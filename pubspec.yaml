@@ -1,0 +1,225 @@
+name: pure_live
+description: A new Flutter project.
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.6.0
+
+environment:
+  sdk: '>=3.0.6 <4.0.0'
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_localizations:
+    sdk: flutter
+  #hashlib
+  hashlib: ^1.12.0
+  # network
+  flutter_js: ^0.8.0
+  html: ^0.15.4
+  http: ^1.1.0
+  url_launcher: ^6.1.12
+  web_socket_channel: ^2.4.0
+  cached_network_image: ^3.3.0
+  
+  # ui related
+  dynamic_color: ^1.6.8
+  flutter_staggered_grid_view: ^0.7.0
+  #Widget
+  easy_refresh: ^3.3.2+4
+  flutter_smart_dialog: ^4.9.5 #各种弹窗 Toast/Dialog/Popup
+  # barrage wall
+  quiver: ^3.2.1
+  flex_color_picker: ^3.3.0
+  flutter_exit_app: ^1.1.2
+  visibility_detector: ^0.4.0+2
+  # database
+  supabase_flutter: ^2.0.1
+  email_validator: ^2.1.17
+  font_awesome_flutter: ^10.6.0
+  # video player mobile
+  media_kit: ^1.1.10+1                           # Primary package.
+  media_kit_video: ^1.2.4                        # For video rendering.
+  media_kit_libs_video: ^1.0.4                   # Native video dependencies.
+  better_player:
+    path: 'C:/Users/XA-158/projects/flutter/better_player'
+    # git: 
+    #   url: https://github.com/liuchuancong/better_player.git
+    #   ref: 'media3'
+  fijkplayer: ^0.11.0
+  share_handler: ^0.0.19
+  uri_to_file: ^1.0.0
+  bordered_text: ^2.0.0
+  screen_brightness: ^0.2.2+1
+  flutter_volume_controller: ^1.2.7
+  flutter_color: ^2.1.0
+  crypto_simple: ^2.1.0
+  window_manager: ^0.3.8
+  url_protocol:
+    git:
+      url: https://github.com/LucasXu0/flutter_url_protocol.git
+      commit: 77a8420
+  win32_registry: ^1.1.2
+  windows_single_instance: ^1.0.0
+  app_links: ^3.4.5
+  protobuf: ^3.1.0
+  fixnum: ^1.1.0
+  dio: ^5.3.3
+  dio_cookie_manager: ^3.1.1
+  cookie_jar: ^4.0.8
+  # system hardware utils
+  wakelock_plus: ^1.1.3
+  dlna_dart: ^0.0.8
+  battery_plus: ^5.0.2
+  stop_watch_timer: ^3.0.2
+  # storage
+  file_picker: ^6.0.0
+  permission_handler: ^11.0.1
+  shared_preferences: ^2.2.2
+  flutter_cache_manager: ^3.3.1
+  # utils
+  get: ^5.0.0-release-candidate-5
+  intl: ^0.18.0
+  timezone: ^0.8.0
+  date_format: ^2.0.7
+  path: ^1.8.3
+  file: ^7.0.0
+  path_provider: ^2.1.1
+  logger: ^2.0.2+1
+  crypto: ^3.0.3
+  brotli: ^0.6.0
+  flutter_restart: 
+    git: https://github.com/liuchuancong/flutterRestartPluginWip.git
+  move_to_desktop: ^0.0.2
+  device_info_plus: ^9.1.1
+  dart_tars_protocol:
+    git: https://github.com/xiaoyaocz/dart_tars_protocol.git
+  html_unescape: ^2.0.0
+  flutter_inappwebview: ^6.0.0-beta.25
+  connectivity_plus: ^5.0.2 
+  qr_flutter: ^4.1.0 
+  # 给web端通信
+  dia: ^0.1.4
+  dia_static: ^0.1.2
+  dia_body: ^0.1.3
+  dia_router: ^0.1.7
+  dia_cors: ^0.1.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  change_app_package_name: any
+  flutter_launcher_icons: ^0.13.1
+  msix: ^3.16.7
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^3.0.1
+
+# flutter pub run flutter_launcher_icons
+flutter_icons:
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true
+  image_path: assets/icons/icon.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icons/icon_foreground.png
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  windows:
+    generate: true
+    image_path: assets/icons/icon.png
+    icon_size: 48 # min:48, max:256, default: 48
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+# The following section is specific to Flutter.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/crypto-js.js
+    - assets/images/
+    - assets/icons/
+    - assets/keystore/
+    - assets/pure_live_web/
+    - assets/pure_live_web/assets/
+    - assets/pure_live_web/assets/assets/icons/
+    - assets/pure_live_web/assets/assets/images/
+    - assets/pure_live_web/assets/fonts/
+    - assets/pure_live_web/assets/packages/flex_color_picker/assets/
+    - assets/pure_live_web/assets/packages/flutter_js/assets/js/
+    - assets/pure_live_web/assets/packages/font_awesome_flutter/lib/fonts/
+    - assets/pure_live_web/assets/shaders/
+    - assets/pure_live_web/canvaskit/
+    - assets/pure_live_web/canvaskit/chromium/
+    - assets/pure_live_web/icons/
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware.
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  fonts:
+    - family: CustomIcons
+      fonts:
+        - asset: assets/icons/CustomIcons.ttf
+    - family: PingFang
+      fonts:
+        - asset: assets/PingFangSC.ttf
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
+
+# flutter localization settings
+
+flutter_intl:
+  enabled: true
+  arb_dir: lib/common/l10n
+  output_dir: lib/common/l10n/generated
+
+# windows msix package
+msix_config:
+  display_name: 纯粹直播
+  # publisher_display_name: puretech.com
+  # identity_name: com.puretech.purelive
+  msix_version: 1.0.0.51
+  logo_path: assets/icons/icon.png
+  # capabilities: internetClient
+  certificate_path: assets/keystore/CERTIFICATE.pfx
+  certificate_password: xxxx
+  # publisher: O=puretech.com, C=CN
