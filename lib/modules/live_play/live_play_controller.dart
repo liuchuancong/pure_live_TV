@@ -1,10 +1,10 @@
 import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
-import 'widgets/video_player/video_controller.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/danmu_merge.dart';
+import 'package:pure_live/modules/live_play/widgets/index.dart';
 
 class LivePlayController extends StateController {
   LivePlayController({
@@ -44,28 +44,6 @@ class LivePlayController extends StateController {
   final currentLineIndex = 0.obs;
 
   int lastExitTime = 0;
-  Future<bool> onBackPressed() async {
-    if (videoController!.showSettting.value) {
-      videoController?.showSettting.toggle();
-      return await Future.value(false);
-    }
-    if (videoController!.isFullscreen.value) {
-      videoController?.exitFullScreen();
-      return await Future.value(false);
-    }
-    bool doubleExit = Get.find<SettingsService>().doubleExit.value;
-    if (!doubleExit) {
-      return Future.value(true);
-    }
-    int nowExitTime = DateTime.now().millisecondsSinceEpoch;
-    if (nowExitTime - lastExitTime > 1000) {
-      lastExitTime = nowExitTime;
-      SmartDialog.showToast(S.current.double_click_to_exit);
-      videoController?.isFullscreen.value = false;
-      return await Future.value(false);
-    }
-    return await Future.value(true);
-  }
 
   @override
   void onClose() {
@@ -170,40 +148,10 @@ class LivePlayController extends StateController {
         return;
       }
       qualites.value = playQualites;
-      int qualityLevel = settings.resolutionsList.indexOf(settings.preferResolution.value);
-      if (qualityLevel == 0) {
-        //最高
-        currentQuality.value = 0;
-      } else if (qualityLevel == settings.resolutionsList.length - 1) {
-        //最低
-        currentQuality.value = playQualites.length - 1;
-      } else {
-        //中间值
-        int middle = (playQualites.length / 2).floor();
-        currentQuality.value = middle;
-      }
-
       getPlayUrl();
     } catch (e) {
       SmartDialog.showToast("无法读取播放清晰度");
     }
-  }
-
-  void changePlayLine() {
-    if (currentLineIndex.value == playUrls.length - 1) {
-      liveStatus.value = false;
-      success.value = false;
-
-      if (videoController != null) {
-        if (videoController!.isFullscreen.value) {
-          videoController?.toggleFullScreen();
-        }
-        videoController?.hasError.value = true;
-      }
-      return;
-    }
-    currentLineIndex.value++;
-    setResolution(qualites.map((e) => e.quality).toList()[currentQuality.value], currentLineIndex.value.toString());
   }
 
   void getPlayUrl() async {
@@ -217,8 +165,7 @@ class LivePlayController extends StateController {
     }
     playUrls.value = playUrl;
     currentLineIndex.value = 0;
-
-    setPlayer();
+    success.value = true;
   }
 
   void setPlayer() async {
@@ -247,6 +194,9 @@ class LivePlayController extends StateController {
       autoPlay: true,
       headers: headers,
     );
-    success.value = true;
+
+    Get.to(() => VideoPlayer(
+          controller: videoController!,
+        ));
   }
 }

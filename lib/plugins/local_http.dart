@@ -90,41 +90,6 @@ class LocalHttpServer {
         final result = await controller.onRefresh();
         ctx.body = jsonEncode({'data': !result});
       });
-      router.post('/exitRoom', (ctx, next) async {
-        try {
-          ctx.body = jsonEncode({'data': true});
-          var currentRoute = Get.previousRoute;
-          if (currentRoute == '/areas') {
-            Get.offAndToNamed(RoutePath.kInitial);
-          } else if (currentRoute == RoutePath.kAreaRooms) {
-            Get.back();
-          } else if (currentRoute == '/home') {
-            Get.back();
-          } else if (currentRoute == RoutePath.kLivePlay) {
-            final LivePlayController livePlayController = Get.find<LivePlayController>();
-            if (livePlayController.videoController != null && livePlayController.videoController!.isFullscreen.value) {
-              if (livePlayController.videoController!.isFullscreen.value) {
-                livePlayController.videoController!.toggleFullScreen();
-              }
-            } else {
-              Get.back();
-            }
-          }
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
-      router.post('/fullscreenRoom', (ctx, next) async {
-        try {
-          final LivePlayController livePlayController = Get.find<LivePlayController>();
-          if (livePlayController.videoController != null) {
-            livePlayController.videoController!.toggleFullScreen();
-          }
-          ctx.body = jsonEncode({'data': true});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
       router.post('/favoriteRoom', (ctx, next) async {
         try {
           final LivePlayController livePlayController = Get.find<LivePlayController>();

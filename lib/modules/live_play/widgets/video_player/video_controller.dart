@@ -2,19 +2,15 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:developer';
 import 'package:get/get.dart';
-import 'video_controller_panel.dart';
 import 'package:flutter/services.dart';
 import 'package:fijkplayer/fijkplayer.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:battery_plus/battery_plus.dart';
 import 'package:pure_live/plugins/barrage.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:better_player/better_player.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
-import 'package:pure_live/modules/live_play/widgets/video_player/player_full.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
 
 class VideoController with ChangeNotifier {
@@ -72,8 +68,6 @@ class VideoController with ChangeNotifier {
   late FijkPlayer fijkPlayer;
 
   final playerRefresh = false.obs;
-
-  GlobalKey<BrightnessVolumnDargAreaState> brightnessKey = GlobalKey<BrightnessVolumnDargAreaState>();
 
   LivePlayController livePlayController = Get.find<LivePlayController>();
 
@@ -139,22 +133,8 @@ class VideoController with ChangeNotifier {
   }
 
   initPagesConfig() {
-    if (allowScreenKeepOn) WakelockPlus.enable();
     initVideoController();
     initDanmaku();
-    initBattery();
-  }
-
-  // Battery level control
-  final Battery _battery = Battery();
-  final batteryLevel = 100.obs;
-  void initBattery() {
-    if (Platform.isAndroid || Platform.isIOS) {
-      _battery.batteryLevel.then((value) => batteryLevel.value = value);
-      _battery.onBatteryStateChanged.listen((BatteryState state) async {
-        batteryLevel.value = await _battery.batteryLevel;
-      });
-    }
   }
 
   void initVideoController() async {
@@ -193,13 +173,6 @@ class VideoController with ChangeNotifier {
             autoDetectFullscreenDeviceOrientation: true,
             autoDetectFullscreenAspectRatio: true,
             errorBuilder: (context, errorMessage) => Container(),
-            routePageBuilder: (context, animation, second, controllerProvider) => AnimatedBuilder(
-              animation: animation,
-              builder: (context, child) => MobileFullscreen(
-                controller: this,
-                controllerProvider: controllerProvider,
-              ),
-            ),
           ),
         );
         mobileController?.setControlsEnabled(false);
@@ -233,13 +206,9 @@ class VideoController with ChangeNotifier {
     }
     debounce(hasError, (callback) {
       if (hasError.value) {
-        livePlayController.changePlayLine();
+        // livePlayController.changePlayLine();
       }
     }, time: const Duration(seconds: 1));
-    // fix auto fullscreen
-    if (fullScreenByDefault && datasource.isNotEmpty) {
-      Timer(const Duration(milliseconds: 500), () => toggleFullScreen());
-    }
   }
 
   void _playerValueChanged() {
@@ -291,14 +260,6 @@ class VideoController with ChangeNotifier {
     }
   }
 
-  refreshView() {
-    refreshCompleted.value = false;
-    Timer(const Duration(microseconds: 200), () {
-      brightnessKey = GlobalKey<BrightnessVolumnDargAreaState>();
-      refreshCompleted.value = true;
-    });
-  }
-
   void initDanmaku() {
     hideDanmaku.value = PrefUtil.getBool('hideDanmaku') ?? false;
     hideDanmaku.listen((data) {
@@ -343,7 +304,6 @@ class VideoController with ChangeNotifier {
 
   @override
   void dispose() async {
-    if (allowScreenKeepOn) WakelockPlus.disable();
     if (Platform.isAndroid || Platform.isIOS) {
       if (videoPlayerIndex == 0) {
         mobileController?.removeEventsListener(mobileStateListener);
@@ -533,92 +493,6 @@ class VideoController with ChangeNotifier {
     await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
   }
 
-  void toggleFullScreen() async {
-    // disable locked
-    showLocked.value = false;
-    // fix danmaku overlap bug
-    if (!hideDanmaku.value) {
-      hideDanmaku.value = true;
-      Timer(const Duration(milliseconds: 500), () {
-        hideDanmaku.value = false;
-      });
-    }
-    // fix obx setstate when build
-    showControllerTimer?.cancel();
-    Timer(const Duration(milliseconds: 500), () {
-      enableController();
-    });
-
-    if (Platform.isWindows || Platform.isLinux) {
-      if (key.currentState?.isFullscreen() ?? false) {
-        key.currentState?.exitFullscreen();
-      } else {
-        key.currentState?.enterFullscreen();
-      }
-      isFullscreen.toggle();
-    } else {
-      if (videoPlayerIndex == 0) {
-        mobileController?.toggleFullScreen();
-        Timer(const Duration(milliseconds: 400), () {
-          isFullscreen.toggle();
-          // fix immersion status bar problem
-          if (Platform.isAndroid) {
-            SystemChrome.setEnabledSystemUIMode(
-                !isFullscreen.value ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky);
-          }
-        });
-      } else if (videoPlayerIndex == 1) {
-        isFullscreen.toggle();
-        if (isFullscreen.value) {
-          fijkPlayer.exitFullScreen();
-        } else {
-          fijkPlayer.enterFullScreen();
-        }
-      } else if (videoPlayerIndex == 2) {
-        if (key.currentState?.isFullscreen() ?? false) {
-          key.currentState?.exitFullscreen();
-        } else {
-          key.currentState?.enterFullscreen();
-        }
-        isFullscreen.toggle();
-      }
-    }
-    refreshView();
-  }
-
-  void toggleWindowFullScreen() {
-    // disable locked
-    showLocked.value = false;
-    // fix danmaku overlap bug
-    if (!hideDanmaku.value) {
-      hideDanmaku.value = true;
-      Timer(const Duration(milliseconds: 500), () {
-        hideDanmaku.value = false;
-      });
-    }
-    // fix obx setstate when build
-    showControllerTimer?.cancel();
-    Timer(const Duration(milliseconds: 500), () {
-      enableController();
-    });
-
-    if (Platform.isWindows || Platform.isLinux) {
-      if (!isWindowFullscreen.value) {
-        Get.to(() => DesktopFullscreen(
-              controller: this,
-              key: UniqueKey(),
-            ));
-      } else {
-        Get.back();
-      }
-      isWindowFullscreen.toggle();
-    } else {
-      throw UnimplementedError('Unsupported Platform');
-    }
-    enableController();
-    refreshView();
-  }
-
   void enterPipMode(BuildContext context) async {
     if ((Platform.isAndroid || Platform.isIOS)) {
       if (videoPlayerIndex == 0) {
@@ -649,31 +523,3 @@ class VideoController with ChangeNotifier {
     }
   }
 }
-
-// use fullscreen with controller provider
-
-class DesktopFullscreen extends StatelessWidget {
-  const DesktopFullscreen({super.key, required this.controller});
-
-  final VideoController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: Stack(
-          children: [
-            Obx(() => media_kit_video.Video(
-                  controller: controller.mediaPlayerController,
-                  fit: controller.videoFit.value,
-                  controls: (state) => VideoControllerPanel(controller: controller),
-                ))
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// use fullscreen with controller provider
