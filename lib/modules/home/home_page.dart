@@ -1,17 +1,7 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:get/get.dart';
-import '../search/search_page.dart';
-import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/plugins/screen_device.dart';
-import 'package:move_to_desktop/move_to_desktop.dart';
-import 'package:pure_live/modules/areas/areas_page.dart';
-import 'package:pure_live/modules/home/mobile_view.dart';
-import 'package:pure_live/modules/home/tablet_view.dart';
-import 'package:pure_live/modules/popular/popular_page.dart';
-import 'package:pure_live/modules/favorite/favorite_page.dart';
-import 'package:pure_live/modules/about/widgets/version_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,129 +10,155 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin, WindowListener {
-  Timer? _debounceTimer;
+class _HomePageState extends State<HomePage> {
   final FavoriteController favoriteController = Get.find<FavoriteController>();
+  final controller = GroupButtonController();
+  final pageController = GroupButtonController();
+  String currentDateTime = '';
   @override
   void initState() {
     super.initState();
-    // check update overlay ui
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) async {
-        // Android statusbar and navigationbar
-        if (Platform.isAndroid) {
-          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            systemNavigationBarColor: Theme.of(context).navigationBarTheme.backgroundColor,
-          ));
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        } else {
-          windowManager.addListener(this);
-        }
-      },
-    );
-    addToOverlay();
-    favoriteController.tabBottomIndex.addListener(() {
-      setState(() => _selectedIndex = favoriteController.tabBottomIndex.value);
+    getCurrentChineseDateTime();
+  }
+
+  void getCurrentChineseDateTime() {
+    Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      DateTime now = DateTime.now();
+      DateFormat formatter = DateFormat('yyyy年MM月dd日 HH:mm:ss', 'zh_CN');
+      setState(() {
+        currentDateTime = formatter.format(now);
+      });
     });
   }
 
-  @override
-  void dispose() {
-    if (Platform.isWindows) {
-      windowManager.removeListener(this);
-    }
-    super.dispose();
-  }
-
-  @override
-  void onWindowFocus() {
-    setState(() {});
-  }
-
-  int _selectedIndex = 0;
-  final List<Widget> bodys = const [
-    FavoritePage(),
-    PopularPage(),
-    AreasPage(),
-    SearchPage(),
-  ];
-  void debounceListen(Function? func, [int delay = 1000]) {
-    if (_debounceTimer != null) {
-      _debounceTimer?.cancel();
-    }
-    _debounceTimer = Timer(Duration(milliseconds: delay), () {
-      func?.call();
-
-      _debounceTimer = null;
-    });
-  }
-
-  handMoveRefresh() {
-    favoriteController.onRefresh();
-  }
-
-  void onDestinationSelected(int index) {
-    setState(() => _selectedIndex = index);
-    favoriteController.tabBottomIndex.value = index;
-  }
-
-  Future<void> addToOverlay() async {
-    final overlay = Overlay.maybeOf(context);
-    late OverlayEntry entry;
-    entry = OverlayEntry(
-      builder: (context) => Container(
-        alignment: Alignment.center,
-        color: Colors.black54,
-        child: NewVersionDialog(entry: entry),
-      ),
-    );
-    if (Platform.isAndroid && await ScreenDevice.getDeviceType() == Device.tv) {
-      return;
-    }
-    await VersionUtil.checkUpdate();
-    bool isHasNerVersion = Get.find<SettingsService>().enableAutoCheckUpdate.value && VersionUtil.hasNewVersion();
-    if (mounted) {
-      if (overlay != null && isHasNerVersion) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => overlay.insert(entry));
-      } else {
-        if (overlay != null && isHasNerVersion) {
-          overlay.insert(entry);
-        }
-      }
+  handleMainPageButtonTap(int index) {
+    controller.unselectAll();
+    pageController.unselectAll();
+    controller.selectIndex(index);
+    switch (index) {
+      case 0:
+        Get.toNamed(RoutePath.kFavorite);
+        break;
+      case 1:
+        Get.toNamed(RoutePath.kPopular);
+        break;
+      case 2:
+        Get.toNamed(RoutePath.kAreas);
+        break;
+      case 3:
+        Get.toNamed(RoutePath.kSearch);
+        break;
+      default:
     }
   }
 
-  void onBackButtonPressed(bool canPop) async {
-    if (canPop) {
-      final moveToDesktopPlugin = MoveToDesktop();
-      await moveToDesktopPlugin.moveToDesktop();
+  handleRoutePageButtonTap(int index) {
+    controller.unselectAll();
+    pageController.unselectAll();
+    pageController.selectIndex(index);
+    switch (index) {
+      case 0:
+        Get.toNamed(RoutePath.kHistory);
+        break;
+      case 1:
+        Get.toNamed(RoutePath.kSettingsAccount);
+        break;
+      case 2:
+        Get.toNamed(RoutePath.kSettings);
+        break;
+      case 3:
+        Get.toNamed(RoutePath.kSearch);
+        break;
+      case 4:
+        Get.toNamed(RoutePath.kSettingsHotAreas);
+        break;
+      case 5:
+        Get.toNamed(RoutePath.kDonate);
+        break;
+      case 6:
+        Get.toNamed(RoutePath.kAbout);
+        break;
+
+      default:
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return PopScope(
-      canPop: Get.currentRoute == RoutePath.kInitial,
-      onPopInvoked: onBackButtonPressed,
-      child: LayoutBuilder(
-        builder: (context, constraint) => constraint.maxWidth <= 680
-            ? HomeMobileView(
-                body: bodys[_selectedIndex],
-                index: _selectedIndex,
-                onDestinationSelected: onDestinationSelected,
-                onFavoriteDoubleTap: handMoveRefresh,
-              )
-            : HomeTabletView(
-                body: bodys[_selectedIndex],
-                index: _selectedIndex,
-                onDestinationSelected: onDestinationSelected,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('纯粹直播'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20, top: 10),
+            child: Text(
+              currentDateTime,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
               ),
+            ),
+          )
+        ],
+      ),
+      body: ListView(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: GroupButton(
+                controller: controller,
+                isRadio: false,
+                options: GroupButtonOptions(
+                  selectedTextStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white),
+                  unselectedTextStyle: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
+                  spacing: 12,
+                  runSpacing: 10,
+                  groupingType: GroupingType.wrap,
+                  direction: Axis.horizontal,
+                  borderRadius: BorderRadius.circular(20),
+                  mainGroupAlignment: MainGroupAlignment.start,
+                  crossGroupAlignment: CrossGroupAlignment.start,
+                  groupRunAlignment: GroupRunAlignment.start,
+                  textAlign: TextAlign.center,
+                  textPadding: EdgeInsets.zero,
+                  alignment: Alignment.center,
+                ),
+                buttons: const ["关注", "热门", "分区", "搜索"],
+                maxSelected: 1,
+                onSelected: (val, i, selected) => handleMainPageButtonTap(i)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: GroupButton(
+                controller: pageController,
+                isRadio: false,
+                options: GroupButtonOptions(
+                  selectedTextStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white),
+                  unselectedTextStyle: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  spacing: 12,
+                  runSpacing: 10,
+                  groupingType: GroupingType.wrap,
+                  direction: Axis.horizontal,
+                  borderRadius: BorderRadius.circular(4),
+                  mainGroupAlignment: MainGroupAlignment.start,
+                  crossGroupAlignment: CrossGroupAlignment.start,
+                  groupRunAlignment: GroupRunAlignment.start,
+                  textAlign: TextAlign.center,
+                  textPadding: EdgeInsets.zero,
+                  alignment: Alignment.center,
+                ),
+                buttons: const ["历史", "账户", "设置", "推送", "平台", "捐赠", "关于"],
+                maxSelected: 1,
+                onSelected: (val, i, selected) => handleRoutePageButtonTap(i)),
+          ),
+        ],
       ),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/modules/auth/utils/constants.dart';
 import 'package:pure_live/modules/shield/danmu_shield_controller.dart';
 
 class DanmuShieldPage extends GetView<DanmuShieldController> {
@@ -32,14 +31,12 @@ class DanmuShieldPage extends GetView<DanmuShieldController> {
               controller.add();
             },
           ),
-          spacer(12.0),
           Obx(
             () => Text(
               "已添加${controller.settingsController.shieldList.length}个关键词（点击移除）",
               style: Get.textTheme.titleMedium,
             ),
           ),
-          spacer(12.0),
           Obx(
             () => Wrap(
               runSpacing: 12,

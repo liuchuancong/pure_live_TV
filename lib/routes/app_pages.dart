@@ -1,20 +1,16 @@
 import 'route_path.dart';
 import 'package:get/get.dart';
-import 'package:pure_live/modules/auth/mine_page.dart';
 import 'package:pure_live/modules/home/home_page.dart';
 import 'package:pure_live/modules/about/about_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/about/donate_page.dart';
-import 'package:pure_live/modules/auth/sign_in_page.dart';
 import 'package:pure_live/modules/search/search_page.dart';
-import 'package:pure_live/modules/backup/backup_page.dart';
 import 'package:pure_live/modules/account/account_bing.dart';
 import 'package:pure_live/modules/account/account_page.dart';
 import 'package:pure_live/modules/contact/contact_page.dart';
 import 'package:pure_live/modules/popular/popular_page.dart';
 import 'package:pure_live/modules/history/history_page.dart';
 import 'package:pure_live/modules/about/version_history.dart';
-import 'package:pure_live/modules/auth/user_manage_page.dart';
 import 'package:pure_live/modules/search/search_binding.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
@@ -30,7 +26,6 @@ import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
 import 'package:pure_live/modules/account/bilibili/qr_login_page.dart';
 import 'package:pure_live/modules/account/bilibili/bilibili_bings.dart';
 import 'package:pure_live/modules/account/bilibili/web_login_page.dart';
-import 'package:pure_live/modules/auth/components/update_password.dart';
 
 // auth
 
@@ -43,18 +38,6 @@ class AppPages {
       page: HomePage.new,
       participatesInRootNavigator: true,
       preventDuplicates: true,
-    ),
-    GetPage(
-      name: RoutePath.kSignIn,
-      page: SignInPage.new,
-    ),
-    GetPage(
-      name: RoutePath.kUpdatePassword,
-      page: UpdatePassword.new,
-    ),
-    GetPage(
-      name: RoutePath.kMine,
-      page: MinePage.new,
     ),
     GetPage(
       name: RoutePath.kFavorite,
@@ -85,10 +68,6 @@ class AppPages {
     GetPage(
       name: RoutePath.kContact,
       page: ContactPage.new,
-    ),
-    GetPage(
-      name: RoutePath.kBackup,
-      page: BackupPage.new,
     ),
     GetPage(
       name: RoutePath.kAbout,
@@ -145,7 +124,6 @@ class AppPages {
         HotAreasBinding(),
       ],
     ),
-    GetPage(name: RoutePath.kUserManage, page: () => const UserManager()),
     GetPage(name: RoutePath.kVersionHistory, page: () => const VersionHistoryPage()),
   ];
 }

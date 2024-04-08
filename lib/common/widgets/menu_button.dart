@@ -1,9 +1,7 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 
-class MenuButton extends GetView<AuthController> {
-  const MenuButton({super.key});
-
+class MenuButton {
   final menuRoutes = const [
     RoutePath.kSettings,
     RoutePath.kAbout,
@@ -13,7 +11,6 @@ class MenuButton extends GetView<AuthController> {
     RoutePath.kSettingsAccount,
   ];
 
-  @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
       tooltip: 'menu',
@@ -24,25 +21,9 @@ class MenuButton extends GetView<AuthController> {
       position: PopupMenuPosition.under,
       icon: const Icon(Icons.menu_rounded),
       onSelected: (int index) {
-        if (index == 4) {
-          if (controller.isLogin) {
-            Get.toNamed(RoutePath.kMine);
-          } else {
-            Get.toNamed(RoutePath.kSignIn);
-          }
-        } else {
-          Get.toNamed(menuRoutes[index]);
-        }
+        Get.toNamed(menuRoutes[index]);
       },
       itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 4,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: MenuListTile(
-            leading: const Icon(Icons.account_circle),
-            text: controller.isLogin ? S.of(context).supabase_mine : S.of(context).supabase_sign_in,
-          ),
-        ),
         const PopupMenuItem(
           value: 5,
           padding: EdgeInsets.symmetric(horizontal: 12),

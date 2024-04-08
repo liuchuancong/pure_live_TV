@@ -3,9 +3,7 @@ import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:pure_live/modules/settings/danmuset.dart';
-import 'package:pure_live/modules/backup/backup_page.dart';
 import 'package:pure_live/plugins/file_recover_utils.dart';
-import 'package:pure_live/modules/auth/utils/constants.dart';
 
 class SettingsPage extends GetView<SettingsService> {
   const SettingsPage({super.key});
@@ -30,42 +28,7 @@ class SettingsPage extends GetView<SettingsService> {
             subtitle: Text(S.of(context).change_theme_mode_subtitle),
             onTap: showThemeModeSelectorDialog,
           ),
-          ListTile(
-            leading: const Icon(Icons.color_lens, size: 32),
-            title: Text(S.of(context).change_theme_color),
-            subtitle: Text(S.of(context).change_theme_color_subtitle),
-            trailing: ColorIndicator(
-              width: 44,
-              height: 44,
-              borderRadius: 4,
-              color: HexColor(controller.themeColorSwitch.value),
-              onSelectFocus: false,
-            ),
-            onTap: colorPickerDialog,
-          ),
-          ListTile(
-            leading: const Icon(Icons.translate_rounded, size: 32),
-            title: Text(S.of(context).change_language),
-            subtitle: Text(S.of(context).change_language_subtitle),
-            onTap: showLanguageSelecterDialog,
-          ),
-          ListTile(
-            leading: const Icon(Icons.backup_rounded, size: 32),
-            title: Text(S.of(context).backup_recover),
-            subtitle: Text(S.of(context).backup_recover_subtitle),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const BackupPage()),
-            ),
-          ),
           SectionTitle(title: S.of(context).video),
-          Obx(() => SwitchListTile(
-                title: Text(S.of(context).enable_background_play),
-                subtitle: Text(S.of(context).enable_background_play_subtitle),
-                value: controller.enableBackgroundPlay.value,
-                activeColor: Theme.of(context).colorScheme.primary,
-                onChanged: (bool value) => controller.enableBackgroundPlay.value = value,
-              )),
           Obx(() => SwitchListTile(
                 title: Text(S.of(context).enable_screen_keep_on),
                 subtitle: Text(S.of(context).enable_screen_keep_on_subtitle),
@@ -80,19 +43,7 @@ class SettingsPage extends GetView<SettingsService> {
                 activeColor: Theme.of(context).colorScheme.primary,
                 onChanged: (bool value) => controller.enableFullScreenDefault.value = value,
               )),
-          ListTile(
-            title: Text(S.of(context).prefer_resolution),
-            subtitle: Text(S.of(context).prefer_resolution_subtitle),
-            onTap: showPreferResolutionSelectorDialog,
-          ),
           SectionTitle(title: S.of(context).custom),
-          Obx(() => SwitchListTile(
-                title: Text(S.of(context).enable_dynamic_color),
-                subtitle: Text(S.of(context).enable_dynamic_color_subtitle),
-                value: controller.enableDynamicTheme.value,
-                activeColor: Theme.of(context).colorScheme.primary,
-                onChanged: (bool value) => controller.enableDynamicTheme.value = value,
-              )),
           Obx(() => SwitchListTile(
                 title: Text(S.of(context).enable_dense_favorites_mode),
                 subtitle: Text(S.of(context).enable_dense_favorites_mode_subtitle),
@@ -100,18 +51,6 @@ class SettingsPage extends GetView<SettingsService> {
                 activeColor: Theme.of(context).colorScheme.primary,
                 onChanged: (bool value) => controller.enableDenseFavorites.value = value,
               )),
-          Obx(() => SwitchListTile(
-                title: Text(S.of(context).enable_auto_check_update),
-                subtitle: Text(S.of(context).enable_auto_check_update_subtitle),
-                value: controller.enableAutoCheckUpdate.value,
-                activeColor: Theme.of(context).colorScheme.primary,
-                onChanged: (bool value) => controller.enableAutoCheckUpdate.value = value,
-              )),
-          ListTile(
-            title: Text(S.of(context).prefer_platform),
-            subtitle: Text(S.of(context).prefer_platform_subtitle),
-            onTap: showPreferPlatformSelectorDialog,
-          ),
           ListTile(
             title: Text(S.of(context).auto_refresh_time),
             subtitle: Text(S.of(context).auto_refresh_time_subtitle),
@@ -119,52 +58,20 @@ class SettingsPage extends GetView<SettingsService> {
             onTap: showAutoRefreshTimeSetDialog,
           ),
           ListTile(
-            title: Text(S.of(context).settings_danmaku_title),
-            onTap: showDanmuSetDialog,
+            title: Text(S.of(context).change_player),
+            subtitle: Text(S.of(context).change_player_subtitle),
+            trailing: Obx(() => Text(controller.playerlist[controller.videoPlayerIndex.value])),
+            onTap: showVideoSetDialog,
           ),
-          ListTile(
-            title: const Text("弹幕过滤"),
-            subtitle: const Text("自定义关键词过滤弹幕"),
-            onTap: () => Get.toNamed(RoutePath.kSettingsDanmuShield),
+          Obx(() => SwitchListTile(
+                title: Text(S.of(context).enable_codec),
+                value: controller.enableCodec.value,
+                activeColor: Theme.of(context).colorScheme.primary,
+                onChanged: (bool value) => controller.enableCodec.value = value,
+              )),
+          const ListTile(
+            title: Text("其他设置请使用推送设置"),
           ),
-          ListTile(
-            title: const Text("平台设置"),
-            subtitle: const Text("自定义观看喜爱的平台"),
-            onTap: () => Get.toNamed(RoutePath.kSettingsHotAreas),
-          ),
-          ListTile(
-            title: const Text("Web服务"),
-            subtitle: const Text("使用web页面控制应用"),
-            onTap: showWebPortDialog,
-          ),
-          if (Platform.isAndroid)
-            Obx(() => SwitchListTile(
-                  title: Text(S.of(context).double_click_to_exit),
-                  value: controller.doubleExit.value,
-                  activeColor: Theme.of(context).colorScheme.primary,
-                  onChanged: (bool value) => controller.doubleExit.value = value,
-                )),
-          if (Platform.isAndroid)
-            ListTile(
-              title: Text(S.of(context).change_player),
-              subtitle: Text(S.of(context).change_player_subtitle),
-              trailing: Obx(() => Text(controller.playerlist[controller.videoPlayerIndex.value])),
-              onTap: showVideoSetDialog,
-            ),
-          if (Platform.isAndroid)
-            Obx(() => SwitchListTile(
-                  title: Text(S.of(context).enable_codec),
-                  value: controller.enableCodec.value,
-                  activeColor: Theme.of(context).colorScheme.primary,
-                  onChanged: (bool value) => controller.enableCodec.value = value,
-                )),
-          if (Platform.isAndroid)
-            ListTile(
-              title: Text(S.of(context).auto_shutdown_time),
-              subtitle: Text(S.of(context).auto_shutdown_time_subtitle),
-              trailing: Obx(() => Text('${controller.autoShutDownTime} minute')),
-              onTap: showAutoShutDownTimeSetDialog,
-            ),
         ],
       ),
     );
@@ -352,7 +259,7 @@ class SettingsPage extends GetView<SettingsService> {
               children: [
                 Slider(
                   min: 0,
-                  max: 120,
+                  max: 30,
                   label: S.of(context).auto_refresh_time,
                   value: controller.autoRefreshTime.toDouble(),
                   onChanged: (value) => controller.autoRefreshTime.value = value.toInt(),
@@ -446,7 +353,6 @@ class SettingsPage extends GetView<SettingsService> {
                       hintText: '端口地址(1-65535)',
                     ),
                   ),
-                  spacer(20.0),
                   Obx(() => SwitchListTile(
                         title: const Text('是否开启web服务'),
                         value: controller.webPortEnable.value,

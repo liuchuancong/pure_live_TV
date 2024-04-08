@@ -55,8 +55,6 @@ dependencies:
   flutter_exit_app: ^1.1.2
   visibility_detector: ^0.4.0+2
   # database
-  supabase_flutter: ^2.0.1
-  email_validator: ^2.1.17
   font_awesome_flutter: ^10.6.0
   # video player mobile
   media_kit: ^1.1.10+1                           # Primary package.
@@ -75,7 +73,6 @@ dependencies:
   flutter_volume_controller: ^1.2.7
   flutter_color: ^2.1.0
   crypto_simple: ^2.1.0
-  window_manager: ^0.3.8
   url_protocol:
     git:
       url: https://github.com/LucasXu0/flutter_url_protocol.git
@@ -125,12 +122,12 @@ dependencies:
   dia_body: ^0.1.3
   dia_router: ^0.1.7
   dia_cors: ^0.1.2
+  group_button: ^5.3.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
   change_app_package_name: any
   flutter_launcher_icons: ^0.13.1
-  msix: ^3.16.7
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -142,16 +139,10 @@ dev_dependencies:
 # flutter pub run flutter_launcher_icons
 flutter_icons:
   android: "ic_launcher"
-  ios: true
-  remove_alpha_ios: true
   image_path: assets/icons/icon.png
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: assets/icons/icon_foreground.png
   min_sdk_android: 21 # android min sdk min:16, default 21
-  windows:
-    generate: true
-    image_path: assets/icons/icon.png
-    icon_size: 48 # min:48, max:256, default: 48
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -211,15 +202,3 @@ flutter_intl:
   enabled: true
   arb_dir: lib/common/l10n
   output_dir: lib/common/l10n/generated
-
-# windows msix package
-msix_config:
-  display_name: 纯粹直播
-  # publisher_display_name: puretech.com
-  # identity_name: com.puretech.purelive
-  msix_version: 1.0.0.51
-  logo_path: assets/icons/icon.png
-  # capabilities: internetClient
-  certificate_path: assets/keystore/CERTIFICATE.pfx
-  certificate_password: xxxx
-  # publisher: O=puretech.com, C=CN
