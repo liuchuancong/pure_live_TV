@@ -13,8 +13,6 @@ export 'package:flutter/material.dart';
 export 'package:windows_single_instance/windows_single_instance.dart';
 export 'package:pure_live/modules/favorite/favorite_controller.dart';
 export 'package:permission_handler/permission_handler.dart';
-
-export 'package:pure_live/modules/areas/areas_controller.dart';
 export 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 export 'package:flutter_localizations/flutter_localizations.dart';
 export 'package:media_kit/media_kit.dart';

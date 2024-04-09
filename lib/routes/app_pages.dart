@@ -6,6 +6,7 @@ import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/home/home_binding.dart';
 import 'package:pure_live/modules/about/donate_page.dart';
 import 'package:pure_live/modules/search/search_page.dart';
+import 'package:pure_live/modules/areas/areas_binding.dart';
 import 'package:pure_live/modules/account/account_bing.dart';
 import 'package:pure_live/modules/account/account_page.dart';
 import 'package:pure_live/modules/contact/contact_page.dart';
@@ -52,6 +53,7 @@ class AppPages {
     GetPage(
       name: RoutePath.kAreas,
       page: AreasPage.new,
+      bindings: [AreasBinding()],
     ),
     GetPage(
       name: RoutePath.kSettings,

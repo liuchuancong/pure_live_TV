@@ -1,3 +1,5 @@
+import 'package:pure_live/app/app_focus_node.dart';
+
 class LiveArea {
   String? platform = '';
   String? areaType = '';
@@ -6,7 +8,7 @@ class LiveArea {
   String? areaName = '';
   String? areaPic = '';
   String? shortName = '';
-
+  AppFocusNode focusNode = AppFocusNode();
   LiveArea({
     this.platform,
     this.areaType,

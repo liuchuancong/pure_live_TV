@@ -55,13 +55,17 @@ class BasePageController<T> extends BaseController {
   int maxPage = 0;
   int pageSize = 30;
   var canLoadMore = false.obs;
+  // 禁止到底部自动加载
+  var stopLoadMore = true.obs;
   var list = <T>[].obs;
 
   @override
   void onInit() {
     scrollController.addListener(() {
       if (scrollController.position.pixels >= (scrollController.position.maxScrollExtent - 100.w)) {
-        loadData();
+        if (stopLoadMore.value) {
+          loadData();
+        }
       }
     });
     super.onInit();

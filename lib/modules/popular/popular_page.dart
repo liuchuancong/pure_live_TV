@@ -60,21 +60,19 @@ class PopularPage extends GetView<PopularGridController> {
             spacing: 36.w,
             children: Sites()
                 .availableSites()
-                .map(
-                  (e) => HighlightButton(
-                    icon: Image.asset(
-                      e.logo,
-                      width: 48.w,
-                      height: 48.w,
-                    ),
-                    text: e.name,
-                    selected: controller.siteId.value == e.id,
-                    focusNode: AppFocusNode(),
-                    onTap: () {
-                      controller.setSite(e.id);
-                    },
-                  ),
-                )
+                .map((e) => Obx(() => HighlightButton(
+                      icon: Image.asset(
+                        e.logo,
+                        width: 48.w,
+                        height: 48.w,
+                      ),
+                      text: e.name,
+                      selected: controller.siteId.value == e.id,
+                      focusNode: AppFocusNode(),
+                      onTap: () {
+                        controller.setSite(e.id);
+                      },
+                    )))
                 .toList(),
           ),
           AppStyle.vGap32,

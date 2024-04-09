@@ -13,6 +13,12 @@ class AreaRoomsController extends BasePageController<LiveRoom> {
   });
 
   @override
+  void onInit() {
+    refreshData();
+    super.onInit();
+  }
+
+  @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
     var result = await site.liveSite.getCategoryRooms(subCategory, page: page);
     for (var element in result.items) {

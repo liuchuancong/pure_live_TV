@@ -5,9 +5,25 @@ import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/common/base/base_controller.dart';
 
 class AreasListController extends BasePageController<AppLiveCategory> {
-  final Site site;
-  final tabIndex = 0.obs;
-  AreasListController(this.site);
+  late Site site;
+  var siteId = ''.obs;
+  @override
+  void onInit() {
+    final preferPlatform = Get.find<SettingsService>().preferPlatform.value;
+    stopLoadMore.value = false;
+    final pIndex = Sites().availableSites().indexWhere((e) => e.id == preferPlatform);
+    siteId.value = pIndex != -1 ? Sites().availableSites()[pIndex].id : Sites().availableSites()[0].id;
+    site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
+    refreshData();
+    super.onInit();
+  }
+
+  void setSite(String id) {
+    siteId.value = id;
+    final pIndex = Sites().availableSites().indexWhere((e) => e.id == id);
+    site = Sites().availableSites()[pIndex];
+    refreshData();
+  }
 
   @override
   Future<List<AppLiveCategory>> getData(int page, int pageSize) async {
@@ -18,6 +34,7 @@ class AreasListController extends BasePageController<AppLiveCategory> {
 
 class AppLiveCategory extends LiveCategory {
   var showAll = false.obs;
+
   AppLiveCategory({
     required super.id,
     required super.name,

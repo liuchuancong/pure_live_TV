@@ -24,7 +24,6 @@ void main(List<String> args) async {
 void initService() {
   Get.put(SettingsService());
   Get.put(FavoriteController());
-  Get.put(AreasController());
   Get.put(BiliBiliAccountService());
 }
 

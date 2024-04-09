@@ -194,14 +194,6 @@ class LocalHttpServer {
             case 'bottomTab':
               favoriteController.tabBottomIndex.value = index;
               break;
-            case 'areaTab':
-              AreasController areasController = Get.find<AreasController>();
-              areasController.tabController.animateTo(index);
-              break;
-            case 'areaSubTab':
-              AreasListController controller = Get.find<AreasListController>(tag: tag);
-              controller.tabIndex.value = index;
-              break;
             case 'doSearch':
               pure_live.SearchController controller = Get.find<pure_live.SearchController>();
               controller.tabController.animateTo(index);
