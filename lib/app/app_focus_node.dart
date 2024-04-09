@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 /// 拓展FoucsNode
 class AppFocusNode extends FocusNode {
   var isFoucsed = false.obs;
+
   AppFocusNode() {
     isFoucsed.value = hasFocus;
     addListener(updateFoucs);

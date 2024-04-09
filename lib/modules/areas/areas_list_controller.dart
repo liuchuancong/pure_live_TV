@@ -1,12 +1,17 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/common/base/base_controller.dart';
 
 class AreasListController extends BasePageController<AppLiveCategory> {
   late Site site;
   var siteId = ''.obs;
+  var currentNodeIndex = 1.obs;
+  // button列表再加上设置最近观看
+  List<AppFocusNode> focusNodes = [];
+  List<AppFocusNode> focusLiveNodes = [];
   @override
   void onInit() {
     final preferPlatform = Get.find<SettingsService>().preferPlatform.value;
@@ -16,6 +21,13 @@ class AreasListController extends BasePageController<AppLiveCategory> {
     site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
     refreshData();
     super.onInit();
+    focusNodes = [];
+    // 分类按钮
+    for (var i = 0; i < Sites().availableSites().length; i++) {
+      focusNodes.add(AppFocusNode());
+    }
+    // 返回按钮
+    focusNodes.add(AppFocusNode());
   }
 
   void setSite(String id) {

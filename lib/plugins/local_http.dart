@@ -13,13 +13,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:dia_router/dia_router.dart' as dia_router;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pure_live/plugins/file_recover_utils.dart';
-import 'package:pure_live/modules/areas/areas_list_controller.dart';
-import 'package:pure_live/modules/search/search_list_controller.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
-import 'package:pure_live/modules/popular/popular_grid_controller.dart';
-import 'package:pure_live/modules/area_rooms/area_rooms_controller.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
-import 'package:pure_live/modules/search/search_controller.dart' as pure_live;
 
 class ContextRequest extends Context with dia_router.Routing, ParsedBody {
   ContextRequest(super.request);
@@ -182,30 +177,6 @@ class LocalHttpServer {
           ctx.body = jsonEncode({'data': false});
         }
       });
-      router.post('/toggleTabevent', (ctx, next) async {
-        try {
-          int index = int.parse(ctx.query['index']!);
-          String tag = ctx.query['tag']!;
-          FavoriteController favoriteController = Get.find<FavoriteController>();
-          switch (ctx.query['type']!) {
-            case 'online':
-              favoriteController.tabController.animateTo(index);
-              break;
-            case 'bottomTab':
-              favoriteController.tabBottomIndex.value = index;
-              break;
-            case 'doSearch':
-              pure_live.SearchController controller = Get.find<pure_live.SearchController>();
-              controller.tabController.animateTo(index);
-              break;
-            default:
-          }
-
-          ctx.body = jsonEncode({'data': true});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
 
       router.post('/toggleWebServer', (ctx, next) async {
         bool webPortEnable = ctx.query['webPortEnable']!.toBoolean();
@@ -217,68 +188,6 @@ class LocalHttpServer {
           settings.webPort.value = webPort;
         }
         ctx.body = jsonEncode({'data': true});
-      });
-
-      router.post('/getGridData', (ctx, next) async {
-        String data = '';
-        try {
-          String tag = ctx.query['tag']!;
-          int page = int.parse(ctx.query['page']!);
-          int pageSize = int.parse(ctx.query['pageSize']!);
-          String keywords = ctx.query['keywords']!;
-          switch (ctx.query['type']!) {
-            case 'hotTab':
-              var controller = Get.find<PopularGridController>(tag: tag);
-              var sizeData = await controller.getData(page, pageSize);
-              controller.list.addAll(sizeData);
-
-              if (page == 1) {
-                data = jsonEncode(controller.list.map((LiveRoom element) => jsonEncode(element.toJson())).toList());
-              } else {
-                controller.scrollToBottom();
-                data = jsonEncode(sizeData.map((LiveRoom element) => jsonEncode(element.toJson())).toList());
-              }
-
-              break;
-            case 'areaTab':
-              var controller = Get.find<AreasListController>(tag: tag);
-              data = jsonEncode(controller.list.value);
-              break;
-            case 'areaRoomsTab':
-              AreaRoomsController areaRoomController = Get.find<AreaRoomsController>();
-              var sizeData = await areaRoomController.getData(page, pageSize);
-              areaRoomController.list.addAll(sizeData);
-
-              if (page == 1) {
-                data = jsonEncode(
-                    areaRoomController.list.map((LiveRoom element) => jsonEncode(element.toJson())).toList());
-              } else {
-                areaRoomController.scrollToBottom();
-                data = jsonEncode(sizeData.map((LiveRoom element) => jsonEncode(element.toJson())).toList());
-              }
-              break;
-            case 'doSearch':
-              SearchListController searchListController = Get.find<SearchListController>(tag: tag);
-              searchListController.keyword.value = keywords;
-              var sizeData = await searchListController.getData(page, pageSize);
-              searchListController.list.addAll(sizeData as List<LiveRoom>);
-
-              data = jsonEncode(sizeData.map((LiveRoom element) => jsonEncode(element.toJson())).toList());
-              if (page == 1) {
-                data = jsonEncode((searchListController.list.value as List<LiveRoom>)
-                    .map((LiveRoom element) => jsonEncode(element.toJson()))
-                    .toList());
-              } else {
-                searchListController.scrollToBottom();
-                data = jsonEncode(sizeData.map((LiveRoom element) => jsonEncode(element.toJson())).toList());
-              }
-              break;
-            default:
-          }
-          ctx.body = jsonEncode({'data': data});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': data});
-        }
       });
       router.post('/toAreaDetail', (ctx, next) async {
         try {

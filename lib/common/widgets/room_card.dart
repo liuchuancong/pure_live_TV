@@ -67,6 +67,7 @@ class RoomCard extends StatelessWidget {
                                 child: Icon(
                                   Icons.tv_off_rounded,
                                   size: dense ? 36 : 60,
+                                  color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
                                 ),
                               )
                             : CachedNetworkImage(
@@ -75,6 +76,7 @@ class RoomCard extends StatelessWidget {
                                 fit: BoxFit.fill,
                                 errorWidget: (context, error, stackTrace) => Center(
                                   child: Icon(
+                                    color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
                                     Icons.live_tv_rounded,
                                     size: dense ? 38 : 62,
                                   ),

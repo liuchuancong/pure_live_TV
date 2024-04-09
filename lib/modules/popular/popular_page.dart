@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/modules/popular/popular_grid_controller.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -19,7 +18,7 @@ class PopularPage extends GetView<PopularGridController> {
             children: [
               AppStyle.hGap48,
               HighlightButton(
-                focusNode: AppFocusNode(),
+                focusNode: controller.focusNodes.first,
                 iconData: Icons.arrow_back,
                 text: "返回",
                 //autofocus: true,
@@ -58,22 +57,21 @@ class PopularPage extends GetView<PopularGridController> {
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 36.w,
-            children: Sites()
-                .availableSites()
-                .map((e) => Obx(() => HighlightButton(
+            children: List.generate(
+                Sites().availableSites().length,
+                (index) => Obx(() => HighlightButton(
                       icon: Image.asset(
-                        e.logo,
+                        Sites().availableSites()[index].logo,
                         width: 48.w,
                         height: 48.w,
                       ),
-                      text: e.name,
-                      selected: controller.siteId.value == e.id,
-                      focusNode: AppFocusNode(),
+                      text: Sites().availableSites()[index].name,
+                      selected: controller.siteId.value == Sites().availableSites()[index].id,
+                      focusNode: controller.focusNodes[index + 1],
                       onTap: () {
-                        controller.setSite(e.id);
+                        controller.setSite(Sites().availableSites()[index].id);
                       },
-                    )))
-                .toList(),
+                    ))).toList(),
           ),
           AppStyle.vGap32,
           Expanded(

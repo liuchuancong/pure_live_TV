@@ -66,7 +66,7 @@ class AppPages {
     ),
     GetPage(
       name: RoutePath.kSearch,
-      page: SearchPage.new,
+      page: SearchRoomPage.new,
       bindings: [SearchBinding()],
     ),
     GetPage(

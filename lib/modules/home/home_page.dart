@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -23,7 +24,7 @@ class HomePage extends GetView<HomeController> {
         Get.toNamed(RoutePath.kAreas);
         break;
       case 3:
-        Get.toNamed(RoutePath.kSearch);
+        showSearchDialog();
         break;
       case 4:
         Get.toNamed(RoutePath.kHistory);
@@ -173,6 +174,89 @@ class HomePage extends GetView<HomeController> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void showSearchDialog() {
+    var textController = TextEditingController();
+    var roomFocusNode = AppFocusNode()..isFoucsed.value = true;
+    Timer(const Duration(milliseconds: 100), () {
+      roomFocusNode.requestFocus();
+    });
+    showDialog(
+      context: Get.context!,
+      builder: (_) => AlertDialog(
+        backgroundColor: Get.theme.cardColor,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppStyle.radius16,
+        ),
+        contentPadding: AppStyle.edgeInsetsA48,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: AppStyle.edgeInsetsR12,
+                      child: Icon(
+                        Icons.live_tv,
+                        size: 40.w,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      '直播间搜索',
+                      style: TextStyle(
+                        fontSize: 28.w,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            AppStyle.vGap48,
+            SizedBox(
+              width: 700.w,
+              child: TextField(
+                controller: textController,
+                focusNode: roomFocusNode,
+                style: AppStyle.textStyleWhite,
+                textInputAction: TextInputAction.search,
+                onSubmitted: (e) {
+                  if (e.isEmpty) {
+                    return;
+                  }
+                  // 关闭键盘在关闭弹窗
+                  Navigator.of(Get.context!).pop();
+                  roomFocusNode.unfocus();
+                  Timer(const Duration(milliseconds: 100), () {
+                    Get.toNamed(RoutePath.kSearch, arguments: e);
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: "点击输入关键字搜索",
+                  hintStyle: AppStyle.textStyleWhite,
+                  border: OutlineInputBorder(
+                    borderRadius: AppStyle.radius16,
+                    borderSide: BorderSide(width: 4.w),
+                  ),
+                  filled: true,
+                  isDense: true,
+                  fillColor: Get.theme.primaryColor,
+                  contentPadding: AppStyle.edgeInsetsA32,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

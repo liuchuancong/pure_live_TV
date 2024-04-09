@@ -21,7 +21,7 @@ class AreasPage extends GetView<AreasListController> {
             children: [
               AppStyle.hGap48,
               HighlightButton(
-                focusNode: AppFocusNode(),
+                focusNode: controller.focusNodes.first,
                 iconData: Icons.arrow_back,
                 text: "返回",
                 autofocus: true,
@@ -68,22 +68,21 @@ class AreasPage extends GetView<AreasListController> {
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 36.w,
-            children: Sites()
-                .availableSites()
-                .map((e) => Obx(() => HighlightButton(
+            children: List.generate(
+                Sites().availableSites().length,
+                (index) => Obx(() => HighlightButton(
                       icon: Image.asset(
-                        e.logo,
+                        Sites().availableSites()[index].logo,
                         width: 48.w,
                         height: 48.w,
                       ),
-                      text: e.name,
-                      selected: controller.siteId.value == e.id,
-                      focusNode: AppFocusNode(),
+                      text: Sites().availableSites()[index].name,
+                      selected: controller.siteId.value == Sites().availableSites()[index].id,
+                      focusNode: controller.focusNodes[index + 1],
                       onTap: () {
-                        controller.setSite(e.id);
+                        controller.setSite(Sites().availableSites()[index].id);
                       },
-                    )))
-                .toList(),
+                    ))).toList(),
           ),
           AppStyle.vGap24,
           Expanded(
@@ -112,10 +111,9 @@ class AreasPage extends GetView<AreasListController> {
                           crossAxisCount: 8,
                           crossAxisSpacing: 36.w,
                           mainAxisSpacing: 36.w,
-                          children: item.showAll.value
-                              ? (item.children.map((e) => buildSubCategory(e)).toList()
-                                ..add(item.children.length > 19 ? buildShowLess(item) : Container()))
-                              : (item.take15.map((e) => buildSubCategory(e)).toList()..add(buildShowMore(item))),
+                          children:
+                              List.generate(item.children.length, (index) => buildSubCategory(item.children[index]))
+                                  .toList(),
                         ),
                       ),
                     ],

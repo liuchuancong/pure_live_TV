@@ -1,23 +1,22 @@
-import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/base/base_controller.dart';
 
-class PopularGridController extends BasePageController<LiveRoom> {
+class SearchRoomController extends BasePageController<LiveRoom> {
+  final String keyword;
   late Site site;
   var siteId = ''.obs;
   var currentNodeIndex = 1.obs;
   // button列表再加上设置最近观看
   List<AppFocusNode> focusNodes = [];
   List<AppFocusNode> focusLiveNodes = [];
+  SearchRoomController({required this.keyword});
 
   @override
   void onInit() {
-    final preferPlatform = Get.find<SettingsService>().preferPlatform.value;
-    final pIndex = Sites().availableSites().indexWhere((e) => e.id == preferPlatform);
-    siteId.value = pIndex != -1 ? Sites().availableSites()[pIndex].id : Sites().availableSites()[0].id;
-    site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
+    siteId.value = Sites().availableSites()[0].id;
+    site = Sites().availableSites()[0];
     focusNodes = [];
     // 分类按钮
     for (var i = 0; i < Sites().availableSites().length; i++) {
@@ -49,7 +48,10 @@ class PopularGridController extends BasePageController<LiveRoom> {
 
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
-    var result = await site.liveSite.getRecommendRooms(page: page);
+    if (keyword.isEmpty) {
+      return [];
+    }
+    var result = await site.liveSite.searchRooms(keyword, page: page);
     return result.items;
   }
 }
