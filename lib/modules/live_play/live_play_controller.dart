@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
@@ -24,11 +25,17 @@ class LivePlayController extends StateController {
   VideoController? videoController;
 
   final playerKey = GlobalKey();
+
   final danmakuViewKey = GlobalKey();
+
   final LiveRoom room;
+
   Rx<LiveRoom?> detail = Rx<LiveRoom?>(LiveRoom());
+
   final success = false.obs;
+
   var liveStatus = false.obs;
+
   Map<String, List<String>> liveStream = {};
 
   /// 清晰度数据
@@ -44,6 +51,14 @@ class LivePlayController extends StateController {
   final currentLineIndex = 0.obs;
 
   int lastExitTime = 0;
+
+  final FocusNode focusNode = FocusNode();
+
+  /// 双击退出Flag
+  bool doubleClickExit = false;
+
+  /// 双击退出Timer
+  Timer? doubleClickTimer;
 
   @override
   void onClose() {
@@ -165,7 +180,7 @@ class LivePlayController extends StateController {
     }
     playUrls.value = playUrl;
     currentLineIndex.value = 0;
-    success.value = true;
+    setPlayer();
   }
 
   void setPlayer() async {
@@ -195,8 +210,59 @@ class LivePlayController extends StateController {
       headers: headers,
     );
 
-    Get.to(() => VideoPlayer(
-          controller: videoController!,
-        ));
+    success.value = true;
+  }
+
+  void nextChannel() {
+    //读取正在直播的频道
+    var liveChannels = settings.favoriteRooms;
+    if (liveChannels.isEmpty) {
+      SmartDialog.showToast("没有正在直播的频道");
+      return;
+    }
+    var index = liveChannels.indexWhere((element) => element.roomId == room.roomId);
+    // if (index == -1) {
+    //   //当前频道不在列表中
+
+    //   return;
+    // }
+    index += 1;
+    if (index >= liveChannels.length) {
+      index = 0;
+    }
+    var nextChannel = liveChannels[index];
+
+    resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
+  }
+
+  void prevChannel() {
+    //读取正在直播的频道
+    var liveChannels = settings.favoriteRooms;
+    if (liveChannels.isEmpty) {
+      SmartDialog.showToast("没有正在直播的频道");
+      return;
+    }
+    var index = liveChannels.indexWhere((element) => element.roomId == room.roomId);
+    // if (index == -1) {
+    //   //当前频道不在列表中
+
+    //   return;
+    // }
+    index -= 1;
+    if (index < 0) {
+      index = liveChannels.length - 1;
+    }
+    var nextChannel = liveChannels[index];
+
+    resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
+  }
+
+  void resetRoom(Site site, String roomId) async {
+    if (room.roomId == roomId) {
+      return;
+    }
+
+    // 清除全部消息
+    liveDanmaku.stop();
   }
 }

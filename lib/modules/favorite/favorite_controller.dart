@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
 
 class FavoriteController extends GetxController with GetSingleTickerProviderStateMixin {
   final SettingsService settings = Get.find<SettingsService>();
-  late TabController tabController;
+
   final tabBottomIndex = 0.obs;
+
+  final onlineRoomsNodes = AppFocusNode();
+
+  final offlineRoomsNodes = AppFocusNode();
+
   bool isFirstLoad = true;
-  FavoriteController() {
-    tabController = TabController(length: 2, vsync: this);
-  }
 
   @override
   void onInit() {
@@ -19,13 +22,6 @@ class FavoriteController extends GetxController with GetSingleTickerProviderStat
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
     onRefresh();
-    // 定时自动刷新
-    if (settings.autoRefreshTime.value != 0) {
-      Timer.periodic(
-        Duration(minutes: settings.autoRefreshTime.value),
-        (timer) => onRefresh(),
-      );
-    }
   }
 
   final onlineRooms = [].obs;

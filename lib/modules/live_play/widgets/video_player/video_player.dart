@@ -25,18 +25,6 @@ class _VideoPlayerState extends State<VideoPlayer> {
     );
   }
 
-  @override
-  void didChangeDependencies() {
-    if (!widget.controller.initialized.value) {
-      final navigator = Navigator.of(context);
-      setState(() {
-        widget.controller.navigatorState = navigator;
-      });
-      widget.controller.initialized.value = true;
-    }
-    super.didChangeDependencies();
-  }
-
   ImageProvider? getRoomCover(cover) {
     try {
       return CachedNetworkImageProvider(cover);

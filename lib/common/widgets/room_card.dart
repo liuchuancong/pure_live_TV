@@ -119,7 +119,7 @@ class RoomCard extends StatelessWidget {
                 height: 56.w,
                 child: focusNode.isFoucsed.value
                     ? Marquee(
-                        text: room.title!,
+                        text: room.title ?? '',
                         style: AppStyle.textStyleBlack,
                         startAfter: const Duration(seconds: 1),
                         velocity: 20,
@@ -130,7 +130,7 @@ class RoomCard extends StatelessWidget {
                     : Container(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          room.title!,
+                          room.title ?? '',
                           style: AppStyle.textStyleWhite,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

@@ -47,19 +47,42 @@ class FavoritePage extends GetView<FavoriteController> {
               AppStyle.hGap48,
             ],
           ),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 36.w,
+            children: [
+              HighlightButton(
+                text: "已开播",
+                focusNode: controller.onlineRoomsNodes,
+                onTap: () {
+                  controller.tabBottomIndex.value = 0;
+                },
+              ),
+              HighlightButton(
+                text: "未开播",
+                focusNode: controller.offlineRoomsNodes,
+                onTap: () {
+                  controller.tabBottomIndex.value = 1;
+                },
+              )
+            ],
+          ),
           AppStyle.vGap48,
           Expanded(
             child: Obx(
               () => MasonryGridView.count(
                 padding: AppStyle.edgeInsetsH48,
-                itemCount: controller.onlineRooms.length,
+                itemCount: controller.tabBottomIndex.value == 0
+                    ? controller.onlineRooms.length
+                    : controller.offlineRooms.length,
                 crossAxisCount: 3,
                 crossAxisSpacing: 48.w,
                 mainAxisSpacing: 40.w,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (_, i) {
-                  var item = controller.onlineRooms[i];
+                  var item =
+                      controller.tabBottomIndex.value == 0 ? controller.onlineRooms[i] : controller.offlineRooms[i];
                   return RoomCard(
                     focusNode: item.focusNode,
                     room: item,

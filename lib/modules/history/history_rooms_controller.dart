@@ -22,7 +22,6 @@ class HistoryPageController extends BasePageController<LiveRoom> {
         for (var i = 0; i < list.length; i++) {
           focusNodes.add(AppFocusNode());
         }
-        focusNodes[focusNodes.length - 1].isFoucsed.value = true;
       }
     });
   }
