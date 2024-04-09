@@ -1,3 +1,5 @@
+import 'package:pure_live/app/app_focus_node.dart';
+
 enum LiveStatus { live, offline, replay, unknown }
 
 enum Platforms { huya, bilibili, douyu, douyin, unknown }
@@ -14,6 +16,7 @@ class LiveRoom {
   String? watching = '';
   String? followers = '';
   String? platform = 'UNKNOWN';
+  AppFocusNode focusNode = AppFocusNode();
 
   /// 介绍
   String? introduction;

@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class FavoritePage extends GetView<FavoriteController> {
@@ -7,130 +9,68 @@ class FavoritePage extends GetView<FavoriteController> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraint) {
-      return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          scrolledUnderElevation: 0,
-          title: TabBar(
-            controller: controller.tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.center,
-            labelStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-            indicatorSize: TabBarIndicatorSize.label,
-            tabs: [
-              Tab(text: S.of(context).online_room_title),
-              Tab(text: S.of(context).offline_room_title),
+    return AppScaffold(
+      child: Column(
+        children: [
+          AppStyle.vGap32,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AppStyle.hGap48,
+              HighlightButton(
+                focusNode: AppFocusNode(),
+                iconData: Icons.arrow_back,
+                text: "返回",
+                autofocus: true,
+                onTap: () {
+                  Get.back();
+                },
+              ),
+              AppStyle.hGap32,
+              Text(
+                "我的关注",
+                style: AppStyle.titleStyleWhite.copyWith(
+                  fontSize: 36.w,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              AppStyle.hGap24,
+              const Spacer(),
+              HighlightButton(
+                focusNode: AppFocusNode(),
+                iconData: Icons.refresh,
+                text: "刷新",
+                onTap: () {
+                  controller.onRefresh();
+                },
+              ),
+              AppStyle.hGap48,
             ],
           ),
-        ),
-        body: TabBarView(
-          controller: controller.tabController,
-          children: [
-            _RoomOnlineGridView(),
-            _RoomOfflineGridView(),
-          ],
-        ),
-      );
-    });
-  }
-}
-
-class _RoomOnlineGridView extends GetView<FavoriteController> {
-  _RoomOnlineGridView();
-
-  final refreshController = EasyRefreshController(
-    controlFinishRefresh: true,
-    controlFinishLoad: true,
-  );
-  final dense = Get.find<SettingsService>().enableDenseFavorites.value;
-
-  Future onRefresh() async {
-    bool result = await controller.onRefresh();
-    if (!result) {
-      refreshController.finishRefresh(IndicatorResult.success);
-      refreshController.resetFooter();
-    } else {
-      refreshController.finishRefresh(IndicatorResult.fail);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraint) {
-      final width = constraint.maxWidth;
-      int crossAxisCount = width > 1280 ? 4 : (width > 960 ? 3 : (width > 640 ? 2 : 1));
-      if (dense) {
-        crossAxisCount = width > 1280 ? 5 : (width > 960 ? 4 : (width > 640 ? 3 : 2));
-      }
-      return Obx(() => EasyRefresh(
-            controller: refreshController,
-            onRefresh: onRefresh,
-            onLoad: () {
-              refreshController.finishLoad(IndicatorResult.success);
-            },
-            child: controller.onlineRooms.isNotEmpty
-                ? MasonryGridView.count(
-                    padding: const EdgeInsets.all(5),
-                    controller: ScrollController(),
-                    crossAxisCount: crossAxisCount,
-                    itemCount: controller.onlineRooms.length,
-                    itemBuilder: (context, index) => RoomCard(room: controller.onlineRooms[index], dense: dense),
-                  )
-                : EmptyView(
-                    icon: Icons.favorite_rounded,
-                    title: S.of(context).empty_favorite_online_title,
-                    subtitle: S.of(context).empty_favorite_online_subtitle,
-                  ),
-          ));
-    });
-  }
-}
-
-class _RoomOfflineGridView extends GetView<FavoriteController> {
-  _RoomOfflineGridView();
-
-  final refreshController = EasyRefreshController();
-  final dense = Get.find<SettingsService>().enableDenseFavorites.value;
-
-  Future onRefresh() async {
-    await controller.onRefresh();
-    refreshController.finishRefresh(IndicatorResult.success);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraint) {
-      final width = constraint.maxWidth;
-      int crossAxisCount = width > 1280 ? 4 : (width > 960 ? 3 : (width > 640 ? 2 : 1));
-      if (dense) {
-        crossAxisCount = width > 1280 ? 5 : (width > 960 ? 4 : (width > 640 ? 3 : 2));
-      }
-
-      return Obx(() => EasyRefresh(
-            controller: refreshController,
-            onRefresh: onRefresh,
-            onLoad: () {
-              refreshController.finishLoad(IndicatorResult.noMore);
-            },
-            child: controller.offlineRooms.isNotEmpty
-                ? MasonryGridView.count(
-                    padding: const EdgeInsets.all(5),
-                    controller: ScrollController(),
-                    crossAxisCount: crossAxisCount,
-                    itemCount: controller.offlineRooms.length,
-                    itemBuilder: (context, index) => RoomCard(
-                      room: controller.offlineRooms[index],
-                      dense: dense,
-                    ),
-                  )
-                : EmptyView(
-                    icon: Icons.favorite_rounded,
-                    title: S.of(context).empty_favorite_offline_title,
-                    subtitle: S.of(context).empty_favorite_offline_subtitle,
-                  ),
-          ));
-    });
+          AppStyle.vGap48,
+          Expanded(
+            child: Obx(
+              () => MasonryGridView.count(
+                padding: AppStyle.edgeInsetsH48,
+                itemCount: controller.onlineRooms.length,
+                crossAxisCount: 3,
+                crossAxisSpacing: 48.w,
+                mainAxisSpacing: 40.w,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (_, i) {
+                  var item = controller.onlineRooms[i];
+                  return RoomCard(
+                    focusNode: item.focusNode,
+                    room: item,
+                    dense: controller.settings.enableDenseFavorites.value,
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

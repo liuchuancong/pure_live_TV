@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:flutter/widgets.dart';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class BaseController extends GetxController {
@@ -9,7 +10,7 @@ class BaseController extends GetxController {
   var pageLoadding = false.obs;
 
   /// 加载中,不会更新页面
-  var loadding = false;
+  var loadding = false.obs;
 
   /// 空白页面
   var pageEmpty = false.obs;
@@ -59,11 +60,8 @@ class BasePageController<T> extends BaseController {
   @override
   void onInit() {
     scrollController.addListener(() {
-      if (scrollController.position.atEdge) {
-        bool isTop = scrollController.position.pixels == 0;
-        if (!isTop) {
-          loadData();
-        }
+      if (scrollController.position.pixels >= (scrollController.position.maxScrollExtent - 100.w)) {
+        loadData();
       }
     });
     super.onInit();
@@ -77,8 +75,8 @@ class BasePageController<T> extends BaseController {
 
   Future loadData() async {
     try {
-      if (loadding) return;
-      loadding = true;
+      if (loadding.value) return;
+      loadding.value = true;
       pageError.value = false;
       pageEmpty.value = false;
       notLogin.value = false;
@@ -105,7 +103,7 @@ class BasePageController<T> extends BaseController {
     } catch (e) {
       handleError(e, showPageError: currentPage == 1);
     } finally {
-      loadding = false;
+      loadding.value = false;
       pageLoadding.value = false;
     }
   }

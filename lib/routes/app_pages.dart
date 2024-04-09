@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pure_live/modules/home/home_page.dart';
 import 'package:pure_live/modules/about/about_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
+import 'package:pure_live/modules/home/home_binding.dart';
 import 'package:pure_live/modules/about/donate_page.dart';
 import 'package:pure_live/modules/search/search_page.dart';
 import 'package:pure_live/modules/account/account_bing.dart';
@@ -14,6 +15,7 @@ import 'package:pure_live/modules/about/version_history.dart';
 import 'package:pure_live/modules/search/search_binding.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
+import 'package:pure_live/modules/popular/popular_binding.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_page.dart';
 import 'package:pure_live/modules/live_play/live_play_page.dart';
 import 'package:pure_live/modules/shield/danmu_shield_page.dart';
@@ -36,8 +38,7 @@ class AppPages {
     GetPage(
       name: RoutePath.kInitial,
       page: HomePage.new,
-      participatesInRootNavigator: true,
-      preventDuplicates: true,
+      bindings: [HomeBinding()],
     ),
     GetPage(
       name: RoutePath.kFavorite,
@@ -46,6 +47,7 @@ class AppPages {
     GetPage(
       name: RoutePath.kPopular,
       page: PopularPage.new,
+      bindings: [PoPopularBinding()],
     ),
     GetPage(
       name: RoutePath.kAreas,

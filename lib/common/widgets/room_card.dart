@@ -1,7 +1,10 @@
 import 'dart:developer';
 import 'package:get/get.dart';
+import 'package:marquee/marquee.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
+import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // ignore: must_be_immutable
@@ -9,31 +12,14 @@ class RoomCard extends StatelessWidget {
   const RoomCard({
     super.key,
     required this.room,
+    required this.focusNode,
     this.dense = false,
   });
   final LiveRoom room;
   final bool dense;
-
+  final AppFocusNode focusNode;
   void onTap(BuildContext context) async {
     AppNavigator.toLiveRoomDetail(liveRoom: room);
-  }
-
-  void onLongPress(BuildContext context) {
-    Get.dialog(
-      AlertDialog(
-        title: Text(room.title!),
-        content: Text(
-          S.of(context).room_info_content(
-                room.roomId!,
-                room.platform!,
-                room.nick!,
-                room.title!,
-                room.liveStatus!.name,
-              ),
-        ),
-        actions: [FollowButton(room: room)],
-      ),
-    );
   }
 
   ImageProvider? getRoomAvatar(avatar) {
@@ -48,151 +34,135 @@ class RoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(7.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(15.0),
-        onTap: () => onTap(context),
-        onLongPress: () => onLongPress(context),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return HighlightWidget(
+      focusNode: focusNode,
+      color: Colors.white10,
+      onTap: () => onTap(context),
+      borderRadius: AppStyle.radius16,
+      child: Obx(
+        () => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                Hero(
-                  tag: room.roomId!,
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Card(
-                      margin: const EdgeInsets.all(0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      color: Theme.of(context).focusColor,
-                      elevation: 0,
-                      child: room.liveStatus == LiveStatus.offline
-                          ? Center(
-                              child: Icon(
-                                Icons.tv_off_rounded,
-                                size: dense ? 36 : 60,
-                              ),
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: room.cover!,
-                              cacheManager: CustomCacheManager.instance,
-                              fit: BoxFit.fill,
-                              errorWidget: (context, error, stackTrace) => Center(
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16.w),
+                topRight: Radius.circular(16.w),
+              ),
+              child: Stack(
+                children: [
+                  Hero(
+                    tag: room.roomId!,
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Card(
+                        margin: const EdgeInsets.all(0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0.0),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        color: Theme.of(context).focusColor,
+                        elevation: 0,
+                        child: room.liveStatus == LiveStatus.offline
+                            ? Center(
                                 child: Icon(
-                                  Icons.live_tv_rounded,
-                                  size: dense ? 38 : 62,
+                                  Icons.tv_off_rounded,
+                                  size: dense ? 36 : 60,
+                                ),
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: room.cover!,
+                                cacheManager: CustomCacheManager.instance,
+                                fit: BoxFit.fill,
+                                errorWidget: (context, error, stackTrace) => Center(
+                                  child: Icon(
+                                    Icons.live_tv_rounded,
+                                    size: dense ? 38 : 62,
+                                  ),
                                 ),
                               ),
-                            ),
-                    ),
-                  ),
-                ),
-                if (room.isRecord == true)
-                  Positioned(
-                    right: dense ? 0 : 2,
-                    top: dense ? 0 : 2,
-                    child: CountChip(
-                      icon: Icons.videocam_rounded,
-                      count: S.of(context).replay,
-                      dense: dense,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                if (room.isRecord == false && room.liveStatus == LiveStatus.live)
-                  Positioned(
-                    right: dense ? 0 : 2,
-                    bottom: dense ? 0 : 2,
-                    child: CountChip(
-                      icon: Icons.whatshot_rounded,
-                      count: readableCount(room.watching!),
-                      dense: dense,
-                    ),
-                  ),
-              ],
-            ),
-            ListTile(
-              dense: dense,
-              minLeadingWidth: dense ? 34 : null,
-              contentPadding: dense ? const EdgeInsets.only(left: 8, right: 10) : null,
-              horizontalTitleGap: dense ? 8 : null,
-              leading: CircleAvatar(
-                foregroundImage: room.avatar!.isNotEmpty ? getRoomAvatar(room.avatar) : null,
-                radius: dense ? 17 : null,
-                backgroundColor: Theme.of(context).disabledColor,
-              ),
-              title: Text(
-                room.title!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: dense ? 12.5 : 15,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              subtitle: Text(
-                room.nick!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: dense ? 12 : 14,
-                ),
-              ),
-              trailing: dense
-                  ? null
-                  : Text(
-                      room.platform!.toUpperCase(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
                       ),
                     ),
-            )
+                  ),
+                  if (room.isRecord == true)
+                    Positioned(
+                      right: 8.w,
+                      top: 8.w,
+                      child: CountChip(
+                        icon: Icons.videocam_rounded,
+                        count: S.of(context).replay,
+                        dense: dense,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  if (room.isRecord == false && room.liveStatus == LiveStatus.live)
+                    Positioned(
+                      right: 8.w,
+                      bottom: 8.w,
+                      child: CountChip(
+                        icon: Icons.whatshot_rounded,
+                        count: readableCount(room.watching!),
+                        dense: dense,
+                      ),
+                    ),
+                ],
+              ),
+              // child: Container(
+              //   height: 200.w,
+              // ),
+            ),
+            AppStyle.vGap8,
+            Padding(
+              padding: AppStyle.edgeInsetsH20,
+              child: SizedBox(
+                height: 56.w,
+                child: focusNode.isFoucsed.value
+                    ? Marquee(
+                        text: room.title!,
+                        style: AppStyle.textStyleBlack,
+                        startAfter: const Duration(seconds: 1),
+                        velocity: 20,
+                        blankSpace: 200.w,
+                        //decelerationDuration: const Duration(seconds: 2),
+                        scrollAxis: Axis.horizontal,
+                      )
+                    : Container(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          room.title!,
+                          style: AppStyle.textStyleWhite,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+              ),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                AppStyle.hGap20,
+                SizedBox(
+                  width: 40.w,
+                  height: 40.h,
+                  child: CircleAvatar(
+                    foregroundImage: room.avatar!.isNotEmpty ? getRoomAvatar(room.avatar) : null,
+                    backgroundColor: Theme.of(context).disabledColor,
+                  ),
+                ),
+                AppStyle.hGap8,
+                Expanded(
+                  child: Text(
+                    room.nick!,
+                    style: focusNode.isFoucsed.value ? AppStyle.subTextStyleBlack : AppStyle.subTextStyleWhite,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            AppStyle.vGap12,
           ],
         ),
       ),
-    );
-  }
-}
-
-class FollowButton extends StatefulWidget {
-  const FollowButton({
-    super.key,
-    required this.room,
-  });
-
-  final LiveRoom room;
-
-  @override
-  State<FollowButton> createState() => _FollowButtonState();
-}
-
-class _FollowButtonState extends State<FollowButton> {
-  final settings = Get.find<SettingsService>();
-
-  late bool isFavorite = settings.isFavorite(widget.room);
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton.tonal(
-      onPressed: () {
-        setState(() => isFavorite = !isFavorite);
-        if (isFavorite) {
-          settings.addRoom(widget.room);
-        } else {
-          settings.removeRoom(widget.room);
-        }
-      },
-      style: ElevatedButton.styleFrom(),
-      child: Text(isFavorite ? S.of(context).unfollow : S.of(context).follow),
     );
   }
 }

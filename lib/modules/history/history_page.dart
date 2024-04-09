@@ -67,6 +67,7 @@ class HistoryPage extends GetView {
                     itemCount: rooms.length,
                     itemBuilder: (context, index) => RoomCard(
                       room: rooms[index],
+                      focusNode: rooms[index].focusNode,
                       dense: dense,
                     ),
                   ),

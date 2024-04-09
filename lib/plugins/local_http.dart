@@ -8,7 +8,6 @@ import 'package:dia_cors/dia_cors.dart';
 import 'package:dia_body/dia_body.dart';
 import 'package:dia_static/dia_static.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:flutter_restart/flutter_restart.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dia_router/dia_router.dart' as dia_router;
@@ -195,10 +194,6 @@ class LocalHttpServer {
             case 'bottomTab':
               favoriteController.tabBottomIndex.value = index;
               break;
-            case 'hotTab':
-              PopularController popularController = Get.find<PopularController>();
-              popularController.tabController.animateTo(index);
-              break;
             case 'areaTab':
               AreasController areasController = Get.find<AreasController>();
               areasController.tabController.animateTo(index);
@@ -232,14 +227,6 @@ class LocalHttpServer {
         ctx.body = jsonEncode({'data': true});
       });
 
-      router.post('/restartApp', (ctx, next) async {
-        if (Platform.isAndroid) {
-          FlutterRestart.restartApp();
-          ctx.body = jsonEncode({'data': true});
-        } else {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
       router.post('/getGridData', (ctx, next) async {
         String data = '';
         try {

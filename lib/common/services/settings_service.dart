@@ -157,14 +157,6 @@ class SettingsService extends GetxController {
     Get.changeThemeMode(themeMode);
   }
 
-  void changeThemeColorSwitch(String hexColor) {
-    var themeColor = HexColor(hexColor);
-    var lightTheme = MyTheme(primaryColor: themeColor).lightThemeData;
-    var darkTheme = MyTheme(primaryColor: themeColor).darkThemeData;
-    Get.changeTheme(lightTheme);
-    Get.changeTheme(darkTheme);
-  }
-
   void onInitShutDown() {
     if (enableAutoShutDownTime.isTrue) {
       _stopWatchTimer.setPresetMinuteTime(autoShutDownTime.value, add: false);
@@ -494,7 +486,6 @@ class SettingsService extends GetxController {
     webPort.value = json['webPort'] ?? '8008';
     webPortEnable.value = json['webPortEnable'] ?? false;
     changeThemeMode(themeModeName.value);
-    changeThemeColorSwitch(themeColorSwitch.value);
     setBilibiliCookit(bilibiliCookie.value);
     changeLanguage(languageName.value);
     changePreferResolution(preferResolution.value);

@@ -35,8 +35,7 @@ dependencies:
     sdk: flutter
   #hashlib
   hashlib: ^1.12.0
-  # network
-  flutter_js: ^0.8.0
+
   html: ^0.15.4
   http: ^1.1.0
   url_launcher: ^6.1.12
@@ -105,10 +104,13 @@ dependencies:
   logger: ^2.0.2+1
   crypto: ^3.0.3
   brotli: ^0.6.0
-  flutter_restart: 
-    git: https://github.com/liuchuancong/flutterRestartPluginWip.git
   move_to_desktop: ^0.0.2
   device_info_plus: ^9.1.1
+  cupertino_icons: ^1.0.2
+  remixicon: ^1.0.0 #Remix图标
+  lottie: ^3.1.0 #Lottie动画
+  marquee: ^2.2.3 #跑马灯
+  flutter_screenutil: ^5.9.0 #UI适配
   dart_tars_protocol:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0
@@ -174,7 +176,10 @@ flutter:
     - assets/pure_live_web/canvaskit/
     - assets/pure_live_web/canvaskit/chromium/
     - assets/pure_live_web/icons/
-
+    - assets/statement.txt
+    - assets/images/
+    - assets/icons/
+    - assets/lotties/ 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
   # For details regarding adding assets from package dependencies, see

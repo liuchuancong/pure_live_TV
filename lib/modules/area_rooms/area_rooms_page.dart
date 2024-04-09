@@ -38,7 +38,8 @@ class _AreasRoomPageState extends State<AreasRoomPage> {
                         controller: controller.scrollController,
                         crossAxisCount: crossAxisCount,
                         itemCount: controller.list.length,
-                        itemBuilder: (context, index) => RoomCard(room: controller.list[index], dense: true),
+                        itemBuilder: (context, index) => RoomCard(
+                            room: controller.list[index], focusNode: controller.list[index].focusNode, dense: true),
                       )
                     : EmptyView(
                         icon: Icons.live_tv_rounded,

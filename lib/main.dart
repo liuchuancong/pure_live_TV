@@ -6,10 +6,16 @@ import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  JsEngine.init();
   PrefUtil.prefs = await SharedPreferences.getInstance();
   MediaKit.ensureInitialized();
   // 初始化服务
+  // 强制横屏
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeRight,
+    DeviceOrientation.landscapeLeft,
+  ]);
+  // 全屏
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   initService();
   initRefresh();
   runApp(const MyApp());
@@ -18,7 +24,6 @@ void main(List<String> args) async {
 void initService() {
   Get.put(SettingsService());
   Get.put(FavoriteController());
-  Get.put(PopularController());
   Get.put(AreasController());
   Get.put(BiliBiliAccountService());
 }
@@ -35,29 +40,37 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Shortcuts(
-      shortcuts: {
-        LogicalKeySet(LogicalKeyboardKey.select): const ActivateIntent(),
-      },
-      child: DynamicColorBuilder(
-        builder: (lightDynamic, darkDynamic) {
+    return ScreenUtilInit(
+        designSize: const Size(1920, 1080),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
           return Obx(() {
-            var themeColor = HexColor(settings.themeColorSwitch.value);
-            var lightTheme = MyTheme(primaryColor: themeColor).lightThemeData;
-            var darkTheme = MyTheme(primaryColor: themeColor).darkThemeData;
-            if (settings.enableDynamicTheme.value) {
-              lightTheme = MyTheme(colorScheme: lightDynamic).lightThemeData;
-              darkTheme = MyTheme(colorScheme: darkDynamic).darkThemeData;
-            }
             return GetMaterialApp(
               debugShowCheckedModeBanner: false,
               title: '纯粹直播',
               themeMode: SettingsService.themeModes[settings.themeModeName.value]!,
-              theme: lightTheme,
-              darkTheme: darkTheme,
+              theme: AppStyle.lightTheme,
+              builder: FlutterSmartDialog.init(
+                loadingBuilder: (msg) => Center(
+                  child: SizedBox(
+                    width: 64.w,
+                    height: 64.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 8.w,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                //字体大小不跟随系统变化
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: const TextScaler.linear(1.0),
+                  ),
+                  child: child!,
+                ),
+              ),
               locale: SettingsService.languages[settings.languageName.value]!,
-              navigatorObservers: [FlutterSmartDialog.observer],
-              builder: FlutterSmartDialog.init(),
               supportedLocales: S.delegate.supportedLocales,
               localizationsDelegates: const [
                 S.delegate,
@@ -70,8 +83,6 @@ class _MyAppState extends State<MyApp> {
               getPages: AppPages.routes,
             );
           });
-        },
-      ),
-    );
+        });
   }
 }

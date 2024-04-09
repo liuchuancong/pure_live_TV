@@ -1,40 +1,17 @@
-import 'dart:async';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/modules/home/home_controller.dart';
+import 'package:pure_live/common/widgets/button/home_big_button.dart';
+import 'package:pure_live/common/widgets/button/highlight_button.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final FavoriteController favoriteController = Get.find<FavoriteController>();
-  final controller = GroupButtonController();
-  final pageController = GroupButtonController();
-  String currentDateTime = '';
-  @override
-  void initState() {
-    super.initState();
-    getCurrentChineseDateTime();
-  }
-
-  void getCurrentChineseDateTime() {
-    Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      DateTime now = DateTime.now();
-      DateFormat formatter = DateFormat('yyyy年MM月dd日 HH:mm:ss', 'zh_CN');
-      setState(() {
-        currentDateTime = formatter.format(now);
-      });
-    });
-  }
-
   handleMainPageButtonTap(int index) {
-    controller.unselectAll();
-    pageController.unselectAll();
-    controller.selectIndex(index);
+    controller.currentNodeIndex.value = index + 1;
+    controller.pageController.unselectAll();
+    controller.pageController.selectIndex(index);
     switch (index) {
       case 0:
         Get.toNamed(RoutePath.kFavorite);
@@ -48,114 +25,152 @@ class _HomePageState extends State<HomePage> {
       case 3:
         Get.toNamed(RoutePath.kSearch);
         break;
+      case 4:
+        Get.toNamed(RoutePath.kHistory);
+        break;
+      case 5:
+        Get.toNamed(RoutePath.kHistory);
+        break;
       default:
     }
   }
 
-  handleRoutePageButtonTap(int index) {
-    controller.unselectAll();
-    pageController.unselectAll();
-    pageController.selectIndex(index);
-    switch (index) {
-      case 0:
-        Get.toNamed(RoutePath.kHistory);
-        break;
-      case 1:
-        Get.toNamed(RoutePath.kSettingsAccount);
-        break;
-      case 2:
-        Get.toNamed(RoutePath.kSettings);
-        break;
-      case 3:
-        Get.toNamed(RoutePath.kSearch);
-        break;
-      case 4:
-        Get.toNamed(RoutePath.kSettingsHotAreas);
-        break;
-      case 5:
-        Get.toNamed(RoutePath.kDonate);
-        break;
-      case 6:
-        Get.toNamed(RoutePath.kAbout);
-        break;
-
-      default:
-    }
+  Widget buildViews() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: GroupButton(
+        controller: controller.pageController,
+        isRadio: false,
+        options: GroupButtonOptions(
+          spacing: 48.w,
+          runSpacing: 10,
+          groupingType: GroupingType.wrap,
+          direction: Axis.horizontal,
+          borderRadius: BorderRadius.circular(4),
+          mainGroupAlignment: MainGroupAlignment.start,
+          crossGroupAlignment: CrossGroupAlignment.start,
+          groupRunAlignment: GroupRunAlignment.start,
+          textAlign: TextAlign.center,
+          textPadding: EdgeInsets.zero,
+          alignment: Alignment.center,
+        ),
+        buttons: HomeController.mainPageOptions,
+        maxSelected: 1,
+        buttonIndexedBuilder: (selected, index, context) => HomeBigButton(
+          key: ValueKey(index),
+          focusNode: controller.focusNodes[index + 1],
+          text: HomeController.mainPageOptions[index],
+          iconData: HomeController.mainPageIconOptions[index],
+          onTap: () => handleMainPageButtonTap(index),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('纯粹直播'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20, top: 10),
-            child: Text(
-              currentDateTime,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          )
-        ],
-      ),
-      body: ListView(
+    return AppScaffold(
+      child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: GroupButton(
-                controller: controller,
-                isRadio: false,
-                options: GroupButtonOptions(
-                  selectedTextStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white),
-                  unselectedTextStyle: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.black,
-                  ),
-                  spacing: 12,
-                  runSpacing: 10,
-                  groupingType: GroupingType.wrap,
-                  direction: Axis.horizontal,
-                  borderRadius: BorderRadius.circular(20),
-                  mainGroupAlignment: MainGroupAlignment.start,
-                  crossGroupAlignment: CrossGroupAlignment.start,
-                  groupRunAlignment: GroupRunAlignment.start,
-                  textAlign: TextAlign.center,
-                  textPadding: EdgeInsets.zero,
-                  alignment: Alignment.center,
-                ),
-                buttons: const ["关注", "热门", "分区", "搜索"],
-                maxSelected: 1,
-                onSelected: (val, i, selected) => handleMainPageButtonTap(i)),
+          AppStyle.vGap32,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AppStyle.hGap48,
+              Text(
+                "纯粹直播",
+                style: AppStyle.titleStyleWhite,
+              ),
+              AppStyle.hGap24,
+              const Spacer(),
+              Obx(() => Text(
+                    controller.datetime.value,
+                    style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w),
+                  )),
+              AppStyle.hGap32,
+              HighlightButton(
+                focusNode: controller.focusNodes.first,
+                iconData: Icons.settings,
+                text: "设置",
+                onTap: () {
+                  controller.currentNodeIndex.value = 0;
+                  Get.toNamed(RoutePath.kSettings);
+                },
+              ),
+              AppStyle.hGap48,
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: GroupButton(
-                controller: pageController,
-                isRadio: false,
-                options: GroupButtonOptions(
-                  selectedTextStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white),
-                  unselectedTextStyle: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
+          Expanded(
+            child: ListView(
+              children: [
+                buildViews(),
+                AppStyle.vGap32,
+                Padding(
+                  padding: AppStyle.edgeInsetsH48,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 64.w,
+                        height: 64.w,
+                        child: Center(
+                          child: Icon(
+                            Icons.history,
+                            color: Colors.white,
+                            size: 56.w,
+                          ),
+                        ),
+                      ),
+                      AppStyle.hGap24,
+                      Expanded(
+                        child: Text(
+                          "最近观看",
+                          style: AppStyle.titleStyleWhite,
+                        ),
+                      ),
+                      Obx(
+                        () => Visibility(
+                          visible: controller.settingsService.favoriteRooms.isNotEmpty,
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 48.w,
+                                height: 48.w,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 4.w,
+                                ),
+                              ),
+                              AppStyle.hGap16,
+                              Text(
+                                "更新状态中...",
+                                style: AppStyle.textStyleWhite,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      AppStyle.hGap16,
+                      HighlightButton(
+                        focusNode: AppFocusNode(),
+                        iconData: Icons.settings,
+                        text: "管理",
+                        onTap: () {},
+                      ),
+                      AppStyle.hGap32,
+                      HighlightButton(
+                        focusNode: controller.focusNodes.last,
+                        iconData: Icons.refresh,
+                        text: "刷新",
+                        onTap: () {
+                          controller.currentNodeIndex.value = controller.focusNodes.length - 1;
+                        },
+                      ),
+                    ],
                   ),
-                  spacing: 12,
-                  runSpacing: 10,
-                  groupingType: GroupingType.wrap,
-                  direction: Axis.horizontal,
-                  borderRadius: BorderRadius.circular(4),
-                  mainGroupAlignment: MainGroupAlignment.start,
-                  crossGroupAlignment: CrossGroupAlignment.start,
-                  groupRunAlignment: GroupRunAlignment.start,
-                  textAlign: TextAlign.center,
-                  textPadding: EdgeInsets.zero,
-                  alignment: Alignment.center,
                 ),
-                buttons: const ["历史", "账户", "设置", "推送", "平台", "捐赠", "关于"],
-                maxSelected: 1,
-                onSelected: (val, i, selected) => handleRoutePageButtonTap(i)),
+              ],
+            ),
           ),
         ],
       ),
