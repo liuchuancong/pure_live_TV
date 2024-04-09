@@ -25,6 +25,7 @@ import 'package:pure_live/modules/area_rooms/area_rooms_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_binding.dart';
 import 'package:pure_live/modules/live_play/live_play_binding.dart';
 import 'package:pure_live/modules/shield/danmu_shield_binding.dart';
+import 'package:pure_live/modules/history/history_rooms_binding.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
 import 'package:pure_live/modules/account/bilibili/qr_login_page.dart';
 import 'package:pure_live/modules/account/bilibili/bilibili_bings.dart';
@@ -63,6 +64,7 @@ class AppPages {
     GetPage(
       name: RoutePath.kHistory,
       page: HistoryPage.new,
+      bindings: [HistoryPageBinding()],
     ),
     GetPage(
       name: RoutePath.kSearch,
