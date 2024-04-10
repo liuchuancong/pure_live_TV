@@ -130,5 +130,6 @@ class BasePageController<T> extends BaseController {
         curve: Curves.linear,
       );
     }
+    refreshData();
   }
 }

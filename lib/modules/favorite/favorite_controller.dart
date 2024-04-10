@@ -21,6 +21,7 @@ class FavoriteController extends GetxController with GetSingleTickerProviderStat
     syncRooms();
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
+
     onRefresh();
   }
 
@@ -38,6 +39,7 @@ class FavoriteController extends GetxController with GetSingleTickerProviderStat
       }
     }
     onlineRooms.sort((a, b) => int.parse(b.watching!).compareTo(int.parse(a.watching!)));
+    settings.currentPlayList.value = onlineRooms;
   }
 
   Future<bool> onRefresh() async {

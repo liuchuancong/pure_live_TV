@@ -5,7 +5,6 @@ import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/plugins/local_http.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
-import 'package:flutter_exit_app/flutter_exit_app.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 
@@ -21,41 +20,6 @@ class SettingsService extends GetxController {
     });
     enableDenseFavorites.listen((value) {
       PrefUtil.setBool('enableDenseFavorites', value);
-    });
-    autoRefreshTime.listen((value) {
-      PrefUtil.setInt('autoRefreshTime', value);
-    });
-    debounce(autoShutDownTime, (callback) {
-      PrefUtil.setInt('autoShutDownTime', autoShutDownTime.value);
-      if (enableAutoShutDownTime.isTrue) {
-        _stopWatchTimer.onStopTimer();
-        _stopWatchTimer.setPresetMinuteTime(autoShutDownTime.value, add: false);
-        _stopWatchTimer.onStartTimer();
-      } else {
-        _stopWatchTimer.onStopTimer();
-      }
-    }, time: 1.seconds);
-    enableBackgroundPlay.listen((value) {
-      PrefUtil.setBool('enableBackgroundPlay', value);
-    });
-    enableScreenKeepOn.listen((value) {
-      PrefUtil.setBool('enableScreenKeepOn', value);
-    });
-    debounce(enableAutoShutDownTime, (callback) {
-      PrefUtil.setBool('enableAutoShutDownTime', enableAutoShutDownTime.value);
-      if (enableAutoShutDownTime.value == true) {
-        _stopWatchTimer.onStopTimer();
-        _stopWatchTimer.setPresetMinuteTime(autoShutDownTime.value, add: false);
-        _stopWatchTimer.onStartTimer();
-      } else {
-        _stopWatchTimer.onStopTimer();
-      }
-    }, time: 1.seconds);
-    enableAutoCheckUpdate.listen((value) {
-      PrefUtil.setBool('enableAutoCheckUpdate', value);
-    });
-    enableFullScreenDefault.listen((value) {
-      PrefUtil.setBool('enableFullScreenDefault', value);
     });
 
     shieldList.listen((value) {
@@ -74,15 +38,6 @@ class SettingsService extends GetxController {
 
     historyRooms.listen((rooms) {
       PrefUtil.setStringList('historyRooms', historyRooms.map<String>((e) => jsonEncode(e.toJson())).toList());
-    });
-
-    backupDirectory.listen((String value) {
-      PrefUtil.setString('backupDirectory', value);
-    });
-    onInitShutDown();
-    _stopWatchTimer.fetchEnded.listen((value) {
-      _stopWatchTimer.onStopTimer();
-      FlutterExitApp.exitApp();
     });
 
     videoFitIndex.listen((value) {
@@ -331,6 +286,10 @@ class SettingsService extends GetxController {
 
   final historyRooms =
       ((PrefUtil.getStringList('historyRooms') ?? []).map((e) => LiveRoom.fromJson(jsonDecode(e))).toList()).obs;
+
+  final currentPlayList = [].obs;
+
+  final currentPlayListNodeIndex = 0.obs;
 
   bool isFavorite(LiveRoom room) {
     return favoriteRooms.any((element) => element.roomId == room.roomId);

@@ -64,6 +64,12 @@ class LivePlayController extends StateController {
 
   bool isFirstLoad = true;
 
+  var channelRoom = LiveRoom();
+
+  bool isInChannel = false;
+  // 0 代表向上 1 代表向下
+  int isNextOrPrev = 0;
+
   @override
   void onClose() {
     videoController?.dispose();
@@ -84,7 +90,37 @@ class LivePlayController extends StateController {
   }) {
     try {
       handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
+      channelRoom = room;
       currentSite.liveSite.getRoomDetail(roomId: room.roomId!).then((value) {
+        detail.value = value;
+        liveStatus.value = detail.value!.status! || detail.value!.isRecord!;
+        if (liveStatus.value) {
+          getPlayQualites();
+        }
+        // start danmaku server
+        List<String> except = ['kuaishou', 'iptv', 'cc'];
+        if (except.indexWhere((element) => element == detail.value?.platform!) == -1) {
+          initDanmau();
+          liveDanmaku.start(detail.value?.danmakuData);
+        }
+      }).then((value) => settings.addRoomToHistory(detail.value!));
+    } catch (e) {
+      log(e.toString(), name: 'LivePlayError');
+    }
+  }
+
+  void resetPlayerState(
+    String roomId,
+    Site site, {
+    ReloadDataType reloadDataType = ReloadDataType.refreash,
+    int line = 0,
+    int currentQuality = 0,
+  }) {
+    try {
+      channelRoom = settings.currentPlayList.firstWhere((element) => element.roomId == roomId);
+      isInChannel = true;
+      handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
+      site.liveSite.getRoomDetail(roomId: roomId).then((value) {
         detail.value = value;
         liveStatus.value = detail.value!.status! || detail.value!.isRecord!;
         if (liveStatus.value) {
@@ -107,6 +143,9 @@ class LivePlayController extends StateController {
     int line = 0,
     int quality = 0,
   }) {
+    success.value = false;
+    liveDanmaku.stop();
+    focusNode.requestFocus();
     try {
       videoController?.dispose();
       videoController = null;
@@ -235,7 +274,16 @@ class LivePlayController extends StateController {
       isFirstLoad = false;
       getPlayUrl();
     } catch (e) {
-      SmartDialog.showToast("无法读取播放清晰度");
+      if (isInChannel) {
+        SmartDialog.showToast("无法读取视频信息,正在播放下一个视频");
+        if (isNextOrPrev == 0) {
+          prevChannel();
+        } else {
+          nextChannel();
+        }
+      } else {
+        SmartDialog.showToast("无法读取播放清晰度");
+      }
     }
   }
 
@@ -250,7 +298,16 @@ class LivePlayController extends StateController {
     var playUrl =
         await currentSite.liveSite.getPlayUrls(detail: detail.value!, quality: qualites[currentQuality.value]);
     if (playUrl.isEmpty) {
-      SmartDialog.showToast("无法读取播放地址");
+      if (isInChannel) {
+        SmartDialog.showToast("无法读取播放地址,正在播放下一个视频");
+        if (isNextOrPrev == 0) {
+          prevChannel();
+        } else {
+          nextChannel();
+        }
+      } else {
+        SmartDialog.showToast("无法读取播放地址");
+      }
       return;
     }
     playUrls.value = playUrl;
@@ -289,54 +346,52 @@ class LivePlayController extends StateController {
 
   void nextChannel() {
     //读取正在直播的频道
-    var liveChannels = settings.favoriteRooms;
+    var liveChannels = settings.currentPlayList;
+
+    log(liveChannels.length.toString());
     if (liveChannels.isEmpty) {
       SmartDialog.showToast("没有正在直播的频道");
       return;
     }
-    var index = liveChannels.indexWhere((element) => element.roomId == room.roomId);
-    // if (index == -1) {
-    //   //当前频道不在列表中
-
-    //   return;
-    // }
+    var index = liveChannels.indexWhere((element) => element.roomId == channelRoom.roomId);
     index += 1;
     if (index >= liveChannels.length) {
       index = 0;
     }
     var nextChannel = liveChannels[index];
-
+    isInChannel = true;
+    isNextOrPrev = 1;
     resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
   }
 
   void prevChannel() {
     //读取正在直播的频道
-    var liveChannels = settings.favoriteRooms;
+    var liveChannels = settings.currentPlayList;
+    log(liveChannels.length.toString());
     if (liveChannels.isEmpty) {
       SmartDialog.showToast("没有正在直播的频道");
       return;
     }
-    var index = liveChannels.indexWhere((element) => element.roomId == room.roomId);
-    // if (index == -1) {
-    //   //当前频道不在列表中
-
-    //   return;
-    // }
+    var index = liveChannels.indexWhere((element) => element.roomId == channelRoom.roomId);
     index -= 1;
     if (index < 0) {
       index = liveChannels.length - 1;
     }
     var nextChannel = liveChannels[index];
-
+    isInChannel = true;
+    isNextOrPrev = 0;
     resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
   }
 
   void resetRoom(Site site, String roomId) async {
-    if (room.roomId == roomId) {
+    if (channelRoom.roomId == roomId) {
       return;
     }
-
-    // 清除全部消息
-    liveDanmaku.stop();
+    isInChannel = true;
+    success.value = false;
+    videoController?.destory();
+    videoController = null;
+    isFirstLoad = true;
+    resetPlayerState(roomId, site);
   }
 }

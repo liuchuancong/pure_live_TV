@@ -32,6 +32,7 @@ class HomeController extends BasePageController {
     initTimer();
     focusNodeListener();
     rooms.value = settingsService.historyRooms.reversed.take(20).toList();
+    settingsService.currentPlayList.value = rooms;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     super.onInit();
   }
@@ -71,6 +72,7 @@ class HomeController extends BasePageController {
     }
     refreshIsOk.value = true;
     rooms.value = settingsService.historyRooms.reversed.take(20).toList();
+    settingsService.currentPlayList.value = rooms;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return true;
   }

@@ -314,13 +314,13 @@ class VideoController with ChangeNotifier {
         }
         // 点击上下键切换播放线路
         if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
-          lastPlayChannel();
+          prevPlayChannel();
         } else if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
           nextPlayChannel();
         }
         // 点击左右键切换播放线路
         if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          lastPlayChannel();
+          prevPlayChannel();
         } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
           nextPlayChannel();
         }
@@ -626,7 +626,11 @@ class VideoController with ChangeNotifier {
     await brightnessController.setScreenBrightness(value);
   }
 
-  void lastPlayChannel() {}
+  void prevPlayChannel() {
+    livePlayController.prevChannel();
+  }
 
-  void nextPlayChannel() {}
+  void nextPlayChannel() {
+    livePlayController.nextChannel();
+  }
 }

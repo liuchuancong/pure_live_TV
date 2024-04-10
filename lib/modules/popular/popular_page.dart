@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/modules/popular/popular_grid_controller.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -39,17 +40,34 @@ class PopularPage extends GetView<PopularGridController> {
               Obx(
                 () => Visibility(
                   visible: controller.loadding.value,
-                  child: SizedBox(
-                    width: 48.w,
-                    height: 48.w,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 4.w,
-                    ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 48.w,
+                        height: 48.w,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 4.w,
+                        ),
+                      ),
+                      AppStyle.hGap16,
+                      Text(
+                        "正在更新...",
+                        style: AppStyle.textStyleWhite,
+                      ),
+                    ],
                   ),
                 ),
               ),
               AppStyle.hGap24,
+              HighlightButton(
+                focusNode: AppFocusNode(),
+                iconData: Icons.refresh,
+                text: "刷新",
+                onTap: () {
+                  controller.scrollToTopOrRefresh();
+                },
+              ),
               AppStyle.hGap48,
             ],
           ),
