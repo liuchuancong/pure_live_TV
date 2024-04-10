@@ -169,7 +169,6 @@ class CCSite implements LiveSite {
         "user-agent": kUserAgent,
       });
       var channelId = result['data'][roomId]['channel_id'];
-
       String urlToGetReal = "https://cc.163.com/live/channel/?channelids=$channelId";
       var resultReal = await HttpClient.instance.getJson(urlToGetReal, queryParameters: {'anchor_ccid': roomId});
       var roomInfo = resultReal["data"][0];

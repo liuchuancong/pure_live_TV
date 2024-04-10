@@ -1,7 +1,5 @@
-import 'dart:math';
 import 'dart:async';
 import 'package:get/get.dart';
-import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
@@ -23,20 +21,9 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
 
   // Video controllers
   VideoController get controller => widget.controller;
-  double currentVolumn = 1.0;
-  bool showVolumn = true;
-  Timer? _hideVolumn;
-  void restartTimer() {
-    _hideVolumn?.cancel();
-    _hideVolumn = Timer(const Duration(seconds: 1), () {
-      setState(() => showVolumn = true);
-    });
-    setState(() => showVolumn = false);
-  }
 
   @override
   void dispose() {
-    _hideVolumn?.cancel();
     super.dispose();
   }
 
@@ -48,111 +35,23 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
     });
   }
 
-  void updateVolumn(double? volume) {
-    restartTimer();
-    setState(() {
-      currentVolumn = volume!;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    IconData iconData;
-    iconData = currentVolumn <= 0
-        ? Icons.volume_mute
-        : currentVolumn < 0.5
-            ? Icons.volume_down
-            : Icons.volume_up;
     return Material(
       type: MaterialType.transparency,
-      child: CallbackShortcuts(
-        bindings: {
-          const SingleActivator(LogicalKeyboardKey.mediaPlay): () => controller.mediaPlayerController.player.play(),
-          const SingleActivator(LogicalKeyboardKey.mediaPause): () => controller.mediaPlayerController.player.pause(),
-          const SingleActivator(LogicalKeyboardKey.mediaPlayPause): () =>
-              controller.mediaPlayerController.player.playOrPause(),
-          const SingleActivator(LogicalKeyboardKey.space): () => controller.mediaPlayerController.player.playOrPause(),
-          const SingleActivator(LogicalKeyboardKey.keyR): () => controller.refresh(),
-          const SingleActivator(LogicalKeyboardKey.arrowUp): () async {
-            double? volume = 1.0;
-            volume = await controller.volumn();
-            volume = (volume! + 0.05);
-            volume = min(volume, 1.0);
-            volume = max(volume, 0.0);
-            controller.setVolumn(volume);
-            updateVolumn(volume);
-          },
-          const SingleActivator(LogicalKeyboardKey.arrowDown): () async {
-            double? volume = 1.0;
-            volume = await controller.volumn();
-            volume = (volume! - 0.05);
-            volume = min(volume, 1.0);
-            volume = max(volume, 0.0);
-            controller.setVolumn(volume);
-            updateVolumn(volume);
-          }
-        },
-        child: Focus(
-          autofocus: true,
-          child: Obx(() => controller.hasError.value
-              ? ErrorWidget(controller: controller)
-              : MouseRegion(
-                  onHover: (event) => controller.enableController(),
-                  onExit: (event) {
-                    controller.showControllerTimer?.cancel();
-                    controller.showController.toggle();
-                  },
-                  child: Stack(children: [
-                    Container(
-                      color: Colors.transparent,
-                      alignment: Alignment.center,
-                      child: AnimatedOpacity(
-                        opacity: !showVolumn ? 0.8 : 0.0,
-                        duration: const Duration(milliseconds: 300),
-                        child: Card(
-                          color: Colors.black,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Icon(iconData, color: Colors.white),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8, right: 4),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: SizedBox(
-                                      width: 100,
-                                      height: 20,
-                                      child: LinearProgressIndicator(
-                                        value: currentVolumn,
-                                        backgroundColor: Colors.white38,
-                                        valueColor: AlwaysStoppedAnimation(
-                                          Theme.of(context).indicatorColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    DanmakuViewer(controller: controller),
-                    TopActionBar(
-                      controller: controller,
-                      barHeight: barHeight,
-                    ),
-                    BottomActionBar(
-                      controller: controller,
-                      barHeight: barHeight,
-                    ),
-                  ]),
-                )),
-        ),
-      ),
+      child: Obx(() => controller.hasError.value
+          ? ErrorWidget(controller: controller)
+          : Stack(children: [
+              DanmakuViewer(controller: controller),
+              TopActionBar(
+                controller: controller,
+                barHeight: barHeight,
+              ),
+              BottomActionBar(
+                controller: controller,
+                barHeight: barHeight,
+              ),
+            ])),
     );
   }
 }
@@ -210,12 +109,7 @@ class TopActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(
       () => AnimatedPositioned(
-        top: (!controller.isPipMode.value &&
-                !controller.showSettting.value &&
-                controller.showController.value &&
-                !controller.showLocked.value)
-            ? 0
-            : -barHeight,
+        top: (!controller.showSettting.value && controller.showController.value) ? 0 : -barHeight,
         left: 0,
         right: 0,
         height: barHeight,
@@ -339,12 +233,7 @@ class BottomActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() => AnimatedPositioned(
-          bottom: (!controller.isPipMode.value &&
-                  !controller.showSettting.value &&
-                  controller.showController.value &&
-                  !controller.showLocked.value)
-              ? 0
-              : -barHeight,
+          bottom: (!controller.showSettting.value && controller.showController.value) ? 0 : -barHeight,
           left: 0,
           right: 0,
           height: barHeight,
@@ -366,8 +255,7 @@ class BottomActionBar extends StatelessWidget {
                 RefreshButton(controller: controller),
                 DanmakuButton(controller: controller),
                 FavoriteButton(controller: controller),
-                if (controller.isFullscreen.value) SettingsButton(controller: controller),
-                if (controller.supportPip && controller.isFullscreen.value) ScreenToggleButton(controller: controller),
+                SettingsButton(controller: controller),
                 const Spacer(),
               ],
             ),
@@ -415,28 +303,6 @@ class RefreshButton extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class ScreenToggleButton extends StatelessWidget {
-  const ScreenToggleButton({super.key, required this.controller});
-
-  final VideoController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() => GestureDetector(
-          onTap: () =>
-              controller.isVertical.value ? controller.setLandscapeOrientation() : controller.setPortraitOrientation(),
-          child: Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(12),
-            child: Icon(
-              controller.isVertical.value ? Icons.crop_landscape : Icons.crop_portrait,
-              color: Colors.white,
-            ),
-          ),
-        ));
   }
 }
 

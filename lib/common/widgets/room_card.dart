@@ -18,7 +18,8 @@ class RoomCard extends StatelessWidget {
   final LiveRoom room;
   final bool dense;
   final AppFocusNode focusNode;
-  void onTap(BuildContext context) async {
+
+  void onTap() {
     AppNavigator.toLiveRoomDetail(liveRoom: room);
   }
 
@@ -37,7 +38,7 @@ class RoomCard extends StatelessWidget {
     return HighlightWidget(
       focusNode: focusNode,
       color: Colors.white10,
-      onTap: () => onTap(context),
+      onTap: onTap,
       borderRadius: AppStyle.radius16,
       child: Obx(
         () => Column(
@@ -104,6 +105,17 @@ class RoomCard extends StatelessWidget {
                         icon: Icons.whatshot_rounded,
                         count: readableCount(room.watching!),
                         dense: dense,
+                      ),
+                    ),
+                  if (room.isRecord == false && room.liveStatus == LiveStatus.offline)
+                    Positioned(
+                      right: 8.w,
+                      top: 8.w,
+                      child: CountChip(
+                        icon: Icons.videocam_rounded,
+                        count: "未开播",
+                        dense: dense,
+                        color: Theme.of(context).colorScheme.surface,
                       ),
                     ),
                 ],

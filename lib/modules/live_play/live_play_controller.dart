@@ -69,7 +69,11 @@ class LivePlayController extends StateController {
 
   @override
   void onInit() {
+    onInitPlayerState();
     super.onInit();
+  }
+
+  void onInitPlayerState() {
     try {
       currentSite.liveSite.getRoomDetail(roomId: room.roomId!).then((value) {
         detail.value = value;
@@ -203,9 +207,6 @@ class LivePlayController extends StateController {
       room: detail.value!,
       datasourceType: 'network',
       datasource: playUrls.value[currentLineIndex.value],
-      allowBackgroundPlay: settings.enableBackgroundPlay.value,
-      allowScreenKeepOn: settings.enableScreenKeepOn.value,
-      fullScreenByDefault: settings.enableFullScreenDefault.value,
       autoPlay: true,
       headers: headers,
     );

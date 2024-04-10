@@ -7,6 +7,7 @@ import 'package:fijkplayer/fijkplayer.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:better_player/better_player.dart';
+import 'package:pure_live/app/app_focus_node.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
@@ -15,16 +16,17 @@ import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.da
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
+
   final LiveRoom room;
+
   final String datasourceType;
+
   String datasource;
-  final bool allowBackgroundPlay;
-  final bool allowScreenKeepOn;
-  final bool allowFullScreen;
-  final bool fullScreenByDefault;
+
   final bool autoPlay;
+
   final Map<String, String> headers;
-  final isVertical = false.obs;
+
   final videoFit = BoxFit.contain.obs;
 
   final mediaPlayerControllerInitialized = false.obs;
@@ -43,19 +45,6 @@ class VideoController with ChangeNotifier {
 
   final isBuffering = false.obs;
 
-  final isPipMode = false.obs;
-
-  final isFullscreen = false.obs;
-
-  final isWindowFullscreen = false.obs;
-
-  bool get supportPip => Platform.isAndroid;
-
-  bool get supportWindowFull => Platform.isWindows || Platform.isLinux;
-
-  bool get fullscreenUI => isFullscreen.value || isWindowFullscreen.value;
-
-  final refreshCompleted = true.obs;
   // Video player status
   // A [GlobalKey<VideoState>] is required to access the programmatic fullscreen interface.
   late final GlobalKey<media_kit_video.VideoState> key = GlobalKey<media_kit_video.VideoState>();
@@ -67,8 +56,6 @@ class VideoController with ChangeNotifier {
 
   late FijkPlayer fijkPlayer;
 
-  final playerRefresh = false.obs;
-
   LivePlayController livePlayController = Get.find<LivePlayController>();
 
   final SettingsService settings = Get.find<SettingsService>();
@@ -77,23 +64,28 @@ class VideoController with ChangeNotifier {
 
   bool enableCodec = true;
 
+  AppFocusNode focusNode = AppFocusNode();
+
   // Controller ui status
   ///State of navigator on widget created
   late NavigatorState navigatorState;
 
   ///Flag which determines if widget has initialized
   final initialized = false.obs;
+
   Timer? showControllerTimer;
+  // Controller ui status
   final showController = true.obs;
+  //  Settting ui status
   final showSettting = false.obs;
-  final showLocked = false.obs;
+
   final danmuKey = GlobalKey();
-  double volume = 0.0;
 
   Timer? _debounceTimer;
+  // 五秒关闭控制器
   void enableController() {
     showControllerTimer?.cancel();
-    showControllerTimer = Timer(const Duration(seconds: 2), () {
+    showControllerTimer = Timer(const Duration(seconds: 5), () {
       showController.value = false;
     });
     showController.value = true;
@@ -108,16 +100,13 @@ class VideoController with ChangeNotifier {
   final danmakuFontBorder = 0.5.obs;
   final danmakuOpacity = 1.0.obs;
   final mergeDanmuRating = 0.0.obs;
+
   VideoController({
     required this.playerKey,
     required this.room,
     required this.datasourceType,
     required this.datasource,
     required this.headers,
-    this.allowBackgroundPlay = false,
-    this.allowScreenKeepOn = false,
-    this.allowFullScreen = true,
-    this.fullScreenByDefault = false,
     this.autoPlay = true,
     BoxFit fitMode = BoxFit.contain,
   }) {
@@ -169,7 +158,7 @@ class VideoController with ChangeNotifier {
           BetterPlayerConfiguration(
             autoPlay: true,
             fit: videoFit.value,
-            allowedScreenSleep: !allowScreenKeepOn,
+            allowedScreenSleep: false,
             autoDetectFullscreenDeviceOrientation: true,
             autoDetectFullscreenAspectRatio: true,
             errorBuilder: (context, errorMessage) => Container(),
@@ -209,6 +198,25 @@ class VideoController with ChangeNotifier {
         // livePlayController.changePlayLine();
       }
     }, time: const Duration(seconds: 1));
+  }
+
+  void onKeyEvent(KeyEvent key) {
+    if (key is KeyUpEvent) {
+      return;
+    }
+    // 点击OK、Enter、Select键时显示/隐藏控制器
+    if (key.logicalKey == LogicalKeyboardKey.select ||
+        key.logicalKey == LogicalKeyboardKey.enter ||
+        key.logicalKey == LogicalKeyboardKey.space) {
+      if (!showController.value) {
+        enableController();
+        showController.value = true;
+      } else {
+        showControllerTimer?.cancel();
+        showController.toggle();
+      }
+      return;
+    }
   }
 
   void _playerValueChanged() {
@@ -256,7 +264,6 @@ class VideoController with ChangeNotifier {
       }
       isPlaying.value = mobileController?.isPlaying() ?? false;
       isBuffering.value = mobileController?.isBuffering() ?? false;
-      isPipMode.value = mobileController?.videoPlayerController?.value.isPip ?? false;
     }
   }
 
@@ -368,16 +375,6 @@ class VideoController with ChangeNotifier {
             url,
             liveStream: true,
             headers: headers,
-            notificationConfiguration: allowBackgroundPlay
-                ? BetterPlayerNotificationConfiguration(
-                    showNotification: true,
-                    title: room.title,
-                    imageUrl: room.avatar,
-                    author: room.nick,
-                    activityName: "MainActivity",
-                    packageName: 'com.mystyle.purelive',
-                  )
-                : null,
           ));
           mobileController?.pause();
         }
@@ -392,17 +389,10 @@ class VideoController with ChangeNotifier {
   }
 
   setFijkPlayerDataSource({bool refresh = false}) async {
-    if (refresh) {
-      playerRefresh.value = refresh;
-      await fijkPlayer.stop();
-      await fijkPlayer.release();
-      fijkPlayer.removeListener(_playerValueChanged);
-    }
     fijkPlayer = FijkPlayer();
     fijkPlayer.addListener(_playerValueChanged);
     await setIjkplayer();
     await fijkPlayer.reset();
-    playerRefresh.value = false;
     await fijkPlayer.setDataSource(datasource, autoPlay: true);
     await fijkPlayer.prepareAsync();
   }
@@ -424,102 +414,35 @@ class VideoController with ChangeNotifier {
   }
 
   void setVideoFit(BoxFit fit) {
-    videoFit.value = fit;
-    if (Platform.isWindows || Platform.isLinux) {
+    if (videoPlayerIndex == 0) {
+      mobileController?.setOverriddenFit(videoFit.value);
+      mobileController?.retryDataSource();
+    } else if (videoPlayerIndex == 1) {
+      //
+    } else if (videoPlayerIndex == 2) {
       key.currentState?.update(fit: fit);
-    } else if (Platform.isAndroid || Platform.isIOS) {
-      if (videoPlayerIndex == 0) {
-        mobileController?.setOverriddenFit(videoFit.value);
-        mobileController?.retryDataSource();
-      } else if (videoPlayerIndex == 1) {
-        //
-      } else if (videoPlayerIndex == 2) {
-        key.currentState?.update(fit: fit);
-      }
     }
-    notifyListeners();
   }
 
   void togglePlayPause() {
-    if (Platform.isWindows || Platform.isLinux) {
+    if (videoPlayerIndex == 0) {
+      isPlaying.value ? mobileController!.pause() : mobileController!.play();
+    } else if (videoPlayerIndex == 1) {
+      if (isPlaying.value) {
+        fijkPlayer.pause();
+      } else {
+        fijkPlayer.start();
+      }
+    } else if (videoPlayerIndex == 2) {
       mediaPlayerController.player.playOrPause();
-    } else if (Platform.isAndroid || Platform.isIOS) {
-      if (videoPlayerIndex == 0) {
-        isPlaying.value ? mobileController!.pause() : mobileController!.play();
-      } else if (videoPlayerIndex == 1) {
-        if (isPlaying.value) {
-          fijkPlayer.pause();
-        } else {
-          fijkPlayer.start();
-        }
-      } else if (videoPlayerIndex == 2) {
-        mediaPlayerController.player.playOrPause();
-      }
     }
-  }
-
-  exitFullScreen() {
-    if (Platform.isAndroid) {
-      isFullscreen.value = false;
-      if (videoPlayerIndex == 0) {
-        mobileController?.exitFullScreen();
-      } else if (videoPlayerIndex == 1) {
-        fijkPlayer.exitFullScreen();
-      } else if (videoPlayerIndex == 2) {
-        if (key.currentState?.isFullscreen() ?? false) {
-          key.currentState?.exitFullscreen();
-        }
-      }
-      showSettting.value = false;
-    }
-  }
-
-  /// 设置横屏
-  Future setLandscapeOrientation() async {
-    isVertical.value = false;
-    if (Platform.isAndroid) {
-      SystemChrome.setEnabledSystemUIMode(!isFullscreen.value ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky);
-    }
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-  }
-
-  /// 设置竖屏
-  Future setPortraitOrientation() async {
-    isVertical.value = true;
-    SystemChrome.setEnabledSystemUIMode(!isFullscreen.value ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky);
-    await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-  }
-
-  void enterPipMode(BuildContext context) async {
-    if ((Platform.isAndroid || Platform.isIOS)) {
-      if (videoPlayerIndex == 0) {
-        if (await mobileController?.isPictureInPictureSupported() ?? false) {
-          isPipMode.value = true;
-          mobileController?.enablePictureInPicture(playerKey);
-        }
-      }
-    }
-  }
-
-  // volumn & brightness
-  Future<double?> volumn() async {
-    return await FlutterVolumeController.getVolume();
   }
 
   Future<double> brightness() async {
     return await brightnessController.current;
   }
 
-  void setVolumn(double value) async {
-    await FlutterVolumeController.setVolume(value);
-  }
-
   void setBrightness(double value) async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      await brightnessController.setScreenBrightness(value);
-    }
+    await brightnessController.setScreenBrightness(value);
   }
 }

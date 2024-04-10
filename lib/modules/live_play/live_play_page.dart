@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'widgets/video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:pure_live/model/live_play_quality.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 
@@ -11,57 +11,35 @@ class LivePlayPage extends GetWidget<LivePlayController> {
 
   final SettingsService settings = Get.find<SettingsService>();
   final groupButtonController = GroupButtonController();
+
   @override
   Widget build(BuildContext context) {
     if (settings.enableScreenKeepOn.value) {
-      WakelockPlus.toggle(enable: settings.enableScreenKeepOn.value);
+      WakelockPlus.toggle(enable: true);
     }
-    return Scaffold(body: buildVideoPlayer());
-  }
-
-  Widget buildLiveResolutionsRow() {
-    var resolutions = [];
-    final urls = controller.playUrls;
-    for (int i = 0; i < urls.length; i++) {
-      for (LivePlayQuality rate in controller.qualites.value) {
-        resolutions.add('线路${i + 1}${rate.quality}');
-      }
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: GroupButton(
-          controller: groupButtonController,
-          isRadio: false,
-          options: GroupButtonOptions(
-            selectedTextStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white),
-            unselectedTextStyle: const TextStyle(
-              fontSize: 12,
-              color: Colors.black,
-            ),
-            groupingType: GroupingType.wrap,
-            direction: Axis.horizontal,
-            borderRadius: BorderRadius.circular(20),
-            mainGroupAlignment: MainGroupAlignment.start,
-            crossGroupAlignment: CrossGroupAlignment.start,
-            groupRunAlignment: GroupRunAlignment.start,
-            textAlign: TextAlign.center,
-            textPadding: EdgeInsets.zero,
-            alignment: Alignment.center,
-          ),
-          buttons: resolutions,
-          maxSelected: 1,
-          onSelected: (val, i, selected) => handleResolutions(val, i)),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          //双击返回键退出
+          if (controller.doubleClickExit) {
+            controller.doubleClickTimer?.cancel();
+            Get.back();
+            return;
+          }
+          controller.doubleClickExit = true;
+          SmartDialog.showToast("再按一次退出播放器");
+          controller.doubleClickTimer = Timer(const Duration(seconds: 2), () {
+            controller.doubleClickExit = false;
+            controller.doubleClickTimer!.cancel();
+          });
+        }
+      },
+      child: buildVideoPlayer(),
     );
   }
 
-  handleResolutions(String val, i) {
-    // 线路 清晰度
-    var lineIndex = val.substring(2, 3);
-    controller.currentLineIndex.value = int.parse(lineIndex) - 1;
-    controller.currentQuality.value = i % controller.qualites.length;
-    controller.setPlayer();
-  }
+  handleResolutions() {}
 
   Widget buildVideoPlayer() {
     return Hero(

@@ -49,75 +49,96 @@ class _VideoPlayerState extends State<VideoPlayer> {
     return fijkFit;
   }
 
+  Widget _buildExoPlayerVideo() {
+    return KeyboardListener(
+      focusNode: widget.controller.focusNode,
+      autofocus: true,
+      onKeyEvent: widget.controller.onKeyEvent,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Obx(
+          () => Stack(
+            children: [
+              BetterPlayer(
+                key: widget.controller.playerKey,
+                controller: widget.controller.mobileController!,
+              ),
+              _buildVideoPanel(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIjkPlayerVideo() {
+    return KeyboardListener(
+      focusNode: widget.controller.focusNode,
+      autofocus: true,
+      onKeyEvent: widget.controller.onKeyEvent,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Obx(
+          () => Stack(
+            children: [
+              FijkView(
+                player: widget.controller.fijkPlayer,
+                color: Colors.black,
+                width: double.infinity,
+                fit: getFijkFit(widget.controller.videoFit.value),
+                cover: getRoomCover(widget.controller.room.cover),
+                fs: false,
+              ),
+              _buildVideoPanel()
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMpvPlayerVideo() {
+    return KeyboardListener(
+      focusNode: widget.controller.focusNode,
+      autofocus: true,
+      onKeyEvent: widget.controller.onKeyEvent,
+      child: Scaffold(
+          backgroundColor: Colors.black,
+          body: Obx(() => widget.controller.mediaPlayerControllerInitialized.value
+              ? media_kit_video.Video(
+                  key: widget.controller.key,
+                  controller: widget.controller.mediaPlayerController,
+                  fit: widget.controller.videoFit.value,
+                  controls: (state) => _buildVideoPanel(),
+                )
+              : Card(
+                  elevation: 0,
+                  margin: const EdgeInsets.all(0),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  clipBehavior: Clip.antiAlias,
+                  color: Get.theme.focusColor,
+                  child: CachedNetworkImage(
+                    cacheManager: CustomCacheManager.instance,
+                    imageUrl: widget.controller.room.cover!,
+                    fit: BoxFit.fill,
+                    errorWidget: (context, error, stackTrace) => const Center(
+                      child: Icon(Icons.live_tv_rounded, size: 48),
+                    ),
+                  ),
+                ))),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.controller.videoPlayerIndex == 0) {
-      return Stack(
-        children: [
-          BetterPlayer(
-            key: widget.controller.playerKey,
-            controller: widget.controller.mobileController!,
-          ),
-          _buildVideoPanel(),
-        ],
-      );
+      return _buildExoPlayerVideo();
     }
     if (widget.controller.videoPlayerIndex == 1) {
-      return Obx(
-        () => !widget.controller.playerRefresh.value
-            ? Stack(
-                children: [
-                  FijkView(
-                    player: widget.controller.fijkPlayer,
-                    color: Colors.black,
-                    width: double.infinity,
-                    fit: getFijkFit(widget.controller.videoFit.value),
-                    cover: getRoomCover(widget.controller.room.cover),
-                    fs: false,
-                  ),
-                  _buildVideoPanel()
-                ],
-              )
-            : Card(
-                elevation: 0,
-                margin: const EdgeInsets.all(0),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                clipBehavior: Clip.antiAlias,
-                color: Get.theme.focusColor,
-                child: CachedNetworkImage(
-                  cacheManager: CustomCacheManager.instance,
-                  imageUrl: widget.controller.room.cover!,
-                  fit: BoxFit.fill,
-                  errorWidget: (context, error, stackTrace) => const Center(
-                    child: Icon(Icons.live_tv_rounded, size: 48),
-                  ),
-                ),
-              ),
-      );
+      return _buildIjkPlayerVideo();
     }
     if (widget.controller.videoPlayerIndex == 2) {
-      return Obx(() => widget.controller.mediaPlayerControllerInitialized.value
-          ? media_kit_video.Video(
-              key: widget.controller.key,
-              controller: widget.controller.mediaPlayerController,
-              fit: widget.controller.videoFit.value,
-              controls: (state) => _buildVideoPanel(),
-            )
-          : Card(
-              elevation: 0,
-              margin: const EdgeInsets.all(0),
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              clipBehavior: Clip.antiAlias,
-              color: Get.theme.focusColor,
-              child: CachedNetworkImage(
-                cacheManager: CustomCacheManager.instance,
-                imageUrl: widget.controller.room.cover!,
-                fit: BoxFit.fill,
-                errorWidget: (context, error, stackTrace) => const Center(
-                  child: Icon(Icons.live_tv_rounded, size: 48),
-                ),
-              ),
-            ));
+      return _buildMpvPlayerVideo();
     }
     return Card(
       elevation: 0,
