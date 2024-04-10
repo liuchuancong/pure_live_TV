@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/modules/settings/danmuset.dart';
 import 'package:pure_live/plugins/file_recover_utils.dart';
+import 'package:pure_live/common/widgets/settings_item_widget.dart';
+import 'package:pure_live/common/widgets/button/highlight_button.dart';
 
 class SettingsPage extends GetView<SettingsService> {
   const SettingsPage({super.key});
@@ -11,67 +14,73 @@ class SettingsPage extends GetView<SettingsService> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: AppBar(
-        scrolledUnderElevation: screenWidth > 640 ? 0 : null,
-        title: Text(S.of(context).settings_title),
-      ),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
-        children: <Widget>[
-          SectionTitle(title: S.of(context).general),
-          ListTile(
-            leading: const Icon(Icons.dark_mode_rounded, size: 32),
-            title: Text(S.of(context).change_theme_mode),
-            subtitle: Text(S.of(context).change_theme_mode_subtitle),
-            onTap: showThemeModeSelectorDialog,
-          ),
-          SectionTitle(title: S.of(context).video),
-          Obx(() => SwitchListTile(
-                title: Text(S.of(context).enable_screen_keep_on),
-                subtitle: Text(S.of(context).enable_screen_keep_on_subtitle),
-                value: controller.enableScreenKeepOn.value,
-                activeColor: Theme.of(context).colorScheme.primary,
-                onChanged: (bool value) => controller.enableScreenKeepOn.value = value,
-              )),
-          Obx(() => SwitchListTile(
-                title: Text(S.of(context).enable_fullscreen_default),
-                subtitle: Text(S.of(context).enable_fullscreen_default_subtitle),
-                value: controller.enableFullScreenDefault.value,
-                activeColor: Theme.of(context).colorScheme.primary,
-                onChanged: (bool value) => controller.enableFullScreenDefault.value = value,
-              )),
-          SectionTitle(title: S.of(context).custom),
-          Obx(() => SwitchListTile(
-                title: Text(S.of(context).enable_dense_favorites_mode),
-                subtitle: Text(S.of(context).enable_dense_favorites_mode_subtitle),
-                value: controller.enableDenseFavorites.value,
-                activeColor: Theme.of(context).colorScheme.primary,
-                onChanged: (bool value) => controller.enableDenseFavorites.value = value,
-              )),
-          ListTile(
-            title: Text(S.of(context).auto_refresh_time),
-            subtitle: Text(S.of(context).auto_refresh_time_subtitle),
-            trailing: Obx(() => Text('${controller.autoRefreshTime}分钟')),
-            onTap: showAutoRefreshTimeSetDialog,
-          ),
-          ListTile(
-            title: Text(S.of(context).change_player),
-            subtitle: Text(S.of(context).change_player_subtitle),
-            trailing: Obx(() => Text(controller.playerlist[controller.videoPlayerIndex.value])),
-            onTap: showVideoSetDialog,
-          ),
-          Obx(() => SwitchListTile(
-                title: Text(S.of(context).enable_codec),
-                value: controller.enableCodec.value,
-                activeColor: Theme.of(context).colorScheme.primary,
-                onChanged: (bool value) => controller.enableCodec.value = value,
-              )),
-          const ListTile(
-            title: Text("其他设置请使用推送设置"),
-          ),
-        ],
+    return AppScaffold(
+      child: Padding(
+        padding: AppStyle.edgeInsetsA48,
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          children: <Widget>[
+            AppStyle.vGap32,
+            Row(
+              children: [
+                AppStyle.hGap48,
+                HighlightButton(
+                  focusNode: AppFocusNode(),
+                  iconData: Icons.arrow_back,
+                  text: "返回",
+                  autofocus: true,
+                  onTap: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+            AppStyle.vGap24,
+            Obx(() => SettingsItemWidget(
+                  foucsNode: controller.preferResolutionNode,
+                  title: "首选清晰度",
+                  items: const {
+                    "原画": "原画",
+                    "蓝光8M": "蓝光8M",
+                    "蓝光4M": "蓝光4M",
+                    "超清": "超清",
+                    "流畅": "流畅",
+                  },
+                  value: controller.preferResolution.value,
+                  onChanged: (e) {
+                    controller.preferResolution.value = e;
+                  },
+                )),
+            AppStyle.vGap24,
+            Obx(
+              () => SettingsItemWidget(
+                foucsNode: controller.videoPlayerNode,
+                title: "播放器设置",
+                items: const {
+                  0: "Exo播放器",
+                  1: "Ijk播放器",
+                  2: "Mpv播放器",
+                },
+                value: controller.videoPlayerIndex.value,
+                onChanged: (e) {
+                  controller.videoPlayerIndex.value = e;
+                },
+              ),
+            ),
+            AppStyle.vGap24,
+            Obx(
+              () => SettingsItemWidget(
+                foucsNode: controller.enableCodecNode,
+                title: "解码设置",
+                items: const {0: "软解码", 1: " 硬解码"},
+                value: controller.enableCodec.value ? 1 : 0,
+                onChanged: (e) {
+                  controller.enableCodec.value = e == 1;
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

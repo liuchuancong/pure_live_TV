@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/plugins/local_http.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:flutter_exit_app/flutter_exit_app.dart';
@@ -188,6 +189,12 @@ class SettingsService extends GetxController {
   final StopWatchTimer _stopWatchTimer = StopWatchTimer(mode: StopWatchMode.countDown); // Create instance.
 
   final themeColorSwitch = (PrefUtil.getString('themeColorSwitch') ?? Colors.blue.hex).obs;
+
+  final AppFocusNode preferResolutionNode = AppFocusNode();
+
+  final AppFocusNode videoPlayerNode = AppFocusNode();
+
+  final AppFocusNode enableCodecNode = AppFocusNode();
 
   StopWatchTimer get stopWatchTimer => _stopWatchTimer;
 

@@ -129,9 +129,9 @@ class RoomCard extends StatelessWidget {
               padding: AppStyle.edgeInsetsH20,
               child: SizedBox(
                 height: 56.w,
-                child: focusNode.isFoucsed.value
+                child: focusNode.isFoucsed.value && room.title!.isNotEmpty
                     ? Marquee(
-                        text: room.title ?? '',
+                        text: room.title ?? '未设置标题',
                         style: AppStyle.textStyleBlack,
                         startAfter: const Duration(seconds: 1),
                         velocity: 20,
@@ -142,7 +142,7 @@ class RoomCard extends StatelessWidget {
                     : Container(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          room.title ?? '',
+                          room.title ?? '未设置标题',
                           style: AppStyle.textStyleWhite,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

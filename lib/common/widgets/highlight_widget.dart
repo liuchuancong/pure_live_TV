@@ -77,7 +77,7 @@ class HighlightWidget extends StatelessWidget {
           onTap: onTap,
           child: Obx(
             () => AnimatedScale(
-              scale: focusNode.isFoucsed.value ? 1.05 : 1,
+              scale: focusNode.isFoucsed.value ? 1.00 : 0.98,
               duration: const Duration(milliseconds: 200),
               child: GestureDetector(
                 onTap: onTap,

@@ -31,7 +31,7 @@ class DanmuMerge {
     double repeatFlag = settings.mergeDanmuRating.value;
     for (var i = 0; i < _msgList.length; i++) {
       var rating = compareTwoStrings(_msgList[i].msg, msg);
-      if (rating >= repeatFlag) {
+      if (rating >= (1.0 - repeatFlag)) {
         return true;
       }
     }

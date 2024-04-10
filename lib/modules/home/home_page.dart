@@ -34,6 +34,9 @@ class HomePage extends GetView<HomeController> {
       case 5:
         Get.toNamed(RoutePath.kHistory);
         break;
+      case 6:
+        Get.toNamed(RoutePath.kSettingsHotAreas);
+        break;
       default:
     }
   }
@@ -106,11 +109,19 @@ class HomePage extends GetView<HomeController> {
               children: [
                 Padding(
                   padding: AppStyle.edgeInsetsH48,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      buildViews(),
-                    ],
+                  child: SizedBox(
+                    height: 300.h,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            buildViews(),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 AppStyle.vGap32,

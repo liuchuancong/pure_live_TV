@@ -44,9 +44,6 @@ class SettingsItemWidget extends StatelessWidget {
         }
         return KeyEventResult.handled;
       },
-      onTap: () {
-        SmartDialog.showToast("请左右切换选择");
-      },
       child: Obx(
         () => Padding(
           padding: AppStyle.edgeInsetsA24,

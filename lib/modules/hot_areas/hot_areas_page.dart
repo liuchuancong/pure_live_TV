@@ -1,30 +1,64 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_controller.dart';
+import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
 
 class HotAreasPage extends GetView<HotAreasController> {
   const HotAreasPage({super.key});
 
-  _initListData() {
-    return controller.sites.map((e) {
-      return SwitchListTile(
-          title: Text(e.name),
-          value: e.show,
-          activeColor: Theme.of(Get.context!).colorScheme.primary,
-          onChanged: (bool value) => controller.onChanged(e.id, value));
-    }).toList();
+  _buildListData() {
+    return List.generate(
+      controller.sites.length,
+      (index) => Obx(
+        () => HighlightListTile(
+          title: controller.sites[index].name,
+          trailing: Switch(
+            value: controller.sites[index].show,
+            thumbColor: controller.sites[index].show
+                ? MaterialStateProperty.all(Colors.white)
+                : MaterialStateProperty.all(Colors.black),
+            onChanged: (bool value) {},
+          ),
+          focusNode: controller.sitesNodes[index],
+          onTap: () {
+            controller.onChanged(controller.sites[index].id, !controller.sites[index].show);
+          },
+        ),
+      ),
+    ).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("平台显示"),
+    return AppScaffold(
+      child: Padding(
+        padding: AppStyle.edgeInsetsA48,
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          children: <Widget>[
+            AppStyle.vGap32,
+            Row(
+              children: [
+                HighlightButton(
+                  focusNode: AppFocusNode(),
+                  iconData: Icons.arrow_back,
+                  text: "返回",
+                  autofocus: true,
+                  onTap: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+            AppStyle.vGap32,
+            Column(
+              children: _buildListData(),
+            )
+          ],
+        ),
       ),
-      body: Obx(() => ListView(
-            padding: const EdgeInsets.all(12.0),
-            children: _initListData(),
-          )),
     );
   }
 }

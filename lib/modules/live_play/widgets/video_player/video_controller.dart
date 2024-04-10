@@ -59,7 +59,7 @@ class VideoController with ChangeNotifier {
 
   final SettingsService settings = Get.find<SettingsService>();
 
-  int videoPlayerIndex = 1;
+  int videoPlayerIndex = 0;
 
   bool enableCodec = true;
 
@@ -180,6 +180,7 @@ class VideoController with ChangeNotifier {
     danmakuFontBorder.value = settings.danmakuFontBorder.value;
     danmakuOpacity.value = settings.danmakuOpacity.value;
     mergeDanmuRating.value = settings.mergeDanmuRating.value;
+    videoPlayerIndex = settings.videoPlayerIndex.value;
     initPagesConfig();
   }
 
@@ -468,6 +469,12 @@ class VideoController with ChangeNotifier {
       PrefUtil.setDouble('danmakuOpacity', data);
       settings.danmakuOpacity.value = data;
     });
+
+    mergeDanmuRating.value = PrefUtil.getDouble('mergeDanmuRating') ?? 1.0;
+    mergeDanmuRating.listen((data) {
+      PrefUtil.setDouble('mergeDanmuRating', data);
+      settings.mergeDanmuRating.value = data;
+    });
   }
 
   void sendDanmaku(LiveMessage msg) {
@@ -538,30 +545,24 @@ class VideoController with ChangeNotifier {
     } else {
       hasError.value = false;
     }
-    if (Platform.isWindows || Platform.isLinux) {
+    if (videoPlayerIndex == 0) {
+      if (refresh) {
+        mobileController?.setResolution(url);
+      } else {
+        mobileController?.setupDataSource(BetterPlayerDataSource(
+          BetterPlayerDataSourceType.network,
+          url,
+          liveStream: true,
+          headers: headers,
+        ));
+        mobileController?.pause();
+      }
+    } else if (videoPlayerIndex == 1) {
+      setFijkPlayerDataSource(refresh: refresh);
+    } else if (videoPlayerIndex == 2) {
       player.pause();
       player.open(Media(datasource, httpHeaders: headers));
-    } else {
-      if (videoPlayerIndex == 0) {
-        if (refresh) {
-          mobileController?.setResolution(url);
-        } else {
-          mobileController?.setupDataSource(BetterPlayerDataSource(
-            BetterPlayerDataSourceType.network,
-            url,
-            liveStream: true,
-            headers: headers,
-          ));
-          mobileController?.pause();
-        }
-      } else if (videoPlayerIndex == 1) {
-        setFijkPlayerDataSource(refresh: refresh);
-      } else if (videoPlayerIndex == 2) {
-        player.pause();
-        player.open(Media(datasource, httpHeaders: headers));
-      }
     }
-    notifyListeners();
   }
 
   setFijkPlayerDataSource({bool refresh = false}) async {
