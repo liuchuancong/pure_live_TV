@@ -577,7 +577,7 @@ class VideoController with ChangeNotifier {
   Future setIjkplayer() async {
     var headersArr = [];
     headers.forEach((key, value) {
-      headersArr.add('$key:$value');
+      headersArr.add('$key: $value');
     });
     fijkPlayer.setOption(FijkOption.formatCategory, "headers", headersArr.join('\r\n'));
     fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
