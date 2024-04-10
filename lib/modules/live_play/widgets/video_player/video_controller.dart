@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 import 'dart:developer';
 import 'package:get/get.dart';
@@ -9,6 +8,7 @@ import 'package:pure_live/plugins/barrage.dart';
 import 'package:better_player/better_player.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
@@ -19,6 +19,12 @@ class VideoController with ChangeNotifier {
   final LiveRoom room;
 
   final String datasourceType;
+
+  final String qualiteName;
+
+  final int currentLineIndex;
+
+  final int currentQuality;
 
   String datasource;
 
@@ -90,6 +96,10 @@ class VideoController with ChangeNotifier {
 
   final settingsFoucsNode = AppFocusNode();
 
+  final qualiteNameNode = AppFocusNode();
+
+  final currentLineNode = AppFocusNode();
+
   List<AppFocusNode> operateFoucsNodes = [];
 
   List<AppFocusNode> danmukuSettingFoucsNodes = [];
@@ -103,6 +113,7 @@ class VideoController with ChangeNotifier {
   Timer? _throttleTimer;
 
   bool _throttleFlag = true;
+
   // 五秒关闭控制器
   void enableController() {
     showControllerTimer?.cancel();
@@ -132,6 +143,8 @@ class VideoController with ChangeNotifier {
     danmakuFoucsNode.unfocus();
     favoriteFoucsNode.unfocus();
     settingsFoucsNode.unfocus();
+    qualiteNameNode.unfocus();
+    currentLineNode.unfocus();
     currentNodeIndex = 0;
   }
 
@@ -169,6 +182,9 @@ class VideoController with ChangeNotifier {
     required this.datasourceType,
     required this.datasource,
     required this.headers,
+    required this.qualiteName,
+    required this.currentLineIndex,
+    required this.currentQuality,
     this.autoPlay = true,
     BoxFit fitMode = BoxFit.contain,
   }) {
@@ -210,6 +226,8 @@ class VideoController with ChangeNotifier {
     operateFoucsNodes.add(refreshFoucsNode);
     operateFoucsNodes.add(danmakuFoucsNode);
     operateFoucsNodes.add(settingsFoucsNode);
+    operateFoucsNodes.add(qualiteNameNode);
+    operateFoucsNodes.add(currentLineNode);
     currentNodeIndex = 0;
   }
 
@@ -265,7 +283,7 @@ class VideoController with ChangeNotifier {
     }
     debounce(hasError, (callback) {
       if (hasError.value) {
-        // livePlayController.changePlayLine();
+        changeLine();
       }
     }, time: const Duration(seconds: 1));
   }
@@ -277,11 +295,6 @@ class VideoController with ChangeNotifier {
   }
 
   handleKeyEvent(KeyEvent key) {
-    log('key event: $key');
-    log('key event: $showController.value');
-    log('key event: $showSettting.value');
-    log('key event: currentNodeIndex $currentNodeIndex');
-    log('key event: danmukuNodeIndex $danmukuNodeIndex');
     // 点击Menu打开/关闭设置
     if (key.logicalKey == LogicalKeyboardKey.keyM || key.logicalKey == LogicalKeyboardKey.contextMenu) {
       showSettting.value = true;
@@ -478,8 +491,7 @@ class VideoController with ChangeNotifier {
   }
 
   void sendDanmaku(LiveMessage msg) {
-    if (hideDanmaku.value) return;
-
+    if (hideDanmaku.value || !livePlayController.success.value) return;
     danmakuController.send([
       Bullet(
         child: DanmakuText(
@@ -494,49 +506,48 @@ class VideoController with ChangeNotifier {
 
   @override
   void dispose() async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      if (videoPlayerIndex == 0) {
-        mobileController?.removeEventsListener(mobileStateListener);
-        mobileController?.dispose();
-        mobileController = null;
-      } else if (videoPlayerIndex == 1) {
-        fijkPlayer.removeListener(_playerValueChanged);
-        fijkPlayer.release();
-      } else if (videoPlayerIndex == 2) {
-        if (key.currentState?.isFullscreen() ?? false) {
-          key.currentState?.exitFullscreen();
-        }
-        mediaPlayerController.player.pause();
-        player.dispose();
-      }
-      brightnessController.resetScreenBrightness();
-    } else {
-      if (key.currentState?.isFullscreen() ?? false) {
-        key.currentState?.exitFullscreen();
-      }
-      mediaPlayerController.player.pause();
-      player.dispose();
-    }
+    destory();
     super.dispose();
   }
 
-  void refresh() {
-    if (Platform.isWindows || Platform.isLinux) {
-      setDataSource(datasource);
-    } else if (Platform.isAndroid || Platform.isIOS) {
-      if (videoPlayerIndex == 0) {
-        if (mobileController?.videoPlayerController != null) {
-          mobileController?.retryDataSource();
-        }
-      } else if (videoPlayerIndex == 1) {
-        setFijkPlayerDataSource(refresh: true);
-      } else if (videoPlayerIndex == 2) {
-        setDataSource(datasource);
-      }
+  destory() {
+    cancleFocus();
+    cancledanmakuFocus();
+    if (videoPlayerIndex == 0) {
+      mobileController?.removeEventsListener(mobileStateListener);
+      mobileController?.dispose();
+      mobileController = null;
+    } else if (videoPlayerIndex == 1) {
+      fijkPlayer.removeListener(_playerValueChanged);
+      fijkPlayer.release();
+    } else if (videoPlayerIndex == 2) {
+      player.dispose();
     }
+    danmakuController.dispose();
+    isTryToHls = false;
+    isPlaying.value = false;
+    hasError.value = false;
+    livePlayController.success.value = false;
   }
 
-  void setDataSource(String url, {bool refresh = false}) async {
+  void refresh() {
+    destory();
+    livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
+  }
+
+  void changeLine() {
+    destory();
+    livePlayController.onInitPlayerState(
+        reloadDataType: ReloadDataType.changeLine, line: currentLineIndex, currentQuality: currentQuality);
+  }
+
+  void changeQuality() {
+    destory();
+    livePlayController.onInitPlayerState(
+        reloadDataType: ReloadDataType.changeQuality, line: currentLineIndex, currentQuality: currentQuality);
+  }
+
+  void setDataSource(String url) async {
     datasource = url;
     // fix datasource empty error
     if (datasource.isEmpty) {
@@ -546,26 +557,22 @@ class VideoController with ChangeNotifier {
       hasError.value = false;
     }
     if (videoPlayerIndex == 0) {
-      if (refresh) {
-        mobileController?.setResolution(url);
-      } else {
-        mobileController?.setupDataSource(BetterPlayerDataSource(
-          BetterPlayerDataSourceType.network,
-          url,
-          liveStream: true,
-          headers: headers,
-        ));
-        mobileController?.pause();
-      }
+      mobileController?.setupDataSource(BetterPlayerDataSource(
+        BetterPlayerDataSourceType.network,
+        url,
+        liveStream: true,
+        headers: headers,
+      ));
+      mobileController?.pause();
     } else if (videoPlayerIndex == 1) {
-      setFijkPlayerDataSource(refresh: refresh);
+      setFijkPlayerDataSource();
     } else if (videoPlayerIndex == 2) {
       player.pause();
       player.open(Media(datasource, httpHeaders: headers));
     }
   }
 
-  setFijkPlayerDataSource({bool refresh = false}) async {
+  setFijkPlayerDataSource() async {
     fijkPlayer = FijkPlayer();
     fijkPlayer.addListener(_playerValueChanged);
     await setIjkplayer();
@@ -595,7 +602,7 @@ class VideoController with ChangeNotifier {
       mobileController?.setOverriddenFit(videoFit.value);
       mobileController?.retryDataSource();
     } else if (videoPlayerIndex == 1) {
-      //
+      print(fit.toString());
     } else if (videoPlayerIndex == 2) {
       key.currentState?.update(fit: fit);
     }

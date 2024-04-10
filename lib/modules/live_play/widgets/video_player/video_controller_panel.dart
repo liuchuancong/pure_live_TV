@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
+import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/common/widgets/button/highlight_icon_button.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 
@@ -203,15 +204,17 @@ class DanmakuViewer extends StatelessWidget {
           opacity: controller.hideDanmaku.value ? 0 : controller.danmakuOpacity.value,
           child: controller.danmakuArea.value == 0.0
               ? Container()
-              : BarrageWall(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * controller.danmakuArea.value,
-                  controller: controller.danmakuController,
-                  speed: controller.danmakuSpeed.value.toInt(),
-                  maxBulletHeight: controller.danmakuFontSize * 1.5,
-                  massiveMode: false, // disabled by default
-                  child: Container(),
-                ),
+              : controller.livePlayController.success.value
+                  ? BarrageWall(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * controller.danmakuArea.value,
+                      controller: controller.danmakuController,
+                      speed: controller.danmakuSpeed.value.toInt(),
+                      maxBulletHeight: controller.danmakuFontSize * 1.5,
+                      massiveMode: false, // disabled by default
+                      child: Container(),
+                    )
+                  : Container(),
         ));
   }
 }
@@ -253,6 +256,8 @@ class BottomActionBar extends StatelessWidget {
                 RefreshButton(controller: controller),
                 DanmakuButton(controller: controller),
                 SettingsButton(controller: controller),
+                QualiteNameButton(controller: controller),
+                LineButton(controller: controller),
                 const Spacer(),
               ],
             ),
@@ -279,6 +284,50 @@ class PlayPauseButton extends StatelessWidget {
             },
           ),
         ));
+  }
+}
+
+class LineButton extends StatelessWidget {
+  const LineButton({super.key, required this.controller});
+
+  final VideoController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: HighlightButton(
+        focusNode: controller.currentLineNode,
+        iconData: Icons.menu_open_sharp,
+        onTap: () {
+          controller.changeLine();
+        },
+        text: '线路${controller.currentLineIndex + 1}',
+      ),
+    );
+  }
+}
+
+class QualiteNameButton extends StatelessWidget {
+  const QualiteNameButton({super.key, required this.controller});
+
+  final VideoController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: HighlightButton(
+        focusNode: controller.qualiteNameNode,
+        iconData: Icons.quora_outlined,
+        onTap: () {
+          controller.changeQuality();
+        },
+        text: controller.qualiteName,
+      ),
+    );
   }
 }
 

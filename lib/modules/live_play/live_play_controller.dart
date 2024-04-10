@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
+import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/modules/live_play/danmu_merge.dart';
 import 'package:pure_live/modules/live_play/widgets/index.dart';
 
@@ -15,6 +16,7 @@ class LivePlayController extends StateController {
   final String site;
 
   late final Site currentSite = Sites.of(site);
+
   late final LiveDanmaku liveDanmaku = Sites.of(site).liveSite.getDanmaku();
 
   final settings = Get.find<SettingsService>();
@@ -60,6 +62,8 @@ class LivePlayController extends StateController {
   /// 双击退出Timer
   Timer? doubleClickTimer;
 
+  bool isFirstLoad = true;
+
   @override
   void onClose() {
     videoController?.dispose();
@@ -73,8 +77,13 @@ class LivePlayController extends StateController {
     super.onInit();
   }
 
-  void onInitPlayerState() {
+  void onInitPlayerState({
+    ReloadDataType reloadDataType = ReloadDataType.refreash,
+    int line = 0,
+    int currentQuality = 0,
+  }) {
     try {
+      handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
       currentSite.liveSite.getRoomDetail(roomId: room.roomId!).then((value) {
         detail.value = value;
         liveStatus.value = detail.value!.status! || detail.value!.isRecord!;
@@ -90,6 +99,40 @@ class LivePlayController extends StateController {
       }).then((value) => settings.addRoomToHistory(detail.value!));
     } catch (e) {
       log(e.toString(), name: 'LivePlayError');
+    }
+  }
+
+  handleCurrentLineAndQuality({
+    ReloadDataType reloadDataType = ReloadDataType.refreash,
+    int line = 0,
+    int quality = 0,
+  }) {
+    try {
+      videoController?.dispose();
+      videoController = null;
+      liveDanmaku.stop();
+      if (reloadDataType == ReloadDataType.refreash) {
+        restoryQualityAndLines();
+      } else if (reloadDataType == ReloadDataType.changeLine) {
+        if (line == playUrls.length - 1) {
+          currentLineIndex.value = 0;
+        } else {
+          currentLineIndex.value = currentLineIndex.value + 1;
+        }
+      } else if (reloadDataType == ReloadDataType.changeQuality) {
+        if (quality == qualites.length - 1) {
+          currentQuality.value = 0;
+        } else {
+          currentQuality.value = currentQuality.value + 1;
+        }
+      }
+    } catch (e) {
+      restoryQualityAndLines();
+      if (reloadDataType == ReloadDataType.changeLine) {
+        SmartDialog.showToast("切换线路失败");
+      } else if (reloadDataType == ReloadDataType.changeQuality) {
+        SmartDialog.showToast("切换清晰度失败");
+      }
     }
   }
 
@@ -165,20 +208,8 @@ class LivePlayController extends StateController {
     return await Future.value(true);
   }
 
-  void setResolution(String quality, String index) {
-    currentQuality.value = qualites.map((e) => e.quality).toList().indexWhere((e) => e == quality);
-    currentLineIndex.value = int.tryParse(index) ?? 0;
-    videoController?.isTryToHls = false;
-    videoController?.isPlaying.value = false;
-    videoController?.hasError.value = false;
-    videoController?.setDataSource(playUrls.value[currentLineIndex.value], refresh: true);
-    update();
-  }
-
   /// 初始化播放器
   void getPlayQualites() async {
-    qualites.value = [];
-    currentQuality.value = 0;
     try {
       var playQualites = await currentSite.liveSite.getPlayQualites(detail: detail.value!);
       if (playQualites.isEmpty) {
@@ -186,15 +217,36 @@ class LivePlayController extends StateController {
         return;
       }
       qualites.value = playQualites;
+      // 第一次加载 使用系统默认线路
+      if (isFirstLoad) {
+        int qualityLevel = settings.resolutionsList.indexOf(settings.preferResolution.value);
+        if (qualityLevel == 0) {
+          //最高
+          currentQuality.value = 0;
+        } else if (qualityLevel == settings.resolutionsList.length - 1) {
+          //最低
+          currentQuality.value = playQualites.length - 1;
+        } else {
+          //中间值
+          int middle = (playQualites.length / 2).floor();
+          currentQuality.value = middle;
+        }
+      }
+      isFirstLoad = false;
       getPlayUrl();
     } catch (e) {
       SmartDialog.showToast("无法读取播放清晰度");
     }
   }
 
-  void getPlayUrl() async {
+  restoryQualityAndLines() {
     playUrls.value = [];
     currentLineIndex.value = 0;
+    qualites.value = [];
+    currentQuality.value = 0;
+  }
+
+  void getPlayUrl() async {
     var playUrl =
         await currentSite.liveSite.getPlayUrls(detail: detail.value!, quality: qualites[currentQuality.value]);
     if (playUrl.isEmpty) {
@@ -202,7 +254,6 @@ class LivePlayController extends StateController {
       return;
     }
     playUrls.value = playUrl;
-    currentLineIndex.value = 0;
     setPlayer();
   }
 
@@ -228,6 +279,9 @@ class LivePlayController extends StateController {
       datasource: playUrls.value[currentLineIndex.value],
       autoPlay: true,
       headers: headers,
+      qualiteName: qualites[currentQuality.value].quality,
+      currentLineIndex: currentLineIndex.value,
+      currentQuality: currentQuality.value,
     );
 
     success.value = true;
