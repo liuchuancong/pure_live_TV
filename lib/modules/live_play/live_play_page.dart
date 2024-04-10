@@ -17,26 +17,22 @@ class LivePlayPage extends GetWidget<LivePlayController> {
     if (settings.enableScreenKeepOn.value) {
       WakelockPlus.toggle(enable: true);
     }
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) {
-        if (!didPop) {
-          //双击返回键退出
-          if (controller.doubleClickExit) {
-            controller.doubleClickTimer?.cancel();
-            Get.back();
-            return;
-          }
-          controller.doubleClickExit = true;
-          SmartDialog.showToast("再按一次退出播放器");
-          controller.doubleClickTimer = Timer(const Duration(seconds: 2), () {
-            controller.doubleClickExit = false;
-            controller.doubleClickTimer!.cancel();
-          });
-        }
-      },
+    return BackButtonListener(
+      onBackButtonPressed: onWillPop,
       child: buildVideoPlayer(),
     );
+  }
+
+  Future<bool> onWillPop() async {
+    try {
+      var exit = await controller.onBackPressed();
+      if (exit) {
+        Get.back();
+      }
+    } catch (e) {
+      Get.back();
+    }
+    return true;
   }
 
   handleResolutions() {}

@@ -146,6 +146,25 @@ class LivePlayController extends StateController {
     };
   }
 
+  Future<bool> onBackPressed() async {
+    if (videoController!.showSettting.value) {
+      videoController?.showSettting.value = false;
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
+    if (videoController!.showController.value) {
+      videoController?.disableController();
+      return await Future.value(false);
+    }
+    int nowExitTime = DateTime.now().millisecondsSinceEpoch;
+    if (nowExitTime - lastExitTime > 1000) {
+      lastExitTime = nowExitTime;
+      SmartDialog.showToast(S.current.double_click_to_exit);
+      return await Future.value(false);
+    }
+    return await Future.value(true);
+  }
+
   void setResolution(String quality, String index) {
     currentQuality.value = qualites.map((e) => e.quality).toList().indexWhere((e) => e == quality);
     currentLineIndex.value = int.tryParse(index) ?? 0;

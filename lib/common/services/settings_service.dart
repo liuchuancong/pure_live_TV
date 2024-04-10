@@ -329,11 +329,7 @@ class SettingsService extends GetxController {
     return favoriteRooms.any((element) => element.roomId == room.roomId);
   }
 
-  LiveRoom getLiveRoomByRoomId(roomId, {String platform = ''}) {
-    if (platform.isNotEmpty) {
-      return favoriteRooms.firstWhere((element) => element.roomId == roomId && element.platform == platform);
-    }
-    if (favoriteRooms.isEmpty) return historyRooms.firstWhere((element) => element.roomId == roomId);
+  LiveRoom getLiveRoomByRoomId(roomId) {
     return favoriteRooms.firstWhere((element) => element.roomId == roomId,
         orElse: () => historyRooms.firstWhere((element) => element.roomId == roomId));
   }
@@ -384,9 +380,9 @@ class SettingsService extends GetxController {
     if (historyRooms.any((element) => element.roomId == room.roomId)) {
       historyRooms.remove(room);
     }
-    //默认只记录20条，够用了
-    if (historyRooms.length > 19) {
-      historyRooms.removeRange(0, historyRooms.length - 19);
+    //默认只记录100条，够用了
+    if (historyRooms.length > 100) {
+      historyRooms.removeRange(0, historyRooms.length - 100);
     }
     historyRooms.add(room);
   }

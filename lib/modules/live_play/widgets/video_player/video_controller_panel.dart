@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
+import 'package:pure_live/common/widgets/settings_item_widget.dart';
+import 'package:pure_live/common/widgets/button/highlight_icon_button.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 
 class VideoControllerPanel extends StatefulWidget {
@@ -25,14 +28,6 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.enableController();
-    });
   }
 
   @override
@@ -109,7 +104,7 @@ class TopActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(
       () => AnimatedPositioned(
-        top: (!controller.showSettting.value && controller.showController.value) ? 0 : -barHeight,
+        top: (controller.showController.value) ? 0 : -barHeight,
         left: 0,
         right: 0,
         height: barHeight,
@@ -130,9 +125,9 @@ class TopActionBar extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
-                  controller.room.title!,
+                  controller.room.title ?? '正在读取直播信息...',
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.none),
+                  style: const TextStyle(color: Colors.white, fontSize: 20, decoration: TextDecoration.none),
                 ),
               ),
             ),
@@ -184,7 +179,7 @@ class _DatetimeInfoState extends State<DatetimeInfo> {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
       child: Text(
         '$hour:$minute',
-        style: const TextStyle(color: Colors.white, fontSize: 14, decoration: TextDecoration.none),
+        style: const TextStyle(color: Colors.white, fontSize: 18, decoration: TextDecoration.none),
       ),
     );
   }
@@ -233,7 +228,7 @@ class BottomActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() => AnimatedPositioned(
-          bottom: (!controller.showSettting.value && controller.showController.value) ? 0 : -barHeight,
+          bottom: (controller.showController.value) ? 0 : -barHeight,
           left: 0,
           right: 0,
           height: barHeight,
@@ -252,9 +247,9 @@ class BottomActionBar extends StatelessWidget {
             child: Row(
               children: <Widget>[
                 PlayPauseButton(controller: controller),
+                FavoriteButton(controller: controller),
                 RefreshButton(controller: controller),
                 DanmakuButton(controller: controller),
-                FavoriteButton(controller: controller),
                 SettingsButton(controller: controller),
                 const Spacer(),
               ],
@@ -271,17 +266,17 @@ class PlayPauseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => controller.togglePlayPause(),
-      child: Obx(() => Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(12),
-            child: Icon(
-              controller.isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              color: Colors.white,
-            ),
-          )),
-    );
+    return Obx(() => Container(
+          alignment: Alignment.center,
+          padding: AppStyle.edgeInsetsA12,
+          child: HighlightIconButton(
+            focusNode: controller.playPauseFoucsNode,
+            iconData: controller.isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            onTap: () {
+              controller.togglePlayPause();
+            },
+          ),
+        ));
   }
 }
 
@@ -289,18 +284,17 @@ class RefreshButton extends StatelessWidget {
   const RefreshButton({super.key, required this.controller});
 
   final VideoController controller;
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => controller.refresh(),
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(12),
-        child: const Icon(
-          Icons.refresh_rounded,
-          color: Colors.white,
-        ),
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: HighlightIconButton(
+        focusNode: controller.refreshFoucsNode,
+        iconData: Icons.refresh_rounded,
+        onTap: () {
+          controller.refresh();
+        },
       ),
     );
   }
@@ -316,16 +310,16 @@ class DanmakuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => controller.hideDanmaku.toggle(),
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(12),
-        child: Obx(() => Icon(
-              controller.hideDanmaku.value ? CustomIcons.danmaku_close : CustomIcons.danmaku_open,
-              color: Colors.white,
-            )),
-      ),
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: Obx(() => HighlightIconButton(
+            focusNode: controller.danmakuFoucsNode,
+            iconData: controller.hideDanmaku.value ? CustomIcons.danmaku_close : CustomIcons.danmaku_open,
+            onTap: () {
+              controller.hideDanmaku.toggle();
+            },
+          )),
     );
   }
 }
@@ -334,18 +328,17 @@ class SettingsButton extends StatelessWidget {
   const SettingsButton({super.key, required this.controller});
 
   final VideoController controller;
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => controller.showSettting.toggle(),
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(12),
-        child: const Icon(
-          CustomIcons.danmaku_setting,
-          color: Colors.white,
-        ),
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: HighlightIconButton(
+        focusNode: controller.settingsFoucsNode,
+        iconData: CustomIcons.danmaku_setting,
+        onTap: () {
+          controller.showSettting.value = true;
+        },
       ),
     );
   }
@@ -369,60 +362,22 @@ class _FavoriteButtonState extends State<FavoriteButton> {
   late bool isFavorite = settings.isFavorite(widget.controller.room);
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (isFavorite) {
-          settings.removeRoom(widget.controller.room);
-        } else {
-          settings.addRoom(widget.controller.room);
-        }
-        setState(() => isFavorite = !isFavorite);
-      },
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          !isFavorite ? Icons.favorite_outline_outlined : Icons.favorite_rounded,
-          color: Colors.white,
-        ),
-      ),
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: Obx(() => HighlightIconButton(
+            focusNode: widget.controller.favoriteFoucsNode,
+            iconData: !isFavorite ? Icons.favorite_outline_outlined : Icons.favorite_rounded,
+            onTap: () {
+              if (isFavorite) {
+                settings.removeRoom(widget.controller.room);
+              } else {
+                settings.addRoom(widget.controller.room);
+              }
+              setState(() => isFavorite = !isFavorite);
+            },
+          )),
     );
-  }
-}
-
-// Settings panel widgets
-class SettingsPanel extends StatelessWidget {
-  const SettingsPanel({
-    super.key,
-    required this.controller,
-  });
-
-  final VideoController controller;
-
-  static const double width = 380;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() => AnimatedPositioned(
-          top: 0,
-          bottom: 0,
-          right: controller.showSettting.value ? 0 : -width,
-          width: width,
-          duration: const Duration(milliseconds: 500),
-          child: Card(
-            color: Colors.black.withOpacity(0.8),
-            child: SizedBox(
-              width: width,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  VideoFitSetting(controller: controller),
-                  DanmakuSetting(controller: controller),
-                ],
-              ),
-            ),
-          ),
-        ));
   }
 }
 
@@ -494,6 +449,176 @@ class _VideoFitSettingState extends State<VideoFitSetting> {
       ],
     );
   }
+}
+
+void showDanmuSettings(VideoController controller) {
+  Utils.showRightDialog(
+    width: 800.w,
+    useSystem: true,
+    child: Column(
+      children: [
+        AppStyle.vGap24,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            AppStyle.hGap32,
+            Text(
+              "设置",
+              style: AppStyle.titleStyleWhite.copyWith(
+                fontSize: 36.w,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            AppStyle.hGap24,
+            const Spacer(),
+          ],
+        ),
+        Expanded(
+          child: ListView(
+            padding: AppStyle.edgeInsetsA48,
+            children: [
+              Padding(
+                padding: AppStyle.edgeInsetsH20,
+                child: Text(
+                  "弹幕",
+                  style: AppStyle.textStyleWhite.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              AppStyle.vGap24,
+              SettingsItemWidget(
+                foucsNode: controller.danmakuAbleFoucsNode,
+                autofocus: controller.danmakuFoucsNode.isFoucsed.value,
+                title: "弹幕开关",
+                items: const {
+                  0: "关",
+                  1: "开",
+                },
+                value: controller.hideDanmaku.value ? 1 : 0,
+                onChanged: (e) {
+                  controller.hideDanmaku.value = e == 1;
+                  controller.hideDanmaku.toggle();
+                },
+              ),
+              SettingsItemWidget(
+                foucsNode: controller.danmakuMergeFoucsNode,
+                autofocus: controller.danmakuMergeFoucsNode.isFoucsed.value,
+                title: "弹幕合并",
+                items: {
+                  0.0: "不合并",
+                  0.25: "相似度小于25%",
+                  0.5: "相似度小于50%",
+                  0.75: "相似度小于75%",
+                  1.0: "全部合并",
+                },
+                value: controller.mergeDanmuRating.value,
+                onChanged: (e) {
+                  controller.mergeDanmuRating.value = e;
+                },
+              ),
+              AppStyle.vGap24,
+              SettingsItemWidget(
+                foucsNode: controller.danmakuSizeFoucsNode,
+                autofocus: controller.danmakuSizeFoucsNode.isFoucsed.value,
+                title: "弹幕大小",
+                items: {
+                  24.0: "24",
+                  32.0: "32",
+                  40.0: "40",
+                  48.0: "48",
+                  56.0: "56",
+                  64.0: "64",
+                  72.0: "72",
+                },
+                value: controller.danmakuFontSize.value,
+                onChanged: (e) {
+                  controller.danmakuFontSize.value = e;
+                },
+              ),
+              AppStyle.vGap24,
+              SettingsItemWidget(
+                foucsNode: controller.danmakuSpeedFoucsNode,
+                autofocus: controller.danmakuSpeedFoucsNode.isFoucsed.value,
+                title: "弹幕速度",
+                items: {
+                  18.0: "很快",
+                  14.0: "较快",
+                  12.0: "快",
+                  10.0: "正常",
+                  8.0: "慢",
+                  6.0: "较慢",
+                  4.0: "很慢",
+                },
+                value: controller.danmakuSpeed.value,
+                onChanged: (e) {
+                  controller.danmakuSpeed.value = e;
+                },
+              ),
+              AppStyle.vGap24,
+              SettingsItemWidget(
+                foucsNode: controller.danmakuAreaFoucsNode,
+                autofocus: controller.danmakuAreaFoucsNode.isFoucsed.value,
+                title: "显示区域",
+                items: {
+                  0.25: "1/4",
+                  0.5: "1/2",
+                  0.75: "3/4",
+                  1.0: "全屏",
+                },
+                value: controller.danmakuArea.value,
+                onChanged: (e) {
+                  controller.danmakuArea.value = e;
+                },
+              ),
+              AppStyle.vGap24,
+              SettingsItemWidget(
+                foucsNode: controller.danmakuOpacityFoucsNode,
+                autofocus: controller.danmakuOpacityFoucsNode.isFoucsed.value,
+                title: "不透明度",
+                items: {
+                  0.1: "10%",
+                  0.2: "20%",
+                  0.3: "30%",
+                  0.4: "40%",
+                  0.5: "50%",
+                  0.6: "60%",
+                  0.7: "70%",
+                  0.8: "80%",
+                  0.9: "90%",
+                  1.0: "100%",
+                },
+                value: controller.danmakuOpacity.value,
+                onChanged: (e) {
+                  controller.danmakuOpacity.value = e;
+                },
+              ),
+              AppStyle.vGap24,
+              SettingsItemWidget(
+                foucsNode: controller.danmakuStorkeFoucsNode,
+                autofocus: controller.danmakuStorkeFoucsNode.isFoucsed.value,
+                title: "描边宽度",
+                items: {
+                  2.0: "2",
+                  4.0: "4",
+                  6.0: "6",
+                  8.0: "8",
+                  10.0: "10",
+                  12.0: "12",
+                  14.0: "14",
+                  16.0: "16",
+                },
+                value: controller.danmakuFontBorder.value,
+                onChanged: (e) {
+                  controller.danmakuFontBorder.value = e;
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class DanmakuSetting extends StatelessWidget {

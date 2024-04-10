@@ -11,8 +11,8 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
-import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
+import 'package:pure_live/modules/live_play/widgets/video_player/video_controller_panel.dart';
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
@@ -75,21 +75,84 @@ class VideoController with ChangeNotifier {
 
   Timer? showControllerTimer;
   // Controller ui status
-  final showController = true.obs;
+  final showController = false.obs;
   //  Settting ui status
   final showSettting = false.obs;
 
   final danmuKey = GlobalKey();
 
+  final playPauseFoucsNode = AppFocusNode();
+
+  final refreshFoucsNode = AppFocusNode();
+
+  final danmakuFoucsNode = AppFocusNode();
+
+  final favoriteFoucsNode = AppFocusNode();
+
+  final settingsFoucsNode = AppFocusNode();
+
+  List<AppFocusNode> operateFoucsNodes = [];
+
+  List<AppFocusNode> danmukuSettingFoucsNodes = [];
+  // 底部控制按钮索引
+  int currentNodeIndex = 0;
+  // 弹幕控制按钮索引
+  int danmukuNodeIndex = 0;
+
   Timer? _debounceTimer;
+
+  Timer? _throttleTimer;
+
+  bool _throttleFlag = true;
   // 五秒关闭控制器
   void enableController() {
     showControllerTimer?.cancel();
+    showController.value = true;
     showControllerTimer = Timer(const Duration(seconds: 5), () {
       showController.value = false;
+      cancleFocus();
+      focusNode.requestFocus();
     });
-    showController.value = true;
+    playPauseFoucsNode.requestFocus();
+    currentNodeIndex = 0;
   }
+
+  void disableController() {
+    showControllerTimer?.cancel();
+    showController.value = false;
+    cancleFocus();
+    cancledanmakuFocus();
+    focusNode.requestFocus();
+    currentNodeIndex = 0;
+    danmukuNodeIndex = 0;
+  }
+
+  void cancleFocus() {
+    playPauseFoucsNode.unfocus();
+    refreshFoucsNode.unfocus();
+    danmakuFoucsNode.unfocus();
+    favoriteFoucsNode.unfocus();
+    settingsFoucsNode.unfocus();
+    currentNodeIndex = 0;
+  }
+
+  void cancledanmakuFocus() {
+    danmakuAbleFoucsNode.unfocus();
+    danmakuMergeFoucsNode.unfocus();
+    danmakuSizeFoucsNode.unfocus();
+    danmakuSpeedFoucsNode.unfocus();
+    danmakuAreaFoucsNode.unfocus();
+    danmakuStorkeFoucsNode.unfocus();
+    danmukuNodeIndex = 0;
+  }
+
+  final danmakuAbleFoucsNode = AppFocusNode();
+  final danmakuMergeFoucsNode = AppFocusNode();
+  final danmakuSizeFoucsNode = AppFocusNode();
+  final danmakuSpeedFoucsNode = AppFocusNode();
+  final danmakuAreaFoucsNode = AppFocusNode();
+  final danmakuOpacityFoucsNode = AppFocusNode();
+  final danmakuStorkeFoucsNode = AppFocusNode();
 
   // Danmaku player control
   BarrageWallController danmakuController = BarrageWallController();
@@ -124,18 +187,65 @@ class VideoController with ChangeNotifier {
   initPagesConfig() {
     initVideoController();
     initDanmaku();
+    initOperateFoucsNodes();
+    initDanmukuSettingFoucsNodes();
+    showSettting.listen((p0) {
+      if (showSettting.value) {
+        showControllerTimer?.cancel();
+        showController.value = false;
+        danmukuNodeIndex = 0;
+        danmakuAbleFoucsNode.requestFocus();
+        showDanmuSettings(this);
+      } else {
+        disableController();
+      }
+    });
+  }
+
+  void initOperateFoucsNodes() {
+    operateFoucsNodes = [];
+    operateFoucsNodes.add(playPauseFoucsNode);
+    operateFoucsNodes.add(favoriteFoucsNode);
+    operateFoucsNodes.add(refreshFoucsNode);
+    operateFoucsNodes.add(danmakuFoucsNode);
+    operateFoucsNodes.add(settingsFoucsNode);
+    currentNodeIndex = 0;
+  }
+
+  void initDanmukuSettingFoucsNodes() {
+    danmukuSettingFoucsNodes = [];
+    danmukuSettingFoucsNodes.add(danmakuAbleFoucsNode);
+    danmukuSettingFoucsNodes.add(danmakuMergeFoucsNode);
+    danmukuSettingFoucsNodes.add(danmakuSizeFoucsNode);
+    danmukuSettingFoucsNodes.add(danmakuSpeedFoucsNode);
+    danmukuSettingFoucsNodes.add(danmakuAreaFoucsNode);
+    danmukuSettingFoucsNodes.add(danmakuOpacityFoucsNode);
+    danmukuSettingFoucsNodes.add(danmakuStorkeFoucsNode);
+    danmukuNodeIndex = 0;
   }
 
   void initVideoController() async {
-    FlutterVolumeController.updateShowSystemUI(false);
-    videoPlayerIndex = settings.videoPlayerIndex.value;
-    enableCodec = settings.enableCodec.value;
-    if (Platform.isWindows || Platform.isLinux) {
+    if (videoPlayerIndex == 0) {
+      mobileController = BetterPlayerController(
+        BetterPlayerConfiguration(
+          autoPlay: true,
+          fit: videoFit.value,
+          allowedScreenSleep: false,
+          autoDetectFullscreenDeviceOrientation: true,
+          autoDetectFullscreenAspectRatio: true,
+          errorBuilder: (context, errorMessage) => Container(),
+        ),
+      );
+      mobileController?.setControlsEnabled(false);
+      setDataSource(datasource);
+      mobileController?.addEventsListener(mobileStateListener);
+    } else if (videoPlayerIndex == 1) {
+      setDataSource(datasource);
+    } else if (videoPlayerIndex == 2) {
       player = Player();
-      if (player.platform is NativePlayer) {
-        await (player.platform as dynamic).setProperty('cache', 'no');
-      }
-      mediaPlayerController = media_kit_video.VideoController(player);
+      mediaPlayerController = media_kit_video.VideoController(player,
+          configuration: media_kit_video.VideoControllerConfiguration(
+              androidAttachSurfaceAfterVideoParameters: false, enableHardwareAcceleration: enableCodec));
       setDataSource(datasource);
       mediaPlayerController.player.stream.playing.listen((bool playing) {
         if (playing) {
@@ -148,50 +258,9 @@ class VideoController with ChangeNotifier {
         if (event.toString().contains('Failed to open')) {
           hasError.value = true;
           isPlaying.value = false;
-          SmartDialog.showToast("无法播放视频");
         }
       });
       mediaPlayerControllerInitialized.value = true;
-    } else if (Platform.isAndroid || Platform.isIOS) {
-      if (videoPlayerIndex == 0) {
-        mobileController = BetterPlayerController(
-          BetterPlayerConfiguration(
-            autoPlay: true,
-            fit: videoFit.value,
-            allowedScreenSleep: false,
-            autoDetectFullscreenDeviceOrientation: true,
-            autoDetectFullscreenAspectRatio: true,
-            errorBuilder: (context, errorMessage) => Container(),
-          ),
-        );
-        mobileController?.setControlsEnabled(false);
-        setDataSource(datasource);
-        mobileController?.addEventsListener(mobileStateListener);
-      } else if (videoPlayerIndex == 1) {
-        setDataSource(datasource);
-      } else if (videoPlayerIndex == 2) {
-        player = Player();
-        mediaPlayerController = media_kit_video.VideoController(player,
-            configuration: media_kit_video.VideoControllerConfiguration(
-                androidAttachSurfaceAfterVideoParameters: false, enableHardwareAcceleration: enableCodec));
-        setDataSource(datasource);
-        mediaPlayerController.player.stream.playing.listen((bool playing) {
-          if (playing) {
-            isPlaying.value = true;
-          } else {
-            isPlaying.value = false;
-          }
-        });
-        mediaPlayerController.player.stream.error.listen((event) {
-          if (event.toString().contains('Failed to open')) {
-            hasError.value = true;
-            isPlaying.value = false;
-          }
-        });
-        mediaPlayerControllerInitialized.value = true;
-      }
-    } else {
-      throw UnimplementedError('Unsupported Platform');
     }
     debounce(hasError, (callback) {
       if (hasError.value) {
@@ -201,21 +270,105 @@ class VideoController with ChangeNotifier {
   }
 
   void onKeyEvent(KeyEvent key) {
-    if (key is KeyUpEvent) {
+    throttle(() {
+      handleKeyEvent(key);
+    }, 200);
+  }
+
+  handleKeyEvent(KeyEvent key) {
+    log('key event: $key');
+    log('key event: $showController.value');
+    log('key event: $showSettting.value');
+    // 点击Menu打开/关闭设置
+    if (key.logicalKey == LogicalKeyboardKey.keyM || key.logicalKey == LogicalKeyboardKey.contextMenu) {
+      showDanmuSettings(this);
       return;
     }
-    // 点击OK、Enter、Select键时显示/隐藏控制器
-    if (key.logicalKey == LogicalKeyboardKey.select ||
-        key.logicalKey == LogicalKeyboardKey.enter ||
-        key.logicalKey == LogicalKeyboardKey.space) {
-      if (!showController.value) {
-        enableController();
-        showController.value = true;
+    // 如果没有显示控制面板
+    if (!showController.value) {
+      // 如果没有显示弹幕控制面板
+      if (!showSettting.value) {
+        // 点击OK、Enter、Select键时显示/隐藏控制器
+        if (key.logicalKey == LogicalKeyboardKey.select ||
+            key.logicalKey == LogicalKeyboardKey.enter ||
+            key.logicalKey == LogicalKeyboardKey.space) {
+          // 点击enter键显示控制器
+          enableController();
+          return;
+        }
+        // 点击上下键切换播放线路
+        if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
+          lastPlayChannel();
+        } else if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
+          nextPlayChannel();
+        }
+        // 点击左右键切换播放线路
+        if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
+          lastPlayChannel();
+        } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
+          nextPlayChannel();
+        }
+        return;
       } else {
-        showControllerTimer?.cancel();
-        showController.toggle();
+        //没有控制面板以及显示了设置面板
+        if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
+          danmukuNodeIndex++;
+          if (danmukuNodeIndex == danmukuSettingFoucsNodes.length) {
+            danmukuNodeIndex = 0;
+          }
+          danmukuSettingFoucsNodes[danmukuNodeIndex].requestFocus();
+
+          return;
+        } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
+          if (danmukuNodeIndex == -1) {
+            danmukuNodeIndex = danmukuSettingFoucsNodes.length - 1;
+          }
+          danmukuSettingFoucsNodes[danmukuNodeIndex].requestFocus();
+          danmukuNodeIndex--;
+          return;
+        }
       }
-      return;
+    } else {
+      // 显示了控制面板 点击时延长控制显示
+      showControllerTimer?.cancel();
+      showController.value = true;
+      showControllerTimer = Timer(const Duration(seconds: 5), () {
+        showController.value = false;
+        cancleFocus();
+        focusNode.requestFocus();
+      });
+
+      // 点击上下键切换播放线路
+      // 默认是0
+      if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
+        currentNodeIndex++;
+        if (currentNodeIndex == operateFoucsNodes.length) {
+          currentNodeIndex = 0;
+        }
+        operateFoucsNodes[currentNodeIndex].requestFocus();
+        return;
+      } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
+        currentNodeIndex--;
+        if (currentNodeIndex == -1) {
+          currentNodeIndex = operateFoucsNodes.length - 1;
+        }
+        operateFoucsNodes[currentNodeIndex].requestFocus();
+        return;
+      } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
+        currentNodeIndex++;
+        if (currentNodeIndex == operateFoucsNodes.length) {
+          currentNodeIndex = 0;
+        }
+        operateFoucsNodes[currentNodeIndex].requestFocus();
+        return;
+      } else if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        currentNodeIndex--;
+        if (currentNodeIndex == -1) {
+          currentNodeIndex = operateFoucsNodes.length - 1;
+        }
+        operateFoucsNodes[currentNodeIndex].requestFocus();
+        return;
+      }
     }
   }
 
@@ -233,6 +386,21 @@ class VideoController with ChangeNotifier {
     mobileController?.play();
   }
 
+  void throttle(Function func, [int delay = 500]) {
+    if (_throttleFlag) {
+      func.call();
+      _throttleFlag = false;
+      return;
+    }
+    if (_throttleTimer != null) {
+      return;
+    }
+    _throttleTimer = Timer(Duration(milliseconds: delay), () {
+      func.call();
+      _throttleTimer = null;
+    });
+  }
+
   void debounceListen(Function? func, [int delay = 1000]) {
     if (_debounceTimer != null) {
       _debounceTimer?.cancel();
@@ -241,9 +409,8 @@ class VideoController with ChangeNotifier {
       try {
         func?.call();
       } catch (e) {
-        log('${mobileController!.videoPlayerController!.value.errorDescription}');
+        log('debounce error: $e');
       }
-
       _debounceTimer = null;
     });
   }
@@ -428,11 +595,7 @@ class VideoController with ChangeNotifier {
     if (videoPlayerIndex == 0) {
       isPlaying.value ? mobileController!.pause() : mobileController!.play();
     } else if (videoPlayerIndex == 1) {
-      if (isPlaying.value) {
-        fijkPlayer.pause();
-      } else {
-        fijkPlayer.start();
-      }
+      isPlaying.value ? fijkPlayer.pause() : fijkPlayer.start();
     } else if (videoPlayerIndex == 2) {
       mediaPlayerController.player.playOrPause();
     }
@@ -445,4 +608,8 @@ class VideoController with ChangeNotifier {
   void setBrightness(double value) async {
     await brightnessController.setScreenBrightness(value);
   }
+
+  void lastPlayChannel() {}
+
+  void nextPlayChannel() {}
 }

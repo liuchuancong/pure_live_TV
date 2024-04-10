@@ -52,7 +52,10 @@ class HomeController extends BasePageController {
   Future<bool> historyRefresh() async {
     List<Future<LiveRoom>> futures = [];
     refreshIsOk.value = false;
-    if (settingsService.historyRooms.value.reversed.take(20).isEmpty) return false;
+    if (settingsService.historyRooms.value.reversed.take(20).isEmpty) {
+      refreshIsOk.value = true;
+      return false;
+    }
     for (final room in settingsService.historyRooms.value.reversed.take(20)) {
       futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!));
     }

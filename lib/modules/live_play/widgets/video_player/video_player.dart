@@ -56,16 +56,14 @@ class _VideoPlayerState extends State<VideoPlayer> {
       onKeyEvent: widget.controller.onKeyEvent,
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: Obx(
-          () => Stack(
-            children: [
-              BetterPlayer(
-                key: widget.controller.playerKey,
-                controller: widget.controller.mobileController!,
-              ),
-              _buildVideoPanel(),
-            ],
-          ),
+        body: Stack(
+          children: [
+            BetterPlayer(
+              key: widget.controller.playerKey,
+              controller: widget.controller.mobileController!,
+            ),
+            _buildVideoPanel(),
+          ],
         ),
       ),
     );
@@ -88,6 +86,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
                 fit: getFijkFit(widget.controller.videoFit.value),
                 cover: getRoomCover(widget.controller.room.cover),
                 fs: false,
+                panelBuilder: (player, data, context, viewSize, texturePos) => Container(),
               ),
               _buildVideoPanel()
             ],

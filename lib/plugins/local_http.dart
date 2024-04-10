@@ -139,7 +139,7 @@ class LocalHttpServer {
       router.post('/playRoom', (ctx, next) async {
         try {
           final liveRoom = jsonDecode(ctx.query['liveRoom']!);
-          final realLiveRoom = settings.getLiveRoomByRoomId(liveRoom['roomId'], platform: liveRoom['platform']);
+          final realLiveRoom = settings.getLiveRoomByRoomId(liveRoom['roomId']);
           Get.offAndToNamed(RoutePath.kInitial)!;
           AppNavigator.toLiveRoomDetail(liveRoom: realLiveRoom);
           ctx.body = jsonEncode({'data': true});
