@@ -22,6 +22,7 @@ class HighlightWidget extends StatelessWidget {
   final BorderRadius? borderRadius;
   final double order;
   final bool selected;
+  final bool useOtherController;
   const HighlightWidget({
     required this.focusNode,
     required this.child,
@@ -31,6 +32,7 @@ class HighlightWidget extends StatelessWidget {
     this.onRightKey,
     this.onFocusChange,
     this.onTap,
+    this.useOtherController = false,
     this.autofocus = false,
     this.selected = false,
     this.borderRadius,

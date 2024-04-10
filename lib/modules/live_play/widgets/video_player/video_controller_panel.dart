@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:get/get.dart';
-import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
@@ -38,6 +37,9 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
           ? ErrorWidget(controller: controller)
           : Stack(children: [
               DanmakuViewer(controller: controller),
+              SettingsPanel(
+                controller: controller,
+              ),
               TopActionBar(
                 controller: controller,
                 barHeight: barHeight,
@@ -451,174 +453,32 @@ class _VideoFitSettingState extends State<VideoFitSetting> {
   }
 }
 
-void showDanmuSettings(VideoController controller) {
-  Utils.showRightDialog(
-    width: 800.w,
-    useSystem: true,
-    child: Column(
-      children: [
-        AppStyle.vGap24,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            AppStyle.hGap32,
-            Text(
-              "设置",
-              style: AppStyle.titleStyleWhite.copyWith(
-                fontSize: 36.w,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            AppStyle.hGap24,
-            const Spacer(),
-          ],
+class SettingsPanel extends StatelessWidget {
+  const SettingsPanel({
+    super.key,
+    required this.controller,
+  });
+
+  final VideoController controller;
+
+  static const double width = 380;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => AnimatedPositioned(
+        top: 0,
+        bottom: 0,
+        right: controller.showSettting.value ? 0 : -width,
+        width: width,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          padding: AppStyle.edgeInsetsA12,
+          child: DanmakuSetting(controller: controller),
         ),
-        Expanded(
-          child: ListView(
-            padding: AppStyle.edgeInsetsA48,
-            children: [
-              Padding(
-                padding: AppStyle.edgeInsetsH20,
-                child: Text(
-                  "弹幕",
-                  style: AppStyle.textStyleWhite.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              AppStyle.vGap24,
-              SettingsItemWidget(
-                foucsNode: controller.danmakuAbleFoucsNode,
-                autofocus: controller.danmakuFoucsNode.isFoucsed.value,
-                title: "弹幕开关",
-                items: const {
-                  0: "关",
-                  1: "开",
-                },
-                value: controller.hideDanmaku.value ? 1 : 0,
-                onChanged: (e) {
-                  controller.hideDanmaku.value = e == 1;
-                  controller.hideDanmaku.toggle();
-                },
-              ),
-              SettingsItemWidget(
-                foucsNode: controller.danmakuMergeFoucsNode,
-                autofocus: controller.danmakuMergeFoucsNode.isFoucsed.value,
-                title: "弹幕合并",
-                items: {
-                  0.0: "不合并",
-                  0.25: "相似度小于25%",
-                  0.5: "相似度小于50%",
-                  0.75: "相似度小于75%",
-                  1.0: "全部合并",
-                },
-                value: controller.mergeDanmuRating.value,
-                onChanged: (e) {
-                  controller.mergeDanmuRating.value = e;
-                },
-              ),
-              AppStyle.vGap24,
-              SettingsItemWidget(
-                foucsNode: controller.danmakuSizeFoucsNode,
-                autofocus: controller.danmakuSizeFoucsNode.isFoucsed.value,
-                title: "弹幕大小",
-                items: {
-                  24.0: "24",
-                  32.0: "32",
-                  40.0: "40",
-                  48.0: "48",
-                  56.0: "56",
-                  64.0: "64",
-                  72.0: "72",
-                },
-                value: controller.danmakuFontSize.value,
-                onChanged: (e) {
-                  controller.danmakuFontSize.value = e;
-                },
-              ),
-              AppStyle.vGap24,
-              SettingsItemWidget(
-                foucsNode: controller.danmakuSpeedFoucsNode,
-                autofocus: controller.danmakuSpeedFoucsNode.isFoucsed.value,
-                title: "弹幕速度",
-                items: {
-                  18.0: "很快",
-                  14.0: "较快",
-                  12.0: "快",
-                  10.0: "正常",
-                  8.0: "慢",
-                  6.0: "较慢",
-                  4.0: "很慢",
-                },
-                value: controller.danmakuSpeed.value,
-                onChanged: (e) {
-                  controller.danmakuSpeed.value = e;
-                },
-              ),
-              AppStyle.vGap24,
-              SettingsItemWidget(
-                foucsNode: controller.danmakuAreaFoucsNode,
-                autofocus: controller.danmakuAreaFoucsNode.isFoucsed.value,
-                title: "显示区域",
-                items: {
-                  0.25: "1/4",
-                  0.5: "1/2",
-                  0.75: "3/4",
-                  1.0: "全屏",
-                },
-                value: controller.danmakuArea.value,
-                onChanged: (e) {
-                  controller.danmakuArea.value = e;
-                },
-              ),
-              AppStyle.vGap24,
-              SettingsItemWidget(
-                foucsNode: controller.danmakuOpacityFoucsNode,
-                autofocus: controller.danmakuOpacityFoucsNode.isFoucsed.value,
-                title: "不透明度",
-                items: {
-                  0.1: "10%",
-                  0.2: "20%",
-                  0.3: "30%",
-                  0.4: "40%",
-                  0.5: "50%",
-                  0.6: "60%",
-                  0.7: "70%",
-                  0.8: "80%",
-                  0.9: "90%",
-                  1.0: "100%",
-                },
-                value: controller.danmakuOpacity.value,
-                onChanged: (e) {
-                  controller.danmakuOpacity.value = e;
-                },
-              ),
-              AppStyle.vGap24,
-              SettingsItemWidget(
-                foucsNode: controller.danmakuStorkeFoucsNode,
-                autofocus: controller.danmakuStorkeFoucsNode.isFoucsed.value,
-                title: "描边宽度",
-                items: {
-                  2.0: "2",
-                  4.0: "4",
-                  6.0: "6",
-                  8.0: "8",
-                  10.0: "10",
-                  12.0: "12",
-                  14.0: "14",
-                  16.0: "16",
-                },
-                value: controller.danmakuFontBorder.value,
-                onChanged: (e) {
-                  controller.danmakuFontBorder.value = e;
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class DanmakuSetting extends StatelessWidget {
@@ -631,118 +491,173 @@ class DanmakuSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const TextStyle label = TextStyle(color: Colors.white);
-    const TextStyle digit = TextStyle(color: Colors.white);
-
-    return Obx(() => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                S.of(context).settings_danmaku_title,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+    return Obx(() => Container(
+          decoration: BoxDecoration(
+            color: Get.theme.cardColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: [
+              AppStyle.vGap24,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  AppStyle.hGap32,
+                  Text(
+                    "设置",
+                    style: AppStyle.titleStyleWhite.copyWith(
+                      fontSize: 36.w,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  AppStyle.hGap24,
+                  const Spacer(),
+                ],
               ),
-            ),
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: const Text('弹幕合并', style: label),
-              subtitle: Text('相似度:${controller.mergeDanmuRating.value * 100}%的弹幕会被合并', style: label),
-              title: Slider(
-                divisions: 10,
-                min: 0.0,
-                max: 1.0,
-                value: controller.mergeDanmuRating.value,
-                onChanged: (val) => controller.mergeDanmuRating.value = val,
+              Expanded(
+                child: ListView(
+                  padding: AppStyle.edgeInsetsA48,
+                  children: [
+                    Padding(
+                      padding: AppStyle.edgeInsetsH20,
+                      child: Text(
+                        "弹幕",
+                        style: AppStyle.textStyleWhite.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    AppStyle.vGap24,
+                    SettingsItemWidget(
+                      foucsNode: controller.danmakuAbleFoucsNode,
+                      autofocus: controller.danmakuFoucsNode.isFoucsed.value,
+                      title: "弹幕开关",
+                      items: const {
+                        0: "关",
+                        1: "开",
+                      },
+                      value: controller.hideDanmaku.value ? 1 : 0,
+                      onChanged: (e) {
+                        controller.hideDanmaku.toggle();
+                      },
+                    ),
+                    SettingsItemWidget(
+                      foucsNode: controller.danmakuMergeFoucsNode,
+                      autofocus: controller.danmakuMergeFoucsNode.isFoucsed.value,
+                      title: "弹幕合并",
+                      items: {
+                        0.0: "不合并",
+                        0.25: "相似度小于25%",
+                        0.5: "相似度小于50%",
+                        0.75: "相似度小于75%",
+                        1.0: "全部合并",
+                      },
+                      value: controller.mergeDanmuRating.value,
+                      onChanged: (e) {
+                        controller.mergeDanmuRating.value = e;
+                      },
+                    ),
+                    AppStyle.vGap24,
+                    SettingsItemWidget(
+                      foucsNode: controller.danmakuSizeFoucsNode,
+                      autofocus: controller.danmakuSizeFoucsNode.isFoucsed.value,
+                      title: "弹幕大小",
+                      items: {
+                        24.0: "24",
+                        32.0: "32",
+                        40.0: "40",
+                        48.0: "48",
+                        56.0: "56",
+                        64.0: "64",
+                        72.0: "72",
+                      },
+                      value: controller.danmakuFontSize.value,
+                      onChanged: (e) {
+                        controller.danmakuFontSize.value = e;
+                      },
+                    ),
+                    AppStyle.vGap24,
+                    SettingsItemWidget(
+                      foucsNode: controller.danmakuSpeedFoucsNode,
+                      autofocus: controller.danmakuSpeedFoucsNode.isFoucsed.value,
+                      title: "弹幕速度",
+                      items: {
+                        18.0: "很快",
+                        14.0: "较快",
+                        12.0: "快",
+                        10.0: "正常",
+                        8.0: "慢",
+                        6.0: "较慢",
+                        4.0: "很慢",
+                      },
+                      value: controller.danmakuSpeed.value,
+                      onChanged: (e) {
+                        controller.danmakuSpeed.value = e;
+                      },
+                    ),
+                    AppStyle.vGap24,
+                    SettingsItemWidget(
+                      foucsNode: controller.danmakuAreaFoucsNode,
+                      autofocus: controller.danmakuAreaFoucsNode.isFoucsed.value,
+                      title: "显示区域",
+                      items: {
+                        0.25: "1/4",
+                        0.5: "1/2",
+                        0.75: "3/4",
+                        1.0: "全屏",
+                      },
+                      value: controller.danmakuArea.value,
+                      onChanged: (e) {
+                        controller.danmakuArea.value = e;
+                      },
+                    ),
+                    AppStyle.vGap24,
+                    SettingsItemWidget(
+                      foucsNode: controller.danmakuOpacityFoucsNode,
+                      autofocus: controller.danmakuOpacityFoucsNode.isFoucsed.value,
+                      title: "不透明度",
+                      items: {
+                        0.1: "10%",
+                        0.2: "20%",
+                        0.3: "30%",
+                        0.4: "40%",
+                        0.5: "50%",
+                        0.6: "60%",
+                        0.7: "70%",
+                        0.8: "80%",
+                        0.9: "90%",
+                        1.0: "100%",
+                      },
+                      value: controller.danmakuOpacity.value,
+                      onChanged: (e) {
+                        controller.danmakuOpacity.value = e;
+                      },
+                    ),
+                    AppStyle.vGap24,
+                    SettingsItemWidget(
+                      foucsNode: controller.danmakuStorkeFoucsNode,
+                      autofocus: controller.danmakuStorkeFoucsNode.isFoucsed.value,
+                      title: "描边宽度",
+                      items: {
+                        2.0: "2",
+                        4.0: "4",
+                        6.0: "6",
+                        8.0: "8",
+                        10.0: "10",
+                        12.0: "12",
+                        14.0: "14",
+                        16.0: "16",
+                      },
+                      value: controller.danmakuFontBorder.value,
+                      onChanged: (e) {
+                        controller.danmakuFontBorder.value = e;
+                      },
+                    ),
+                  ],
+                ),
               ),
-              trailing: Text(
-                '${(controller.mergeDanmuRating.value * 100).toInt()}%',
-                style: digit,
-              ),
-            ),
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Text(S.of(context).settings_danmaku_area, style: label),
-              title: Slider(
-                divisions: 10,
-                min: 0.0,
-                max: 1.0,
-                value: controller.danmakuArea.value,
-                onChanged: (val) => controller.danmakuArea.value = val,
-              ),
-              trailing: Text(
-                '${(controller.danmakuArea.value * 100).toInt()}%',
-                style: digit,
-              ),
-            ),
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Text(S.of(context).settings_danmaku_opacity, style: label),
-              title: Slider(
-                divisions: 10,
-                min: 0.0,
-                max: 1.0,
-                value: controller.danmakuOpacity.value,
-                onChanged: (val) => controller.danmakuOpacity.value = val,
-              ),
-              trailing: Text(
-                '${(controller.danmakuOpacity.value * 100).toInt()}%',
-                style: digit,
-              ),
-            ),
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Text(S.of(context).settings_danmaku_speed, style: label),
-              title: Slider(
-                divisions: 15,
-                min: 5.0,
-                max: 20.0,
-                value: controller.danmakuSpeed.value,
-                onChanged: (val) => controller.danmakuSpeed.value = val,
-              ),
-              trailing: Text(
-                controller.danmakuSpeed.value.toInt().toString(),
-                style: digit,
-              ),
-            ),
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Text(S.of(context).settings_danmaku_fontsize, style: label),
-              title: Slider(
-                divisions: 20,
-                min: 10.0,
-                max: 30.0,
-                value: controller.danmakuFontSize.value,
-                onChanged: (val) => controller.danmakuFontSize.value = val,
-              ),
-              trailing: Text(
-                controller.danmakuFontSize.value.toInt().toString(),
-                style: digit,
-              ),
-            ),
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Text(S.of(context).settings_danmaku_fontBorder, style: label),
-              title: Slider(
-                divisions: 25,
-                min: 0.0,
-                max: 2.5,
-                value: controller.danmakuFontBorder.value,
-                onChanged: (val) => controller.danmakuFontBorder.value = val,
-              ),
-              trailing: Text(
-                controller.danmakuFontBorder.value.toStringAsFixed(2),
-                style: digit,
-              ),
-            ),
-          ],
+            ],
+          ),
         ));
   }
 }

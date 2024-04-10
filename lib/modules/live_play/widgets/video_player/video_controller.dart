@@ -12,7 +12,6 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
-import 'package:pure_live/modules/live_play/widgets/video_player/video_controller_panel.dart';
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
@@ -194,8 +193,9 @@ class VideoController with ChangeNotifier {
         showControllerTimer?.cancel();
         showController.value = false;
         danmukuNodeIndex = 0;
+        currentNodeIndex = 0;
+        cancleFocus();
         danmakuAbleFoucsNode.requestFocus();
-        showDanmuSettings(this);
       } else {
         disableController();
       }
@@ -279,9 +279,11 @@ class VideoController with ChangeNotifier {
     log('key event: $key');
     log('key event: $showController.value');
     log('key event: $showSettting.value');
+    log('key event: currentNodeIndex $currentNodeIndex');
+    log('key event: danmukuNodeIndex $danmukuNodeIndex');
     // 点击Menu打开/关闭设置
     if (key.logicalKey == LogicalKeyboardKey.keyM || key.logicalKey == LogicalKeyboardKey.contextMenu) {
-      showDanmuSettings(this);
+      showSettting.value = true;
       return;
     }
     // 如果没有显示控制面板
@@ -311,6 +313,7 @@ class VideoController with ChangeNotifier {
         return;
       } else {
         //没有控制面板以及显示了设置面板
+
         if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
           danmukuNodeIndex++;
           if (danmukuNodeIndex == danmukuSettingFoucsNodes.length) {
@@ -438,26 +441,32 @@ class VideoController with ChangeNotifier {
     hideDanmaku.value = PrefUtil.getBool('hideDanmaku') ?? false;
     hideDanmaku.listen((data) {
       PrefUtil.setBool('hideDanmaku', data);
+      settings.hideDanmaku.value = data;
     });
     danmakuArea.value = PrefUtil.getDouble('danmakuArea') ?? 1.0;
     danmakuArea.listen((data) {
       PrefUtil.setDouble('danmakuArea', data);
+      settings.danmakuArea.value = data;
     });
     danmakuSpeed.value = PrefUtil.getDouble('danmakuSpeed') ?? 8;
     danmakuSpeed.listen((data) {
       PrefUtil.setDouble('danmakuSpeed', data);
+      settings.danmakuSpeed.value = data;
     });
     danmakuFontSize.value = PrefUtil.getDouble('danmakuFontSize') ?? 16;
     danmakuFontSize.listen((data) {
       PrefUtil.setDouble('danmakuFontSize', data);
+      settings.danmakuFontSize.value = data;
     });
     danmakuFontBorder.value = PrefUtil.getDouble('danmakuFontBorder') ?? 0.5;
     danmakuFontBorder.listen((data) {
       PrefUtil.setDouble('danmakuFontBorder', data);
+      settings.danmakuFontBorder.value = data;
     });
     danmakuOpacity.value = PrefUtil.getDouble('danmakuOpacity') ?? 1.0;
     danmakuOpacity.listen((data) {
       PrefUtil.setDouble('danmakuOpacity', data);
+      settings.danmakuOpacity.value = data;
     });
   }
 
