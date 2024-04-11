@@ -8,15 +8,14 @@ import 'package:pure_live/common/base/base_controller.dart';
 
 class HomeController extends BasePageController {
   var datetime = "00:00".obs;
-  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "数据同步", "平台设置"];
+  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "捐赠支持"];
   static List<IconData> mainPageIconOptions = [
     Icons.favorite_border,
     Remix.fire_line,
     Remix.apps_line,
     Remix.search_2_line,
     Icons.history,
-    Icons.devices,
-    Icons.category_outlined
+    Icons.monetization_on_outlined
   ];
   var rooms = <LiveRoom>[].obs;
   var currentNodeIndex = 1.obs;

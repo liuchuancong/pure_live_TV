@@ -32,10 +32,7 @@ class HomePage extends GetView<HomeController> {
         Get.toNamed(RoutePath.kHistory);
         break;
       case 5:
-        Get.toNamed(RoutePath.kSync);
-        break;
-      case 6:
-        Get.toNamed(RoutePath.kSettingsHotAreas);
+        Get.toNamed(RoutePath.kDonate);
         break;
       default:
     }

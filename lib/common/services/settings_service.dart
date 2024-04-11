@@ -145,6 +145,12 @@ class SettingsService extends GetxController {
 
   final AppFocusNode preferPlatformNode = AppFocusNode();
 
+  final AppFocusNode dataSyncNode = AppFocusNode();
+
+  final AppFocusNode accountNode = AppFocusNode();
+
+  final AppFocusNode platformNode = AppFocusNode();
+
   StopWatchTimer get stopWatchTimer => _stopWatchTimer;
 
   static Map<String, Locale> languages = {
