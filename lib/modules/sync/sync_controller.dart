@@ -9,8 +9,7 @@ class SyncController extends BaseController {
   final settingServer = Get.find<SettingsService>();
   NetworkInfo networkInfo = NetworkInfo();
   var ipAddress = ''.obs;
-  var port = '8080'.obs;
-  var webPortEnabled = false.obs;
+  var port = '9527'.obs;
   @override
   void onInit() {
     super.onInit();
@@ -18,10 +17,15 @@ class SyncController extends BaseController {
     LocalHttpServer().startServer(port.value);
   }
 
+  @override
+  void onClose() {
+    LocalHttpServer().closeServer();
+    super.onClose();
+  }
+
   initIpAddresses() async {
     ipAddress.value = await getLocalIP();
     port.value = settingServer.webPort.value;
-    webPortEnabled.value = settingServer.webPortEnable.value;
   }
 
   Future<String> getLocalIP() async {

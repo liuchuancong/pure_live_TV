@@ -153,7 +153,6 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - assets/crypto-js.js
     - assets/images/
     - assets/icons/
     - assets/keystore/
@@ -181,9 +180,6 @@ flutter:
     - family: CustomIcons
       fonts:
         - asset: assets/icons/CustomIcons.ttf
-    - family: PingFang
-      fonts:
-        - asset: assets/PingFangSC.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

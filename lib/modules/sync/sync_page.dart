@@ -55,8 +55,7 @@ class SyncPage extends GetView<SyncController> {
                         Get.back();
                       },
                       child: QrImageView(
-                        data:
-                            'http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}/pure_live/',
+                        data: 'http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}',
                         version: QrVersions.auto,
                         backgroundColor: Colors.white,
                         padding: AppStyle.edgeInsetsA24,
@@ -70,7 +69,7 @@ class SyncPage extends GetView<SyncController> {
                   () => Visibility(
                     visible: controller.settingServer.webPortEnable.value,
                     child: Text(
-                      '服务已启动：http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}/pure_live/',
+                      '服务已启动：http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}',
                       style: AppStyle.textStyleWhite,
                       textAlign: TextAlign.center,
                     ),

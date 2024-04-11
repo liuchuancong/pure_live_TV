@@ -211,7 +211,7 @@ class HomePage extends GetView<HomeController> {
                         ),
                         AppStyle.vGap24,
                         Text(
-                          "暂无任何关注\n您可以从其他端同步数据到此处",
+                          "暂无任何历史记录\n您可以从其他端同步数据到此处",
                           textAlign: TextAlign.center,
                           style: AppStyle.textStyleWhite,
                         ),

@@ -159,7 +159,7 @@ class SettingsService extends GetxController {
   };
   final languageName = (PrefUtil.getString('language') ?? "简体中文").obs;
 
-  final webPort = (PrefUtil.getString('webPort') ?? "8008").obs;
+  final webPort = (PrefUtil.getString('webPort') ?? "9527").obs;
 
   final webPortEnable = false.obs;
 
@@ -451,9 +451,7 @@ class SettingsService extends GetxController {
     mergeDanmuRating.value = json['mergeDanmuRating'] != null ? double.parse(json['mergeDanmuRating'].toString()) : 0.0;
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
-    webPort.value = json['webPort'] ?? '8008';
-    webPortEnable.value = json['webPortEnable'] ?? false;
-    changeThemeMode(themeModeName.value);
+    webPort.value = json['webPort'] ?? '9527';
     setBilibiliCookit(bilibiliCookie.value);
     changePreferResolution(preferResolution.value);
     changePreferPlatform(preferPlatform.value);
@@ -496,7 +494,7 @@ class SettingsService extends GetxController {
     json['mergeDanmuRating'] = mergeDanmuRating.value;
     json['themeColorSwitch'] = themeColorSwitch.value;
     json['webPort '] = webPort.value;
-    json['webPortEnable'] = webPortEnable.value;
+    json['webPortEnable'] = false;
     return json;
   }
 
@@ -532,7 +530,7 @@ class SettingsService extends GetxController {
       'mergeDanmuRating': 0.0,
       "hotAreasList": [],
       "webPortEnable": false,
-      "webPort": "8008",
+      "webPort": "9527",
     };
     return json;
   }

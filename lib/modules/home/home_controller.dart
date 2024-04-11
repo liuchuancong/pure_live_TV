@@ -44,7 +44,10 @@ class HomeController extends BasePageController {
     focusNodes[currentNodeIndex.value].requestFocus();
   }
 
-  toSync() {}
+  toSync() {
+    Get.toNamed(RoutePath.kSync);
+  }
+
   void initTimer() {
     Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       DateTime now = DateTime.now();

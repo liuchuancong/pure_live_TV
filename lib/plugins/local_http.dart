@@ -71,9 +71,9 @@ class LocalHttpServer {
             final file = File('${dir.path}${Platform.pathSeparator}${ctx.parsed['name']}');
             file.writeAsStringSync(ctx.parsed['file']);
             if (settings.recover(file)) {
-              SnackBarUtil.success(S.of(Get.context!).recover_backup_success);
+              SmartDialog.showToast("恢复备份成功");
             } else {
-              SnackBarUtil.error(S.of(Get.context!).recover_backup_failed);
+              SmartDialog.showToast("恢复备份失败");
             }
           } else {
             next();
@@ -84,6 +84,7 @@ class LocalHttpServer {
       });
 
       app.listen(io.InternetAddress.anyIPv4.address, int.parse(port));
+      settings.webPort.value = port;
       settings.webPortEnable.value = true;
     } catch (e) {
       settings.webPortEnable.value = false;

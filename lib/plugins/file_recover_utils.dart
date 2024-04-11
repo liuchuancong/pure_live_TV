@@ -55,7 +55,7 @@ class FileRecoverUtils {
     try {
       dio.Response response = await dioInstance.download(url, m3ufile.path);
       if (response.statusCode != 200 && response.statusCode != 304) {
-        SnackBarUtil.error('文件下载失败请重试');
+        SmartDialog.showToast("文件下载失败请重试");
       }
       List jsonArr = [];
       final categories = File('${dir.path}${Platform.pathSeparator}categories.json');
@@ -75,10 +75,10 @@ class FileRecoverUtils {
       }
 
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      SnackBarUtil.success(S.of(Get.context!).recover_backup_success);
+      SmartDialog.showToast("恢复备份成功");
       return true;
     } catch (e) {
-      SnackBarUtil.error(S.of(Get.context!).recover_backup_failed);
+      SmartDialog.showToast("恢复备份失败");
       return false;
     }
   }
@@ -94,9 +94,9 @@ class FileRecoverUtils {
 
     final file = File(result.files.single.path!);
     if (settings.recover(file)) {
-      SnackBarUtil.success(S.of(Get.context!).recover_backup_success);
+      SmartDialog.showToast("恢复备份成功");
     } else {
-      SnackBarUtil.error(S.of(Get.context!).recover_backup_failed);
+      SmartDialog.showToast("恢复备份失败");
     }
   }
 
@@ -127,10 +127,10 @@ class FileRecoverUtils {
             id: getUUid(), name: getName(m3ufile.path).replaceAll(RegExp(r'.m3u'), ''), path: m3ufile.path));
       }
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      SmartDialog.showToast(S.of(Get.context!).recover_backup_success);
+      SmartDialog.showToast("恢复备份成功");
       return true;
     } catch (e) {
-      SmartDialog.showToast(S.of(Get.context!).recover_backup_failed);
+      SmartDialog.showToast("恢复备份失败");
       return false;
     }
   }
@@ -162,10 +162,10 @@ class FileRecoverUtils {
 
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
       file.copySync(m3ufile.path);
-      SmartDialog.showToast(S.of(Get.context!).recover_backup_success);
+      SmartDialog.showToast("恢复备份成功");
       return true;
     } catch (e) {
-      SmartDialog.showToast(S.of(Get.context!).recover_backup_failed);
+      SmartDialog.showToast("恢复备份失败");
       return false;
     }
   }
@@ -189,10 +189,10 @@ class FileRecoverUtils {
       }
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
       file.copySync(m3ufile.path);
-      SnackBarUtil.success(S.of(Get.context!).recover_backup_success);
+      SnackBarUtil.success("恢复备份成功");
       return true;
     } catch (e) {
-      SnackBarUtil.error(S.of(Get.context!).recover_backup_failed);
+      SnackBarUtil.error("恢复备份失败");
       return false;
     }
   }
