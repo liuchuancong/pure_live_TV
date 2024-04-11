@@ -44,13 +44,13 @@ class Sites {
     Site(
       id: "cc",
       name: "网易CC",
-      logo: "assets/images/kuaishou.png",
+      logo: "assets/images/cc.png",
       liveSite: CCSite(),
     ),
     Site(
       id: "iptv",
       name: "网络",
-      logo: "assets/images/kuaishou.png",
+      logo: "assets/images/logo.png",
       liveSite: IptvSite(),
     ),
   ];

@@ -26,40 +26,59 @@ class DonatePage extends StatelessWidget {
                 },
               ),
               AppStyle.hGap32,
+              Text(
+                "帮助与支持",
+                style: AppStyle.titleStyleWhite.copyWith(
+                  fontSize: 36.w,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               AppStyle.hGap24,
               const Spacer(),
             ],
           ),
           AppStyle.vGap48,
           Expanded(
-            child: Center(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        "感谢您的支持！",
-                        style: AppStyle.titleStyleWhite,
-                      ),
-                    ),
-                    AppStyle.vGap16,
-                    Text(
-                      "如果您觉得本软件对您有帮助，欢迎微信扫码或支付宝捐赠。",
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: AppStyle.edgeInsetsA32,
+                    child: Text(
+                      "感谢您的支持！",
                       style: AppStyle.titleStyleWhite,
                     ),
-                    Text(
-                      "支付宝:17792321552",
+                  ),
+                  AppStyle.vGap16,
+                  Padding(
+                    padding: AppStyle.edgeInsetsA32,
+                    child: Text(
+                      "如果您觉得本软件对您有帮助，欢迎微信捐赠或支付宝捐赠。",
+                      style: AppStyle.titleStyleWhite,
+                    ),
+                  ),
+                  Padding(
+                    padding: AppStyle.edgeInsetsA32,
+                    child: Text(
+                      "手机号：17792321552",
                       style: AppStyle.titleStyleWhite.copyWith(
                         fontSize: 36.w,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    AppStyle.vGap16,
-                    const WechatItem(),
-                  ]),
-            ),
+                  ),
+                  Padding(
+                    padding: AppStyle.edgeInsetsA32,
+                    child: Text(
+                      "QQ：920447827",
+                      style: AppStyle.titleStyleWhite.copyWith(
+                        fontSize: 36.w,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ]),
           )
         ],
       ),
