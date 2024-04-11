@@ -198,7 +198,7 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId}) async {
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     var resultText = await HttpClient.instance.getText("https://m.huya.com/$roomId", queryParameters: {}, header: {
       "user-agent": kUserAgent,
     });
@@ -272,7 +272,7 @@ class HuyaSite implements LiveSite {
           ),
           link: "https://www.huya.com/$roomId");
     } catch (e) {
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId);
+      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -357,7 +357,7 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId}) async {
+  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
     var resultText = await HttpClient.instance.getText("https://m.huya.com/$roomId", queryParameters: {}, header: {
       "user-agent": kUserAgent,
     });

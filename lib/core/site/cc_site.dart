@@ -160,7 +160,7 @@ class CCSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId}) async {
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     try {
       var url = "https://api.cc.163.com/v1/activitylives/anchor/lives";
       var result = await HttpClient.instance.getJson(url, queryParameters: {
@@ -185,13 +185,13 @@ class CCSite implements LiveSite {
         notice: roomInfo["personal_label"],
         status: roomInfo["status"] == 1,
         liveStatus: roomInfo["status"] == 1 ? LiveStatus.live : LiveStatus.offline,
-        platform: 'cc',
+        platform: platform,
         link: url,
         data: roomInfo["quickplay"],
       );
     } catch (e) {
       log(e.toString(), name: 'CC.getRoomDetail');
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId);
+      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -261,7 +261,7 @@ class CCSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId}) async {
+  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
     return Future.value(true);
   }
 

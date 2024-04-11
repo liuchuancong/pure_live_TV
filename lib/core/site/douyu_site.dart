@@ -16,8 +16,6 @@ import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 
-
-
 class DouyuSite implements LiveSite {
   @override
   String id = "douyu";
@@ -182,7 +180,7 @@ class DouyuSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId}) async {
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     try {
       var result =
           await HttpClient.instance.getJson("https://www.douyu.com/betard/$roomId", queryParameters: {}, header: {
@@ -224,7 +222,7 @@ class DouyuSite implements LiveSite {
         isRecord: roomInfo["videoLoop"] == 1,
       );
     } catch (e) {
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId);
+      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -321,8 +319,8 @@ class DouyuSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId}) async {
-    var detail = await getRoomDetail(roomId: roomId);
+  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
+    var detail = await getRoomDetail(roomId: roomId, platform: platform);
     return detail.status!;
   }
 

@@ -183,7 +183,7 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId}) async {
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     try {
       var detail = await getRoomWebDetail(roomId);
       var requestHeader = await getRequestHeaders();
@@ -240,7 +240,7 @@ class DouyinSite implements LiveSite {
         data: roomInfo["stream_url"],
       );
     } catch (e) {
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId);
+      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -397,8 +397,8 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId}) async {
-    var result = await getRoomDetail(roomId: roomId);
+  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
+    var result = await getRoomDetail(roomId: roomId, platform: platform);
     return result.status!;
   }
 

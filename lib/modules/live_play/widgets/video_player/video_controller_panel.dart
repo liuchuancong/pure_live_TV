@@ -37,6 +37,10 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
       child: Obx(() => controller.hasError.value
           ? ErrorWidget(controller: controller)
           : Stack(children: [
+              ChannelVideoWidget(
+                controller: controller,
+                barHeight: 100,
+              ),
               DanmakuViewer(controller: controller),
               SettingsPanel(
                 controller: controller,
@@ -258,6 +262,7 @@ class BottomActionBar extends StatelessWidget {
                 SettingsButton(controller: controller),
                 QualiteNameButton(controller: controller),
                 LineButton(controller: controller),
+                BoxFitButton(controller: controller),
                 const Spacer(),
               ],
             ),
@@ -327,6 +332,40 @@ class QualiteNameButton extends StatelessWidget {
         },
         text: controller.qualiteName,
       ),
+    );
+  }
+}
+
+class BoxFitButton extends StatefulWidget {
+  const BoxFitButton({super.key, required this.controller});
+
+  final VideoController controller;
+
+  @override
+  State<BoxFitButton> createState() => _BoxFitButtonState();
+}
+
+class _BoxFitButtonState extends State<BoxFitButton> {
+  @override
+  Widget build(BuildContext context) {
+    final fitmodes = [
+      S.of(context).videofit_contain,
+      S.of(context).videofit_fill,
+      S.of(context).videofit_cover,
+      S.of(context).videofit_fitwidth,
+      S.of(context).videofit_fitheight,
+    ];
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: Obx(() => HighlightButton(
+            focusNode: widget.controller.boxFitNode,
+            iconData: Icons.video_settings_outlined,
+            onTap: () {
+              widget.controller.setVideoFit();
+            },
+            text: fitmodes[widget.controller.settings.videoFitIndex.value],
+          )),
     );
   }
 }
@@ -428,76 +467,6 @@ class _FavoriteButtonState extends State<FavoriteButton> {
               setState(() => isFavorite = !isFavorite);
             },
           )),
-    );
-  }
-}
-
-class VideoFitSetting extends StatefulWidget {
-  const VideoFitSetting({
-    super.key,
-    required this.controller,
-  });
-
-  final VideoController controller;
-
-  @override
-  State<VideoFitSetting> createState() => _VideoFitSettingState();
-}
-
-class _VideoFitSettingState extends State<VideoFitSetting> {
-  late final fitmodes = {
-    S.of(context).videofit_contain: BoxFit.contain,
-    S.of(context).videofit_fill: BoxFit.fill,
-    S.of(context).videofit_cover: BoxFit.cover,
-    S.of(context).videofit_fitwidth: BoxFit.fitWidth,
-    S.of(context).videofit_fitheight: BoxFit.fitHeight,
-  };
-  late int fitIndex = fitmodes.values.toList().indexWhere((e) => e == widget.controller.videoFit.value);
-
-  @override
-  Widget build(BuildContext context) {
-    final Color color = Theme.of(context).colorScheme.primary.withOpacity(0.8);
-    final isSelected = [false, false, false, false, false];
-    isSelected[fitIndex] = true;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            S.of(context).settings_videofit_title,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: ToggleButtons(
-            borderRadius: BorderRadius.circular(10),
-            // selectedBorderColor: color,
-            // borderColor: color,
-            selectedColor: Theme.of(context).colorScheme.primary,
-            fillColor: color,
-            isSelected: isSelected,
-            onPressed: (index) {
-              setState(() {
-                fitIndex = index;
-                widget.controller.setVideoFit(fitmodes.values.toList()[index]);
-              });
-            },
-            children: fitmodes.keys
-                .map<Widget>((e) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(e,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white,
-                          )),
-                    ))
-                .toList(),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -708,6 +677,51 @@ class DanmakuSetting extends StatelessWidget {
               ),
             ],
           ),
+        ));
+  }
+}
+
+class ChannelVideoWidget extends StatelessWidget {
+  const ChannelVideoWidget({super.key, required this.controller, required this.barHeight});
+
+  final VideoController controller;
+  final double barHeight;
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => AnimatedPositioned(
+          top: controller.showChangeNameFlag.value ? 0 : -barHeight,
+          left: 0,
+          right: 0,
+          height: barHeight,
+          duration: const Duration(milliseconds: 100),
+          child: Container(
+              height: barHeight,
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black45, Colors.black87, Colors.black45],
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppStyle.vGap24,
+                  Padding(
+                    padding: AppStyle.edgeInsetsA24,
+                    child: Obx(() => Text(
+                          '${controller.livePlayController.currentChannelIndex.value + 1}. ${controller.settings.currentPlayList[controller.livePlayController.currentChannelIndex.value].nick!}',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            color: Colors.white,
+                          ),
+                        )),
+                  ),
+                ],
+              )),
         ));
   }
 }

@@ -1,22 +1,23 @@
 import 'route_path.dart';
 import 'package:get/get.dart';
+import 'package:pure_live/modules/sync/sync_page.dart';
 import 'package:pure_live/modules/home/home_page.dart';
 import 'package:pure_live/modules/about/about_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
+import 'package:pure_live/modules/sync/sync_binding.dart';
 import 'package:pure_live/modules/home/home_binding.dart';
 import 'package:pure_live/modules/about/donate_page.dart';
 import 'package:pure_live/modules/search/search_page.dart';
 import 'package:pure_live/modules/areas/areas_binding.dart';
 import 'package:pure_live/modules/account/account_bing.dart';
 import 'package:pure_live/modules/account/account_page.dart';
-import 'package:pure_live/modules/contact/contact_page.dart';
 import 'package:pure_live/modules/popular/popular_page.dart';
 import 'package:pure_live/modules/history/history_page.dart';
-import 'package:pure_live/modules/about/version_history.dart';
 import 'package:pure_live/modules/search/search_binding.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
 import 'package:pure_live/modules/popular/popular_binding.dart';
+import 'package:pure_live/modules/agreement/agreement_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_page.dart';
 import 'package:pure_live/modules/live_play/live_play_page.dart';
 import 'package:pure_live/modules/shield/danmu_shield_page.dart';
@@ -70,10 +71,6 @@ class AppPages {
       name: RoutePath.kSearch,
       page: SearchRoomPage.new,
       bindings: [SearchBinding()],
-    ),
-    GetPage(
-      name: RoutePath.kContact,
-      page: ContactPage.new,
     ),
     GetPage(
       name: RoutePath.kAbout,
@@ -130,6 +127,14 @@ class AppPages {
         HotAreasBinding(),
       ],
     ),
-    GetPage(name: RoutePath.kVersionHistory, page: () => const VersionHistoryPage()),
+    GetPage(
+      name: RoutePath.kSync,
+      page: () => const SyncPage(),
+      bindings: [
+        SyncBinding(),
+      ],
+    ),
+
+    GetPage(name: RoutePath.kAgreementPage, page: () => const AgreementPage()),
   ];
 }

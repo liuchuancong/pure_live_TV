@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:fijkplayer/fijkplayer.dart';
@@ -100,6 +99,8 @@ class VideoController with ChangeNotifier {
 
   final currentLineNode = AppFocusNode();
 
+  final boxFitNode = AppFocusNode();
+
   List<AppFocusNode> operateFoucsNodes = [];
 
   List<AppFocusNode> danmukuSettingFoucsNodes = [];
@@ -108,11 +109,11 @@ class VideoController with ChangeNotifier {
   // 弹幕控制按钮索引
   int danmukuNodeIndex = 0;
 
-  Timer? _debounceTimer;
+  int _currentTimeStamp = 0;
 
-  Timer? _throttleTimer;
+  var showChangeNameFlag = true.obs;
 
-  bool _throttleFlag = true;
+  Timer? showChangeNameTimer;
 
   // 五秒关闭控制器
   void enableController() {
@@ -145,6 +146,7 @@ class VideoController with ChangeNotifier {
     settingsFoucsNode.unfocus();
     qualiteNameNode.unfocus();
     currentLineNode.unfocus();
+    boxFitNode.unfocus();
     currentNodeIndex = 0;
   }
 
@@ -205,6 +207,15 @@ class VideoController with ChangeNotifier {
     initDanmaku();
     initOperateFoucsNodes();
     initDanmukuSettingFoucsNodes();
+    showChangeNameTimer = Timer(const Duration(milliseconds: 2000), () {
+      showChangeNameFlag.value = false;
+      showChangeNameTimer?.cancel();
+    });
+    showController.listen((p0) {
+      if (showController.value) {
+        showChangeNameFlag.value = false;
+      }
+    });
     showSettting.listen((p0) {
       if (showSettting.value) {
         showControllerTimer?.cancel();
@@ -228,6 +239,7 @@ class VideoController with ChangeNotifier {
     operateFoucsNodes.add(settingsFoucsNode);
     operateFoucsNodes.add(qualiteNameNode);
     operateFoucsNodes.add(currentLineNode);
+    operateFoucsNodes.add(boxFitNode);
     currentNodeIndex = 0;
   }
 
@@ -404,38 +416,17 @@ class VideoController with ChangeNotifier {
   }
 
   void throttle(Function func, [int delay = 500]) {
-    if (_throttleFlag) {
+    var now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _currentTimeStamp > delay) {
+      _currentTimeStamp = now;
       func.call();
-      _throttleFlag = false;
-      return;
     }
-    if (_throttleTimer != null) {
-      return;
-    }
-    _throttleTimer = Timer(Duration(milliseconds: delay), () {
-      func.call();
-      _throttleTimer = null;
-    });
-  }
-
-  void debounceListen(Function? func, [int delay = 1000]) {
-    if (_debounceTimer != null) {
-      _debounceTimer?.cancel();
-    }
-    _debounceTimer = Timer(Duration(milliseconds: delay), () {
-      try {
-        func?.call();
-      } catch (e) {
-        log('debounce error: $e');
-      }
-      _debounceTimer = null;
-    });
   }
 
   dynamic mobileStateListener(BetterPlayerEvent state) {
     if (mobileController?.videoPlayerController != null) {
       if (state.betterPlayerEventType == BetterPlayerEventType.exception) {
-        debounceListen(() {
+        throttle(() {
           if (mobileController!.videoPlayerController!.value.errorDescription != null) {
             if (mobileController!.videoPlayerController!.value.errorDescription!.contains('Source error') &&
                 !isTryToHls) {
@@ -488,6 +479,13 @@ class VideoController with ChangeNotifier {
       PrefUtil.setDouble('mergeDanmuRating', data);
       settings.mergeDanmuRating.value = data;
     });
+
+    videoFit.listen((p0) {
+      if (p0 != settings.videofitArrary[settings.videoFitIndex.value]) {
+        var index = settings.videofitArrary.indexWhere((element) => element == videoFit.value);
+        settings.videoFitIndex.value = index;
+      }
+    });
   }
 
   void sendDanmaku(LiveMessage msg) {
@@ -510,20 +508,20 @@ class VideoController with ChangeNotifier {
     super.dispose();
   }
 
-  destory() {
+  destory() async {
     cancleFocus();
     cancledanmakuFocus();
     if (videoPlayerIndex == 0) {
       mobileController?.removeEventsListener(mobileStateListener);
-      mobileController?.dispose();
+      mobileController?.dispose(forceDispose: true);
       mobileController = null;
     } else if (videoPlayerIndex == 1) {
       fijkPlayer.removeListener(_playerValueChanged);
-      fijkPlayer.release();
+      await fijkPlayer.release();
     } else if (videoPlayerIndex == 2) {
-      player.dispose();
+      await player.dispose();
     }
-    danmakuController.dispose();
+    await danmakuController.dispose();
     isTryToHls = false;
     isPlaying.value = false;
     hasError.value = false;
@@ -597,12 +595,21 @@ class VideoController with ChangeNotifier {
     }
   }
 
-  void setVideoFit(BoxFit fit) {
+  void setVideoFit() {
+    var index = settings.videoFitIndex.value;
+    index += 1;
+    if (index >= settings.videofitArrary.length) {
+      index = 0;
+    }
+
+    settings.videoFitIndex.value = index;
+    var fit = settings.videofitArrary[index];
+
     if (videoPlayerIndex == 0) {
-      mobileController?.setOverriddenFit(videoFit.value);
+      mobileController?.setOverriddenFit(fit);
       mobileController?.retryDataSource();
     } else if (videoPlayerIndex == 1) {
-      print(fit.toString());
+      refresh();
     } else if (videoPlayerIndex == 2) {
       key.currentState?.update(fit: fit);
     }
@@ -627,10 +634,22 @@ class VideoController with ChangeNotifier {
   }
 
   void prevPlayChannel() {
+    showChangeNameFlag.value = true;
+    showChangeNameTimer?.cancel();
+    showChangeNameTimer = Timer(const Duration(milliseconds: 2000), () {
+      showChangeNameFlag.value = false;
+      showChangeNameTimer?.cancel();
+    });
     livePlayController.prevChannel();
   }
 
   void nextPlayChannel() {
+    showChangeNameFlag.value = true;
+    showChangeNameTimer?.cancel();
+    showChangeNameTimer = Timer(const Duration(milliseconds: 2000), () {
+      showChangeNameFlag.value = false;
+      showChangeNameTimer?.cancel();
+    });
     livePlayController.nextChannel();
   }
 }

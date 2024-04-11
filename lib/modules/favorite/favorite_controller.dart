@@ -40,6 +40,7 @@ class FavoriteController extends GetxController with GetSingleTickerProviderStat
     }
     onlineRooms.sort((a, b) => int.parse(b.watching!).compareTo(int.parse(a.watching!)));
     settings.currentPlayList.value = onlineRooms;
+    settings.currentPlayListNodeIndex.value = 0;
   }
 
   Future<bool> onRefresh() async {
@@ -51,7 +52,7 @@ class FavoriteController extends GetxController with GetSingleTickerProviderStat
     List<Future<LiveRoom>> futures = [];
     if (settings.favoriteRooms.value.isEmpty) return false;
     for (final room in settings.favoriteRooms.value) {
-      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!));
+      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
     }
     try {
       final rooms = await Future.wait(futures);

@@ -217,7 +217,7 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId}) async {
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     try {
       var result = await HttpClient.instance.getJson(
         "https://api.live.bilibili.com/xlive/web-room/v1/index/getH5InfoByRoom",
@@ -270,7 +270,7 @@ class BiliBiliSite implements LiveSite {
         ),
       );
     } catch (e) {
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId);
+      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -351,7 +351,7 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId}) async {
+  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/room/v1/Room/get_info",
       queryParameters: {

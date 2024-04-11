@@ -75,7 +75,7 @@ class IptvSite implements LiveSite {
   LiveDanmaku getDanmaku() => EmptyDanmaku();
 
   @override
-  Future<bool> getLiveStatus({required String roomId}) {
+  Future<bool> getLiveStatus({required String roomId, required String platform}) {
     return Future.value(true);
   }
 
@@ -127,7 +127,7 @@ class IptvSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId}) async {
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     final SettingsService service = Get.find<SettingsService>();
     var siteIndex = service.favoriteRooms.indexWhere((item) => item.roomId == roomId);
     return LiveRoom(

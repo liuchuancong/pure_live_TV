@@ -91,9 +91,8 @@ class SettingsService extends GetxController {
       PrefUtil.setString('webPort', value);
     });
 
-    webPortEnable.listen((value) {
-      changeWebListen(webPort.value, value);
-      PrefUtil.setBool('webPortEnable', value);
+    isFirstInApp.listen((value) {
+      PrefUtil.setBool('isFirstInApp', false);
     });
   }
 
@@ -111,13 +110,6 @@ class SettingsService extends GetxController {
     themeModeName.value = mode;
     PrefUtil.setString('themeMode', mode);
     Get.changeThemeMode(themeMode);
-  }
-
-  void onInitShutDown() {
-    if (enableAutoShutDownTime.isTrue) {
-      _stopWatchTimer.setPresetMinuteTime(autoShutDownTime.value, add: false);
-      _stopWatchTimer.onStartTimer();
-    }
   }
 
   static Map<String, Color> themeColors = {
@@ -151,6 +143,8 @@ class SettingsService extends GetxController {
 
   final AppFocusNode enableCodecNode = AppFocusNode();
 
+  final AppFocusNode preferPlatformNode = AppFocusNode();
+
   StopWatchTimer get stopWatchTimer => _stopWatchTimer;
 
   static Map<String, Locale> languages = {
@@ -161,7 +155,11 @@ class SettingsService extends GetxController {
 
   final webPort = (PrefUtil.getString('webPort') ?? "8008").obs;
 
-  final webPortEnable = (PrefUtil.getBool('webPortEnable') ?? false).obs;
+  final webPortEnable = false.obs;
+
+  final httpErrorMsg = ''.obs;
+
+  final isFirstInApp = (PrefUtil.getBool('isFirstInApp') ?? true).obs;
 
   get language => SettingsService.languages[languageName.value]!;
 
@@ -247,14 +245,6 @@ class SettingsService extends GetxController {
 
   List<BoxFit> get videofitArrary => videofitList;
 
-  void changeShutDownConfig(int minutes, bool isAutoShutDown) {
-    autoShutDownTime.value = minutes;
-    enableAutoShutDownTime.value = isAutoShutDown;
-    PrefUtil.setInt('autoShutDownTime', minutes);
-    PrefUtil.setBool('enableAutoShutDownTime', isAutoShutDown);
-    onInitShutDown();
-  }
-
   void changeAutoRefreshConfig(int minutes) {
     autoRefreshTime.value = minutes;
     PrefUtil.setInt('autoRefreshTime', minutes);
@@ -295,9 +285,17 @@ class SettingsService extends GetxController {
     return favoriteRooms.any((element) => element.roomId == room.roomId);
   }
 
-  LiveRoom getLiveRoomByRoomId(roomId) {
-    return favoriteRooms.firstWhere((element) => element.roomId == roomId,
-        orElse: () => historyRooms.firstWhere((element) => element.roomId == roomId));
+  LiveRoom getLiveRoomByRoomId(roomId, platform) {
+    if (!favoriteRooms.any((element) => element.roomId == roomId && element.platform == platform) &&
+        !historyRooms.any((element) => element.roomId == roomId && element.platform == platform)) {
+      return LiveRoom(
+        roomId: roomId,
+        platform: platform,
+        liveStatus: LiveStatus.unknown,
+      );
+    }
+    return favoriteRooms.firstWhere((element) => element.roomId == roomId && element.platform == platform,
+        orElse: () => historyRooms.firstWhere((element) => element.roomId == roomId && element.platform == platform));
   }
 
   bool addRoom(LiveRoom room) {
@@ -451,11 +449,8 @@ class SettingsService extends GetxController {
     webPortEnable.value = json['webPortEnable'] ?? false;
     changeThemeMode(themeModeName.value);
     setBilibiliCookit(bilibiliCookie.value);
-    changeLanguage(languageName.value);
     changePreferResolution(preferResolution.value);
     changePreferPlatform(preferPlatform.value);
-    changeShutDownConfig(autoShutDownTime.value, enableAutoShutDownTime.value);
-    changeAutoRefreshConfig(autoRefreshTime.value);
   }
 
   Map<String, dynamic> toJson() {

@@ -33,6 +33,7 @@ class HomeController extends BasePageController {
     focusNodeListener();
     rooms.value = settingsService.historyRooms.reversed.take(20).toList();
     settingsService.currentPlayList.value = rooms;
+    settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     super.onInit();
   }
@@ -59,7 +60,7 @@ class HomeController extends BasePageController {
       return false;
     }
     for (final room in settingsService.historyRooms.value.reversed.take(20)) {
-      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!));
+      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
     }
     try {
       final rooms = await Future.wait(futures);
@@ -73,6 +74,7 @@ class HomeController extends BasePageController {
     refreshIsOk.value = true;
     rooms.value = settingsService.historyRooms.reversed.take(20).toList();
     settingsService.currentPlayList.value = rooms;
+    settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return true;
   }

@@ -79,6 +79,18 @@ class SettingsPage extends GetView<SettingsService> {
                 },
               ),
             ),
+            AppStyle.vGap24,
+            Obx(
+              () => SettingsItemWidget(
+                foucsNode: controller.preferPlatformNode,
+                title: "默认平台",
+                items: SettingsService.platforms.asMap(),
+                value: SettingsService.platforms.indexOf(controller.preferPlatform.value),
+                onChanged: (e) {
+                  controller.preferPlatform.value = SettingsService.platforms[e];
+                },
+              ),
+            ),
           ],
         ),
       ),

@@ -8,13 +8,10 @@ import 'package:dia_cors/dia_cors.dart';
 import 'package:dia_body/dia_body.dart';
 import 'package:dia_static/dia_static.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/routes/app_navigation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dia_router/dia_router.dart' as dia_router;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pure_live/plugins/file_recover_utils.dart';
-import 'package:pure_live/modules/live_play/live_play_controller.dart';
-import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 class ContextRequest extends Context with dia_router.Routing, ParsedBody {
   ContextRequest(super.request);
@@ -23,7 +20,6 @@ class ContextRequest extends Context with dia_router.Routing, ParsedBody {
 final app = App((req) => ContextRequest(req));
 
 class LocalHttpServer {
-  static bool webPortEnableStatus = false;
   final SettingsService settings = Get.find<SettingsService>();
   Future<void> readAssetsFiles() async {
     final assets = await rootBundle.loadString('AssetManifest.json');
@@ -45,9 +41,6 @@ class LocalHttpServer {
         SmartDialog.showToast('请在局域网下使用', displayTime: const Duration(seconds: 2));
         return;
       }
-      if (webPortEnableStatus) {
-        return;
-      }
       await readAssetsFiles();
       final directory = await getApplicationCacheDirectory();
 
@@ -57,146 +50,10 @@ class LocalHttpServer {
       app.use(cors());
 
       final router = dia_router.Router('/api');
-      router.get('/path/:id', (ctx, next) async {
-        ctx.body = 'params=${ctx.params} query=${ctx.query}';
-      });
-      router.get('/getSettings', (ctx, next) async {
-        ctx.body = jsonEncode(settings.toJson());
-      });
-
-      router.get('/getFavoriteRooms', (ctx, next) async {
-        ctx.body = jsonEncode(settings.favoriteRooms.map((e) => jsonEncode(e.toJson())).toList());
-      });
-
-      router.post('/closeWebServer', (ctx, next) async {
-        var webPort = ctx.query['webPort']!;
-        settings.webPort.value = webPort;
-        settings.webPortEnable.value = false;
-        ctx.body = jsonEncode({'data': true});
-      });
-
-      router.post('/getHistoryData', (ctx, next) async {
-        ctx.body = jsonEncode(settings.historyRooms.map((e) => jsonEncode(e.toJson())).toList());
-      });
-
-      router.post('/postFavoriteRooms', (ctx, next) async {
-        final FavoriteController controller = Get.find<FavoriteController>();
-        final result = await controller.onRefresh();
-        ctx.body = jsonEncode({'data': !result});
-      });
-      router.post('/favoriteRoom', (ctx, next) async {
-        try {
-          final LivePlayController livePlayController = Get.find<LivePlayController>();
-          if (livePlayController.videoController != null) {
-            final liveRoom = livePlayController.detail.value;
-            if (settings.isFavorite(liveRoom!)) {
-              settings.removeRoom(liveRoom);
-              ctx.body = jsonEncode({
-                'data': '取消关注成功',
-              });
-            } else {
-              settings.addRoom(liveRoom);
-              ctx.body = jsonEncode({
-                'data': '关注成功',
-              });
-            }
-          } else {
-            ctx.body = jsonEncode({
-              'data': '请进入直播间重试',
-            });
-          }
-        } catch (e) {
-          ctx.body = jsonEncode({'data': '操作失败'});
-        }
-      });
-      router.post('/enterRoom', (ctx, next) async {
-        try {
-          final liveRoom = jsonDecode(ctx.query['liveRoom']!);
-          ctx.body = jsonEncode({
-            'data': true,
-          });
-          AppNavigator.toLiveRoomDetail(liveRoom: LiveRoom.fromJson(liveRoom));
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
-      router.post('/enterSearch', (ctx, next) async {
-        try {
-          ctx.body = jsonEncode({'data': true});
-          Get.toNamed(RoutePath.kSearch);
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
-      router.post('/doSearch', (ctx, next) async {
-        try {
-          ctx.body = jsonEncode({'data': true});
-          Get.toNamed(RoutePath.kSearch);
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
-      router.post('/playRoom', (ctx, next) async {
-        try {
-          final liveRoom = jsonDecode(ctx.query['liveRoom']!);
-          final realLiveRoom = settings.getLiveRoomByRoomId(liveRoom['roomId']);
-          Get.offAndToNamed(RoutePath.kInitial)!;
-          AppNavigator.toLiveRoomDetail(liveRoom: realLiveRoom);
-          ctx.body = jsonEncode({'data': true});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
-
-      router.post('/getLibilibiLoginStatus', (ctx, next) async {
-        final BiliBiliAccountService accountService = Get.find<BiliBiliAccountService>();
-        ctx.body = jsonEncode({'data': accountService.logined.value, 'name': accountService.name.value});
-      });
-
-      router.post('/toBiliBiliLogin', (ctx, next) async {
-        try {
-          Get.toNamed(RoutePath.kBiliBiliQRLogin);
-          ctx.body = jsonEncode({'data': true});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
-      router.post('/exitBilibili', (ctx, next) async {
-        try {
-          BiliBiliAccountService.instance.logout();
-          ctx.body = jsonEncode({'data': true});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
       router.post('/uploadSettingsConfig', (ctx, next) async {
         try {
           settings.fromJson(json.decode(ctx.query['setting']!));
           ctx.body = jsonEncode({'data': true});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
-
-      router.post('/toggleWebServer', (ctx, next) async {
-        bool webPortEnable = ctx.query['webPortEnable']!.toBoolean();
-        String webPort = ctx.query['webPort']!;
-        if (settings.webPortEnable.value != webPortEnable) {
-          settings.webPortEnable.value = webPortEnable;
-        }
-        if (settings.webPort.value != webPort) {
-          settings.webPort.value = webPort;
-        }
-        ctx.body = jsonEncode({'data': true});
-      });
-      router.post('/toAreaDetail', (ctx, next) async {
-        try {
-          String tag = ctx.query['tag']!;
-          String area = ctx.query['area']!;
-          var site = Sites.of(tag);
-          ctx.body = jsonEncode({'data': true});
-          var areaRoom = LiveArea.fromJson(jsonDecode(area));
-          AppNavigator.toCategoryDetail(site: site, category: areaRoom);
         } catch (e) {
           ctx.body = jsonEncode({'data': false});
         }
@@ -231,23 +88,16 @@ class LocalHttpServer {
           next();
         }
       });
-      webPortEnableStatus = true;
+
       app.listen(io.InternetAddress.anyIPv4.address, int.parse(port));
-      webPortEnableStatus = true;
-      SnackBarUtil.success('Web服务打开成功,请用浏览器打开您的ip地址+:$port/pure_live/');
+      settings.webPortEnable.value = true;
     } catch (e) {
-      webPortEnableStatus = true;
       settings.webPortEnable.value = false;
-      SnackBarUtil.success('Web服务打开失败,请手动打开');
+      settings.httpErrorMsg.value = e.toString();
     }
   }
 
   closeServer() async {
     app.close();
-    final connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.mobile) {
-      SnackBarUtil.success('Web服务关闭成功');
-      webPortEnableStatus = false;
-    }
   }
 }

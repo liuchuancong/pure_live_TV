@@ -47,24 +47,81 @@ class LivePlayPage extends GetWidget<LivePlayController> {
           child: Obx(
             () => controller.success.value
                 ? VideoPlayer(controller: controller.videoController!)
-                : Card(
-                    elevation: 0,
-                    margin: const EdgeInsets.all(0),
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                    clipBehavior: Clip.antiAlias,
-                    color: Get.theme.focusColor,
-                    child: CachedNetworkImage(
-                      imageUrl: controller.room.cover!,
-                      cacheManager: CustomCacheManager.instance,
-                      fit: BoxFit.fill,
-                      errorWidget: (context, error, stackTrace) => const Center(
-                        child: Icon(Icons.live_tv_rounded, size: 48),
-                      ),
-                    ),
+                : KeyboardListener(
+                    focusNode: controller.focusNode,
+                    autofocus: true,
+                    onKeyEvent: controller.onKeyEvent,
+                    child: !controller.getVideoSuccess.value
+                        ? ErrorVideoWidget(controller: controller)
+                        : Card(
+                            elevation: 0,
+                            margin: const EdgeInsets.all(0),
+                            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                            clipBehavior: Clip.antiAlias,
+                            color: Get.theme.focusColor,
+                            child: Obx(() => CachedNetworkImage(
+                                  imageUrl: controller.currentPlayRoom.value.cover!,
+                                  cacheManager: CustomCacheManager.instance,
+                                  fit: BoxFit.fill,
+                                  errorWidget: (context, error, stackTrace) => const Center(
+                                    child: Icon(Icons.live_tv_rounded, size: 48),
+                                  ),
+                                )),
+                          ),
                   ),
           ),
         ),
       ),
     );
+  }
+}
+
+class ErrorVideoWidget extends StatelessWidget {
+  const ErrorVideoWidget({super.key, required this.controller});
+
+  final LivePlayController controller;
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        type: MaterialType.transparency,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppStyle.vGap24,
+            Padding(
+              padding: AppStyle.edgeInsetsA24,
+              child: Obx(() => Text(
+                    '${controller.currentChannelIndex.value + 1}. ${controller.currentPlayRoom.value.nick ?? ''}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
+                    ),
+                  )),
+            ),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        S.of(context).play_video_failed,
+                        style: const TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+                    AppStyle.vGap24,
+                    const Text(
+                      "请切换其他频道或刷新重试",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            AppStyle.vGap48,
+          ],
+        ));
   }
 }

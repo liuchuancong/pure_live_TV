@@ -111,6 +111,7 @@ dependencies:
   lottie: ^3.1.0 #Lottie动画
   marquee: ^2.2.3 #跑马灯
   flutter_screenutil: ^5.9.0 #UI适配
+  network_info_plus: ^4.1.0+1
   dart_tars_protocol:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0

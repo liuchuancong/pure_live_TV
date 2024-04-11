@@ -46,46 +46,41 @@ class _MyAppState extends State<MyApp> {
         builder: (context, child) {
           return Obx(() {
             return GetMaterialApp(
-                debugShowCheckedModeBanner: false,
-                title: '纯粹直播',
-                themeMode: SettingsService.themeModes[settings.themeModeName.value]!,
-                theme: AppStyle.lightTheme,
-                builder: FlutterSmartDialog.init(
-                  loadingBuilder: (msg) => Center(
-                    child: SizedBox(
-                      width: 64.w,
-                      height: 64.w,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 8.w,
-                        color: Colors.white,
-                      ),
+              debugShowCheckedModeBanner: false,
+              title: '纯粹直播',
+              themeMode: SettingsService.themeModes[settings.themeModeName.value]!,
+              theme: AppStyle.lightTheme,
+              builder: FlutterSmartDialog.init(
+                loadingBuilder: (msg) => Center(
+                  child: SizedBox(
+                    width: 64.w,
+                    height: 64.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 8.w,
+                      color: Colors.white,
                     ),
-                  ),
-                  //字体大小不跟随系统变化
-                  builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                      textScaler: const TextScaler.linear(1.0),
-                    ),
-                    child: child!,
                   ),
                 ),
-                locale: SettingsService.languages[settings.languageName.value]!,
-                supportedLocales: S.delegate.supportedLocales,
-                localizationsDelegates: const [
-                  S.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                initialRoute: RoutePath.kInitial,
-                defaultTransition: Transition.native,
-                getPages: AppPages.routes,
-                routingCallback: (routing) {
-                  if (routing?.current == RoutePath.kInitial) {
-                    Get.find<SettingsService>().currentPlayList.value =
-                        Get.find<SettingsService>().historyRooms.reversed.take(20).toList();
-                  }
-                });
+                //字体大小不跟随系统变化
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: const TextScaler.linear(1.0),
+                  ),
+                  child: child!,
+                ),
+              ),
+              locale: SettingsService.languages[settings.languageName.value]!,
+              supportedLocales: S.delegate.supportedLocales,
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              initialRoute: settings.isFirstInApp.value ? RoutePath.kAgreementPage : RoutePath.kInitial,
+              defaultTransition: Transition.native,
+              getPages: AppPages.routes,
+            );
           });
         });
   }

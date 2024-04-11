@@ -69,4 +69,10 @@ class RoutePath {
 
   /// webview
   static const kWebview = "/webview_all";
+
+  /// webview
+  static const kSync = "/sync";
+
+  /// webview
+  static const kAgreementPage = "/agreement_page";
 }

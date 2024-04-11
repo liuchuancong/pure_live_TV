@@ -282,7 +282,7 @@ class KuaishowSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId}) async {
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     headers['cookie'] = cookie;
     var url = "https://live.kuaishou.com/u/$roomId";
 
@@ -320,7 +320,7 @@ class KuaishowSite implements LiveSite {
       );
     } catch (e) {
       log(e.toString());
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId);
+      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -339,7 +339,7 @@ class KuaishowSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId}) async {
+  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
     return false;
   }
 
