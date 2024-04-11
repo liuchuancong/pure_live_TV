@@ -49,6 +49,9 @@ class LocalHttpServer {
       app.use(body());
       app.use(cors());
       final router = dia_router.Router('/api');
+      router.get('/getSettings', (ctx, next) async {
+        ctx.body = jsonEncode(settings.toJson());
+      });
       router.post('/uploadFile', (ctx, next) async {
         try {
           ctx.body = jsonEncode({'data': true});

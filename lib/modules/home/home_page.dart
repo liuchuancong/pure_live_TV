@@ -217,7 +217,7 @@ class HomePage extends GetView<HomeController> {
                         ),
                         AppStyle.vGap16,
                         HighlightButton(
-                          focusNode: AppFocusNode(),
+                          focusNode: controller.syncNode,
                           iconData: Icons.devices,
                           text: "同步数据",
                           onTap: () {

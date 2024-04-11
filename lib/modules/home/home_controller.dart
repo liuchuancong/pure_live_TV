@@ -22,6 +22,7 @@ class HomeController extends BasePageController {
   // button列表再加上设置最近观看
   List<AppFocusNode> focusNodes = List.generate(mainPageOptions.length + 2, (_) => AppFocusNode());
   List<AppFocusNode> hisToryFocusNodes = [];
+  final syncNode = AppFocusNode();
   final pageController = GroupButtonController(selectedIndex: 0);
   final SettingsService settingsService = Get.find<SettingsService>();
 
