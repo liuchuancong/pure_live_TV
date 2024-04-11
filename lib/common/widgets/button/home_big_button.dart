@@ -35,7 +35,6 @@ class HomeBigButton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: AppStyle.edgeInsetsA12,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                 ),

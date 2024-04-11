@@ -30,8 +30,6 @@ import 'package:pure_live/modules/history/history_rooms_binding.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
 import 'package:pure_live/modules/account/bilibili/qr_login_page.dart';
 import 'package:pure_live/modules/account/bilibili/bilibili_bings.dart';
-import 'package:pure_live/modules/account/bilibili/web_login_page.dart';
-
 // auth
 
 class AppPages {
@@ -98,13 +96,6 @@ class AppPages {
       bindings: [AccountBinding()],
     ),
     //哔哩哔哩Web登录
-    GetPage(
-      name: RoutePath.kBiliBiliWebLogin,
-      page: () => const BiliBiliWebLoginPage(),
-      bindings: [
-        BilibiliWebLoginBinding(),
-      ],
-    ),
     //哔哩哔哩二维码登录
     GetPage(
       name: RoutePath.kBiliBiliQRLogin,
