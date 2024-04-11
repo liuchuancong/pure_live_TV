@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
-import 'package:pure_live/plugins/file_recover_utils.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
