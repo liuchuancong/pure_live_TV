@@ -48,16 +48,7 @@ class LocalHttpServer {
           prefix: '/pure_live', index: 'index.html'));
       app.use(body());
       app.use(cors());
-
       final router = dia_router.Router('/api');
-      router.post('/uploadSettingsConfig', (ctx, next) async {
-        try {
-          settings.fromJson(json.decode(ctx.query['setting']!));
-          ctx.body = jsonEncode({'data': true});
-        } catch (e) {
-          ctx.body = jsonEncode({'data': false});
-        }
-      });
       router.post('/uploadFile', (ctx, next) async {
         try {
           ctx.body = jsonEncode({'data': true});

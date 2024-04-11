@@ -169,10 +169,10 @@ class FileRecoverUtils {
             id: getUUid(), name: getName(m3ufile.path).replaceAll(RegExp(r'.m3u'), ''), path: m3ufile.path));
       }
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      SnackBarUtil.success(S.of(Get.context!).recover_backup_success);
+      SmartDialog.showToast(S.of(Get.context!).recover_backup_success);
       return true;
     } catch (e) {
-      SnackBarUtil.error(S.of(Get.context!).recover_backup_failed);
+      SmartDialog.showToast(S.of(Get.context!).recover_backup_failed);
       return false;
     }
   }
@@ -204,10 +204,10 @@ class FileRecoverUtils {
 
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
       file.copySync(m3ufile.path);
-      SnackBarUtil.success(S.of(Get.context!).recover_backup_success);
+      SmartDialog.showToast(S.of(Get.context!).recover_backup_success);
       return true;
     } catch (e) {
-      SnackBarUtil.error(S.of(Get.context!).recover_backup_failed);
+      SmartDialog.showToast(S.of(Get.context!).recover_backup_failed);
       return false;
     }
   }
