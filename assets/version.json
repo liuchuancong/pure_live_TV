@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.6.1",
   "version_num": 10506,
   "version_desc": "-Fix:修复横屏显示问题. \n -Fix:直播间按热度显示. \n -Fix:优化windows 初始窗口设置.",
   "prerelease":false,

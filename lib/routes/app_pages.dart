@@ -2,7 +2,6 @@ import 'route_path.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/modules/sync/sync_page.dart';
 import 'package:pure_live/modules/home/home_page.dart';
-import 'package:pure_live/modules/about/about_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/sync/sync_binding.dart';
 import 'package:pure_live/modules/home/home_binding.dart';
@@ -69,10 +68,6 @@ class AppPages {
       name: RoutePath.kSearch,
       page: SearchRoomPage.new,
       bindings: [SearchBinding()],
-    ),
-    GetPage(
-      name: RoutePath.kAbout,
-      page: AboutPage.new,
     ),
     GetPage(
       name: RoutePath.kDonate,
