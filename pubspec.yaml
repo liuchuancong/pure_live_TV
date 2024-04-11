@@ -43,10 +43,8 @@ dependencies:
   cached_network_image: ^3.3.0
   
   # ui related
-  dynamic_color: ^1.6.8
   flutter_staggered_grid_view: ^0.7.0
   #Widget
-  easy_refresh: ^3.3.2+4
   flutter_smart_dialog: ^4.9.5 #各种弹窗 Toast/Dialog/Popup
   # barrage wall
   quiver: ^3.2.1
@@ -67,17 +65,13 @@ dependencies:
   share_handler: ^0.0.19
   uri_to_file: ^1.0.0
   bordered_text: ^2.0.0
-  screen_brightness: ^0.2.2+1
-  flutter_volume_controller: ^1.2.7
   flutter_color: ^2.1.0
   crypto_simple: ^2.1.0
   url_protocol:
     git:
       url: https://github.com/LucasXu0/flutter_url_protocol.git
       commit: 77a8420
-  win32_registry: ^1.1.2
-  windows_single_instance: ^1.0.0
-  app_links: ^3.4.5
+
   protobuf: ^3.1.0
   fixnum: ^1.1.0
   dio: ^5.3.3
@@ -90,7 +84,6 @@ dependencies:
   stop_watch_timer: ^3.0.2
   # storage
   file_picker: ^6.0.0
-  permission_handler: ^11.0.1
   shared_preferences: ^2.2.2
   flutter_cache_manager: ^3.3.1
   # utils
@@ -104,7 +97,6 @@ dependencies:
   logger: ^2.0.2+1
   crypto: ^3.0.3
   brotli: ^0.6.0
-  move_to_desktop: ^0.0.2
   device_info_plus: ^9.1.1
   cupertino_icons: ^1.0.2
   remixicon: ^1.0.0 #Remix图标
@@ -167,12 +159,7 @@ flutter:
     - assets/keystore/
     - assets/pure_live_web/
     - assets/pure_live_web/assets/
-    - assets/pure_live_web/assets/assets/icons/
-    - assets/pure_live_web/assets/assets/images/
     - assets/pure_live_web/assets/fonts/
-    - assets/pure_live_web/assets/packages/flex_color_picker/assets/
-    - assets/pure_live_web/assets/packages/flutter_js/assets/js/
-    - assets/pure_live_web/assets/packages/font_awesome_flutter/lib/fonts/
     - assets/pure_live_web/assets/shaders/
     - assets/pure_live_web/canvaskit/
     - assets/pure_live_web/canvaskit/chromium/

@@ -71,7 +71,27 @@ class DonatePage extends StatelessWidget {
                   Padding(
                     padding: AppStyle.edgeInsetsA32,
                     child: Text(
-                      "QQ：920447827",
+                      "QQ群：920447827",
+                      style: AppStyle.titleStyleWhite.copyWith(
+                        fontSize: 36.w,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: AppStyle.edgeInsetsA32,
+                    child: Text(
+                      "QQ号：872934574",
+                      style: AppStyle.titleStyleWhite.copyWith(
+                        fontSize: 36.w,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: AppStyle.edgeInsetsA32,
+                    child: Text(
+                      "网易邮箱：17792321552@163.com",
                       style: AppStyle.titleStyleWhite.copyWith(
                         fontSize: 36.w,
                         fontWeight: FontWeight.bold,

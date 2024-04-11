@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/plugins/global.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 void main(List<String> args) async {
@@ -17,7 +16,6 @@ void main(List<String> args) async {
   // 全屏
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   initService();
-  initRefresh();
   runApp(const MyApp());
 }
 

@@ -30,10 +30,11 @@ class HomeController extends BasePageController {
   void onInit() {
     initTimer();
     focusNodeListener();
-    rooms.value = settingsService.historyRooms.reversed.take(20).toList();
+    rooms.value = settingsService.historyRooms.reversed.take(5).toList();
     settingsService.currentPlayList.value = rooms;
     settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
+
     super.onInit();
   }
 
@@ -54,11 +55,11 @@ class HomeController extends BasePageController {
   Future<bool> historyRefresh() async {
     List<Future<LiveRoom>> futures = [];
     refreshIsOk.value = false;
-    if (settingsService.historyRooms.value.reversed.take(20).isEmpty) {
+    if (settingsService.historyRooms.value.reversed.take(5).isEmpty) {
       refreshIsOk.value = true;
       return false;
     }
-    for (final room in settingsService.historyRooms.value.reversed.take(20)) {
+    for (final room in settingsService.historyRooms.value.reversed.take(5)) {
       futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
     }
     try {
@@ -71,7 +72,7 @@ class HomeController extends BasePageController {
       return false;
     }
     refreshIsOk.value = true;
-    rooms.value = settingsService.historyRooms.reversed.take(20).toList();
+    rooms.value = settingsService.historyRooms.reversed.take(5).toList();
     settingsService.currentPlayList.value = rooms;
     settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());

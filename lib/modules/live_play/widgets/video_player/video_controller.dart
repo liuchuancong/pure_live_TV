@@ -6,7 +6,6 @@ import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:better_player/better_player.dart';
 import 'package:pure_live/app/app_focus_node.dart';
-import 'package:screen_brightness/screen_brightness.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
@@ -34,8 +33,6 @@ class VideoController with ChangeNotifier {
   final videoFit = BoxFit.contain.obs;
 
   final mediaPlayerControllerInitialized = false.obs;
-
-  ScreenBrightness brightnessController = ScreenBrightness();
 
   BetterPlayerController? mobileController;
 
@@ -623,14 +620,6 @@ class VideoController with ChangeNotifier {
     } else if (videoPlayerIndex == 2) {
       mediaPlayerController.player.playOrPause();
     }
-  }
-
-  Future<double> brightness() async {
-    return await brightnessController.current;
-  }
-
-  void setBrightness(double value) async {
-    await brightnessController.setScreenBrightness(value);
   }
 
   void prevPlayChannel() {

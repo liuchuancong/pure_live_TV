@@ -90,14 +90,6 @@ class SettingsPage extends GetView<SettingsService> {
               ),
             ),
             HighlightListTile(
-              title: "数据同步",
-              trailing: const Icon(Icons.chevron_right),
-              focusNode: controller.dataSyncNode,
-              onTap: () {
-                Get.toNamed(RoutePath.kSync);
-              },
-            ),
-            HighlightListTile(
               title: "平台设置",
               trailing: const Icon(Icons.chevron_right),
               focusNode: controller.platformNode,
@@ -111,6 +103,14 @@ class SettingsPage extends GetView<SettingsService> {
               focusNode: controller.accountNode,
               onTap: () {
                 Get.toNamed(RoutePath.kSettingsAccount);
+              },
+            ),
+            HighlightListTile(
+              title: "数据同步",
+              trailing: const Icon(Icons.chevron_right),
+              focusNode: controller.dataSyncNode,
+              onTap: () {
+                Get.toNamed(RoutePath.kSync);
               },
             ),
           ],

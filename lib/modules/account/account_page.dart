@@ -52,7 +52,10 @@ class AccountPage extends GetView<AccountController> {
                 ),
                 title: "哔哩哔哩",
                 trailing: BiliBiliAccountService.instance.logined.value
-                    ? const Icon(Icons.logout)
+                    ? Obx(() => Text(
+                          '已登录',
+                          style: TextStyle(color: controller.nodes[0].isFoucsed.value ? Colors.black : Colors.white),
+                        ))
                     : const Icon(Icons.chevron_right),
                 focusNode: controller.nodes[0],
                 onTap: () {

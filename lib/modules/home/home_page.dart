@@ -107,7 +107,7 @@ class HomePage extends GetView<HomeController> {
                 Padding(
                   padding: AppStyle.edgeInsetsH48,
                   child: SizedBox(
-                    height: 300.h,
+                    height: 200.h,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [

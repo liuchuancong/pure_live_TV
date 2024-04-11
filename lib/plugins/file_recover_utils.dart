@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:pure_live/common/index.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:date_format/date_format.dart' hide S;
 import 'package:pure_live/core/iptv/iptv_utils.dart';
 
 class FileRecoverUtils {
@@ -81,47 +80,6 @@ class FileRecoverUtils {
     } catch (e) {
       SnackBarUtil.error(S.of(Get.context!).recover_backup_failed);
       return false;
-    }
-  }
-
-  Future<bool> requestStoragePermission() async {
-    if (await Permission.manageExternalStorage.isDenied) {
-      final status = Permission.manageExternalStorage.request();
-      return status.isGranted;
-    }
-    return true;
-  }
-
-  Future<String?> createBackup(String backupDirectory) async {
-    final settings = Get.find<SettingsService>();
-    if (Platform.isAndroid || Platform.isIOS) {
-      final granted = await requestStoragePermission();
-      if (!granted) {
-        SnackBarUtil.error('请先授予读写文件权限');
-        return null;
-      }
-    }
-
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
-      initialDirectory: backupDirectory.isEmpty ? '/' : backupDirectory,
-    );
-    if (selectedDirectory == null) return null;
-
-    final dateStr = formatDate(
-      DateTime.now(),
-      [yyyy, '-', mm, '-', dd, 'T', HH, '_', nn, '_', ss],
-    );
-    final file = File('$selectedDirectory/purelive_$dateStr.txt');
-    if (settings.backup(file)) {
-      SnackBarUtil.success(S.of(Get.context!).create_backup_success);
-      // 首次同步备份目录
-      if (settings.backupDirectory.isEmpty) {
-        settings.backupDirectory.value = selectedDirectory;
-      }
-      return selectedDirectory;
-    } else {
-      SnackBarUtil.error(S.of(Get.context!).create_backup_failed);
-      return null;
     }
   }
 
