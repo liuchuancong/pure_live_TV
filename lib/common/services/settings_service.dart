@@ -135,7 +135,7 @@ class SettingsService extends GetxController {
 
   final StopWatchTimer _stopWatchTimer = StopWatchTimer(mode: StopWatchMode.countDown); // Create instance.
 
-  final themeColorSwitch = (PrefUtil.getString('themeColorSwitch') ?? Colors.blue.hex).obs;
+  final themeColorSwitch = (PrefUtil.getString('themeColorSwitch') ?? Colors.red.hex).obs;
 
   final AppFocusNode preferResolutionNode = AppFocusNode();
 

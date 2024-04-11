@@ -1,8 +1,7 @@
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
-import 'package:pure_live/common/style/index.dart';
 
 typedef FocusOnKeyDownCallback = KeyEventResult Function();
 
@@ -44,6 +43,8 @@ class HighlightWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Get.find<SettingsService>();
+    var themeColor = HexColor(settings.themeColorSwitch.value);
     return FocusTraversalOrder(
       order: NumericFocusOrder(order),
       child: Focus(
@@ -84,7 +85,16 @@ class HighlightWidget extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: borderRadius,
-                    boxShadow: focusNode.isFoucsed.value ? AppStyle.highlightShadow : null,
+                    boxShadow: focusNode.isFoucsed.value
+                        ? [
+                            BoxShadow(
+                              blurRadius: 6.w,
+                              spreadRadius: 2.w,
+                              color: themeColor,
+                              //color: Color.fromARGB(255, 255, 120, 167),
+                            )
+                          ]
+                        : null,
                     color: (focusNode.isFoucsed.value || selected) ? foucsedColor : color,
                   ),
                   child: child,

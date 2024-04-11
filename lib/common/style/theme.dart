@@ -3,12 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppColors {
+  Color? primaryColor;
+  ColorScheme? colorScheme;
+  AppColors({
+    this.primaryColor,
+    this.colorScheme,
+  }) : assert(colorScheme == null || primaryColor == null);
   static ColorScheme lightColorScheme = ColorScheme.fromSwatch(
     primarySwatch: Colors.pink,
     brightness: Brightness.dark,
     //primaryColorDark: const Color(0xfff06595),
     accentColor: const Color(0xfff06595),
   );
+
+  get darkThemeData {
+    return ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: primaryColor,
+        colorScheme: colorScheme?.copyWith(
+          error: const Color.fromARGB(255, 255, 99, 71),
+        ),
+        brightness: Brightness.dark);
+  }
 }
 
 class AppStyle {
