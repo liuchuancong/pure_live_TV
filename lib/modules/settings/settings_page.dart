@@ -35,7 +35,7 @@ class SettingsPage extends GetView<SettingsService> {
             ),
             AppStyle.vGap24,
             Obx(() => SettingsItemWidget(
-                  foucsNode: controller.preferResolutionNode,
+                  focusNode: controller.preferResolutionNode,
                   title: "首选清晰度",
                   items: const {
                     "原画": "原画",
@@ -52,7 +52,7 @@ class SettingsPage extends GetView<SettingsService> {
             AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
-                foucsNode: controller.videoPlayerNode,
+                focusNode: controller.videoPlayerNode,
                 title: "播放器设置",
                 items: const {
                   0: "Exo播放器",
@@ -68,7 +68,7 @@ class SettingsPage extends GetView<SettingsService> {
             AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
-                foucsNode: controller.enableCodecNode,
+                focusNode: controller.enableCodecNode,
                 title: "Mpv播放器兼容模式(此配置生效解码不生效)",
                 items: const {0: "不使用", 1: "使用"},
                 value: controller.playerCompatMode.value ? 1 : 0,
@@ -79,7 +79,7 @@ class SettingsPage extends GetView<SettingsService> {
             ),
             Obx(
               () => SettingsItemWidget(
-                foucsNode: controller.enableCodecNode,
+                focusNode: controller.enableCodecNode,
                 title: "解码设置",
                 items: const {0: "软解码", 1: "硬解码"},
                 value: controller.enableCodec.value ? 1 : 0,
@@ -91,7 +91,7 @@ class SettingsPage extends GetView<SettingsService> {
             AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
-                foucsNode: controller.preferPlatformNode,
+                focusNode: controller.preferPlatformNode,
                 title: "默认平台",
                 items: SettingsService.platforms.asMap(),
                 value: SettingsService.platforms.indexOf(controller.preferPlatform.value),

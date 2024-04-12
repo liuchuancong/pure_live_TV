@@ -4,27 +4,33 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/highlight_widget.dart';
 
 class SettingsItemWidget extends StatelessWidget {
-  final AppFocusNode foucsNode;
+  final AppFocusNode focusNode;
   final Map<dynamic, String> items;
   final dynamic value;
   final String title;
   final bool autofocus;
   final Function(dynamic) onChanged;
+  final bool useFocus;
+  final bool selected;
   const SettingsItemWidget({
-    required this.foucsNode,
+    required this.focusNode,
     required this.items,
     required this.value,
     required this.title,
     required this.onChanged,
     this.autofocus = false,
+    this.selected = false,
+    this.useFocus = true,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return HighlightWidget(
-      focusNode: foucsNode,
+      focusNode: focusNode,
       autofocus: autofocus,
+      useFocus: useFocus,
+      selected: selected,
       borderRadius: AppStyle.radius16,
       onLeftKey: () {
         if (items.isEmpty) return KeyEventResult.handled;
@@ -51,30 +57,30 @@ class SettingsItemWidget extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: foucsNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                style: (focusNode.isFoucsed.value || selected) ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
               ),
               const Spacer(),
-              if (foucsNode.isFoucsed.value && items.isNotEmpty)
+              if (focusNode.isFoucsed.value || selected && items.isNotEmpty)
                 Icon(
                   Icons.chevron_left,
                   size: 40.w,
-                  color: foucsNode.isFoucsed.value ? Colors.black : Colors.white,
+                  color: focusNode.isFoucsed.value || selected ? Colors.black : Colors.white,
                 ),
               AppStyle.hGap12,
               ConstrainedBox(
                 constraints: BoxConstraints(minWidth: 120.w),
                 child: Text(
                   items[value] ?? '',
-                  style: foucsNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
-                  textAlign: foucsNode.isFoucsed.value ? TextAlign.center : TextAlign.right,
+                  style: focusNode.isFoucsed.value || selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                  textAlign: focusNode.isFoucsed.value || selected ? TextAlign.center : TextAlign.right,
                 ),
               ),
               AppStyle.hGap12,
-              if (foucsNode.isFoucsed.value && items.isNotEmpty)
+              if (focusNode.isFoucsed.value || selected && items.isNotEmpty)
                 Icon(
                   Icons.chevron_right,
                   size: 40.w,
-                  color: foucsNode.isFoucsed.value ? Colors.black : Colors.white,
+                  color: focusNode.isFoucsed.value || selected ? Colors.black : Colors.white,
                 ),
             ],
           ),

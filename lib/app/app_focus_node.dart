@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
-/// 拓展FoucsNode
+/// 拓展FocusNode
 class AppFocusNode extends FocusNode {
   var isFoucsed = false.obs;
 

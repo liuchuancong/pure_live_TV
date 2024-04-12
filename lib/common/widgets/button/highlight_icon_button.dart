@@ -11,6 +11,7 @@ class HighlightIconButton extends StatelessWidget {
   final Function()? onTap;
   final bool autofocus;
   final bool selected;
+  final bool useFocus;
   const HighlightIconButton({
     required this.iconData,
     this.icon,
@@ -19,6 +20,7 @@ class HighlightIconButton extends StatelessWidget {
     this.autofocus = false,
     this.selected = false,
     super.key,
+    this.useFocus = true,
   });
   @override
   Widget build(BuildContext context) {
@@ -39,7 +41,11 @@ class HighlightIconButton extends StatelessWidget {
           Icon(
             iconData,
             size: 60.w,
-            color: (focusNode.isFoucsed.value || selected) ? Colors.black : Colors.white,
+            color: useFocus
+                ? (focusNode.isFoucsed.value || selected ? Colors.white : Colors.black)
+                : selected
+                    ? Colors.black
+                    : Colors.white,
           );
     }
     return const SizedBox();

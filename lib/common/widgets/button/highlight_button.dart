@@ -13,6 +13,7 @@ class HighlightButton extends StatelessWidget {
   final Function()? onTap;
   final bool autofocus;
   final bool selected;
+  final bool useFocus;
   const HighlightButton({
     this.iconData,
     required this.text,
@@ -21,6 +22,7 @@ class HighlightButton extends StatelessWidget {
     required this.focusNode,
     this.autofocus = false,
     this.selected = false,
+    this.useFocus = true,
     super.key,
   });
   @override
@@ -33,6 +35,7 @@ class HighlightButton extends StatelessWidget {
         onTap: onTap,
         autofocus: autofocus,
         selected: selected,
+        useFocus: useFocus,
         child: Container(
           height: 64.w,
           //width: 64.w,
@@ -49,7 +52,11 @@ class HighlightButton extends StatelessWidget {
                 text,
                 style: TextStyle(
                   fontSize: 28.w,
-                  color: (focusNode.isFoucsed.value || selected) ? Colors.black : Colors.white,
+                  color: useFocus
+                      ? (focusNode.isFoucsed.value || selected ? Colors.black : Colors.white)
+                      : selected
+                          ? Colors.black
+                          : Colors.white,
                 ),
               ),
             ],

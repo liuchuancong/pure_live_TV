@@ -82,29 +82,10 @@ class VideoController with ChangeNotifier {
 
   final danmuKey = GlobalKey();
 
-  final playPauseFoucsNode = AppFocusNode();
-
-  final refreshFoucsNode = AppFocusNode();
-
-  final danmakuFoucsNode = AppFocusNode();
-
-  final favoriteFoucsNode = AppFocusNode();
-
-  final settingsFoucsNode = AppFocusNode();
-
-  final qualiteNameNode = AppFocusNode();
-
-  final currentLineNode = AppFocusNode();
-
-  final boxFitNode = AppFocusNode();
-
-  List<AppFocusNode> operateFoucsNodes = [];
-
-  List<AppFocusNode> danmukuSettingFoucsNodes = [];
   // 底部控制按钮索引
-  int currentNodeIndex = 0;
+  var currentNodeIndex = 0.obs;
   // 弹幕控制按钮索引
-  int danmukuNodeIndex = 0;
+  var danmukuNodeIndex = 0.obs;
 
   int _currentTimeStamp = 0;
 
@@ -113,6 +94,10 @@ class VideoController with ChangeNotifier {
   Timer? showChangeNameTimer;
 
   Timer? hasErrorTimer;
+
+  BottomButtonClickType get currentBottomClickType => BottomButtonClickType.values[currentNodeIndex.value];
+
+  DanmakuSettingClickType get currentDanmukuClickType => DanmakuSettingClickType.values[danmukuNodeIndex.value];
 
   // 五秒关闭控制器
   void enableController() {
@@ -123,8 +108,7 @@ class VideoController with ChangeNotifier {
       cancleFocus();
       focusNode.requestFocus();
     });
-    playPauseFoucsNode.requestFocus();
-    currentNodeIndex = 0;
+    currentNodeIndex.value = 0;
   }
 
   void disableController() {
@@ -133,39 +117,17 @@ class VideoController with ChangeNotifier {
     cancleFocus();
     cancledanmakuFocus();
     focusNode.requestFocus();
-    currentNodeIndex = 0;
-    danmukuNodeIndex = 0;
+    currentNodeIndex.value = 0;
+    danmukuNodeIndex.value = 0;
   }
 
   void cancleFocus() {
-    playPauseFoucsNode.unfocus();
-    refreshFoucsNode.unfocus();
-    danmakuFoucsNode.unfocus();
-    favoriteFoucsNode.unfocus();
-    settingsFoucsNode.unfocus();
-    qualiteNameNode.unfocus();
-    currentLineNode.unfocus();
-    boxFitNode.unfocus();
-    currentNodeIndex = 0;
+    currentNodeIndex.value = 0;
   }
 
   void cancledanmakuFocus() {
-    danmakuAbleFoucsNode.unfocus();
-    danmakuMergeFoucsNode.unfocus();
-    danmakuSizeFoucsNode.unfocus();
-    danmakuSpeedFoucsNode.unfocus();
-    danmakuAreaFoucsNode.unfocus();
-    danmakuStorkeFoucsNode.unfocus();
-    danmukuNodeIndex = 0;
+    danmukuNodeIndex.value = 0;
   }
-
-  final danmakuAbleFoucsNode = AppFocusNode();
-  final danmakuMergeFoucsNode = AppFocusNode();
-  final danmakuSizeFoucsNode = AppFocusNode();
-  final danmakuSpeedFoucsNode = AppFocusNode();
-  final danmakuAreaFoucsNode = AppFocusNode();
-  final danmakuOpacityFoucsNode = AppFocusNode();
-  final danmakuStorkeFoucsNode = AppFocusNode();
 
   // Danmaku player control
   BarrageWallController danmakuController = BarrageWallController();
@@ -204,8 +166,8 @@ class VideoController with ChangeNotifier {
   initPagesConfig() {
     initVideoController();
     initDanmaku();
-    initOperateFoucsNodes();
-    initDanmukuSettingFoucsNodes();
+    initOperateFocusNodes();
+    initDanmukuSettingFocusNodes();
     showChangeNameTimer = Timer(const Duration(milliseconds: 2000), () {
       showChangeNameFlag.value = false;
       showChangeNameTimer?.cancel();
@@ -229,39 +191,29 @@ class VideoController with ChangeNotifier {
       if (showSettting.value) {
         showControllerTimer?.cancel();
         showController.value = false;
-        danmukuNodeIndex = 0;
-        currentNodeIndex = 0;
+        danmukuNodeIndex.value = 0;
+        currentNodeIndex.value = 0;
         cancleFocus();
-        danmakuAbleFoucsNode.requestFocus();
       } else {
         disableController();
       }
     });
   }
 
-  void initOperateFoucsNodes() {
-    operateFoucsNodes = [];
-    operateFoucsNodes.add(playPauseFoucsNode);
-    operateFoucsNodes.add(favoriteFoucsNode);
-    operateFoucsNodes.add(refreshFoucsNode);
-    operateFoucsNodes.add(danmakuFoucsNode);
-    operateFoucsNodes.add(settingsFoucsNode);
-    operateFoucsNodes.add(qualiteNameNode);
-    operateFoucsNodes.add(currentLineNode);
-    operateFoucsNodes.add(boxFitNode);
-    currentNodeIndex = 0;
+  void initOperateFocusNodes() {
+    currentNodeIndex.value = 0;
   }
 
-  void initDanmukuSettingFoucsNodes() {
-    danmukuSettingFoucsNodes = [];
-    danmukuSettingFoucsNodes.add(danmakuAbleFoucsNode);
-    danmukuSettingFoucsNodes.add(danmakuMergeFoucsNode);
-    danmukuSettingFoucsNodes.add(danmakuSizeFoucsNode);
-    danmukuSettingFoucsNodes.add(danmakuSpeedFoucsNode);
-    danmukuSettingFoucsNodes.add(danmakuAreaFoucsNode);
-    danmukuSettingFoucsNodes.add(danmakuOpacityFoucsNode);
-    danmukuSettingFoucsNodes.add(danmakuStorkeFoucsNode);
-    danmukuNodeIndex = 0;
+  void initDanmukuSettingFocusNodes() {
+    // danmukuSettingFocusNodes = [];
+    // danmukuSettingFocusNodes.add(danmakuAbleFocusNode);
+    // danmukuSettingFocusNodes.add(danmakuMergeFocusNode);
+    // danmukuSettingFocusNodes.add(danmakuSizeFocusNode);
+    // danmukuSettingFocusNodes.add(danmakuSpeedFocusNode);
+    // danmukuSettingFocusNodes.add(danmakuAreaFocusNode);
+    // danmukuSettingFocusNodes.add(danmakuOpacityFocusNode);
+    // danmukuSettingFocusNodes.add(danmakuStorkeFocusNode);
+    danmukuNodeIndex.value = 0;
   }
 
   void initVideoController() async {
@@ -356,19 +308,16 @@ class VideoController with ChangeNotifier {
         //没有控制面板以及显示了设置面板
 
         if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
-          danmukuNodeIndex++;
-          if (danmukuNodeIndex == danmukuSettingFoucsNodes.length) {
-            danmukuNodeIndex = 0;
+          danmukuNodeIndex.value++;
+          if (danmukuNodeIndex.value == DanmakuSettingClickType.values.length) {
+            danmukuNodeIndex.value = 0;
           }
-          danmukuSettingFoucsNodes[danmukuNodeIndex].requestFocus();
-
           return;
         } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
-          if (danmukuNodeIndex == -1) {
-            danmukuNodeIndex = danmukuSettingFoucsNodes.length - 1;
+          if (danmukuNodeIndex.value == -1) {
+            danmukuNodeIndex.value = DanmakuSettingClickType.values.length - 1;
           }
-          danmukuSettingFoucsNodes[danmukuNodeIndex].requestFocus();
-          danmukuNodeIndex--;
+          danmukuNodeIndex.value--;
           return;
         }
       }
@@ -385,32 +334,28 @@ class VideoController with ChangeNotifier {
       // 点击上下键切换播放线路
       // 默认是0
       if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
-        currentNodeIndex++;
-        if (currentNodeIndex == operateFoucsNodes.length) {
-          currentNodeIndex = 0;
+        currentNodeIndex.value++;
+        if (currentNodeIndex.value == BottomButtonClickType.values.length) {
+          currentNodeIndex.value = 0;
         }
-        operateFoucsNodes[currentNodeIndex].requestFocus();
         return;
       } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
-        currentNodeIndex--;
-        if (currentNodeIndex == -1) {
-          currentNodeIndex = operateFoucsNodes.length - 1;
+        currentNodeIndex.value--;
+        if (currentNodeIndex.value == -1) {
+          currentNodeIndex.value = BottomButtonClickType.values.length - 1;
         }
-        operateFoucsNodes[currentNodeIndex].requestFocus();
         return;
       } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
-        currentNodeIndex++;
-        if (currentNodeIndex == operateFoucsNodes.length) {
-          currentNodeIndex = 0;
+        currentNodeIndex.value++;
+        if (currentNodeIndex.value == BottomButtonClickType.values.length) {
+          currentNodeIndex.value = 0;
         }
-        operateFoucsNodes[currentNodeIndex].requestFocus();
         return;
       } else if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
-        currentNodeIndex--;
-        if (currentNodeIndex == -1) {
-          currentNodeIndex = operateFoucsNodes.length - 1;
+        currentNodeIndex.value--;
+        if (currentNodeIndex.value == -1) {
+          currentNodeIndex.value = BottomButtonClickType.values.length - 1;
         }
-        operateFoucsNodes[currentNodeIndex].requestFocus();
         return;
       }
     }
@@ -663,4 +608,16 @@ class VideoController with ChangeNotifier {
     });
     livePlayController.nextChannel();
   }
+}
+
+enum BottomButtonClickType { playPause, favorite, refresh, danmaku, settings, qualityName, changeLine, boxFit }
+
+enum DanmakuSettingClickType {
+  danmakuAble,
+  danmakuMerge,
+  danmakuSize,
+  danmakuSpeed,
+  danmakuArea,
+  danmakuOpacity,
+  danmakuStorke
 }
