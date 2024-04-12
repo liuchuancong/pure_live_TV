@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
@@ -94,29 +95,49 @@ class PopularPage extends GetView<PopularGridController> {
           AppStyle.vGap32,
           Expanded(
             child: Obx(
-              () => MasonryGridView.count(
-                padding: AppStyle.edgeInsetsA48,
-                itemCount: controller.list.length,
-                crossAxisCount: 5,
-                crossAxisSpacing: 48.w,
-                mainAxisSpacing: 48.w,
-                controller: controller.scrollController,
-                itemBuilder: (_, i) {
-                  var item = controller.list[i];
-                  if (i == 0) {
-                    Future.delayed(Duration.zero, () {
-                      if (controller.currentPage == 2) {
-                        item.focusNode.requestFocus();
-                      }
-                    });
-                  }
-                  return RoomCard(
-                    room: item,
-                    dense: true,
-                    focusNode: item.focusNode,
-                  );
-                },
-              ),
+              () => Sites().availableSites().isNotEmpty
+                  ? MasonryGridView.count(
+                      padding: AppStyle.edgeInsetsA48,
+                      itemCount: controller.list.length,
+                      crossAxisCount: 5,
+                      crossAxisSpacing: 48.w,
+                      mainAxisSpacing: 48.w,
+                      controller: controller.scrollController,
+                      itemBuilder: (_, i) {
+                        var item = controller.list[i];
+                        if (i == 0) {
+                          Future.delayed(Duration.zero, () {
+                            if (controller.currentPage == 2) {
+                              item.focusNode.requestFocus();
+                            }
+                          });
+                        }
+                        return RoomCard(
+                          room: item,
+                          dense: true,
+                          focusNode: item.focusNode,
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          LottieBuilder.asset(
+                            'assets/lotties/empty.json',
+                            width: 160.w,
+                            height: 160.w,
+                            repeat: false,
+                          ),
+                          AppStyle.vGap24,
+                          Text(
+                            "暂无热门直播\n请打开设置展示平台",
+                            textAlign: TextAlign.center,
+                            style: AppStyle.textStyleWhite,
+                          )
+                        ],
+                      ),
+                    ),
             ),
           ),
         ],

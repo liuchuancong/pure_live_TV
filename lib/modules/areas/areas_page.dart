@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
@@ -31,7 +32,7 @@ class AreasPage extends GetView<AreasListController> {
               ),
               AppStyle.hGap32,
               Text(
-                "直播类目",
+                "分区类别",
                 style: AppStyle.titleStyleWhite.copyWith(
                   fontSize: 36.w,
                   fontWeight: FontWeight.bold,
@@ -87,39 +88,58 @@ class AreasPage extends GetView<AreasListController> {
           AppStyle.vGap24,
           Expanded(
             child: Obx(
-              () => ListView.builder(
-                padding: AppStyle.edgeInsetsH48,
-                itemCount: controller.list.length,
-                controller: controller.scrollController,
-                itemBuilder: (_, i) {
-                  var item = controller.list[i];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Padding(
-                        padding: AppStyle.edgeInsetsV32,
-                        child: Text(
-                          item.name,
-                          style: AppStyle.titleStyleWhite,
-                        ),
+              () => Sites().availableSites().isNotEmpty
+                  ? ListView.builder(
+                      padding: AppStyle.edgeInsetsH48,
+                      itemCount: controller.list.length,
+                      controller: controller.scrollController,
+                      itemBuilder: (_, i) {
+                        var item = controller.list[i];
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: AppStyle.edgeInsetsV32,
+                              child: Text(
+                                item.name,
+                                style: AppStyle.titleStyleWhite,
+                              ),
+                            ),
+                            Obx(
+                              () => GridView.count(
+                                shrinkWrap: true,
+                                padding: AppStyle.edgeInsetsV8,
+                                physics: const NeverScrollableScrollPhysics(),
+                                crossAxisCount: 8,
+                                crossAxisSpacing: 36.w,
+                                mainAxisSpacing: 36.w,
+                                children: List.generate(
+                                    item.children.length, (index) => buildSubCategory(item.children[index])).toList(),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          LottieBuilder.asset(
+                            'assets/lotties/empty.json',
+                            width: 160.w,
+                            height: 160.w,
+                            repeat: false,
+                          ),
+                          AppStyle.vGap24,
+                          Text(
+                            "暂无分区类目\n请打开设置展示平台",
+                            textAlign: TextAlign.center,
+                            style: AppStyle.textStyleWhite,
+                          )
+                        ],
                       ),
-                      Obx(
-                        () => GridView.count(
-                          shrinkWrap: true,
-                          padding: AppStyle.edgeInsetsV8,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 8,
-                          crossAxisSpacing: 36.w,
-                          mainAxisSpacing: 36.w,
-                          children:
-                              List.generate(item.children.length, (index) => buildSubCategory(item.children[index]))
-                                  .toList(),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                    ),
             ),
           ),
           AppStyle.vGap24,

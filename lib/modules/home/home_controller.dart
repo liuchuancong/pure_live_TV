@@ -24,18 +24,19 @@ class HomeController extends BasePageController {
   List<AppFocusNode> hisToryFocusNodes = [];
   final syncNode = AppFocusNode();
   final pageController = GroupButtonController(selectedIndex: 0);
-  final SettingsService settingsService = Get.find<SettingsService>();
 
   var refreshIsOk = true.obs;
   @override
   void onInit() {
+    autoRefresh.value = true;
     initTimer();
     focusNodeListener();
-    rooms.value = settingsService.historyRooms.reversed.take(5).toList();
+    rooms.value =
+        settingsService.historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
     settingsService.currentPlayList.value = rooms;
     settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
-
+    refreshData();
     super.onInit();
   }
 
@@ -59,11 +60,15 @@ class HomeController extends BasePageController {
   Future<bool> historyRefresh() async {
     List<Future<LiveRoom>> futures = [];
     refreshIsOk.value = false;
-    if (settingsService.historyRooms.value.reversed.take(5).isEmpty) {
+    if (settingsService.historyRooms.value.reversed
+        .where((room) => room.liveStatus == LiveStatus.live)
+        .take(5)
+        .isEmpty) {
       refreshIsOk.value = true;
       return false;
     }
-    for (final room in settingsService.historyRooms.value.reversed.take(5)) {
+    for (final room
+        in settingsService.historyRooms.value.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5)) {
       futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
     }
     try {
@@ -76,7 +81,8 @@ class HomeController extends BasePageController {
       return false;
     }
     refreshIsOk.value = true;
-    rooms.value = settingsService.historyRooms.reversed.take(5).toList();
+    rooms.value =
+        settingsService.historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
     settingsService.currentPlayList.value = rooms;
     settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());

@@ -4,7 +4,6 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/common/base/base_controller.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 
 class AreaRoomsController extends BasePageController<LiveRoom> {
   final Site site;
@@ -26,7 +25,7 @@ class AreaRoomsController extends BasePageController<LiveRoom> {
       if (list.isNotEmpty) {
         // 直播间
         focusCateGoryNodes = [];
-        Get.find<SettingsService>().currentPlayList.value = list;
+        settingsService.currentPlayList.value = list;
         for (var i = 0; i < list.length; i++) {
           focusCateGoryNodes.add(AppFocusNode());
         }

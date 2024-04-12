@@ -16,10 +16,12 @@ class AreasListController extends BasePageController<AppLiveCategory> {
   void onInit() {
     final preferPlatform = Get.find<SettingsService>().preferPlatform.value;
     stopLoadMore.value = false;
-    final pIndex = Sites().availableSites().indexWhere((e) => e.id == preferPlatform);
-    siteId.value = pIndex != -1 ? Sites().availableSites()[pIndex].id : Sites().availableSites()[0].id;
-    site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
-    refreshData();
+    if (Sites().availableSites().isNotEmpty) {
+      final pIndex = Sites().availableSites().indexWhere((e) => e.id == preferPlatform);
+      siteId.value = pIndex != -1 ? Sites().availableSites()[pIndex].id : Sites().availableSites()[0].id;
+      site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
+      refreshData();
+    }
     super.onInit();
     focusNodes = [];
     // 分类按钮
@@ -39,6 +41,7 @@ class AreasListController extends BasePageController<AppLiveCategory> {
 
   @override
   Future<List<AppLiveCategory>> getData(int page, int pageSize) async {
+    if (siteId.value.isEmpty) return [];
     var result = await site.liveSite.getCategores(page, pageSize);
     return result.map((e) => AppLiveCategory.fromLiveCategory(e)).toList();
   }

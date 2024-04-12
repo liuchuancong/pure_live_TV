@@ -76,3 +76,9 @@ class RoutePath {
   /// webview
   static const kAgreementPage = "/agreement_page";
 }
+
+enum RouteChangeType {
+  push,
+  pop,
+  replace,
+}

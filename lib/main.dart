@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/routes/getx_router_observer.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 void main(List<String> args) async {
@@ -78,6 +79,7 @@ class _MyAppState extends State<MyApp> {
               initialRoute: settings.isFirstInApp.value ? RoutePath.kAgreementPage : RoutePath.kInitial,
               defaultTransition: Transition.native,
               getPages: AppPages.routes,
+              navigatorObservers: [GetXRouterObserver()],
             );
           });
         });

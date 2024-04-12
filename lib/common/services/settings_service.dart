@@ -167,6 +167,11 @@ class SettingsService extends GetxController {
 
   final isFirstInApp = (PrefUtil.getBool('isFirstInApp') ?? true).obs;
 
+  // Route change type 0: push, 1: pop, 2: replace
+  final routeChangeType = RouteChangeType.push.obs;
+
+  final currentRouteName = ''.obs;
+
   get language => SettingsService.languages[languageName.value]!;
 
   void changeLanguage(String value) {
@@ -350,9 +355,10 @@ class SettingsService extends GetxController {
     if (historyRooms.any((element) => element.roomId == room.roomId)) {
       historyRooms.remove(room);
     }
-    //默认只记录100条，够用了
-    if (historyRooms.length > 100) {
-      historyRooms.removeRange(0, historyRooms.length - 100);
+    //默认只记录20条，够用了
+    // 防止数据量大页面卡顿
+    if (historyRooms.length > 19) {
+      historyRooms.removeRange(0, historyRooms.length - 19);
     }
     historyRooms.add(room);
   }

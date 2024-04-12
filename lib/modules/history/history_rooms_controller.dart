@@ -3,7 +3,6 @@ import 'package:pure_live/plugins/utils.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/common/base/base_controller.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 
 class HistoryPageController extends BasePageController<LiveRoom> {
   var currentNodeIndex = 1.obs;
@@ -18,7 +17,7 @@ class HistoryPageController extends BasePageController<LiveRoom> {
     list.addListener(() {
       if (list.isNotEmpty) {
         // 直播间
-        Get.find<SettingsService>().currentPlayList.value = list;
+        settingsService.currentPlayList.value = list;
         focusNodes = [];
         for (var i = 0; i < list.length; i++) {
           focusNodes.add(AppFocusNode());
@@ -45,8 +44,7 @@ class HistoryPageController extends BasePageController<LiveRoom> {
 
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
-    final SettingsService settings = Get.find<SettingsService>();
-    final rooms = settings.historyRooms.reversed.toList();
+    final rooms = settingsService.historyRooms.reversed.toList();
     return rooms;
   }
 }

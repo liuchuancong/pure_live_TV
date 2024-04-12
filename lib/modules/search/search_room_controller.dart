@@ -15,8 +15,11 @@ class SearchRoomController extends BasePageController<LiveRoom> {
 
   @override
   void onInit() {
-    siteId.value = Sites().availableSites()[0].id;
-    site = Sites().availableSites()[0];
+    if (Sites().availableSites().isNotEmpty) {
+      siteId.value = Sites().availableSites()[0].id;
+      site = Sites().availableSites()[0];
+    }
+
     focusNodes = [];
     // 分类按钮
     for (var i = 0; i < Sites().availableSites().length; i++) {
@@ -48,7 +51,7 @@ class SearchRoomController extends BasePageController<LiveRoom> {
 
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
-    if (keyword.isEmpty) {
+    if (keyword.isEmpty || siteId.value.isEmpty) {
       return [];
     }
     var result = await site.liveSite.searchRooms(keyword, page: page);

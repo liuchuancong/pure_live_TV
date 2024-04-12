@@ -16,9 +16,24 @@ class PopularGridController extends BasePageController<LiveRoom> {
   void onInit() {
     final preferPlatform = Get.find<SettingsService>().preferPlatform.value;
     final pIndex = Sites().availableSites().indexWhere((e) => e.id == preferPlatform);
-    siteId.value = pIndex != -1 ? Sites().availableSites()[pIndex].id : Sites().availableSites()[0].id;
-    site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
     focusNodes = [];
+    if (Sites().availableSites().isNotEmpty) {
+      final SettingsService settingsService = Get.find<SettingsService>();
+      siteId.value = pIndex != -1 ? Sites().availableSites()[pIndex].id : Sites().availableSites()[0].id;
+      site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
+      list.addListener(() {
+        if (list.isNotEmpty) {
+          // 直播间
+          settingsService.currentPlayList.value = list;
+          settingsService.currentPlayListNodeIndex.value = 0;
+          focusLiveNodes = [];
+          for (var i = 0; i < list.length; i++) {
+            focusLiveNodes.add(AppFocusNode());
+          }
+        }
+      });
+    }
+
     // 分类按钮
     for (var i = 0; i < Sites().availableSites().length; i++) {
       focusNodes.add(AppFocusNode());
@@ -28,18 +43,6 @@ class PopularGridController extends BasePageController<LiveRoom> {
 
     refreshData();
     super.onInit();
-    final SettingsService settingsService = Get.find<SettingsService>();
-    list.addListener(() {
-      if (list.isNotEmpty) {
-        // 直播间
-        settingsService.currentPlayList.value = list;
-        settingsService.currentPlayListNodeIndex.value = 0;
-        focusLiveNodes = [];
-        for (var i = 0; i < list.length; i++) {
-          focusLiveNodes.add(AppFocusNode());
-        }
-      }
-    });
   }
 
   void setSite(String id) {
@@ -51,6 +54,7 @@ class PopularGridController extends BasePageController<LiveRoom> {
 
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
+    if (siteId.value.isEmpty) return [];
     var result = await site.liveSite.getRecommendRooms(page: page);
     return result.items;
   }

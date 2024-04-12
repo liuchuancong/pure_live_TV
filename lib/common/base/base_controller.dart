@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:pure_live/common/index.dart';
 
 class BaseController extends GetxController {
   /// 加载中，更新页面
@@ -48,6 +46,8 @@ class BaseController extends GetxController {
 
 class BasePageController<T> extends BaseController {
   final ScrollController scrollController = ScrollController();
+  final SettingsService settingsService = Get.find<SettingsService>();
+
   int currentPage = 1;
   int count = 0;
   int maxPage = 0;
@@ -55,7 +55,12 @@ class BasePageController<T> extends BaseController {
   var canLoadMore = false.obs;
   // 禁止到底部自动加载
   var stopLoadMore = true.obs;
+
+  var autoRefresh = false.obs;
+
   var list = <T>[].obs;
+
+  var _currentTimeStamp = 0;
 
   @override
   void onInit() {
@@ -66,6 +71,7 @@ class BasePageController<T> extends BaseController {
         }
       }
     });
+    settingsService.routeChangeType.listen(listener);
     super.onInit();
   }
 
@@ -73,6 +79,22 @@ class BasePageController<T> extends BaseController {
     currentPage = 1;
     list.value = [];
     await loadData();
+  }
+
+  listener(event) {
+    if (autoRefresh.value && event == RouteChangeType.pop) {
+      throttle(() {
+        refreshData();
+      });
+    }
+  }
+
+  void throttle(Function func, [int delay = 1000]) {
+    var now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _currentTimeStamp > delay) {
+      _currentTimeStamp = now;
+      func.call();
+    }
   }
 
   Future loadData() async {
@@ -131,5 +153,11 @@ class BasePageController<T> extends BaseController {
       );
     }
     refreshData();
+  }
+
+  @override
+  void onClose() {
+    autoRefresh.value = true;
+    super.onClose();
   }
 }
