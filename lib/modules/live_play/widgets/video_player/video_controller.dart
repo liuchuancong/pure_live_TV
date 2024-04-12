@@ -112,6 +112,8 @@ class VideoController with ChangeNotifier {
 
   Timer? showChangeNameTimer;
 
+  Timer? hasErrorTimer;
+
   // 五秒关闭控制器
   void enableController() {
     showControllerTimer?.cancel();
@@ -213,6 +215,16 @@ class VideoController with ChangeNotifier {
         showChangeNameFlag.value = false;
       }
     });
+
+    hasError.listen((p0) {
+      if (hasError.value && !livePlayController.isLastLine.value) {
+        hasErrorTimer?.cancel();
+        hasErrorTimer = Timer(const Duration(milliseconds: 2000), () {
+          changeLine();
+          hasErrorTimer?.cancel();
+        });
+      }
+    });
     showSettting.listen((p0) {
       if (showSettting.value) {
         showControllerTimer?.cancel();
@@ -292,17 +304,16 @@ class VideoController with ChangeNotifier {
       });
       mediaPlayerControllerInitialized.value = true;
     }
-    debounce(hasError, (callback) {
-      if (hasError.value) {
-        changeLine();
-      }
-    }, time: const Duration(seconds: 1));
   }
 
   void onKeyEvent(KeyEvent key) {
+    if (key is KeyUpEvent) {
+      return;
+    }
+
     throttle(() {
       handleKeyEvent(key);
-    }, 200);
+    }, 100);
   }
 
   handleKeyEvent(KeyEvent key) {

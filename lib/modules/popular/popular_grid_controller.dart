@@ -25,7 +25,6 @@ class PopularGridController extends BasePageController<LiveRoom> {
         if (list.isNotEmpty) {
           // 直播间
           settingsService.currentPlayList.value = list;
-          settingsService.currentPlayListNodeIndex.value = 0;
           focusLiveNodes = [];
           for (var i = 0; i < list.length; i++) {
             focusLiveNodes.add(AppFocusNode());

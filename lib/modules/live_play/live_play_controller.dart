@@ -80,7 +80,7 @@ class LivePlayController extends StateController {
 
   Timer? channelTimer;
   // 切换线路会添加到这个数组里面
-  bool isLastLine = false;
+  var isLastLine = false.obs;
 
   var hasError = false.obs;
 
@@ -103,16 +103,17 @@ class LivePlayController extends StateController {
     int currentQuality = 0,
   }) async {
     var liveRoom = await currentSite.liveSite.getRoomDetail(roomId: room.roomId!, platform: site);
-    isLastLine = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
-    if (success.value && videoController == null && isLastLine) {
-      hasError.value = videoController!.hasError.value;
+    isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
+    if (isLastLine.value) {
+      hasError.value = true;
     } else {
       hasError.value = false;
     }
-    if (isLastLine && hasError.value) {
+
+    if (isLastLine.value && hasError.value) {
+      disPoserPlayer();
       restoryQualityAndLines();
       getVideoSuccess.value = false;
-      disPoserPlayer();
       return liveRoom;
     } else {
       handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
@@ -149,7 +150,6 @@ class LivePlayController extends StateController {
     int currentQuality = 0,
   }) async {
     channelTimer?.cancel();
-
     handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
     var liveRoom = await currentSite.liveSite
         .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
@@ -194,11 +194,11 @@ class LivePlayController extends StateController {
   }
 
   disPoserPlayer() {
-    success.value = false;
-    liveDanmaku.stop();
-    focusNode.requestFocus();
     videoController?.dispose();
     videoController = null;
+    liveDanmaku.stop();
+    success.value = false;
+    focusNode.requestFocus();
     liveDanmaku.stop();
   }
 
@@ -440,6 +440,7 @@ class LivePlayController extends StateController {
 
   void resetRoom(Site site, String roomId) async {
     success.value = false;
+    hasError.value = false;
     await videoController?.destory();
     videoController = null;
     isFirstLoad = true;

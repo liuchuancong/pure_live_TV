@@ -8,9 +8,7 @@ import 'package:pure_live/modules/live_play/live_play_controller.dart';
 
 class LivePlayPage extends GetWidget<LivePlayController> {
   LivePlayPage({super.key});
-
   final SettingsService settings = Get.find<SettingsService>();
-  final groupButtonController = GroupButtonController();
 
   @override
   Widget build(BuildContext context) {
@@ -51,23 +49,25 @@ class LivePlayPage extends GetWidget<LivePlayController> {
                     focusNode: controller.focusNode,
                     autofocus: true,
                     onKeyEvent: controller.onKeyEvent,
-                    child: !controller.getVideoSuccess.value || controller.hasError.value
+                    child: controller.hasError.value
                         ? ErrorVideoWidget(controller: controller)
-                        : Card(
-                            elevation: 0,
-                            margin: const EdgeInsets.all(0),
-                            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                            clipBehavior: Clip.antiAlias,
-                            color: Get.theme.focusColor,
-                            child: Obx(() => CachedNetworkImage(
-                                  imageUrl: controller.currentPlayRoom.value.cover!,
-                                  cacheManager: CustomCacheManager.instance,
-                                  fit: BoxFit.fill,
-                                  errorWidget: (context, error, stackTrace) => const Center(
-                                    child: Icon(Icons.live_tv_rounded, size: 48),
-                                  ),
-                                )),
-                          ),
+                        : !controller.getVideoSuccess.value
+                            ? ErrorVideoWidget(controller: controller)
+                            : Card(
+                                elevation: 0,
+                                margin: const EdgeInsets.all(0),
+                                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                                clipBehavior: Clip.antiAlias,
+                                color: Get.theme.focusColor,
+                                child: Obx(() => CachedNetworkImage(
+                                      imageUrl: controller.currentPlayRoom.value.cover!,
+                                      cacheManager: CustomCacheManager.instance,
+                                      fit: BoxFit.fill,
+                                      errorWidget: (context, error, stackTrace) => const Center(
+                                        child: Icon(Icons.live_tv_rounded, size: 48),
+                                      ),
+                                    )),
+                              ),
                   ),
           ),
         ),
@@ -113,7 +113,15 @@ class ErrorVideoWidget extends StatelessWidget {
                     ),
                     AppStyle.vGap24,
                     const Text(
-                      "请切换播放器或其他线路或刷新重试, 如仍有问题可能该房间未开播或无法观看",
+                      "所有线路已切换且无法播放",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const Text(
+                      "请切换播放器或设置解码方式刷新重试",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const Text(
+                      "如仍有问题可能该房间未开播或无法观看",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     )
                   ],

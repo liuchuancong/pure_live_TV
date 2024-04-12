@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:pure_live/modules/areas/areas_list_controller.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class AreasPage extends GetView<AreasListController> {
   const AreasPage({super.key});
@@ -105,18 +106,54 @@ class AreasPage extends GetView<AreasListController> {
                                 style: AppStyle.titleStyleWhite,
                               ),
                             ),
-                            Obx(
-                              () => GridView.count(
-                                shrinkWrap: true,
-                                padding: AppStyle.edgeInsetsV8,
-                                physics: const NeverScrollableScrollPhysics(),
-                                crossAxisCount: 8,
-                                crossAxisSpacing: 36.w,
-                                mainAxisSpacing: 36.w,
-                                children: List.generate(
-                                    item.children.length, (index) => buildSubCategory(item.children[index])).toList(),
+                            if (controller.siteId.value != "iptv")
+                              Obx(
+                                () => GridView.count(
+                                  shrinkWrap: true,
+                                  padding: AppStyle.edgeInsetsV8,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  crossAxisCount: 8,
+                                  crossAxisSpacing: 36.w,
+                                  mainAxisSpacing: 36.w,
+                                  children: List.generate(
+                                      item.children.length, (index) => buildSubCategory(item.children[index])).toList(),
+                                ),
+                              )
+                            else
+                              Obx(
+                                () => MasonryGridView.count(
+                                  padding: AppStyle.edgeInsetsA48,
+                                  itemCount: controller.list.length,
+                                  crossAxisCount: 5,
+                                  crossAxisSpacing: 48.w,
+                                  mainAxisSpacing: 40.w,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemBuilder: (_, i) {
+                                    LiveArea liveArea = item.children[i];
+                                    var roomItem = LiveRoom(
+                                      roomId: liveArea.areaId,
+                                      title: liveArea.typeName,
+                                      cover: '',
+                                      nick: liveArea.areaName,
+                                      watching: '',
+                                      avatar:
+                                          'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',
+                                      area: '',
+                                      liveStatus: LiveStatus.live,
+                                      status: true,
+                                      platform: 'iptv',
+                                    );
+                                    return RoomCard(
+                                      room: roomItem,
+                                      dense: true,
+                                      focusNode: liveArea.focusNode,
+                                      isIptv: true,
+                                      areas: item.children,
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
                           ],
                         );
                       },

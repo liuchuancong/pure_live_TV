@@ -8,19 +8,50 @@ import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // ignore: must_be_immutable
-class RoomCard extends StatelessWidget {
+class RoomCard extends StatefulWidget {
   const RoomCard({
     super.key,
     required this.room,
     required this.focusNode,
     this.dense = false,
+    this.isIptv = false,
+    this.areas = const [],
   });
   final LiveRoom room;
   final bool dense;
+  final bool isIptv;
+  final List<LiveArea> areas;
   final AppFocusNode focusNode;
 
+  @override
+  State<RoomCard> createState() => _RoomCardState();
+}
+
+class _RoomCardState extends State<RoomCard> {
   void onTap() {
-    AppNavigator.toLiveRoomDetail(liveRoom: room);
+    if (widget.isIptv) {
+      final SettingsService settingsService = Get.find<SettingsService>();
+      var rooms = [];
+      for (var liveArea in widget.areas) {
+        var roomItem = LiveRoom(
+          roomId: liveArea.areaId,
+          title: liveArea.typeName,
+          cover: '',
+          nick: liveArea.areaName,
+          watching: '',
+          avatar:
+              'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',
+          area: '',
+          liveStatus: LiveStatus.live,
+          status: true,
+          platform: 'iptv',
+        );
+        rooms.add(roomItem);
+      }
+      settingsService.currentPlayList.value = rooms;
+    }
+
+    AppNavigator.toLiveRoomDetail(liveRoom: widget.room);
   }
 
   ImageProvider? getRoomAvatar(avatar) {
@@ -36,7 +67,7 @@ class RoomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HighlightWidget(
-      focusNode: focusNode,
+      focusNode: widget.focusNode,
       color: Colors.white10,
       onTap: onTap,
       borderRadius: AppStyle.radius16,
@@ -52,7 +83,7 @@ class RoomCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Hero(
-                    tag: room.roomId!,
+                    tag: widget.room.roomId!,
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
                       child: Card(
@@ -63,58 +94,58 @@ class RoomCard extends StatelessWidget {
                         clipBehavior: Clip.antiAlias,
                         color: Theme.of(context).focusColor,
                         elevation: 0,
-                        child: room.liveStatus == LiveStatus.offline
+                        child: widget.room.liveStatus == LiveStatus.offline
                             ? Center(
                                 child: Icon(
                                   Icons.tv_off_rounded,
-                                  size: dense ? 36 : 60,
-                                  color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
+                                  size: widget.dense ? 36 : 60,
+                                  color: widget.focusNode.isFoucsed.value ? Colors.black : Colors.white,
                                 ),
                               )
                             : CachedNetworkImage(
-                                imageUrl: room.cover!,
+                                imageUrl: widget.room.cover!,
                                 cacheManager: CustomCacheManager.instance,
                                 fit: BoxFit.fill,
                                 errorWidget: (context, error, stackTrace) => Center(
                                   child: Icon(
-                                    color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
+                                    color: widget.focusNode.isFoucsed.value ? Colors.black : Colors.white,
                                     Icons.live_tv_rounded,
-                                    size: dense ? 38 : 62,
+                                    size: widget.dense ? 38 : 62,
                                   ),
                                 ),
                               ),
                       ),
                     ),
                   ),
-                  if (room.isRecord == true)
+                  if (widget.room.isRecord == true)
                     Positioned(
                       right: 8.w,
                       top: 8.w,
                       child: CountChip(
                         icon: Icons.videocam_rounded,
                         count: S.of(context).replay,
-                        dense: dense,
+                        dense: widget.dense,
                         color: Theme.of(context).colorScheme.error,
                       ),
                     ),
-                  if (room.isRecord == false && room.liveStatus == LiveStatus.live)
+                  if (widget.room.isRecord == false && widget.room.liveStatus == LiveStatus.live)
                     Positioned(
                       right: 8.w,
                       bottom: 8.w,
                       child: CountChip(
                         icon: Icons.whatshot_rounded,
-                        count: readableCount(room.watching!),
-                        dense: dense,
+                        count: readableCount(widget.room.watching!),
+                        dense: widget.dense,
                       ),
                     ),
-                  if (room.isRecord == false && room.liveStatus == LiveStatus.offline)
+                  if (widget.room.isRecord == false && widget.room.liveStatus == LiveStatus.offline)
                     Positioned(
                       right: 8.w,
                       top: 8.w,
                       child: CountChip(
                         icon: Icons.videocam_rounded,
                         count: "未开播",
-                        dense: dense,
+                        dense: widget.dense,
                         color: Theme.of(context).colorScheme.surface,
                       ),
                     ),
@@ -129,9 +160,9 @@ class RoomCard extends StatelessWidget {
               padding: AppStyle.edgeInsetsH20,
               child: SizedBox(
                 height: 56.w,
-                child: focusNode.isFoucsed.value && room.title!.isNotEmpty
+                child: widget.focusNode.isFoucsed.value && widget.room.title!.isNotEmpty
                     ? Marquee(
-                        text: room.title ?? '未设置标题',
+                        text: widget.room.title ?? '未设置标题',
                         style: AppStyle.textStyleBlack,
                         startAfter: const Duration(seconds: 1),
                         velocity: 20,
@@ -142,7 +173,7 @@ class RoomCard extends StatelessWidget {
                     : Container(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          room.title ?? '未设置标题',
+                          widget.room.title ?? '未设置标题',
                           style: AppStyle.textStyleWhite,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -158,15 +189,15 @@ class RoomCard extends StatelessWidget {
                   width: 40.w,
                   height: 40.h,
                   child: CircleAvatar(
-                    foregroundImage: room.avatar!.isNotEmpty ? getRoomAvatar(room.avatar) : null,
+                    foregroundImage: widget.room.avatar!.isNotEmpty ? getRoomAvatar(widget.room.avatar) : null,
                     backgroundColor: Theme.of(context).disabledColor,
                   ),
                 ),
                 AppStyle.hGap8,
                 Expanded(
                   child: Text(
-                    room.nick!,
-                    style: focusNode.isFoucsed.value ? AppStyle.subTextStyleBlack : AppStyle.subTextStyleWhite,
+                    widget.room.nick!,
+                    style: widget.focusNode.isFoucsed.value ? AppStyle.subTextStyleBlack : AppStyle.subTextStyleWhite,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

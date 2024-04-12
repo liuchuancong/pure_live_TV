@@ -34,7 +34,6 @@ class HomeController extends BasePageController {
     rooms.value =
         settingsService.historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
     settingsService.currentPlayList.value = rooms;
-    settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     refreshData();
     super.onInit();
@@ -84,7 +83,6 @@ class HomeController extends BasePageController {
     rooms.value =
         settingsService.historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
     settingsService.currentPlayList.value = rooms;
-    settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return true;
   }
