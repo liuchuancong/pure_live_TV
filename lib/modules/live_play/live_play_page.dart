@@ -59,14 +59,34 @@ class LivePlayPage extends GetWidget<LivePlayController> {
                                 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                                 clipBehavior: Clip.antiAlias,
                                 color: Get.theme.focusColor,
-                                child: Obx(() => CachedNetworkImage(
-                                      imageUrl: controller.currentPlayRoom.value.cover!,
-                                      cacheManager: CustomCacheManager.instance,
-                                      fit: BoxFit.fill,
-                                      errorWidget: (context, error, stackTrace) => const Center(
-                                        child: Icon(Icons.live_tv_rounded, size: 48),
-                                      ),
-                                    )),
+                                child: Obx(() => controller.isFirstLoad.value
+                                    ? const Center(
+                                        child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ))
+                                    : CachedNetworkImage(
+                                        imageUrl: controller.currentPlayRoom.value.cover!,
+                                        cacheManager: CustomCacheManager.instance,
+                                        fit: BoxFit.fill,
+                                        errorWidget: (context, error, stackTrace) => Center(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.live_tv_rounded, size: 48),
+                                              AppStyle.vGap16,
+                                              const Text(
+                                                "无法获取播放信息",
+                                                style: TextStyle(color: Colors.white, fontSize: 18),
+                                              ),
+                                              AppStyle.vGap16,
+                                              const Text(
+                                                "当前房间未开播或无法观看",
+                                                style: TextStyle(color: Colors.white, fontSize: 18),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      )),
                               ),
                   ),
           ),

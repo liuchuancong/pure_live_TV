@@ -133,9 +133,9 @@ class AreasPage extends GetView<AreasListController> {
                                     LiveArea liveArea = item.children[i];
                                     var roomItem = LiveRoom(
                                       roomId: liveArea.areaId,
-                                      title: liveArea.typeName,
+                                      title: liveArea.areaName,
                                       cover: '',
-                                      nick: liveArea.areaName,
+                                      nick: liveArea.typeName,
                                       watching: '',
                                       avatar:
                                           'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',

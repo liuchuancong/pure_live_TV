@@ -64,7 +64,7 @@ class LivePlayController extends StateController {
   /// 双击退出Timer
   Timer? doubleClickTimer;
 
-  bool isFirstLoad = true;
+  var isFirstLoad = true.obs;
   // 0 代表向上 1 代表向下
   int isNextOrPrev = 0;
 
@@ -114,17 +114,17 @@ class LivePlayController extends StateController {
       disPoserPlayer();
       restoryQualityAndLines();
       getVideoSuccess.value = false;
+      isFirstLoad.value = false;
       return liveRoom;
     } else {
       handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
       detail.value = liveRoom;
       currentPlayRoom.value = liveRoom;
-      currentChannelIndex.value = settings.currentPlayList.indexWhere((element) =>
-          element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform);
-      settings.currentPlayListNodeIndex.value = currentChannelIndex.value;
+      resetGlobalListState();
       if (liveRoom.liveStatus == LiveStatus.unknown) {
         SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
         getVideoSuccess.value = false;
+        isFirstLoad.value = false;
         return liveRoom;
       }
 
@@ -133,6 +133,8 @@ class LivePlayController extends StateController {
         getPlayQualites();
         getVideoSuccess.value = true;
         settings.addRoomToHistory(liveRoom);
+      } else {
+        isFirstLoad.value = false;
       }
       // start danmaku server
       List<String> except = ['kuaishou', 'iptv', 'cc'];
@@ -142,6 +144,13 @@ class LivePlayController extends StateController {
       }
       return liveRoom;
     }
+  }
+
+  resetGlobalListState() {
+    var index = settings.currentPlayList.indexWhere((element) =>
+        element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform);
+    currentChannelIndex.value = index > -1 ? index : 0;
+    settings.currentPlayListNodeIndex.value = currentChannelIndex.value;
   }
 
   Future<LiveRoom> resetPlayerState({
@@ -155,9 +164,7 @@ class LivePlayController extends StateController {
         .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
     detail.value = liveRoom;
     currentPlayRoom.value = liveRoom;
-    currentChannelIndex.value = settings.currentPlayList.indexWhere((element) =>
-        element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform);
-    settings.currentPlayListNodeIndex.value = currentChannelIndex.value;
+    resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {
       SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
       getVideoSuccess.value = false;
@@ -317,7 +324,7 @@ class LivePlayController extends StateController {
       }
       qualites.value = playQualites;
       // 第一次加载 使用系统默认线路
-      if (isFirstLoad) {
+      if (isFirstLoad.value) {
         int qualityLevel = settings.resolutionsList.indexOf(settings.preferResolution.value);
         if (qualityLevel == 0) {
           //最高
@@ -331,7 +338,7 @@ class LivePlayController extends StateController {
           currentQuality.value = middle;
         }
       }
-      isFirstLoad = false;
+      isFirstLoad.value = false;
       getPlayUrl();
     } catch (e) {
       SmartDialog.showToast("无法读取视频信息,请按确定键重新获取");
@@ -443,7 +450,7 @@ class LivePlayController extends StateController {
     hasError.value = false;
     await videoController?.destory();
     videoController = null;
-    isFirstLoad = true;
+    isFirstLoad.value = true;
     getVideoSuccess.value = true;
     focusNode.requestFocus();
     Timer(const Duration(milliseconds: 200), () {
