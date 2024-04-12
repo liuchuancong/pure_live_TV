@@ -94,8 +94,11 @@ class SettingsService extends GetxController {
     isFirstInApp.listen((value) {
       PrefUtil.setBool('isFirstInApp', false);
     });
-  }
 
+    playerCompatMode.listen((value) {
+      PrefUtil.setBool('playerCompatMode', false);
+    });
+  }
   // Theme settings
   static Map<String, ThemeMode> themeModes = {
     "System": ThemeMode.system,
@@ -167,6 +170,7 @@ class SettingsService extends GetxController {
 
   final isFirstInApp = (PrefUtil.getBool('isFirstInApp') ?? true).obs;
 
+  final playerCompatMode = (PrefUtil.getBool('playerCompatMode') ?? false).obs;
   // Route change type 0: push, 1: pop, 2: replace
   final routeChangeType = RouteChangeType.push.obs;
 

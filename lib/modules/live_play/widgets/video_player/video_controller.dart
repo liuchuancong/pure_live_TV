@@ -284,8 +284,13 @@ class VideoController with ChangeNotifier {
     } else if (videoPlayerIndex == 2) {
       player = Player();
       mediaPlayerController = media_kit_video.VideoController(player,
-          configuration: media_kit_video.VideoControllerConfiguration(
-              androidAttachSurfaceAfterVideoParameters: false, enableHardwareAcceleration: enableCodec));
+          configuration: settings.playerCompatMode.value
+              ? const media_kit_video.VideoControllerConfiguration(
+                  vo: 'mediacodec_embed',
+                  hwdec: 'mediacodec',
+                )
+              : media_kit_video.VideoControllerConfiguration(
+                  androidAttachSurfaceAfterVideoParameters: false, enableHardwareAcceleration: enableCodec));
       setDataSource(datasource);
       mediaPlayerController.player.stream.playing.listen((bool playing) {
         if (playing) {

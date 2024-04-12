@@ -69,8 +69,19 @@ class SettingsPage extends GetView<SettingsService> {
             Obx(
               () => SettingsItemWidget(
                 foucsNode: controller.enableCodecNode,
+                title: "Mpv播放器兼容模式(此配置生效解码不生效)",
+                items: const {0: "不使用", 1: "使用"},
+                value: controller.playerCompatMode.value ? 1 : 0,
+                onChanged: (e) {
+                  controller.playerCompatMode.value = e == 1;
+                },
+              ),
+            ),
+            Obx(
+              () => SettingsItemWidget(
+                foucsNode: controller.enableCodecNode,
                 title: "解码设置",
-                items: const {0: "软解码", 1: " 硬解码"},
+                items: const {0: "软解码", 1: "硬解码"},
                 value: controller.enableCodec.value ? 1 : 0,
                 onChanged: (e) {
                   controller.enableCodec.value = e == 1;
