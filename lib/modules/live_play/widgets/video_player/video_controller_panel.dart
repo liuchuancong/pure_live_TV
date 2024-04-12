@@ -305,16 +305,16 @@ class LineButton extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: Obx(() => HighlightButton(
-            useFocus: false,
-            focusNode: AppFocusNode(),
-            selected: controller.currentBottomClickType == BottomButtonClickType.changeLine,
-            iconData: Icons.menu_open_sharp,
-            onTap: () {
-              controller.changeLine();
-            },
-            text: '线路${controller.currentLineIndex + 1}',
-          )),
+      child: HighlightButton(
+        useFocus: false,
+        focusNode: AppFocusNode(),
+        selected: controller.currentBottomClickType == BottomButtonClickType.changeLine,
+        iconData: Icons.menu_open_sharp,
+        onTap: () {
+          controller.changeLine();
+        },
+        text: '线路${controller.currentLineIndex + 1}',
+      ),
     );
   }
 }
@@ -731,13 +731,13 @@ class ChannelVideoWidget extends StatelessWidget {
                   AppStyle.vGap24,
                   Padding(
                     padding: AppStyle.edgeInsetsA24,
-                    child: Obx(() => Text(
-                          '${controller.livePlayController.currentChannelIndex.value + 1}. ${controller.settings.currentPlayList[controller.livePlayController.currentChannelIndex.value].nick!}',
-                          style: const TextStyle(
-                            fontSize: 32,
-                            color: Colors.white,
-                          ),
-                        )),
+                    child: Text(
+                      '${controller.livePlayController.currentChannelIndex.value + 1}. ${controller.settings.currentPlayList[controller.livePlayController.currentChannelIndex.value].nick!}',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ],
               )),

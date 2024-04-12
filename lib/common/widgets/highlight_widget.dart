@@ -116,23 +116,23 @@ class HighlightWidget extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 child: GestureDetector(
                   onTap: onTap,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: borderRadius,
-                      boxShadow: selected
-                          ? [
-                              BoxShadow(
-                                blurRadius: 6.w,
-                                spreadRadius: 2.w,
-                                color: themeColor,
-                                //color: Color.fromARGB(255, 255, 120, 167),
-                              )
-                            ]
-                          : null,
-                      color: selected ? foucsedColor : color,
-                    ),
-                    child: child,
-                  ),
+                  child: Obx(() => Container(
+                        decoration: BoxDecoration(
+                          borderRadius: borderRadius,
+                          boxShadow: selected
+                              ? [
+                                  BoxShadow(
+                                    blurRadius: 6.w,
+                                    spreadRadius: 2.w,
+                                    color: themeColor,
+                                    //color: Color.fromARGB(255, 255, 120, 167),
+                                  )
+                                ]
+                              : null,
+                          color: selected ? foucsedColor : color,
+                        ),
+                        child: child,
+                      )),
                 ),
               ),
             ),
