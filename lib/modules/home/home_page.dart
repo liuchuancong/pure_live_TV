@@ -147,7 +147,7 @@ class HomePage extends GetView<HomeController> {
                       ),
                       Obx(
                         () => Visibility(
-                          visible: !controller.refreshIsOk.value,
+                          visible: controller.loadding.value,
                           child: Row(
                             children: [
                               SizedBox(
@@ -173,7 +173,7 @@ class HomePage extends GetView<HomeController> {
                         iconData: Icons.refresh,
                         text: "刷新",
                         onTap: () {
-                          controller.historyRefresh();
+                          controller.refreshData();
                           controller.currentNodeIndex.value = controller.focusNodes.length - 1;
                         },
                       ),

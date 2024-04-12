@@ -50,42 +50,77 @@ class SettingsItemWidget extends StatelessWidget {
         }
         return KeyEventResult.handled;
       },
-      child: Obx(
-        () => Padding(
-          padding: AppStyle.edgeInsetsA24,
-          child: Row(
-            children: [
-              Text(
-                title,
-                style: (focusNode.isFoucsed.value || selected) ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+      child: useFocus
+          ? Obx(
+              () => Padding(
+                padding: AppStyle.edgeInsetsA24,
+                child: Row(
+                  children: [
+                    Text(
+                      title,
+                      style: focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                    ),
+                    const Spacer(),
+                    if (focusNode.isFoucsed.value && items.isNotEmpty)
+                      Icon(
+                        Icons.chevron_left,
+                        size: 40.w,
+                        color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
+                      ),
+                    AppStyle.hGap12,
+                    ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: 120.w),
+                      child: Text(
+                        items[value] ?? '',
+                        style: focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                        textAlign: focusNode.isFoucsed.value ? TextAlign.center : TextAlign.right,
+                      ),
+                    ),
+                    AppStyle.hGap12,
+                    if (focusNode.isFoucsed.value && items.isNotEmpty)
+                      Icon(
+                        Icons.chevron_right,
+                        size: 40.w,
+                        color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
+                      ),
+                  ],
+                ),
               ),
-              const Spacer(),
-              if (focusNode.isFoucsed.value || selected && items.isNotEmpty)
-                Icon(
-                  Icons.chevron_left,
-                  size: 40.w,
-                  color: focusNode.isFoucsed.value || selected ? Colors.black : Colors.white,
-                ),
-              AppStyle.hGap12,
-              ConstrainedBox(
-                constraints: BoxConstraints(minWidth: 120.w),
-                child: Text(
-                  items[value] ?? '',
-                  style: focusNode.isFoucsed.value || selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
-                  textAlign: focusNode.isFoucsed.value || selected ? TextAlign.center : TextAlign.right,
-                ),
+            )
+          : Padding(
+              padding: AppStyle.edgeInsetsA24,
+              child: Row(
+                children: [
+                  Text(
+                    title,
+                    style: selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                  ),
+                  const Spacer(),
+                  if (selected && items.isNotEmpty)
+                    Icon(
+                      Icons.chevron_left,
+                      size: 40.w,
+                      color: selected ? Colors.black : Colors.white,
+                    ),
+                  AppStyle.hGap12,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: 120.w),
+                    child: Text(
+                      items[value] ?? '',
+                      style: selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                      textAlign: selected ? TextAlign.center : TextAlign.right,
+                    ),
+                  ),
+                  AppStyle.hGap12,
+                  if (selected && items.isNotEmpty)
+                    Icon(
+                      Icons.chevron_right,
+                      size: 40.w,
+                      color: selected ? Colors.black : Colors.white,
+                    ),
+                ],
               ),
-              AppStyle.hGap12,
-              if (focusNode.isFoucsed.value || selected && items.isNotEmpty)
-                Icon(
-                  Icons.chevron_right,
-                  size: 40.w,
-                  color: focusNode.isFoucsed.value || selected ? Colors.black : Colors.white,
-                ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

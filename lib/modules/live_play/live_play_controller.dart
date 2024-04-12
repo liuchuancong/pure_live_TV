@@ -84,6 +84,8 @@ class LivePlayController extends StateController {
 
   var hasError = false.obs;
 
+  var loadTimeOut = true.obs;
+
   @override
   void onClose() {
     videoController?.dispose();
@@ -94,6 +96,26 @@ class LivePlayController extends StateController {
   @override
   void onInit() {
     onInitPlayerState();
+    isFirstLoad.listen((p0) {
+      if (isFirstLoad.value) {
+        loadTimeOut.value = true;
+        Timer(const Duration(seconds: 5), () {
+          isFirstLoad.value = false;
+          loadTimeOut.value = false;
+          Timer(const Duration(seconds: 5), () {
+            loadTimeOut.value = true;
+          });
+        });
+      } else {
+        // 防止闪屏
+        Timer(const Duration(seconds: 2), () {
+          loadTimeOut.value = false;
+          Timer(const Duration(seconds: 5), () {
+            loadTimeOut.value = true;
+          });
+        });
+      }
+    });
     super.onInit();
   }
 
@@ -102,6 +124,7 @@ class LivePlayController extends StateController {
     int line = 0,
     int currentQuality = 0,
   }) async {
+    isFirstLoad.value = true;
     var liveRoom = await currentSite.liveSite.getRoomDetail(roomId: room.roomId!, platform: site);
     isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
     if (isLastLine.value) {
@@ -133,15 +156,20 @@ class LivePlayController extends StateController {
         getPlayQualites();
         getVideoSuccess.value = true;
         settings.addRoomToHistory(liveRoom);
+        // start danmaku server
+        List<String> except = ['kuaishou', 'iptv', 'cc'];
+        if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
+          initDanmau();
+          liveDanmaku.start(liveRoom.danmakuData);
+        }
       } else {
         isFirstLoad.value = false;
+        success.value = false;
+        getVideoSuccess.value = true;
+        SmartDialog.showToast("当前主播未开播或主播已下播");
+        restoryQualityAndLines();
       }
-      // start danmaku server
-      List<String> except = ['kuaishou', 'iptv', 'cc'];
-      if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
-        initDanmau();
-        liveDanmaku.start(liveRoom.danmakuData);
-      }
+
       return liveRoom;
     }
   }
@@ -176,13 +204,14 @@ class LivePlayController extends StateController {
       getPlayQualites();
       getVideoSuccess.value = true;
       settings.addRoomToHistory(liveRoom);
+      // start danmaku server
+      List<String> except = ['kuaishou', 'iptv', 'cc'];
+      if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
+        initDanmau();
+        liveDanmaku.start(liveRoom.danmakuData);
+      }
     }
-    // start danmaku server
-    List<String> except = ['kuaishou', 'iptv', 'cc'];
-    if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
-      initDanmau();
-      liveDanmaku.start(liveRoom.danmakuData);
-    }
+
     return liveRoom;
   }
 
@@ -452,6 +481,7 @@ class LivePlayController extends StateController {
     videoController = null;
     isFirstLoad.value = true;
     getVideoSuccess.value = true;
+    loadTimeOut.value = true;
     focusNode.requestFocus();
     Timer(const Duration(milliseconds: 200), () {
       if (lastChannelIndex.value == currentChannelIndex.value) {

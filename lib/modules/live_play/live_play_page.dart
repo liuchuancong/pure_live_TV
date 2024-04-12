@@ -64,29 +64,33 @@ class LivePlayPage extends GetWidget<LivePlayController> {
                                         child: CircularProgressIndicator(
                                         color: Colors.white,
                                       ))
-                                    : CachedNetworkImage(
-                                        imageUrl: controller.currentPlayRoom.value.cover!,
-                                        cacheManager: CustomCacheManager.instance,
-                                        fit: BoxFit.fill,
-                                        errorWidget: (context, error, stackTrace) => Center(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              const Icon(Icons.live_tv_rounded, size: 48),
-                                              AppStyle.vGap16,
-                                              const Text(
-                                                "无法获取播放信息",
-                                                style: TextStyle(color: Colors.white, fontSize: 18),
+                                    : controller.loadTimeOut.value
+                                        ? CachedNetworkImage(
+                                            imageUrl: controller.currentPlayRoom.value.cover!,
+                                            cacheManager: CustomCacheManager.instance,
+                                            fit: BoxFit.fill,
+                                            errorWidget: (context, error, stackTrace) => Center(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  const Icon(Icons.live_tv_rounded, size: 48),
+                                                  AppStyle.vGap16,
+                                                  const Text(
+                                                    "无法获取播放信息",
+                                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                                  ),
+                                                  AppStyle.vGap16,
+                                                  const Text(
+                                                    "当前房间未开播或无法观看",
+                                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                                  ),
+                                                ],
                                               ),
-                                              AppStyle.vGap16,
-                                              const Text(
-                                                "当前房间未开播或无法观看",
-                                                style: TextStyle(color: Colors.white, fontSize: 18),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )),
+                                            ),
+                                          )
+                                        : TimeOutVideoWidget(
+                                            controller: controller,
+                                          )),
                               ),
                   ),
           ),
@@ -144,6 +148,60 @@ class ErrorVideoWidget extends StatelessWidget {
                       "如仍有问题可能该房间未开播或无法观看",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     )
+                  ],
+                ),
+              ),
+            ),
+            AppStyle.vGap48,
+          ],
+        ));
+  }
+}
+
+class TimeOutVideoWidget extends StatelessWidget {
+  const TimeOutVideoWidget({super.key, required this.controller});
+
+  final LivePlayController controller;
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        type: MaterialType.transparency,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppStyle.vGap24,
+            Padding(
+              padding: AppStyle.edgeInsetsA24,
+              child: Obx(() => Text(
+                    '${controller.currentChannelIndex.value + 1}. ${controller.currentPlayRoom.value.nick ?? ''}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
+                    ),
+                  )),
+            ),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        S.of(context).play_video_failed,
+                        style: const TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+                    AppStyle.vGap24,
+                    const Text(
+                      "该房间未开播或已下播",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const Text(
+                      "请刷新或者切换其他直播间进行观看吧",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ],
                 ),
               ),

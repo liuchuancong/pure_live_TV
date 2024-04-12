@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -24,14 +23,12 @@ class HighlightIconButton extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => HighlightWidget(
-        focusNode: focusNode,
-        onTap: onTap,
-        autofocus: autofocus,
-        selected: selected,
-        child: buildIcon(),
-      ),
+    return HighlightWidget(
+      focusNode: focusNode,
+      onTap: onTap,
+      autofocus: autofocus,
+      selected: selected,
+      child: buildIcon(),
     );
   }
 

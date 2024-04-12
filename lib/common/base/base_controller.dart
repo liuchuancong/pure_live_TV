@@ -158,7 +158,7 @@ class BasePageController<T> extends BaseController {
 
   @override
   void onClose() {
-    autoRefresh.value = true;
+    autoRefresh.value = false;
     super.onClose();
   }
 }

@@ -95,9 +95,11 @@ class VideoController with ChangeNotifier {
 
   Timer? hasErrorTimer;
 
-  BottomButtonClickType get currentBottomClickType => BottomButtonClickType.values[currentNodeIndex.value];
+  var currentBottomClickType = BottomButtonClickType.playPause.obs;
 
-  DanmakuSettingClickType get currentDanmukuClickType => DanmakuSettingClickType.values[danmukuNodeIndex.value];
+  var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
+
+  static const danmakuAbleKey = ValueKey(DanmakuSettingClickType.danmakuAble);
 
   // 五秒关闭控制器
   void enableController() {
@@ -198,6 +200,13 @@ class VideoController with ChangeNotifier {
         disableController();
       }
     });
+
+    currentNodeIndex.listen((p0) {
+      currentBottomClickType.value = BottomButtonClickType.values[currentNodeIndex.value];
+    });
+    danmukuNodeIndex.listen((p0) {
+      currentDanmukuClickType.value = DanmakuSettingClickType.values[danmukuNodeIndex.value];
+    });
   }
 
   void initOperateFocusNodes() {
@@ -205,14 +214,6 @@ class VideoController with ChangeNotifier {
   }
 
   void initDanmukuSettingFocusNodes() {
-    // danmukuSettingFocusNodes = [];
-    // danmukuSettingFocusNodes.add(danmakuAbleFocusNode);
-    // danmukuSettingFocusNodes.add(danmakuMergeFocusNode);
-    // danmukuSettingFocusNodes.add(danmakuSizeFocusNode);
-    // danmukuSettingFocusNodes.add(danmakuSpeedFocusNode);
-    // danmukuSettingFocusNodes.add(danmakuAreaFocusNode);
-    // danmukuSettingFocusNodes.add(danmakuOpacityFocusNode);
-    // danmukuSettingFocusNodes.add(danmakuStorkeFocusNode);
     danmukuNodeIndex.value = 0;
   }
 
@@ -273,6 +274,20 @@ class VideoController with ChangeNotifier {
     }, 100);
   }
 
+  handleDanmuKeyLeft(items, value) {
+    if (items.keys.first == value) {
+      return items.keys.last;
+    }
+    return items.keys.elementAt(items.keys.toList().indexOf(value) - 1);
+  }
+
+  handleDanmuKeyRight(items, value) {
+    if (items.keys.last == value) {
+      return items.keys.first;
+    }
+    return items.keys.elementAt(items.keys.toList().indexOf(value) + 1);
+  }
+
   handleKeyEvent(KeyEvent key) {
     // 点击Menu打开/关闭设置
     if (key.logicalKey == LogicalKeyboardKey.keyM || key.logicalKey == LogicalKeyboardKey.contextMenu) {
@@ -306,19 +321,24 @@ class VideoController with ChangeNotifier {
         return;
       } else {
         //没有控制面板以及显示了设置面板
-
+        var danmakuIndex = danmukuNodeIndex.value;
         if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
-          danmukuNodeIndex.value++;
-          if (danmukuNodeIndex.value == DanmakuSettingClickType.values.length) {
-            danmukuNodeIndex.value = 0;
+          danmakuIndex++;
+          if (danmakuIndex == DanmakuSettingClickType.values.length) {
+            danmakuIndex = 0;
           }
-          return;
         } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
-          if (danmukuNodeIndex.value == -1) {
-            danmukuNodeIndex.value = DanmakuSettingClickType.values.length - 1;
+          if (danmakuIndex == -1) {
+            danmakuIndex = DanmakuSettingClickType.values.length - 1;
           }
-          danmukuNodeIndex.value--;
-          return;
+          danmakuIndex--;
+        }
+        danmukuNodeIndex.value = danmakuIndex;
+        // 点击左右键切换播放线路
+        if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
+          handleDanmuKeyLeftEvent();
+        } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
+          handleDanmuKeyRightEvent();
         }
       }
     } else {
@@ -333,30 +353,65 @@ class VideoController with ChangeNotifier {
 
       // 点击上下键切换播放线路
       // 默认是0
+      var bottomActionIndex = currentNodeIndex.value;
       if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
-        currentNodeIndex.value++;
-        if (currentNodeIndex.value == BottomButtonClickType.values.length) {
-          currentNodeIndex.value = 0;
+        bottomActionIndex++;
+        if (bottomActionIndex == BottomButtonClickType.values.length) {
+          bottomActionIndex = 0;
         }
-        return;
       } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
-        currentNodeIndex.value--;
-        if (currentNodeIndex.value == -1) {
-          currentNodeIndex.value = BottomButtonClickType.values.length - 1;
+        bottomActionIndex--;
+        if (bottomActionIndex == -1) {
+          bottomActionIndex = BottomButtonClickType.values.length - 1;
         }
-        return;
       } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
-        currentNodeIndex.value++;
-        if (currentNodeIndex.value == BottomButtonClickType.values.length) {
-          currentNodeIndex.value = 0;
+        bottomActionIndex++;
+        if (bottomActionIndex == BottomButtonClickType.values.length) {
+          bottomActionIndex = 0;
         }
-        return;
       } else if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
-        currentNodeIndex.value--;
-        if (currentNodeIndex.value == -1) {
-          currentNodeIndex.value = BottomButtonClickType.values.length - 1;
+        bottomActionIndex--;
+        if (bottomActionIndex == -1) {
+          bottomActionIndex = BottomButtonClickType.values.length - 1;
         }
-        return;
+      }
+      currentNodeIndex.value = bottomActionIndex;
+      // 点击OK、Enter、Select键时显示/隐藏控制器
+      if (key.logicalKey == LogicalKeyboardKey.select ||
+          key.logicalKey == LogicalKeyboardKey.enter ||
+          key.logicalKey == LogicalKeyboardKey.space) {
+        // 点击enter键显示控制器
+        switch (currentBottomClickType.value) {
+          case BottomButtonClickType.playPause:
+            togglePlayPause();
+            break;
+          case BottomButtonClickType.favorite:
+            if (settings.isFavorite(room)) {
+              settings.removeRoom(room);
+            } else {
+              settings.addRoom(room);
+            }
+            break;
+          case BottomButtonClickType.refresh:
+            refresh();
+            break;
+          case BottomButtonClickType.danmaku:
+            hideDanmaku.toggle();
+            break;
+          case BottomButtonClickType.settings:
+            showSettting.value = true;
+            break;
+          case BottomButtonClickType.qualityName:
+            changeQuality();
+            break;
+          case BottomButtonClickType.changeLine:
+            changeLine();
+            break;
+          case BottomButtonClickType.boxFit:
+            setVideoFit();
+            break;
+          default:
+        }
       }
     }
   }
@@ -607,6 +662,194 @@ class VideoController with ChangeNotifier {
       showChangeNameTimer?.cancel();
     });
     livePlayController.nextChannel();
+  }
+
+  handleDanmuKeyRightEvent() {
+    switch (currentDanmukuClickType.value) {
+      case DanmakuSettingClickType.danmakuAble:
+        Map<dynamic, String> items = {
+          0: "关",
+          1: "开",
+        };
+        hideDanmaku.value = handleDanmuKeyRight(items, hideDanmaku.value ? 0 : 1) == 0;
+      case DanmakuSettingClickType.danmakuMerge:
+        Map<dynamic, String> items = {
+          0.0: "不合并",
+          0.25: "相似度小于25%",
+          0.5: "相似度小于50%",
+          0.75: "相似度小于75%",
+          1.0: "全部合并",
+        };
+        mergeDanmuRating.value = handleDanmuKeyRight(items, mergeDanmuRating.value);
+        break;
+      case DanmakuSettingClickType.danmakuSize:
+        Map<dynamic, String> items = {
+          10.0: "10",
+          12.0: "12",
+          14.0: "14",
+          16.0: "16",
+          18.0: "18",
+          20.0: "20",
+          22.0: "22",
+          24.0: "24",
+          26.0: "26",
+          28.0: "28",
+          32.0: "32",
+          40.0: "40",
+          48.0: "48",
+          56.0: "56",
+          64.0: "64",
+          72.0: "72",
+        };
+        danmakuFontSize.value = handleDanmuKeyRight(items, danmakuFontSize.value);
+        break;
+      case DanmakuSettingClickType.danmakuSpeed:
+        Map<dynamic, String> items = {
+          18.0: "很慢",
+          14.0: "较慢",
+          12.0: "慢",
+          10.0: "正常",
+          8.0: "快",
+          6.0: "较快",
+          4.0: "很快",
+        };
+        danmakuSpeed.value = handleDanmuKeyRight(items, danmakuSpeed.value);
+      case DanmakuSettingClickType.danmakuArea:
+        Map<dynamic, String> items = {
+          0.25: "1/4",
+          0.5: "1/2",
+          0.75: "3/4",
+          1.0: "全屏",
+        };
+        danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
+        break;
+      case DanmakuSettingClickType.danmakuOpacity:
+        Map<dynamic, String> items = {
+          0.1: "10%",
+          0.2: "20%",
+          0.3: "30%",
+          0.4: "40%",
+          0.5: "50%",
+          0.6: "60%",
+          0.7: "70%",
+          0.8: "80%",
+          0.9: "90%",
+          1.0: "100%",
+        };
+        danmakuOpacity.value = handleDanmuKeyRight(items, danmakuOpacity.value);
+      case DanmakuSettingClickType.danmakuStorke:
+        Map<dynamic, String> items = {
+          2.0: "2",
+          4.0: "4",
+          6.0: "6",
+          8.0: "8",
+          10.0: "10",
+          12.0: "12",
+          14.0: "14",
+          16.0: "16",
+          18.0: "18",
+          20.0: "20",
+          22.0: "22",
+          24.0: "24",
+        };
+        danmakuFontBorder.value = handleDanmuKeyRight(items, danmakuFontBorder.value);
+        break;
+      default:
+    }
+  }
+
+  handleDanmuKeyLeftEvent() {
+    switch (currentDanmukuClickType.value) {
+      case DanmakuSettingClickType.danmakuAble:
+        Map<dynamic, String> items = {
+          0: "关",
+          1: "开",
+        };
+        hideDanmaku.value = handleDanmuKeyLeft(items, hideDanmaku.value ? 0 : 1) == 0;
+      case DanmakuSettingClickType.danmakuMerge:
+        Map<dynamic, String> items = {
+          0.0: "不合并",
+          0.25: "相似度小于25%",
+          0.5: "相似度小于50%",
+          0.75: "相似度小于75%",
+          1.0: "全部合并",
+        };
+        mergeDanmuRating.value = handleDanmuKeyLeft(items, mergeDanmuRating.value);
+        break;
+      case DanmakuSettingClickType.danmakuSize:
+        Map<dynamic, String> items = {
+          10.0: "10",
+          12.0: "12",
+          14.0: "14",
+          16.0: "16",
+          18.0: "18",
+          20.0: "20",
+          22.0: "22",
+          24.0: "24",
+          26.0: "26",
+          28.0: "28",
+          32.0: "32",
+          40.0: "40",
+          48.0: "48",
+          56.0: "56",
+          64.0: "64",
+          72.0: "72",
+        };
+        danmakuFontSize.value = handleDanmuKeyLeft(items, danmakuFontSize.value);
+        break;
+      case DanmakuSettingClickType.danmakuSpeed:
+        Map<dynamic, String> items = {
+          18.0: "很慢",
+          14.0: "较慢",
+          12.0: "慢",
+          10.0: "正常",
+          8.0: "快",
+          6.0: "较快",
+          4.0: "很快",
+        };
+        danmakuSpeed.value = handleDanmuKeyLeft(items, danmakuSpeed.value);
+      case DanmakuSettingClickType.danmakuArea:
+        Map<dynamic, String> items = {
+          0.25: "1/4",
+          0.5: "1/2",
+          0.75: "3/4",
+          1.0: "全屏",
+        };
+        danmakuArea.value = handleDanmuKeyLeft(items, danmakuArea.value);
+        break;
+      case DanmakuSettingClickType.danmakuOpacity:
+        Map<dynamic, String> items = {
+          0.1: "10%",
+          0.2: "20%",
+          0.3: "30%",
+          0.4: "40%",
+          0.5: "50%",
+          0.6: "60%",
+          0.7: "70%",
+          0.8: "80%",
+          0.9: "90%",
+          1.0: "100%",
+        };
+        danmakuOpacity.value = handleDanmuKeyLeft(items, danmakuOpacity.value);
+      case DanmakuSettingClickType.danmakuStorke:
+        Map<dynamic, String> items = {
+          2.0: "2",
+          4.0: "4",
+          6.0: "6",
+          8.0: "8",
+          10.0: "10",
+          12.0: "12",
+          14.0: "14",
+          16.0: "16",
+          18.0: "18",
+          20.0: "20",
+          22.0: "22",
+          24.0: "24",
+        };
+        danmakuFontBorder.value = handleDanmuKeyLeft(items, danmakuFontBorder.value);
+        break;
+      default:
+    }
   }
 }
 

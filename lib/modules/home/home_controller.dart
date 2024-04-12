@@ -24,16 +24,11 @@ class HomeController extends BasePageController {
   List<AppFocusNode> hisToryFocusNodes = [];
   final syncNode = AppFocusNode();
   final pageController = GroupButtonController(selectedIndex: 0);
-
   var refreshIsOk = true.obs;
   @override
   void onInit() {
-    autoRefresh.value = true;
     initTimer();
     focusNodeListener();
-    rooms.value =
-        settingsService.historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
-    settingsService.currentPlayList.value = rooms;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     refreshData();
     super.onInit();
@@ -56,34 +51,34 @@ class HomeController extends BasePageController {
     });
   }
 
-  Future<bool> historyRefresh() async {
+  @override
+  Future<List<LiveRoom>> getData(int page, int pageSize) async {
     List<Future<LiveRoom>> futures = [];
-    refreshIsOk.value = false;
-    if (settingsService.historyRooms.value.reversed
+    var historyRooms = settingsService.historyRooms.value.reversed
         .where((room) => room.liveStatus == LiveStatus.live)
         .take(5)
-        .isEmpty) {
-      refreshIsOk.value = true;
-      return false;
+        .toList();
+    if (historyRooms.isEmpty) {
+      return [];
     }
-    for (final room
-        in settingsService.historyRooms.value.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5)) {
+    for (final room in historyRooms) {
       futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
     }
     try {
-      final rooms = await Future.wait(futures);
-      for (var room in rooms) {
+      final futuresRooms = await Future.wait(futures);
+      for (var room in futuresRooms) {
         settingsService.updateRoomInHistory(room);
       }
     } catch (e) {
-      refreshIsOk.value = true;
-      return false;
+      return historyRooms;
     }
-    refreshIsOk.value = true;
-    rooms.value =
-        settingsService.historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
-    settingsService.currentPlayList.value = rooms;
+    historyRooms = settingsService.historyRooms.value.reversed
+        .where((room) => room.liveStatus == LiveStatus.live)
+        .take(5)
+        .toList();
+    rooms.value = historyRooms;
+    settingsService.currentPlayList.value = historyRooms;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
-    return true;
+    return historyRooms;
   }
 }

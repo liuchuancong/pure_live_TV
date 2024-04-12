@@ -110,29 +110,27 @@ class HighlightWidget extends StatelessWidget {
           )
         : GestureDetector(
             onTap: onTap,
-            child: Obx(
-              () => AnimatedScale(
-                scale: selected ? 1.00 : 0.98,
-                duration: const Duration(milliseconds: 200),
-                child: GestureDetector(
-                  onTap: onTap,
-                  child: Obx(() => Container(
-                        decoration: BoxDecoration(
-                          borderRadius: borderRadius,
-                          boxShadow: selected
-                              ? [
-                                  BoxShadow(
-                                    blurRadius: 6.w,
-                                    spreadRadius: 2.w,
-                                    color: themeColor,
-                                    //color: Color.fromARGB(255, 255, 120, 167),
-                                  )
-                                ]
-                              : null,
-                          color: selected ? foucsedColor : color,
-                        ),
-                        child: child,
-                      )),
+            child: AnimatedScale(
+              scale: selected ? 1.00 : 0.98,
+              duration: const Duration(milliseconds: 200),
+              child: GestureDetector(
+                onTap: onTap,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: borderRadius,
+                    boxShadow: selected
+                        ? [
+                            BoxShadow(
+                              blurRadius: 6.w,
+                              spreadRadius: 2.w,
+                              color: themeColor,
+                              //color: Color.fromARGB(255, 255, 120, 167),
+                            )
+                          ]
+                        : null,
+                    color: selected ? foucsedColor : color,
+                  ),
+                  child: child,
                 ),
               ),
             ),

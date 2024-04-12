@@ -27,56 +27,89 @@ class HighlightButton extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => HighlightWidget(
-        focusNode: focusNode,
-        borderRadius: AppStyle.radius32,
-        color: Colors.white10,
-        onTap: onTap,
-        autofocus: autofocus,
-        selected: selected,
-        useFocus: useFocus,
-        child: Container(
-          height: 64.w,
-          //width: 64.w,
-          padding: AppStyle.edgeInsetsH24,
-          decoration: BoxDecoration(
-            borderRadius: AppStyle.radius32,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              buildIcon(),
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 28.w,
-                  color: useFocus
-                      ? (focusNode.isFoucsed.value || selected ? Colors.black : Colors.white)
-                      : selected
-                          ? Colors.black
-                          : Colors.white,
+    return useFocus
+        ? Obx(
+            () => HighlightWidget(
+              focusNode: focusNode,
+              borderRadius: AppStyle.radius32,
+              color: Colors.white10,
+              onTap: onTap,
+              autofocus: autofocus,
+              selected: selected,
+              useFocus: useFocus,
+              child: Container(
+                height: 64.w,
+                //width: 64.w,
+                padding: AppStyle.edgeInsetsH24,
+                decoration: BoxDecoration(
+                  borderRadius: AppStyle.radius32,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    buildIcon(),
+                    Text(
+                      text,
+                      style: TextStyle(
+                          fontSize: 28.w, color: (focusNode.isFoucsed.value || selected ? Colors.black : Colors.white)),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          )
+        : HighlightWidget(
+            focusNode: focusNode,
+            borderRadius: AppStyle.radius32,
+            color: Colors.white10,
+            onTap: onTap,
+            autofocus: autofocus,
+            selected: selected,
+            useFocus: useFocus,
+            child: Container(
+              height: 64.w,
+              //width: 64.w,
+              padding: AppStyle.edgeInsetsH24,
+              decoration: BoxDecoration(
+                borderRadius: AppStyle.radius32,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  buildIcon(),
+                  Text(
+                    text,
+                    style: TextStyle(fontSize: 28.w, color: selected ? Colors.black : Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          );
   }
 
   Widget buildIcon() {
     if (icon != null || iconData != null) {
-      return Padding(
-        padding: AppStyle.edgeInsetsR12,
-        child: icon ??
-            Icon(
-              iconData,
-              size: 40.w,
-              color: (focusNode.isFoucsed.value || selected) ? Colors.black : Colors.white,
-            ),
-      );
+      return useFocus
+          ? Padding(
+              padding: AppStyle.edgeInsetsR12,
+              child: icon ??
+                  Icon(
+                    iconData,
+                    size: 40.w,
+                    color: (focusNode.isFoucsed.value || selected) ? Colors.black : Colors.white,
+                  ),
+            )
+          : Padding(
+              padding: AppStyle.edgeInsetsR12,
+              child: icon ??
+                  Icon(
+                    iconData,
+                    size: 40.w,
+                    color: selected ? Colors.black : Colors.white,
+                  ),
+            );
     }
     return const SizedBox();
   }

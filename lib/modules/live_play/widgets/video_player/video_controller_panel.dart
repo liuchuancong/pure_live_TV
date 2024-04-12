@@ -247,13 +247,7 @@ class BottomActionBar extends StatelessWidget {
             height: barHeight,
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black45],
-              ),
-            ),
+            decoration: const BoxDecoration(color: Colors.black),
             child: Row(
               children: <Widget>[
                 PlayPauseButton(controller: controller),
@@ -279,19 +273,19 @@ class PlayPauseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Container(
-          alignment: Alignment.center,
-          padding: AppStyle.edgeInsetsA12,
-          child: HighlightIconButton(
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: Obx(() => HighlightIconButton(
             useFocus: false,
             focusNode: AppFocusNode(),
-            selected: controller.currentBottomClickType == BottomButtonClickType.playPause,
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.playPause,
             iconData: controller.isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
             onTap: () {
               controller.togglePlayPause();
             },
-          ),
-        ));
+          )),
+    );
   }
 }
 
@@ -305,16 +299,16 @@ class LineButton extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: HighlightButton(
-        useFocus: false,
-        focusNode: AppFocusNode(),
-        selected: controller.currentBottomClickType == BottomButtonClickType.changeLine,
-        iconData: Icons.menu_open_sharp,
-        onTap: () {
-          controller.changeLine();
-        },
-        text: '线路${controller.currentLineIndex + 1}',
-      ),
+      child: Obx(() => HighlightButton(
+            useFocus: false,
+            focusNode: AppFocusNode(),
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.changeLine,
+            iconData: Icons.density_small_rounded,
+            onTap: () {
+              controller.changeLine();
+            },
+            text: '线路${controller.currentLineIndex + 1}',
+          )),
     );
   }
 }
@@ -329,30 +323,25 @@ class QualiteNameButton extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: HighlightButton(
-        useFocus: false,
-        focusNode: AppFocusNode(),
-        selected: controller.currentBottomClickType == BottomButtonClickType.qualityName,
-        iconData: Icons.quora_outlined,
-        onTap: () {
-          controller.changeQuality();
-        },
-        text: controller.qualiteName,
-      ),
+      child: Obx(() => HighlightButton(
+            useFocus: false,
+            focusNode: AppFocusNode(),
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.qualityName,
+            iconData: Icons.swap_vertical_circle_outlined,
+            onTap: () {
+              controller.changeQuality();
+            },
+            text: controller.qualiteName,
+          )),
     );
   }
 }
 
-class BoxFitButton extends StatefulWidget {
+class BoxFitButton extends StatelessWidget {
   const BoxFitButton({super.key, required this.controller});
 
   final VideoController controller;
 
-  @override
-  State<BoxFitButton> createState() => _BoxFitButtonState();
-}
-
-class _BoxFitButtonState extends State<BoxFitButton> {
   @override
   Widget build(BuildContext context) {
     final fitmodes = [
@@ -365,16 +354,16 @@ class _BoxFitButtonState extends State<BoxFitButton> {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: HighlightButton(
-        useFocus: false,
-        focusNode: AppFocusNode(),
-        selected: widget.controller.currentBottomClickType == BottomButtonClickType.boxFit,
-        iconData: Icons.video_settings_outlined,
-        onTap: () {
-          widget.controller.setVideoFit();
-        },
-        text: fitmodes[widget.controller.settings.videoFitIndex.value],
-      ),
+      child: Obx(() => HighlightButton(
+            useFocus: false,
+            focusNode: AppFocusNode(),
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.boxFit,
+            iconData: Icons.video_settings_outlined,
+            onTap: () {
+              controller.setVideoFit();
+            },
+            text: fitmodes[controller.settings.videoFitIndex.value],
+          )),
     );
   }
 }
@@ -388,15 +377,15 @@ class RefreshButton extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: HighlightIconButton(
-        useFocus: false,
-        focusNode: AppFocusNode(),
-        selected: controller.currentBottomClickType == BottomButtonClickType.refresh,
-        iconData: Icons.refresh_rounded,
-        onTap: () {
-          controller.refresh();
-        },
-      ),
+      child: Obx(() => HighlightIconButton(
+            useFocus: false,
+            focusNode: AppFocusNode(),
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.refresh,
+            iconData: Icons.refresh_rounded,
+            onTap: () {
+              controller.refresh();
+            },
+          )),
     );
   }
 }
@@ -414,14 +403,15 @@ class DanmakuButton extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: HighlightIconButton(
-        useFocus: false,
-        focusNode: AppFocusNode(),
-        iconData: controller.hideDanmaku.value ? CustomIcons.danmaku_close : CustomIcons.danmaku_open,
-        onTap: () {
-          controller.hideDanmaku.toggle();
-        },
-      ),
+      child: Obx(() => HighlightIconButton(
+            useFocus: false,
+            focusNode: AppFocusNode(),
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.danmaku,
+            iconData: controller.hideDanmaku.value ? CustomIcons.danmaku_close : CustomIcons.danmaku_open,
+            onTap: () {
+              controller.hideDanmaku.toggle();
+            },
+          )),
     );
   }
 }
@@ -435,15 +425,15 @@ class SettingsButton extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: HighlightIconButton(
-        useFocus: false,
-        focusNode: AppFocusNode(),
-        selected: controller.currentBottomClickType == BottomButtonClickType.settings,
-        iconData: CustomIcons.danmaku_setting,
-        onTap: () {
-          controller.showSettting.value = true;
-        },
-      ),
+      child: Obx(() => HighlightIconButton(
+            useFocus: false,
+            focusNode: AppFocusNode(),
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.settings,
+            iconData: CustomIcons.danmaku_setting,
+            onTap: () {
+              controller.showSettting.value = true;
+            },
+          )),
     );
   }
 }
@@ -457,20 +447,22 @@ class FavoriteButton extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
-      child: HighlightIconButton(
-        useFocus: false,
-        focusNode: AppFocusNode(),
-        selected: controller.currentBottomClickType == BottomButtonClickType.favorite,
-        iconData:
-            !controller.settings.isFavorite(controller.room) ? Icons.favorite_outline_outlined : Icons.favorite_rounded,
-        onTap: () {
-          if (controller.settings.isFavorite(controller.room)) {
-            controller.settings.removeRoom(controller.room);
-          } else {
-            controller.settings.addRoom(controller.room);
-          }
-        },
-      ),
+      child: Obx(() => HighlightButton(
+            useFocus: false,
+            text: !controller.settings.isFavorite(controller.room) ? '未关注' : "已关注",
+            focusNode: AppFocusNode(),
+            selected: controller.currentBottomClickType.value == BottomButtonClickType.favorite,
+            iconData: !controller.settings.isFavorite(controller.room)
+                ? Icons.highlight_remove_outlined
+                : Icons.add_task_rounded,
+            onTap: () {
+              if (controller.settings.isFavorite(controller.room)) {
+                controller.settings.removeRoom(controller.room);
+              } else {
+                controller.settings.addRoom(controller.room);
+              }
+            },
+          )),
     );
   }
 }
@@ -513,47 +505,48 @@ class DanmakuSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Container(
-          decoration: BoxDecoration(
-            color: Get.theme.cardColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
+    return Container(
+      decoration: BoxDecoration(
+        color: Get.theme.cardColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          AppStyle.vGap24,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              AppStyle.vGap24,
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  AppStyle.hGap32,
-                  Text(
-                    "设置",
-                    style: AppStyle.titleStyleWhite.copyWith(
-                      fontSize: 36.w,
+              AppStyle.hGap32,
+              Text(
+                "设置",
+                style: AppStyle.titleStyleWhite.copyWith(
+                  fontSize: 36.w,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              AppStyle.hGap24,
+              const Spacer(),
+            ],
+          ),
+          Expanded(
+            child: ListView(
+              padding: AppStyle.edgeInsetsA48,
+              children: [
+                Padding(
+                  padding: AppStyle.edgeInsetsH20,
+                  child: Text(
+                    "弹幕",
+                    style: AppStyle.textStyleWhite.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  AppStyle.hGap24,
-                  const Spacer(),
-                ],
-              ),
-              Expanded(
-                child: ListView(
-                  padding: AppStyle.edgeInsetsA48,
-                  children: [
-                    Padding(
-                      padding: AppStyle.edgeInsetsH20,
-                      child: Text(
-                        "弹幕",
-                        style: AppStyle.textStyleWhite.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    AppStyle.vGap24,
-                    SettingsItemWidget(
+                ),
+                AppStyle.vGap24,
+                Obx(() => SettingsItemWidget(
                       useFocus: false,
                       focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType == DanmakuSettingClickType.danmakuAble,
+                      key: VideoController.danmakuAbleKey,
+                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuAble,
                       title: "弹幕开关",
                       items: const {
                         0: "关",
@@ -563,11 +556,11 @@ class DanmakuSetting extends StatelessWidget {
                       onChanged: (e) {
                         controller.hideDanmaku.toggle();
                       },
-                    ),
-                    SettingsItemWidget(
+                    )),
+                Obx(() => SettingsItemWidget(
                       useFocus: false,
                       focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType == DanmakuSettingClickType.danmakuMerge,
+                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuMerge,
                       title: "弹幕合并",
                       items: {
                         0.0: "不合并",
@@ -580,12 +573,12 @@ class DanmakuSetting extends StatelessWidget {
                       onChanged: (e) {
                         controller.mergeDanmuRating.value = e;
                       },
-                    ),
-                    AppStyle.vGap24,
-                    SettingsItemWidget(
+                    )),
+                AppStyle.vGap24,
+                Obx(() => SettingsItemWidget(
                       useFocus: false,
                       focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType == DanmakuSettingClickType.danmakuSize,
+                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuSize,
                       title: "弹幕大小",
                       items: {
                         10.0: "10",
@@ -609,12 +602,12 @@ class DanmakuSetting extends StatelessWidget {
                       onChanged: (e) {
                         controller.danmakuFontSize.value = e;
                       },
-                    ),
-                    AppStyle.vGap24,
-                    SettingsItemWidget(
+                    )),
+                AppStyle.vGap24,
+                Obx(() => SettingsItemWidget(
                       useFocus: false,
                       focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType == DanmakuSettingClickType.danmakuSpeed,
+                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuSpeed,
                       title: "弹幕速度",
                       items: {
                         18.0: "很慢",
@@ -629,12 +622,12 @@ class DanmakuSetting extends StatelessWidget {
                       onChanged: (e) {
                         controller.danmakuSpeed.value = e;
                       },
-                    ),
-                    AppStyle.vGap24,
-                    SettingsItemWidget(
+                    )),
+                AppStyle.vGap24,
+                Obx(() => SettingsItemWidget(
                       useFocus: false,
                       focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType == DanmakuSettingClickType.danmakuArea,
+                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuArea,
                       title: "显示区域",
                       items: {
                         0.25: "1/4",
@@ -646,12 +639,12 @@ class DanmakuSetting extends StatelessWidget {
                       onChanged: (e) {
                         controller.danmakuArea.value = e;
                       },
-                    ),
-                    AppStyle.vGap24,
-                    SettingsItemWidget(
+                    )),
+                AppStyle.vGap24,
+                Obx(() => SettingsItemWidget(
                       useFocus: false,
                       focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType == DanmakuSettingClickType.danmakuOpacity,
+                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuOpacity,
                       title: "不透明度",
                       items: {
                         0.1: "10%",
@@ -669,12 +662,12 @@ class DanmakuSetting extends StatelessWidget {
                       onChanged: (e) {
                         controller.danmakuOpacity.value = e;
                       },
-                    ),
-                    AppStyle.vGap24,
-                    SettingsItemWidget(
+                    )),
+                AppStyle.vGap24,
+                Obx(() => SettingsItemWidget(
                       useFocus: false,
                       focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType == DanmakuSettingClickType.danmakuStorke,
+                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuStorke,
                       title: "描边宽度",
                       items: {
                         2.0: "2",
@@ -690,13 +683,13 @@ class DanmakuSetting extends StatelessWidget {
                       onChanged: (e) {
                         controller.danmakuFontBorder.value = e;
                       },
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                    )),
+              ],
+            ),
           ),
-        ));
+        ],
+      ),
+    );
   }
 }
 
@@ -732,7 +725,7 @@ class ChannelVideoWidget extends StatelessWidget {
                   Padding(
                     padding: AppStyle.edgeInsetsA24,
                     child: Text(
-                      '${controller.livePlayController.currentChannelIndex.value + 1}. ${controller.settings.currentPlayList[controller.livePlayController.currentChannelIndex.value].nick!}',
+                      '${controller.settings.currentPlayListNodeIndex.value + 1}. ${controller.settings.currentPlayList[controller.settings.currentPlayListNodeIndex.value].nick!}',
                       style: const TextStyle(
                         fontSize: 32,
                         color: Colors.white,
