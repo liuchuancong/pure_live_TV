@@ -9,7 +9,7 @@ build_path = []
 buildcellctions = []
 # target_apk_dir_name = 'D:/flutter/pure_live_TV/build/app/outputs/flutter-apk/'
 files = []
-dirArr = ['电视高版本.apk','电视低版本.apk','电视版本All.apk','模拟器.apk']
+dirArr = ['电视高版本.apk','电视低版本.apk','电视版本All.apk','电视模拟器.apk']
 def traversal_dirs(path):
     for item in os.scandir(path):
         if item.is_dir():
