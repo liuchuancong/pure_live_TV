@@ -23,6 +23,7 @@ class HotAreasPage extends GetView<HotAreasController> {
           ),
           focusNode: controller.sitesNodes[index],
           onTap: () {
+            controller.settingsController.currentPlayListNodeIndex.value = 0;
             controller.onChanged(controller.sites[index].id, !controller.sites[index].show);
           },
         ),

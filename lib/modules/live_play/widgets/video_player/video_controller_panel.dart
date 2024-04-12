@@ -121,13 +121,7 @@ class TopActionBar extends StatelessWidget {
           height: barHeight,
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [Colors.transparent, Colors.black45],
-            ),
-          ),
+          decoration: const BoxDecoration(color: Colors.black),
           child: Row(children: [
             Expanded(
               child: Padding(
@@ -710,13 +704,7 @@ class ChannelVideoWidget extends StatelessWidget {
               height: barHeight,
               alignment: Alignment.centerLeft,
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black45, Colors.black87, Colors.black45],
-                ),
-              ),
+              decoration: const BoxDecoration(color: Colors.black),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,

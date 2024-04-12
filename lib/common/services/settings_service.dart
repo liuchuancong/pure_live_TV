@@ -154,6 +154,8 @@ class SettingsService extends GetxController {
 
   final AppFocusNode enableCodecNode = AppFocusNode();
 
+  final AppFocusNode playerCompatModeNode = AppFocusNode();
+
   final AppFocusNode preferPlatformNode = AppFocusNode();
 
   final AppFocusNode dataSyncNode = AppFocusNode();

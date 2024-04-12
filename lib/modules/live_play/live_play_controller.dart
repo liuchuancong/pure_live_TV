@@ -96,6 +96,10 @@ class LivePlayController extends StateController {
   @override
   void onInit() {
     onInitPlayerState();
+
+    // 发现房间ID 会变化 使用静态列表ID 对比
+
+    currentPlayRoom.value = room;
     isFirstLoad.listen((p0) {
       if (isFirstLoad.value) {
         loadTimeOut.value = true;
@@ -142,7 +146,6 @@ class LivePlayController extends StateController {
     } else {
       handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
       detail.value = liveRoom;
-      currentPlayRoom.value = liveRoom;
       resetGlobalListState();
       if (liveRoom.liveStatus == LiveStatus.unknown) {
         SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
@@ -191,7 +194,6 @@ class LivePlayController extends StateController {
     var liveRoom = await currentSite.liveSite
         .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
     detail.value = liveRoom;
-    currentPlayRoom.value = liveRoom;
     resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {
       SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
@@ -349,6 +351,8 @@ class LivePlayController extends StateController {
       if (playQualites.isEmpty) {
         SmartDialog.showToast("无法读取视频信息,请按确定键重新获取");
         getVideoSuccess.value = false;
+        isFirstLoad.value = false;
+        success.value = false;
         return;
       }
       qualites.value = playQualites;
@@ -371,6 +375,9 @@ class LivePlayController extends StateController {
       getPlayUrl();
     } catch (e) {
       SmartDialog.showToast("无法读取视频信息,请按确定键重新获取");
+      getVideoSuccess.value = false;
+      isFirstLoad.value = false;
+      success.value = false;
     }
   }
 
@@ -387,6 +394,8 @@ class LivePlayController extends StateController {
     if (playUrl.isEmpty) {
       SmartDialog.showToast("无法读取播放地址,请按确定键重新获取");
       getVideoSuccess.value = false;
+      isFirstLoad.value = false;
+      success.value = false;
       return;
     }
     playUrls.value = playUrl;
@@ -439,7 +448,7 @@ class LivePlayController extends StateController {
     var nextChannel = liveChannels[index];
     settings.currentPlayListNodeIndex.value = index;
     currentChannelIndex.value = index;
-    currentPlayRoom.value = liveChannels[index];
+    currentPlayRoom.value = nextChannel;
     isNextOrPrev = 1;
     channelTimer?.cancel();
     channelTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -464,8 +473,9 @@ class LivePlayController extends StateController {
     }
     settings.currentPlayListNodeIndex.value = index;
     currentChannelIndex.value = index;
-    currentPlayRoom.value = liveChannels[index];
+
     var nextChannel = liveChannels[index];
+    currentPlayRoom.value = nextChannel;
     isNextOrPrev = 0;
     channelTimer?.cancel();
     channelTimer = Timer.periodic(const Duration(seconds: 1), (timer) {

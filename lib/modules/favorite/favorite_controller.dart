@@ -19,6 +19,7 @@ class FavoriteController extends GetxController with GetSingleTickerProviderStat
     super.onInit();
     // 初始化关注页
     syncRooms();
+    settings.currentPlayListNodeIndex.value = 0;
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
 

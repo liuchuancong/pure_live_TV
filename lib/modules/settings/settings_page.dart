@@ -68,7 +68,7 @@ class SettingsPage extends GetView<SettingsService> {
             AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
-                focusNode: controller.enableCodecNode,
+                focusNode: controller.playerCompatModeNode,
                 title: "Mpv播放器兼容模式(此配置生效解码不生效)",
                 items: const {0: "不使用", 1: "使用"},
                 value: controller.playerCompatMode.value ? 1 : 0,

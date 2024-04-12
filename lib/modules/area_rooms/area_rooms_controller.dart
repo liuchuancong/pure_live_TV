@@ -21,6 +21,7 @@ class AreaRoomsController extends BasePageController<LiveRoom> {
   void onInit() {
     refreshData();
     super.onInit();
+    settingsService.currentPlayListNodeIndex.value = 0;
     list.addListener(() {
       if (list.isNotEmpty) {
         // 直播间

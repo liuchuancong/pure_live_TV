@@ -16,6 +16,8 @@ class HotAreasController extends BaseController {
       sites.add(area);
       sitesNodes.add(AppFocusNode());
     }
+    settingsController.currentPlayListNodeIndex.value = 0;
+
     super.onInit();
   }
 
