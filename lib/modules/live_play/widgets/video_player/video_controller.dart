@@ -501,7 +501,7 @@ class VideoController with ChangeNotifier {
 
   @override
   void dispose() async {
-    destory();
+    await destory();
     super.dispose();
   }
 
@@ -530,14 +530,18 @@ class VideoController with ChangeNotifier {
     livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
   }
 
-  void changeLine() {
-    destory();
+  void handleError() {}
+
+  void changeLine() async {
+    // exoPlayer 播放错误
+    if (videoPlayerIndex == 0) {}
+    await destory();
     livePlayController.onInitPlayerState(
         reloadDataType: ReloadDataType.changeLine, line: currentLineIndex, currentQuality: currentQuality);
   }
 
-  void changeQuality() {
-    destory();
+  void changeQuality() async {
+    await destory();
     livePlayController.onInitPlayerState(
         reloadDataType: ReloadDataType.changeQuality, line: currentLineIndex, currentQuality: currentQuality);
   }
@@ -584,6 +588,9 @@ class VideoController with ChangeNotifier {
     fijkPlayer.setOption(FijkOption.formatCategory, "headers", headersArr.join('\r\n'));
     fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
     fijkPlayer.setOption(FijkOption.hostCategory, "request-audio-focus", 1);
+    fijkPlayer.setOption(FijkOption.playerCategory, "framedrop", 1);
+    fijkPlayer.setOption(FijkOption.playerCategory, "cover-after-prepared", 0);
+    fijkPlayer.setOption(FijkOption.playerCategory, "enable-position-notify", 0);
     fijkPlayer.setOption(FijkOption.playerCategory, "mediacodec-all-videos", 1);
     if (enableCodec) {
       fijkPlayer.setOption(FijkOption.codecCategory, "mediacodec", 1);
