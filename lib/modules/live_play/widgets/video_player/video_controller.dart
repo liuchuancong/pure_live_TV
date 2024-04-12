@@ -286,6 +286,8 @@ class VideoController with ChangeNotifier {
         if (event.toString().contains('Failed to open')) {
           hasError.value = true;
           isPlaying.value = false;
+        } else {
+          hasError.value = true;
         }
       });
       mediaPlayerControllerInitialized.value = true;
@@ -530,11 +532,8 @@ class VideoController with ChangeNotifier {
     livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
   }
 
-  void handleError() {}
-
   void changeLine() async {
-    // exoPlayer 播放错误
-    if (videoPlayerIndex == 0) {}
+    // 播放错误 不一定是线路问题 先切换路线解决 后面尝试通知用户切换播放器
     await destory();
     livePlayController.onInitPlayerState(
         reloadDataType: ReloadDataType.changeLine, line: currentLineIndex, currentQuality: currentQuality);

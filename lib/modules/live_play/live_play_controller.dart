@@ -79,6 +79,10 @@ class LivePlayController extends StateController {
   var lastChannelIndex = 0.obs;
 
   Timer? channelTimer;
+  // 切换线路会添加到这个数组里面
+  bool isLastLine = false;
+
+  var hasError = false.obs;
 
   @override
   void onClose() {
@@ -98,32 +102,45 @@ class LivePlayController extends StateController {
     int line = 0,
     int currentQuality = 0,
   }) async {
-    handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
     var liveRoom = await currentSite.liveSite.getRoomDetail(roomId: room.roomId!, platform: site);
-    detail.value = liveRoom;
-    currentPlayRoom.value = liveRoom;
-    currentChannelIndex.value = settings.currentPlayList.indexWhere((element) =>
-        element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform);
-    settings.currentPlayListNodeIndex.value = currentChannelIndex.value;
-    if (liveRoom.liveStatus == LiveStatus.unknown) {
-      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
+    isLastLine = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
+    if (success.value && videoController == null && isLastLine) {
+      hasError.value = videoController!.hasError.value;
+    } else {
+      hasError.value = false;
+    }
+    if (isLastLine && hasError.value) {
+      restoryQualityAndLines();
       getVideoSuccess.value = false;
+      disPoserPlayer();
+      return liveRoom;
+    } else {
+      handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
+      detail.value = liveRoom;
+      currentPlayRoom.value = liveRoom;
+      currentChannelIndex.value = settings.currentPlayList.indexWhere((element) =>
+          element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform);
+      settings.currentPlayListNodeIndex.value = currentChannelIndex.value;
+      if (liveRoom.liveStatus == LiveStatus.unknown) {
+        SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
+        getVideoSuccess.value = false;
+        return liveRoom;
+      }
+
+      liveStatus.value = liveRoom.status! || liveRoom.isRecord!;
+      if (liveStatus.value) {
+        getPlayQualites();
+        getVideoSuccess.value = true;
+        settings.addRoomToHistory(liveRoom);
+      }
+      // start danmaku server
+      List<String> except = ['kuaishou', 'iptv', 'cc'];
+      if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
+        initDanmau();
+        liveDanmaku.start(liveRoom.danmakuData);
+      }
       return liveRoom;
     }
-
-    liveStatus.value = liveRoom.status! || liveRoom.isRecord!;
-    if (liveStatus.value) {
-      getPlayQualites();
-      getVideoSuccess.value = true;
-      settings.addRoomToHistory(liveRoom);
-    }
-    // start danmaku server
-    List<String> except = ['kuaishou', 'iptv', 'cc'];
-    if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
-      initDanmau();
-      liveDanmaku.start(liveRoom.danmakuData);
-    }
-    return liveRoom;
   }
 
   Future<LiveRoom> resetPlayerState({
@@ -132,6 +149,7 @@ class LivePlayController extends StateController {
     int currentQuality = 0,
   }) async {
     channelTimer?.cancel();
+
     handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
     var liveRoom = await currentSite.liveSite
         .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
@@ -161,18 +179,36 @@ class LivePlayController extends StateController {
     return liveRoom;
   }
 
+  bool calcIsLastLine(ReloadDataType reloadDataType, int line) {
+    var lastLine = line + 1;
+    if (playUrls.isEmpty) {
+      return true;
+    }
+    if (playUrls.length == 1) {
+      return true;
+    }
+    if (lastLine == playUrls.length - 1) {
+      return true;
+    }
+    return false;
+  }
+
+  disPoserPlayer() {
+    success.value = false;
+    liveDanmaku.stop();
+    focusNode.requestFocus();
+    videoController?.dispose();
+    videoController = null;
+    liveDanmaku.stop();
+  }
+
   handleCurrentLineAndQuality({
     ReloadDataType reloadDataType = ReloadDataType.refreash,
     int line = 0,
     int quality = 0,
   }) {
-    success.value = false;
-    liveDanmaku.stop();
-    focusNode.requestFocus();
+    disPoserPlayer();
     try {
-      videoController?.dispose();
-      videoController = null;
-      liveDanmaku.stop();
       if (reloadDataType == ReloadDataType.refreash) {
         restoryQualityAndLines();
       } else if (reloadDataType == ReloadDataType.changeLine) {

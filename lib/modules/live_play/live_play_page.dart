@@ -51,7 +51,7 @@ class LivePlayPage extends GetWidget<LivePlayController> {
                     focusNode: controller.focusNode,
                     autofocus: true,
                     onKeyEvent: controller.onKeyEvent,
-                    child: !controller.getVideoSuccess.value
+                    child: !controller.getVideoSuccess.value || controller.hasError.value
                         ? ErrorVideoWidget(controller: controller)
                         : Card(
                             elevation: 0,
@@ -113,7 +113,7 @@ class ErrorVideoWidget extends StatelessWidget {
                     ),
                     AppStyle.vGap24,
                     const Text(
-                      "请切换其他频道或刷新重试",
+                      "请切换播放器或其他线路或刷新重试, 如仍有问题可能该房间未开播或无法观看",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     )
                   ],
