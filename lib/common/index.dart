@@ -16,7 +16,6 @@ export 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 export 'package:flutter_localizations/flutter_localizations.dart';
 export 'package:media_kit/media_kit.dart';
 export 'package:pure_live/common/index.dart';
-export 'package:uri_to_file/uri_to_file.dart';
 export 'package:pure_live/routes/app_pages.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:pure_live/routes/route_path.dart';

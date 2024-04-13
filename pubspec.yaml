@@ -49,7 +49,6 @@ dependencies:
   # barrage wall
   quiver: ^3.2.1
   flex_color_picker: ^3.3.0
-  flutter_exit_app: ^1.1.2
   visibility_detector: ^0.4.0+2
   # database
   font_awesome_flutter: ^10.6.0
@@ -63,10 +62,8 @@ dependencies:
       ref: 'media3'
   fijkplayer: ^0.11.0
   share_handler: ^0.0.19
-  uri_to_file: ^1.0.0
   bordered_text: ^2.0.0
   flutter_color: ^2.1.0
-  crypto_simple: ^2.1.0
   url_protocol:
     git:
       url: https://github.com/LucasXu0/flutter_url_protocol.git
@@ -79,11 +76,8 @@ dependencies:
   cookie_jar: ^4.0.8
   # system hardware utils
   wakelock_plus: ^1.1.3
-  dlna_dart: ^0.0.8
-  battery_plus: ^5.0.2
   stop_watch_timer: ^3.0.2
   # storage
-  file_picker: ^6.0.0
   shared_preferences: ^2.2.2
   flutter_cache_manager: ^3.3.1
   # utils

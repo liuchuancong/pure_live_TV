@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:convert';
-import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:pure_live/common/index.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:pure_live/core/iptv/iptv_utils.dart';
 
 class FileRecoverUtils {
@@ -83,32 +81,6 @@ class FileRecoverUtils {
     }
   }
 
-  void recoverBackup() async {
-    final settings = Get.find<SettingsService>();
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      dialogTitle: S.of(Get.context!).select_recover_file,
-      type: FileType.custom,
-      allowedExtensions: ['txt'],
-    );
-    if (result == null || result.files.single.path == null) return;
-
-    final file = File(result.files.single.path!);
-    if (settings.recover(file)) {
-      SmartDialog.showToast("恢复备份成功");
-    } else {
-      SmartDialog.showToast("恢复备份失败");
-    }
-  }
-
-  // 选择备份目录
-  Future<String?> selectBackupDirectory(String backupDirectory) async {
-    final settings = Get.find<SettingsService>();
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-    if (selectedDirectory == null) return null;
-    settings.backupDirectory.value = selectedDirectory;
-    return selectedDirectory;
-  }
-
   Future<bool> recoverM3u8BackupByWeb(String fileString, String fileName) async {
     try {
       var dir = await getApplicationCacheDirectory();
@@ -131,68 +103,6 @@ class FileRecoverUtils {
       return true;
     } catch (e) {
       SmartDialog.showToast("恢复备份失败");
-      return false;
-    }
-  }
-
-  Future<bool> recoverM3u8Backup() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      dialogTitle: S.of(Get.context!).select_recover_file,
-      type: FileType.custom,
-      allowedExtensions: ['m3u'],
-    );
-    if (result == null || result.files.single.path == null) return false;
-
-    try {
-      final file = File(result.files.single.path!);
-      var dir = await getApplicationCacheDirectory();
-      final m3ufile = File('${dir.path}${Platform.pathSeparator}${getName(file.path)}');
-      List jsonArr = [];
-      final categories = File('${dir.path}${Platform.pathSeparator}categories.json');
-      if (!categories.existsSync()) {
-        categories.createSync();
-      }
-      String jsonData = await categories.readAsString();
-      jsonArr = jsonData.isNotEmpty ? jsonDecode(jsonData) : [];
-      List<IptvCategory> categoriesArr = jsonArr.map((e) => IptvCategory.fromJson(e)).toList();
-      if (categoriesArr.indexWhere((element) => element.path == m3ufile.path) == -1) {
-        categoriesArr.add(IptvCategory(
-            id: getUUid(), name: getName(m3ufile.path).replaceAll(RegExp(r'.m3u'), ''), path: m3ufile.path));
-      }
-
-      categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      file.copySync(m3ufile.path);
-      SmartDialog.showToast("恢复备份成功");
-      return true;
-    } catch (e) {
-      SmartDialog.showToast("恢复备份失败");
-      return false;
-    }
-  }
-
-  Future<bool> recoverM3u8BackupByShare(SharedMedia media) async {
-    try {
-      File file = await toFile(media.content!);
-      var dir = await getApplicationCacheDirectory();
-      final m3ufile = File('${dir.path}${Platform.pathSeparator}${getName(file.path)}');
-      List jsonArr = [];
-      final categories = File('${dir.path}${Platform.pathSeparator}categories.json');
-      if (!categories.existsSync()) {
-        categories.createSync();
-      }
-      String jsonData = await categories.readAsString();
-      jsonArr = jsonData.isNotEmpty ? jsonDecode(jsonData) : [];
-      List<IptvCategory> categoriesArr = jsonArr.map((e) => IptvCategory.fromJson(e)).toList();
-      if (categoriesArr.indexWhere((element) => element.path == m3ufile.path) == -1) {
-        categoriesArr.add(IptvCategory(
-            id: getUUid(), name: getName(m3ufile.path).replaceAll(RegExp(r'.m3u'), ''), path: m3ufile.path));
-      }
-      categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      file.copySync(m3ufile.path);
-      SnackBarUtil.success("恢复备份成功");
-      return true;
-    } catch (e) {
-      SnackBarUtil.error("恢复备份失败");
       return false;
     }
   }

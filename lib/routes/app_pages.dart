@@ -20,6 +20,7 @@ import 'package:pure_live/modules/agreement/agreement_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_page.dart';
 import 'package:pure_live/modules/live_play/live_play_page.dart';
 import 'package:pure_live/modules/shield/danmu_shield_page.dart';
+import 'package:pure_live/modules/favorite/favorite_binding.dart';
 import 'package:pure_live/modules/settings/settings_binding.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_binding.dart';
@@ -29,6 +30,7 @@ import 'package:pure_live/modules/history/history_rooms_binding.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
 import 'package:pure_live/modules/account/bilibili/qr_login_page.dart';
 import 'package:pure_live/modules/account/bilibili/bilibili_bings.dart';
+
 // auth
 
 class AppPages {
@@ -43,6 +45,7 @@ class AppPages {
     GetPage(
       name: RoutePath.kFavorite,
       page: FavoritePage.new,
+      bindings: [FavoriteBinding()],
     ),
     GetPage(
       name: RoutePath.kPopular,

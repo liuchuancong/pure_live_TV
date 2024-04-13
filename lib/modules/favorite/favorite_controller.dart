@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 
-class FavoriteController extends GetxController with GetSingleTickerProviderStateMixin {
+class FavoriteController extends GetxController {
   final SettingsService settings = Get.find<SettingsService>();
 
   final tabBottomIndex = 0.obs;

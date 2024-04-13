@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/getx_router_observer.dart';
-import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +21,6 @@ void main(List<String> args) async {
 
 void initService() {
   Get.put(SettingsService());
-  Get.put(FavoriteController());
-  Get.put(BiliBiliAccountService());
 }
 
 class MyApp extends StatefulWidget {
@@ -34,10 +31,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final settings = Get.find<SettingsService>();
-
+  @override
   @override
   Widget build(BuildContext context) {
+    final settings = Get.find<SettingsService>();
     return ScreenUtilInit(
         designSize: const Size(1920, 1080),
         minTextAdapt: true,
