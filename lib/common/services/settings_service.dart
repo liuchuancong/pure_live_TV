@@ -96,7 +96,7 @@ class SettingsService extends GetxController {
     });
 
     playerCompatMode.listen((value) {
-      PrefUtil.setBool('playerCompatMode', false);
+      PrefUtil.setBool('playerCompatMode', value);
     });
 
     currentPlayList.listen((p0) {
