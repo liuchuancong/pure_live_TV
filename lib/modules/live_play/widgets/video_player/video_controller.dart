@@ -292,7 +292,6 @@ class VideoController with ChangeNotifier {
     // 点击Menu打开/关闭设置
     if (key.logicalKey == LogicalKeyboardKey.keyM || key.logicalKey == LogicalKeyboardKey.contextMenu) {
       showSettting.value = true;
-      return;
     }
     // 如果没有显示控制面板
     if (!showController.value) {
@@ -451,6 +450,8 @@ class VideoController with ChangeNotifier {
             }
           }
         }, 1000);
+      } else if (state.betterPlayerEventType == BetterPlayerEventType.changedTrack) {
+        //  print(mobileController.setAudioTrack(audioTrack))
       }
       isPlaying.value = mobileController?.isPlaying() ?? false;
       isBuffering.value = mobileController?.isBuffering() ?? false;
@@ -505,6 +506,7 @@ class VideoController with ChangeNotifier {
 
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value || !livePlayController.success.value) return;
+    if (!danmakuController.isEnabled) return;
     danmakuController.send([
       Bullet(
         child: DanmakuText(
@@ -526,6 +528,9 @@ class VideoController with ChangeNotifier {
   destory() async {
     cancleFocus();
     cancledanmakuFocus();
+    danmakuController.disable();
+    await danmakuController.dispose();
+
     if (videoPlayerIndex == 0) {
       mobileController?.removeEventsListener(mobileStateListener);
       mobileController?.dispose(forceDispose: true);
@@ -536,7 +541,7 @@ class VideoController with ChangeNotifier {
     } else if (videoPlayerIndex == 2) {
       await player.dispose();
     }
-    await danmakuController.dispose();
+
     isTryToHls = false;
     isPlaying.value = false;
     hasError.value = false;
@@ -810,8 +815,10 @@ class VideoController with ChangeNotifier {
         danmakuSpeed.value = handleDanmuKeyLeft(items, danmakuSpeed.value);
       case DanmakuSettingClickType.danmakuArea:
         Map<dynamic, String> items = {
+          0.2: "1/5",
           0.25: "1/4",
           0.5: "1/2",
+          0.6: "3/5",
           0.75: "3/4",
           1.0: "全屏",
         };
@@ -833,6 +840,7 @@ class VideoController with ChangeNotifier {
         danmakuOpacity.value = handleDanmuKeyLeft(items, danmakuOpacity.value);
       case DanmakuSettingClickType.danmakuStorke:
         Map<dynamic, String> items = {
+          1.0: "2",
           2.0: "2",
           4.0: "4",
           6.0: "6",

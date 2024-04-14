@@ -205,12 +205,14 @@ class DanmakuViewer extends StatelessWidget {
               ? Container()
               : controller.livePlayController.success.value
                   ? BarrageWall(
+                      safeBottomHeight: 50,
+                      key: ValueKey(controller.room.roomId),
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height * controller.danmakuArea.value,
                       controller: controller.danmakuController,
                       speed: controller.danmakuSpeed.value.toInt(),
                       maxBulletHeight: controller.danmakuFontSize * 1.5,
-                      massiveMode: false, // disabled by default
+                      massiveMode: true, // disabled by default
                       child: Container(),
                     )
                   : Container(),

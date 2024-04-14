@@ -255,12 +255,14 @@ class LivePlayController extends StateController {
         } else {
           currentLineIndex.value = currentLineIndex.value + 1;
         }
+        isFirstLoad.value = false;
       } else if (reloadDataType == ReloadDataType.changeQuality) {
         if (quality == qualites.length - 1) {
           currentQuality.value = 0;
         } else {
           currentQuality.value = currentQuality.value + 1;
         }
+        isFirstLoad.value = false;
       }
     } catch (e) {
       restoryQualityAndLines();
