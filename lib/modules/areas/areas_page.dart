@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
@@ -185,11 +186,30 @@ class AreasPage extends GetView<AreasListController> {
     );
   }
 
+  handleLiveArea(LiveArea area) async {
+    if (controller.settingsService.isFavoriteArea(area)) {
+      var result = await Utils.showAlertDialog("确定要删除此分区吗?", title: "删除分区");
+      if (!result) {
+        return;
+      }
+      controller.settingsService.removeArea(area);
+    } else {
+      var result = await Utils.showAlertDialog("确定要添加此分区吗?", title: "添加分区");
+      if (!result) {
+        return;
+      }
+      controller.settingsService.addArea(area);
+    }
+  }
+
   Widget buildSubCategory(LiveArea item) {
     return HighlightWidget(
       focusNode: item.focusNode,
       onTap: () {
         AppNavigator.toCategoryDetail(site: controller.site, category: item);
+      },
+      onLongTap: () {
+        handleLiveArea(item);
       },
       color: Colors.white10,
       borderRadius: AppStyle.radius16,

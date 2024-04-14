@@ -100,7 +100,7 @@ class SettingsService extends GetxController {
     });
 
     currentPlayList.listen((p0) {
-      if (currentPlayList.value.isEmpty) {
+      if (currentPlayList.value.isEmpty && historyRooms.value.isNotEmpty) {
         var rooms = historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
         currentPlayList.value = rooms;
         currentPlayListNodeIndex.value = 0;
@@ -344,6 +344,14 @@ class SettingsService extends GetxController {
       return false;
     }
     favoriteRooms.remove(room);
+    return true;
+  }
+
+  bool removeHistoryRoom(LiveRoom room) {
+    if (!historyRooms.any((element) => element.roomId == room.roomId)) {
+      return false;
+    }
+    historyRooms.remove(room);
     return true;
   }
 

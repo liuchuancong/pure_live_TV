@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 
@@ -22,8 +23,6 @@ class FavoriteController extends GetxController {
     settings.currentPlayListNodeIndex.value = 0;
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
-
-    onRefresh();
   }
 
   final onlineRooms = [].obs;
@@ -42,6 +41,23 @@ class FavoriteController extends GetxController {
     onlineRooms.sort((a, b) => int.parse(b.watching!).compareTo(int.parse(a.watching!)));
     settings.currentPlayList.value = onlineRooms;
     settings.currentPlayListNodeIndex.value = 0;
+  }
+
+  handleFollowLongTap(LiveRoom room) async {
+    if (settings.isFavorite(room)) {
+      var result = await Utils.showAlertDialog("确定要取消关注此房间吗?", title: "取消关注");
+      if (!result) {
+        return;
+      }
+      settings.removeRoom(room);
+    } else {
+      var result = await Utils.showAlertDialog("确定要关注此房间吗?", title: "关注");
+      if (!result) {
+        return;
+      }
+      settings.addRoom(room);
+    }
+    syncRooms();
   }
 
   Future<bool> onRefresh() async {

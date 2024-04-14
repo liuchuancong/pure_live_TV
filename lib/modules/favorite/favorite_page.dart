@@ -87,7 +87,11 @@ class FavoritePage extends GetView<FavoriteController> {
                   return RoomCard(
                     focusNode: item.focusNode,
                     room: item,
+                    useDefaultLongTapEvent: false,
                     dense: controller.settings.enableDenseFavorites.value,
+                    onLongTap: () {
+                      controller.handleFollowLongTap(item);
+                    },
                   );
                 },
               ),

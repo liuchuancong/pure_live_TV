@@ -28,11 +28,8 @@ class HistoryPageController extends BasePageController<LiveRoom> {
   }
 
   void clean() async {
-    var result = await Utils.showAlertDialog("确定要清空观看记录吗?", title: "清空观看记录");
-    if (!result) {
-      return;
-    }
-    refreshData();
+    settingsService.historyRooms.value = [];
+    list.value = [];
   }
 
   void removeItem(LiveRoom item) async {
@@ -40,6 +37,7 @@ class HistoryPageController extends BasePageController<LiveRoom> {
     if (!result) {
       return;
     }
+    settingsService.removeHistoryRoom(item);
     refreshData();
   }
 

@@ -75,6 +75,9 @@ class RoutePath {
 
   /// webview
   static const kAgreementPage = "/agreement_page";
+
+  /// webview
+  static const kFavoriteAreas = "/favorite_areas";
 }
 
 enum RouteChangeType {

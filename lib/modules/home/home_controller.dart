@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:pure_live/app/utils.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -8,13 +9,14 @@ import 'package:pure_live/common/base/base_controller.dart';
 
 class HomeController extends BasePageController {
   var datetime = "00:00".obs;
-  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "捐赠支持"];
+  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区", "捐赠支持"];
   static List<IconData> mainPageIconOptions = [
     Icons.favorite_border,
     Remix.fire_line,
     Remix.apps_line,
     Remix.search_2_line,
     Icons.history,
+    Icons.view_module_rounded,
     Icons.monetization_on_outlined
   ];
   var rooms = <LiveRoom>[].obs;
@@ -32,6 +34,15 @@ class HomeController extends BasePageController {
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     refreshData();
     super.onInit();
+  }
+
+  void removeItem(LiveRoom item) async {
+    var result = await Utils.showAlertDialog("确定要删除此记录吗?", title: "删除记录");
+    if (!result) {
+      return;
+    }
+    settingsService.removeHistoryRoom(item);
+    refreshData();
   }
 
   void focusNodeListener() {

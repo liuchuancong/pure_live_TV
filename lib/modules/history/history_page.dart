@@ -63,7 +63,11 @@ class HistoryPage extends GetView<HistoryPageController> {
                   return RoomCard(
                     room: item,
                     dense: true,
+                    useDefaultLongTapEvent: false,
                     focusNode: controller.focusNodes[i],
+                    onLongTap: () {
+                      controller.removeItem(item);
+                    },
                   );
                 },
               ),

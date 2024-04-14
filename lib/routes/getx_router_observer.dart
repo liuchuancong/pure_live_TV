@@ -8,7 +8,6 @@ class GetXRouterObserver extends NavigatorObserver {
     // 进入页面 route.settings.name
     final SettingsService settingsService = Get.find<SettingsService>();
     settingsService.routeChangeType.value = RouteChangeType.push;
-    settingsService.currentRouteName.value = route.settings.name!;
   }
 
   @override
@@ -16,7 +15,5 @@ class GetXRouterObserver extends NavigatorObserver {
     super.didPop(route, previousRoute);
     final SettingsService settingsService = Get.find<SettingsService>();
     settingsService.routeChangeType.value = RouteChangeType.pop;
-    // 离开页面 previousRoute.settings.name
-    settingsService.currentRouteName.value = previousRoute!.settings.name!;
   }
 }

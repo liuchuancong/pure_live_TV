@@ -32,6 +32,9 @@ class HomePage extends GetView<HomeController> {
         Get.toNamed(RoutePath.kHistory);
         break;
       case 5:
+        Get.toNamed(RoutePath.kFavoriteAreas);
+        break;
+      case 6:
         Get.toNamed(RoutePath.kDonate);
         break;
       default:
@@ -193,6 +196,10 @@ class HomePage extends GetView<HomeController> {
                         return RoomCard(
                           room: item,
                           dense: true,
+                          useDefaultLongTapEvent: false,
+                          onLongTap: () {
+                            controller.removeItem(item);
+                          },
                           focusNode: controller.hisToryFocusNodes[i],
                         );
                       },

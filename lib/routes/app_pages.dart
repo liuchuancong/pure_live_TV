@@ -20,6 +20,7 @@ import 'package:pure_live/modules/agreement/agreement_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_page.dart';
 import 'package:pure_live/modules/live_play/live_play_page.dart';
 import 'package:pure_live/modules/shield/danmu_shield_page.dart';
+import 'package:pure_live/modules/areas/favorite_areas_page.dart';
 import 'package:pure_live/modules/favorite/favorite_binding.dart';
 import 'package:pure_live/modules/settings/settings_binding.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_page.dart';
@@ -125,5 +126,7 @@ class AppPages {
     ),
 
     GetPage(name: RoutePath.kAgreementPage, page: () => const AgreementPage()),
+    // 喜爱分区
+    GetPage(name: RoutePath.kFavoriteAreas, page: () => const FavoriteAreasPage()),
   ];
 }

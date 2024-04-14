@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
@@ -15,6 +16,7 @@ class HighlightWidget extends StatelessWidget {
   final FocusOnKeyDownCallback? onRightKey;
   final Function(bool)? onFocusChange;
   final Function()? onTap;
+  final Function()? onLongTap;
   final Color foucsedColor;
   final Color color;
   final bool autofocus;
@@ -32,6 +34,7 @@ class HighlightWidget extends StatelessWidget {
     this.onRightKey,
     this.onFocusChange,
     this.onTap,
+    this.onLongTap,
     this.useOtherController = false,
     this.autofocus = false,
     this.selected = false,
@@ -47,6 +50,8 @@ class HighlightWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = Get.find<SettingsService>();
     var themeColor = HexColor(settings.themeColorSwitch.value);
+    int currentTimeStamp = 0;
+    int eventDirection = 0;
     return useFocus
         ? FocusTraversalOrder(
             order: NumericFocusOrder(order),
@@ -55,6 +60,21 @@ class HighlightWidget extends StatelessWidget {
               autofocus: autofocus,
               onFocusChange: onFocusChange,
               onKeyEvent: (node, e) {
+                if (e is KeyUpEvent) {
+                  if (eventDirection == 0) return KeyEventResult.ignored;
+                  log('message: ${e.toString()} ${DateTime.now().millisecondsSinceEpoch - currentTimeStamp}');
+                  if (e.logicalKey == LogicalKeyboardKey.enter ||
+                      e.logicalKey == LogicalKeyboardKey.select ||
+                      e.logicalKey == LogicalKeyboardKey.space) {
+                    eventDirection = 0;
+                    var now = DateTime.now().millisecondsSinceEpoch;
+                    if (now - currentTimeStamp > 500 && currentTimeStamp != 0) {
+                      currentTimeStamp = 0;
+                      return onLongTap?.call() ?? KeyEventResult.ignored;
+                    }
+                    return onTap?.call() ?? KeyEventResult.ignored;
+                  }
+                }
                 if (e is KeyDownEvent) {
                   if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
                     return onRightKey?.call() ?? KeyEventResult.ignored;
@@ -71,7 +91,8 @@ class HighlightWidget extends StatelessWidget {
                   if (e.logicalKey == LogicalKeyboardKey.enter ||
                       e.logicalKey == LogicalKeyboardKey.select ||
                       e.logicalKey == LogicalKeyboardKey.space) {
-                    return onTap?.call() ?? KeyEventResult.ignored;
+                    currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
+                    eventDirection = 1;
                   }
                 }
 

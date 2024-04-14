@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:marquee/marquee.dart';
+import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
@@ -15,6 +16,8 @@ class RoomCard extends StatefulWidget {
     required this.focusNode,
     this.dense = false,
     this.isIptv = false,
+    this.onLongTap,
+    this.useDefaultLongTapEvent = true,
     this.areas = const [],
   });
   final LiveRoom room;
@@ -22,7 +25,8 @@ class RoomCard extends StatefulWidget {
   final bool isIptv;
   final List<LiveArea> areas;
   final AppFocusNode focusNode;
-
+  final Function()? onLongTap;
+  final bool useDefaultLongTapEvent;
   @override
   State<RoomCard> createState() => _RoomCardState();
 }
@@ -64,12 +68,34 @@ class _RoomCardState extends State<RoomCard> {
     }
   }
 
+  handleFollowLongTap() async {
+    final SettingsService settingsService = Get.find<SettingsService>();
+    if (settingsService.isFavorite(widget.room)) {
+      var result = await Utils.showAlertDialog("确定要取消关注此房间吗?", title: "取消关注");
+      if (!result) {
+        return;
+      }
+      settingsService.removeRoom(widget.room);
+    } else {
+      var result = await Utils.showAlertDialog("确定要关注此房间吗?", title: "关注");
+      if (!result) {
+        return;
+      }
+      settingsService.addRoom(widget.room);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return HighlightWidget(
       focusNode: widget.focusNode,
       color: Colors.white10,
       onTap: onTap,
+      onLongTap: widget.useDefaultLongTapEvent
+          ? () {
+              handleFollowLongTap();
+            }
+          : widget.onLongTap,
       borderRadius: AppStyle.radius16,
       child: Obx(
         () => Column(
