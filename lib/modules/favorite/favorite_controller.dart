@@ -15,12 +15,14 @@ class FavoriteController extends GetxController {
 
   bool isFirstLoad = true;
 
+  var loading = true.obs;
   @override
   void onInit() {
     super.onInit();
+
+    onlineRoomsNodes.requestFocus();
     // 初始化关注页
     syncRooms();
-    settings.currentPlayListNodeIndex.value = 0;
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
   }
@@ -29,6 +31,7 @@ class FavoriteController extends GetxController {
   final offlineRooms = [].obs;
 
   void syncRooms() {
+    loading.value = true;
     onlineRooms.clear();
     offlineRooms.clear();
     onlineRooms.addAll(settings.favoriteRooms.where((room) => room.liveStatus == LiveStatus.live));
@@ -41,6 +44,7 @@ class FavoriteController extends GetxController {
     onlineRooms.sort((a, b) => int.parse(b.watching!).compareTo(int.parse(a.watching!)));
     settings.currentPlayList.value = onlineRooms;
     settings.currentPlayListNodeIndex.value = 0;
+    loading.value = false;
   }
 
   handleFollowLongTap(LiveRoom room) async {
@@ -61,10 +65,7 @@ class FavoriteController extends GetxController {
   }
 
   Future<bool> onRefresh() async {
-    // 自动刷新时间为0关闭。不是手动刷新并且不是第一次刷新
-    if (isFirstLoad) {
-      await const Duration(seconds: 1).delay();
-    }
+    loading.value = true;
     bool hasError = false;
     List<Future<LiveRoom>> futures = [];
     if (settings.favoriteRooms.value.isEmpty) return false;
@@ -79,8 +80,10 @@ class FavoriteController extends GetxController {
       syncRooms();
     } catch (e) {
       hasError = true;
+      loading.value = false;
     }
     isFirstLoad = false;
+    loading.value = false;
     return hasError;
   }
 }

@@ -36,6 +36,29 @@ class FavoritePage extends GetView<FavoriteController> {
               ),
               AppStyle.hGap24,
               const Spacer(),
+              Obx(
+                () => Visibility(
+                  visible: controller.loading.value,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 48.w,
+                        height: 48.w,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 4.w,
+                        ),
+                      ),
+                      AppStyle.hGap16,
+                      Text(
+                        "正在更新...",
+                        style: AppStyle.textStyleWhite,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              AppStyle.hGap32,
               HighlightButton(
                 focusNode: AppFocusNode(),
                 iconData: Icons.refresh,
@@ -57,6 +80,7 @@ class FavoritePage extends GetView<FavoriteController> {
                 onTap: () {
                   controller.settings.currentPlayList.value = controller.onlineRooms;
                   controller.tabBottomIndex.value = 0;
+                  controller.onlineRoomsNodes.requestFocus();
                 },
               ),
               HighlightButton(
@@ -64,6 +88,7 @@ class FavoritePage extends GetView<FavoriteController> {
                 focusNode: controller.offlineRoomsNodes,
                 onTap: () {
                   controller.tabBottomIndex.value = 1;
+                  controller.offlineRoomsNodes.requestFocus();
                 },
               )
             ],

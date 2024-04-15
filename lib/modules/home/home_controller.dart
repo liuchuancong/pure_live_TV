@@ -89,6 +89,7 @@ class HomeController extends BasePageController {
         .toList();
     rooms.value = historyRooms;
     settingsService.currentPlayList.value = historyRooms;
+    settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return historyRooms;
   }
