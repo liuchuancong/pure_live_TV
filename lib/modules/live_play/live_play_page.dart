@@ -84,6 +84,11 @@ class LivePlayPage extends GetWidget<LivePlayController> {
                                                     "当前房间未开播或无法观看",
                                                     style: TextStyle(color: Colors.white, fontSize: 18),
                                                   ),
+                                                  AppStyle.vGap16,
+                                                  const Text(
+                                                    "请按确定按钮刷新重试",
+                                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                                  ),
                                                 ],
                                               ),
                                             ),

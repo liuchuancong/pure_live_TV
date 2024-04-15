@@ -71,9 +71,9 @@ class LocalHttpServer {
             final file = File('${dir.path}${Platform.pathSeparator}${ctx.parsed['name']}');
             file.writeAsStringSync(ctx.parsed['file']);
             if (settings.recover(file)) {
-              SmartDialog.showToast("恢复备份成功");
+              SmartDialog.showToast("恢复备份成功", displayTime: const Duration(seconds: 2));
             } else {
-              SmartDialog.showToast("恢复备份失败");
+              SmartDialog.showToast("恢复备份失败", displayTime: const Duration(seconds: 2));
             }
           } else {
             next();

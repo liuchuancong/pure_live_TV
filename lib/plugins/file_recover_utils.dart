@@ -53,7 +53,7 @@ class FileRecoverUtils {
     try {
       dio.Response response = await dioInstance.download(url, m3ufile.path);
       if (response.statusCode != 200 && response.statusCode != 304) {
-        SmartDialog.showToast("文件下载失败请重试");
+        SmartDialog.showToast("文件下载失败请重试", displayTime: const Duration(seconds: 2));
       }
       List jsonArr = [];
       final categories = File('${dir.path}${Platform.pathSeparator}categories.json');
@@ -73,10 +73,10 @@ class FileRecoverUtils {
       }
 
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      SmartDialog.showToast("恢复备份成功");
+      SmartDialog.showToast("恢复备份成功", displayTime: const Duration(seconds: 2));
       return true;
     } catch (e) {
-      SmartDialog.showToast("恢复备份失败");
+      SmartDialog.showToast("恢复备份失败", displayTime: const Duration(seconds: 2));
       return false;
     }
   }
@@ -99,10 +99,10 @@ class FileRecoverUtils {
             id: getUUid(), name: getName(m3ufile.path).replaceAll(RegExp(r'.m3u'), ''), path: m3ufile.path));
       }
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      SmartDialog.showToast("恢复备份成功");
+      SmartDialog.showToast("恢复备份成功", displayTime: const Duration(seconds: 2));
       return true;
     } catch (e) {
-      SmartDialog.showToast("恢复备份失败");
+      SmartDialog.showToast("恢复备份失败", displayTime: const Duration(seconds: 2));
       return false;
     }
   }

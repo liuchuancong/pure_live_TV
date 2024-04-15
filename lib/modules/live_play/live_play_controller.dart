@@ -79,6 +79,8 @@ class LivePlayController extends StateController {
   var lastChannelIndex = 0.obs;
 
   Timer? channelTimer;
+
+  Timer? loadRefreshRoomTimer;
   // 切换线路会添加到这个数组里面
   var isLastLine = false.obs;
 
@@ -120,6 +122,26 @@ class LivePlayController extends StateController {
         });
       }
     });
+
+    isLastLine.listen((p0) {
+      if (isLastLine.value && hasError.value) {
+        // 刷新到了最后一路线 并且有错误
+        SmartDialog.showToast("当前房间无法播放,正在为您每10秒刷新直播间信息...", displayTime: const Duration(seconds: 2));
+        Timer(const Duration(seconds: 1), () {
+          loadRefreshRoomTimer?.cancel();
+          loadRefreshRoomTimer = Timer(const Duration(seconds: 10), () {
+            isLastLine.value = false;
+            isFirstLoad.value = true;
+            restoryQualityAndLines();
+            resetRoom(Sites.of(currentPlayRoom.value.platform!), currentPlayRoom.value.roomId!);
+          });
+        });
+      } else {
+        if (success.value) {
+          loadRefreshRoomTimer?.cancel();
+        }
+      }
+    });
     super.onInit();
   }
 
@@ -129,7 +151,8 @@ class LivePlayController extends StateController {
     int currentQuality = 0,
   }) async {
     isFirstLoad.value = true;
-    var liveRoom = await currentSite.liveSite.getRoomDetail(roomId: room.roomId!, platform: site);
+    var liveRoom = await currentSite.liveSite
+        .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
     isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
     if (isLastLine.value) {
       hasError.value = true;
@@ -148,7 +171,7 @@ class LivePlayController extends StateController {
       detail.value = liveRoom;
       resetGlobalListState();
       if (liveRoom.liveStatus == LiveStatus.unknown) {
-        SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
+        SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
         getVideoSuccess.value = false;
         isFirstLoad.value = false;
         return liveRoom;
@@ -169,7 +192,7 @@ class LivePlayController extends StateController {
         isFirstLoad.value = false;
         success.value = false;
         getVideoSuccess.value = true;
-        SmartDialog.showToast("当前主播未开播或主播已下播");
+        SmartDialog.showToast("当前主播未开播或主播已下播", displayTime: const Duration(seconds: 2));
         restoryQualityAndLines();
       }
 
@@ -196,7 +219,7 @@ class LivePlayController extends StateController {
     detail.value = liveRoom;
     resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {
-      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
+      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
       getVideoSuccess.value = false;
       return liveRoom;
     }
@@ -260,6 +283,9 @@ class LivePlayController extends StateController {
         if (quality == qualites.length - 1) {
           currentQuality.value = 0;
         } else {
+          if (currentPlayRoom.value.platform == 'huya' && qualites.length >= 2 && isFirstLoad.value) {
+            currentQuality.value = 1;
+          }
           currentQuality.value = currentQuality.value + 1;
         }
         isFirstLoad.value = false;
@@ -267,9 +293,9 @@ class LivePlayController extends StateController {
     } catch (e) {
       restoryQualityAndLines();
       if (reloadDataType == ReloadDataType.changeLine) {
-        SmartDialog.showToast("切换线路失败");
+        SmartDialog.showToast("切换线路失败", displayTime: const Duration(seconds: 2));
       } else if (reloadDataType == ReloadDataType.changeQuality) {
-        SmartDialog.showToast("切换清晰度失败");
+        SmartDialog.showToast("切换清晰度失败", displayTime: const Duration(seconds: 2));
       }
     }
   }
@@ -351,7 +377,7 @@ class LivePlayController extends StateController {
     try {
       var playQualites = await currentSite.liveSite.getPlayQualites(detail: detail.value!);
       if (playQualites.isEmpty) {
-        SmartDialog.showToast("无法读取视频信息,请按确定键重新获取");
+        SmartDialog.showToast("无法读取视频信息,请按确定键重新获取", displayTime: const Duration(seconds: 2));
         getVideoSuccess.value = false;
         isFirstLoad.value = false;
         success.value = false;
@@ -394,7 +420,7 @@ class LivePlayController extends StateController {
     var playUrl =
         await currentSite.liveSite.getPlayUrls(detail: detail.value!, quality: qualites[currentQuality.value]);
     if (playUrl.isEmpty) {
-      SmartDialog.showToast("无法读取播放地址,请按确定键重新获取");
+      SmartDialog.showToast("无法读取播放地址,请按确定键重新获取", displayTime: const Duration(seconds: 2));
       getVideoSuccess.value = false;
       isFirstLoad.value = false;
       success.value = false;
@@ -439,7 +465,7 @@ class LivePlayController extends StateController {
     var liveChannels = settings.currentPlayList;
     log(liveChannels.length.toString());
     if (liveChannels.isEmpty) {
-      SmartDialog.showToast("没有正在直播的频道");
+      SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
       return;
     }
     var index = settings.currentPlayListNodeIndex.value;
@@ -465,7 +491,7 @@ class LivePlayController extends StateController {
     var liveChannels = settings.currentPlayList;
     log(liveChannels.length.toString());
     if (liveChannels.isEmpty) {
-      SmartDialog.showToast("没有正在直播的频道");
+      SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
       return;
     }
     var index = settings.currentPlayListNodeIndex.value;
@@ -528,6 +554,7 @@ class LivePlayController extends StateController {
     if (key.logicalKey == LogicalKeyboardKey.select ||
         key.logicalKey == LogicalKeyboardKey.enter ||
         key.logicalKey == LogicalKeyboardKey.space) {
+      restoryQualityAndLines();
       resetRoom(Sites.of(currentPlayRoom.value.platform!), currentPlayRoom.value.roomId!);
     }
   }
