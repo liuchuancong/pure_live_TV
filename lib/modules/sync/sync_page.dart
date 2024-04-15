@@ -43,62 +43,79 @@ class SyncPage extends GetView<SyncController> {
           ),
           AppStyle.vGap24,
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Obx(
-                  () => Visibility(
-                    visible: controller.settingServer.webPortEnable.value,
-                    child: GestureDetector(
-                      onTap: () {
-                        Get.back();
-                      },
-                      child: QrImageView(
-                        data: 'http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}',
-                        version: QrVersions.auto,
-                        backgroundColor: Colors.white,
-                        padding: AppStyle.edgeInsetsA24,
-                        size: 420.0.w,
+              child: Obx(
+            () => controller.isFiretloader.value
+                ? Center(
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "服务正在开启中,请稍后...",
+                        style: AppStyle.textStyleWhite,
                       ),
-                    ),
+                      AppStyle.vGap48,
+                      const CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    ],
+                  ))
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Obx(
+                        () => Visibility(
+                          visible: controller.settingServer.webPortEnable.value,
+                          child: GestureDetector(
+                            onTap: () {
+                              Get.back();
+                            },
+                            child: QrImageView(
+                              data: 'http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}',
+                              version: QrVersions.auto,
+                              backgroundColor: Colors.white,
+                              padding: AppStyle.edgeInsetsA24,
+                              size: 420.0.w,
+                            ),
+                          ),
+                        ),
+                      ),
+                      AppStyle.vGap24,
+                      Obx(
+                        () => Visibility(
+                          visible: controller.settingServer.webPortEnable.value,
+                          child: Text(
+                            '服务已启动：http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}',
+                            style: AppStyle.textStyleWhite,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      Obx(
+                        () => Visibility(
+                          visible: !controller.settingServer.webPortEnable.value,
+                          child: Text(
+                            'HTTP服务未启动：${controller.settingServer.httpErrorMsg.value}，请尝试重启应用',
+                            style: AppStyle.textStyleWhite,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      AppStyle.vGap12,
+                      Obx(
+                        () => Visibility(
+                          visible: controller.settingServer.webPortEnable.value,
+                          child: Text(
+                            "请使用手机扫描上方二维码\n建立连接后可在浏览器端选择需要同步至TV端的数据",
+                            style: AppStyle.textStyleWhite,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                AppStyle.vGap24,
-                Obx(
-                  () => Visibility(
-                    visible: controller.settingServer.webPortEnable.value,
-                    child: Text(
-                      '服务已启动：http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}',
-                      style: AppStyle.textStyleWhite,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                Obx(
-                  () => Visibility(
-                    visible: !controller.settingServer.webPortEnable.value,
-                    child: Text(
-                      'HTTP服务未启动：${controller.settingServer.httpErrorMsg.value}，请尝试重启应用',
-                      style: AppStyle.textStyleWhite,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                AppStyle.vGap12,
-                Obx(
-                  () => Visibility(
-                    visible: controller.settingServer.webPortEnable.value,
-                    child: Text(
-                      "请使用手机扫描上方二维码\n建立连接后可在浏览器端选择需要同步至TV端的数据",
-                      style: AppStyle.textStyleWhite,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          )),
         ],
       ),
     );

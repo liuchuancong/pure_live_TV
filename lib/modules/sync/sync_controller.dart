@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pure_live/plugins/local_http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
@@ -10,11 +11,15 @@ class SyncController extends BaseController {
   NetworkInfo networkInfo = NetworkInfo();
   var ipAddress = ''.obs;
   var port = '9527'.obs;
+  var isFiretloader = true.obs;
   @override
   void onInit() {
     super.onInit();
     initIpAddresses();
     LocalHttpServer().startServer(port.value);
+    Timer(const Duration(seconds: 2), () {
+      isFiretloader.value = false;
+    });
   }
 
   @override

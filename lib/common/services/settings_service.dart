@@ -480,7 +480,6 @@ class SettingsService extends GetxController {
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
-    setBilibiliCookit(bilibiliCookie.value);
     changePreferResolution(preferResolution.value);
     changePreferPlatform(preferPlatform.value);
   }
