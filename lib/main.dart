@@ -6,8 +6,9 @@ import 'package:pure_live/routes/getx_router_observer.dart';
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   PrefUtil.prefs = await SharedPreferences.getInstance();
-  MediaKit.ensureInitialized();
   // 初始化服务
+  initService();
+
   // 强制横屏
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeRight,
@@ -15,7 +16,7 @@ void main(List<String> args) async {
   ]);
   // 全屏
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-  initService();
+
   runApp(const MyApp());
 }
 
@@ -32,14 +33,19 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   @override
+  void initState() {
+    MediaKit.ensureInitialized();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final settings = Get.find<SettingsService>();
     return ScreenUtilInit(
         designSize: const Size(1920, 1080),
         minTextAdapt: true,
         splitScreenMode: true,
         builder: (context, child) {
+          final settings = Get.find<SettingsService>();
           return Obx(() {
             return GetMaterialApp(
               debugShowCheckedModeBanner: false,

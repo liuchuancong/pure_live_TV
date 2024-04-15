@@ -97,11 +97,11 @@ class LivePlayController extends StateController {
 
   @override
   void onInit() {
-    onInitPlayerState();
-
     // 发现房间ID 会变化 使用静态列表ID 对比
 
     currentPlayRoom.value = room;
+    onInitPlayerState();
+
     isFirstLoad.listen((p0) {
       if (isFirstLoad.value) {
         loadTimeOut.value = true;
