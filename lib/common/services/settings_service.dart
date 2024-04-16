@@ -452,31 +452,12 @@ class SettingsService extends GetxController {
     shieldList.value = json['shieldList'] != null ? (json['shieldList'] as List).map((e) => e.toString()).toList() : [];
     hotAreasList.value =
         json['hotAreasList'] != null ? (json['hotAreasList'] as List).map((e) => e.toString()).toList() : [];
-    autoShutDownTime.value = json['autoShutDownTime'] ?? 120;
-    autoRefreshTime.value = json['autoRefreshTime'] ?? 3;
     themeModeName.value = json['themeMode'] ?? "System";
-    enableAutoShutDownTime.value = json['enableAutoShutDownTime'] ?? false;
     enableDynamicTheme.value = json['enableDynamicTheme'] ?? false;
     enableDenseFavorites.value = json['enableDenseFavorites'] ?? false;
-    enableBackgroundPlay.value = json['enableBackgroundPlay'] ?? false;
-    enableScreenKeepOn.value = json['enableScreenKeepOn'] ?? true;
-    enableAutoCheckUpdate.value = json['enableAutoCheckUpdate'] ?? true;
-    enableFullScreenDefault.value = json['enableFullScreenDefault'] ?? false;
     languageName.value = json['languageName'] ?? "简体中文";
     preferResolution.value = json['preferResolution'] ?? resolutions[0];
     preferPlatform.value = json['preferPlatform'] ?? platforms[0];
-    videoFitIndex.value = json['videoFitIndex'] ?? 0;
-    hideDanmaku.value = json['hideDanmaku'] ?? false;
-    danmakuArea.value = json['danmakuArea'] != null ? double.parse(json['danmakuArea'].toString()) : 1.0;
-    danmakuSpeed.value = json['danmakuSpeed'] != null ? double.parse(json['danmakuSpeed'].toString()) : 8.0;
-    danmakuFontSize.value = json['danmakuFontSize'] != null ? double.parse(json['danmakuFontSize'].toString()) : 16.0;
-    danmakuFontBorder.value =
-        json['danmakuFontBorder'] != null ? double.parse(json['danmakuFontBorder'].toString()) : 0.5;
-    danmakuOpacity.value = json['danmakuOpacity'] != null ? double.parse(json['danmakuOpacity'].toString()) : 1.0;
-    doubleExit.value = json['doubleExit'] ?? true;
-    videoPlayerIndex.value = json['videoPlayerIndex'] ?? 0;
-    enableCodec.value = json['enableCodec'] ?? true;
-    mergeDanmuRating.value = json['mergeDanmuRating'] != null ? double.parse(json['mergeDanmuRating'].toString()) : 0.0;
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
@@ -520,7 +501,7 @@ class SettingsService extends GetxController {
 
     json['mergeDanmuRating'] = mergeDanmuRating.value;
     json['themeColorSwitch'] = themeColorSwitch.value;
-    json['webPort '] = webPort.value;
+    json['webPort'] = webPort.value;
     json['webPortEnable'] = false;
     return json;
   }
