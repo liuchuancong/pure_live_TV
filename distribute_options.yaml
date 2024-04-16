@@ -1,0 +1,11 @@
+output: dist/
+releases:
+  - name: dev
+    jobs:
+      - name: release-windows
+        package:
+          platform: windows
+          target: exe
+          build_args:
+            dart-define:
+              APP_ENV: dev

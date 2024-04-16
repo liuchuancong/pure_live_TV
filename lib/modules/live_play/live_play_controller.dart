@@ -283,9 +283,6 @@ class LivePlayController extends StateController {
         if (quality == qualites.length - 1) {
           currentQuality.value = 0;
         } else {
-          if (currentPlayRoom.value.platform == 'huya' && qualites.length >= 2 && isFirstLoad.value) {
-            currentQuality.value = 1;
-          }
           currentQuality.value = currentQuality.value + 1;
         }
         isFirstLoad.value = false;
@@ -427,6 +424,9 @@ class LivePlayController extends StateController {
       return;
     }
     playUrls.value = playUrl;
+    if (currentPlayRoom.value.platform == 'huya' && playUrls.length >= 2 && isFirstLoad.value) {
+      currentLineIndex.value = 1;
+    }
     setPlayer();
   }
 
