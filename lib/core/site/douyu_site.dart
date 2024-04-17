@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
@@ -56,7 +57,7 @@ class DouyuSite implements LiveSite {
         areaId: item["cid2"].toString(),
         typeName: liveCategory.name,
         areaType: liveCategory.id,
-        platform: 'douyu',
+        platform: Sites.douyuSite,
         areaName: item["cname2"].toString(),
       ));
     }
@@ -86,7 +87,7 @@ class DouyuSite implements LiveSite {
         liveStatus: LiveStatus.live,
         avatar: item['av'].toString().isNotEmpty ? 'https://apic.douyucdn.cn/upload/${item['av']}_middle.jpg' : '',
         status: true,
-        platform: 'douyu',
+        platform: Sites.douyuSite,
       );
       items.add(roomItem);
     }
@@ -169,7 +170,7 @@ class DouyuSite implements LiveSite {
         nick: item['nn'].toString(),
         area: item['c2name'].toString(),
         avatar: item['av'].toString().isNotEmpty ? 'https://apic.douyucdn.cn/upload/${item['av']}_middle.jpg' : '',
-        platform: 'douyu',
+        platform: Sites.douyuSite,
         status: true,
         liveStatus: LiveStatus.live,
       );
@@ -217,7 +218,7 @@ class DouyuSite implements LiveSite {
         status: roomInfo["show_status"] == 1,
         danmakuData: roomInfo["room_id"].toString(),
         data: await getPlayArgs(crptext, roomInfo["room_id"].toString()),
-        platform: 'douyu',
+        platform: Sites.douyuSite,
         link: "https://www.douyu.com/$roomId",
         isRecord: roomInfo["videoLoop"] == 1,
       );
@@ -264,7 +265,7 @@ class DouyuSite implements LiveSite {
         liveStatus: liveStatus && roomType == 0 ? LiveStatus.live : LiveStatus.offline,
         status: liveStatus && roomType == 0,
         nick: item["nickName"].toString(),
-        platform: 'douyu',
+        platform: Sites.douyuSite,
         watching: item["hot"].toString(),
       );
       items.add(roomItem);

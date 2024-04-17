@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/common/models/live_area.dart';
@@ -96,7 +97,7 @@ class KuaishowSite implements LiveSite {
         areaId: item["id"],
         areaName: item["name"],
         areaType: liveCategory.id,
-        platform: 'kuaishou',
+        platform: Sites.kuaishouSite,
         areaPic: item["poster"],
         typeName: liveCategory.name,
       );
@@ -128,7 +129,7 @@ class KuaishowSite implements LiveSite {
         area: item["gameInfo"]["name"].toString(),
         liveStatus: LiveStatus.live,
         status: true,
-        platform: 'kuaishou',
+        platform: Sites.kuaishouSite,
       );
       items.add(roomItem);
     }
@@ -180,7 +181,7 @@ class KuaishowSite implements LiveSite {
             notice: author["description"],
             status: true,
             liveStatus: LiveStatus.live,
-            platform: 'kuaishou',
+            platform: Sites.kuaishouSite,
             data: titem["playUrls"],
           );
           items.add(roomItems);
@@ -300,7 +301,8 @@ class KuaishowSite implements LiveSite {
       var liveStream = jsonObj["liveroom"]["playList"][0]["liveStream"];
       var author = jsonObj["liveroom"]["playList"][0]["author"];
       var gameInfo = jsonObj["liveroom"]["playList"][0]["gameInfo"];
-      // var liveStreamId = liveStream["id"];
+      var liveStreamId = liveStream["id"];
+
       // var res = await getWebsocketUrl(liveStreamId);
       return LiveRoom(
         cover: liveStream["coverUrl"],
@@ -314,8 +316,8 @@ class KuaishowSite implements LiveSite {
         notice: author["description"],
         status: jsonObj["liveroom"]["playList"][0]["isLiving"],
         liveStatus: jsonObj["liveroom"]["playList"][0]["isLiving"] ? LiveStatus.live : LiveStatus.offline,
-        platform: 'kuaishou',
-        link: url,
+        platform: Sites.kuaishouSite,
+        link: liveStreamId,
         data: liveStream["playUrls"],
       );
     } catch (e) {

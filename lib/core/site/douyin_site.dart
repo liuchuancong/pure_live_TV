@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:get/get.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/common/models/live_area.dart';
@@ -80,7 +81,7 @@ class DouyinSite implements LiveSite {
           areaType: id,
           areaName: subItem["partition"]["title"] ?? '',
           areaPic: "",
-          platform: 'douyin',
+          platform: Sites.douyinSite,
         );
         subs.add(subCategory);
       }
@@ -98,7 +99,7 @@ class DouyinSite implements LiveSite {
             areaType: category.id,
             areaPic: "",
             areaName: category.name,
-            platform: 'douyin',
+            platform: Sites.douyinSite,
           ));
       categories.add(category);
     }
@@ -136,7 +137,7 @@ class DouyinSite implements LiveSite {
         liveStatus: LiveStatus.live,
         avatar: item["room"]["owner"]["avatar_thumb"]["url_list"][0].toString(),
         status: true,
-        platform: 'douyin',
+        platform: Sites.douyinSite,
         area: item['tag_name'].toString(),
         watching: item["room"]?["room_view_stats"]?["display_value"].toString() ?? '',
       );
@@ -171,7 +172,7 @@ class DouyinSite implements LiveSite {
         title: item["room"]["title"].toString(),
         cover: item["room"]["cover"]["url_list"][0].toString(),
         nick: item["room"]["owner"]["nickname"].toString(),
-        platform: 'douyin',
+        platform: Sites.douyinSite,
         area: item["tag_name"] ?? '热门推荐',
         avatar: item["room"]["owner"]["avatar_thumb"]["url_list"][0].toString(),
         watching: item["room"]?["room_view_stats"]?["display_value"].toString() ?? '',
@@ -228,7 +229,7 @@ class DouyinSite implements LiveSite {
         link: "https://live.douyin.com/$webRid",
         area: partition?['partition']?['title'].toString() ?? '',
         status: roomStatus,
-        platform: 'douyin',
+        platform: Sites.douyinSite,
         introduction: roomInfo["title"].toString(),
         notice: "",
         danmakuData: DouyinDanmakuArgs(
@@ -379,7 +380,7 @@ class DouyinSite implements LiveSite {
         title: itemData["title"].toString(),
         cover: itemData["cover"]["url_list"][0].toString(),
         nick: itemData["owner"]["nickname"].toString(),
-        platform: 'douyin',
+        platform: Sites.douyinSite,
         avatar: itemData["owner"]["avatar_thumb"]["url_list"][0].toString(),
         liveStatus: roomStatus ? LiveStatus.live : LiveStatus.offline,
         area: '',

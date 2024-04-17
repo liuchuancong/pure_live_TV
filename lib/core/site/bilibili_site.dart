@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/common/models/live_area.dart';
@@ -49,7 +50,7 @@ class BiliBiliSite implements LiveSite {
           areaType: asT<String?>(subItem["parent_id"]) ?? "",
           typeName: asT<String?>(subItem["parent_name"]) ?? "",
           areaPic: "${asT<String?>(subItem["pic"]) ?? ""}@100w.png",
-          platform: 'bilibili',
+          platform: Sites.bilibiliSite,
         );
         subs.add(subCategory);
       }
@@ -94,7 +95,7 @@ class BiliBiliSite implements LiveSite {
           liveStatus: LiveStatus.live,
           area: item["area_name"].toString(),
           status: true,
-          platform: 'bilibili');
+          platform: Sites.bilibiliSite);
       items.add(roomItem);
     }
     return LiveCategoryResult(hasMore: hasMore, items: items);
@@ -209,7 +210,7 @@ class BiliBiliSite implements LiveSite {
         avatar: item["face"].toString(),
         watching: item["online"].toString(),
         liveStatus: LiveStatus.live,
-        platform: 'bilibili',
+        platform: Sites.bilibiliSite,
       );
       items.add(roomItem);
     }
@@ -259,7 +260,7 @@ class BiliBiliSite implements LiveSite {
         link: "https://live.bilibili.com/$roomId",
         introduction: result["data"]["room_info"]["description"].toString(),
         notice: "",
-        platform: 'bilibili',
+        platform: Sites.bilibiliSite,
         danmakuData: BiliBiliDanmakuArgs(
           roomId: asT<int?>(result["data"]["room_info"]["room_id"]) ?? 0,
           uid: userId,
@@ -310,7 +311,7 @@ class BiliBiliSite implements LiveSite {
         area: item["cate_name"].toString(),
         status: (asT<int?>(item["live_status"]) ?? 0) == 1,
         avatar: "https:${item["uface"]}@400w.jpg",
-        platform: 'bilibili',
+        platform: Sites.bilibiliSite,
       );
       items.add(roomItem);
     }

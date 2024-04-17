@@ -10,6 +10,14 @@ import 'package:pure_live/core/site/kuaishou_site.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 
 class Sites {
+  static const String allSite = "all";
+  static const String bilibiliSite = "bilibili";
+  static const String douyuSite = "douyu";
+  static const String huyaSite = "huya";
+  static const String douyinSite = "douyin";
+  static const String kuaishouSite = "kuaishou";
+  static const String ccSite = "cc";
+  static const String iptvSite = "iptv";
   static List<Site> supportSites = [
     Site(
       id: "bilibili",

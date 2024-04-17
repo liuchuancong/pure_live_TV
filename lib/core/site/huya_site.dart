@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:pure_live/model/live_category.dart';
@@ -64,7 +65,7 @@ class HuyaSite implements LiveSite {
           areaId: gid!,
           areaName: item["gameFullName"].toString(),
           areaType: liveCategory.id,
-          platform: 'huya',
+          platform: Sites.huyaSite,
           areaPic: "https://huyaimg.msstatic.com/cdnimage/game/$gid-MS.jpg",
           typeName: liveCategory.name);
       subs.add(subCategory);
@@ -106,7 +107,7 @@ class HuyaSite implements LiveSite {
         area: item["gameFullName"].toString(),
         liveStatus: LiveStatus.live,
         status: true,
-        platform: 'huya',
+        platform: Sites.huyaSite,
       );
       items.add(roomItem);
     }
@@ -181,16 +182,17 @@ class HuyaSite implements LiveSite {
         title = item["roomName"]?.toString() ?? "";
       }
       var roomItem = LiveRoom(
-          roomId: item["profileRoom"].toString(),
-          title: title,
-          cover: cover,
-          area: item["gameFullName"].toString(),
-          nick: item["nick"].toString(),
-          avatar: item["avatar180"],
-          watching: item["totalCount"].toString(),
-          platform: 'huya',
-          liveStatus: LiveStatus.live,
-          status: true);
+        roomId: item["profileRoom"].toString(),
+        title: title,
+        cover: cover,
+        area: item["gameFullName"].toString(),
+        nick: item["nick"].toString(),
+        avatar: item["avatar180"],
+        watching: item["totalCount"].toString(),
+        platform: Sites.huyaSite,
+        liveStatus: LiveStatus.live,
+        status: true,
+      );
       items.add(roomItem);
     }
     var hasMore = result["data"]["page"] < result["data"]["totalPage"];
@@ -258,7 +260,7 @@ class HuyaSite implements LiveSite {
           notice: jsonObj["welcomeText"].toString(),
           status: jsonObj["roomInfo"]["eLiveStatus"] == 2,
           liveStatus: jsonObj["roomInfo"]["eLiveStatus"] == 2 ? LiveStatus.live : LiveStatus.offline,
-          platform: 'huya',
+          platform: Sites.huyaSite,
           data: HuyaUrlDataModel(
             url: "https:${utf8.decode(base64.decode(jsonObj["roomProfile"]["liveLineUrl"].toString()))}",
             lines: huyaLines,
@@ -318,7 +320,7 @@ class HuyaSite implements LiveSite {
         liveStatus: LiveStatus.live,
         avatar: item["game_imgUrl"].toString(),
         watching: item["game_total_count"].toString(),
-        platform: 'huya',
+        platform: Sites.huyaSite,
       );
       items.add(roomItem);
     }

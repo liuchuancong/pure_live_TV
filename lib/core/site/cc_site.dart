@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:get/get.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/common/models/live_area.dart';
@@ -59,7 +60,7 @@ class CCSite implements LiveSite {
         areaId: gid,
         areaName: item["name"] ?? '',
         areaType: liveCategory.id,
-        platform: 'cc',
+        platform: Sites.ccSite,
         areaPic: item["cover"],
         typeName: liveCategory.name,
       );
@@ -87,7 +88,7 @@ class CCSite implements LiveSite {
         area: item["game_name"] ?? '',
         liveStatus: LiveStatus.live,
         status: true,
-        platform: 'cc',
+        platform: Sites.ccSite,
       );
       items.add(roomItem);
     }
@@ -100,19 +101,27 @@ class CCSite implements LiveSite {
     List<LivePlayQuality> qualities = <LivePlayQuality>[];
     var reflect = {
       'blueray': '原画',
+      'original': '原画',
       'high': '高清',
+      'medium': '标准',
       'standard': '标准',
+      'low': '低清',
       'ultra': '蓝光',
     };
 
-    var priority = ['hs', 'ks', 'ali'];
-    Map qulityList = detail.data['resolution'];
+    var priority = ['hs', 'ks', 'ali', 'fws', 'wy'];
+    bool isLiveStream = detail.data['resolution'] == null;
+    Map qulityList = isLiveStream ? detail.data : detail.data['resolution'];
     qulityList.forEach((key, value) {
-      Map cdn = value['cdn'];
+      Map cdn = isLiveStream ? value['CDN_FMT'] : value['cdn'];
       List<String> lines = [];
       cdn.forEach((line, lineValue) {
         if (priority.contains(line)) {
-          lines.add(lineValue.toString());
+          if (isLiveStream) {
+            lines.add('${detail.link!}&$lineValue');
+          } else {
+            lines.add(lineValue.toString());
+          }
         }
       });
       var qualityItem = LivePlayQuality(
@@ -151,7 +160,7 @@ class CCSite implements LiveSite {
         area: item["game_name"] ?? '',
         liveStatus: LiveStatus.live,
         status: true,
-        platform: 'cc',
+        platform: Sites.ccSite,
       );
       items.add(roomItem);
     }
@@ -169,10 +178,11 @@ class CCSite implements LiveSite {
         "user-agent": kUserAgent,
       });
       var channelId = result['data'][roomId]['channel_id'];
+
       String urlToGetReal = "https://cc.163.com/live/channel/?channelids=$channelId";
       var resultReal = await HttpClient.instance.getJson(urlToGetReal, queryParameters: {'anchor_ccid': roomId});
       var roomInfo = resultReal["data"][0];
-
+      log(roomInfo.toString());
       return LiveRoom(
         cover: roomInfo["cover"],
         watching: roomInfo["follower_num"].toString(),
@@ -185,9 +195,10 @@ class CCSite implements LiveSite {
         notice: roomInfo["personal_label"],
         status: roomInfo["status"] == 1,
         liveStatus: roomInfo["status"] == 1 ? LiveStatus.live : LiveStatus.offline,
-        platform: platform,
-        link: url,
-        data: roomInfo["quickplay"],
+        platform: Sites.ccSite,
+        link: roomInfo['m3u8'],
+        userId: roomInfo['cid'].toString(),
+        data: roomInfo["quickplay"] ?? roomInfo["stream_list"],
       );
     } catch (e) {
       log(e.toString(), name: 'CC.getRoomDetail');
@@ -221,7 +232,7 @@ class CCSite implements LiveSite {
         liveStatus: item['status'] != null && item['status'] == 1 ? LiveStatus.live : LiveStatus.offline,
         avatar: item["portrait"].toString(),
         watching: item["follower_num"].toString(),
-        platform: 'cc',
+        platform: Sites.ccSite,
       );
       items.add(roomItem);
     }

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../iptv/m3u_parser_nullsafe.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/core/iptv/iptv_utils.dart';
 import 'package:pure_live/common/models/live_area.dart';
@@ -43,7 +44,7 @@ class IptvSite implements LiveSite {
         areaId: item.link,
         typeName: liveCategory.name,
         areaType: liveCategory.id,
-        platform: 'iptv',
+        platform: Sites.iptvSite,
         areaName: item.title,
       ));
     }
@@ -65,7 +66,7 @@ class IptvSite implements LiveSite {
       area: '',
       liveStatus: LiveStatus.live,
       status: true,
-      platform: 'iptv',
+      platform: Sites.iptvSite,
     );
     items.add(roomItem);
     return Future.value(LiveCategoryResult(hasMore: false, items: items));
@@ -117,7 +118,7 @@ class IptvSite implements LiveSite {
         notice: '',
         status: true,
         liveStatus: LiveStatus.live,
-        platform: 'iptv',
+        platform: Sites.iptvSite,
         link: item.link,
         data: item.link,
       );
@@ -143,7 +144,7 @@ class IptvSite implements LiveSite {
       notice: '',
       status: true,
       liveStatus: LiveStatus.live,
-      platform: 'iptv',
+      platform: Sites.iptvSite,
       link: roomId,
       data: roomId,
     );
