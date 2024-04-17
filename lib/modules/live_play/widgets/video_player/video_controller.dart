@@ -404,7 +404,7 @@ class VideoController with ChangeNotifier {
             changeQuality();
             break;
           case BottomButtonClickType.changeLine:
-            changeLine();
+            changeLine(active: true);
             break;
           case BottomButtonClickType.boxFit:
             setVideoFit();
@@ -553,11 +553,15 @@ class VideoController with ChangeNotifier {
     livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
   }
 
-  void changeLine() async {
+  void changeLine({bool active = false}) async {
     // 播放错误 不一定是线路问题 先切换路线解决 后面尝试通知用户切换播放器
     await destory();
     livePlayController.onInitPlayerState(
-        reloadDataType: ReloadDataType.changeLine, line: currentLineIndex, currentQuality: currentQuality);
+      reloadDataType: ReloadDataType.changeLine,
+      line: currentLineIndex,
+      currentQuality: currentQuality,
+      active: active,
+    );
   }
 
   void changeQuality() async {

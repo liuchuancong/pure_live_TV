@@ -390,11 +390,13 @@ class SettingsService extends GetxController {
       ((PrefUtil.getStringList('favoriteAreas') ?? []).map((e) => LiveArea.fromJson(jsonDecode(e))).toList()).obs;
 
   bool isFavoriteArea(LiveArea area) {
-    return favoriteAreas.contains(area);
+    return favoriteAreas.any((element) =>
+        element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType);
   }
 
   bool addArea(LiveArea area) {
-    if (favoriteAreas.any((element) => element.areaId == area.areaId && element.platform == area.platform)) {
+    if (favoriteAreas.any((element) =>
+        element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType)) {
       return false;
     }
     favoriteAreas.add(area);
@@ -402,7 +404,8 @@ class SettingsService extends GetxController {
   }
 
   bool removeArea(LiveArea area) {
-    if (!favoriteAreas.any((element) => element.areaId == area.areaId && element.platform == area.platform)) {
+    if (!favoriteAreas.any((element) =>
+        element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType)) {
       return false;
     }
     favoriteAreas.remove(area);

@@ -49,7 +49,7 @@ class LivePlayPage extends GetWidget<LivePlayController> {
                     focusNode: controller.focusNode,
                     autofocus: true,
                     onKeyEvent: controller.onKeyEvent,
-                    child: controller.hasError.value
+                    child: controller.hasError.value && controller.isActive.value == false
                         ? ErrorVideoWidget(controller: controller)
                         : !controller.getVideoSuccess.value
                             ? ErrorVideoWidget(controller: controller)

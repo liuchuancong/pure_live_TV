@@ -87,6 +87,8 @@ class LivePlayController extends StateController {
   var hasError = false.obs;
 
   var loadTimeOut = true.obs;
+  // 是否是手动切换线路
+  var isActive = false.obs;
 
   @override
   void onClose() {
@@ -124,7 +126,7 @@ class LivePlayController extends StateController {
     });
 
     isLastLine.listen((p0) {
-      if (isLastLine.value && hasError.value) {
+      if (isLastLine.value && hasError.value && isActive.value == false) {
         // 刷新到了最后一路线 并且有错误
         SmartDialog.showToast("当前房间无法播放,正在为您每10秒刷新直播间信息...", displayTime: const Duration(seconds: 2));
         Timer(const Duration(seconds: 1), () {
@@ -138,6 +140,7 @@ class LivePlayController extends StateController {
         });
       } else {
         if (success.value) {
+          isActive.value = false;
           loadRefreshRoomTimer?.cancel();
         }
       }
@@ -149,7 +152,9 @@ class LivePlayController extends StateController {
     ReloadDataType reloadDataType = ReloadDataType.refreash,
     int line = 0,
     int currentQuality = 0,
+    bool active = false,
   }) async {
+    isActive.value = active;
     isFirstLoad.value = true;
     var liveRoom = await currentSite.liveSite
         .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
@@ -159,8 +164,9 @@ class LivePlayController extends StateController {
     } else {
       hasError.value = false;
     }
+    // active 代表用户是否手动切换路线 只有不是手动自动切换才会显示路线错误信息
 
-    if (isLastLine.value && hasError.value) {
+    if (isLastLine.value && hasError.value && active == false) {
       disPoserPlayer();
       restoryQualityAndLines();
       getVideoSuccess.value = false;
@@ -424,7 +430,10 @@ class LivePlayController extends StateController {
       return;
     }
     playUrls.value = playUrl;
-    if (currentPlayRoom.value.platform == 'huya' && playUrls.length >= 2 && isFirstLoad.value) {
+    if (currentPlayRoom.value.platform == Sites.huyaSite &&
+        playUrls.length > 1 &&
+        isFirstLoad.value &&
+        isActive.value == false) {
       currentLineIndex.value = 1;
     }
     setPlayer();
@@ -458,6 +467,7 @@ class LivePlayController extends StateController {
     );
 
     success.value = true;
+    isActive.value = false;
   }
 
   void nextChannel() {
@@ -556,6 +566,7 @@ class LivePlayController extends StateController {
         key.logicalKey == LogicalKeyboardKey.space) {
       restoryQualityAndLines();
       resetRoom(Sites.of(currentPlayRoom.value.platform!), currentPlayRoom.value.roomId!);
+      onInitPlayerState();
     }
   }
 
