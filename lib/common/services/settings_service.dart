@@ -518,8 +518,6 @@ class SettingsService extends GetxController {
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
-    changePreferResolution(preferResolution.value);
-    changePreferPlatform(preferPlatform.value);
   }
 
   Map<String, dynamic> toJson() {
