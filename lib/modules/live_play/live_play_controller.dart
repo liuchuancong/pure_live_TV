@@ -362,6 +362,11 @@ class LivePlayController extends StateController {
       videoController?.focusNode.requestFocus();
       return await Future.value(false);
     }
+    if (videoController!.showPlayListPanel.value) {
+      videoController?.showPlayListPanel.value = false;
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
     if (videoController!.showController.value) {
       videoController?.disableController();
       return await Future.value(false);
@@ -512,6 +517,27 @@ class LivePlayController extends StateController {
     settings.currentPlayListNodeIndex.value = index;
     currentChannelIndex.value = index;
 
+    var nextChannel = liveChannels[index];
+    currentPlayRoom.value = nextChannel;
+    isNextOrPrev = 0;
+    channelTimer?.cancel();
+    channelTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      lastChannelIndex.value = currentChannelIndex.value;
+      resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
+    });
+  }
+
+  playFavoriteChannel() {
+    //读取正在直播的频道
+    _currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
+    var liveChannels = settings.currentPlayList;
+    log(liveChannels.length.toString());
+    if (liveChannels.isEmpty) {
+      SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
+      return;
+    }
+    var index = settings.currentPlayListNodeIndex.value;
+    currentChannelIndex.value = index;
     var nextChannel = liveChannels[index];
     currentPlayRoom.value = nextChannel;
     isNextOrPrev = 0;
