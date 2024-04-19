@@ -112,12 +112,19 @@ class HomePage extends GetView<HomeController> {
                   child: SizedBox(
                     height: 200.h,
                     child: ListView(
+                      controller: controller.listScrollController,
                       scrollDirection: Axis.horizontal,
                       children: [
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            const SizedBox(
+                              width: 5,
+                            ),
                             buildViews(),
+                            const SizedBox(
+                              width: 5,
+                            ),
                           ],
                         ),
                       ],

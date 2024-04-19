@@ -52,6 +52,17 @@ class LocalHttpServer {
       router.get('/getSettings', (ctx, next) async {
         ctx.body = jsonEncode(settings.toJson());
       });
+      router.post('/setSettings', (ctx, next) async {
+        var settingStrings = ctx.query['settings'];
+        try {
+          settings.fromJson(jsonDecode(settingStrings!));
+          ctx.body = jsonEncode({'data': true});
+          SmartDialog.showToast('同步成功', displayTime: const Duration(seconds: 4));
+        } catch (e) {
+          ctx.body = jsonEncode({'data': false});
+          SmartDialog.showToast('同步失败', displayTime: const Duration(seconds: 4));
+        }
+      });
       router.post('/uploadFile', (ctx, next) async {
         try {
           ctx.body = jsonEncode({'data': true});

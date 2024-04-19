@@ -10,6 +10,9 @@ import 'package:pure_live/common/base/base_controller.dart';
 class HomeController extends BasePageController {
   var datetime = "00:00".obs;
   static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区", "捐赠支持"];
+
+  late ScrollController listScrollController;
+
   static List<IconData> mainPageIconOptions = [
     Icons.favorite_border,
     Remix.fire_line,
@@ -33,6 +36,14 @@ class HomeController extends BasePageController {
     focusNodeListener();
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     refreshData();
+    listScrollController = ScrollController();
+    focusNodes[1].isFoucsed.listen((p0) {
+      listScrollController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.linear);
+    });
+    focusNodes[mainPageOptions.length].isFoucsed.listen((p0) {
+      listScrollController.animateTo(listScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200), curve: Curves.linear);
+    });
     super.onInit();
   }
 

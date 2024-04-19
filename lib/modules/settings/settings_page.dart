@@ -88,7 +88,6 @@ class SettingsPage extends GetView<SettingsService> {
                 },
               ),
             ),
-            AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
                 focusNode: controller.preferPlatformNode,
@@ -122,6 +121,28 @@ class SettingsPage extends GetView<SettingsService> {
               focusNode: controller.dataSyncNode,
               onTap: () {
                 Get.toNamed(RoutePath.kSync);
+              },
+            ),
+            Obx(
+              () => SettingsItemWidget(
+                focusNode: controller.currentImageIndexNode,
+                title: "壁纸选择",
+                items: controller.getBoxImageItems(),
+                value: SettingsService.currentBoxImageSources
+                    .map((e) => e.keys.first)
+                    .toList()[controller.currentBoxImageIndex.value],
+                onChanged: (e) {
+                  var index = SettingsService.currentBoxImageSources.map((e) => e.keys.first).toList().indexOf(e);
+                  controller.currentBoxImageIndex.value = index;
+                },
+              ),
+            ),
+            HighlightListTile(
+              title: "切换壁纸",
+              trailing: const Icon(Icons.change_circle_rounded),
+              focusNode: controller.currentImageNode,
+              onTap: () {
+                controller.getImage();
               },
             ),
           ],
