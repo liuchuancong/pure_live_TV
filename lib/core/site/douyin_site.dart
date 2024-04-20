@@ -344,7 +344,7 @@ class DouyinSite implements LiveSite {
       "round_trip_time": "100",
       "webid": "7273033021933946427",
     });
-    var requlestUrl = await signUrl(uri.toString());
+    var requlestUrl = uri.toString();
     var headResp = await HttpClient.instance.head('https://live.douyin.com', header: headers);
     var dyCookie = "";
     headResp.headers["set-cookie"]?.forEach((element) {

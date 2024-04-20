@@ -42,8 +42,6 @@ class FavoriteController extends GetxController {
       }
     }
     onlineRooms.sort((a, b) => int.parse(b.watching!).compareTo(int.parse(a.watching!)));
-    settings.currentPlayList.value = onlineRooms;
-    settings.currentPlayListNodeIndex.value = 0;
     loading.value = false;
   }
 

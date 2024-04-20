@@ -53,6 +53,7 @@ class _RoomCardState extends State<RoomCard> {
         rooms.add(roomItem);
       }
       settingsService.currentPlayList.value = rooms;
+      settingsService.currentPlayListNodeIndex.value = 0;
     }
 
     AppNavigator.toLiveRoomDetail(liveRoom: widget.room);

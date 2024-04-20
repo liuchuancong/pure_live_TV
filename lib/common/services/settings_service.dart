@@ -107,14 +107,6 @@ class SettingsService extends GetxController {
     playerCompatMode.listen((value) {
       PrefUtil.setBool('playerCompatMode', value);
     });
-
-    currentPlayList.listen((p0) {
-      if (currentPlayList.value.isEmpty && historyRooms.value.isNotEmpty) {
-        var rooms = historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
-        currentPlayList.value = rooms;
-        currentPlayListNodeIndex.value = 0;
-      }
-    });
   }
   // Theme settings
   static Map<String, ThemeMode> themeModes = {

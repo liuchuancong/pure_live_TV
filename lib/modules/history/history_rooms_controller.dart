@@ -14,11 +14,9 @@ class HistoryPageController extends BasePageController<LiveRoom> {
     refreshData();
     super.onInit();
     stopLoadMore.value = false;
-    settingsService.currentPlayListNodeIndex.value = 0;
     list.addListener(() {
       if (list.isNotEmpty) {
         // 直播间
-        settingsService.currentPlayList.value = list;
         focusNodes = [];
         for (var i = 0; i < list.length; i++) {
           focusNodes.add(AppFocusNode());

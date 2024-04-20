@@ -72,6 +72,9 @@ class HomePage extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    final SettingsService settingsService = Get.find<SettingsService>();
+    settingsService.currentPlayList.value = controller.list;
+    settingsService.currentPlayListNodeIndex.value = 0;
     return AppScaffold(
       child: Column(
         children: [
