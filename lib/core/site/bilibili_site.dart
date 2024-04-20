@@ -187,7 +187,7 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1}) async {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/xlive/web-interface/v1/second/getListByArea",
       queryParameters: {"platform": "web", "sort": "online", "page_size": 30, "page": page},
@@ -218,7 +218,8 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetail(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     try {
       var result = await HttpClient.instance.getJson(
         "https://api.live.bilibili.com/xlive/web-room/v1/index/getH5InfoByRoom",
@@ -352,7 +353,8 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
+  Future<bool> getLiveStatus(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/room/v1/Room/get_info",
       queryParameters: {

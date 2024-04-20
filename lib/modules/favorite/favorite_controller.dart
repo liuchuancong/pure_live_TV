@@ -68,7 +68,9 @@ class FavoriteController extends GetxController {
     List<Future<LiveRoom>> futures = [];
     if (settings.favoriteRooms.value.isEmpty) return false;
     for (final room in settings.favoriteRooms.value) {
-      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
+      futures.add(Sites.of(room.platform!)
+          .liveSite
+          .getRoomDetail(roomId: room.roomId!, platform: room.platform!, title: room.title!, nick: room.nick!));
     }
     List<List<Future<LiveRoom>>> groupedList = [];
 

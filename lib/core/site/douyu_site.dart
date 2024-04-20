@@ -151,7 +151,7 @@ class DouyuSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1}) async {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     var result = await HttpClient.instance.getJson(
       "https://www.douyu.com/japi/weblist/apinc/allpage/6/$page",
       queryParameters: {},
@@ -181,7 +181,8 @@ class DouyuSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetail(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     try {
       var result =
           await HttpClient.instance.getJson("https://www.douyu.com/betard/$roomId", queryParameters: {}, header: {
@@ -320,8 +321,9 @@ class DouyuSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
-    var detail = await getRoomDetail(roomId: roomId, platform: platform);
+  Future<bool> getLiveStatus(
+      {required String nick, required String platform, required String roomId, required String title}) async {
+    var detail = await getRoomDetail(roomId: roomId, platform: platform, title: title, nick: nick);
     return detail.status!;
   }
 

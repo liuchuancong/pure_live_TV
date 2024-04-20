@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import '../iptv/m3u_parser_nullsafe.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
@@ -12,7 +11,6 @@ import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/core/danmaku/empty_danmaku.dart';
 import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 
 class IptvSite implements LiveSite {
   @override
@@ -76,7 +74,8 @@ class IptvSite implements LiveSite {
   LiveDanmaku getDanmaku() => EmptyDanmaku();
 
   @override
-  Future<bool> getLiveStatus({required String roomId, required String platform}) {
+  Future<bool> getLiveStatus(
+      {required String nick, required String platform, required String roomId, required String title}) {
     return Future.value(true);
   }
 
@@ -99,7 +98,7 @@ class IptvSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1}) async {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     List<M3uItem> lists = await IptvUtils.readRecommandsItems();
 
     // tvg-id: CCTV1, tvg-name: CCTV1, tvg-logo: https://live.fanmingming.com/tv/CCTV1.png, group-title: 央视
@@ -111,7 +110,7 @@ class IptvSite implements LiveSite {
         roomId: item.link,
         area: item.attributes['group-title'] ?? '',
         title: item.title,
-        nick: '网络',
+        nick: nick,
         avatar:
             'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',
         introduction: '',
@@ -128,16 +127,15 @@ class IptvSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
-    final SettingsService service = Get.find<SettingsService>();
-    var siteIndex = service.favoriteRooms.indexWhere((item) => item.roomId == roomId);
+  Future<LiveRoom> getRoomDetail(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     return LiveRoom(
       cover: '',
       watching: '',
       roomId: roomId,
       area: '',
-      title: siteIndex == -1 ? "网络" : service.favoriteRooms[siteIndex].title,
-      nick: siteIndex == -1 ? "m3u订阅" : service.favoriteRooms[siteIndex].nick,
+      title: title,
+      nick: nick,
       avatar:
           'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',
       introduction: '',

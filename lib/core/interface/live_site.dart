@@ -39,7 +39,7 @@ class LiveSite {
   }
 
   /// 读取推荐的房间
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1}) {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) {
     return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
   }
 
@@ -47,6 +47,8 @@ class LiveSite {
   Future<LiveRoom> getRoomDetail({
     required String roomId,
     required String platform,
+    required String nick,
+    required String title,
   }) {
     return Future.value(LiveRoom(
       cover: '',
@@ -55,10 +57,10 @@ class LiveSite {
       status: false,
       platform: platform,
       liveStatus: LiveStatus.offline,
-      title: '',
+      title: title,
       link: '',
       avatar: '',
-      nick: '',
+      nick: nick,
       isRecord: false,
     ));
   }
@@ -74,7 +76,8 @@ class LiveSite {
   }
 
   /// 查询直播状态
-  Future<bool> getLiveStatus({required String roomId, required String platform}) {
+  Future<bool> getLiveStatus(
+      {required String nick, required String platform, required String roomId, required String title}) {
     return Future.value(false);
   }
 

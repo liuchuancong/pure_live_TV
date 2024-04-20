@@ -156,8 +156,12 @@ class LivePlayController extends StateController {
   }) async {
     isActive.value = active;
     isFirstLoad.value = true;
-    var liveRoom = await currentSite.liveSite
-        .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
+    var liveRoom = await currentSite.liveSite.getRoomDetail(
+      roomId: currentPlayRoom.value.roomId!,
+      platform: currentPlayRoom.value.platform!,
+      title: currentPlayRoom.value.title!,
+      nick: currentPlayRoom.value.nick!,
+    );
     isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
     if (isLastLine.value) {
       hasError.value = true;
@@ -187,7 +191,11 @@ class LivePlayController extends StateController {
       if (liveStatus.value) {
         getPlayQualites();
         getVideoSuccess.value = true;
-        settings.addRoomToHistory(liveRoom);
+        if (currentPlayRoom.value.platform == Sites.iptvSite) {
+          settings.addRoomToHistory(currentPlayRoom.value);
+        } else {
+          settings.addRoomToHistory(liveRoom);
+        }
         // start danmaku server
         List<String> except = ['kuaishou', 'iptv', 'cc'];
         if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
@@ -220,8 +228,12 @@ class LivePlayController extends StateController {
   }) async {
     channelTimer?.cancel();
     handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
-    var liveRoom = await currentSite.liveSite
-        .getRoomDetail(roomId: currentPlayRoom.value.roomId!, platform: currentPlayRoom.value.platform!);
+    var liveRoom = await currentSite.liveSite.getRoomDetail(
+      roomId: currentPlayRoom.value.roomId!,
+      platform: currentPlayRoom.value.platform!,
+      title: currentPlayRoom.value.title!,
+      nick: currentPlayRoom.value.nick!,
+    );
     detail.value = liveRoom;
     resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {
@@ -234,7 +246,11 @@ class LivePlayController extends StateController {
     if (liveStatus.value) {
       getPlayQualites();
       getVideoSuccess.value = true;
-      settings.addRoomToHistory(liveRoom);
+      if (currentPlayRoom.value.platform == Sites.iptvSite) {
+        settings.addRoomToHistory(currentPlayRoom.value);
+      } else {
+        settings.addRoomToHistory(liveRoom);
+      }
       // start danmaku server
       List<String> except = ['kuaishou', 'iptv', 'cc'];
       if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {

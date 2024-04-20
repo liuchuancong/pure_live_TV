@@ -147,7 +147,7 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1}) async {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     var result = await HttpClient.instance.getJson(
       "https://live.douyin.com/webcast/web/partition/detail/room/",
       queryParameters: {
@@ -184,7 +184,8 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetail(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     try {
       var detail = await getRoomWebDetail(roomId);
       var requestHeader = await getRequestHeaders();
@@ -398,8 +399,9 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
-    var result = await getRoomDetail(roomId: roomId, platform: platform);
+  Future<bool> getLiveStatus(
+      {required String nick, required String platform, required String roomId, required String title}) async {
+    var result = await getRoomDetail(roomId: roomId, platform: platform, title: title, nick: nick);
     return result.status!;
   }
 

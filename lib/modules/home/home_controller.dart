@@ -84,7 +84,9 @@ class HomeController extends BasePageController {
       return [];
     }
     for (final room in historyRooms) {
-      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
+      futures.add(Sites.of(room.platform!)
+          .liveSite
+          .getRoomDetail(roomId: room.roomId!, platform: room.platform!, title: room.title!, nick: room.nick!));
     }
     try {
       final futuresRooms = await Future.wait(futures);
