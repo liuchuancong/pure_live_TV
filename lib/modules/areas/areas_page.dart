@@ -151,6 +151,7 @@ class AreasPage extends GetView<AreasListController> {
                                       focusNode: liveArea.focusNode,
                                       isIptv: true,
                                       areas: item.children,
+                                      roomTypePage: EnterRoomTypePage.areasRoomPage,
                                     );
                                   },
                                 ),

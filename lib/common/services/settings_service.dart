@@ -107,6 +107,14 @@ class SettingsService extends GetxController {
     playerCompatMode.listen((value) {
       PrefUtil.setBool('playerCompatMode', value);
     });
+
+    preferResolution.listen((value) {
+      PrefUtil.setString('preferResolution', value);
+    });
+
+    preferPlatform.listen((value) {
+      PrefUtil.setString('preferPlatform', value);
+    });
   }
   // Theme settings
   static Map<String, ThemeMode> themeModes = {

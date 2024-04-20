@@ -72,9 +72,6 @@ class HomePage extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    final SettingsService settingsService = Get.find<SettingsService>();
-    settingsService.currentPlayList.value = controller.list;
-    settingsService.currentPlayListNodeIndex.value = 0;
     return AppScaffold(
       child: Column(
         children: [
@@ -207,6 +204,7 @@ class HomePage extends GetView<HomeController> {
                           room: item,
                           dense: true,
                           useDefaultLongTapEvent: false,
+                          roomTypePage: EnterRoomTypePage.homePage,
                           onLongTap: () {
                             controller.removeItem(item);
                           },

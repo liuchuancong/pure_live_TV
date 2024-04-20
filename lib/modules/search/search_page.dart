@@ -106,6 +106,7 @@ class SearchRoomPage extends GetView<SearchRoomController> {
                           room: item,
                           dense: true,
                           focusNode: item.focusNode,
+                          roomTypePage: EnterRoomTypePage.searchPage,
                         );
                       },
                     )

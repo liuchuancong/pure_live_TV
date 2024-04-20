@@ -701,35 +701,38 @@ class ChannelVideoWidget extends StatelessWidget {
   final double barHeight;
   @override
   Widget build(BuildContext context) {
-    return Obx(() => AnimatedPositioned(
-          top: controller.showChangeNameFlag.value ? 0 : -barHeight,
-          left: 0,
-          right: 0,
-          height: barHeight,
-          duration: const Duration(milliseconds: 100),
-          child: Container(
-              height: barHeight,
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: const BoxDecoration(color: Colors.black),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppStyle.vGap24,
-                  Padding(
-                    padding: AppStyle.edgeInsetsA24,
-                    child: Text(
-                      '${controller.settings.currentPlayListNodeIndex.value + 1}. ${controller.settings.currentPlayList[controller.settings.currentPlayListNodeIndex.value].nick!}',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        color: Colors.white,
-                      ),
+    return Obx(() {
+      LiveRoom room = controller.settings.currentPlayList[controller.settings.currentPlayListNodeIndex.value];
+      return AnimatedPositioned(
+        top: controller.showChangeNameFlag.value ? 0 : -barHeight,
+        left: 0,
+        right: 0,
+        height: barHeight,
+        duration: const Duration(milliseconds: 100),
+        child: Container(
+            height: barHeight,
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: const BoxDecoration(color: Colors.black),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppStyle.vGap24,
+                Padding(
+                  padding: AppStyle.edgeInsetsA24,
+                  child: Text(
+                    '${controller.settings.currentPlayListNodeIndex.value + 1}. ${room.platform == Sites.iptvSite ? room.title : room.nick!}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
                     ),
                   ),
-                ],
-              )),
-        ));
+                ),
+              ],
+            )),
+      );
+    });
   }
 }
 

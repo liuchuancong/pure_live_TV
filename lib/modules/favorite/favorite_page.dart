@@ -78,9 +78,6 @@ class FavoritePage extends GetView<FavoriteController> {
                 text: "已开播",
                 focusNode: controller.onlineRoomsNodes,
                 onTap: () {
-                  final SettingsService settingsService = Get.find<SettingsService>();
-                  settingsService.currentPlayList.value = controller.onlineRooms;
-                  settingsService.currentPlayListNodeIndex.value = 0;
                   controller.tabBottomIndex.value = 0;
                   controller.onlineRoomsNodes.requestFocus();
                 },
@@ -89,9 +86,6 @@ class FavoritePage extends GetView<FavoriteController> {
                 text: "未开播",
                 focusNode: controller.offlineRoomsNodes,
                 onTap: () {
-                  final SettingsService settingsService = Get.find<SettingsService>();
-                  settingsService.currentPlayList.value = controller.offlineRooms;
-                  settingsService.currentPlayListNodeIndex.value = 0;
                   controller.tabBottomIndex.value = 1;
                   controller.offlineRoomsNodes.requestFocus();
                 },
@@ -119,6 +113,7 @@ class FavoritePage extends GetView<FavoriteController> {
                     room: item,
                     useDefaultLongTapEvent: false,
                     dense: controller.settings.enableDenseFavorites.value,
+                    roomTypePage: EnterRoomTypePage.favoritePage,
                     onLongTap: () {
                       controller.handleFollowLongTap(item);
                     },

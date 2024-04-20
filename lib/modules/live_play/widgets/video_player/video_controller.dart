@@ -100,6 +100,10 @@ class VideoController with ChangeNotifier {
 
   var beforePlayNodeIndex = 0.obs;
 
+  Timer? doubleClickTimer;
+
+  int doubleClickTimeStamp = 0;
+
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
   var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
@@ -399,13 +403,28 @@ class VideoController with ChangeNotifier {
         }
         // 点击左右键切换播放线路
         if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          // prevPlayChannel();
-          if (settings.isFavorite(room)) {
-            settings.removeRoom(room);
-            SmartDialog.showToast("已取消关注");
+          // 双击取消或关注
+          if (doubleClickTimeStamp == 0) {
+            settings.isFavorite(room) ? SmartDialog.showToast("双击取消关注") : SmartDialog.showToast("双击关注");
+            doubleClickTimeStamp = DateTime.now().millisecondsSinceEpoch;
           } else {
-            settings.addRoom(room);
-            SmartDialog.showToast("已关注");
+            var now = DateTime.now().millisecondsSinceEpoch;
+            if (now - doubleClickTimeStamp < 500) {
+              if (settings.isFavorite(room)) {
+                settings.removeRoom(room);
+                SmartDialog.showToast("已取消关注");
+              } else {
+                settings.addRoom(room);
+                SmartDialog.showToast("已关注");
+              }
+              doubleClickTimeStamp = 0;
+              doubleClickTimer?.cancel();
+            }
+            doubleClickTimer?.cancel();
+            doubleClickTimer = Timer(const Duration(milliseconds: 500), () {
+              doubleClickTimeStamp = 0;
+              doubleClickTimer?.cancel();
+            });
           }
         } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
           showPlayListPanel.value = true;

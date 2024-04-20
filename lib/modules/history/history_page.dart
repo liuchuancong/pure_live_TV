@@ -10,9 +10,6 @@ class HistoryPage extends GetView<HistoryPageController> {
 
   @override
   Widget build(BuildContext context) {
-    final SettingsService settingsService = Get.find<SettingsService>();
-    settingsService.currentPlayList.value = controller.list;
-    settingsService.currentPlayListNodeIndex.value = 0;
     return AppScaffold(
       child: Column(
         children: [
@@ -68,6 +65,7 @@ class HistoryPage extends GetView<HistoryPageController> {
                     dense: true,
                     useDefaultLongTapEvent: false,
                     focusNode: controller.focusNodes[i],
+                    roomTypePage: EnterRoomTypePage.historyPage,
                     onLongTap: () {
                       controller.removeItem(item);
                     },
