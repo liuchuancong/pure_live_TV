@@ -66,7 +66,10 @@ class FavoriteController extends GetxController {
     loading.value = true;
     bool hasError = false;
     List<Future<LiveRoom>> futures = [];
-    if (settings.favoriteRooms.value.isEmpty) return false;
+    if (settings.favoriteRooms.value.isEmpty) {
+      loading.value = false;
+      return false;
+    }
     for (final room in settings.favoriteRooms.value) {
       futures.add(Sites.of(room.platform!)
           .liveSite
