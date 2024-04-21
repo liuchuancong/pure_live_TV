@@ -431,12 +431,12 @@ class SettingsService extends GetxController {
     if (historyRooms.any((element) => element.roomId == room.roomId)) {
       historyRooms.remove(room);
     }
-    //默认只记录20条，够用了
+    //默认只记录50条，够用了
     // 防止数据量大页面卡顿
-    if (historyRooms.length > 19) {
-      historyRooms.removeRange(0, historyRooms.length - 19);
+    if (historyRooms.length > 50) {
+      historyRooms.removeRange(0, historyRooms.length - 50);
     }
-    historyRooms.add(room);
+    historyRooms.insert(0, room);
   }
 
   // Favorite areas storage

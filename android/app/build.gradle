@@ -47,7 +47,6 @@ android {
 
     defaultConfig {
         applicationId "com.mystyle.purelive"
-        targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         minSdk 19 
