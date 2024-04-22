@@ -23,3 +23,4 @@ export 'package:share_handler/share_handler.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:group_button/group_button.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
+export 'package:pure_live/common/base/constant.dart';

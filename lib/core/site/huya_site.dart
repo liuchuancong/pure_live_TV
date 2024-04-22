@@ -165,7 +165,7 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1}) async {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     var resultText = await HttpClient.instance.getJson(
       "https://www.huya.com/cache.php",
       queryParameters: {"m": "LiveList", "do": "getLiveListByPage", "tagAll": 0, "page": page},
@@ -200,7 +200,8 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetail(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     var resultText = await HttpClient.instance.getText("https://m.huya.com/$roomId", queryParameters: {}, header: {
       "user-agent": kUserAgent,
     });
@@ -359,7 +360,8 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
+  Future<bool> getLiveStatus(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     var resultText = await HttpClient.instance.getText("https://m.huya.com/$roomId", queryParameters: {}, header: {
       "user-agent": kUserAgent,
     });

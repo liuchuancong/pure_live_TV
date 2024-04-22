@@ -65,6 +65,7 @@ class HistoryPage extends GetView<HistoryPageController> {
                     dense: true,
                     useDefaultLongTapEvent: false,
                     focusNode: controller.focusNodes[i],
+                    roomTypePage: EnterRoomTypePage.historyPage,
                     onLongTap: () {
                       controller.removeItem(item);
                     },

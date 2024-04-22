@@ -86,6 +86,7 @@ class AreasRoomPage extends GetView<AreaRoomsController> {
                     room: item,
                     dense: true,
                     focusNode: item.focusNode,
+                    roomTypePage: EnterRoomTypePage.areasRoomPage,
                   );
                 },
               ),

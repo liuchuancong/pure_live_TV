@@ -116,6 +116,7 @@ class PopularPage extends GetView<PopularGridController> {
                           room: item,
                           dense: true,
                           focusNode: item.focusNode,
+                          roomTypePage: EnterRoomTypePage.popularPage,
                         );
                       },
                     )

@@ -147,7 +147,7 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1}) async {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     var result = await HttpClient.instance.getJson(
       "https://live.douyin.com/webcast/web/partition/detail/room/",
       queryParameters: {
@@ -184,7 +184,8 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
+  Future<LiveRoom> getRoomDetail(
+      {required String nick, required String platform, required String roomId, required String title}) async {
     try {
       var detail = await getRoomWebDetail(roomId);
       var requestHeader = await getRequestHeaders();
@@ -344,7 +345,7 @@ class DouyinSite implements LiveSite {
       "round_trip_time": "100",
       "webid": "7273033021933946427",
     });
-    var requlestUrl = await signUrl(uri.toString());
+    var requlestUrl = uri.toString();
     var headResp = await HttpClient.instance.head('https://live.douyin.com', header: headers);
     var dyCookie = "";
     headResp.headers["set-cookie"]?.forEach((element) {
@@ -398,8 +399,9 @@ class DouyinSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus({required String roomId, required String platform}) async {
-    var result = await getRoomDetail(roomId: roomId, platform: platform);
+  Future<bool> getLiveStatus(
+      {required String nick, required String platform, required String roomId, required String title}) async {
+    var result = await getRoomDetail(roomId: roomId, platform: platform, title: title, nick: nick);
     return result.status!;
   }
 

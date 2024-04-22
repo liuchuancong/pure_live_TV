@@ -47,10 +47,10 @@ android {
 
     defaultConfig {
         applicationId "com.mystyle.purelive"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        minSdk 19 
+        targetSdk 34
     }
 
     signingConfigs {

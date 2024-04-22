@@ -107,7 +107,7 @@ class AreasPage extends GetView<AreasListController> {
                                 style: AppStyle.titleStyleWhite,
                               ),
                             ),
-                            if (controller.siteId.value != "iptv")
+                            if (controller.siteId.value != Sites.iptvSite)
                               Obx(
                                 () => GridView.count(
                                   shrinkWrap: true,
@@ -124,7 +124,7 @@ class AreasPage extends GetView<AreasListController> {
                               Obx(
                                 () => MasonryGridView.count(
                                   padding: AppStyle.edgeInsetsA48,
-                                  itemCount: controller.list.length,
+                                  itemCount: controller.list.isNotEmpty ? controller.list[0].children.length : 0,
                                   crossAxisCount: 5,
                                   crossAxisSpacing: 48.w,
                                   mainAxisSpacing: 40.w,
@@ -151,6 +151,7 @@ class AreasPage extends GetView<AreasListController> {
                                       focusNode: liveArea.focusNode,
                                       isIptv: true,
                                       areas: item.children,
+                                      roomTypePage: EnterRoomTypePage.areasRoomPage,
                                     );
                                   },
                                 ),

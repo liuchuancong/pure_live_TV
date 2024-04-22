@@ -18,13 +18,11 @@ class PopularGridController extends BasePageController<LiveRoom> {
     final pIndex = Sites().availableSites().indexWhere((e) => e.id == preferPlatform);
     focusNodes = [];
     if (Sites().availableSites().isNotEmpty) {
-      final SettingsService settingsService = Get.find<SettingsService>();
       siteId.value = pIndex != -1 ? Sites().availableSites()[pIndex].id : Sites().availableSites()[0].id;
       site = pIndex != -1 ? Sites().availableSites()[pIndex] : Sites().availableSites()[0];
       list.addListener(() {
         if (list.isNotEmpty) {
-          // 直播间
-          settingsService.currentPlayList.value = list;
+          // 直播
           focusLiveNodes = [];
           for (var i = 0; i < list.length; i++) {
             focusLiveNodes.add(AppFocusNode());
@@ -54,7 +52,7 @@ class PopularGridController extends BasePageController<LiveRoom> {
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
     if (siteId.value.isEmpty) return [];
-    var result = await site.liveSite.getRecommendRooms(page: page);
+    var result = await site.liveSite.getRecommendRooms(page: page, nick: '热门');
     return result.items;
   }
 }

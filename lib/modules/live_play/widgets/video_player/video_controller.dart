@@ -67,6 +67,7 @@ class VideoController with ChangeNotifier {
 
   AppFocusNode focusNode = AppFocusNode();
 
+  late ScrollController scrollController;
   // Controller ui status
   ///State of navigator on widget created
   late NavigatorState navigatorState;
@@ -79,6 +80,8 @@ class VideoController with ChangeNotifier {
   final showController = false.obs;
   //  Settting ui status
   final showSettting = false.obs;
+
+  final showPlayListPanel = false.obs;
 
   final danmuKey = GlobalKey();
 
@@ -95,11 +98,22 @@ class VideoController with ChangeNotifier {
 
   Timer? hasErrorTimer;
 
-  var currentBottomClickType = BottomButtonClickType.playPause.obs;
+  var beforePlayNodeIndex = 0.obs;
+
+  Timer? doubleClickTimer;
+
+  int doubleClickTimeStamp = 0;
+
+  var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
   var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
 
   static const danmakuAbleKey = ValueKey(DanmakuSettingClickType.danmakuAble);
+
+  // 是否手动暂停
+  var isActivePause = true.obs;
+
+  Timer? hasActivePause;
 
   // 五秒关闭控制器
   void enableController() {
@@ -162,6 +176,19 @@ class VideoController with ChangeNotifier {
     danmakuOpacity.value = settings.danmakuOpacity.value;
     mergeDanmuRating.value = settings.mergeDanmuRating.value;
     videoPlayerIndex = settings.videoPlayerIndex.value;
+    beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
+    scrollController = ScrollController();
+    scrollController.addListener(() {
+      Future.delayed(Duration.zero, () {
+        if (showPlayListPanel.value) {
+          scrollController.animateTo(
+            (100 * (beforePlayNodeIndex.value)).toDouble(),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    });
     initPagesConfig();
   }
 
@@ -177,6 +204,14 @@ class VideoController with ChangeNotifier {
     showController.listen((p0) {
       if (showController.value) {
         showChangeNameFlag.value = false;
+        if (isPlaying.value) {
+          // 取消手动暂停
+
+          isActivePause.value = false;
+        }
+      }
+      if (isPlaying.value) {
+        hasActivePause?.cancel();
       }
     });
 
@@ -193,6 +228,7 @@ class VideoController with ChangeNotifier {
       if (showSettting.value) {
         showControllerTimer?.cancel();
         showController.value = false;
+        showPlayListPanel.value = false;
         danmukuNodeIndex.value = 0;
         currentNodeIndex.value = 0;
         cancleFocus();
@@ -201,11 +237,60 @@ class VideoController with ChangeNotifier {
       }
     });
 
+    showPlayListPanel.listen((p0) {
+      if (showPlayListPanel.value) {
+        showControllerTimer?.cancel();
+        showController.value = false;
+        showSettting.value = false;
+        danmukuNodeIndex.value = 0;
+        currentNodeIndex.value = 0;
+        scrollController.animateTo(
+          (100 * (beforePlayNodeIndex.value)).toDouble(),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+        cancleFocus();
+      } else {
+        beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
+        disableController();
+      }
+    });
+    beforePlayNodeIndex.listen((p0) {
+      if (showPlayListPanel.value) {
+        scrollController.animateTo(
+          (100 * (beforePlayNodeIndex.value)).toDouble(),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
     currentNodeIndex.listen((p0) {
       currentBottomClickType.value = BottomButtonClickType.values[currentNodeIndex.value];
     });
     danmukuNodeIndex.listen((p0) {
       currentDanmukuClickType.value = DanmakuSettingClickType.values[danmukuNodeIndex.value];
+    });
+
+    isPlaying.listen((p0) {
+      // 代表手动暂停了
+      if (!isPlaying.value) {
+        if (showController.value) {
+          isActivePause.value = true;
+          hasActivePause?.cancel();
+        } else {
+          if (isActivePause.value) {
+            hasActivePause = Timer(const Duration(seconds: 20), () {
+              // 暂停了
+              SmartDialog.showToast("系统监测视频已停止播放,正在为您刷新视频");
+              isActivePause.value = false;
+              refresh();
+            });
+          }
+        }
+      } else {
+        hasActivePause?.cancel();
+        isActivePause.value = false;
+      }
     });
   }
 
@@ -289,14 +374,19 @@ class VideoController with ChangeNotifier {
   }
 
   handleKeyEvent(KeyEvent key) {
+    if (key is KeyUpEvent) {
+      return;
+    }
     // 点击Menu打开/关闭设置
     if (key.logicalKey == LogicalKeyboardKey.keyM || key.logicalKey == LogicalKeyboardKey.contextMenu) {
+      showPlayListPanel.value = false;
+      showController.value = false;
       showSettting.value = true;
     }
     // 如果没有显示控制面板
     if (!showController.value) {
-      // 如果没有显示弹幕控制面板
-      if (!showSettting.value) {
+      // 如果没有显示弹幕控制面板和关注列表
+      if (!showSettting.value && !showPlayListPanel.value) {
         // 点击OK、Enter、Select键时显示/隐藏控制器
         if (key.logicalKey == LogicalKeyboardKey.select ||
             key.logicalKey == LogicalKeyboardKey.enter ||
@@ -313,13 +403,77 @@ class VideoController with ChangeNotifier {
         }
         // 点击左右键切换播放线路
         if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          prevPlayChannel();
+          // 双击取消或关注
+          if (doubleClickTimeStamp == 0) {
+            settings.isFavorite(room) ? SmartDialog.showToast("双击取消关注") : SmartDialog.showToast("双击关注");
+            doubleClickTimeStamp = DateTime.now().millisecondsSinceEpoch;
+          } else {
+            var now = DateTime.now().millisecondsSinceEpoch;
+            if (now - doubleClickTimeStamp < 500) {
+              if (settings.isFavorite(room)) {
+                settings.removeRoom(room);
+                SmartDialog.showToast("已取消关注");
+              } else {
+                settings.addRoom(room);
+                SmartDialog.showToast("已关注");
+              }
+              doubleClickTimeStamp = 0;
+              doubleClickTimer?.cancel();
+            }
+            doubleClickTimer?.cancel();
+            doubleClickTimer = Timer(const Duration(milliseconds: 500), () {
+              doubleClickTimeStamp = 0;
+              doubleClickTimer?.cancel();
+            });
+          }
         } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
-          nextPlayChannel();
+          showPlayListPanel.value = true;
         }
-        return;
+      } else if (showPlayListPanel.value) {
+        // 展示关注列表
+        var playIndex = beforePlayNodeIndex.value;
+        if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
+          playIndex++;
+          if (playIndex == settings.currentPlayList.length) {
+            playIndex = 0;
+          }
+        } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
+          if (playIndex == -1) {
+            playIndex = settings.currentPlayList.length - 1;
+          }
+          playIndex--;
+        }
+        beforePlayNodeIndex.value = playIndex;
+
+        if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
+          var room = settings.currentPlayList[beforePlayNodeIndex.value];
+          if (settings.isFavorite(room)) {
+            settings.removeRoom(room);
+            SmartDialog.showToast("已取消关注");
+          } else {
+            settings.addRoom(room);
+            SmartDialog.showToast("已关注");
+          }
+        } else if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
+          var room = settings.currentPlayList[beforePlayNodeIndex.value];
+          if (settings.isFavorite(room)) {
+            settings.removeRoom(room);
+            SmartDialog.showToast("已取消关注");
+          } else {
+            settings.addRoom(room);
+            SmartDialog.showToast("已关注");
+          }
+        }
+
+        if (key.logicalKey == LogicalKeyboardKey.select ||
+            key.logicalKey == LogicalKeyboardKey.enter ||
+            key.logicalKey == LogicalKeyboardKey.space) {
+          // 点击enter键显示控制器
+          settings.currentPlayListNodeIndex.value = beforePlayNodeIndex.value;
+          livePlayController.playFavoriteChannel();
+        }
       } else {
-        //没有控制面板以及显示了设置面板
+        //没有控制面板以及关注列表显示了 设置面板
         var danmakuIndex = danmukuNodeIndex.value;
         if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
           danmakuIndex++;
@@ -673,6 +827,16 @@ class VideoController with ChangeNotifier {
     livePlayController.nextChannel();
   }
 
+  void playFavoriteChannel() {
+    showChangeNameFlag.value = true;
+    showChangeNameTimer?.cancel();
+    showChangeNameTimer = Timer(const Duration(milliseconds: 2000), () {
+      showChangeNameFlag.value = false;
+      showChangeNameTimer?.cancel();
+    });
+    livePlayController.playFavoriteChannel();
+  }
+
   handleDanmuKeyRightEvent() {
     switch (currentDanmukuClickType.value) {
       case DanmakuSettingClickType.danmakuAble:
@@ -865,7 +1029,7 @@ class VideoController with ChangeNotifier {
   }
 }
 
-enum BottomButtonClickType { playPause, favorite, refresh, danmaku, settings, qualityName, changeLine, boxFit }
+enum BottomButtonClickType { favorite, refresh, playPause, danmaku, settings, qualityName, changeLine, boxFit }
 
 enum DanmakuSettingClickType {
   danmakuAble,

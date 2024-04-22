@@ -21,12 +21,10 @@ class AreaRoomsController extends BasePageController<LiveRoom> {
   void onInit() {
     refreshData();
     super.onInit();
-    settingsService.currentPlayListNodeIndex.value = 0;
     list.addListener(() {
       if (list.isNotEmpty) {
         // 直播间
         focusCateGoryNodes = [];
-        settingsService.currentPlayList.value = list;
         for (var i = 0; i < list.length; i++) {
           focusCateGoryNodes.add(AppFocusNode());
         }

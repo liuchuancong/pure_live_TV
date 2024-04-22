@@ -10,6 +10,9 @@ import 'package:pure_live/common/base/base_controller.dart';
 class HomeController extends BasePageController {
   var datetime = "00:00".obs;
   static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区", "帮助支持"];
+
+  late ScrollController listScrollController;
+
   static List<IconData> mainPageIconOptions = [
     Icons.favorite_border,
     Remix.fire_line,
@@ -33,6 +36,14 @@ class HomeController extends BasePageController {
     focusNodeListener();
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     refreshData();
+    listScrollController = ScrollController();
+    focusNodes[1].isFoucsed.listen((p0) {
+      listScrollController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.linear);
+    });
+    focusNodes[mainPageOptions.length].isFoucsed.listen((p0) {
+      listScrollController.animateTo(listScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200), curve: Curves.linear);
+    });
     super.onInit();
   }
 
@@ -65,15 +76,15 @@ class HomeController extends BasePageController {
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
     List<Future<LiveRoom>> futures = [];
-    var historyRooms = settingsService.historyRooms.value.reversed
-        .where((room) => room.liveStatus == LiveStatus.live)
-        .take(5)
-        .toList();
+    var historyRooms =
+        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
     if (historyRooms.isEmpty) {
       return [];
     }
     for (final room in historyRooms) {
-      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
+      futures.add(Sites.of(room.platform!)
+          .liveSite
+          .getRoomDetail(roomId: room.roomId!, platform: room.platform!, title: room.title!, nick: room.nick!));
     }
     try {
       final futuresRooms = await Future.wait(futures);
@@ -83,13 +94,9 @@ class HomeController extends BasePageController {
     } catch (e) {
       return historyRooms;
     }
-    historyRooms = settingsService.historyRooms.value.reversed
-        .where((room) => room.liveStatus == LiveStatus.live)
-        .take(5)
-        .toList();
+    historyRooms =
+        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
     rooms.value = historyRooms;
-    settingsService.currentPlayList.value = historyRooms;
-    settingsService.currentPlayListNodeIndex.value = 0;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return historyRooms;
   }

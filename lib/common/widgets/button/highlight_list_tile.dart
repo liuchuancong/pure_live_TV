@@ -13,7 +13,8 @@ class HighlightListTile extends StatelessWidget {
   final AppFocusNode focusNode;
   final Function()? onTap;
   final bool autofocus;
-
+  final bool selected;
+  final bool useFocus;
   const HighlightListTile({
     this.subtitle,
     required this.title,
@@ -21,6 +22,8 @@ class HighlightListTile extends StatelessWidget {
     this.onTap,
     required this.focusNode,
     this.autofocus = false,
+    this.useFocus = true,
+    this.selected = false,
     this.trailing,
     super.key,
   });
@@ -32,48 +35,99 @@ class HighlightListTile extends StatelessWidget {
         data: IconThemeData(
           color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
         ),
-        child: HighlightWidget(
-          onTap: onTap,
-          autofocus: autofocus,
-          focusNode: focusNode,
-          borderRadius: AppStyle.radius16,
-          child: Padding(
-            padding: AppStyle.edgeInsetsA24,
-            child: Row(
-              children: [
-                if (leading != null) leading!,
-                if (leading != null) AppStyle.hGap32,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+        child: useFocus
+            ? HighlightWidget(
+                onTap: onTap,
+                autofocus: autofocus,
+                focusNode: focusNode,
+                useFocus: useFocus,
+                selected: selected,
+                borderRadius: AppStyle.radius16,
+                child: Padding(
+                  padding: AppStyle.edgeInsetsA24,
+                  child: Row(
                     children: [
-                      Text(
-                        title,
-                        style: focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
-                      ),
-                      if (subtitle != null)
-                        Text(
-                          subtitle!,
-                          style: focusNode.isFoucsed.value
-                              ? AppStyle.textStyleBlack.copyWith(fontSize: 24.w)
-                              : AppStyle.textStyleWhite.copyWith(fontSize: 24.w),
+                      if (leading != null) leading!,
+                      if (leading != null) AppStyle.hGap32,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              title,
+                              style: focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                              maxLines: 2,
+                            ),
+                            if (subtitle != null)
+                              Text(
+                                subtitle!,
+                                style: focusNode.isFoucsed.value
+                                    ? AppStyle.textStyleBlack.copyWith(fontSize: 24.w)
+                                    : AppStyle.textStyleWhite.copyWith(fontSize: 24.w),
+                                maxLines: 1,
+                              ),
+                          ],
                         ),
+                      ),
+                      AppStyle.hGap12,
+                      if (onTap != null && focusNode.isFoucsed.value && trailing == null)
+                        Icon(
+                          Icons.chevron_right,
+                          size: 40.w,
+                          color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
+                        ),
+                      if (trailing != null) trailing!,
                     ],
                   ),
                 ),
-                AppStyle.hGap12,
-                if (onTap != null && focusNode.isFoucsed.value && trailing == null)
-                  Icon(
-                    Icons.chevron_right,
-                    size: 40.w,
-                    color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
+              )
+            : HighlightWidget(
+                onTap: onTap,
+                autofocus: false,
+                focusNode: focusNode,
+                useFocus: useFocus,
+                selected: selected,
+                borderRadius: AppStyle.radius16,
+                child: Padding(
+                  padding: AppStyle.edgeInsetsA24,
+                  child: Row(
+                    children: [
+                      if (leading != null) leading!,
+                      if (leading != null) AppStyle.hGap32,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              title,
+                              style: selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
+                              maxLines: 2,
+                            ),
+                            if (subtitle != null)
+                              Text(
+                                subtitle!,
+                                style: selected
+                                    ? AppStyle.textStyleBlack.copyWith(fontSize: 24.w)
+                                    : AppStyle.textStyleWhite.copyWith(fontSize: 24.w),
+                                maxLines: 1,
+                              ),
+                          ],
+                        ),
+                      ),
+                      AppStyle.hGap12,
+                      if (onTap != null && selected && trailing == null)
+                        Icon(
+                          Icons.chevron_right,
+                          size: 40.w,
+                          color: selected ? Colors.black : Colors.white,
+                        ),
+                      if (trailing != null) trailing!,
+                    ],
                   ),
-                if (trailing != null) trailing!,
-              ],
-            ),
-          ),
-        ),
+                ),
+              ),
       ),
     );
   }

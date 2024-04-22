@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
+import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
 import 'package:pure_live/common/widgets/button/highlight_icon_button.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 
@@ -44,6 +46,9 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
               ),
               DanmakuViewer(controller: controller),
               SettingsPanel(
+                controller: controller,
+              ),
+              FavoriteChoose(
                 controller: controller,
               ),
               TopActionBar(
@@ -246,9 +251,9 @@ class BottomActionBar extends StatelessWidget {
             decoration: const BoxDecoration(color: Colors.black),
             child: Row(
               children: <Widget>[
-                PlayPauseButton(controller: controller),
                 FavoriteButton(controller: controller),
                 RefreshButton(controller: controller),
+                PlayPauseButton(controller: controller),
                 DanmakuButton(controller: controller),
                 SettingsButton(controller: controller),
                 QualiteNameButton(controller: controller),
@@ -696,34 +701,156 @@ class ChannelVideoWidget extends StatelessWidget {
   final double barHeight;
   @override
   Widget build(BuildContext context) {
-    return Obx(() => AnimatedPositioned(
-          top: controller.showChangeNameFlag.value ? 0 : -barHeight,
-          left: 0,
-          right: 0,
-          height: barHeight,
-          duration: const Duration(milliseconds: 100),
-          child: Container(
-              height: barHeight,
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: const BoxDecoration(color: Colors.black),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppStyle.vGap24,
-                  Padding(
-                    padding: AppStyle.edgeInsetsA24,
-                    child: Text(
-                      '${controller.settings.currentPlayListNodeIndex.value + 1}. ${controller.settings.currentPlayList[controller.settings.currentPlayListNodeIndex.value].nick!}',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        color: Colors.white,
-                      ),
+    return Obx(() {
+      LiveRoom room = controller.settings.currentPlayList[controller.settings.currentPlayListNodeIndex.value];
+      return AnimatedPositioned(
+        top: controller.showChangeNameFlag.value ? 0 : -barHeight,
+        left: 0,
+        right: 0,
+        height: barHeight,
+        duration: const Duration(milliseconds: 100),
+        child: Container(
+            height: barHeight,
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: const BoxDecoration(color: Colors.black),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppStyle.vGap24,
+                Padding(
+                  padding: AppStyle.edgeInsetsA24,
+                  child: Text(
+                    '${controller.settings.currentPlayListNodeIndex.value + 1}. ${room.platform == Sites.iptvSite ? room.title : room.nick!}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
                     ),
                   ),
-                ],
-              )),
-        ));
+                ),
+              ],
+            )),
+      );
+    });
+  }
+}
+
+class FavoriteChoose extends StatelessWidget {
+  const FavoriteChoose({
+    super.key,
+    required this.controller,
+  });
+
+  final VideoController controller;
+
+  static const double width = 450;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => AnimatedPositioned(
+        top: 0,
+        bottom: 0,
+        right: controller.showPlayListPanel.value ? 0 : -width,
+        width: width,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          padding: AppStyle.edgeInsetsA12,
+          child: FavoriteChoosePanel(controller: controller),
+        ),
+      ),
+    );
+  }
+}
+
+class FavoriteChoosePanel extends StatelessWidget {
+  const FavoriteChoosePanel({
+    super.key,
+    required this.controller,
+  });
+
+  final VideoController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Get.theme.cardColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          AppStyle.vGap24,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AppStyle.hGap32,
+              Text(
+                "播放列表",
+                style: AppStyle.titleStyleWhite.copyWith(
+                  fontSize: 36.w,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              AppStyle.hGap24,
+              const Spacer(),
+            ],
+          ),
+          Expanded(
+            child: ListView(
+                controller: controller.scrollController,
+                padding: AppStyle.edgeInsetsA48,
+                children: List.generate(
+                    controller.settings.currentPlayList.length,
+                    (index) => Obx(
+                          () => SizedBox(
+                            height: 100,
+                            child: HighlightListTile(
+                              title: controller.settings.currentPlayList[index].title,
+                              trailing: HighlightButton(
+                                useFocus: false,
+                                text: !controller.settings.isFavorite(controller.settings.currentPlayList[index])
+                                    ? '未关注'
+                                    : "已关注",
+                                focusNode: AppFocusNode(),
+                                selected: controller.beforePlayNodeIndex.value == index,
+                                iconData: !controller.settings.isFavorite(controller.settings.currentPlayList[index])
+                                    ? Icons.highlight_remove_outlined
+                                    : Icons.add_task_rounded,
+                                onTap: () {
+                                  if (controller.settings.isFavorite(controller.settings.currentPlayList[index])) {
+                                    controller.settings.removeRoom(controller.settings.currentPlayList[index]);
+                                  } else {
+                                    controller.settings.addRoom(controller.settings.currentPlayList[index]);
+                                  }
+                                },
+                              ),
+                              leading: Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                                  image: DecorationImage(
+                                    image:
+                                        CachedNetworkImageProvider(controller.settings.currentPlayList[index].avatar),
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                              subtitle: controller.settings.currentPlayList[index].nick,
+                              focusNode: AppFocusNode(),
+                              useFocus: false,
+                              selected: controller.beforePlayNodeIndex.value == index,
+                              onTap: () {
+                                // controller.getImage();
+                              },
+                            ),
+                          ),
+                        ))),
+          ),
+        ],
+      ),
+    );
   }
 }

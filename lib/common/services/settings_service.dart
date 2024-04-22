@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -95,16 +96,24 @@ class SettingsService extends GetxController {
       PrefUtil.setBool('isFirstInApp', false);
     });
 
+    currentBoxImage.listen((value) {
+      PrefUtil.setString('currentBoxImage', value);
+    });
+
+    currentBoxImageIndex.listen((value) {
+      PrefUtil.setInt('currentBoxImageIndex', value);
+    });
+
     playerCompatMode.listen((value) {
       PrefUtil.setBool('playerCompatMode', value);
     });
 
-    currentPlayList.listen((p0) {
-      if (currentPlayList.value.isEmpty && historyRooms.value.isNotEmpty) {
-        var rooms = historyRooms.reversed.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
-        currentPlayList.value = rooms;
-        currentPlayListNodeIndex.value = 0;
-      }
+    preferResolution.listen((value) {
+      PrefUtil.setString('preferResolution', value);
+    });
+
+    preferPlatform.listen((value) {
+      PrefUtil.setString('preferPlatform', value);
     });
   }
   // Theme settings
@@ -163,6 +172,10 @@ class SettingsService extends GetxController {
   final AppFocusNode accountNode = AppFocusNode();
 
   final AppFocusNode platformNode = AppFocusNode();
+
+  final AppFocusNode currentImageNode = AppFocusNode();
+
+  final AppFocusNode currentImageIndexNode = AppFocusNode();
 
   StopWatchTimer get stopWatchTimer => _stopWatchTimer;
 
@@ -306,6 +319,47 @@ class SettingsService extends GetxController {
 
   final currentPlayListNodeIndex = 0.obs;
 
+  final currentBoxImage = (PrefUtil.getString('currentBoxImage') ?? "").obs;
+
+  static final List<Map<dynamic, String>> currentBoxImageSources = [
+    {"不使用": 'default'},
+    {"必应随机": 'https://bing.img.run/rand.php'},
+    {"kf666888": 'http://www.kf666888.cn/api/tvbox/img'},
+    {"picsum": 'https://picsum.photos/1280/720/?blur=10'},
+    {"dmoe": 'https://www.dmoe.cc/random.php'},
+    {"btstu动漫": 'https://api.btstu.cn/sjbz/?lx=dongman'},
+    {"btstu妹子": 'http://api.btstu.cn/sjbz/?lx=meizi'},
+    {"btstu随机": 'http://api.btstu.cn/sjbz/?lx=suiji'},
+    {"catvod": 'https://pictures.catvod.eu.org/'},
+  ];
+
+  final currentBoxImageIndex = (PrefUtil.getInt('currentBoxImageIndex') ?? 0).obs;
+
+  getImage() async {
+    var url = currentBoxImageSources.map((e) => e.values.first).toList()[currentBoxImageIndex.value];
+    if (url == "default") {
+      currentBoxImage.value = "";
+    } else {
+      Dio dio = Dio();
+      var response = await dio.get(url, options: Options(responseType: ResponseType.bytes));
+      String base64String = base64Encode(response.data);
+      if (base64String.length > 30) {
+        currentBoxImage.value = base64String;
+      } else {
+        SmartDialog.showToast("图片加载失败,请重新获取");
+      }
+    }
+  }
+
+  Map<dynamic, String> getBoxImageItems() {
+    var keys = currentBoxImageSources.map((e) => e.keys.first).toList();
+    Map<dynamic, String> map = {};
+    for (var i = 0; i < keys.length; i++) {
+      map[keys[i]] = keys[i];
+    }
+    return map;
+  }
+
   bool isFavorite(LiveRoom room) {
     return favoriteRooms.any((element) => element.roomId == room.roomId);
   }
@@ -377,12 +431,12 @@ class SettingsService extends GetxController {
     if (historyRooms.any((element) => element.roomId == room.roomId)) {
       historyRooms.remove(room);
     }
-    //默认只记录20条，够用了
+    //默认只记录50条，够用了
     // 防止数据量大页面卡顿
-    if (historyRooms.length > 19) {
-      historyRooms.removeRange(0, historyRooms.length - 19);
+    if (historyRooms.length > 50) {
+      historyRooms.removeRange(0, historyRooms.length - 50);
     }
-    historyRooms.add(room);
+    historyRooms.insert(0, room);
   }
 
   // Favorite areas storage
@@ -464,8 +518,6 @@ class SettingsService extends GetxController {
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
-    changePreferResolution(preferResolution.value);
-    changePreferPlatform(preferPlatform.value);
   }
 
   Map<String, dynamic> toJson() {

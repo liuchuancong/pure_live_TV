@@ -7,6 +7,10 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/search/search_room_controller.dart';
+import 'package:pure_live/modules/popular/popular_grid_controller.dart';
+import 'package:pure_live/modules/history/history_rooms_controller.dart';
+import 'package:pure_live/modules/area_rooms/area_rooms_controller.dart';
 
 // ignore: must_be_immutable
 class RoomCard extends StatefulWidget {
@@ -19,6 +23,7 @@ class RoomCard extends StatefulWidget {
     this.onLongTap,
     this.useDefaultLongTapEvent = true,
     this.areas = const [],
+    required this.roomTypePage,
   });
   final LiveRoom room;
   final bool dense;
@@ -27,14 +32,21 @@ class RoomCard extends StatefulWidget {
   final AppFocusNode focusNode;
   final Function()? onLongTap;
   final bool useDefaultLongTapEvent;
+  final EnterRoomTypePage roomTypePage;
   @override
   State<RoomCard> createState() => _RoomCardState();
 }
 
 class _RoomCardState extends State<RoomCard> {
+  EnterRoomTypePage get roomTypePage => widget.roomTypePage;
   void onTap() {
+    handleCurrentPlayList();
+    AppNavigator.toLiveRoomDetail(liveRoom: widget.room);
+  }
+
+  handleCurrentPlayList() {
+    final SettingsService settingsService = Get.find<SettingsService>();
     if (widget.isIptv) {
-      final SettingsService settingsService = Get.find<SettingsService>();
       var rooms = [];
       for (var liveArea in widget.areas) {
         var roomItem = LiveRoom(
@@ -53,9 +65,58 @@ class _RoomCardState extends State<RoomCard> {
         rooms.add(roomItem);
       }
       settingsService.currentPlayList.value = rooms;
-    }
+      settingsService.currentPlayListNodeIndex.value =
+          rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+    } else {
+      switch (roomTypePage) {
+        case EnterRoomTypePage.homePage:
+          var rooms =
+              settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
+          settingsService.currentPlayList.value = rooms;
+          settingsService.currentPlayListNodeIndex.value =
+              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          break;
+        case EnterRoomTypePage.areasRoomPage:
+          var areaRoomsController = Get.find<AreaRoomsController>();
+          var rooms = areaRoomsController.list.value;
+          settingsService.currentPlayList.value = rooms;
+          settingsService.currentPlayListNodeIndex.value =
+              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          break;
+        case EnterRoomTypePage.favoritePage:
+          var favoriteController = Get.find<FavoriteController>();
+          var rooms = favoriteController.tabBottomIndex.value == 0
+              ? favoriteController.onlineRooms.value
+              : favoriteController.offlineRooms.value;
+          settingsService.currentPlayList.value = rooms;
+          settingsService.currentPlayListNodeIndex.value =
+              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          break;
+        case EnterRoomTypePage.searchPage:
+          var searchRoomController = Get.find<SearchRoomController>();
+          var rooms = searchRoomController.list.value;
+          settingsService.currentPlayList.value = rooms;
+          settingsService.currentPlayListNodeIndex.value =
+              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          break;
 
-    AppNavigator.toLiveRoomDetail(liveRoom: widget.room);
+        case EnterRoomTypePage.historyPage:
+          var historyRoomsController = Get.find<HistoryPageController>();
+          var rooms = historyRoomsController.list.value;
+          settingsService.currentPlayList.value = rooms;
+          settingsService.currentPlayListNodeIndex.value =
+              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          break;
+        case EnterRoomTypePage.popularPage:
+          var popularGridController = Get.find<PopularGridController>();
+          var rooms = popularGridController.list.value;
+          settingsService.currentPlayList.value = rooms;
+          settingsService.currentPlayListNodeIndex.value =
+              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          break;
+        default:
+      }
+    }
   }
 
   ImageProvider? getRoomAvatar(avatar) {

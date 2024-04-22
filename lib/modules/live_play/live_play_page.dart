@@ -121,7 +121,7 @@ class ErrorVideoWidget extends StatelessWidget {
             Padding(
               padding: AppStyle.edgeInsetsA24,
               child: Obx(() => Text(
-                    '${controller.currentChannelIndex.value + 1}. ${controller.currentPlayRoom.value.nick ?? ''}',
+                    '${controller.currentChannelIndex.value + 1}. ${controller.currentPlayRoom.value.platform == Sites.iptvSite ? controller.currentPlayRoom.value.title : controller.currentPlayRoom.value.nick ?? ''}',
                     style: const TextStyle(
                       fontSize: 32,
                       color: Colors.white,
@@ -179,7 +179,7 @@ class TimeOutVideoWidget extends StatelessWidget {
             Padding(
               padding: AppStyle.edgeInsetsA24,
               child: Obx(() => Text(
-                    '${controller.currentChannelIndex.value + 1}. ${controller.currentPlayRoom.value.nick ?? ''}',
+                    '${controller.currentChannelIndex.value + 1}. ${controller.currentPlayRoom.value.platform == Sites.iptvSite ? controller.currentPlayRoom.value.title : controller.currentPlayRoom.value.nick ?? ''}',
                     style: const TextStyle(
                       fontSize: 32,
                       color: Colors.white,

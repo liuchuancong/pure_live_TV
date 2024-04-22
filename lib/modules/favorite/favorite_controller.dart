@@ -42,8 +42,6 @@ class FavoriteController extends GetxController {
       }
     }
     onlineRooms.sort((a, b) => int.parse(b.watching!).compareTo(int.parse(a.watching!)));
-    settings.currentPlayList.value = onlineRooms;
-    settings.currentPlayListNodeIndex.value = 0;
     loading.value = false;
   }
 
@@ -68,16 +66,39 @@ class FavoriteController extends GetxController {
     loading.value = true;
     bool hasError = false;
     List<Future<LiveRoom>> futures = [];
-    if (settings.favoriteRooms.value.isEmpty) return false;
-    for (final room in settings.favoriteRooms.value) {
-      futures.add(Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!));
+    if (settings.favoriteRooms.value.isEmpty) {
+      loading.value = false;
+      return false;
     }
-    try {
-      final rooms = await Future.wait(futures);
-      for (var room in rooms) {
-        settings.updateRoom(room);
+    for (final room in settings.favoriteRooms.value) {
+      futures.add(Sites.of(room.platform!)
+          .liveSite
+          .getRoomDetail(roomId: room.roomId!, platform: room.platform!, title: room.title!, nick: room.nick!));
+    }
+    List<List<Future<LiveRoom>>> groupedList = [];
+
+    // 每次循环处理四个元素
+    for (int i = 0; i < futures.length; i += 3) {
+      // 获取当前循环开始到下一个四个元素的位置（但不超过原列表长度）
+      int end = i + 3;
+      if (end > futures.length) {
+        end = futures.length;
       }
-      syncRooms();
+      // 截取当前四个元素的子列表
+      List<Future<LiveRoom>> subList = futures.sublist(i, end);
+      // 将子列表添加到结果列表中
+      groupedList.add(subList);
+    }
+
+    try {
+      for (var i = 0; i < groupedList.length; i++) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        final rooms = await Future.wait(groupedList[i]);
+        for (var room in rooms) {
+          settings.updateRoom(room);
+        }
+        syncRooms();
+      }
     } catch (e) {
       hasError = true;
       loading.value = false;

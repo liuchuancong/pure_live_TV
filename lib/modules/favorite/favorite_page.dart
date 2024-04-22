@@ -78,7 +78,6 @@ class FavoritePage extends GetView<FavoriteController> {
                 text: "已开播",
                 focusNode: controller.onlineRoomsNodes,
                 onTap: () {
-                  controller.settings.currentPlayList.value = controller.onlineRooms;
                   controller.tabBottomIndex.value = 0;
                   controller.onlineRoomsNodes.requestFocus();
                 },
@@ -114,6 +113,7 @@ class FavoritePage extends GetView<FavoriteController> {
                     room: item,
                     useDefaultLongTapEvent: false,
                     dense: controller.settings.enableDenseFavorites.value,
+                    roomTypePage: EnterRoomTypePage.favoritePage,
                     onLongTap: () {
                       controller.handleFollowLongTap(item);
                     },
