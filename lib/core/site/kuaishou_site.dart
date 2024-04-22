@@ -174,10 +174,10 @@ class KuaishowSite implements LiveSite {
             watching: titem["watchingCount"].toString(),
             roomId: author["id"],
             area: gameInfo["name"],
-            title: author["description"].replaceAll("\n", " "),
+            title: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
             nick: author["name"].toString(),
             avatar: author["avatar"].toString(),
-            introduction: author["description"].replaceAll("\n", " "),
+            introduction: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
             notice: author["description"],
             status: true,
             liveStatus: LiveStatus.live,
@@ -303,18 +303,16 @@ class KuaishowSite implements LiveSite {
       var author = jsonObj["liveroom"]["playList"][0]["author"];
       var gameInfo = jsonObj["liveroom"]["playList"][0]["gameInfo"];
       var liveStreamId = liveStream["id"];
-
-      // var res = await getWebsocketUrl(liveStreamId);
       return LiveRoom(
-        cover: liveStream["coverUrl"],
-        watching: gameInfo["watchingCount"].toString(),
-        roomId: author["description"],
-        area: gameInfo["name"],
-        title: author["description"].replaceAll("\n", " "),
+        cover: liveStream['poster'] != null ? '${liveStream['poster']}.jpg' : '',
+        watching: jsonObj["liveroom"]["playList"][0]["isLiving"] ? gameInfo["watchingCount"].toString() : '0',
+        roomId: author["id"],
+        area: gameInfo["name"] ?? '',
+        title: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
         nick: author["name"].toString(),
         avatar: author["avatar"].toString(),
-        introduction: author["description"],
-        notice: author["description"],
+        introduction: author["description"].toString(),
+        notice: author["description"].toString(),
         status: jsonObj["liveroom"]["playList"][0]["isLiving"],
         liveStatus: jsonObj["liveroom"]["playList"][0]["isLiving"] ? LiveStatus.live : LiveStatus.offline,
         platform: Sites.kuaishouSite,
