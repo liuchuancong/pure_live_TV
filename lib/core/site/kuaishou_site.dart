@@ -122,7 +122,11 @@ class KuaishowSite implements LiveSite {
       var roomItem = LiveRoom(
         roomId: item["author"]["id"] ?? '',
         title: item['caption'] ?? '',
-        cover: item['poster'] ?? '',
+        cover: item['poster'] != null && !'${item['poster']}'.endsWith('jpg') ||
+                item['poster'] != null && !'${item['poster']}'.endsWith('jpeg') ||
+                item['poster'] != null && !'${item['poster']}'.endsWith('png')
+            ? '${item['poster']}.jpg'
+            : '',
         nick: item["author"]["name"].toString(),
         watching: item["watchingCount"].toString(),
         avatar: item["author"]["avatar"],
@@ -170,7 +174,11 @@ class KuaishowSite implements LiveSite {
           var author = titem["author"];
           var gameInfo = titem["gameInfo"];
           var roomItems = LiveRoom(
-            cover: gameInfo["poster"],
+            cover: gameInfo['poster'] != null && !'${gameInfo['poster']}'.endsWith('jpg') ||
+                    gameInfo['poster'] != null && !'${gameInfo['poster']}'.endsWith('jpeg') ||
+                    gameInfo['poster'] != null && !'${gameInfo['poster']}'.endsWith('png')
+                ? '${gameInfo['poster']}.jpg'
+                : '',
             watching: titem["watchingCount"].toString(),
             roomId: author["id"],
             area: gameInfo["name"],
