@@ -46,52 +46,22 @@ class DonatePage extends StatelessWidget {
                   Padding(
                     padding: AppStyle.edgeInsetsA32,
                     child: Text(
-                      "感谢您的支持！",
+                      "感谢您的使用！",
                       style: AppStyle.titleStyleWhite,
                     ),
                   ),
-                  AppStyle.vGap16,
+                  AppStyle.vGap48,
                   Padding(
                     padding: AppStyle.edgeInsetsA32,
                     child: Text(
-                      "如果您觉得本软件对您有帮助，欢迎微信捐赠或支付宝捐赠。",
+                      "如果您觉得有更好的建议或者意见，欢迎您联系我们。",
                       style: AppStyle.titleStyleWhite,
-                    ),
-                  ),
-                  Padding(
-                    padding: AppStyle.edgeInsetsA32,
-                    child: Text(
-                      "手机号：17792321552",
-                      style: AppStyle.titleStyleWhite.copyWith(
-                        fontSize: 36.w,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ),
                   Padding(
                     padding: AppStyle.edgeInsetsA32,
                     child: Text(
                       "QQ群：920447827",
-                      style: AppStyle.titleStyleWhite.copyWith(
-                        fontSize: 36.w,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: AppStyle.edgeInsetsA32,
-                    child: Text(
-                      "QQ号：872934574",
-                      style: AppStyle.titleStyleWhite.copyWith(
-                        fontSize: 36.w,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: AppStyle.edgeInsetsA32,
-                    child: Text(
-                      "网易邮箱：17792321552@163.com",
                       style: AppStyle.titleStyleWhite.copyWith(
                         fontSize: 36.w,
                         fontWeight: FontWeight.bold,
