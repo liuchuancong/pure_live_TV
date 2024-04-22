@@ -99,7 +99,7 @@ class PopularPage extends GetView<PopularGridController> {
                   ? MasonryGridView.count(
                       padding: AppStyle.edgeInsetsA48,
                       itemCount: controller.list.length,
-                      crossAxisCount: 5,
+                      crossAxisCount: 4,
                       crossAxisSpacing: 48.w,
                       mainAxisSpacing: 48.w,
                       controller: controller.scrollController,

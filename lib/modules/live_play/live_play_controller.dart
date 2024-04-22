@@ -393,6 +393,9 @@ class LivePlayController extends StateController {
       SmartDialog.showToast(S.current.double_click_to_exit);
       return await Future.value(false);
     }
+    if (videoController != null && videoController!.hasDestory == false) {
+      videoController!.destory();
+    }
     return await Future.value(true);
   }
 

@@ -304,7 +304,11 @@ class KuaishowSite implements LiveSite {
       var gameInfo = jsonObj["liveroom"]["playList"][0]["gameInfo"];
       var liveStreamId = liveStream["id"];
       return LiveRoom(
-        cover: liveStream['poster'] != null ? '${liveStream['poster']}.jpg' : '',
+        cover: liveStream['poster'] != null && !'${liveStream['poster']}'.endsWith('jpg') ||
+                liveStream['poster'] != null && !'${liveStream['poster']}'.endsWith('jpeg') ||
+                liveStream['poster'] != null && !'${liveStream['poster']}'.endsWith('png')
+            ? '${liveStream['poster']}.jpg'
+            : '',
         watching: jsonObj["liveroom"]["playList"][0]["isLiving"] ? gameInfo["watchingCount"].toString() : '0',
         roomId: author["id"],
         area: gameInfo["name"] ?? '',

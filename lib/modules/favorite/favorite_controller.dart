@@ -78,9 +78,9 @@ class FavoriteController extends GetxController {
     List<List<Future<LiveRoom>>> groupedList = [];
 
     // 每次循环处理四个元素
-    for (int i = 0; i < futures.length; i += 3) {
+    for (int i = 0; i < futures.length; i += 1) {
       // 获取当前循环开始到下一个四个元素的位置（但不超过原列表长度）
-      int end = i + 3;
+      int end = i + 1;
       if (end > futures.length) {
         end = futures.length;
       }
@@ -92,7 +92,6 @@ class FavoriteController extends GetxController {
 
     try {
       for (var i = 0; i < groupedList.length; i++) {
-        await Future.delayed(const Duration(milliseconds: 300));
         final rooms = await Future.wait(groupedList[i]);
         for (var room in rooms) {
           settings.updateRoom(room);

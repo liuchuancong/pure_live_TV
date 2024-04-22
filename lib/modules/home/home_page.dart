@@ -193,7 +193,7 @@ class HomePage extends GetView<HomeController> {
                 Obx(() => MasonryGridView.count(
                       padding: AppStyle.edgeInsetsA48,
                       itemCount: controller.rooms.value.length,
-                      crossAxisCount: 5,
+                      crossAxisCount: 4,
                       crossAxisSpacing: 48.w,
                       mainAxisSpacing: 40.w,
                       shrinkWrap: true,

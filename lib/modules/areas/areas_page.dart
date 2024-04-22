@@ -113,7 +113,7 @@ class AreasPage extends GetView<AreasListController> {
                                   shrinkWrap: true,
                                   padding: AppStyle.edgeInsetsV8,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  crossAxisCount: 8,
+                                  crossAxisCount: 5,
                                   crossAxisSpacing: 36.w,
                                   mainAxisSpacing: 36.w,
                                   children: List.generate(
@@ -125,7 +125,7 @@ class AreasPage extends GetView<AreasListController> {
                                 () => MasonryGridView.count(
                                   padding: AppStyle.edgeInsetsA48,
                                   itemCount: controller.list.isNotEmpty ? controller.list[0].children.length : 0,
-                                  crossAxisCount: 5,
+                                  crossAxisCount: 4,
                                   crossAxisSpacing: 48.w,
                                   mainAxisSpacing: 40.w,
                                   shrinkWrap: true,
@@ -218,10 +218,10 @@ class AreasPage extends GetView<AreasListController> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 64.w,
-            height: 64.w,
+            width: 120.w,
+            height: 120.w,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.w),
+              borderRadius: BorderRadius.circular(30.w),
             ),
             child: CachedNetworkImage(
               imageUrl: item.areaPic!,
@@ -230,7 +230,7 @@ class AreasPage extends GetView<AreasListController> {
               errorWidget: (context, error, stackTrace) => Center(
                 child: Icon(
                   Icons.live_tv_rounded,
-                  size: 38,
+                  size: 50,
                   color: item.focusNode.isFoucsed.value ? Colors.black : Colors.white,
                 ),
               ),

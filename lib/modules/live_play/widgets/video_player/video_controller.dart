@@ -40,6 +40,8 @@ class VideoController with ChangeNotifier {
 
   double initBrightness = 0.0;
 
+  bool hasDestory = false;
+
   final hasError = false.obs;
 
   final isPlaying = false.obs;
@@ -675,7 +677,9 @@ class VideoController with ChangeNotifier {
 
   @override
   void dispose() async {
-    await destory();
+    if (hasDestory == false) {
+      await destory();
+    }
     super.dispose();
   }
 
@@ -700,6 +704,7 @@ class VideoController with ChangeNotifier {
     isPlaying.value = false;
     hasError.value = false;
     livePlayController.success.value = false;
+    hasDestory = true;
   }
 
   void refresh() {

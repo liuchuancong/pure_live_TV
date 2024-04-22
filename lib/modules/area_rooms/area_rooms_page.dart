@@ -69,7 +69,7 @@ class AreasRoomPage extends GetView<AreaRoomsController> {
               () => MasonryGridView.count(
                 padding: AppStyle.edgeInsetsA48,
                 itemCount: controller.list.length,
-                crossAxisCount: 5,
+                crossAxisCount: 4,
                 crossAxisSpacing: 48.w,
                 mainAxisSpacing: 40.w,
                 controller: controller.scrollController,

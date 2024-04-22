@@ -41,7 +41,7 @@ class HistoryPageController extends BasePageController<LiveRoom> {
 
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
-    final rooms = settingsService.historyRooms.reversed.toList();
+    final rooms = settingsService.historyRooms.toList();
     return rooms;
   }
 }

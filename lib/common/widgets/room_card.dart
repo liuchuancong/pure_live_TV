@@ -71,7 +71,7 @@ class _RoomCardState extends State<RoomCard> {
       switch (roomTypePage) {
         case EnterRoomTypePage.homePage:
           var rooms =
-              settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
+              settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(8).toList();
           settingsService.currentPlayList.value = rooms;
           settingsService.currentPlayListNodeIndex.value =
               rooms.indexWhere((element) => element.roomId == widget.room.roomId);

@@ -100,7 +100,7 @@ class FavoritePage extends GetView<FavoriteController> {
                 itemCount: controller.tabBottomIndex.value == 0
                     ? controller.onlineRooms.length
                     : controller.offlineRooms.length,
-                crossAxisCount: 5,
+                crossAxisCount: 4,
                 crossAxisSpacing: 48.w,
                 mainAxisSpacing: 40.w,
                 shrinkWrap: true,

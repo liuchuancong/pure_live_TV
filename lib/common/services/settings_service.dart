@@ -410,6 +410,7 @@ class SettingsService extends GetxController {
   }
 
   bool updateRoom(LiveRoom room) {
+    updateRoomInHistory(room);
     int idx = favoriteRooms.indexWhere((element) => element.roomId == room.roomId);
     if (idx == -1) return false;
     favoriteRooms[idx] = room;
@@ -431,6 +432,7 @@ class SettingsService extends GetxController {
     if (historyRooms.any((element) => element.roomId == room.roomId)) {
       historyRooms.remove(room);
     }
+    updateRoom(room);
     //默认只记录50条，够用了
     // 防止数据量大页面卡顿
     if (historyRooms.length > 50) {

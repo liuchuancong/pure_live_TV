@@ -77,7 +77,7 @@ class HomeController extends BasePageController {
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
     List<Future<LiveRoom>> futures = [];
     var historyRooms =
-        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
+        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(8).toList();
     if (historyRooms.isEmpty) {
       return [];
     }
@@ -95,7 +95,7 @@ class HomeController extends BasePageController {
       return historyRooms;
     }
     historyRooms =
-        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(5).toList();
+        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(8).toList();
     rooms.value = historyRooms;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return historyRooms;
