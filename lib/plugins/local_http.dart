@@ -54,12 +54,11 @@ class LocalHttpServer {
       });
       router.post('/setSettings', (ctx, next) async {
         var settingStrings = ctx.query['settings'];
+        ctx.body = settingStrings != null ? jsonEncode({'data': true}) : jsonEncode({'data': false});
         try {
           settings.fromJson(jsonDecode(settingStrings!));
-          ctx.body = jsonEncode({'data': true});
           SmartDialog.showToast('同步成功', displayTime: const Duration(seconds: 4));
         } catch (e) {
-          ctx.body = jsonEncode({'data': false});
           SmartDialog.showToast('同步失败', displayTime: const Duration(seconds: 4));
         }
       });
