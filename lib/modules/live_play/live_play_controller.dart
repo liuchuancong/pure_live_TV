@@ -385,6 +385,7 @@ class LivePlayController extends StateController {
     }
     if (videoController!.showController.value) {
       videoController?.disableController();
+      videoController?.focusNode.requestFocus();
       return await Future.value(false);
     }
     int nowExitTime = DateTime.now().millisecondsSinceEpoch;
@@ -394,6 +395,7 @@ class LivePlayController extends StateController {
       return await Future.value(false);
     }
     if (videoController != null && videoController!.hasDestory == false) {
+      videoController?.focusNode.requestFocus();
       videoController!.destory();
     }
     return await Future.value(true);
