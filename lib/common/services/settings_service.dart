@@ -231,7 +231,7 @@ class SettingsService extends GetxController {
   final danmakuArea = (PrefUtil.getDouble('danmakuArea') ?? 1.0).obs;
   final danmakuSpeed = (PrefUtil.getDouble('danmakuSpeed') ?? 8.0).obs;
   final danmakuFontSize = (PrefUtil.getDouble('danmakuFontSize') ?? 16.0).obs;
-  final danmakuFontBorder = (PrefUtil.getDouble('danmakuFontBorder') ?? 0.5).obs;
+  final danmakuFontBorder = (PrefUtil.getDouble('danmakuFontBorder') ?? 2.0).obs;
 
   final danmakuOpacity = (PrefUtil.getDouble('danmakuOpacity') ?? 1.0).obs;
 
@@ -585,7 +585,7 @@ class SettingsService extends GetxController {
       "danmakuArea": 1.0,
       "danmakuSpeed": 8.0,
       "danmakuFontSize": 16.0,
-      "danmakuFontBorder": 0.5,
+      "danmakuFontBorder": 2.0,
       "danmakuOpacity": 1.0,
       'doubleExit': true,
       "videoPlayerIndex": 0,

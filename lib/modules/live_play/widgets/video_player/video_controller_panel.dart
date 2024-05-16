@@ -680,6 +680,10 @@ class DanmakuSetting extends StatelessWidget {
                         12.0: "12",
                         14.0: "14",
                         16.0: "16",
+                        18.0: "18",
+                        20.0: "20",
+                        22.0: "22",
+                        24.0: "24",
                       },
                       value: controller.danmakuFontBorder.value,
                       onChanged: (e) {

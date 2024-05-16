@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:async';
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
@@ -137,7 +136,7 @@ class VideoController with ChangeNotifier {
   final danmakuArea = 1.0.obs;
   final danmakuSpeed = 8.0.obs;
   final danmakuFontSize = 16.0.obs;
-  final danmakuFontBorder = 0.5.obs;
+  final danmakuFontBorder = 2.0.obs;
   final danmakuOpacity = 1.0.obs;
   final mergeDanmuRating = 0.0.obs;
 
@@ -558,7 +557,7 @@ class VideoController with ChangeNotifier {
       PrefUtil.setDouble('danmakuFontSize', data);
       settings.danmakuFontSize.value = data;
     });
-    danmakuFontBorder.value = PrefUtil.getDouble('danmakuFontBorder') ?? 0.5;
+    danmakuFontBorder.value = PrefUtil.getDouble('danmakuFontBorder') ?? 2.0;
     danmakuFontBorder.listen((data) {
       PrefUtil.setDouble('danmakuFontBorder', data);
       settings.danmakuFontBorder.value = data;
