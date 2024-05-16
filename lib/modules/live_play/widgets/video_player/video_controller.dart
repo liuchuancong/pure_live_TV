@@ -1,14 +1,13 @@
+import 'dart:math';
 import 'dart:async';
 import 'package:get/get.dart';
+import 'dart:developer' as developer;
 import 'package:flutter/services.dart';
-import 'package:fijkplayer/fijkplayer.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
-import 'package:better_player/better_player.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
-import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
 
 class VideoController with ChangeNotifier {
@@ -32,12 +31,6 @@ class VideoController with ChangeNotifier {
 
   final videoFit = BoxFit.contain.obs;
 
-  final mediaPlayerControllerInitialized = false.obs;
-
-  BetterPlayerController? mobileController;
-
-  bool isTryToHls = false;
-
   double initBrightness = 0.0;
 
   bool hasDestory = false;
@@ -47,17 +40,6 @@ class VideoController with ChangeNotifier {
   final isPlaying = false.obs;
 
   final isBuffering = false.obs;
-
-  // Video player status
-  // A [GlobalKey<VideoState>] is required to access the programmatic fullscreen interface.
-  late final GlobalKey<media_kit_video.VideoState> key = GlobalKey<media_kit_video.VideoState>();
-
-  // Create a [Player] to control playback.
-  late Player player;
-  // CeoController] to handle video output from [Player].
-  late media_kit_video.VideoController mediaPlayerController;
-
-  late FijkPlayer fijkPlayer;
 
   LivePlayController livePlayController = Get.find<LivePlayController>();
 
@@ -105,6 +87,8 @@ class VideoController with ChangeNotifier {
   Timer? doubleClickTimer;
 
   int doubleClickTimeStamp = 0;
+
+  GsyVideoPlayerController gsyVideoPlayerController = GsyVideoPlayerController();
 
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
@@ -305,50 +289,24 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    if (videoPlayerIndex == 0) {
-      mobileController = BetterPlayerController(
-        BetterPlayerConfiguration(
-          autoPlay: true,
-          fit: videoFit.value,
-          allowedScreenSleep: false,
-          autoDetectFullscreenDeviceOrientation: true,
-          autoDetectFullscreenAspectRatio: true,
-          errorBuilder: (context, errorMessage) => Container(),
-        ),
-      );
-      mobileController?.setControlsEnabled(false);
-      setDataSource(datasource);
-      mobileController?.addEventsListener(mobileStateListener);
-    } else if (videoPlayerIndex == 1) {
-      setDataSource(datasource);
-    } else if (videoPlayerIndex == 2) {
-      player = Player();
-      mediaPlayerController = media_kit_video.VideoController(player,
-          configuration: settings.playerCompatMode.value
-              ? const media_kit_video.VideoControllerConfiguration(
-                  vo: 'mediacodec_embed',
-                  hwdec: 'mediacodec',
-                )
-              : media_kit_video.VideoControllerConfiguration(
-                  androidAttachSurfaceAfterVideoParameters: false, enableHardwareAcceleration: enableCodec));
-      setDataSource(datasource);
-      mediaPlayerController.player.stream.playing.listen((bool playing) {
-        if (playing) {
-          isPlaying.value = true;
-        } else {
-          isPlaying.value = false;
-        }
-      });
-      mediaPlayerController.player.stream.error.listen((event) {
-        if (event.toString().contains('Failed to open')) {
+    gsyVideoPlayerController.setLogLevel(LogLevel.logSilent);
+    gsyVideoPlayerController.setCurrentPlayer(getVideoPlayerType(videoPlayerIndex));
+    gsyVideoPlayerController.setMediaCodec(enableCodec);
+    gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
+    gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers);
+    gsyVideoPlayerController.addEventsListener((VideoEventType event) {
+      if (gsyVideoPlayerController.value.initialized) {
+        if (event == VideoEventType.onListenerError) {
+          developer.log("video listener error${gsyVideoPlayerController.value}", name: "video_player");
           hasError.value = true;
           isPlaying.value = false;
         } else {
-          hasError.value = true;
+          if (isPlaying.value != gsyVideoPlayerController.value.isPlaying) {
+            isPlaying.value = gsyVideoPlayerController.value.isPlaying;
+          }
         }
-      });
-      mediaPlayerControllerInitialized.value = true;
-    }
+      }
+    });
   }
 
   void onKeyEvent(KeyEvent key) {
@@ -571,46 +529,11 @@ class VideoController with ChangeNotifier {
     }
   }
 
-  void _playerValueChanged() {
-    FijkValue value = fijkPlayer.value;
-    bool playing = (value.state == FijkState.started);
-    hasError.value = (value.state == FijkState.error);
-    isPlaying.value = playing;
-  }
-
-  tryToHlsPlay() {
-    isTryToHls = true;
-    mobileController?.pause();
-    mobileController?.setResolution(datasource, videoFormat: BetterPlayerVideoFormat.hls);
-    mobileController?.play();
-  }
-
   void throttle(Function func, [int delay = 500]) {
     var now = DateTime.now().millisecondsSinceEpoch;
     if (now - _currentTimeStamp > delay) {
       _currentTimeStamp = now;
       func.call();
-    }
-  }
-
-  dynamic mobileStateListener(BetterPlayerEvent state) {
-    if (mobileController?.videoPlayerController != null) {
-      if (state.betterPlayerEventType == BetterPlayerEventType.exception) {
-        throttle(() {
-          if (mobileController!.videoPlayerController!.value.errorDescription != null) {
-            if (mobileController!.videoPlayerController!.value.errorDescription!.contains('Source error') &&
-                !isTryToHls) {
-              tryToHlsPlay();
-            } else {
-              hasError.value = mobileController?.videoPlayerController?.value.hasError ?? true;
-            }
-          }
-        }, 1000);
-      } else if (state.betterPlayerEventType == BetterPlayerEventType.changedTrack) {
-        //  print(mobileController.setAudioTrack(audioTrack))
-      }
-      isPlaying.value = mobileController?.isPlaying() ?? false;
-      isBuffering.value = mobileController?.isBuffering() ?? false;
     }
   }
 
@@ -688,19 +611,7 @@ class VideoController with ChangeNotifier {
     cancledanmakuFocus();
     danmakuController.disable();
     await danmakuController.dispose();
-
-    if (videoPlayerIndex == 0) {
-      mobileController?.removeEventsListener(mobileStateListener);
-      mobileController?.dispose(forceDispose: true);
-      mobileController = null;
-    } else if (videoPlayerIndex == 1) {
-      fijkPlayer.removeListener(_playerValueChanged);
-      await fijkPlayer.release();
-    } else if (videoPlayerIndex == 2) {
-      await player.dispose();
-    }
-
-    isTryToHls = false;
+    gsyVideoPlayerController.dispose();
     isPlaying.value = false;
     hasError.value = false;
     livePlayController.success.value = false;
@@ -738,48 +649,6 @@ class VideoController with ChangeNotifier {
     } else {
       hasError.value = false;
     }
-    if (videoPlayerIndex == 0) {
-      mobileController?.setupDataSource(BetterPlayerDataSource(
-        BetterPlayerDataSourceType.network,
-        url,
-        liveStream: true,
-        headers: headers,
-      ));
-      mobileController?.pause();
-    } else if (videoPlayerIndex == 1) {
-      setFijkPlayerDataSource();
-    } else if (videoPlayerIndex == 2) {
-      player.pause();
-      player.open(Media(datasource, httpHeaders: headers));
-    }
-  }
-
-  setFijkPlayerDataSource() async {
-    fijkPlayer = FijkPlayer();
-    fijkPlayer.addListener(_playerValueChanged);
-    await setIjkplayer();
-    await fijkPlayer.reset();
-    await fijkPlayer.setDataSource(datasource, autoPlay: true);
-    await fijkPlayer.prepareAsync();
-  }
-
-  Future setIjkplayer() async {
-    var headersArr = [];
-    headers.forEach((key, value) {
-      headersArr.add('$key: $value');
-    });
-    fijkPlayer.setOption(FijkOption.formatCategory, "headers", headersArr.join('\r\n'));
-    fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
-    fijkPlayer.setOption(FijkOption.hostCategory, "request-audio-focus", 1);
-    fijkPlayer.setOption(FijkOption.playerCategory, "framedrop", 1);
-    fijkPlayer.setOption(FijkOption.playerCategory, "cover-after-prepared", 0);
-    fijkPlayer.setOption(FijkOption.playerCategory, "enable-position-notify", 0);
-    fijkPlayer.setOption(FijkOption.playerCategory, "mediacodec-all-videos", 1);
-    if (enableCodec) {
-      fijkPlayer.setOption(FijkOption.codecCategory, "mediacodec", 1);
-      fijkPlayer.setOption(FijkOption.codecCategory, "mediacodec-auto-rotate", 1);
-      fijkPlayer.setOption(FijkOption.codecCategory, "mediacodec-handle-resolution-change", 1);
-    }
   }
 
   void setVideoFit() {
@@ -788,27 +657,15 @@ class VideoController with ChangeNotifier {
     if (index >= settings.videofitArrary.length) {
       index = 0;
     }
-
     settings.videoFitIndex.value = index;
-    var fit = settings.videofitArrary[index];
-
-    if (videoPlayerIndex == 0) {
-      mobileController?.setOverriddenFit(fit);
-      mobileController?.retryDataSource();
-    } else if (videoPlayerIndex == 1) {
-      refresh();
-    } else if (videoPlayerIndex == 2) {
-      key.currentState?.update(fit: fit);
-    }
+    gsyVideoPlayerController.setShowType(getPlayerVideoShowType(index));
   }
 
   void togglePlayPause() {
-    if (videoPlayerIndex == 0) {
-      isPlaying.value ? mobileController!.pause() : mobileController!.play();
-    } else if (videoPlayerIndex == 1) {
-      isPlaying.value ? fijkPlayer.pause() : fijkPlayer.start();
-    } else if (videoPlayerIndex == 2) {
-      mediaPlayerController.player.playOrPause();
+    if (isPlaying.value) {
+      gsyVideoPlayerController.pause();
+    } else {
+      gsyVideoPlayerController.resume();
     }
   }
 

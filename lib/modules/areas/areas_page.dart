@@ -113,9 +113,9 @@ class AreasPage extends GetView<AreasListController> {
                                   shrinkWrap: true,
                                   padding: AppStyle.edgeInsetsV8,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  crossAxisCount: 5,
-                                  crossAxisSpacing: 36.w,
-                                  mainAxisSpacing: 36.w,
+                                  crossAxisCount: 8,
+                                  crossAxisSpacing: 20.w,
+                                  mainAxisSpacing: 20.w,
                                   children: List.generate(
                                       item.children.length, (index) => buildSubCategory(item.children[index])).toList(),
                                 ),
@@ -218,8 +218,8 @@ class AreasPage extends GetView<AreasListController> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 120.w,
-            height: 120.w,
+            width: 100.w,
+            height: 100.w,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(30.w),
             ),

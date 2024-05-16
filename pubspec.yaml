@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.6.8
+version: 1.6.9
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -39,7 +39,7 @@ dependencies:
   html: ^0.15.4
   http: ^1.1.0
   url_launcher: ^6.1.12
-  web_socket_channel: ^2.4.0
+  web_socket_channel: ^3.0.0
   cached_network_image: ^3.3.0
   
   # ui related
@@ -53,14 +53,8 @@ dependencies:
   # database
   font_awesome_flutter: ^10.6.0
   # video player mobile
-  media_kit: ^1.1.10+1                           # Primary package.
-  media_kit_video: ^1.2.4                        # For video rendering.
-  media_kit_libs_video: ^1.0.4                   # Native video dependencies.
-  better_player:
-    git: 
-      url: https://github.com/liuchuancong/better_player.git
-      ref: 'media3'
-  fijkplayer: ^0.11.0
+  gsy_video_player: 
+    path: E:/project/gsy_video_player
   share_handler: ^0.0.19
   bordered_text: ^2.0.0
   flutter_color: ^2.1.0
@@ -81,9 +75,10 @@ dependencies:
   shared_preferences: ^2.2.2
   flutter_cache_manager: ^3.3.1
   # utils
-  get: ^5.0.0-release-candidate-5
-  intl: ^0.18.0
-  timezone: ^0.8.0
+  get: 
+    git: https://github.com/jonataslaw/getx
+  intl: ^0.19.0
+  timezone: ^0.9.3
   date_format: ^2.0.7
   path: ^1.8.3
   file: ^7.0.0
@@ -91,18 +86,18 @@ dependencies:
   logger: ^2.0.2+1
   crypto: ^3.0.3
   brotli: ^0.6.0
-  device_info_plus: ^9.1.1
+  device_info_plus: ^10.1.0
   cupertino_icons: ^1.0.2
   remixicon: ^1.0.0 #Remix图标
   lottie: ^3.1.0 #Lottie动画
-  marquee: ^2.2.3 #跑马灯
+  marquee_list: ^1.0.0
   flutter_screenutil: ^5.9.0 #UI适配
-  network_info_plus: ^4.1.0+1
+  network_info_plus: ^5.0.3
   dart_tars_protocol:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0
   flutter_inappwebview: ^6.0.0-beta.25
-  connectivity_plus: ^5.0.2 
+  connectivity_plus: ^6.0.3 
   qr_flutter: ^4.1.0 
   # 给web端通信
   dia: ^0.1.4
@@ -122,7 +117,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.1
+  flutter_lints: ^4.0.0
 
 # flutter pub run flutter_launcher_icons
 flutter_icons:

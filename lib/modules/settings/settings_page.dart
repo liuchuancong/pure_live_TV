@@ -56,8 +56,9 @@ class SettingsPage extends GetView<SettingsService> {
                 title: "播放器设置",
                 items: const {
                   0: "Exo播放器",
-                  1: "Ijk播放器",
-                  2: "Mpv播放器",
+                  1: "系统播放器",
+                  2: "IJK播放器",
+                  4: "阿里播放器",
                 },
                 value: controller.videoPlayerIndex.value,
                 onChanged: (e) {
@@ -66,17 +67,6 @@ class SettingsPage extends GetView<SettingsService> {
               ),
             ),
             AppStyle.vGap24,
-            Obx(
-              () => SettingsItemWidget(
-                focusNode: controller.playerCompatModeNode,
-                title: "Mpv播放器兼容模式(此配置生效解码不生效)",
-                items: const {0: "不使用", 1: "使用"},
-                value: controller.playerCompatMode.value ? 1 : 0,
-                onChanged: (e) {
-                  controller.playerCompatMode.value = e == 1;
-                },
-              ),
-            ),
             Obx(
               () => SettingsItemWidget(
                 focusNode: controller.enableCodecNode,

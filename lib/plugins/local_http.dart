@@ -36,11 +36,14 @@ class LocalHttpServer {
 
   void startServer(String port) async {
     try {
-      final connectivityResult = await (Connectivity().checkConnectivity());
-      if (connectivityResult == ConnectivityResult.mobile) {
-        SmartDialog.showToast('请在局域网下使用', displayTime: const Duration(seconds: 2));
-        return;
+      final connectivityResults = await (Connectivity().checkConnectivity());
+      for (var connectivityResult in connectivityResults) {
+        if (connectivityResult == ConnectivityResult.none) {
+          SmartDialog.showToast('请在局域网下使用', displayTime: const Duration(seconds: 2));
+          return;
+        }
       }
+
       await readAssetsFiles();
       final directory = await getApplicationCacheDirectory();
 

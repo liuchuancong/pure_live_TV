@@ -6,7 +6,7 @@ class SnackBarUtil {
       'Success',
       text,
       duration: const Duration(seconds: 2),
-      backgroundColor: Get.theme.colorScheme.surfaceVariant,
+      backgroundColor: Get.theme.colorScheme.surfaceContainerHighest,
       colorText: Get.theme.colorScheme.onSurfaceVariant,
       snackPosition: SnackPosition.bottom,
     );

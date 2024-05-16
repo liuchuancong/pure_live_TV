@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'package:get/get.dart';
-import 'package:marquee/marquee.dart';
 import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:marquee_list/marquee_list.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/common/widgets/highlight_widget.dart';
@@ -248,14 +248,14 @@ class _RoomCardState extends State<RoomCard> {
               child: SizedBox(
                 height: 56.w,
                 child: widget.focusNode.isFoucsed.value && widget.room.title!.isNotEmpty
-                    ? Marquee(
-                        text: widget.room.title ?? '未设置标题',
-                        style: AppStyle.textStyleBlack,
-                        startAfter: const Duration(seconds: 1),
-                        velocity: 20,
-                        blankSpace: 200.w,
-                        //decelerationDuration: const Duration(seconds: 2),
-                        scrollAxis: Axis.horizontal,
+                    ? MarqueeList(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          Text(
+                            widget.room.title ?? '未设置标题',
+                            style: AppStyle.textStyleBlack,
+                          ),
+                        ],
                       )
                     : Container(
                         alignment: Alignment.centerLeft,

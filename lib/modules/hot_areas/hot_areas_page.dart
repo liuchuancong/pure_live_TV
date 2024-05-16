@@ -17,8 +17,8 @@ class HotAreasPage extends GetView<HotAreasController> {
           trailing: Switch(
             value: controller.sites[index].show,
             thumbColor: controller.sites[index].show
-                ? MaterialStateProperty.all(Colors.white)
-                : MaterialStateProperty.all(Colors.black),
+                ? WidgetStateProperty.all(Colors.white)
+                : WidgetStateProperty.all(Colors.black),
             onChanged: (bool value) {},
           ),
           focusNode: controller.sitesNodes[index],

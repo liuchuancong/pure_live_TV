@@ -49,6 +49,7 @@ android {
         applicationId "com.mystyle.purelive"
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
         minSdk 19 
         targetSdk 34
     }
@@ -87,4 +88,6 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+  implementation "androidx.multidex:multidex:2.0.1"
+}
