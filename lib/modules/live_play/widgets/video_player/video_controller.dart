@@ -289,13 +289,13 @@ class VideoController with ChangeNotifier {
 
   void initVideoController() async {
     gsyVideoPlayerController.setLogLevel(LogLevel.logSilent);
-    gsyVideoPlayerController.setCurrentPlayer(getVideoPlayerType(videoPlayerIndex));
+    gsyVideoPlayerController.setPlayerFactory(getVideoPlayerType(videoPlayerIndex));
     gsyVideoPlayerController.setMediaCodec(enableCodec);
     gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
     gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers);
     gsyVideoPlayerController.addEventsListener((VideoEventType event) {
       if (gsyVideoPlayerController.value.initialized) {
-        if (event == VideoEventType.onListenerError) {
+        if (event == VideoEventType.onError) {
           developer.log("video listener error${gsyVideoPlayerController.value}", name: "video_player");
           hasError.value = true;
           isPlaying.value = false;
@@ -657,7 +657,6 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
-    gsyVideoPlayerController.setShowType(getPlayerVideoShowType(index));
   }
 
   void togglePlayPause() {

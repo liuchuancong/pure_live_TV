@@ -295,12 +295,6 @@ class LivePlayController extends StateController {
       if (reloadDataType == ReloadDataType.refreash) {
         restoryQualityAndLines();
       } else if (reloadDataType == ReloadDataType.changeLine) {
-        if (line == playUrls.length - 1) {
-          currentLineIndex.value = 0;
-        } else {
-          currentLineIndex.value = currentLineIndex.value + 1;
-        }
-        isFirstLoad.value = false;
       } else if (reloadDataType == ReloadDataType.changeQuality) {
         if (quality == qualites.length - 1) {
           currentQuality.value = 0;
