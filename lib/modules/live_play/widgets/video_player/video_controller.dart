@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:get/get.dart';
-import 'dart:developer' as developer;
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
@@ -87,7 +86,12 @@ class VideoController with ChangeNotifier {
 
   int doubleClickTimeStamp = 0;
 
-  GsyVideoPlayerController gsyVideoPlayerController = GsyVideoPlayerController();
+  // Video player control
+  late GsyVideoPlayerController gsyVideoPlayerController = GsyVideoPlayerController(allowBackgroundPlayback: false);
+
+  final mediaPlayerControllerInitialized = false.obs;
+
+  late ChewieController chewieController;
 
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
@@ -288,22 +292,46 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    gsyVideoPlayerController.setLogLevel(LogLevel.logSilent);
+    chewieController = ChewieController(
+      videoPlayerController: gsyVideoPlayerController,
+      autoPlay: false,
+      looping: false,
+      draggableProgressBar: false,
+      aspectRatio: gsyVideoPlayerController.value.aspectRatio,
+      showControls: false,
+      useRootNavigator: true,
+      showOptions: false,
+      fullScreenByDefault: true,
+    );
+    // fix datasource empty error
+    if (datasource.isEmpty) {
+      hasError.value = true;
+      return;
+    } else {
+      hasError.value = false;
+    }
     gsyVideoPlayerController.setPlayerFactory(getVideoPlayerType(videoPlayerIndex));
+    if (videoPlayerIndex == 2) {
+      gsyVideoPlayerController.setLogLevel(LogLevel.logSilent);
+    }
+    gsyVideoPlayerController.setRenderType(GsyVideoPlayerRenderType.surfaceView);
     gsyVideoPlayerController.setMediaCodec(enableCodec);
     gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
-    gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers);
+    gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers, cacheWithPlay: false);
     gsyVideoPlayerController.addEventsListener((VideoEventType event) {
       if (gsyVideoPlayerController.value.initialized) {
         if (event == VideoEventType.onError) {
-          developer.log("video listener error${gsyVideoPlayerController.value}", name: "video_player");
           hasError.value = true;
           isPlaying.value = false;
-        } else {
-          if (isPlaying.value != gsyVideoPlayerController.value.isPlaying) {
-            isPlaying.value = gsyVideoPlayerController.value.isPlaying;
+        } else if (event == VideoEventType.onVideoPlayerInitialized) {
+          mediaPlayerControllerInitialized.value = true;
+        } else if (event == VideoEventType.onVideoSizeChanged) {
+          if (gsyVideoPlayerController.value.size.width > 0 && gsyVideoPlayerController.value.size.height > 0) {
+            var aspectRatio = gsyVideoPlayerController.value.size.width / gsyVideoPlayerController.value.size.height;
+            gsyVideoPlayerController.setAspectRatio(aspectRatio);
           }
         }
+        isPlaying.value = gsyVideoPlayerController.value.isPlaying;
       }
     });
   }
@@ -610,6 +638,7 @@ class VideoController with ChangeNotifier {
     cancledanmakuFocus();
     danmakuController.disable();
     await danmakuController.dispose();
+    chewieController.dispose();
     gsyVideoPlayerController.dispose();
     isPlaying.value = false;
     hasError.value = false;
@@ -639,17 +668,6 @@ class VideoController with ChangeNotifier {
         reloadDataType: ReloadDataType.changeQuality, line: currentLineIndex, currentQuality: currentQuality);
   }
 
-  void setDataSource(String url) async {
-    datasource = url;
-    // fix datasource empty error
-    if (datasource.isEmpty) {
-      hasError.value = true;
-      return;
-    } else {
-      hasError.value = false;
-    }
-  }
-
   void setVideoFit() {
     var index = settings.videoFitIndex.value;
     index += 1;
@@ -657,6 +675,7 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
+    gsyVideoPlayerController.setBoxFit(settings.videofitArrary[index]);
   }
 
   void togglePlayPause() {
