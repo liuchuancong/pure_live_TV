@@ -456,12 +456,6 @@ class LivePlayController extends StateController {
       return;
     }
     playUrls.value = playUrl;
-    if (currentPlayRoom.value.platform == Sites.huyaSite &&
-        playUrls.length > 1 &&
-        isFirstLoad.value &&
-        isActive.value == false) {
-      currentLineIndex.value = 1;
-    }
     setPlayer();
   }
 

@@ -38,7 +38,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
         backgroundColor: Colors.black,
         body: Stack(
           children: [
-            GsyVideoPlayer(controller: widget.controller.gsyVideoPlayerController),
+            Chewie(
+              controller: widget.controller.chewieController,
+            ),
             _buildVideoPanel(),
           ],
         ),

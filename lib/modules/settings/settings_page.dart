@@ -58,7 +58,7 @@ class SettingsPage extends GetView<SettingsService> {
                   0: "Exo播放器",
                   1: "系统播放器",
                   2: "IJK播放器",
-                  4: "阿里播放器",
+                  3: "阿里播放器",
                 },
                 value: controller.videoPlayerIndex.value,
                 onChanged: (e) {

@@ -346,12 +346,11 @@ class BoxFitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fitmodes = [
-      "默认",
-      "16:9",
-      "4:3",
-      "全屏裁减",
-      "全屏拉伸",
-      "18:9",
+      S.of(context).videofit_contain,
+      S.of(context).videofit_fill,
+      S.of(context).videofit_cover,
+      S.of(context).videofit_fitwidth,
+      S.of(context).videofit_fitheight,
     ];
     return Container(
       alignment: Alignment.center,

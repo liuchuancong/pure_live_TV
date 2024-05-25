@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:get/get.dart';
-import 'dart:developer' as developer;
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
@@ -87,7 +87,10 @@ class VideoController with ChangeNotifier {
 
   int doubleClickTimeStamp = 0;
 
-  GsyVideoPlayerController gsyVideoPlayerController = GsyVideoPlayerController();
+  // Video player control
+  late GsyVideoPlayerController gsyVideoPlayerController = GsyVideoPlayerController(allowBackgroundPlayback: false);
+
+  late ChewieController chewieController;
 
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
@@ -99,6 +102,8 @@ class VideoController with ChangeNotifier {
   var isActivePause = true.obs;
 
   Timer? hasActivePause;
+
+  Timer? videoRefreshTimer;
 
   // 五秒关闭控制器
   void enableController() {
@@ -288,23 +293,37 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
+    chewieController = ChewieController(
+      videoPlayerController: gsyVideoPlayerController,
+      autoPlay: false,
+      looping: false,
+      draggableProgressBar: false,
+      showControls: false,
+      useRootNavigator: true,
+      showOptions: false,
+    );
     gsyVideoPlayerController.setLogLevel(LogLevel.logSilent);
-    gsyVideoPlayerController.setCurrentPlayer(getVideoPlayerType(videoPlayerIndex));
+    gsyVideoPlayerController.setPlayerFactory(getVideoPlayerType(videoPlayerIndex));
     gsyVideoPlayerController.setMediaCodec(enableCodec);
     gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
-    gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers);
+    gsyVideoPlayerController.setNetWorkBuilder(datasource,
+        mapHeadData: headers, cacheWithPlay: false, useDefaultIjkOptions: true);
     gsyVideoPlayerController.addEventsListener((VideoEventType event) {
-      if (gsyVideoPlayerController.value.initialized) {
-        if (event == VideoEventType.onListenerError) {
-          developer.log("video listener error${gsyVideoPlayerController.value}", name: "video_player");
-          hasError.value = true;
-          isPlaying.value = false;
-        } else {
-          if (isPlaying.value != gsyVideoPlayerController.value.isPlaying) {
-            isPlaying.value = gsyVideoPlayerController.value.isPlaying;
-          }
-        }
+      if (event == VideoEventType.onError) {
+        hasError.value = true;
+        isPlaying.value = false;
+        log('video error ${gsyVideoPlayerController.value.what}', name: 'video_player');
+      } else {
+        isPlaying.value = gsyVideoPlayerController.value.isPlaying;
       }
+    });
+    videoRefreshTimer?.cancel();
+    videoRefreshTimer = Timer(const Duration(seconds: 8), () {
+      if (isPlaying.value == false) {
+        SmartDialog.showToast("系统监测视频已停止播放,正在为您刷新视频");
+        changeLine();
+      }
+      videoRefreshTimer?.cancel();
     });
   }
 
@@ -615,6 +634,7 @@ class VideoController with ChangeNotifier {
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
+    videoRefreshTimer?.cancel();
   }
 
   void refresh() {
@@ -657,7 +677,7 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
-    gsyVideoPlayerController.setShowType(getPlayerVideoShowType(index));
+    gsyVideoPlayerController.setBoxFit(settings.videofitArrary[index]);
   }
 
   void togglePlayPause() {
