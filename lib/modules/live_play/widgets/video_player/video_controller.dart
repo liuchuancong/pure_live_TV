@@ -44,6 +44,8 @@ class VideoController with ChangeNotifier {
 
   final SettingsService settings = Get.find<SettingsService>();
 
+  final mediaPlayerControllerInitialized = false.obs;
+
   int videoPlayerIndex = 0;
 
   bool enableCodec = true;
@@ -314,7 +316,10 @@ class VideoController with ChangeNotifier {
         isPlaying.value = false;
         log('video error ${gsyVideoPlayerController.value.what}', name: 'video_player');
       } else {
-        isPlaying.value = gsyVideoPlayerController.value.isPlaying;
+        mediaPlayerControllerInitialized.value = gsyVideoPlayerController.value.onVideoPlayerInitialized;
+        if (mediaPlayerControllerInitialized.value) {
+          isPlaying.value = gsyVideoPlayerController.value.isPlaying;
+        }
       }
     });
     videoRefreshTimer?.cancel();
@@ -629,6 +634,7 @@ class VideoController with ChangeNotifier {
     cancledanmakuFocus();
     danmakuController.disable();
     await danmakuController.dispose();
+    chewieController.dispose();
     gsyVideoPlayerController.dispose();
     isPlaying.value = false;
     hasError.value = false;
@@ -657,17 +663,6 @@ class VideoController with ChangeNotifier {
     await destory();
     livePlayController.onInitPlayerState(
         reloadDataType: ReloadDataType.changeQuality, line: currentLineIndex, currentQuality: currentQuality);
-  }
-
-  void setDataSource(String url) async {
-    datasource = url;
-    // fix datasource empty error
-    if (datasource.isEmpty) {
-      hasError.value = true;
-      return;
-    } else {
-      hasError.value = false;
-    }
   }
 
   void setVideoFit() {
