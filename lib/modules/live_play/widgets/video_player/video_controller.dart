@@ -308,8 +308,7 @@ class VideoController with ChangeNotifier {
     gsyVideoPlayerController.setPlayerFactory(getVideoPlayerType(videoPlayerIndex));
     gsyVideoPlayerController.setMediaCodec(enableCodec);
     gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
-    gsyVideoPlayerController.setNetWorkBuilder(datasource,
-        mapHeadData: headers, cacheWithPlay: false, useDefaultIjkOptions: true);
+    gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers, cacheWithPlay: false);
     gsyVideoPlayerController.addEventsListener((VideoEventType event) {
       if (event == VideoEventType.onError) {
         hasError.value = true;
