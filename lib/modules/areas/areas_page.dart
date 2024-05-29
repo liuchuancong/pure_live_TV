@@ -125,9 +125,9 @@ class AreasPage extends GetView<AreasListController> {
                                 () => MasonryGridView.count(
                                   padding: AppStyle.edgeInsetsA48,
                                   itemCount: controller.list.isNotEmpty ? controller.list[0].children.length : 0,
-                                  crossAxisCount: 4,
-                                  crossAxisSpacing: 48.w,
-                                  mainAxisSpacing: 40.w,
+                                  crossAxisCount: 5,
+                                  crossAxisSpacing: 24.w,
+                                  mainAxisSpacing: 20.w,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder: (_, i) {

@@ -105,8 +105,6 @@ class VideoController with ChangeNotifier {
 
   Timer? hasActivePause;
 
-  Timer? videoRefreshTimer;
-
   // 五秒关闭控制器
   void enableController() {
     showControllerTimer?.cancel();
@@ -211,6 +209,7 @@ class VideoController with ChangeNotifier {
       if (hasError.value && !livePlayController.isLastLine.value) {
         hasErrorTimer?.cancel();
         hasErrorTimer = Timer(const Duration(milliseconds: 2000), () {
+          SmartDialog.showToast("当前视频播放出错,正在为您切换路线");
           changeLine();
           hasErrorTimer?.cancel();
         });
@@ -320,14 +319,6 @@ class VideoController with ChangeNotifier {
           isPlaying.value = gsyVideoPlayerController.value.isPlaying;
         }
       }
-    });
-    videoRefreshTimer?.cancel();
-    videoRefreshTimer = Timer(const Duration(seconds: 8), () {
-      if (isPlaying.value == false) {
-        SmartDialog.showToast("系统监测视频已停止播放,正在为您刷新视频");
-        changeLine();
-      }
-      videoRefreshTimer?.cancel();
     });
   }
 
@@ -639,7 +630,6 @@ class VideoController with ChangeNotifier {
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
-    videoRefreshTimer?.cancel();
   }
 
   void refresh() {

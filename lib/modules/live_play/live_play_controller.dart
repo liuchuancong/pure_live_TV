@@ -566,8 +566,10 @@ class LivePlayController extends StateController {
   void resetRoom(Site site, String roomId) async {
     success.value = false;
     hasError.value = false;
-    await videoController?.destory();
-    videoController = null;
+    if (videoController != null && videoController!.hasDestory == false) {
+      await videoController?.destory();
+      videoController = null;
+    }
     isFirstLoad.value = true;
     getVideoSuccess.value = true;
     loadTimeOut.value = true;
