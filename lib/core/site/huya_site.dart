@@ -238,7 +238,10 @@ class HuyaSite implements LiveSite {
       }
 
       //清晰度
-      var biterates = data['stream']['flv']['rateArray'];
+      //清晰度
+      var biterates = data['liveData']['bitRateInfo'] != null
+          ? jsonDecode(data['liveData']['bitRateInfo'])
+          : data['stream']['flv']['rateArray'];
       for (var item in biterates) {
         var name = item["sDisplayName"].toString();
         if (name.contains("HDR")) {
