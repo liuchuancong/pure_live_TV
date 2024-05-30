@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
+import 'dart:developer' as developer;
 import 'package:pure_live/core/sites.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -47,7 +48,7 @@ class HuyaSite implements LiveSite {
   }
 
   final String kUserAgent =
-      "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36 Edg/117.0.0.0";
+      "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36";
 
   final SettingsService settings = Get.find<SettingsService>();
   Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory) async {
@@ -202,38 +203,43 @@ class HuyaSite implements LiveSite {
   @override
   Future<LiveRoom> getRoomDetail(
       {required String nick, required String platform, required String roomId, required String title}) async {
-    var resultText = await HttpClient.instance.getText("https://m.huya.com/$roomId", queryParameters: {}, header: {
-      "user-agent": kUserAgent,
-    });
-    try {
-      var text =
-          RegExp(r"window\.HNF_GLOBAL_INIT.=.\{(.*?)\}.</script>", multiLine: false).firstMatch(resultText)?.group(1);
-      var jsonObj = json.decode("{$text}");
+    var resultText = await HttpClient.instance.getText(
+        'https://mp.huya.com/cache.php?m=Live'
+        '&do=profileRoom&roomid=$roomId',
+        header: {
+          "user-agent": kUserAgent,
+        });
+    var result = json.decode(resultText);
+    if (result['status'] == 200 && result['data']['stream'] != null) {
+      dynamic data = result['data'];
+      var topSid = 0;
+      var subSid = 0;
 
-      var title = jsonObj["roomInfo"]["tLiveInfo"]["sIntroduction"]?.toString() ?? "";
-      if (title.isEmpty) {
-        title = jsonObj["roomInfo"]["tLiveInfo"]["sRoomName"]?.toString() ?? "";
-      }
       var huyaLines = <HuyaLineModel>[];
       var huyaBiterates = <HuyaBitRateModel>[];
       //读取可用线路
-      var lines = jsonObj["roomInfo"]["tLiveInfo"]["tLiveStreamInfo"]["vStreamInfo"]["value"];
+      var lines = data['stream']['flv']['multiLine'];
+      var baseSteamInfoList = data['stream']['baseSteamInfoList'];
       for (var item in lines) {
-        if ((item["sFlvUrl"]?.toString() ?? "").isNotEmpty) {
-          if (item["iPCPriorityRate"] > -1 || item["iWebPriorityRate"] > -1 || item["iMobilePriorityRate"] > -1) {
+        if ((item["url"]?.toString() ?? "").isNotEmpty) {
+          var currentStream =
+              baseSteamInfoList.firstWhere((element) => element["sCdnType"] == item["cdnType"], orElse: () => null);
+          if (currentStream != null) {
+            topSid = currentStream["lChannelId"];
+            subSid = currentStream["lSubChannelId"];
             huyaLines.add(HuyaLineModel(
-              line: item["sFlvUrl"].toString(),
+              line: currentStream['sFlvUrl'],
               lineType: HuyaLineType.flv,
-              flvAntiCode: item["sFlvAntiCode"].toString(),
-              hlsAntiCode: item["sHlsAntiCode"].toString(),
-              streamName: item["sStreamName"].toString(),
+              flvAntiCode: currentStream["sFlvAntiCode"].toString(),
+              hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
+              streamName: currentStream["sStreamName"].toString(),
             ));
           }
         }
       }
 
       //清晰度
-      var biterates = jsonObj["roomInfo"]["tLiveInfo"]["tLiveStreamInfo"]["vBitRateInfo"]["value"];
+      var biterates = data['stream']['flv']['rateArray'];
       for (var item in biterates) {
         var name = item["sDisplayName"].toString();
         if (name.contains("HDR")) {
@@ -246,35 +252,33 @@ class HuyaSite implements LiveSite {
           ));
         }
       }
-
-      var topSid = int.tryParse(RegExp(r'lChannelId":([0-9]+)').firstMatch(resultText)?.group(1) ?? "0");
-      var subSid = int.tryParse(RegExp(r'lSubChannelId":([0-9]+)').firstMatch(resultText)?.group(1) ?? "0");
       return LiveRoom(
-          cover: jsonObj["roomInfo"]["tLiveInfo"]["sScreenshot"].toString(),
-          watching: jsonObj["roomInfo"]["tLiveInfo"]["lTotalCount"].toString(),
-          roomId: roomId,
-          area: jsonObj["roomInfo"]?["tLiveInfo"]?["sGameFullName"].toString() ?? '',
-          title: title,
-          nick: jsonObj["roomInfo"]["tProfileInfo"]["sNick"].toString(),
-          avatar: jsonObj["roomInfo"]["tProfileInfo"]["sAvatar180"].toString(),
-          introduction: jsonObj["roomInfo"]["tLiveInfo"]["sIntroduction"].toString(),
-          notice: jsonObj["welcomeText"].toString(),
-          status: jsonObj["roomInfo"]["eLiveStatus"] == 2,
-          liveStatus: jsonObj["roomInfo"]["eLiveStatus"] == 2 ? LiveStatus.live : LiveStatus.offline,
-          platform: Sites.huyaSite,
-          data: HuyaUrlDataModel(
-            url: "https:${utf8.decode(base64.decode(jsonObj["roomProfile"]["liveLineUrl"].toString()))}",
-            lines: huyaLines,
-            bitRates: huyaBiterates,
-            uid: getUid(t: 13, e: 10),
-          ),
-          danmakuData: HuyaDanmakuArgs(
-            ayyuid: jsonObj["roomInfo"]["tLiveInfo"]["lYyid"] ?? 0,
-            topSid: topSid ?? 0,
-            subSid: subSid ?? 0,
-          ),
-          link: "https://www.huya.com/$roomId");
-    } catch (e) {
+        cover: data['liveData']?['screenshot'] ?? '',
+        watching: data['liveData']?['attendeeCount']?.toString() ?? '',
+        roomId: roomId,
+        area: data['liveData']?['gameFullName'] ?? '',
+        title: data['liveData']?['introduction'] ?? '',
+        nick: data['profileInfo']?['nick'] ?? '',
+        avatar: data['profileInfo']?['avatar180'] ?? '',
+        introduction: data['liveData']?['introduction'] ?? '',
+        notice: data['welcomeText'] ?? '',
+        status: data['liveStatus'] == "ON" || data['liveStatus'] == "REPLAY",
+        liveStatus: data['liveStatus'] == "ON" || data['liveStatus'] == "REPLAY" ? LiveStatus.live : LiveStatus.offline,
+        platform: Sites.huyaSite,
+        data: HuyaUrlDataModel(
+          url: "",
+          lines: huyaLines,
+          bitRates: huyaBiterates,
+          uid: getUid(t: 13, e: 10),
+        ),
+        danmakuData: HuyaDanmakuArgs(
+          ayyuid: data["profileInfo"]["yyid"] ?? 0,
+          topSid: topSid ?? 0,
+          subSid: subSid ?? 0,
+        ),
+        link: "https://www.huya.com/$roomId",
+      );
+    } else {
       LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
