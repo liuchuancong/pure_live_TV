@@ -90,7 +90,7 @@ class VideoController with ChangeNotifier {
   int doubleClickTimeStamp = 0;
 
   // Video player control
-  late GsyVideoPlayerController gsyVideoPlayerController = GsyVideoPlayerController(allowBackgroundPlayback: false);
+  late GsyVideoPlayerController gsyVideoPlayerController;
 
   late ChewieController chewieController;
 
@@ -294,6 +294,8 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
+    gsyVideoPlayerController =
+        GsyVideoPlayerController(allowBackgroundPlayback: false, player: getVideoPlayerType(videoPlayerIndex));
     chewieController = ChewieController(
       videoPlayerController: gsyVideoPlayerController,
       autoPlay: false,
@@ -303,8 +305,6 @@ class VideoController with ChangeNotifier {
       useRootNavigator: true,
       showOptions: false,
     );
-    gsyVideoPlayerController.setLogLevel(LogLevel.logSilent);
-    gsyVideoPlayerController.setPlayerFactory(getVideoPlayerType(videoPlayerIndex));
     gsyVideoPlayerController.setMediaCodec(enableCodec);
     gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
     gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers, cacheWithPlay: false);

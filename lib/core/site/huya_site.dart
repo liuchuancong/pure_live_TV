@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
-import 'dart:developer' as developer;
 import 'package:pure_live/core/sites.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -254,7 +253,7 @@ class HuyaSite implements LiveSite {
       }
       return LiveRoom(
         cover: data['liveData']?['screenshot'] ?? '',
-        watching: data['liveData']?['attendeeCount']?.toString() ?? '',
+        watching: data['liveData']?['userCount']?.toString() ?? '',
         roomId: roomId,
         area: data['liveData']?['gameFullName'] ?? '',
         title: data['liveData']?['introduction'] ?? '',
@@ -273,8 +272,8 @@ class HuyaSite implements LiveSite {
         ),
         danmakuData: HuyaDanmakuArgs(
           ayyuid: data["profileInfo"]["yyid"] ?? 0,
-          topSid: topSid ?? 0,
-          subSid: subSid ?? 0,
+          topSid: topSid,
+          subSid: subSid,
         ),
         link: "https://www.huya.com/$roomId",
       );
