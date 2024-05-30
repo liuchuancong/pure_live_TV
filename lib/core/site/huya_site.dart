@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
+import 'dart:developer' as developer;
 import 'package:pure_live/core/sites.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -213,7 +214,7 @@ class HuyaSite implements LiveSite {
       dynamic data = result['data'];
       var topSid = 0;
       var subSid = 0;
-
+      developer.log("data: $data");
       var huyaLines = <HuyaLineModel>[];
       var huyaBiterates = <HuyaBitRateModel>[];
       //读取可用线路
@@ -236,17 +237,12 @@ class HuyaSite implements LiveSite {
           }
         }
       }
-
-      //清晰度
       //清晰度
       var biterates = data['liveData']['bitRateInfo'] != null
           ? jsonDecode(data['liveData']['bitRateInfo'])
           : data['stream']['flv']['rateArray'];
       for (var item in biterates) {
         var name = item["sDisplayName"].toString();
-        if (name.contains("HDR")) {
-          continue;
-        }
         if (huyaBiterates.map((e) => e.name).toList().every((element) => element != name)) {
           huyaBiterates.add(HuyaBitRateModel(
             bitRate: item["iBitRate"],
