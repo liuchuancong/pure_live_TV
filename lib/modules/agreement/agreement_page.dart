@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
+import 'package:pure_live/modules/agreement/agreement_page_controller.dart';
 
-class AgreementPage extends StatelessWidget {
+class AgreementPage extends GetView<AgreementPageController> {
   const AgreementPage({super.key});
 
   @override
@@ -59,7 +59,7 @@ class AgreementPage extends StatelessWidget {
                   HighlightButton(
                     text: "已阅读并同意",
                     autofocus: true,
-                    focusNode: AppFocusNode(),
+                    focusNode: controller.agreeFocusNode,
                     onTap: () {
                       Get<SettingsService>().isFirstInApp.value = false;
                       Get.offAllNamed(RoutePath.kInitial);
@@ -68,7 +68,7 @@ class AgreementPage extends StatelessWidget {
                   AppStyle.hGap32,
                   HighlightButton(
                     text: "退出应用",
-                    focusNode: AppFocusNode(),
+                    focusNode: controller.disagreeFocusNode,
                     onTap: () {
                       //退出软件
                       exit(0);

@@ -31,6 +31,7 @@ import 'package:pure_live/modules/history/history_rooms_binding.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
 import 'package:pure_live/modules/account/bilibili/qr_login_page.dart';
 import 'package:pure_live/modules/account/bilibili/bilibili_bings.dart';
+import 'package:pure_live/modules/agreement/agreement_page_binding.dart';
 
 // auth
 
@@ -125,7 +126,9 @@ class AppPages {
       ],
     ),
 
-    GetPage(name: RoutePath.kAgreementPage, page: () => const AgreementPage()),
+    GetPage(name: RoutePath.kAgreementPage, page: () => const AgreementPage(), bindings: [
+      AgreementPageBinding(),
+    ]),
     // 喜爱分区
     GetPage(name: RoutePath.kFavoriteAreas, page: () => const FavoriteAreasPage()),
   ];
