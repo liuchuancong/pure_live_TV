@@ -606,7 +606,9 @@ class LivePlayController extends StateController {
     // 点击OK、Enter、Select键时刷新直播间
     if (key.logicalKey == LogicalKeyboardKey.select ||
         key.logicalKey == LogicalKeyboardKey.enter ||
-        key.logicalKey == LogicalKeyboardKey.space) {
+        key.logicalKey == LogicalKeyboardKey.space ||
+        key.logicalKey == LogicalKeyboardKey.controlRight ||
+        key.logicalKey == LogicalKeyboardKey.controlLeft) {
       restoryQualityAndLines();
       resetRoom(Sites.of(currentPlayRoom.value.platform!), currentPlayRoom.value.roomId!);
       onInitPlayerState();

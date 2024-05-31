@@ -65,7 +65,9 @@ class HighlightWidget extends StatelessWidget {
                   log('message: ${e.toString()} ${DateTime.now().millisecondsSinceEpoch - currentTimeStamp}');
                   if (e.logicalKey == LogicalKeyboardKey.enter ||
                       e.logicalKey == LogicalKeyboardKey.select ||
-                      e.logicalKey == LogicalKeyboardKey.space) {
+                      e.logicalKey == LogicalKeyboardKey.space ||
+                      e.logicalKey == LogicalKeyboardKey.controlRight ||
+                      e.logicalKey == LogicalKeyboardKey.controlLeft) {
                     eventDirection = 0;
                     var now = DateTime.now().millisecondsSinceEpoch;
                     if (now - currentTimeStamp > 500 && currentTimeStamp != 0) {
@@ -90,7 +92,9 @@ class HighlightWidget extends StatelessWidget {
                   }
                   if (e.logicalKey == LogicalKeyboardKey.enter ||
                       e.logicalKey == LogicalKeyboardKey.select ||
-                      e.logicalKey == LogicalKeyboardKey.space) {
+                      e.logicalKey == LogicalKeyboardKey.space ||
+                      e.logicalKey == LogicalKeyboardKey.controlRight ||
+                      e.logicalKey == LogicalKeyboardKey.controlLeft) {
                     currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
                     eventDirection = 1;
                   }

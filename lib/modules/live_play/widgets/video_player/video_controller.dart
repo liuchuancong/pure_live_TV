@@ -363,7 +363,9 @@ class VideoController with ChangeNotifier {
         // 点击OK、Enter、Select键时显示/隐藏控制器
         if (key.logicalKey == LogicalKeyboardKey.select ||
             key.logicalKey == LogicalKeyboardKey.enter ||
-            key.logicalKey == LogicalKeyboardKey.space) {
+            key.logicalKey == LogicalKeyboardKey.space ||
+            key.logicalKey == LogicalKeyboardKey.controlRight ||
+            key.logicalKey == LogicalKeyboardKey.controlLeft) {
           // 点击enter键显示控制器
           enableController();
           return;
@@ -440,7 +442,9 @@ class VideoController with ChangeNotifier {
 
         if (key.logicalKey == LogicalKeyboardKey.select ||
             key.logicalKey == LogicalKeyboardKey.enter ||
-            key.logicalKey == LogicalKeyboardKey.space) {
+            key.logicalKey == LogicalKeyboardKey.space ||
+            key.logicalKey == LogicalKeyboardKey.controlRight ||
+            key.logicalKey == LogicalKeyboardKey.controlLeft) {
           // 点击enter键显示控制器
           settings.currentPlayListNodeIndex.value = beforePlayNodeIndex.value;
           livePlayController.playFavoriteChannel();
@@ -505,7 +509,9 @@ class VideoController with ChangeNotifier {
       // 点击OK、Enter、Select键时显示/隐藏控制器
       if (key.logicalKey == LogicalKeyboardKey.select ||
           key.logicalKey == LogicalKeyboardKey.enter ||
-          key.logicalKey == LogicalKeyboardKey.space) {
+          key.logicalKey == LogicalKeyboardKey.space ||
+          key.logicalKey == LogicalKeyboardKey.controlRight ||
+          key.logicalKey == LogicalKeyboardKey.controlLeft) {
         // 点击enter键显示控制器
         switch (currentBottomClickType.value) {
           case BottomButtonClickType.playPause:
