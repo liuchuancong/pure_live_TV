@@ -1,9 +1,9 @@
 import 'dart:async';
-
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:pure_live/common/services/bilibili_account_service.dart';
+import 'package:flutter/material.dart';
 import 'package:pure_live/core/common/http_client.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 enum QRStatus {
   loading,
@@ -85,7 +85,7 @@ class BiliBiliQRLoginController extends GetxController {
           var cookieStr = cookies.join(";");
           BiliBiliAccountService.instance.setCookie(cookieStr);
           await BiliBiliAccountService.instance.loadUserInfo();
-          Get.back();
+          Navigator.of(Get.context!).pop();
         }
       } else if (code == 86038) {
         qrStatus.value = QRStatus.expired;

@@ -25,10 +25,10 @@ class LivePlayPage extends GetWidget<LivePlayController> {
     try {
       var exit = await controller.onBackPressed();
       if (exit) {
-        Get.back();
+        Navigator.of(Get.context!).pop();
       }
     } catch (e) {
-      Get.back();
+      Navigator.of(Get.context!).pop();
     }
     return true;
   }

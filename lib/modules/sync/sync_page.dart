@@ -27,7 +27,7 @@ class SyncPage extends GetView<SyncController> {
                 text: "返回",
                 autofocus: true,
                 onTap: () {
-                  Get.back();
+                  Navigator.of(Get.context!).pop();
                 },
               ),
               AppStyle.hGap32,
@@ -69,7 +69,7 @@ class SyncPage extends GetView<SyncController> {
                           visible: controller.settingServer.webPortEnable.value,
                           child: GestureDetector(
                             onTap: () {
-                              Get.back();
+                              Navigator.of(Get.context!).pop();
                             },
                             child: QrImageView(
                               data: 'http://${controller.ipAddress.value}:${controller.settingServer.webPort.value}',

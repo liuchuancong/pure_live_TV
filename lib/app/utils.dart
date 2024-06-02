@@ -69,7 +69,7 @@ class Utils {
         ),
         actions: [
           TextButton(
-            onPressed: (() => Get.back(result: false)),
+            onPressed: (() => Navigator.of(Get.context!).pop(false)),
             child: Text(
               cancel.isEmpty ? "取消" : cancel,
               style: AppStyle.textStyleWhite,
@@ -77,7 +77,7 @@ class Utils {
           ),
           TextButton(
             autofocus: true,
-            onPressed: (() => Get.back(result: true)),
+            onPressed: (() => Navigator.of(Get.context!).pop(true)),
             child: Text(
               confirm.isEmpty ? "确定" : confirm,
               style: AppStyle.textStyleWhite,
@@ -105,7 +105,7 @@ class Utils {
         ),
         actions: [
           TextButton(
-            onPressed: (() => Get.back(result: true)),
+            onPressed: (() => Navigator.of(Get.context!).pop(true)),
             child: Text(confirm.isEmpty ? "确定" : confirm),
           ),
         ],
@@ -129,7 +129,7 @@ class Utils {
                 value: e,
                 groupValue: value,
                 onChanged: (e) {
-                  Get.back(result: e);
+                  Navigator.of(Get.context!).pop(e);
                 },
               ),
             )
@@ -154,7 +154,7 @@ class Utils {
                 value: e,
                 groupValue: value,
                 onChanged: (e) {
-                  Get.back(result: e);
+                  Navigator.of(Get.context!).pop(e);
                 },
               ),
             )

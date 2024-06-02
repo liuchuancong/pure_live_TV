@@ -24,7 +24,7 @@ class HistoryPage extends GetView<HistoryPageController> {
                 text: "返回",
                 autofocus: true,
                 onTap: () {
-                  Get.back();
+                  Navigator.of(Get.context!).pop();
                 },
               ),
               AppStyle.hGap32,

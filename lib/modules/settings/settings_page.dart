@@ -28,7 +28,7 @@ class SettingsPage extends GetView<SettingsService> {
                   text: "返回",
                   autofocus: true,
                   onTap: () {
-                    Get.back();
+                    Navigator.of(Get.context!).pop();
                   },
                 ),
               ],

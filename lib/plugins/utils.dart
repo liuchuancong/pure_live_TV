@@ -75,7 +75,7 @@ class Utils {
         ),
         actions: [
           TextButton(
-            onPressed: (() => Get.back(result: true)),
+            onPressed: (() => Navigator.of(Get.context!).pop(true)),
             child: Text(confirm.isEmpty ? "确定" : confirm),
           ),
         ],
@@ -187,12 +187,14 @@ class Utils {
         ),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () {
+              Navigator.of(Get.context!).pop();
+            },
             child: const Text("取消"),
           ),
           TextButton(
             onPressed: () {
-              Get.back(result: textEditingController.text);
+              Navigator.of(Get.context!).pop(textEditingController.text);
             },
             child: const Text("确定"),
           ),

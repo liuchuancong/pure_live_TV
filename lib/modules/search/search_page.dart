@@ -24,7 +24,7 @@ class SearchRoomPage extends GetView<SearchRoomController> {
                 iconData: Icons.arrow_back,
                 text: "返回",
                 onTap: () {
-                  Get.back();
+                  Navigator.of(Get.context!).pop();
                 },
               ),
               AppStyle.hGap32,
