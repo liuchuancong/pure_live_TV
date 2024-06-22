@@ -1,12 +1,12 @@
+import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
+import 'proto/douyin.pb.dart';
+import 'package:pure_live/core/site/douyin_site.dart';
 import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
-
-import 'proto/douyin.pb.dart';
+import 'package:pure_live/core/common/http_client.dart' as http;
 
 class DouyinDanmakuArgs {
   final String webRid;
@@ -74,23 +74,24 @@ class DouyinDanmaku implements LiveDanmaku {
       "browser_language": "zh-CN",
       "browser_platform": "Win32",
       "browser_name": "Mozilla",
-      "browser_version":
-          "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51",
+      "browser_version": DouyinSite.kDefaultUserAgent.replaceAll("Mozilla/", ""),
       "browser_online": "true",
       "tz_name": "Asia/Shanghai",
       "identity": "audience",
       "room_id": danmakuArgs.roomId,
       "heartbeatDuration": "0",
-      "signature": "00000000"
+      //"signature": "00000000"
     });
-    var url = uri.toString();
+
+    var sign = await getSignature(danmakuArgs.roomId, danmakuArgs.userId);
+
+    var url = "$uri&signature=$sign";
     var backupUrl = url.replaceAll("webcast3-ws-web-lq", "webcast5-ws-web-lf");
     webScoketUtils = WebScoketUtils(
       url: url,
       backupUrl: backupUrl,
       headers: {
-        "User-Agnet":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51",
+        "User-Agnet": DouyinSite.kDefaultUserAgent,
         "Cookie": danmakuArgs.cookie,
       },
       heartBeatTime: heartbeatTime,
@@ -156,6 +157,25 @@ class DouyinDanmaku implements LiveDanmaku {
         userName: chatMessage.user.nickName,
       ),
     );
+  }
+
+  /// 获取Websocket签名
+  /// - [roomId] 房间ID, 例如：7382735338101328680
+  /// - [uniqueId] 用户唯一ID, 例如：7273033021933946427
+  ///
+  /// 服务端代码：https://github.com/lovelyyoshino/douyin_python，请自行部署后使用
+  Future<String> getSignature(String roomId, String uniqueId) async {
+    try {
+      var signResult = await http.HttpClient.instance.postJson(
+        "https://dy.nsapps.cn/signature",
+        queryParameters: {},
+        header: {"Content-Type": "application/json"},
+        data: {"roomId": roomId, "uniqueId": uniqueId},
+      );
+      return signResult["data"]["signature"];
+    } catch (e) {
+      return "";
+    }
   }
 
   void unPackWebcastRoomUserSeqMessage(List<int> payload) {

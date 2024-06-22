@@ -29,7 +29,7 @@ class DouyinSite implements LiveSite {
   final SettingsService settings = Get.find<SettingsService>();
 
   static const String kDefaultUserAgent =
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0";
 
   static const String kDefaultReferer = "https://live.douyin.com";
 
@@ -201,7 +201,7 @@ class DouyinSite implements LiveSite {
           "device_platform": "web",
           "enter_from": "web_live",
           "web_rid": webRid,
-          "room_id_str": realRoomId,
+          "room_id_str": "",
           "enter_source": "",
           "Room-Enter-User-Login-Ab": 0,
           "is_need_double_stream": false,
@@ -211,7 +211,7 @@ class DouyinSite implements LiveSite {
           "browser_language": "zh-CN",
           "browser_platform": "Win32",
           "browser_name": "Edge",
-          "browser_version": "120.0.0.0"
+          "browser_version": "125.0.0.0"
         },
         header: requestHeader,
       );
@@ -285,19 +285,59 @@ class DouyinSite implements LiveSite {
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     List<LivePlayQuality> qualities = [];
-    var qualityData = json.decode(detail.data["live_core_sdk_data"]["pull_data"]["stream_data"])["data"];
+
     var qulityList = detail.data["live_core_sdk_data"]["pull_data"]["options"]["qualities"];
-    for (var quality in qulityList) {
-      var qualityItem = LivePlayQuality(
-        quality: quality["name"],
-        sort: quality["level"],
-        data: <String>[
-          qualityData[quality["sdk_key"]]["main"]["flv"].toString(),
-          qualityData[quality["sdk_key"]]["main"]["hls"].toString(),
-        ],
-      );
-      qualities.add(qualityItem);
+    var streamData = detail.data["live_core_sdk_data"]["pull_data"]["stream_data"].toString();
+
+    if (!streamData.startsWith('{')) {
+      var flvList = (detail.data["flv_pull_url"] as Map).values.cast<String>().toList();
+      var hlsList = (detail.data["hls_pull_url_map"] as Map).values.cast<String>().toList();
+      for (var quality in qulityList) {
+        int level = quality["level"];
+        List<String> urls = [];
+        var flvIndex = flvList.length - level;
+        if (flvIndex >= 0 && flvIndex < flvList.length) {
+          urls.add(flvList[flvIndex]);
+        }
+        var hlsIndex = hlsList.length - level;
+        if (hlsIndex >= 0 && hlsIndex < hlsList.length) {
+          urls.add(hlsList[hlsIndex]);
+        }
+        var qualityItem = LivePlayQuality(
+          quality: quality["name"],
+          sort: level,
+          data: urls,
+        );
+        if (urls.isNotEmpty) {
+          qualities.add(qualityItem);
+        }
+      }
+    } else {
+      var qualityData = json.decode(streamData)["data"] as Map;
+      for (var quality in qulityList) {
+        List<String> urls = [];
+        var flvUrl = qualityData[quality["sdk_key"]]?["main"]?["flv"]?.toString();
+
+        if (flvUrl != null && flvUrl.isNotEmpty) {
+          urls.add(flvUrl);
+        }
+        var hlsUrl = qualityData[quality["sdk_key"]]?["main"]?["hls"]?.toString();
+        if (hlsUrl != null && hlsUrl.isNotEmpty) {
+          urls.add(hlsUrl);
+        }
+        var qualityItem = LivePlayQuality(
+          quality: quality["name"],
+          sort: quality["level"],
+          data: urls,
+        );
+        if (urls.isNotEmpty) {
+          qualities.add(qualityItem);
+        }
+      }
     }
+    // var qualityData = json.decode(
+    //     detail.data["live_core_sdk_data"]["pull_data"]["stream_data"])["data"];
+
     qualities.sort((a, b) => b.sort.compareTo(a.sort));
     return qualities;
   }
@@ -331,10 +371,10 @@ class DouyinSite implements LiveSite {
       "browser_language": "zh-CN",
       "browser_platform": "Win32",
       "browser_name": "Edge",
-      "browser_version": "120.0.0.0",
+      "browser_version": "125.0.0.0",
       "browser_online": "true",
       "engine_name": "Blink",
-      "engine_version": "120.0.0.0",
+      "engine_version": "125.0.0.0",
       "os_name": "Windows",
       "os_version": "10",
       "cpu_core_num": "12",
@@ -343,7 +383,7 @@ class DouyinSite implements LiveSite {
       "downlink": "10",
       "effective_type": "4g",
       "round_trip_time": "100",
-      "webid": "7273033021933946427",
+      "webid": "7382872326016435738",
     });
     var requlestUrl = uri.toString();
     var headResp = await HttpClient.instance.head('https://live.douyin.com', header: headers);
@@ -361,14 +401,22 @@ class DouyinSite implements LiveSite {
       requlestUrl,
       queryParameters: {},
       header: {
-        "Accept": "*/*",
         "Authority": 'www.douyin.com',
-        "Referer": requlestUrl,
-        "Cookie": dyCookie,
-        "User-Agent": kDefaultUserAgent,
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'cookie': dyCookie,
+        'priority': 'u=1, i',
+        'referer': 'https://www.douyin.com/search/${Uri.encodeComponent(keyword)}?type=live',
+        'sec-ch-ua': '"Microsoft Edge";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': kDefaultUserAgent,
       },
     );
-    if (result == 'blocked') {
+    if (result == "" || result == 'blocked') {
       throw Exception("抖音直播搜索被限制，请稍后再试");
     }
     var items = <LiveRoom>[];
@@ -421,18 +469,18 @@ class DouyinSite implements LiveSite {
     return stringBuffer.toString();
   }
 
-  Future<String> signUrl(String url) async {
+  Future<String> getAbogusUrl(String url) async {
     try {
       // 发起一个签名请求
       // 服务端代码：https://github.com/5ime/Tiktok_Signature
       var signResult = await HttpClient.instance.postJson(
-        "https://tk.nsapps.cn/",
+        "https://dy.nsapps.cn/abogus",
         queryParameters: {},
         header: {"Content-Type": "application/json"},
         data: {"url": url, "userAgent": kDefaultUserAgent},
       );
-      var requlestUrl = '${signResult["data"]["url"]}&msToken=${Uri.encodeComponent(signResult["data"]["mstoken"])}';
-      return requlestUrl;
+
+      return signResult["data"]["url"];
     } catch (e) {
       CoreLog.error(e);
       return url;
