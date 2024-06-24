@@ -203,7 +203,7 @@ class DouyinSite implements LiveSite {
           "web_rid": webRid,
           "room_id_str": "",
           "enter_source": "",
-          "Room-Enter-User-Login-Ab": 0,
+          "Room-Enter-User-Login-Ab": 1,
           "is_need_double_stream": false,
           "cookie_enabled": true,
           "screen_width": 1980,

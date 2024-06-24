@@ -2,7 +2,10 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'proto/douyin.pb.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter_js/flutter_js.dart';
 import 'package:pure_live/core/site/douyin_site.dart';
+import 'package:pure_live/common/utils/js_engine.dart';
 import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
@@ -48,11 +51,15 @@ class DouyinDanmaku implements LiveDanmaku {
   Future start(dynamic args) async {
     danmakuArgs = args as DouyinDanmakuArgs;
     var ts = DateTime.now().millisecondsSinceEpoch;
+    JsEngine.init();
+    await JsEngine.loadDouyinSdk();
+    var xMsStub = getMsStub(danmakuArgs.roomId, danmakuArgs.userId);
+    JsEvalResult jsEvalResult = await JsEngine.evaluateAsync("get_sign('$xMsStub')");
     var uri = Uri.parse(serverUrl).replace(scheme: "wss", queryParameters: {
       "app_name": "douyin_web",
       "version_code": "180800",
-      "webcast_sdk_version": "1.3.0",
-      "update_version_code": "1.3.0",
+      "webcast_sdk_version": "1.0.14-beta.0",
+      "update_version_code": "1.0.14-beta.0",
       "compress": "gzip",
       // "internal_ext":
       //     "internal_src:dim|wss_push_room_id:${danmakuArgs.roomId}|wss_push_did:${danmakuArgs.userId}|dim_log_id:20230626152702E8F63662383A350588E1|fetch_time:1687764422114|seq:1|wss_info:0-1687764422114-0-0|wrds_kvs:WebcastRoomRankMessage-1687764036509597990_InputPanelComponentSyncData-1687736682345173033_WebcastRoomStatsMessage-1687764414427812578",
@@ -80,12 +87,12 @@ class DouyinDanmaku implements LiveDanmaku {
       "identity": "audience",
       "room_id": danmakuArgs.roomId,
       "heartbeatDuration": "0",
-      //"signature": "00000000"
+      "signature": jsEvalResult.stringResult
     });
 
-    var sign = await getSignature(danmakuArgs.roomId, danmakuArgs.userId);
+    // var sign = await getSignature(danmakuArgs.roomId, danmakuArgs.userId);
 
-    var url = "$uri&signature=$sign";
+    var url = "$uri";
     var backupUrl = url.replaceAll("webcast3-ws-web-lq", "webcast5-ws-web-lf");
     webScoketUtils = WebScoketUtils(
       url: url,
@@ -211,5 +218,29 @@ class DouyinDanmaku implements LiveDanmaku {
     onMessage = null;
     onClose = null;
     webScoketUtils?.close();
+  }
+
+  String getMsStub(String liveRoomRealId, String userUniqueId) {
+    Map<String, dynamic> params = {
+      "live_id": "1",
+      "aid": "6383",
+      "version_code": 180800,
+      "webcast_sdk_version": '1.0.14-beta.0',
+      "room_id": liveRoomRealId,
+      "sub_room_id": "",
+      "sub_channel_id": "",
+      "did_rule": "3",
+      "user_unique_id": userUniqueId,
+      "device_platform": "web",
+      "device_type": "",
+      "ac": "",
+      "identity": "audience",
+    };
+
+    String sigParams = params.entries.map((e) => '${e.key}=${e.value}').join(',');
+
+    var bytes = utf8.encode(sigParams);
+    var digest = md5.convert(bytes);
+    return digest.toString();
   }
 }
