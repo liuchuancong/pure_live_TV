@@ -30,13 +30,20 @@ class DouyuSite implements LiveSite {
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [
-      LiveCategory(id: "PCgame", name: "网游竞技", children: []),
-      LiveCategory(id: "djry", name: "单机热游", children: []),
-      LiveCategory(id: "syxx", name: "手游休闲", children: []),
-      LiveCategory(id: "yl", name: "娱乐天地", children: []),
-      LiveCategory(id: "yz", name: "颜值", children: []),
-      LiveCategory(id: "kjwh", name: "科技文化", children: []),
-      LiveCategory(id: "yp", name: "语言互动", children: []),
+      LiveCategory(id: "1", name: "推荐分类", children: []),
+      LiveCategory(id: "3", name: "网游竞技", children: []),
+      LiveCategory(id: "4", name: "单机热游", children: []),
+      LiveCategory(id: "5", name: "手游休闲", children: []),
+      LiveCategory(id: "6", name: "FPS射击", children: []),
+      LiveCategory(id: "7", name: "卡牌棋牌", children: []),
+      LiveCategory(id: "8", name: "体育游戏", children: []),
+      LiveCategory(id: "9", name: "经典怀旧", children: []),
+      LiveCategory(id: "10", name: "娱乐天地", children: []),
+      LiveCategory(id: "11", name: "颜值", children: []),
+      LiveCategory(id: "12", name: "科技文化", children: []),
+      LiveCategory(id: "13", name: "语音互动", children: []),
+      LiveCategory(id: "14", name: "语音直播", children: []),
+      LiveCategory(id: "15", name: "正能量", children: []),
     ];
 
     for (var item in categories) {
@@ -47,8 +54,8 @@ class DouyuSite implements LiveSite {
   }
 
   Future<List<LiveArea>> getSubCategories(LiveCategory liveCategory) async {
-    var result = await HttpClient.instance.getJson("https://www.douyu.com/japi/weblist/api/getC2List",
-        queryParameters: {"shortName": liveCategory.id, "offset": 0, "limit": 200});
+    var result = await HttpClient.instance.getJson("https://www.douyu.com/japi/weblist/apinc/getC2List",
+        queryParameters: {"shortName": liveCategory.name, "customClassId": liveCategory.id, "offset": 0, "limit": 200});
 
     List<LiveArea> subs = [];
     for (var item in result["data"]["list"]) {

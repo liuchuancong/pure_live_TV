@@ -1,11 +1,13 @@
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/getx_router_observer.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   PrefUtil.prefs = await SharedPreferences.getInstance();
+  MediaKit.ensureInitialized();
   // 初始化服务
   initService();
 

@@ -2,11 +2,14 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
+import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
 
 class VideoController with ChangeNotifier {
@@ -100,8 +103,18 @@ class VideoController with ChangeNotifier {
 
   static const danmakuAbleKey = ValueKey(DanmakuSettingClickType.danmakuAble);
 
+  // A [GlobalKey<VideoState>] is required to access the programmatic fullscreen interface.
+  late final GlobalKey<media_kit_video.VideoState> key = GlobalKey<media_kit_video.VideoState>();
+  // CeoController] to handle video output from [Player].
+  late media_kit_video.VideoController mediaPlayerController;
+
+  final GlobalKey vlcPlayerKey = GlobalKey();
+  // Create a [Player] to control playback.
+  late Player player;
   // 是否手动暂停
   var isActivePause = true.obs;
+
+  late VlcPlayerController vlcPlayerController;
 
   Timer? hasActivePause;
 
@@ -157,6 +170,7 @@ class VideoController with ChangeNotifier {
     this.autoPlay = true,
     BoxFit fitMode = BoxFit.contain,
   }) {
+    hasDestory = false;
     videoFit.value = settings.videofitArrary[settings.videoFitIndex.value];
     hideDanmaku.value = settings.hideDanmaku.value;
     danmakuArea.value = settings.danmakuArea.value;
@@ -294,32 +308,92 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    gsyVideoPlayerController =
-        GsyVideoPlayerController(allowBackgroundPlayback: false, player: getVideoPlayerType(videoPlayerIndex));
-    chewieController = ChewieController(
-      videoPlayerController: gsyVideoPlayerController,
-      autoPlay: false,
-      looping: false,
-      draggableProgressBar: false,
-      showControls: false,
-      useRootNavigator: true,
-      showOptions: false,
-    );
-    gsyVideoPlayerController.setMediaCodec(enableCodec);
-    gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
-    gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers, cacheWithPlay: false);
-    gsyVideoPlayerController.addEventsListener((VideoEventType event) {
-      if (event == VideoEventType.onError) {
-        hasError.value = true;
-        isPlaying.value = false;
-        log('video error ${gsyVideoPlayerController.value.what}', name: 'video_player');
-      } else {
-        mediaPlayerControllerInitialized.value = gsyVideoPlayerController.value.onVideoPlayerInitialized;
-        if (mediaPlayerControllerInitialized.value) {
-          isPlaying.value = gsyVideoPlayerController.value.isPlaying;
+    if (videoPlayerIndex == 5) {
+      vlcPlayerController = VlcPlayerController.network(
+        datasource,
+        hwAcc: HwAcc.auto,
+        autoPlay: true,
+        allowBackgroundPlayback: false,
+        options: headers['User-Agent'] != null
+            ? VlcPlayerOptions(
+                http: VlcHttpOptions([
+                VlcHttpOptions.httpReconnect(true),
+                VlcHttpOptions.httpUserAgent(headers['User-Agent']!),
+                VlcHttpOptions.httpReferrer(headers['Referer']!),
+              ]))
+            : VlcPlayerOptions(),
+      );
+
+      mediaPlayerControllerInitialized.value = true;
+      vlcPlayerController.addListener(() {
+        isPlaying.value = vlcPlayerController.value.isPlaying;
+        hasError.value = vlcPlayerController.value.hasError;
+      });
+    } else if (videoPlayerIndex == 4) {
+      player = Player();
+      mediaPlayerController = enableCodec
+          ? media_kit_video.VideoController(player,
+              configuration: media_kit_video.VideoControllerConfiguration(
+                enableHardwareAcceleration: enableCodec,
+                androidAttachSurfaceAfterVideoParameters: false,
+                vo: 'mediacodec_embed',
+                hwdec: 'mediacodec',
+              ))
+          : media_kit_video.VideoController(player,
+              configuration: const media_kit_video.VideoControllerConfiguration(
+                enableHardwareAcceleration: false,
+                androidAttachSurfaceAfterVideoParameters: false,
+              ));
+      setDataSource(datasource);
+      mediaPlayerController.player.stream.playing.listen((bool playing) {
+        if (playing) {
+          if (!mediaPlayerControllerInitialized.value) {
+            mediaPlayerControllerInitialized.value = true;
+          }
+          isPlaying.value = true;
+        } else {
+          isPlaying.value = false;
         }
-      }
-    });
+      });
+      mediaPlayerController.player.stream.error.listen((event) {
+        if (event.toString().contains('Failed to open')) {
+          hasError.value = true;
+          isPlaying.value = false;
+        }
+      });
+    } else {
+      gsyVideoPlayerController =
+          GsyVideoPlayerController(allowBackgroundPlayback: false, player: getVideoPlayerType(videoPlayerIndex));
+      chewieController = ChewieController(
+        videoPlayerController: gsyVideoPlayerController,
+        autoPlay: false,
+        looping: false,
+        draggableProgressBar: false,
+        showControls: false,
+        useRootNavigator: true,
+        showOptions: false,
+      );
+      gsyVideoPlayerController.setMediaCodec(enableCodec);
+      gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
+      gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers, cacheWithPlay: false);
+      gsyVideoPlayerController.addEventsListener((VideoEventType event) {
+        if (event == VideoEventType.onError) {
+          hasError.value = true;
+          isPlaying.value = false;
+          log('video error ${gsyVideoPlayerController.value.what}', name: 'video_player');
+        } else {
+          mediaPlayerControllerInitialized.value = gsyVideoPlayerController.value.onVideoPlayerInitialized;
+          if (mediaPlayerControllerInitialized.value) {
+            isPlaying.value = gsyVideoPlayerController.value.isPlaying;
+          }
+        }
+      });
+    }
+  }
+
+  void setDataSource(String url) async {
+    player.pause();
+    player.open(Media(url, httpHeaders: headers));
   }
 
   void onKeyEvent(KeyEvent key) {
@@ -630,34 +704,47 @@ class VideoController with ChangeNotifier {
     cancledanmakuFocus();
     danmakuController.disable();
     await danmakuController.dispose();
-    chewieController.dispose();
-    gsyVideoPlayerController.dispose();
     isPlaying.value = false;
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
+    if (videoPlayerIndex == 5) {
+      log('vlc dispose', name: 'video_player');
+      await vlcPlayerController.stopRendererScanning();
+      await vlcPlayerController.dispose();
+    } else if (videoPlayerIndex == 4) {
+      player.dispose();
+    } else {
+      chewieController.dispose();
+      await gsyVideoPlayerController.dispose();
+    }
   }
 
-  void refresh() {
-    destory();
-    livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
+  void refresh() async {
+    await destory();
+    Timer(const Duration(seconds: 2), () {
+      livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
+    });
   }
 
   void changeLine({bool active = false}) async {
     // 播放错误 不一定是线路问题 先切换路线解决 后面尝试通知用户切换播放器
     await destory();
-    livePlayController.onInitPlayerState(
-      reloadDataType: ReloadDataType.changeLine,
-      line: currentLineIndex,
-      currentQuality: currentQuality,
-      active: active,
-    );
+    Timer(const Duration(seconds: 2), () {
+      livePlayController.onInitPlayerState(
+        reloadDataType: ReloadDataType.changeLine,
+        line: currentLineIndex,
+        active: active,
+      );
+    });
   }
 
   void changeQuality() async {
     await destory();
-    livePlayController.onInitPlayerState(
-        reloadDataType: ReloadDataType.changeQuality, line: currentLineIndex, currentQuality: currentQuality);
+    Timer(const Duration(seconds: 2), () {
+      livePlayController.onInitPlayerState(
+          reloadDataType: ReloadDataType.changeQuality, line: currentLineIndex, currentQuality: currentQuality);
+    });
   }
 
   void setVideoFit() {
@@ -667,14 +754,43 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
-    gsyVideoPlayerController.setBoxFit(settings.videofitArrary[index]);
+    var aspectRatio = "16:9";
+    if (index == 0) {
+      aspectRatio = "16:9";
+    } else if (index == 1) {
+      aspectRatio = "1:1";
+    } else if (index == 2) {
+      aspectRatio = "9:16";
+    } else if (index == 3) {
+      aspectRatio = "3:4";
+    } else if (index == 4) {
+      aspectRatio = "4:3";
+    }
+
+    if (videoPlayerIndex == 5) {
+      vlcPlayerController.setVideoAspectRatio(aspectRatio);
+    } else if (videoPlayerIndex == 4) {
+      key.currentState?.update(fit: settings.videofitArrary[index]);
+    } else {
+      gsyVideoPlayerController.setBoxFit(settings.videofitArrary[index]);
+    }
   }
 
   void togglePlayPause() {
-    if (isPlaying.value) {
-      gsyVideoPlayerController.pause();
+    if (videoPlayerIndex == 5) {
+      if (isPlaying.value) {
+        vlcPlayerController.pause();
+      } else {
+        vlcPlayerController.play();
+      }
+    } else if (videoPlayerIndex == 4) {
+      mediaPlayerController.player.playOrPause();
     } else {
-      gsyVideoPlayerController.resume();
+      if (isPlaying.value) {
+        gsyVideoPlayerController.pause();
+      } else {
+        gsyVideoPlayerController.resume();
+      }
     }
   }
 

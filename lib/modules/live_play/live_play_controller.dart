@@ -463,8 +463,8 @@ class LivePlayController extends StateController {
     Map<String, String> headers = {};
     if (currentSite.id == 'bilibili') {
       headers = {
-        "referer": "https://live.bilibili.com",
-        "user-agent":
+        "Referer": "https://live.bilibili.com",
+        "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
       };
     } else if (currentSite.id == 'huya') {

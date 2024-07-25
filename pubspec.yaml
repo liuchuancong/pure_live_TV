@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.7.2
+version: 1.7.3
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -53,6 +53,9 @@ dependencies:
   # database
   font_awesome_flutter: ^10.6.0
   # video player mobile
+  media_kit: ^1.1.10+1                           # Primary package.
+  media_kit_video: ^1.2.4                        # For video rendering.
+  media_kit_libs_video: ^1.0.4                   # Native video dependencies.
   gsy_video_player: 
     path: E:/project/gsy_video_player
   share_handler: ^0.0.19
@@ -62,7 +65,10 @@ dependencies:
     git:
       url: https://github.com/LucasXu0/flutter_url_protocol.git
       commit: 77a8420
-
+  flutter_vlc_player: 
+    git: 
+      url: https://github.com/Gabriellsp/flutter_vlc_player.git
+      path: flutter_vlc_player
   protobuf: ^3.1.0
   fixnum: ^1.1.0
   dio: ^5.3.3
