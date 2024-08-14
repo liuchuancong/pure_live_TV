@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:crypto/crypto.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
@@ -167,7 +169,6 @@ class BiliBiliSite implements LiveSite {
           for (var codecItem in codecList) {
             var urlList = codecItem["url_info"];
             var baseUrl = codecItem["base_url"].toString();
-
             for (var urlItem in urlList) {
               urls.add(
                 "${urlItem["host"]}$baseUrl${urlItem["extra"]}",
@@ -215,17 +216,143 @@ class BiliBiliSite implements LiveSite {
     return LiveCategoryResult(hasMore: hasMore, items: items);
   }
 
+  Future<Map<String, dynamic>> getRoomInfo({required String roomId}) async {
+    var url = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=$roomId";
+    var queryParams = await getWbiSign(url);
+    var result = await HttpClient.instance.getJson(
+      "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom",
+      queryParameters: queryParams,
+      header: getHeader(),
+    );
+    return result["data"];
+  }
+
+  static String kImgKey = '';
+  static String kSubKey = '';
+  static const List<int> mixinKeyEncTab = [
+    46,
+    47,
+    18,
+    2,
+    53,
+    8,
+    23,
+    32,
+    15,
+    50,
+    10,
+    31,
+    58,
+    3,
+    45,
+    35,
+    27,
+    43,
+    5,
+    49,
+    33,
+    9,
+    42,
+    19,
+    29,
+    28,
+    14,
+    39,
+    12,
+    38,
+    41,
+    13,
+    37,
+    48,
+    7,
+    16,
+    24,
+    55,
+    40,
+    61,
+    26,
+    17,
+    0,
+    1,
+    60,
+    51,
+    30,
+    4,
+    22,
+    25,
+    54,
+    21,
+    56,
+    59,
+    6,
+    63,
+    57,
+    62,
+    11,
+    36,
+    20,
+    34,
+    44,
+    52
+  ];
+  Future<(String, String)> getWbiKeys() async {
+    if (kImgKey.isNotEmpty && kSubKey.isNotEmpty) {
+      return (kImgKey, kSubKey);
+    }
+    // 获取最新的 img_key 和 sub_key
+    var resp = await HttpClient.instance.getJson(
+      'https://api.bilibili.com/x/web-interface/nav',
+      header: getHeader(),
+    );
+
+    var imgUrl = resp["data"]["wbi_img"]["img_url"].toString();
+    var subUrl = resp["data"]["wbi_img"]["sub_url"].toString();
+    var imgKey = imgUrl.substring(imgUrl.lastIndexOf('/') + 1).split('.').first;
+    var subKey = subUrl.substring(subUrl.lastIndexOf('/') + 1).split('.').first;
+
+    kImgKey = imgKey;
+    kSubKey = subKey;
+
+    return (imgKey, subKey);
+  }
+
+  String getMixinKey(String origin) {
+    // 对 imgKey 和 subKey 进行字符顺序打乱编码
+    return mixinKeyEncTab.fold("", (s, i) => s + origin[i]).substring(0, 32);
+  }
+
+  Future<Map<String, String>> getWbiSign(String url) async {
+    var (imgKey, subKey) = await getWbiKeys();
+
+    // 为请求参数进行 wbi 签名
+    var mixinKey = getMixinKey(imgKey + subKey);
+    var currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    var queryParams = Map<String, String>.from(Uri.parse(url).queryParameters);
+
+    queryParams["wts"] = currentTime.toString(); // 添加 wts 字段
+
+    //按照 key 重排参数
+    Map<String, String> map = {};
+    var sortedKeys = queryParams.keys.toList()..sort();
+    for (var key in sortedKeys) {
+      var value = queryParams[key]!;
+      // 过滤 value 中的 "!'()*" 字符
+      map[key] = value.toString().split('').where((c) => "!'()*".contains(c) == false).join('');
+    }
+
+    var query = map.keys.map((key) => "$key=${Uri.encodeQueryComponent(map[key]!)}").join("&");
+    var wbiSign = md5.convert(utf8.encode("$query$mixinKey")).toString();
+    queryParams["w_rid"] = wbiSign;
+    return queryParams;
+  }
+
   @override
   Future<LiveRoom> getRoomDetail(
       {required String nick, required String platform, required String roomId, required String title}) async {
     try {
-      var result = await HttpClient.instance.getJson(
-        "https://api.live.bilibili.com/xlive/web-room/v1/index/getH5InfoByRoom",
-        queryParameters: {
-          "room_id": roomId,
-        },
-        header: getHeader(),
-      );
+      var roomInfo = await getRoomInfo(roomId: roomId);
+      var realRoomId = roomInfo["room_info"]["room_id"].toString();
 
       var roomDanmakuResult = await HttpClient.instance.getJson(
         "https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo",
@@ -239,21 +366,20 @@ class BiliBiliSite implements LiveSite {
           (roomDanmakuResult["data"]["host_list"] as List).map<String>((e) => e["host"].toString()).toList();
       return LiveRoom(
         roomId: roomId,
-        title: result["data"]["room_info"]["title"].toString(),
-        cover: result["data"]["room_info"]["cover"].toString(),
-        nick: result["data"]["anchor_info"]["base_info"]["uname"].toString(),
-        avatar: "${result["data"]["anchor_info"]["base_info"]["face"]}@100w.jpg",
-        watching: result["data"]["room_info"]["online"].toString(),
-        area: result["data"]['room_info']?['area_name'] ?? '',
-        status: (asT<int?>(result["data"]["room_info"]["live_status"]) ?? 0) == 1,
-        liveStatus:
-            (asT<int?>(result["data"]["room_info"]["live_status"]) ?? 0) == 1 ? LiveStatus.live : LiveStatus.offline,
+        title: roomInfo["room_info"]["title"].toString(),
+        cover: roomInfo["room_info"]["cover"].toString(),
+        nick: roomInfo["anchor_info"]["base_info"]["uname"].toString(),
+        avatar: "${roomInfo["anchor_info"]["base_info"]["face"]}@100w.jpg",
+        watching: roomInfo["room_info"]["online"].toString(),
+        area: roomInfo['room_info']?['area_name'] ?? '',
+        status: (asT<int?>(roomInfo["room_info"]["live_status"]) ?? 0) == 1,
+        liveStatus: (asT<int?>(roomInfo["room_info"]["live_status"]) ?? 0) == 1 ? LiveStatus.live : LiveStatus.offline,
         link: "https://live.bilibili.com/$roomId",
-        introduction: result["data"]["room_info"]["description"].toString(),
+        introduction: roomInfo["room_info"]["description"].toString(),
         notice: "",
         platform: Sites.bilibiliSite,
         danmakuData: BiliBiliDanmakuArgs(
-          roomId: asT<int?>(result["data"]["room_info"]["room_id"]) ?? 0,
+          roomId: int.tryParse(realRoomId) ?? 0,
           uid: userId,
           token: roomDanmakuResult["data"]["token"].toString(),
           serverHost: serverHosts.isNotEmpty ? serverHosts.first : "broadcastlv.chat.bilibili.com",
