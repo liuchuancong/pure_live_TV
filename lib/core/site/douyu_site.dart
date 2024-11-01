@@ -29,27 +29,33 @@ class DouyuSite implements LiveSite {
   final SettingsService settings = Get.find<SettingsService>();
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
-    List<LiveCategory> categories = [
-      LiveCategory(id: "1", name: "推荐分类", children: []),
-      LiveCategory(id: "3", name: "网游竞技", children: []),
-      LiveCategory(id: "4", name: "单机热游", children: []),
-      LiveCategory(id: "5", name: "手游休闲", children: []),
-      LiveCategory(id: "6", name: "FPS射击", children: []),
-      LiveCategory(id: "7", name: "卡牌棋牌", children: []),
-      LiveCategory(id: "8", name: "体育游戏", children: []),
-      LiveCategory(id: "9", name: "经典怀旧", children: []),
-      LiveCategory(id: "10", name: "娱乐天地", children: []),
-      LiveCategory(id: "11", name: "颜值", children: []),
-      LiveCategory(id: "12", name: "科技文化", children: []),
-      LiveCategory(id: "13", name: "语音互动", children: []),
-      LiveCategory(id: "14", name: "语音直播", children: []),
-      LiveCategory(id: "15", name: "正能量", children: []),
-    ];
-
-    for (var item in categories) {
-      var items = await getSubCategories(item);
-      item.children.addAll(items);
+    List<LiveCategory> categories = [];
+    var result = await HttpClient.instance.getJson("https://m.douyu.com/api/cate/list");
+    var subCateList = result["data"]["cate2Info"] as List;
+    for (var item in result["data"]["cate1Info"]) {
+      var cate1Id = item["cate1Id"];
+      var cate1Name = item["cate1Name"];
+      List<LiveArea> subCategories = [];
+      subCateList.where((x) => x["cate1Id"] == cate1Id).forEach((element) {
+        subCategories.add(LiveArea(
+          areaPic: element["icon"].toString(),
+          areaId: element["cate2Id"].toString(),
+          typeName: cate1Name.toString(),
+          areaType: cate1Id.toString(),
+          platform: Sites.douyuSite,
+          areaName: element["cate2Name"].toString(),
+        ));
+      });
+      categories.add(
+        LiveCategory(
+          id: cate1Id.toString(),
+          name: cate1Name.toString(),
+          children: subCategories,
+        ),
+      );
     }
+    // 根据ID排序
+    categories.sort((a, b) => int.parse(a.id).compareTo(int.parse(b.id)));
     return categories;
   }
 

@@ -92,13 +92,13 @@ dependencies:
   logger: ^2.0.2+1
   crypto: ^3.0.3
   brotli: ^0.6.0
-  device_info_plus: ^10.1.0
+  device_info_plus: ^11.1.0
   cupertino_icons: ^1.0.2
   remixicon: ^1.0.0 #Remix图标
   lottie: ^3.1.0 #Lottie动画
   marquee_list: ^1.0.0
   flutter_screenutil: ^5.9.0 #UI适配
-  network_info_plus: ^5.0.3
+  network_info_plus: ^6.1.0
   dart_tars_protocol:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0
@@ -116,14 +116,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   change_app_package_name: any
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 # flutter pub run flutter_launcher_icons
 flutter_icons:
