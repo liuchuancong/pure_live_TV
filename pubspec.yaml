@@ -65,10 +65,6 @@ dependencies:
     git:
       url: https://github.com/LucasXu0/flutter_url_protocol.git
       commit: 77a8420
-  flutter_vlc_player: 
-    git: 
-      url: https://github.com/Gabriellsp/flutter_vlc_player.git
-      path: flutter_vlc_player
   protobuf: ^3.1.0
   fixnum: ^1.1.0
   dio: ^5.3.3

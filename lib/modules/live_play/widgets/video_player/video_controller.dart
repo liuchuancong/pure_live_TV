@@ -7,7 +7,6 @@ import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
@@ -108,13 +107,9 @@ class VideoController with ChangeNotifier {
   // CeoController] to handle video output from [Player].
   late media_kit_video.VideoController mediaPlayerController;
 
-  final GlobalKey vlcPlayerKey = GlobalKey();
-  // Create a [Player] to control playback.
   late Player player;
   // 是否手动暂停
   var isActivePause = true.obs;
-
-  late VlcPlayerController vlcPlayerController;
 
   Timer? hasActivePause;
 
@@ -308,28 +303,7 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    if (videoPlayerIndex == 5) {
-      vlcPlayerController = VlcPlayerController.network(
-        datasource,
-        hwAcc: HwAcc.auto,
-        autoPlay: true,
-        allowBackgroundPlayback: false,
-        options: headers['User-Agent'] != null
-            ? VlcPlayerOptions(
-                http: VlcHttpOptions([
-                VlcHttpOptions.httpReconnect(true),
-                VlcHttpOptions.httpUserAgent(headers['User-Agent']!),
-                VlcHttpOptions.httpReferrer(headers['Referer']!),
-              ]))
-            : VlcPlayerOptions(),
-      );
-
-      mediaPlayerControllerInitialized.value = true;
-      vlcPlayerController.addListener(() {
-        isPlaying.value = vlcPlayerController.value.isPlaying;
-        hasError.value = vlcPlayerController.value.hasError;
-      });
-    } else if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 4) {
       player = Player();
       mediaPlayerController = enableCodec
           ? media_kit_video.VideoController(player,
@@ -708,11 +682,7 @@ class VideoController with ChangeNotifier {
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
-    if (videoPlayerIndex == 5) {
-      log('vlc dispose', name: 'video_player');
-      await vlcPlayerController.stopRendererScanning();
-      await vlcPlayerController.dispose();
-    } else if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 4) {
       player.dispose();
     } else {
       chewieController.dispose();
@@ -754,22 +724,8 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
-    var aspectRatio = "16:9";
-    if (index == 0) {
-      aspectRatio = "16:9";
-    } else if (index == 1) {
-      aspectRatio = "1:1";
-    } else if (index == 2) {
-      aspectRatio = "9:16";
-    } else if (index == 3) {
-      aspectRatio = "3:4";
-    } else if (index == 4) {
-      aspectRatio = "4:3";
-    }
 
-    if (videoPlayerIndex == 5) {
-      vlcPlayerController.setVideoAspectRatio(aspectRatio);
-    } else if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 4) {
       key.currentState?.update(fit: settings.videofitArrary[index]);
     } else {
       gsyVideoPlayerController.setBoxFit(settings.videofitArrary[index]);
@@ -777,13 +733,7 @@ class VideoController with ChangeNotifier {
   }
 
   void togglePlayPause() {
-    if (videoPlayerIndex == 5) {
-      if (isPlaying.value) {
-        vlcPlayerController.pause();
-      } else {
-        vlcPlayerController.play();
-      }
-    } else if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 4) {
       mediaPlayerController.player.playOrPause();
     } else {
       if (isPlaying.value) {

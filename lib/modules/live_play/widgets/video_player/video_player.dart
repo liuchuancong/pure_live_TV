@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
@@ -26,22 +25,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   }
 
   Widget _buildVideo() {
-    if (widget.controller.videoPlayerIndex == 5) {
-      return Stack(
-        children: [
-          VlcPlayer(
-            key: UniqueKey(),
-            controller: widget.controller.vlcPlayerController,
-            aspectRatio: 16 / 9,
-            placeholder: const Center(
-                child: CircularProgressIndicator(
-              color: Colors.white,
-            )),
-          ),
-          _buildVideoPanel(),
-        ],
-      );
-    } else if (widget.controller.videoPlayerIndex == 4) {
+    if (widget.controller.videoPlayerIndex == 4) {
       return Obx(() => widget.controller.mediaPlayerControllerInitialized.value
           ? media_kit_video.Video(
               key: widget.controller.key,
