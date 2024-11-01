@@ -4,14 +4,7 @@ class CoreLog {
   static bool enableLog = true;
   static Function(Level, String)? onPrintLog;
   static Logger logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0,
-      errorMethodCount: 8,
-      lineLength: 120,
-      colors: true,
-      printEmojis: true,
-      printTime: false,
-    ),
+    printer: PrettyPrinter(methodCount: 0, errorMethodCount: 8, lineLength: 120, colors: true, printEmojis: true),
   );
 
   static void d(String message) {

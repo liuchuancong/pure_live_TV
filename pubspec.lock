@@ -526,7 +526,7 @@ packages:
       path: "E:\\project\\gsy_video_player"
       relative: false
     source: path
-    version: "0.0.5"
+    version: "0.0.6"
   hashlib:
     dependency: "direct main"
     description:
