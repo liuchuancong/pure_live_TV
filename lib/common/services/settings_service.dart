@@ -76,12 +76,12 @@ class SettingsService extends GetxController {
       PrefUtil.setBool('enableCodec', value);
     });
 
-    videoPlayerIndex.listen((value) {
-      PrefUtil.setInt('videoPlayerIndex', value);
-    });
-
     bilibiliCookie.listen((value) {
       PrefUtil.setString('bilibiliCookie', value);
+    });
+
+    huyaCookie.listen((value) {
+      PrefUtil.setString('huyaCookie', value);
     });
 
     mergeDanmuRating.listen((value) {
@@ -207,11 +207,6 @@ class SettingsService extends GetxController {
     Get.updateLocale(language);
   }
 
-  void changePlayer(int value) {
-    videoPlayerIndex.value = value;
-    PrefUtil.setInt('videoPlayerIndex', value);
-  }
-
   final enableDynamicTheme = (PrefUtil.getBool('enableDynamicTheme') ?? false).obs;
 
   // Custom settings
@@ -237,8 +232,6 @@ class SettingsService extends GetxController {
 
   final enableFullScreenDefault = (PrefUtil.getBool('enableFullScreenDefault') ?? false).obs;
 
-  final videoPlayerIndex = (PrefUtil.getInt('videoPlayerIndex') ?? 0).obs;
-
   final enableCodec = (PrefUtil.getBool('enableCodec') ?? true).obs;
 
   final mergeDanmuRating = (PrefUtil.getDouble('mergeDanmuRating') ?? 0.0).obs;
@@ -247,9 +240,10 @@ class SettingsService extends GetxController {
   final doubleExit = (PrefUtil.getBool('doubleExit') ?? true).obs;
   static const List<String> resolutions = ['原画', '蓝光8M', '蓝光4M', '超清', '流畅'];
 
-  // cookie
-
   final bilibiliCookie = (PrefUtil.getString('bilibiliCookie') ?? '').obs;
+
+  final huyaCookie = (PrefUtil.getString('huyaCookie') ?? '').obs;
+
   static const List<BoxFit> videofitList = [
     BoxFit.contain,
     BoxFit.fill,
@@ -290,10 +284,8 @@ class SettingsService extends GetxController {
 
   static const List<String> platforms = ['bilibili', 'douyu', 'huya', 'douyin', 'kuaishow', 'cc', '网络'];
 
-  static const List<String> players = ['ExoPlayer', 'IjkPlayer', 'MpvPlayer'];
   final preferPlatform = (PrefUtil.getString('preferPlatform') ?? platforms[0]).obs;
 
-  List<String> get playerlist => players;
   void changePreferPlatform(String name) {
     if (platforms.indexWhere((e) => e == name) != -1) {
       preferPlatform.value = name;
@@ -518,6 +510,7 @@ class SettingsService extends GetxController {
     preferResolution.value = json['preferResolution'] ?? resolutions[0];
     preferPlatform.value = json['preferPlatform'] ?? platforms[0];
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
+    huyaCookie.value = json['huyaCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
   }
@@ -550,9 +543,9 @@ class SettingsService extends GetxController {
     json['danmakuFontBorder'] = danmakuFontBorder.value;
     json['danmakuOpacity'] = danmakuOpacity.value;
     json['doubleExit'] = doubleExit.value;
-    json['videoPlayerIndex'] = videoPlayerIndex.value;
     json['enableCodec'] = enableCodec.value;
     json['bilibiliCookie'] = bilibiliCookie.value;
+    json['huyaCookie'] = huyaCookie.value;
     json['shieldList'] = shieldList.map<String>((e) => e.toString()).toList();
     json['hotAreasList'] = hotAreasList.map<String>((e) => e.toString()).toList();
 
@@ -588,9 +581,9 @@ class SettingsService extends GetxController {
       "danmakuFontBorder": 2.0,
       "danmakuOpacity": 1.0,
       'doubleExit': true,
-      "videoPlayerIndex": 0,
       'enableCodec': true,
       'bilibiliCookie': '',
+      'huyaCookie': '',
       'shieldList': [],
       'mergeDanmuRating': 0.0,
       "hotAreasList": [],

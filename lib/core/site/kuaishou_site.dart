@@ -1,11 +1,12 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'dart:developer' as developer;
 import 'package:pure_live/core/sites.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:pure_live/model/live_category.dart';
+import 'package:pure_live/plugins/fake_useragent.dart';
 import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/common/http_client.dart';
@@ -165,7 +166,9 @@ class KuaishowSite implements LiveSite {
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) {
     List<LivePlayQuality> qualities = <LivePlayQuality>[];
-    var qulityList = detail.data[0]["adaptationSet"]["representation"];
+    developer.log(detail.data.toString(), name: 'detail.data');
+    var qulityList = detail.data["h264"]["adaptationSet"]["representation"];
+
     for (var quality in qulityList) {
       var qualityItem = LivePlayQuality(
         quality: quality["name"],
@@ -312,17 +315,30 @@ class KuaishowSite implements LiveSite {
       {required String nick, required String platform, required String roomId, required String title}) async {
     headers['cookie'] = cookie;
     var url = "https://live.kuaishou.com/u/$roomId";
-
+    var mHeaders = headers;
+    var fakeUseragent = FakeUserAgent.getRandomUserAgent();
+    mHeaders['User-Agent'] = fakeUseragent['userAgent'];
+    mHeaders['sec-ch-ua'] = 'Google Chrome;v=${fakeUseragent['v']}, Chromium;v=${fakeUseragent['v']}, Not=A?Brand;v=24';
+    mHeaders['sec-ch-ua-platform'] = fakeUseragent['device'];
+    mHeaders['sec-fetch-dest'] = 'document';
+    mHeaders['sec-fetch-mode'] = 'navigate';
+    mHeaders['sec-fetch-site'] = 'same-origin';
+    mHeaders['sec-fetch-user'] = '?1';
+    mHeaders['accept'] =
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9';
     await getCookie(url);
     await registerDid();
     var resultText = await HttpClient.instance.getText(
       url,
       queryParameters: {},
-      header: headers,
+      header: mHeaders,
     );
+
     try {
       var text = RegExp(r"window\.__INITIAL_STATE__=(.*?);", multiLine: false).firstMatch(resultText)?.group(1);
+
       var transferData = text!.replaceAll("undefined", "null");
+
       var jsonObj = jsonDecode(transferData);
       var liveStream = jsonObj["liveroom"]["playList"][0]["liveStream"];
       var author = jsonObj["liveroom"]["playList"][0]["author"];
@@ -346,7 +362,6 @@ class KuaishowSite implements LiveSite {
         data: liveStream["playUrls"],
       );
     } catch (e) {
-      log(e.toString());
       LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;

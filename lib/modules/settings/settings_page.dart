@@ -52,30 +52,24 @@ class SettingsPage extends GetView<SettingsService> {
             AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
-                focusNode: controller.videoPlayerNode,
-                title: "播放器设置",
-                items: const {
-                  0: "Exo播放器",
-                  1: "系统播放器",
-                  2: "IJK播放器",
-                  3: "阿里播放器",
-                  4: "Mpv播放器",
-                },
-                value: controller.videoPlayerIndex.value,
-                onChanged: (e) {
-                  controller.videoPlayerIndex.value = e;
-                },
-              ),
-            ),
-            AppStyle.vGap24,
-            Obx(
-              () => SettingsItemWidget(
                 focusNode: controller.enableCodecNode,
                 title: "解码设置",
                 items: const {0: "软解码", 1: "硬解码"},
                 value: controller.enableCodec.value ? 1 : 0,
                 onChanged: (e) {
                   controller.enableCodec.value = e == 1;
+                },
+              ),
+            ),
+            AppStyle.vGap24,
+            Obx(
+              () => SettingsItemWidget(
+                focusNode: controller.playerCompatModeNode,
+                title: "兼容模式",
+                items: const {0: "关闭", 1: "打开"},
+                value: controller.playerCompatMode.value ? 1 : 0,
+                onChanged: (e) {
+                  controller.playerCompatMode.value = e == 1;
                 },
               ),
             ),

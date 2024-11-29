@@ -12,7 +12,6 @@ export 'package:pure_live/modules/favorite/favorite_controller.dart';
 
 export 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 export 'package:flutter_localizations/flutter_localizations.dart';
-export 'package:gsy_video_player/gsy_video_player.dart';
 export 'package:pure_live/common/index.dart';
 export 'package:pure_live/routes/app_pages.dart';
 export 'package:path_provider/path_provider.dart';
