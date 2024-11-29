@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/plugins/fake_useragent.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
@@ -488,13 +489,19 @@ class LivePlayController extends StateController {
         'Accept': '*/*',
         'Origin': 'https://www.huya.com',
         'Referer': 'https://www.huya.com/',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site',
-        "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
         "Cookie": settings.huyaCookie.value,
       };
+      var fakeUseragent = FakeUserAgent.getRandomUserAgent();
+      headers['User-Agent'] = fakeUseragent['userAgent'];
+      headers['sec-ch-ua'] =
+          'Google Chrome;v=${fakeUseragent['v']}, Chromium;v=${fakeUseragent['v']}, Not=A?Brand;v=24';
+      headers['sec-ch-ua-platform'] = fakeUseragent['device'];
+      headers['sec-fetch-dest'] = 'document';
+      headers['sec-fetch-mode'] = 'navigate';
+      headers['sec-fetch-site'] = 'same-origin';
+      headers['sec-fetch-user'] = '?1';
+      headers['accept'] =
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9';
     }
     videoController = VideoController(
       playerKey: playerKey,

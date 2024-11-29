@@ -130,10 +130,12 @@ class HuyaSite implements LiveSite {
       for (var line in urlData.lines) {
         var src = line.line;
         src += "/${line.streamName}.flv";
-        var parms = processAnticode(
-          line.flvAntiCode,
-          line.streamName,
-        );
+        var parms = urlData.isXingxiu
+            ? line.flvAntiCode
+            : processAnticode(
+                line.flvAntiCode,
+                line.streamName,
+              );
         src += "?$parms";
         if (item.bitRate > 0) {
           src += "&ratio=${item.bitRate}";
@@ -197,45 +199,50 @@ class HuyaSite implements LiveSite {
   @override
   Future<LiveRoom> getRoomDetail(
       {required String nick, required String platform, required String roomId, required String title}) async {
-    var htmlInfo = await HttpClient.instance.getText('https://www.huya.com/$roomId', header: {
-      'Accept': '*/*',
-      'Origin': 'https://www.huya.com',
-      'Referer': 'https://www.huya.com/',
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'same-site',
-      "user-agent": kUserAgent,
-      "Cookie": settings.huyaCookie.value,
-    });
-    var result = json.decode(htmlInfo.split('stream: ')[1].split('};')[0].toString());
-    if (result['data'] != null && result['data'][0] != null && result['data'][0]['gameStreamInfoList'] != null) {
-      var data = result['data'][0]['gameLiveInfo'];
-      bool isXingxiu = data['gid'] == 1663;
-      String topSid = '0';
-      String subSid = '0';
+    var resultText = await HttpClient.instance.getText(
+        'https://mp.huya.com/cache.php?m=Live'
+        '&do=profileRoom&roomid=$roomId',
+        header: {
+          'Accept': '*/*',
+          'Origin': 'https://www.huya.com',
+          'Referer': 'https://www.huya.com/',
+          'Sec-Fetch-Dest': 'empty',
+          'Sec-Fetch-Mode': 'cors',
+          'Sec-Fetch-Site': 'same-site',
+          "user-agent": kUserAgent,
+        });
+    var result = json.decode(resultText);
+    if (result['status'] == 200 && result['data']['stream'] != null) {
+      dynamic data = result['data'];
+      var topSid = 0;
+      var subSid = 0;
       var huyaLines = <HuyaLineModel>[];
       var huyaBiterates = <HuyaBitRateModel>[];
       //读取可用线路
-      var lines = result['vMultiStreamInfo'];
-      var baseSteamInfoList = result['data'][0]['gameStreamInfoList'];
-      baseSteamInfoList = baseSteamInfoList
-          .where(
-              (item) => item["iPCPriorityRate"] > 0 && item["iWebPriorityRate"] > 0 && item["iMobilePriorityRate"] > 0)
-          .toList();
-      lines = lines.where((item) => item["iCompatibleFlag"] == 0).toList();
-      for (var item in baseSteamInfoList) {
-        topSid = item["lChannelId"].toString();
-        subSid = item["lSubChannelId"].toString();
-        huyaLines.add(HuyaLineModel(
-          line: item['sFlvUrl'],
-          lineType: HuyaLineType.flv,
-          flvAntiCode: item["sFlvAntiCode"].toString(),
-          hlsAntiCode: item["sHlsAntiCode"].toString(),
-          streamName: item["sStreamName"].toString(),
-        ));
+      var lines = data['stream']['flv']['multiLine'];
+      var baseSteamInfoList = data['stream']['baseSteamInfoList'];
+      for (var item in lines) {
+        if ((item["url"]?.toString() ?? "").isNotEmpty) {
+          var currentStream =
+              baseSteamInfoList.firstWhere((element) => element["sCdnType"] == item["cdnType"], orElse: () => null);
+          if (currentStream != null) {
+            topSid = currentStream["lChannelId"];
+            subSid = currentStream["lSubChannelId"];
+            huyaLines.add(HuyaLineModel(
+              line: currentStream['sFlvUrl'],
+              lineType: HuyaLineType.flv,
+              flvAntiCode: currentStream["sFlvAntiCode"].toString(),
+              hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
+              streamName: currentStream["sStreamName"].toString(),
+            ));
+          }
+        }
       }
       //清晰度
-      for (var item in lines) {
+      var biterates = data['liveData']['bitRateInfo'] != null
+          ? jsonDecode(data['liveData']['bitRateInfo'])
+          : data['stream']['flv']['rateArray'];
+      for (var item in biterates) {
         var name = item["sDisplayName"].toString();
         if (huyaBiterates.map((e) => e.name).toList().every((element) => element != name)) {
           huyaBiterates.add(HuyaBitRateModel(
@@ -244,18 +251,19 @@ class HuyaSite implements LiveSite {
           ));
         }
       }
+      bool isXingxiu = data['liveData']['gid'] == 1663;
       return LiveRoom(
-        cover: data['screenshot'] ?? '',
-        watching: data['activityCount']?.toString() ?? '',
+        cover: data['liveData']?['screenshot'] ?? '',
+        watching: data['liveData']?['userCount']?.toString() ?? '',
         roomId: roomId,
-        area: data['gameFullName'] ?? '',
-        title: data['introduction'] ?? '',
-        nick: data['nick'] ?? '',
-        avatar: data['avatar180'] ?? '',
-        introduction: data['introduction'] ?? '',
+        area: data['liveData']?['gameFullName'] ?? '',
+        title: data['liveData']?['introduction'] ?? '',
+        nick: data['profileInfo']?['nick'] ?? '',
+        avatar: data['profileInfo']?['avatar180'] ?? '',
+        introduction: data['liveData']?['introduction'] ?? '',
         notice: data['welcomeText'] ?? '',
-        status: baseSteamInfoList.length != 0,
-        liveStatus: baseSteamInfoList.length != 0 ? LiveStatus.live : LiveStatus.offline,
+        status: data['liveStatus'] == "ON" || data['liveStatus'] == "REPLAY",
+        liveStatus: data['liveStatus'] == "ON" || data['liveStatus'] == "REPLAY" ? LiveStatus.live : LiveStatus.offline,
         platform: Sites.huyaSite,
         data: HuyaUrlDataModel(
           url: "",
@@ -265,9 +273,9 @@ class HuyaSite implements LiveSite {
           isXingxiu: isXingxiu,
         ),
         danmakuData: HuyaDanmakuArgs(
-          ayyuid: int.parse(data["yyid"].toString()),
-          topSid: int.parse(topSid.toString()),
-          subSid: int.parse(subSid.toString()),
+          ayyuid: data["profileInfo"]["yyid"] ?? 0,
+          topSid: topSid,
+          subSid: subSid,
         ),
         link: "https://www.huya.com/$roomId",
       );
