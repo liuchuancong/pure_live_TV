@@ -199,18 +199,17 @@ class HuyaSite implements LiveSite {
   @override
   Future<LiveRoom> getRoomDetail(
       {required String nick, required String platform, required String roomId, required String title}) async {
-    var resultText = await HttpClient.instance.getText(
-        'https://mp.huya.com/cache.php?m=Live'
-        '&do=profileRoom&roomid=$roomId',
-        header: {
-          'Accept': '*/*',
-          'Origin': 'https://www.huya.com',
-          'Referer': 'https://www.huya.com/',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-site',
-          "user-agent": kUserAgent,
-        });
+    var resultText = await HttpClient.instance
+        .getText('https://mp.huya.com/cache.php?m=Live&do=profileRoom&roomid=$roomId&showSecret=1', header: {
+      'Accept': '*/*',
+      'Origin': 'https://www.huya.com',
+      'Referer': 'https://www.huya.com/',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-site',
+      "user-agent": kUserAgent,
+      "Cookie": settings.huyaCookie.value,
+    });
     var result = json.decode(resultText);
     if (result['status'] == 200 && result['data']['stream'] != null) {
       dynamic data = result['data'];
@@ -220,7 +219,11 @@ class HuyaSite implements LiveSite {
       var huyaBiterates = <HuyaBitRateModel>[];
       //读取可用线路
       var lines = data['stream']['flv']['multiLine'];
-      var baseSteamInfoList = data['stream']['baseSteamInfoList'];
+      var baseSteamInfoList = data['stream']['baseSteamInfoList'] as List<dynamic>;
+      baseSteamInfoList = baseSteamInfoList
+          .where(
+              (item) => item["iPCPriorityRate"] > 0 && item["iWebPriorityRate"] > 0 && item["iMobilePriorityRate"] > 0)
+          .toList();
       for (var item in lines) {
         if ((item["url"]?.toString() ?? "").isNotEmpty) {
           var currentStream =
@@ -430,7 +433,6 @@ class HuyaSite implements LiveSite {
 
   String processAnticode(String anticode, String streamName) {
     var query = Uri.splitQueryString(anticode);
-    query["t"] = query["t"] ?? "100";
     final uid = int.parse(getUUid(settings.huyaCookie.value, streamName));
     final convertUid = (uid << 8 | uid >> 24) & 0xFFFFFFFF;
     final wsTime = query["wsTime"]!;
