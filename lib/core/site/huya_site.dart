@@ -1,8 +1,11 @@
 import 'dart:math';
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/core/common/http_client.dart';
@@ -130,6 +133,7 @@ class HuyaSite implements LiveSite {
       for (var line in urlData.lines) {
         var src = line.line;
         src += "/${line.streamName}.flv";
+        src = src.replaceAll("http://", "https://");
         var parms = urlData.isXingxiu
             ? line.flvAntiCode
             : processAnticode(
@@ -140,7 +144,7 @@ class HuyaSite implements LiveSite {
         if (item.bitRate > 0) {
           src += "&ratio=${item.bitRate}";
         }
-        src = src.replaceAll("http://", "https://");
+
         urls.add(src);
       }
       qualities.add(LivePlayQuality(
@@ -165,6 +169,8 @@ class HuyaSite implements LiveSite {
       header: {
         "user-agent": kUserAgent,
         "Cookie": settings.huyaCookie.value,
+        "Origin": "https://www.huya.com",
+        "Referer": "https://www.huya.com/",
       },
     );
     var result = json.decode(resultText);
@@ -434,8 +440,12 @@ class HuyaSite implements LiveSite {
   String processAnticode(String anticode, String streamName) {
     var query = Uri.splitQueryString(anticode);
     final uid = int.parse(getUUid(settings.huyaCookie.value, streamName));
+    query["ctype"] = "huya_live";
+    query["t"] = "100";
+
     final convertUid = (uid << 8 | uid >> 24) & 0xFFFFFFFF;
     final wsTime = query["wsTime"]!;
+
     final seqId = (DateTime.now().millisecondsSinceEpoch + uid).toString();
     int ct = ((int.parse(wsTime, radix: 16) + Random().nextDouble()) * 1000).toInt();
     final fm = utf8.decode(base64.decode(Uri.decodeComponent(query['fm']!)));
@@ -443,7 +453,15 @@ class HuyaSite implements LiveSite {
     final wsSecretHash = md5.convert(utf8.encode('$seqId|${query["ctype"]}|${query["t"]}')).toString();
     final wsSecret =
         md5.convert(utf8.encode('${wsSecretPrefix}_${convertUid}_${streamName}_${wsSecretHash}_$wsTime')).toString();
+    tz.initializeTimeZones();
+    final location = tz.getLocation('Asia/Shanghai');
+    final now = tz.TZDateTime.now(location);
+    final formatter = DateFormat('yyyyMMddHH');
+    final formatted = formatter.format(now);
+    DateFormat timeStampFormat = DateFormat("yyyy-MM-dd_HH:mm:ss.SSS");
 
+    // 格式化当前时间
+    String formattedDate = timeStampFormat.format(now);
     return Uri(queryParameters: {
       "wsSecret": wsSecret,
       "wsTime": wsTime,
@@ -455,7 +473,12 @@ class HuyaSite implements LiveSite {
       "u": convertUid.toString(),
       "uuid": (((ct % 1e10 + Random().nextDouble()) * 1e3).toInt() & 0xFFFFFFFF).toString(),
       "sdk_sid": DateTime.now().millisecondsSinceEpoch.toString(),
-      "codec": "264"
+      "codec": "264",
+      "sv": formatted,
+      "dMod": "mseh-0",
+      "sdkPcdn": "1_1",
+      "a_block": "0",
+      "timeStamp": formattedDate
     }).query;
   }
 

@@ -76,6 +76,10 @@ class SettingsService extends GetxController {
       PrefUtil.setBool('enableCodec', value);
     });
 
+    videoPlayerIndex.listen((value) {
+      PrefUtil.setInt('videoPlayerIndex', value);
+    });
+
     bilibiliCookie.listen((value) {
       PrefUtil.setString('bilibiliCookie', value);
     });
@@ -207,6 +211,11 @@ class SettingsService extends GetxController {
     Get.updateLocale(language);
   }
 
+  void changePlayer(int value) {
+    videoPlayerIndex.value = value;
+    PrefUtil.setInt('videoPlayerIndex', value);
+  }
+
   final enableDynamicTheme = (PrefUtil.getBool('enableDynamicTheme') ?? false).obs;
 
   // Custom settings
@@ -229,6 +238,8 @@ class SettingsService extends GetxController {
   final danmakuFontBorder = (PrefUtil.getDouble('danmakuFontBorder') ?? 2.0).obs;
 
   final danmakuOpacity = (PrefUtil.getDouble('danmakuOpacity') ?? 1.0).obs;
+
+  final videoPlayerIndex = (PrefUtil.getInt('videoPlayerIndex') ?? 0).obs;
 
   final enableFullScreenDefault = (PrefUtil.getBool('enableFullScreenDefault') ?? false).obs;
 
@@ -293,6 +304,10 @@ class SettingsService extends GetxController {
       PrefUtil.setString('preferPlatform', name);
     }
   }
+
+  static const List<String> players = ['ExoPlayer', 'IjkPlayer', 'MpvPlayer'];
+
+  List<String> get playerlist => players;
 
   static const List<String> supportSites = ['bilibili', 'douyu', 'huya', 'douyin', 'kuaishou', 'cc', 'iptv'];
 
@@ -543,6 +558,7 @@ class SettingsService extends GetxController {
     json['danmakuFontBorder'] = danmakuFontBorder.value;
     json['danmakuOpacity'] = danmakuOpacity.value;
     json['doubleExit'] = doubleExit.value;
+    json['videoPlayerIndex'] = videoPlayerIndex.value;
     json['enableCodec'] = enableCodec.value;
     json['bilibiliCookie'] = bilibiliCookie.value;
     json['huyaCookie'] = huyaCookie.value;
@@ -579,6 +595,7 @@ class SettingsService extends GetxController {
       "danmakuSpeed": 8.0,
       "danmakuFontSize": 16.0,
       "danmakuFontBorder": 2.0,
+      "videoPlayerIndex": 0,
       "danmakuOpacity": 1.0,
       'doubleExit': true,
       'enableCodec': true,

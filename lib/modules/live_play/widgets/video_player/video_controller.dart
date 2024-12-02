@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
@@ -47,6 +48,8 @@ class VideoController with ChangeNotifier {
 
   final mediaPlayerControllerInitialized = false.obs;
 
+  int videoPlayerIndex = 0;
+
   bool enableCodec = true;
 
   AppFocusNode focusNode = AppFocusNode();
@@ -87,6 +90,11 @@ class VideoController with ChangeNotifier {
   Timer? doubleClickTimer;
 
   int doubleClickTimeStamp = 0;
+
+  // Video player control
+  late GsyVideoPlayerController gsyVideoPlayerController;
+
+  late ChewieController chewieController;
 
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
@@ -166,6 +174,7 @@ class VideoController with ChangeNotifier {
     danmakuFontBorder.value = settings.danmakuFontBorder.value;
     danmakuOpacity.value = settings.danmakuOpacity.value;
     mergeDanmuRating.value = settings.mergeDanmuRating.value;
+    videoPlayerIndex = settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
     scrollController = ScrollController();
     scrollController.addListener(() {
@@ -294,35 +303,72 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    player = Player();
-    mediaPlayerController = settings.playerCompatMode.value
-        ? media_kit_video.VideoController(player,
-            configuration: media_kit_video.VideoControllerConfiguration(
-              vo: 'mediacodec_embed',
-              hwdec: 'mediacodec',
-            ))
-        : media_kit_video.VideoController(player,
-            configuration: media_kit_video.VideoControllerConfiguration(
-              enableHardwareAcceleration: enableCodec,
-              androidAttachSurfaceAfterVideoParameters: false,
-            ));
-    setDataSource(datasource);
-    mediaPlayerController.player.stream.playing.listen((bool playing) {
-      if (playing) {
-        if (!mediaPlayerControllerInitialized.value) {
-          mediaPlayerControllerInitialized.value = true;
+    if (videoPlayerIndex == 4) {
+      player = Player();
+      mediaPlayerController = settings.playerCompatMode.value
+          ? media_kit_video.VideoController(player,
+              configuration: media_kit_video.VideoControllerConfiguration(
+                vo: 'mediacodec_embed',
+                hwdec: 'mediacodec',
+              ))
+          : media_kit_video.VideoController(player,
+              configuration: media_kit_video.VideoControllerConfiguration(
+                enableHardwareAcceleration: enableCodec,
+                androidAttachSurfaceAfterVideoParameters: false,
+              ));
+      setDataSource(datasource);
+      mediaPlayerController.player.stream.playing.listen((bool playing) {
+        if (playing) {
+          if (!mediaPlayerControllerInitialized.value) {
+            mediaPlayerControllerInitialized.value = true;
+          }
+          isPlaying.value = true;
+        } else {
+          isPlaying.value = false;
         }
-        isPlaying.value = true;
-      } else {
-        isPlaying.value = false;
+      });
+      mediaPlayerController.player.stream.error.listen((event) {
+        if (event.toString().contains('Failed to open')) {
+          hasError.value = true;
+          isPlaying.value = false;
+        }
+      });
+    } else {
+      bool useDefaultIjkPlayer = false;
+      if (room.platform == Sites.bilibiliSite) {
+        if (getVideoPlayerType(videoPlayerIndex) == GsyVideoPlayerType.sysytem ||
+            getVideoPlayerType(videoPlayerIndex) == GsyVideoPlayerType.ali) {
+          useDefaultIjkPlayer = true;
+        }
       }
-    });
-    mediaPlayerController.player.stream.error.listen((event) {
-      if (event.toString().contains('Failed to open')) {
-        hasError.value = true;
-        isPlaying.value = false;
-      }
-    });
+      gsyVideoPlayerController = GsyVideoPlayerController(
+          allowBackgroundPlayback: false,
+          player: useDefaultIjkPlayer ? GsyVideoPlayerType.ijk : getVideoPlayerType(videoPlayerIndex));
+      chewieController = ChewieController(
+        videoPlayerController: gsyVideoPlayerController,
+        autoPlay: false,
+        looping: false,
+        draggableProgressBar: false,
+        showControls: false,
+        useRootNavigator: true,
+        showOptions: false,
+      );
+      gsyVideoPlayerController.setMediaCodec(enableCodec);
+      gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
+      gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers, cacheWithPlay: false);
+      gsyVideoPlayerController.addEventsListener((VideoEventType event) {
+        if (event == VideoEventType.onError) {
+          hasError.value = true;
+          isPlaying.value = false;
+          log('video error ${gsyVideoPlayerController.value.what}', name: 'video_player');
+        } else {
+          mediaPlayerControllerInitialized.value = gsyVideoPlayerController.value.onVideoPlayerInitialized;
+          if (mediaPlayerControllerInitialized.value) {
+            isPlaying.value = gsyVideoPlayerController.value.isPlaying;
+          }
+        }
+      });
+    }
   }
 
   void setDataSource(String url) async {
@@ -642,7 +688,12 @@ class VideoController with ChangeNotifier {
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
-    player.dispose();
+    if (videoPlayerIndex == 4) {
+      player.dispose();
+    } else {
+      chewieController.dispose();
+      await gsyVideoPlayerController.dispose();
+    }
   }
 
   void refresh() async {
@@ -680,11 +731,23 @@ class VideoController with ChangeNotifier {
     }
     settings.videoFitIndex.value = index;
 
-    key.currentState?.update(fit: settings.videofitArrary[index]);
+    if (videoPlayerIndex == 4) {
+      key.currentState?.update(fit: settings.videofitArrary[index]);
+    } else {
+      gsyVideoPlayerController.setBoxFit(settings.videofitArrary[index]);
+    }
   }
 
   void togglePlayPause() {
-    mediaPlayerController.player.playOrPause();
+    if (videoPlayerIndex == 4) {
+      mediaPlayerController.player.playOrPause();
+    } else {
+      if (isPlaying.value) {
+        gsyVideoPlayerController.pause();
+      } else {
+        gsyVideoPlayerController.resume();
+      }
+    }
   }
 
   void prevPlayChannel() {
