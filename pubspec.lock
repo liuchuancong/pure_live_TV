@@ -626,10 +626,10 @@ packages:
     dependency: "direct main"
     description:
       name: logger
-      sha256: "697d067c60c20999686a0add96cf6aba723b3aa1f83ecf806a8097231529ec32"
+      sha256: be4b23575aac7ebf01f225a241eb7f6b5641eeaf43c6a8613510fc2f8cf187d1
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.4.0"
+    version: "2.5.0"
   logging:
     dependency: transitive
     description:
@@ -1182,6 +1182,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.3.0+3"
+  tars_dart:
+    dependency: "direct main"
+    description:
+      path: "simple_live_core/packages/tars_dart"
+      ref: HEAD
+      resolved-ref: "97f1d45c144f15b8f2937b7cc6bad39d438c3cd1"
+      url: "https://github.com/xiaoyaocz/dart_simple_live.git"
+    source: git
+    version: "0.1.0"
   term_glyph:
     dependency: transitive
     description:

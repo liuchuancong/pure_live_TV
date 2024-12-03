@@ -486,22 +486,9 @@ class LivePlayController extends StateController {
       };
     } else if (currentSite.id == 'huya') {
       headers = {
-        'Accept': '*/*',
-        'Origin': 'https://www.huya.com',
-        'Referer': 'https://www.huya.com/',
+        "user-agent": "HYSDK(Windows, 20000308)",
         "Cookie": settings.huyaCookie.value,
       };
-      var fakeUseragent = FakeUserAgent.getRandomUserAgent();
-      headers['User-Agent'] = fakeUseragent['userAgent'];
-      headers['sec-ch-ua'] =
-          'Google Chrome;v=${fakeUseragent['v']}, Chromium;v=${fakeUseragent['v']}, Not=A?Brand;v=24';
-      headers['sec-ch-ua-platform'] = fakeUseragent['device'];
-      headers['sec-fetch-dest'] = 'document';
-      headers['sec-fetch-mode'] = 'navigate';
-      headers['sec-fetch-site'] = 'same-origin';
-      headers['sec-fetch-user'] = '?1';
-      headers['accept'] =
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9';
     }
     videoController = VideoController(
       playerKey: playerKey,

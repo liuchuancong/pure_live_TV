@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
+import 'package:tars_dart/tars/net/base_tars_http.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_site.dart';
@@ -15,6 +16,8 @@ import 'package:pure_live/model/live_search_result.dart';
 import 'package:pure_live/core/danmaku/huya_danmaku.dart';
 import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
+import 'package:pure_live/model/tars/get_cdn_token_req.dart';
+import 'package:pure_live/model/tars/get_cdn_token_resp.dart';
 
 class HuyaSite implements LiveSite {
   @override
@@ -22,7 +25,7 @@ class HuyaSite implements LiveSite {
 
   @override
   String name = "虎牙直播";
-
+  final BaseTarsHttp tupClient = BaseTarsHttp("http://wup.huya.com", "liveui");
   @override
   LiveDanmaku getDanmaku() => HuyaDanmaku();
 
@@ -129,26 +132,11 @@ class HuyaSite implements LiveSite {
       ];
     }
     for (var item in urlData.bitRates) {
-      var urls = <String>[];
-      for (var line in urlData.lines) {
-        var src = line.line;
-        src += "/${line.streamName}.flv";
-        src = src.replaceAll("http://", "https://");
-        var parms = urlData.isXingxiu
-            ? line.flvAntiCode
-            : processAnticode(
-                line.flvAntiCode,
-                line.streamName,
-              );
-        src += "?$parms";
-        if (item.bitRate > 0) {
-          src += "&ratio=${item.bitRate}";
-        }
-
-        urls.add(src);
-      }
       qualities.add(LivePlayQuality(
-        data: urls,
+        data: {
+          "urls": urlData.lines,
+          "bitRate": item.bitRate,
+        },
         quality: item.name,
       ));
     }
@@ -158,7 +146,25 @@ class HuyaSite implements LiveSite {
 
   @override
   Future<List<String>> getPlayUrls({required LiveRoom detail, required LivePlayQuality quality}) async {
-    return quality.data as List<String>;
+    var ls = <String>[];
+    for (var element in quality.data["urls"]) {
+      var line = element as HuyaLineModel;
+      var url = await getPlayUrl(line, quality.data["bitRate"]);
+      ls.add(url);
+    }
+    return ls;
+  }
+
+  Future<String> getPlayUrl(HuyaLineModel line, int bitRate) async {
+    var req = GetCdnTokenReq();
+    req.cdnType = line.cdnType;
+    req.streamName = line.streamName;
+    var resp = await tupClient.tupRequest("getCdnTokenInfo", req, GetCdnTokenResp());
+    var url = '${line.line}/${resp.streamName}.flv?${resp.flvAntiCode}&codec=264';
+    if (bitRate > 0) {
+      url += "&ratio=$bitRate";
+    }
+    return url;
   }
 
   @override
@@ -243,6 +249,7 @@ class HuyaSite implements LiveSite {
               flvAntiCode: currentStream["sFlvAntiCode"].toString(),
               hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
               streamName: currentStream["sStreamName"].toString(),
+              cdnType: item["sCdnType"].toString(),
             ));
           }
         }
@@ -511,17 +518,20 @@ enum HuyaLineType {
 
 class HuyaLineModel {
   final String line;
+  final String cdnType;
   final String flvAntiCode;
   final String hlsAntiCode;
   final String streamName;
   final HuyaLineType lineType;
-
+  int bitRate;
   HuyaLineModel({
     required this.line,
     required this.lineType,
     required this.flvAntiCode,
     required this.hlsAntiCode,
     required this.streamName,
+    required this.cdnType,
+    this.bitRate = 0,
   });
   @override
   String toString() {
