@@ -216,6 +216,7 @@ class DanmakuViewer extends StatelessWidget {
                       height: MediaQuery.of(context).size.height * controller.danmakuArea.value,
                       controller: controller.danmakuController,
                       speed: controller.danmakuSpeed.value.toInt(),
+                      speedCorrectionInMilliseconds: 5000,
                       maxBulletHeight: controller.danmakuFontSize * 1.5,
                       massiveMode: true, // disabled by default
                       child: Container(),

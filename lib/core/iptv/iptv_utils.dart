@@ -33,8 +33,8 @@ class IptvUtils {
     ));
     try {
       var dir = await getApplicationCacheDirectory();
-      final m3ufile = File("${dir.path}${Platform.pathSeparator}global.m3u");
-      await dio.download('https://live.fanmingming.com/tv/m3u/global.m3u', m3ufile.path);
+      final m3ufile = File("${dir.path}${Platform.pathSeparator}hot.m3u");
+      await dio.download('https://live.fanmingming.com/tv/m3u/ipv6.m3u', m3ufile.path);
     } catch (e) {
       log(e.toString());
     }
@@ -67,6 +67,9 @@ class IptvUtils {
         for (M3uItem item in m3uList.items) {
           list.add(item);
         }
+      } else {
+        await loadNetworkM3u8();
+        list = await readRecommandsItems();
       }
     } catch (e) {
       log(e.toString());
