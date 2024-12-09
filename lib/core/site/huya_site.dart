@@ -232,10 +232,6 @@ class HuyaSite implements LiveSite {
       //读取可用线路
       var lines = data['stream']['flv']['multiLine'];
       var baseSteamInfoList = data['stream']['baseSteamInfoList'] as List<dynamic>;
-      baseSteamInfoList = baseSteamInfoList
-          .where(
-              (item) => item["iPCPriorityRate"] > 0 && item["iWebPriorityRate"] > 0 && item["iMobilePriorityRate"] > 0)
-          .toList();
       for (var item in lines) {
         if ((item["url"]?.toString() ?? "").isNotEmpty) {
           var currentStream =
