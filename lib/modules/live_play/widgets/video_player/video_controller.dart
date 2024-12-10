@@ -150,7 +150,7 @@ class VideoController with ChangeNotifier {
   final danmakuArea = 1.0.obs;
   final danmakuSpeed = 8.0.obs;
   final danmakuFontSize = 16.0.obs;
-  final danmakuFontBorder = 2.0.obs;
+  final danmakuFontBorder = 4.0.obs;
   final danmakuOpacity = 1.0.obs;
 
   VideoController({
@@ -636,7 +636,7 @@ class VideoController with ChangeNotifier {
       settings.danmakuFontSize.value = data;
       updateDanmaku();
     });
-    danmakuFontBorder.value = PrefUtil.getDouble('danmakuFontBorder') ?? 0.5;
+    danmakuFontBorder.value = PrefUtil.getDouble('danmakuFontBorder') ?? 4.0;
     danmakuFontBorder.listen((data) {
       PrefUtil.setDouble('danmakuFontBorder', data);
       settings.danmakuFontBorder.value = data;
@@ -874,18 +874,15 @@ class VideoController with ChangeNotifier {
         danmakuOpacity.value = handleDanmuKeyRight(items, danmakuOpacity.value);
       case DanmakuSettingClickType.danmakuStorke:
         Map<dynamic, String> items = {
-          2.0: "2",
-          4.0: "4",
-          6.0: "6",
-          8.0: "8",
-          10.0: "10",
-          12.0: "12",
-          14.0: "14",
-          16.0: "16",
-          18.0: "18",
-          20.0: "20",
-          22.0: "22",
-          24.0: "24",
+          0.0: "2",
+          1.0: "4",
+          2.0: "6",
+          3.0: "8",
+          4.0: "10",
+          5.0: "12",
+          6.0: "14",
+          7.0: "16",
+          8.0: "18",
         };
         danmakuFontBorder.value = handleDanmuKeyRight(items, danmakuFontBorder.value);
         break;
@@ -960,19 +957,15 @@ class VideoController with ChangeNotifier {
         danmakuOpacity.value = handleDanmuKeyLeft(items, danmakuOpacity.value);
       case DanmakuSettingClickType.danmakuStorke:
         Map<dynamic, String> items = {
-          1.0: "2",
-          2.0: "2",
-          4.0: "4",
-          6.0: "6",
-          8.0: "8",
-          10.0: "10",
-          12.0: "12",
-          14.0: "14",
-          16.0: "16",
-          18.0: "18",
-          20.0: "20",
-          22.0: "22",
-          24.0: "24",
+          0.0: "2",
+          1.0: "4",
+          2.0: "6",
+          3.0: "8",
+          4.0: "10",
+          5.0: "12",
+          6.0: "14",
+          7.0: "16",
+          8.0: "18",
         };
         danmakuFontBorder.value = handleDanmuKeyLeft(items, danmakuFontBorder.value);
         break;
