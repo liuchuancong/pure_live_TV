@@ -6,6 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:canvas_danmaku/danmaku_controller.dart';
+import 'package:canvas_danmaku/models/danmaku_option.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
@@ -151,7 +152,6 @@ class VideoController with ChangeNotifier {
   final danmakuFontSize = 16.0.obs;
   final danmakuFontBorder = 2.0.obs;
   final danmakuOpacity = 1.0.obs;
-  final mergeDanmuRating = 0.0.obs;
 
   VideoController({
     required this.playerKey,
@@ -173,7 +173,6 @@ class VideoController with ChangeNotifier {
     danmakuFontSize.value = settings.danmakuFontSize.value;
     danmakuFontBorder.value = settings.danmakuFontBorder.value;
     danmakuOpacity.value = settings.danmakuOpacity.value;
-    mergeDanmuRating.value = settings.mergeDanmuRating.value;
     videoPlayerIndex = settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
     scrollController = ScrollController();
@@ -613,6 +612,9 @@ class VideoController with ChangeNotifier {
   void initDanmaku() {
     hideDanmaku.value = PrefUtil.getBool('hideDanmaku') ?? false;
     hideDanmaku.listen((data) {
+      if (data) {
+        danmakuController.clear();
+      }
       PrefUtil.setBool('hideDanmaku', data);
       settings.hideDanmaku.value = data;
     });
@@ -620,32 +622,31 @@ class VideoController with ChangeNotifier {
     danmakuArea.listen((data) {
       PrefUtil.setDouble('danmakuArea', data);
       settings.danmakuArea.value = data;
+      updateDanmaku();
     });
     danmakuSpeed.value = PrefUtil.getDouble('danmakuSpeed') ?? 8;
     danmakuSpeed.listen((data) {
       PrefUtil.setDouble('danmakuSpeed', data);
       settings.danmakuSpeed.value = data;
+      updateDanmaku();
     });
     danmakuFontSize.value = PrefUtil.getDouble('danmakuFontSize') ?? 16;
     danmakuFontSize.listen((data) {
       PrefUtil.setDouble('danmakuFontSize', data);
       settings.danmakuFontSize.value = data;
+      updateDanmaku();
     });
-    danmakuFontBorder.value = PrefUtil.getDouble('danmakuFontBorder') ?? 2.0;
+    danmakuFontBorder.value = PrefUtil.getDouble('danmakuFontBorder') ?? 0.5;
     danmakuFontBorder.listen((data) {
       PrefUtil.setDouble('danmakuFontBorder', data);
       settings.danmakuFontBorder.value = data;
+      updateDanmaku();
     });
     danmakuOpacity.value = PrefUtil.getDouble('danmakuOpacity') ?? 1.0;
     danmakuOpacity.listen((data) {
       PrefUtil.setDouble('danmakuOpacity', data);
       settings.danmakuOpacity.value = data;
-    });
-
-    mergeDanmuRating.value = PrefUtil.getDouble('mergeDanmuRating') ?? 1.0;
-    mergeDanmuRating.listen((data) {
-      PrefUtil.setDouble('mergeDanmuRating', data);
-      settings.mergeDanmuRating.value = data;
+      updateDanmaku();
     });
 
     videoFit.listen((p0) {
@@ -654,6 +655,16 @@ class VideoController with ChangeNotifier {
         settings.videoFitIndex.value = index;
       }
     });
+  }
+
+  updateDanmaku() {
+    danmakuController.updateOption(DanmakuOption(
+      fontSize: danmakuFontSize.value,
+      area: danmakuArea.value,
+      duration: danmakuSpeed.value.toInt(),
+      opacity: danmakuOpacity.value,
+      fontWeight: danmakuFontBorder.value.toInt(),
+    ));
   }
 
   void sendDanmaku(LiveMessage msg) {
@@ -779,16 +790,6 @@ class VideoController with ChangeNotifier {
           1: "开",
         };
         hideDanmaku.value = handleDanmuKeyRight(items, hideDanmaku.value ? 0 : 1) == 0;
-      case DanmakuSettingClickType.danmakuMerge:
-        Map<dynamic, String> items = {
-          0.0: "不合并",
-          0.25: "相似度小于25%",
-          0.5: "相似度小于50%",
-          0.75: "相似度小于75%",
-          1.0: "全部合并",
-        };
-        mergeDanmuRating.value = handleDanmuKeyRight(items, mergeDanmuRating.value);
-        break;
       case DanmakuSettingClickType.danmakuSize:
         Map<dynamic, String> items = {
           10.0: "10",
@@ -900,16 +901,6 @@ class VideoController with ChangeNotifier {
           1: "开",
         };
         hideDanmaku.value = handleDanmuKeyLeft(items, hideDanmaku.value ? 0 : 1) == 0;
-      case DanmakuSettingClickType.danmakuMerge:
-        Map<dynamic, String> items = {
-          0.0: "不合并",
-          0.25: "相似度小于25%",
-          0.5: "相似度小于50%",
-          0.75: "相似度小于75%",
-          1.0: "全部合并",
-        };
-        mergeDanmuRating.value = handleDanmuKeyLeft(items, mergeDanmuRating.value);
-        break;
       case DanmakuSettingClickType.danmakuSize:
         Map<dynamic, String> items = {
           10.0: "10",
@@ -996,12 +987,4 @@ class VideoController with ChangeNotifier {
 
 enum BottomButtonClickType { favorite, refresh, playPause, danmaku, settings, qualityName, changeLine, boxFit }
 
-enum DanmakuSettingClickType {
-  danmakuAble,
-  danmakuMerge,
-  danmakuSize,
-  danmakuSpeed,
-  danmakuArea,
-  danmakuOpacity,
-  danmakuStorke
-}
+enum DanmakuSettingClickType { danmakuAble, danmakuSize, danmakuSpeed, danmakuArea, danmakuOpacity, danmakuStorke }

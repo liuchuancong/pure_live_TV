@@ -7,7 +7,6 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
-import 'package:pure_live/modules/live_play/danmu_merge.dart';
 import 'package:pure_live/modules/live_play/widgets/index.dart';
 
 class LivePlayController extends StateController {
@@ -342,11 +341,8 @@ class LivePlayController extends StateController {
     liveDanmaku.onMessage = (msg) {
       if (msg.type == LiveMessageType.chat) {
         if (settings.shieldList.every((element) => !msg.message.contains(element))) {
-          if (!DanmuMerge().isRepeat(msg.message)) {
-            DanmuMerge().add(msg.message);
-            messages.add(msg);
-            videoController?.sendDanmaku(msg);
-          }
+          messages.add(msg);
+          videoController?.sendDanmaku(msg);
         }
       }
     };

@@ -553,23 +553,6 @@ class DanmakuSetting extends StatelessWidget {
                         controller.hideDanmaku.toggle();
                       },
                     )),
-                Obx(() => SettingsItemWidget(
-                      useFocus: false,
-                      focusNode: AppFocusNode(),
-                      selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuMerge,
-                      title: "弹幕合并",
-                      items: {
-                        0.0: "不合并",
-                        0.25: "相似度小于25%",
-                        0.5: "相似度小于50%",
-                        0.75: "相似度小于75%",
-                        1.0: "全部合并",
-                      },
-                      value: controller.mergeDanmuRating.value,
-                      onChanged: (e) {
-                        controller.mergeDanmuRating.value = e;
-                      },
-                    )),
                 AppStyle.vGap24,
                 Obx(() => SettingsItemWidget(
                       useFocus: false,

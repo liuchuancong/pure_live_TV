@@ -88,10 +88,6 @@ class SettingsService extends GetxController {
       PrefUtil.setString('huyaCookie', value);
     });
 
-    mergeDanmuRating.listen((value) {
-      PrefUtil.setDouble('mergeDanmuRating', value);
-    });
-
     webPort.listen((value) {
       PrefUtil.setString('webPort', value);
     });
@@ -244,8 +240,6 @@ class SettingsService extends GetxController {
   final enableFullScreenDefault = (PrefUtil.getBool('enableFullScreenDefault') ?? false).obs;
 
   final enableCodec = (PrefUtil.getBool('enableCodec') ?? true).obs;
-
-  final mergeDanmuRating = (PrefUtil.getDouble('mergeDanmuRating') ?? 0.0).obs;
 
   final enableAutoShutDownTime = (PrefUtil.getBool('enableAutoShutDownTime') ?? false).obs;
   final doubleExit = (PrefUtil.getBool('doubleExit') ?? true).obs;
@@ -565,7 +559,6 @@ class SettingsService extends GetxController {
     json['shieldList'] = shieldList.map<String>((e) => e.toString()).toList();
     json['hotAreasList'] = hotAreasList.map<String>((e) => e.toString()).toList();
 
-    json['mergeDanmuRating'] = mergeDanmuRating.value;
     json['themeColorSwitch'] = themeColorSwitch.value;
     json['webPort'] = webPort.value;
     json['webPortEnable'] = false;
@@ -602,7 +595,6 @@ class SettingsService extends GetxController {
       'bilibiliCookie': '',
       'huyaCookie': '',
       'shieldList': [],
-      'mergeDanmuRating': 0.0,
       "hotAreasList": [],
       "webPortEnable": false,
       "webPort": "9527",
