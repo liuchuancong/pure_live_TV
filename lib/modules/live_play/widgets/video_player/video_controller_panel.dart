@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:canvas_danmaku/danmaku_screen.dart';
+import 'package:canvas_danmaku/models/danmaku_option.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
@@ -204,24 +205,17 @@ class DanmakuViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Opacity(
-          opacity: controller.hideDanmaku.value ? 0 : controller.danmakuOpacity.value,
-          child: controller.danmakuArea.value == 0.0
-              ? Container()
-              : controller.livePlayController.success.value
-                  ? BarrageWall(
-                      safeBottomHeight: 50,
-                      key: ValueKey(controller.room.roomId),
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * controller.danmakuArea.value,
-                      controller: controller.danmakuController,
-                      speed: controller.danmakuSpeed.value.toInt(),
-                      speedCorrectionInMilliseconds: 5000,
-                      maxBulletHeight: controller.danmakuFontSize * 1.5,
-                      massiveMode: true, // disabled by default
-                      child: Container(),
-                    )
-                  : Container(),
+    return Obx(() => DanmakuScreen(
+          createdController: (c) {
+            controller.setDanmukuController(c);
+          },
+          option: DanmakuOption(
+            fontSize: controller.danmakuFontSize.value,
+            area: controller.danmakuArea.value,
+            duration: controller.danmakuSpeed.value.toInt(),
+            opacity: controller.danmakuOpacity.value,
+            fontWeight: controller.danmakuFontBorder.value.toInt(),
+          ),
         ));
   }
 }

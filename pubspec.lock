@@ -73,6 +73,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.2.0"
+  canvas_danmaku:
+    dependency: "direct main"
+    description:
+      name: canvas_danmaku
+      sha256: "25bb2dd9a3f46cc47a926a7a3aacca461ae8c6290e9d44767cddc0f9ac4f9c91"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.5"
   change_app_package_name:
     dependency: "direct dev"
     description:

@@ -4,12 +4,12 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:canvas_danmaku/danmaku_controller.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
+import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
-import 'package:pure_live/modules/live_play/widgets/video_player/danmaku_text.dart';
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
@@ -144,7 +144,7 @@ class VideoController with ChangeNotifier {
   }
 
   // Danmaku player control
-  BarrageWallController danmakuController = BarrageWallController();
+  late DanmakuController danmakuController;
   final hideDanmaku = false.obs;
   final danmakuArea = 1.0.obs;
   final danmakuSpeed = 8.0.obs;
@@ -658,17 +658,10 @@ class VideoController with ChangeNotifier {
 
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value || !livePlayController.success.value) return;
-    if (!danmakuController.isEnabled) return;
-    danmakuController.send([
-      Bullet(
-        child: DanmakuText(
-          msg.message,
-          fontSize: danmakuFontSize.value,
-          strokeWidth: danmakuFontBorder.value,
-          color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b),
-        ),
-      ),
-    ]);
+    danmakuController.addDanmaku(DanmakuContentItem(
+      msg.message,
+      color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b),
+    ));
   }
 
   @override
@@ -682,8 +675,6 @@ class VideoController with ChangeNotifier {
   destory() async {
     cancleFocus();
     cancledanmakuFocus();
-    danmakuController.disable();
-    await danmakuController.dispose();
     isPlaying.value = false;
     hasError.value = false;
     livePlayController.success.value = false;
@@ -996,6 +987,10 @@ class VideoController with ChangeNotifier {
         break;
       default:
     }
+  }
+
+  void setDanmukuController(DanmakuController controller) {
+    danmakuController = controller;
   }
 }
 
