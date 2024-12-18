@@ -9,7 +9,7 @@ import 'package:pure_live/common/base/base_controller.dart';
 
 class HomeController extends BasePageController {
   var datetime = "00:00".obs;
-  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区", "帮助支持"];
+  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区"];
 
   late ScrollController listScrollController;
 
@@ -19,8 +19,7 @@ class HomeController extends BasePageController {
     Remix.apps_line,
     Remix.search_2_line,
     Icons.history,
-    Icons.view_module_rounded,
-    Icons.monetization_on_outlined
+    Icons.view_module_rounded
   ];
   var rooms = <LiveRoom>[].obs;
   var currentNodeIndex = 1.obs;

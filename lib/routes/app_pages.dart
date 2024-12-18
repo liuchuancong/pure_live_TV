@@ -75,10 +75,6 @@ class AppPages {
       bindings: [SearchBinding()],
     ),
     GetPage(
-      name: RoutePath.kDonate,
-      page: DonatePage.new,
-    ),
-    GetPage(
       name: RoutePath.kAreaRooms,
       page: AreasRoomPage.new,
       bindings: [AreaRoomsBinding()],

@@ -34,9 +34,6 @@ class HomePage extends GetView<HomeController> {
       case 5:
         Get.toNamed(RoutePath.kFavoriteAreas);
         break;
-      case 6:
-        Get.toNamed(RoutePath.kDonate);
-        break;
       default:
     }
   }

@@ -34,7 +34,7 @@ class IptvUtils {
     try {
       var dir = await getApplicationCacheDirectory();
       final m3ufile = File("${dir.path}${Platform.pathSeparator}hot.m3u");
-      await dio.download('https://live.fanmingming.com/tv/m3u/ipv6.m3u', m3ufile.path);
+      await dio.download('https://raw.githubusercontent.com/YanG-1989/m3u/master/Gather.m3u', m3ufile.path);
     } catch (e) {
       log(e.toString());
     }
@@ -60,6 +60,7 @@ class IptvUtils {
   static Future<List<M3uItem>> readRecommandsItems() async {
     List<M3uItem> list = [];
     try {
+      await loadNetworkM3u8();
       var dir = await getApplicationCacheDirectory();
       final m3ufile = File("${dir.path}${Platform.pathSeparator}hot.m3u");
       if (m3ufile.existsSync()) {
@@ -67,9 +68,6 @@ class IptvUtils {
         for (M3uItem item in m3uList.items) {
           list.add(item);
         }
-      } else {
-        await loadNetworkM3u8();
-        list = await readRecommandsItems();
       }
     } catch (e) {
       log(e.toString());
