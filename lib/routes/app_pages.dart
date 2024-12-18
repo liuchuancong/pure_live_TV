@@ -5,7 +5,6 @@ import 'package:pure_live/modules/home/home_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/sync/sync_binding.dart';
 import 'package:pure_live/modules/home/home_binding.dart';
-import 'package:pure_live/modules/about/donate_page.dart';
 import 'package:pure_live/modules/search/search_page.dart';
 import 'package:pure_live/modules/areas/areas_binding.dart';
 import 'package:pure_live/modules/account/account_bing.dart';
