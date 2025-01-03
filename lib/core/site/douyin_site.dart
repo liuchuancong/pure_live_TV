@@ -273,8 +273,6 @@ class DouyinSite implements LiveSite {
     );
 
     var renderData = RegExp(r'\{\\"state\\":\{\\"appStore.*?\]\\n').firstMatch(result)?.group(0) ?? "";
-
-    developer.log(renderData.toString(), name: "str");
     var str = renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', "");
 
     var renderDataJson = json.decode(str);
