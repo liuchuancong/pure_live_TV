@@ -199,6 +199,7 @@ class LivePlayController extends StateController {
         List<String> except = ['kuaishou', 'iptv', 'cc'];
         if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
           initDanmau();
+          liveDanmaku.stop();
           liveDanmaku.start(liveRoom.danmakuData);
         }
       } else {
@@ -254,6 +255,7 @@ class LivePlayController extends StateController {
       List<String> except = ['kuaishou', 'iptv', 'cc'];
       if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
         initDanmau();
+        liveDanmaku.stop();
         liveDanmaku.start(liveRoom.danmakuData);
       }
     }

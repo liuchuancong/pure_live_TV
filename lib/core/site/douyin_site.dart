@@ -272,10 +272,12 @@ class DouyinSite implements LiveSite {
       },
     );
 
-    var renderData = RegExp(r'\{\\"state\\":\{\\"isLiveModal.*?\]\\n').firstMatch(result)?.group(0) ?? "";
-    var str = renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', "");
-    var renderDataJson = json.decode(str);
+    var renderData = RegExp(r'\{\\"state\\":\{\\"appStore.*?\]\\n').firstMatch(result)?.group(0) ?? "";
 
+    developer.log(renderData.toString(), name: "str");
+    var str = renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', "");
+
+    var renderDataJson = json.decode(str);
     return renderDataJson["state"];
     // return renderDataJson["app"]["initialState"]["roomStore"]["roomInfo"]
     //         ["room"]["id_str"]

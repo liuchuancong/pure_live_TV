@@ -60,6 +60,19 @@ class IptvUtils {
   static Future<List<M3uItem>> readRecommandsItems() async {
     List<M3uItem> list = [];
     try {
+      Dio dio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 30),
+        //响应时间为3秒
+        receiveTimeout: const Duration(seconds: 30),
+      ));
+      var m3u8Url = 'https://raw.githubusercontent.com/YanG-1989/m3u/master/Gather.m3u';
+      Response response = await dio.get(m3u8Url);
+      final m3uList = M3uList.load(response.data);
+      for (M3uItem item in m3uList.items) {
+        list.add(item);
+      }
+      log(list.toString());
+    } catch (e) {
       await loadNetworkM3u8();
       var dir = await getApplicationCacheDirectory();
       final m3ufile = File("${dir.path}${Platform.pathSeparator}hot.m3u");
@@ -69,7 +82,6 @@ class IptvUtils {
           list.add(item);
         }
       }
-    } catch (e) {
       log(e.toString());
     }
     return list;
