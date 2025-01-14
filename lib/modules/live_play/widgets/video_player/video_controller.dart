@@ -595,7 +595,6 @@ class VideoController with ChangeNotifier {
           case BottomButtonClickType.boxFit:
             setVideoFit();
             break;
-          default:
         }
       }
     }
@@ -886,7 +885,6 @@ class VideoController with ChangeNotifier {
         };
         danmakuFontBorder.value = handleDanmuKeyRight(items, danmakuFontBorder.value);
         break;
-      default:
     }
   }
 
@@ -969,7 +967,6 @@ class VideoController with ChangeNotifier {
         };
         danmakuFontBorder.value = handleDanmuKeyLeft(items, danmakuFontBorder.value);
         break;
-      default:
     }
   }
 

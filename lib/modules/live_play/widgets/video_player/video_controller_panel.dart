@@ -90,7 +90,7 @@ class ErrorWidget extends StatelessWidget {
             onPressed: () => controller.refresh(),
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor: Colors.white.withOpacity(0.2),
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
             ),
             child: Text(
               S.of(context).retry,

@@ -18,7 +18,7 @@ class DanmakuText extends StatelessWidget {
   });
 
   Color get borderColor {
-    var brightness = ((color.red * 299) + (color.green * 587) + (color.blue * 114)) / 1000;
+    var brightness = ((color.r * 299) + (color.g * 587) + (color.b * 114)) / 1000;
     return brightness > 70 ? Colors.black54 : Colors.white54;
   }
 

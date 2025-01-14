@@ -114,7 +114,6 @@ class _RoomCardState extends State<RoomCard> {
           settingsService.currentPlayListNodeIndex.value =
               rooms.indexWhere((element) => element.roomId == widget.room.roomId);
           break;
-        default:
       }
     }
   }
@@ -317,7 +316,7 @@ class CountChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       shape: const StadiumBorder(),
-      color: color.withOpacity(0.8),
+      color: color.withValues(alpha: 0.8),
       shadowColor: Colors.transparent,
       elevation: 0,
       child: Padding(
@@ -328,13 +327,13 @@ class CountChip extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               size: dense ? 18 : 20,
             ),
             Text(
               count,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: dense ? 15 : 18,
                   ),
             ),
