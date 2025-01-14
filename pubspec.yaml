@@ -102,7 +102,7 @@ dependencies:
   logger: ^2.0.2+1
   crypto: ^3.0.3
   brotli: ^0.6.0
-  device_info_plus: ^11.1.0
+  device_info_plus: ^11.2.0
   cupertino_icons: ^1.0.2
   remixicon: ^1.0.0 #Remix图标
   lottie: ^3.1.0 #Lottie动画
@@ -113,7 +113,7 @@ dependencies:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0
   flutter_inappwebview: ^6.0.0-beta.25
-  connectivity_plus: ^6.0.3 
+  connectivity_plus: ^6.1.1 
   qr_flutter: ^4.1.0 
   # 给web端通信
   dia: ^0.1.4
