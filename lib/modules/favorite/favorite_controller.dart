@@ -64,7 +64,6 @@ class FavoriteController extends GetxController {
 
   Future<bool> onRefresh() async {
     loading.value = true;
-    bool hasError = false;
     List<Future<LiveRoom>> futures = [];
     if (settings.favoriteRooms.value.isEmpty) {
       loading.value = false;
@@ -94,16 +93,19 @@ class FavoriteController extends GetxController {
       for (var i = 0; i < groupedList.length; i++) {
         final rooms = await Future.wait(groupedList[i]);
         for (var room in rooms) {
-          settings.updateRoom(room);
+          try {
+            settings.updateRoom(room);
+          } catch (e) {
+            debugPrint('Error during refresh for a single request: $e');
+          }
         }
         syncRooms();
       }
     } catch (e) {
-      hasError = true;
       loading.value = false;
     }
     isFirstLoad = false;
     loading.value = false;
-    return hasError;
+    return false;
   }
 }
