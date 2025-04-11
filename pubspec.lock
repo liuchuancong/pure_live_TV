@@ -514,7 +514,7 @@ packages:
   gsy_video_player:
     dependency: "direct main"
     description:
-      path: "E:\\project\\gsy_video_player"
+      path: "C:\\Users\\XA-158\\projects\\flutter\\gsy_video_player"
       relative: false
     source: path
     version: "0.0.6"
@@ -989,18 +989,18 @@ packages:
     dependency: transitive
     description:
       name: sensors_plus
-      sha256: "6898cd4490ffc27fea4de5976585e92fae55355175d46c6c3b3d719d42f9e230"
+      sha256: "905282c917c6bb731c242f928665c2ea15445aa491249dea9d98d7c79dc8fd39"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "5.0.1"
+    version: "6.1.1"
   sensors_plus_platform_interface:
     dependency: transitive
     description:
       name: sensors_plus_platform_interface
-      sha256: bc472d6cfd622acb4f020e726433ee31788b038056691ba433fec80e448a094f
+      sha256: "58815d2f5e46c0c41c40fb39375d3f127306f7742efe3b891c0b1c87e2b5cd5d"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.2.0"
+    version: "2.0.1"
   share_handler:
     dependency: "direct main"
     description:
