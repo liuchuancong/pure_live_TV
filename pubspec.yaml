@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.8.5
+version: 1.8.6
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -123,7 +123,7 @@ dependencies:
   dia_cors: ^0.1.2
   group_button: ^5.3.4
   gsy_video_player: 
-    path: C:/Users/XA-158/projects/flutter/gsy_video_player
+    path: E:/project/gsy_video_player
 dependency_overrides: 
   media_kit:
     git:

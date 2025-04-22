@@ -514,7 +514,7 @@ packages:
   gsy_video_player:
     dependency: "direct main"
     description:
-      path: "C:\\Users\\XA-158\\projects\\flutter\\gsy_video_player"
+      path: "E:\\project\\gsy_video_player"
       relative: false
     source: path
     version: "0.0.6"
