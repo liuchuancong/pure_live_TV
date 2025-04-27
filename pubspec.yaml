@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.8.6
+version: 1.8.7
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -79,7 +79,7 @@ dependencies:
     git:
       url: https://github.com/LucasXu0/flutter_url_protocol.git
       commit: 77a8420
-  protobuf: ^3.1.0
+  protobuf: ^4.0.0
   fixnum: ^1.1.0
   dio: ^5.3.3
   dio_cookie_manager: ^3.1.1
@@ -123,7 +123,7 @@ dependencies:
   dia_cors: ^0.1.2
   group_button: ^5.3.4
   gsy_video_player: 
-    path: E:/project/gsy_video_player
+    git: https://github.com/liuchuancong/gsy_video_player.git
 dependency_overrides: 
   media_kit:
     git:
