@@ -497,11 +497,10 @@ packages:
   get:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: d5b843d7b0f231df6757ac65bd06553b04fcb81f
-      url: "https://github.com/jonataslaw/getx"
-    source: git
+      name: get
+      sha256: b3294002946e99314c341bff0b4f3094e631a1f8cf37785e93aa7c2f04b0768e
+      url: "https://pub.flutter-io.cn"
+    source: hosted
     version: "5.0.0-release-candidate-9.3.2"
   group_button:
     dependency: "direct main"
