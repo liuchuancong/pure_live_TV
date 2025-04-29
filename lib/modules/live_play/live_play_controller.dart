@@ -482,9 +482,14 @@ class LivePlayController extends StateController {
         "referer": "https://live.bilibili.com"
       };
     } else if (currentSite.id == 'huya') {
+      var validTs = 20000308;
+      var sysTs = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      var last8 = sysTs % 100000000;
+      var currentTs = last8 > validTs ? last8 : (validTs + sysTs ~/ 100);
       headers = {
-        "user-agent": "HYSDK(Windows, 20000308)",
-        "Cookie": settings.huyaCookie.value,
+        "user-agent": "HYSDK(Windows, $currentTs)",
+        "origin": "https://www.huya.com",
+        "cookie": settings.huyaCookie.value,
       };
     }
     videoController = VideoController(
