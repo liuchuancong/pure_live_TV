@@ -28,7 +28,7 @@ class HuyaSite implements LiveSite {
   final BaseTarsHttp tupClient = BaseTarsHttp("http://wup.huya.com", "liveui");
   @override
   LiveDanmaku getDanmaku() => HuyaDanmaku();
-
+  String? playUserAgent;
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [
@@ -153,6 +153,25 @@ class HuyaSite implements LiveSite {
       ls.add(url);
     }
     return ls;
+  }
+
+  // 每次访问播放虎牙都需要获取一次，不太合理，倾向于在客户端获取保存替换
+  Future<String> getHuYaUA() async {
+    if (playUserAgent != null) {
+      return playUserAgent!;
+    }
+    try {
+      var result = await HttpClient.instance.getJson(
+        "https://github.iill.moe/xiaoyaocz/dart_simple_live/master/assets/play_config.json",
+        queryParameters: {
+          "ts": DateTime.now().millisecondsSinceEpoch,
+        },
+      );
+      playUserAgent = json.decode(result)['huya']['user_agent'];
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return playUserAgent ?? "HYSDK(Windows, 30000002)_APP(pc_exe&6080100&official)_SDK(trans&2.23.0.4969)";
   }
 
   Future<String> getPlayUrl(HuyaLineModel line, int bitRate) async {

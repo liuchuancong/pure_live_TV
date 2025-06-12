@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/core/site/huya_site.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
@@ -482,12 +483,9 @@ class LivePlayController extends StateController {
         "referer": "https://live.bilibili.com"
       };
     } else if (currentSite.id == 'huya') {
-      var validTs = 20000308;
-      var sysTs = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      var last8 = sysTs % 100000000;
-      var currentTs = last8 > validTs ? last8 : (validTs + sysTs ~/ 100);
+      var ua = await HuyaSite().getHuYaUA();
       headers = {
-        "user-agent": "HYSDK(Windows, $currentTs)",
+        "user-agent": ua,
         "origin": "https://www.huya.com",
         "cookie": settings.huyaCookie.value,
       };
