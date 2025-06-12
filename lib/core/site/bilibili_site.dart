@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:crypto/crypto.dart';
+import 'dart:developer' as developer;
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
@@ -35,6 +36,7 @@ class BiliBiliSite implements LiveSite {
 
   String buvid3 = "";
   String buvid4 = "";
+  String accessId = "";
   Future<Map<String, String>> getHeader() async {
     if (buvid3.isEmpty) {
       var buvidInfo = await getBuvid();
@@ -92,14 +94,17 @@ class BiliBiliSite implements LiveSite {
   Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
     const baseUrl = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList";
     var url =
-        "$baseUrl?platform=web&parent_area_id=${category.areaType}&area_id=${category.areaId}&sort_type=&page=$page";
+        "$baseUrl?platform=web&parent_area_id=${category.areaType}&area_id=${category.areaId}&sort_type=&page=$page&w_webid=${await getAccessId()}";
+
     var queryParams = await getWbiSign(url);
+
+    developer.log(queryParams.toString(), name: "queryParams");
     var result = await HttpClient.instance.getJson(
       baseUrl,
       queryParameters: queryParams,
       header: await getHeader(),
     );
-
+    developer.log(result.toString(), name: "result");
     var hasMore = result["data"]["has_more"] == 1;
     var items = <LiveRoom>[];
     for (var item in result["data"]["list"]) {
@@ -547,5 +552,21 @@ class BiliBiliSite implements LiveSite {
         "b_4": "",
       };
     }
+  }
+
+  Future<String> getAccessId() async {
+    if (accessId.isNotEmpty) {
+      return accessId;
+    }
+
+    // 获取 access_id
+    var resp = await HttpClient.instance.getText(
+      "https://live.bilibili.com/lol",
+      queryParameters: {},
+      header: await getHeader(),
+    );
+    var id = RegExp(r'"access_id":"(.*?)"').firstMatch(resp)?.group(1)?.replaceAll("\\", "");
+    accessId = id ?? "";
+    return accessId;
   }
 }
