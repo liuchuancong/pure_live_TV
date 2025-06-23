@@ -187,7 +187,7 @@ class AreasPage extends GetView<AreasListController> {
     );
   }
 
-  handleLiveArea(LiveArea area) async {
+  Future<void> handleLiveArea(LiveArea area) async {
     if (controller.settingsService.isFavoriteArea(area)) {
       var result = await Utils.showAlertDialog("确定要删除此分区吗?", title: "删除分区");
       if (!result) {

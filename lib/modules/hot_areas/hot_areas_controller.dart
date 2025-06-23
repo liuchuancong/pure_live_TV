@@ -23,7 +23,7 @@ class HotAreasController extends BaseController {
 
   Color get themeColor => HexColor(settingsController.themeColorSwitch.value);
 
-  void onChanged(id, value) {
+  void onChanged(String id, bool value) {
     var index = sites.map((element) => element.id).toList().indexWhere((note) => note == id);
     HotAreasModel origin = sites[index];
     sites.removeAt(index);

@@ -33,8 +33,6 @@ class LivePlayPage extends GetWidget<LivePlayController> {
     return true;
   }
 
-  handleResolutions() {}
-
   Widget buildVideoPlayer() {
     return Hero(
       tag: controller.room.roomId!,

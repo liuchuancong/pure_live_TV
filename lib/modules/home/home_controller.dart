@@ -60,7 +60,7 @@ class HomeController extends BasePageController {
     focusNodes[currentNodeIndex.value].requestFocus();
   }
 
-  toSync() {
+  void toSync() {
     Get.toNamed(RoutePath.kSync);
   }
 

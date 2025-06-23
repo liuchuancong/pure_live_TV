@@ -55,11 +55,8 @@ class SettingsPage extends GetView<SettingsService> {
                 focusNode: controller.videoPlayerNode,
                 title: "播放器设置",
                 items: const {
-                  0: "Exo播放器",
-                  1: "系统播放器",
-                  2: "IJK播放器",
-                  3: "阿里播放器",
-                  4: "Mpv播放器",
+                  0: "Mpv播放器",
+                  1: "ExoPlayer播放器",
                 },
                 value: controller.videoPlayerIndex.value,
                 onChanged: (e) {

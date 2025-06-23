@@ -81,7 +81,7 @@ class BasePageController<T> extends BaseController {
     await loadData();
   }
 
-  listener(event) {
+  void listener(RouteChangeType event) {
     if (autoRefresh.value && event == RouteChangeType.pop) {
       settingsService.currentPlayListNodeIndex.value = 0;
       throttle(() {

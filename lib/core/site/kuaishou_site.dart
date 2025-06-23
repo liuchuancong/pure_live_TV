@@ -220,7 +220,7 @@ class KuaishowSite implements LiveSite {
     return LiveCategoryResult(hasMore: hasMore, items: items);
   }
 
-  registerDid() async {
+  Future registerDid() async {
     var res = await HttpClient.instance.postJson(
         'https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/misc2?v=3.9.49&kpn=KS_GAME_LIVE_PC',
         header: headers,
@@ -228,7 +228,7 @@ class KuaishowSite implements LiveSite {
     return res;
   }
 
-  misc2dic(did) {
+  Map<String, Object> misc2dic(String? did) {
     var map = {
       'common': {
         'identity_package': {'device_id': did, 'global_id': ''},
@@ -274,7 +274,7 @@ class KuaishowSite implements LiveSite {
   }
 
   // 获取pageId
-  getPageId() {
+  String getPageId() {
     var pageId = '';
     const charset = 'bjectSymhasOwnProp-0123456789ABCDEFGHIJKLMNQRTUVWXYZ_dfgiklquvxz';
     for (var i = 0; i < 16; i++) {
@@ -284,7 +284,7 @@ class KuaishowSite implements LiveSite {
     return pageId += '_$currentTime';
   }
 
-  Future getCookie(url) async {
+  Future getCookie(String url) async {
     final dio = Dio();
     final cookieJar = CookieJar();
     dio.interceptors.add(CookieManager(cookieJar));
@@ -301,7 +301,7 @@ class KuaishowSite implements LiveSite {
     }
   }
 
-  getWebsocketUrl(liveRoomId) async {
+  Future getWebsocketUrl(String liveRoomId) async {
     var variables = {'liveStreamId': liveRoomId};
     var query =
         r'query WebSocketInfoQuery($liveStreamId: String) {\n  webSocketInfo(liveStreamId: $liveStreamId) {\n    token\n    webSocketUrls\n    __typename\n  }\n}\n';

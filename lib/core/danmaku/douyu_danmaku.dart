@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:pure_live/common/models/live_message.dart';
+import '../common/binary_writer.dart';
 import 'package:pure_live/core/common/core_log.dart';
+import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
-
-import '../common/binary_writer.dart';
 
 class DouyuDanmaku implements LiveDanmaku {
   @override
@@ -48,11 +46,9 @@ class DouyuDanmaku implements LiveDanmaku {
     webScoketUtils?.connect();
   }
 
-  void joinRoom(roomId) {
-    webScoketUtils
-        ?.sendMessage(serializeDouyu("type@=loginreq/roomid@=$roomId/"));
-    webScoketUtils?.sendMessage(
-        serializeDouyu("type@=joingroup/rid@=$roomId/gid@=-9999/"));
+  void joinRoom(String roomId) {
+    webScoketUtils?.sendMessage(serializeDouyu("type@=loginreq/roomid@=$roomId/"));
+    webScoketUtils?.sendMessage(serializeDouyu("type@=joingroup/rid@=$roomId/gid@=-9999/"));
   }
 
   @override
@@ -121,8 +117,7 @@ class DouyuDanmaku implements LiveDanmaku {
   String? deserializeDouyu(List<int> buffer) {
     try {
       var reader = BinaryReader(Uint8List.fromList(buffer));
-      int fullMsgLength =
-          reader.readInt32(endian: Endian.little); //fullMsgLength
+      int fullMsgLength = reader.readInt32(endian: Endian.little); //fullMsgLength
       reader.readInt32(endian: Endian.little); //fullMsgLength2
       int bodyLength = fullMsgLength - 9;
       reader.readShort(endian: Endian.little); //packType

@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
-import 'package:pure_live/plugins/local_http.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
@@ -124,7 +123,7 @@ class SettingsService extends GetxController {
   };
   final themeModeName = (PrefUtil.getString('themeMode') ?? "System").obs;
 
-  get themeMode => SettingsService.themeModes[themeModeName.value]!;
+  ThemeMode get themeMode => SettingsService.themeModes[themeModeName.value]!;
 
   void changeThemeMode(String mode) {
     themeModeName.value = mode;
@@ -199,7 +198,7 @@ class SettingsService extends GetxController {
 
   final currentRouteName = ''.obs;
 
-  get language => SettingsService.languages[languageName.value]!;
+  Locale get language => SettingsService.languages[languageName.value]!;
 
   void changeLanguage(String value) {
     languageName.value = value;
@@ -266,18 +265,6 @@ class SettingsService extends GetxController {
     }
   }
 
-  void changeWebListen(port, enable) {
-    try {
-      if (enable) {
-        LocalHttpServer().startServer(port);
-      } else {
-        LocalHttpServer().closeServer();
-      }
-    } catch (e) {
-      SmartDialog.showToast('打开故障,请稍后重试');
-    }
-  }
-
   List<String> get resolutionsList => resolutions;
 
   List<BoxFit> get videofitArrary => videofitList;
@@ -336,7 +323,7 @@ class SettingsService extends GetxController {
 
   final currentBoxImageIndex = (PrefUtil.getInt('currentBoxImageIndex') ?? 0).obs;
 
-  getImage() async {
+  Future<void> getImage() async {
     var url = currentBoxImageSources.map((e) => e.values.first).toList()[currentBoxImageIndex.value];
     if (url == "default") {
       currentBoxImage.value = "";
@@ -365,7 +352,7 @@ class SettingsService extends GetxController {
     return favoriteRooms.any((element) => element.roomId == room.roomId);
   }
 
-  LiveRoom getLiveRoomByRoomId(roomId, platform) {
+  LiveRoom getLiveRoomByRoomId(String roomId, String platform) {
     if (!favoriteRooms.any((element) => element.roomId == roomId && element.platform == platform) &&
         !historyRooms.any((element) => element.roomId == roomId && element.platform == platform)) {
       return LiveRoom(
@@ -418,7 +405,7 @@ class SettingsService extends GetxController {
     return true;
   }
 
-  updateRooms(List<LiveRoom> rooms) {
+  void updateRooms(List<LiveRoom> rooms) {
     favoriteRooms.value = rooms;
   }
 
@@ -494,7 +481,7 @@ class SettingsService extends GetxController {
     return true;
   }
 
-  setBilibiliCookit(cookie) {
+  void setBilibiliCookit(String cookie) {
     final BiliBiliAccountService biliAccountService = Get.find<BiliBiliAccountService>();
     if (biliAccountService.cookie.isEmpty || biliAccountService.uid == 0) {
       biliAccountService.resetCookie(cookie);
@@ -565,7 +552,7 @@ class SettingsService extends GetxController {
     return json;
   }
 
-  defaultConfig() {
+  Map<String, dynamic> defaultConfig() {
     Map<String, dynamic> json = {
       "favoriteRooms": [],
       "favoriteAreas": [],

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.8.9
+version: 1.9.0
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -34,14 +34,14 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   #hashlib
-  hashlib: ^1.12.0
+  hashlib: ^2.0.0
   flutter_js: ^0.8.2
   html: ^0.15.4
   http: ^1.1.0
   url_launcher: ^6.1.12
   web_socket_channel: ^3.0.0
   cached_network_image: ^3.3.0
-  canvas_danmaku: ^0.2.5
+  canvas_danmaku: ^0.2.7
   # ui related
   flutter_staggered_grid_view: ^0.7.0
   #Widget
@@ -56,22 +56,9 @@ dependencies:
     git:
       url:  https://github.com/xiaoyaocz/dart_simple_live.git
       path: ./simple_live_core/packages/tars_dart
-  media_kit:
-    git:
-      url: https://github.com/media-kit/media-kit.git
-      ref: main
-      path: ./media_kit
-  media_kit_video:
-    git:
-      url: https://github.com/media-kit/media-kit.git
-      ref: main
-      path: ./media_kit_video
-  media_kit_libs_video:
-    git:
-      url: https://github.com/media-kit/media-kit.git
-      ref: main
-      path: ./libs/universal/media_kit_libs_video
-
+  media_kit: ^1.1.11 # Primary package.
+  media_kit_video: ^1.2.5 # For video rendering.
+  media_kit_libs_video: ^1.0.5 # Native video dependencies.
   share_handler: ^0.0.19
   bordered_text: ^2.0.0
   flutter_color: ^2.1.0
@@ -92,7 +79,7 @@ dependencies:
   flutter_cache_manager: ^3.3.1
   # utils
   get: ^5.0.0-release-candidate-9.3.2
-  intl: ^0.19.0
+  intl: ^0.20.2
   timezone: ^0.10.0
   date_format: ^2.0.7
   path: ^1.8.3
@@ -121,24 +108,7 @@ dependencies:
   dia_router: ^0.1.7
   dia_cors: ^0.1.2
   group_button: ^5.3.4
-  gsy_video_player: 
-    git: https://github.com/liuchuancong/gsy_video_player.git
-dependency_overrides: 
-  media_kit:
-    git:
-      url: https://github.com/media-kit/media-kit.git
-      ref: main
-      path: ./media_kit
-  media_kit_video:
-    git:
-      url: https://github.com/media-kit/media-kit.git
-      ref: main
-      path: ./media_kit_video
-  media_kit_libs_video:
-    git:
-      url: https://github.com/media-kit/media-kit.git
-      ref: main
-      path: ./libs/universal/media_kit_libs_video
+  awesome_video_player: ^1.0.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -150,7 +120,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # flutter pub run flutter_launcher_icons
 flutter_icons:

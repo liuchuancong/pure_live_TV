@@ -9,7 +9,7 @@ class Iterum extends StatefulWidget {
   // ignore: library_private_types_in_public_api
   _IterumState createState() => _IterumState();
 
-  static revive(BuildContext context) {
+  static void revive(BuildContext context) {
     context.findAncestorStateOfType<_IterumState>()!.revive();
   }
 }

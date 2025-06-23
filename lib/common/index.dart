@@ -9,7 +9,7 @@ export 'widgets/index.dart';
 export 'package:flutter_color/flutter_color.dart';
 export 'package:flutter/material.dart';
 export 'package:pure_live/modules/favorite/favorite_controller.dart';
-export 'package:gsy_video_player/gsy_video_player.dart';
+export 'package:awesome_video_player/awesome_video_player.dart';
 export 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 export 'package:flutter_localizations/flutter_localizations.dart';
 export 'package:pure_live/common/index.dart';

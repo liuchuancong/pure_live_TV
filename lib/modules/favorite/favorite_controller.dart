@@ -45,7 +45,7 @@ class FavoriteController extends GetxController {
     loading.value = false;
   }
 
-  handleFollowLongTap(LiveRoom room) async {
+  Future<void> handleFollowLongTap(LiveRoom room) async {
     if (settings.isFavorite(room)) {
       var result = await Utils.showAlertDialog("确定要取消关注此房间吗?", title: "取消关注");
       if (!result) {

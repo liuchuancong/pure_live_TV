@@ -31,7 +31,7 @@ class CoreLog {
     logger.e("${DateTime.now().toString()}\n$message", stackTrace: stackTrace);
   }
 
-  static void error(e) {
+  static void error(dynamic e) {
     onPrintLog?.call(Level.error, e.toString());
     logger.e(
       "${DateTime.now().toString()}\n${e.toString()}",

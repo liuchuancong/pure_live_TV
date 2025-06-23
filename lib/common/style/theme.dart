@@ -16,7 +16,7 @@ class AppColors {
     accentColor: const Color(0xfff06595),
   );
 
-  get darkThemeData {
+  ThemeData get darkThemeData {
     return ThemeData(
         useMaterial3: true,
         colorSchemeSeed: primaryColor,

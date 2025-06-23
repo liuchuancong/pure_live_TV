@@ -24,7 +24,7 @@ class ScreenDevice {
     return Device.phone;
   }
 
-  static autoStartWebServer() async {
+  static Future<void> autoStartWebServer() async {
     await const Duration(seconds: 2).delay();
     var device = await getDeviceType();
     if (Platform.isAndroid && device == Device.tv) {

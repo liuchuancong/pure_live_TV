@@ -28,7 +28,7 @@ class SyncController extends BaseController {
     super.onClose();
   }
 
-  initIpAddresses() async {
+  Future<void> initIpAddresses() async {
     ipAddress.value = await getLocalIP();
     port.value = settingServer.webPort.value;
   }

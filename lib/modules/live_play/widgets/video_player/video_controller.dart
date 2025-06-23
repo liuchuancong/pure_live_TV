@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
@@ -92,10 +91,7 @@ class VideoController with ChangeNotifier {
 
   int doubleClickTimeStamp = 0;
 
-  // Video player control
-  late GsyVideoPlayerController gsyVideoPlayerController;
-
-  late ChewieController chewieController;
+  late BetterPlayerController betterPlayerController;
 
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
@@ -190,7 +186,7 @@ class VideoController with ChangeNotifier {
     initPagesConfig();
   }
 
-  initPagesConfig() {
+  void initPagesConfig() {
     initVideoController();
     initDanmaku();
     initOperateFocusNodes();
@@ -204,7 +200,6 @@ class VideoController with ChangeNotifier {
         showChangeNameFlag.value = false;
         if (isPlaying.value) {
           // 取消手动暂停
-
           isActivePause.value = false;
         }
       }
@@ -302,7 +297,7 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 0) {
       player = Player();
       mediaPlayerController = settings.playerCompatMode.value
           ? media_kit_video.VideoController(player,
@@ -333,46 +328,45 @@ class VideoController with ChangeNotifier {
         }
       });
     } else {
-      bool useDefaultIjkPlayer = false;
-      if (room.platform == Sites.bilibiliSite) {
-        if (getVideoPlayerType(videoPlayerIndex) == GsyVideoPlayerType.sysytem ||
-            getVideoPlayerType(videoPlayerIndex) == GsyVideoPlayerType.ali) {
-          useDefaultIjkPlayer = true;
-        }
-      }
-      gsyVideoPlayerController = GsyVideoPlayerController(
-          allowBackgroundPlayback: false,
-          player: useDefaultIjkPlayer ? GsyVideoPlayerType.ijk : getVideoPlayerType(videoPlayerIndex));
-      chewieController = ChewieController(
-        videoPlayerController: gsyVideoPlayerController,
-        autoPlay: false,
-        looping: false,
-        draggableProgressBar: false,
-        showControls: false,
-        useRootNavigator: true,
-        showOptions: false,
+      BetterPlayerConfiguration betterPlayerConfiguration = BetterPlayerConfiguration(
+        aspectRatio: 16 / 9,
+        autoPlay: true,
+        fit: videoFit.value,
+        autoDetectFullscreenDeviceOrientation: true,
+        allowedScreenSleep: false,
+        autoDetectFullscreenAspectRatio: true,
+        errorBuilder: (context, errorMessage) => Container(),
       );
-      gsyVideoPlayerController.setMediaCodec(enableCodec);
-      gsyVideoPlayerController.setMediaCodecTexture(enableCodec);
-      gsyVideoPlayerController.setNetWorkBuilder(datasource, mapHeadData: headers, cacheWithPlay: false);
-      gsyVideoPlayerController.addEventsListener((VideoEventType event) {
-        if (event == VideoEventType.onError) {
-          hasError.value = true;
-          isPlaying.value = false;
-          log('video error ${gsyVideoPlayerController.value.what}', name: 'video_player');
-        } else {
-          mediaPlayerControllerInitialized.value = gsyVideoPlayerController.value.onVideoPlayerInitialized;
-          if (mediaPlayerControllerInitialized.value) {
-            isPlaying.value = gsyVideoPlayerController.value.isPlaying;
-          }
-        }
-      });
+      betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
+      betterPlayerController.setControlsEnabled(false);
+      betterPlayerController.addEventsListener(mobileStateListener);
+      setDataSource(datasource);
+    }
+  }
+
+  dynamic mobileStateListener(BetterPlayerEvent state) {
+    if (betterPlayerController.videoPlayerController != null) {
+      if (state.betterPlayerEventType == BetterPlayerEventType.exception) {
+        hasError.value = betterPlayerController.videoPlayerController?.value.hasError ?? true;
+      }
+      isPlaying.value = betterPlayerController.isPlaying() ?? false;
+      isBuffering.value = betterPlayerController.isBuffering() ?? false;
     }
   }
 
   void setDataSource(String url) async {
-    player.pause();
-    player.open(Media(url, httpHeaders: headers));
+    if (videoPlayerIndex == 0) {
+      player.pause();
+      player.open(Media(url, httpHeaders: headers));
+    } else {
+      betterPlayerController.setupDataSource(BetterPlayerDataSource(
+        BetterPlayerDataSourceType.network,
+        url,
+        liveStream: true,
+        headers: headers,
+      ));
+      betterPlayerController.pause();
+    }
   }
 
   void onKeyEvent(KeyEvent key) {
@@ -385,21 +379,21 @@ class VideoController with ChangeNotifier {
     }, 100);
   }
 
-  handleDanmuKeyLeft(items, value) {
+  dynamic handleDanmuKeyLeft(Map<dynamic, String> items, value) {
     if (items.keys.first == value) {
       return items.keys.last;
     }
     return items.keys.elementAt(items.keys.toList().indexOf(value) - 1);
   }
 
-  handleDanmuKeyRight(items, value) {
+  dynamic handleDanmuKeyRight(Map<dynamic, String> items, value) {
     if (items.keys.last == value) {
       return items.keys.first;
     }
     return items.keys.elementAt(items.keys.toList().indexOf(value) + 1);
   }
 
-  handleKeyEvent(KeyEvent key) {
+  void handleKeyEvent(KeyEvent key) {
     if (key is KeyUpEvent) {
       return;
     }
@@ -656,7 +650,7 @@ class VideoController with ChangeNotifier {
     });
   }
 
-  updateDanmaku() {
+  void updateDanmaku() {
     danmakuController.updateOption(DanmakuOption(
       fontSize: danmakuFontSize.value,
       area: danmakuArea.value,
@@ -668,10 +662,12 @@ class VideoController with ChangeNotifier {
 
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value || !livePlayController.success.value) return;
-    danmakuController.addDanmaku(DanmakuContentItem(
-      msg.message,
-      color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b),
-    ));
+    if (danmakuController.running) {
+      danmakuController.addDanmaku(DanmakuContentItem(
+        msg.message,
+        color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b),
+      ));
+    }
   }
 
   @override
@@ -682,18 +678,18 @@ class VideoController with ChangeNotifier {
     super.dispose();
   }
 
-  destory() async {
+  Future<void> destory() async {
     cancleFocus();
     cancledanmakuFocus();
     isPlaying.value = false;
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
-    if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 0) {
       player.dispose();
     } else {
-      chewieController.dispose();
-      await gsyVideoPlayerController.dispose();
+      betterPlayerController.removeEventsListener(mobileStateListener);
+      betterPlayerController.dispose();
     }
   }
 
@@ -732,22 +728,19 @@ class VideoController with ChangeNotifier {
     }
     settings.videoFitIndex.value = index;
 
-    if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 0) {
       key.currentState?.update(fit: settings.videofitArrary[index]);
     } else {
-      gsyVideoPlayerController.setBoxFit(settings.videofitArrary[index]);
+      betterPlayerController.setOverriddenFit(videoFit.value);
+      betterPlayerController.retryDataSource();
     }
   }
 
   void togglePlayPause() {
-    if (videoPlayerIndex == 4) {
+    if (videoPlayerIndex == 0) {
       mediaPlayerController.player.playOrPause();
     } else {
-      if (isPlaying.value) {
-        gsyVideoPlayerController.pause();
-      } else {
-        gsyVideoPlayerController.resume();
-      }
+      isPlaying.value ? betterPlayerController.pause() : betterPlayerController.play();
     }
   }
 
@@ -781,7 +774,7 @@ class VideoController with ChangeNotifier {
     livePlayController.playFavoriteChannel();
   }
 
-  handleDanmuKeyRightEvent() {
+  void handleDanmuKeyRightEvent() {
     switch (currentDanmukuClickType.value) {
       case DanmakuSettingClickType.danmakuAble:
         Map<dynamic, String> items = {
@@ -888,7 +881,7 @@ class VideoController with ChangeNotifier {
     }
   }
 
-  handleDanmuKeyLeftEvent() {
+  void handleDanmuKeyLeftEvent() {
     switch (currentDanmukuClickType.value) {
       case DanmakuSettingClickType.danmakuAble:
         Map<dynamic, String> items = {

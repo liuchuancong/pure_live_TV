@@ -11,7 +11,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
-  handleMainPageButtonTap(int index) {
+  void handleMainPageButtonTap(int index) {
     controller.currentNodeIndex.value = index + 1;
     controller.pageController.unselectAll();
     controller.pageController.selectIndex(index);

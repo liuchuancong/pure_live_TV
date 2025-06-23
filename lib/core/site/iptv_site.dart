@@ -35,7 +35,7 @@ class IptvSite implements LiveSite {
 
   Future<List<LiveArea>> getSubCategores(IptvCategory liveCategory) async {
     List<LiveArea> subs = [];
-    List<M3uItem> lists = await IptvUtils.readCategoryItems(liveCategory.path);
+    List<M3uItem> lists = await IptvUtils.readCategoryItems(liveCategory.path!);
     for (var item in lists) {
       subs.add(LiveArea(
         areaPic: '',

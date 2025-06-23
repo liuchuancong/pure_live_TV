@@ -431,7 +431,7 @@ class HuyaSite implements LiveSite {
     return result["data"]["uid"].toString();
   }
 
-  String getUUid(cookie, streamName) {
+  String getUUid(String cookie, String streamName) {
     return getUid(cookie, streamName).toString();
   }
 

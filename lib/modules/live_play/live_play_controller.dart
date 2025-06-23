@@ -215,7 +215,7 @@ class LivePlayController extends StateController {
     }
   }
 
-  resetGlobalListState() {
+  void resetGlobalListState() {
     var index = settings.currentPlayList.indexWhere((element) =>
         element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform);
     currentChannelIndex.value = index > -1 ? index : 0;
@@ -278,7 +278,7 @@ class LivePlayController extends StateController {
     return false;
   }
 
-  disPoserPlayer() {
+  void disPoserPlayer() {
     videoController?.dispose();
     videoController = null;
     liveDanmaku.stop();
@@ -287,7 +287,7 @@ class LivePlayController extends StateController {
     liveDanmaku.stop();
   }
 
-  handleCurrentLineAndQuality({
+  void handleCurrentLineAndQuality({
     ReloadDataType reloadDataType = ReloadDataType.refreash,
     int line = 0,
     int quality = 0,
@@ -437,7 +437,7 @@ class LivePlayController extends StateController {
     }
   }
 
-  restoryQualityAndLines() {
+  void restoryQualityAndLines() {
     playUrls.value = [];
     currentLineIndex.value = 0;
     qualites.value = [];
@@ -558,7 +558,7 @@ class LivePlayController extends StateController {
     });
   }
 
-  playFavoriteChannel() {
+  void playFavoriteChannel() {
     //读取正在直播的频道
     _currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
     var liveChannels = settings.currentPlayList;
@@ -606,7 +606,7 @@ class LivePlayController extends StateController {
     }, 100);
   }
 
-  handleKeyEvent(KeyEvent key) {
+  void handleKeyEvent(KeyEvent key) {
     // 点击上下键切换播放线路
     if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
       prevChannel();

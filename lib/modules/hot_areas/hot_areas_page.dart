@@ -8,7 +8,7 @@ import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
 class HotAreasPage extends GetView<HotAreasController> {
   const HotAreasPage({super.key});
 
-  _buildListData() {
+  List<Obx> _buildListData() {
     return List.generate(
       controller.sites.length,
       (index) => Obx(

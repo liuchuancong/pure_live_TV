@@ -44,7 +44,7 @@ class _RoomCardState extends State<RoomCard> {
     AppNavigator.toLiveRoomDetail(liveRoom: widget.room);
   }
 
-  handleCurrentPlayList() {
+  void handleCurrentPlayList() {
     final SettingsService settingsService = Get.find<SettingsService>();
     if (widget.isIptv) {
       var rooms = [];
@@ -118,7 +118,7 @@ class _RoomCardState extends State<RoomCard> {
     }
   }
 
-  ImageProvider? getRoomAvatar(avatar) {
+  ImageProvider? getRoomAvatar(String avatar) {
     try {
       return CachedNetworkImageProvider(avatar, errorListener: (err) {
         log("CachedNetworkImageProvider: Image failed to load!");
@@ -128,7 +128,7 @@ class _RoomCardState extends State<RoomCard> {
     }
   }
 
-  handleFollowLongTap() async {
+  Future<void> handleFollowLongTap() async {
     final SettingsService settingsService = Get.find<SettingsService>();
     if (settingsService.isFavorite(widget.room)) {
       var result = await Utils.showAlertDialog("确定要取消关注此房间吗?", title: "取消关注");
@@ -275,7 +275,7 @@ class _RoomCardState extends State<RoomCard> {
                   width: 40.w,
                   height: 40.h,
                   child: CircleAvatar(
-                    foregroundImage: widget.room.avatar!.isNotEmpty ? getRoomAvatar(widget.room.avatar) : null,
+                    foregroundImage: widget.room.avatar!.isNotEmpty ? getRoomAvatar(widget.room.avatar!) : null,
                     backgroundColor: Theme.of(context).disabledColor,
                   ),
                 ),

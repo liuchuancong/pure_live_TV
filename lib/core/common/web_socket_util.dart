@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:web_socket_channel/io.dart';
 
 enum SocketStatus {
@@ -113,6 +112,7 @@ class WebScoketUtils {
     onMessage?.call(data);
   }
 
+  // ignore: strict_top_level_inference
   void onError(e, s) {
     status = SocketStatus.failed;
     onClose?.call(e.toString());

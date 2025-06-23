@@ -105,7 +105,7 @@ class LocalHttpServer {
     }
   }
 
-  closeServer() async {
+  Future<void> closeServer() async {
     app.close();
   }
 }

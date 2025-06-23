@@ -24,8 +24,20 @@ class _VideoPlayerState extends State<VideoPlayer> {
     );
   }
 
+  Widget _buildExoPlayerVideo() {
+    return Stack(
+      children: [
+        BetterPlayer(
+          key: widget.controller.playerKey,
+          controller: widget.controller.betterPlayerController,
+        ),
+        _buildVideoPanel(),
+      ],
+    );
+  }
+
   Widget _buildVideo() {
-    if (widget.controller.videoPlayerIndex == 4) {
+    if (widget.controller.videoPlayerIndex == 0) {
       return Obx(() => widget.controller.mediaPlayerControllerInitialized.value
           ? media_kit_video.Video(
               key: widget.controller.key,
@@ -51,32 +63,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
               ),
             ));
     } else {
-      return Stack(
-        children: [
-          Obx(
-            () => widget.controller.mediaPlayerControllerInitialized.value
-                ? Chewie(
-                    controller: widget.controller.chewieController,
-                  )
-                : Card(
-                    elevation: 0,
-                    margin: const EdgeInsets.all(0),
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                    clipBehavior: Clip.antiAlias,
-                    color: Get.theme.focusColor,
-                    child: CachedNetworkImage(
-                      cacheManager: CustomCacheManager.instance,
-                      imageUrl: widget.controller.room.cover!,
-                      fit: BoxFit.fill,
-                      errorWidget: (context, error, stackTrace) => const Center(
-                        child: Icon(Icons.live_tv_rounded, size: 48),
-                      ),
-                    ),
-                  ),
-          ),
-          _buildVideoPanel(),
-        ],
-      );
+      return _buildExoPlayerVideo();
     }
   }
 
