@@ -362,6 +362,7 @@ class VideoController with ChangeNotifier {
       betterPlayerController.setupDataSource(BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
         url,
+        videoFormat: room.platform == Sites.bilibiliSite ? BetterPlayerVideoFormat.hls : null,
         liveStream: true,
         headers: headers,
       ));
