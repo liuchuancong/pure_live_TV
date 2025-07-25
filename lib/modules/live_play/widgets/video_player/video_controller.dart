@@ -169,7 +169,8 @@ class VideoController with ChangeNotifier {
     danmakuFontSize.value = settings.danmakuFontSize.value;
     danmakuFontBorder.value = settings.danmakuFontBorder.value;
     danmakuOpacity.value = settings.danmakuOpacity.value;
-    videoPlayerIndex = settings.videoPlayerIndex.value;
+    videoPlayerIndex =
+        settings.videoPlayerIndex.value == 1 && room.platform == Sites.huyaSite ? 0 : settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
     scrollController = ScrollController();
     scrollController.addListener(() {
