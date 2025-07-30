@@ -286,7 +286,7 @@ class SettingsService extends GetxController {
     }
   }
 
-  static const List<String> players = ['ExoPlayer', 'IjkPlayer', 'MpvPlayer'];
+  static const List<String> players = ['MpvPlayer', 'ExoPlayer'];
 
   List<String> get playerlist => players;
 
