@@ -1,6 +1,6 @@
 import 'package:pure_live/app/app_focus_node.dart';
 
-enum LiveStatus { live, offline, replay, unknown }
+enum LiveStatus { live, offline, replay, unknown, banned }
 
 enum Platforms { huya, bilibili, douyu, douyin, unknown }
 
@@ -93,6 +93,49 @@ class LiveRoom {
         'notice': notice,
         'introduction': introduction
       };
+
+  /// 创建一个新的LiveRoom实例，并用提供的值更新指定字段
+  LiveRoom copyWith({
+    String? roomId,
+    String? userId,
+    String? link,
+    String? title,
+    String? nick,
+    String? avatar,
+    String? cover,
+    String? area,
+    String? watching,
+    String? followers,
+    String? platform,
+    String? introduction,
+    String? notice,
+    bool? status,
+    dynamic data,
+    dynamic danmakuData,
+    bool? isRecord,
+    LiveStatus? liveStatus,
+  }) {
+    return LiveRoom(
+      roomId: roomId ?? this.roomId,
+      userId: userId ?? this.userId,
+      link: link ?? this.link,
+      title: title ?? this.title,
+      nick: nick ?? this.nick,
+      avatar: avatar ?? this.avatar,
+      cover: cover ?? this.cover,
+      area: area ?? this.area,
+      watching: watching ?? this.watching,
+      followers: followers ?? this.followers,
+      platform: platform ?? this.platform,
+      introduction: introduction ?? this.introduction,
+      notice: notice ?? this.notice,
+      status: status ?? this.status,
+      data: data ?? this.data,
+      danmakuData: danmakuData ?? this.danmakuData,
+      isRecord: isRecord ?? this.isRecord,
+      liveStatus: liveStatus ?? this.liveStatus,
+    );
+  }
 
   @override
   bool operator ==(covariant LiveRoom other) => platform == other.platform && roomId == other.roomId;

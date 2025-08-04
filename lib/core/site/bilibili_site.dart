@@ -31,7 +31,7 @@ class BiliBiliSite implements LiveSite {
   final SettingsService settings = Get.find<SettingsService>();
 
   static const String kDefaultUserAgent =
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0";
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36";
   static const String kDefaultReferer = "https://live.bilibili.com/";
 
   String buvid3 = "";
@@ -44,11 +44,7 @@ class BiliBiliSite implements LiveSite {
       buvid4 = buvidInfo["b_4"] ?? "";
     }
     return cookie.isEmpty
-        ? {
-            "user-agent": kDefaultUserAgent,
-            "referer": kDefaultReferer,
-            "cookie": 'buvid3=$buvid3;buvid4=$buvid4;',
-          }
+        ? {"user-agent": kDefaultUserAgent, "referer": kDefaultReferer, "cookie": 'buvid3=$buvid3;buvid4=$buvid4;'}
         : {
             "cookie": cookie.contains("buvid3") ? cookie : "$cookie;buvid3=$buvid3;buvid4=$buvid4;",
             "user-agent": kDefaultUserAgent,
@@ -61,10 +57,7 @@ class BiliBiliSite implements LiveSite {
     List<LiveCategory> categories = [];
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/room/v1/Area/getList",
-      queryParameters: {
-        "need_entrance": 1,
-        "parent_id": 0,
-      },
+      queryParameters: {"need_entrance": 1, "parent_id": 0},
       header: await getHeader(),
     );
     for (var item in result["data"]) {
@@ -80,11 +73,7 @@ class BiliBiliSite implements LiveSite {
         );
         subs.add(subCategory);
       }
-      var category = LiveCategory(
-        children: subs,
-        id: item["id"].toString(),
-        name: asT<String?>(item["name"]) ?? "",
-      );
+      var category = LiveCategory(children: subs, id: item["id"].toString(), name: asT<String?>(item["name"]) ?? "");
       categories.add(category);
     }
     return categories;
@@ -99,26 +88,23 @@ class BiliBiliSite implements LiveSite {
     var queryParams = await getWbiSign(url);
 
     developer.log(queryParams.toString(), name: "queryParams");
-    var result = await HttpClient.instance.getJson(
-      baseUrl,
-      queryParameters: queryParams,
-      header: await getHeader(),
-    );
+    var result = await HttpClient.instance.getJson(baseUrl, queryParameters: queryParams, header: await getHeader());
     developer.log(result.toString(), name: "result");
     var hasMore = result["data"]["has_more"] == 1;
     var items = <LiveRoom>[];
     for (var item in result["data"]["list"]) {
       var roomItem = LiveRoom(
-          roomId: item["roomid"].toString(),
-          title: item["title"].toString(),
-          cover: "${item["cover"]}@400w.jpg",
-          nick: item["uname"].toString(),
-          avatar: item["face"].toString(),
-          watching: item["online"].toString(),
-          liveStatus: LiveStatus.live,
-          area: item["area_name"].toString(),
-          status: true,
-          platform: Sites.bilibiliSite);
+        roomId: item["roomid"].toString(),
+        title: item["title"].toString(),
+        cover: "${item["cover"]}@400w.jpg",
+        nick: item["uname"].toString(),
+        avatar: item["face"].toString(),
+        watching: item["online"].toString(),
+        liveStatus: LiveStatus.live,
+        area: item["area_name"].toString(),
+        status: true,
+        platform: Sites.bilibiliSite,
+      );
       items.add(roomItem);
     }
     return LiveCategoryResult(hasMore: hasMore, items: items);
@@ -145,10 +131,7 @@ class BiliBiliSite implements LiveSite {
     }
 
     for (var item in result["data"]["playurl_info"]["playurl"]["stream"][0]["format"][0]["codec"][0]["accept_qn"]) {
-      var qualityItem = LivePlayQuality(
-        quality: qualitiesMap[item] ?? "未知清晰度",
-        data: item,
-      );
+      var qualityItem = LivePlayQuality(quality: qualitiesMap[item] ?? "未知清晰度", data: item);
       qualities.add(qualityItem);
     }
     return qualities;
@@ -183,9 +166,7 @@ class BiliBiliSite implements LiveSite {
             var urlList = codecItem["url_info"];
             var baseUrl = codecItem["base_url"].toString();
             for (var urlItem in urlList) {
-              urls.add(
-                "${urlItem["host"]}$baseUrl${urlItem["extra"]}",
-              );
+              urls.add("${urlItem["host"]}$baseUrl${urlItem["extra"]}");
             }
           }
         }
@@ -207,11 +188,7 @@ class BiliBiliSite implements LiveSite {
     const baseUrl = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getListByArea";
     var url = "$baseUrl?platform=web&sort=online&page_size=30&page=$page";
     var queryParams = await getWbiSign(url);
-    var result = await HttpClient.instance.getJson(
-      baseUrl,
-      queryParameters: queryParams,
-      header: await getHeader(),
-    );
+    var result = await HttpClient.instance.getJson(baseUrl, queryParameters: queryParams, header: await getHeader());
 
     var hasMore = (result["data"]["list"] as List).isNotEmpty;
     var items = <LiveRoom>[];
@@ -309,7 +286,7 @@ class BiliBiliSite implements LiveSite {
     20,
     34,
     44,
-    52
+    52,
   ];
   Future<(String, String)> getWbiKeys() async {
     if (kImgKey.isNotEmpty && kSubKey.isNotEmpty) {
@@ -364,12 +341,10 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(
-      {required String nick, required String platform, required String roomId, required String title}) async {
+  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     try {
       var roomInfo = await getRoomInfo(roomId: roomId);
       var realRoomId = roomInfo["room_info"]["room_id"].toString();
-
       const danmuInfoBaseUrl = "https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo";
       var danmuInfoUrl = "$danmuInfoBaseUrl?id=$realRoomId";
       var queryParams = await getWbiSign(danmuInfoUrl);
@@ -378,8 +353,9 @@ class BiliBiliSite implements LiveSite {
         queryParameters: queryParams,
         header: await getHeader(),
       );
-      List<String> serverHosts =
-          (roomDanmakuResult["data"]["host_list"] as List).map<String>((e) => e["host"].toString()).toList();
+      List<String> serverHosts = (roomDanmakuResult["data"]["host_list"] as List)
+          .map<String>((e) => e["host"].toString())
+          .toList();
       return LiveRoom(
         roomId: roomId,
         title: roomInfo["room_info"]["title"].toString(),
@@ -423,7 +399,7 @@ class BiliBiliSite implements LiveSite {
         "_extra": "",
         "highlight": 0,
         "single_column": 0,
-        "page": page
+        "page": page,
       },
       header: await getHeader(),
     );
@@ -463,7 +439,7 @@ class BiliBiliSite implements LiveSite {
         "_extra": "",
         "highlight": 0,
         "single_column": 0,
-        "page": page
+        "page": page,
       },
       header: await getHeader(),
     );
@@ -485,13 +461,10 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus(
-      {required String nick, required String platform, required String roomId, required String title}) async {
+  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/room/v1/Room/get_info",
-      queryParameters: {
-        "room_id": roomId,
-      },
+      queryParameters: {"room_id": roomId},
       header: await getHeader(),
     );
     return (asT<int?>(result["data"]["live_status"]) ?? 0) == 1;
@@ -501,9 +474,7 @@ class BiliBiliSite implements LiveSite {
   Future<List<LiveSuperChatMessage>> getSuperChatMessage({required String roomId}) async {
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/av/v1/SuperChat/getMessageList",
-      queryParameters: {
-        "room_id": roomId,
-      },
+      queryParameters: {"room_id": roomId},
       header: await getHeader(),
     );
     List<LiveSuperChatMessage> ls = [];
@@ -511,15 +482,11 @@ class BiliBiliSite implements LiveSite {
       var message = LiveSuperChatMessage(
         backgroundBottomColor: item["background_bottom_color"].toString(),
         backgroundColor: item["background_color"].toString(),
-        endTime: DateTime.fromMillisecondsSinceEpoch(
-          item["end_time"] * 1000,
-        ),
+        endTime: DateTime.fromMillisecondsSinceEpoch(item["end_time"] * 1000),
         face: "${item["user_info"]["face"]}@200w.jpg",
         message: item["message"].toString(),
         price: item["price"],
-        startTime: DateTime.fromMillisecondsSinceEpoch(
-          item["start_time"] * 1000,
-        ),
+        startTime: DateTime.fromMillisecondsSinceEpoch(item["start_time"] * 1000),
         userName: item["user_info"]["uname"].toString(),
       );
       ls.add(message);
@@ -539,18 +506,11 @@ class BiliBiliSite implements LiveSite {
       var result = await HttpClient.instance.getJson(
         "https://api.bilibili.com/x/frontend/finger/spi",
         queryParameters: {},
-        header: {
-          "user-agent": kDefaultUserAgent,
-          "referer": kDefaultReferer,
-          "cookie": cookie,
-        },
+        header: {"user-agent": kDefaultUserAgent, "referer": kDefaultReferer, "cookie": cookie},
       );
       return result["data"];
     } catch (e) {
-      return {
-        "b_3": "",
-        "b_4": "",
-      };
+      return {"b_3": "", "b_4": ""};
     }
   }
 

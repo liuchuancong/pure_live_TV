@@ -37,42 +37,43 @@ class DouyuSite implements LiveSite {
       var cate1Name = item["cate1Name"];
       List<LiveArea> subCategories = [];
       subCateList.where((x) => x["cate1Id"] == cate1Id).forEach((element) {
-        subCategories.add(LiveArea(
-          areaPic: element["icon"].toString(),
-          areaId: element["cate2Id"].toString(),
-          typeName: cate1Name.toString(),
-          areaType: cate1Id.toString(),
-          platform: Sites.douyuSite,
-          areaName: element["cate2Name"].toString(),
-        ));
+        subCategories.add(
+          LiveArea(
+            areaPic: element["icon"].toString(),
+            areaId: element["cate2Id"].toString(),
+            typeName: cate1Name.toString(),
+            areaType: cate1Id.toString(),
+            platform: Sites.douyuSite,
+            areaName: element["cate2Name"].toString(),
+          ),
+        );
       });
-      categories.add(
-        LiveCategory(
-          id: cate1Id.toString(),
-          name: cate1Name.toString(),
-          children: subCategories,
-        ),
-      );
+      categories.add(LiveCategory(id: cate1Id.toString(), name: cate1Name.toString(), children: subCategories));
     }
     // 根据ID排序
     categories.sort((a, b) => int.parse(a.id).compareTo(int.parse(b.id)));
+
     return categories;
   }
 
   Future<List<LiveArea>> getSubCategories(LiveCategory liveCategory) async {
-    var result = await HttpClient.instance.getJson("https://www.douyu.com/japi/weblist/apinc/getC2List",
-        queryParameters: {"shortName": liveCategory.name, "customClassId": liveCategory.id, "offset": 0, "limit": 200});
+    var result = await HttpClient.instance.getJson(
+      "https://www.douyu.com/japi/weblist/apinc/getC2List",
+      queryParameters: {"shortName": liveCategory.name, "customClassId": liveCategory.id, "offset": 0, "limit": 200},
+    );
 
     List<LiveArea> subs = [];
     for (var item in result["data"]["list"]) {
-      subs.add(LiveArea(
-        areaPic: item["squareIconUrlW"].toString(),
-        areaId: item["cid2"].toString(),
-        typeName: liveCategory.name,
-        areaType: liveCategory.id,
-        platform: Sites.douyuSite,
-        areaName: item["cname2"].toString(),
-      ));
+      subs.add(
+        LiveArea(
+          areaPic: item["squareIconUrlW"].toString(),
+          areaId: item["cid2"].toString(),
+          typeName: liveCategory.name,
+          areaType: liveCategory.id,
+          platform: Sites.douyuSite,
+          areaName: item["cname2"].toString(),
+        ),
+      );
     }
 
     return subs;
@@ -133,10 +134,7 @@ class DouyuSite implements LiveSite {
       return 0;
     });
     for (var item in result["data"]["multirates"]) {
-      qualities.add(LivePlayQuality(
-        quality: item["name"].toString(),
-        data: DouyuPlayData(item["rate"], cdns),
-      ));
+      qualities.add(LivePlayQuality(quality: item["name"].toString(), data: DouyuPlayData(item["rate"], cdns)));
     }
     return qualities;
   }
@@ -164,7 +162,7 @@ class DouyuSite implements LiveSite {
       header: {
         'referer': 'https://www.douyu.com/$roomId',
         'user-agent':
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43"
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43",
       },
       formUrlEncoded: true,
     );
@@ -203,15 +201,17 @@ class DouyuSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(
-      {required String nick, required String platform, required String roomId, required String title}) async {
+  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     try {
-      var result =
-          await HttpClient.instance.getJson("https://www.douyu.com/betard/$roomId", queryParameters: {}, header: {
-        'referer': 'https://www.douyu.com/$roomId',
-        'user-agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43',
-      });
+      var result = await HttpClient.instance.getJson(
+        "https://www.douyu.com/betard/$roomId",
+        queryParameters: {},
+        header: {
+          'referer': 'https://www.douyu.com/$roomId',
+          'user-agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43',
+        },
+      );
       Map roomInfo;
       if (result is String) {
         roomInfo = json.decode(result)["room"];
@@ -219,12 +219,15 @@ class DouyuSite implements LiveSite {
         roomInfo = result["room"];
       }
 
-      var jsEncResult = await HttpClient.instance
-          .getText("https://www.douyu.com/swf_api/homeH5Enc?rids=$roomId", queryParameters: {}, header: {
-        'referer': 'https://www.douyu.com/$roomId',
-        'user-agent':
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43"
-      });
+      var jsEncResult = await HttpClient.instance.getText(
+        "https://www.douyu.com/swf_api/homeH5Enc?rids=$roomId",
+        queryParameters: {},
+        header: {
+          'referer': 'https://www.douyu.com/$roomId',
+          'user-agent':
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43",
+        },
+      );
       var crptext = json.decode(jsEncResult)["data"]["room$roomId"].toString();
 
       return LiveRoom(
@@ -258,16 +261,12 @@ class DouyuSite implements LiveSite {
     var did = generateRandomString(32);
     var result = await HttpClient.instance.getJson(
       "https://www.douyu.com/japi/search/api/searchShow",
-      queryParameters: {
-        "kw": keyword,
-        "page": page,
-        "pageSize": 20,
-      },
+      queryParameters: {"kw": keyword, "page": page, "pageSize": 20},
       header: {
         'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51',
         'referer': 'https://www.douyu.com/search/',
-        'Cookie': 'dy_did=$did;acf_did=$did'
+        'Cookie': 'dy_did=$did;acf_did=$did',
       },
     );
     if (result['error'] != 0) {
@@ -312,17 +311,12 @@ class DouyuSite implements LiveSite {
     var did = generateRandomString(32);
     var result = await HttpClient.instance.getJson(
       "https://www.douyu.com/japi/search/api/searchUser",
-      queryParameters: {
-        "kw": keyword,
-        "page": page,
-        "pageSize": 20,
-        "filterType": 1,
-      },
+      queryParameters: {"kw": keyword, "page": page, "pageSize": 20, "filterType": 1},
       header: {
         'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51',
         'referer': 'https://www.douyu.com/search/',
-        'Cookie': 'dy_did=$did;acf_did=$did'
+        'Cookie': 'dy_did=$did;acf_did=$did',
       },
     );
 
@@ -343,22 +337,25 @@ class DouyuSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus(
-      {required String nick, required String platform, required String roomId, required String title}) async {
-    var detail = await getRoomDetail(roomId: roomId, platform: platform, title: title, nick: nick);
+  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
+    var detail = await getRoomDetail(roomId: roomId, platform: platform);
     return detail.status!;
   }
 
   Future<String> getPlayArgs(String html, String rid) async {
     //取加密的js
-    html = RegExp(r"(vdwdae325w_64we[\s\S]*function ub98484234[\s\S]*?)function", multiLine: true)
-            .firstMatch(html)
-            ?.group(1) ??
+    html =
+        RegExp(
+          r"(vdwdae325w_64we[\s\S]*function ub98484234[\s\S]*?)function",
+          multiLine: true,
+        ).firstMatch(html)?.group(1) ??
         "";
     html = html.replaceAll(RegExp(r"eval.*?;}"), "strc;}");
 
-    var result = await HttpClient.instance
-        .postJson("http://alive.nsapps.cn/api/AllLive/DouyuSign", data: {"html": html, "rid": rid});
+    var result = await HttpClient.instance.postJson(
+      "http://alive.nsapps.cn/api/AllLive/DouyuSign",
+      data: {"html": html, "rid": rid},
+    );
 
     if (result["code"] == 0) {
       return result["data"].toString();

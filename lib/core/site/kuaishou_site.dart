@@ -45,7 +45,7 @@ class KuaishowSite implements LiveSite {
     'jpg',
     'jpeg',
     'bmp',
-    'gif'
+    'gif',
   ];
   @override
   LiveDanmaku getDanmaku() => EmptyDanmaku();
@@ -81,13 +81,17 @@ class KuaishowSite implements LiveSite {
     'Sec-Fetch-Dest': 'document',
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'same-origin',
-    'Sec-Fetch-User': '?1'
+    'Sec-Fetch-User': '?1',
   };
 
   final SettingsService settings = Get.find<SettingsService>();
 
   Future<List<LiveArea>> getAllSubCategores(
-      LiveCategory liveCategory, int page, int pageSize, List<LiveArea> allSubCategores) async {
+    LiveCategory liveCategory,
+    int page,
+    int pageSize,
+    List<LiveArea> allSubCategores,
+  ) async {
     try {
       var subsArea = await getSubCategores(liveCategory, page, pageSize);
       allSubCategores.addAll(subsArea);
@@ -222,13 +226,14 @@ class KuaishowSite implements LiveSite {
 
   Future registerDid() async {
     var res = await HttpClient.instance.postJson(
-        'https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/misc2?v=3.9.49&kpn=KS_GAME_LIVE_PC',
-        header: headers,
-        data: misc2dic(cookieObj['did']));
+      'https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/misc2?v=3.9.49&kpn=KS_GAME_LIVE_PC',
+      header: headers,
+      data: misc2dic(cookieObj['did']!),
+    );
     return res;
   }
 
-  Map<String, Object> misc2dic(String? did) {
+  Map<String, Object> misc2dic(String did) {
     var map = {
       'common': {
         'identity_package': {'device_id': did, 'global_id': ''},
@@ -237,13 +242,13 @@ class KuaishowSite implements LiveSite {
           'os_version': 'NT 6.1',
           'model': 'Windows',
           'ua':
-              'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36'
+              'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36',
         },
         'need_encrypt': 'false',
         'network_package': {'type': 3},
         'h5_extra_attr':
             '{"sdk_name":"webLogger","sdk_version":"3.9.49","sdk_bundle":"log.common.js","app_version_name":"","host_product":"","resolution":"1600x900","screen_with":1600,"screen_height":900,"device_pixel_ratio":1,"domain":"https://live.kuaishou.com"}',
-        'global_attr': '{}'
+        'global_attr': '{}',
       },
       'logs': [
         {
@@ -262,13 +267,13 @@ class KuaishowSite implements LiveSite {
                 'page': 'GAME_DETAL_PAGE',
                 'identity': '5316c78e-f0b6-4be2-a076-c8f9d11ebc0a',
                 'page_type': 2,
-                'params': '{"game_id":1001,"game_name":"王者荣耀"}'
+                'params': '{"game_id":1001,"game_name":"王者荣耀"}',
               },
-              'element_package': {}
-            }
-          }
-        }
-      ]
+              'element_package': {},
+            },
+          },
+        },
+      ],
     };
     return map;
   }
@@ -305,14 +310,16 @@ class KuaishowSite implements LiveSite {
     var variables = {'liveStreamId': liveRoomId};
     var query =
         r'query WebSocketInfoQuery($liveStreamId: String) {\n  webSocketInfo(liveStreamId: $liveStreamId) {\n    token\n    webSocketUrls\n    __typename\n  }\n}\n';
-    var res = await HttpClient.instance.postJson('https://live.kuaishou.com/live_graphql',
-        header: headers, data: {"operationName": 'WebSocketInfoQuery', "variables": variables, "query": query});
+    var res = await HttpClient.instance.postJson(
+      'https://live.kuaishou.com/live_graphql',
+      header: headers,
+      data: {"operationName": 'WebSocketInfoQuery', "variables": variables, "query": query},
+    );
     return res;
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(
-      {required String nick, required String platform, required String roomId, required String title}) async {
+  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     headers['cookie'] = cookie;
     var url = "https://live.kuaishou.com/u/$roomId";
     var mHeaders = headers;
@@ -328,11 +335,7 @@ class KuaishowSite implements LiveSite {
         'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9';
     await getCookie(url);
     await registerDid();
-    var resultText = await HttpClient.instance.getText(
-      url,
-      queryParameters: {},
-      header: mHeaders,
-    );
+    var resultText = await HttpClient.instance.getText(url, queryParameters: {}, header: mHeaders);
 
     try {
       var text = RegExp(r"window\.__INITIAL_STATE__=(.*?);", multiLine: false).firstMatch(resultText)?.group(1);
@@ -345,8 +348,9 @@ class KuaishowSite implements LiveSite {
       var gameInfo = jsonObj["liveroom"]["playList"][0]["gameInfo"];
       var liveStreamId = liveStream["id"];
       return LiveRoom(
-        cover:
-            isImage(liveStream['poster']) ? liveStream['poster'].toString() : '${liveStream['poster'].toString()}.jpg',
+        cover: isImage(liveStream['poster'])
+            ? liveStream['poster'].toString()
+            : '${liveStream['poster'].toString()}.jpg',
         watching: jsonObj["liveroom"]["playList"][0]["isLiving"] ? gameInfo["watchingCount"].toString() : '0',
         roomId: author["id"],
         area: gameInfo["name"] ?? '',
@@ -381,8 +385,7 @@ class KuaishowSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus(
-      {required String nick, required String platform, required String roomId, required String title}) async {
+  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
     return false;
   }
 

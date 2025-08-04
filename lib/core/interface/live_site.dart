@@ -44,25 +44,22 @@ class LiveSite {
   }
 
   /// 读取房间详情
-  Future<LiveRoom> getRoomDetail({
-    required String roomId,
-    required String platform,
-    required String nick,
-    required String title,
-  }) {
-    return Future.value(LiveRoom(
-      cover: '',
-      watching: '0',
-      roomId: '',
-      status: false,
-      platform: platform,
-      liveStatus: LiveStatus.offline,
-      title: title,
-      link: '',
-      avatar: '',
-      nick: nick,
-      isRecord: false,
-    ));
+  Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) {
+    return Future.value(
+      LiveRoom(
+        cover: '',
+        watching: '0',
+        roomId: '',
+        status: false,
+        platform: platform,
+        liveStatus: LiveStatus.offline,
+        title: '',
+        link: '',
+        avatar: '',
+        nick: '',
+        isRecord: false,
+      ),
+    );
   }
 
   /// 读取房间清晰度
@@ -76,8 +73,7 @@ class LiveSite {
   }
 
   /// 查询直播状态
-  Future<bool> getLiveStatus(
-      {required String nick, required String platform, required String roomId, required String title}) {
+  Future<bool> getLiveStatus({required String platform, required String roomId}) {
     return Future.value(false);
   }
 

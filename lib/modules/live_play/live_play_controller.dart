@@ -159,8 +159,6 @@ class LivePlayController extends StateController {
     var liveRoom = await currentSite.liveSite.getRoomDetail(
       roomId: currentPlayRoom.value.roomId!,
       platform: currentPlayRoom.value.platform!,
-      title: currentPlayRoom.value.title!,
-      nick: currentPlayRoom.value.nick!,
     );
     isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
     if (isLastLine.value) {
@@ -232,9 +230,10 @@ class LivePlayController extends StateController {
     var liveRoom = await currentSite.liveSite.getRoomDetail(
       roomId: currentPlayRoom.value.roomId!,
       platform: currentPlayRoom.value.platform!,
-      title: currentPlayRoom.value.title!,
-      nick: currentPlayRoom.value.nick!,
     );
+    if (currentSite.id == Sites.iptvSite) {
+      liveRoom = liveRoom.copyWith(title: currentPlayRoom.value.title!, nick: currentPlayRoom.value.nick!);
+    }
     detail.value = liveRoom;
     resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {

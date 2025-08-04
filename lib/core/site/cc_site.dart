@@ -47,11 +47,11 @@ class CCSite implements LiveSite {
 
   final SettingsService settings = Get.find<SettingsService>();
   Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory) async {
-    var result = await HttpClient.instance.getJson("https://api.cc.163.com/v1/wapcc/gamecategory", queryParameters: {
-      "catetype": liveCategory.id,
-    }, header: {
-      "user-agent": kUserAgent,
-    });
+    var result = await HttpClient.instance.getJson(
+      "https://api.cc.163.com/v1/wapcc/gamecategory",
+      queryParameters: {"catetype": liveCategory.id},
+      header: {"user-agent": kUserAgent},
+    );
 
     List<LiveArea> subs = [];
     for (var item in result["data"]["category_info"]["game_list"]) {
@@ -124,11 +124,7 @@ class CCSite implements LiveSite {
           }
         }
       });
-      var qualityItem = LivePlayQuality(
-        quality: reflect[key]!,
-        sort: value['vbr'],
-        data: lines,
-      );
+      var qualityItem = LivePlayQuality(quality: reflect[key]!, sort: value['vbr'], data: lines);
       qualities.add(qualityItem);
     });
     qualities.sort((a, b) => b.sort.compareTo(a.sort));
@@ -169,15 +165,14 @@ class CCSite implements LiveSite {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail(
-      {required String nick, required String platform, required String roomId, required String title}) async {
+  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     try {
       var url = "https://api.cc.163.com/v1/activitylives/anchor/lives";
-      var result = await HttpClient.instance.getJson(url, queryParameters: {
-        'anchor_ccid': roomId
-      }, header: {
-        "user-agent": kUserAgent,
-      });
+      var result = await HttpClient.instance.getJson(
+        url,
+        queryParameters: {'anchor_ccid': roomId},
+        header: {"user-agent": kUserAgent},
+      );
       var channelId = result['data'][roomId]['channel_id'];
       String urlToGetReal = "https://cc.163.com/live/channel/?channelids=$channelId";
       var resultReal = await HttpClient.instance.getJson(urlToGetReal, queryParameters: {'anchor_ccid': roomId});
@@ -212,11 +207,7 @@ class CCSite implements LiveSite {
   Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
     var result = await HttpClient.instance.getJson(
       "https://cc.163.com/search/anchor",
-      queryParameters: {
-        "query": keyword,
-        "size": 20,
-        "page": page,
-      },
+      queryParameters: {"query": keyword, "size": 20, "page": page},
     );
     var items = <LiveRoom>[];
     var queryList = result["webcc_anchor"]["result"] ?? [];
@@ -271,8 +262,7 @@ class CCSite implements LiveSite {
   }
 
   @override
-  Future<bool> getLiveStatus(
-      {required String nick, required String platform, required String roomId, required String title}) async {
+  Future<bool> getLiveStatus({required String platform, required String roomId}) async {
     return Future.value(true);
   }
 

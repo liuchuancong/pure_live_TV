@@ -72,12 +72,7 @@ class FavoriteController extends GetxController {
     for (final room in settings.favoriteRooms.value) {
       if (room.platform!.isNotEmpty) {
         futures.add(
-          Sites.of(room.platform!).liveSite.getRoomDetail(
-                roomId: room.roomId!,
-                platform: room.platform!,
-                title: room.title!,
-                nick: room.nick!,
-              ),
+          Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!),
         );
       }
     }
