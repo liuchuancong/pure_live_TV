@@ -74,11 +74,13 @@ class DouyinSite implements LiveSite {
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [];
+    developer.log('111111');
     var result = await HttpClient.instance.getText(
       "https://live.douyin.com/",
       queryParameters: {},
       header: await getRequestHeaders(),
     );
+    developer.log(result);
     var renderData = RegExp(r'\{\\"pathname\\":\\"\/\\",\\"categoryData.*?\]\\n').firstMatch(result)?.group(0) ?? "";
     var renderDataJson = json.decode(
       renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', ""),
@@ -118,24 +120,25 @@ class DouyinSite implements LiveSite {
   @override
   Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
     var ids = category.areaId?.split(',');
+    developer.log(ids.toString());
     var partitionId = ids?[0];
     var partitionType = ids?[1];
+    var requestparam = await DouyinClient().commonRequest({
+      "aid": '6383',
+      "app_name": "douyin_web",
+      "live_id": '1',
+      "device_platform": "web",
+      "count": '15',
+      "offset": ((page - 1) * 15).toString(),
+      "partition": partitionId.toString(),
+      "partition_type": partitionType.toString(),
+      "req_from": 2.toString(),
+    }, await getRequestHeaders());
     var result = await HttpClient.instance.getJson(
-      "https://live.douyin.com/webcast/web/partition/detail/room/",
-      queryParameters: {
-        "aid": 6383,
-        "app_name": "douyin_web",
-        "live_id": 1,
-        "device_platform": "web",
-        "count": 15,
-        "offset": (page - 1) * 15,
-        "partition": partitionId,
-        "partition_type": partitionType,
-        "req_from": 2,
-      },
-      header: await getRequestHeaders(),
+      "https://live.douyin.com/webcast/web/partition/detail/room/v2/",
+      queryParameters: requestparam['params'],
+      header: requestparam['headers'],
     );
-
     var hasMore = (result["data"]["data"] as List).length >= 15;
     var items = <LiveRoom>[];
     for (var item in result["data"]["data"]) {
@@ -158,19 +161,22 @@ class DouyinSite implements LiveSite {
 
   @override
   Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
+    var requestparam = await DouyinClient().commonRequest({
+      "aid": '6383',
+      "app_name": "douyin_web",
+      "live_id": '1',
+      "device_platform": "web",
+      "count": '15',
+      "offset": ((page - 1) * 15).toString(),
+      "partition": '720',
+      "partition_type": '1',
+      "req_from": 2.toString(),
+    }, await getRequestHeaders());
+    developer.log(requestparam.toString());
     var result = await HttpClient.instance.getJson(
-      "https://live.douyin.com/webcast/web/partition/detail/room/",
-      queryParameters: {
-        "aid": 6383,
-        "app_name": "douyin_web",
-        "live_id": 1,
-        "device_platform": "web",
-        "count": 15,
-        "offset": (page - 1) * 15,
-        "partition": 720,
-        "partition_type": 1,
-      },
-      header: await getRequestHeaders(),
+      "https://live.douyin.com/webcast/web/partition/detail/room/v2/",
+      queryParameters: requestparam['params'],
+      header: requestparam['headers'],
     );
 
     var hasMore = (result["data"]["data"] as List).length >= 15;
@@ -271,8 +277,8 @@ class DouyinSite implements LiveSite {
         liveStatus: roomStatus
             ? LiveStatus.live
             : result["status_code"] == 10011
-            ? LiveStatus.offline
-            : LiveStatus.banned,
+                ? LiveStatus.offline
+                : LiveStatus.banned,
         link: "https://live.douyin.com/$webRid",
         area: partition?['partition']?['title'].toString() ?? '',
         status: roomStatus,

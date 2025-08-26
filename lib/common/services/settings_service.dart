@@ -533,11 +533,6 @@ class SettingsService extends GetxController {
 
     json['videoFitIndex'] = videoFitIndex.value;
     json['hideDanmaku'] = hideDanmaku.value;
-    json['danmakuArea'] = danmakuArea.value;
-    json['danmakuSpeed'] = danmakuSpeed.value;
-    json['danmakuFontSize'] = danmakuFontSize.value;
-    json['danmakuFontBorder'] = danmakuFontBorder.value;
-    json['danmakuOpacity'] = danmakuOpacity.value;
     json['doubleExit'] = doubleExit.value;
     json['videoPlayerIndex'] = videoPlayerIndex.value;
     json['enableCodec'] = enableCodec.value;

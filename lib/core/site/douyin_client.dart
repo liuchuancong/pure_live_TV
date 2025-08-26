@@ -75,7 +75,7 @@ class DouyinClient {
     }
   }
 
-  Future<String?> getWebid(Map<String, String> headers) async {
+  Future<String?> getWebid(Map<String, dynamic> headers) async {
     final url = Uri.parse('$host/?recommend=1');
 
     var requestHeaders = Map<String, String>.from(headers);
@@ -122,7 +122,7 @@ class DouyinClient {
   }
 
   // 修改为返回Map<String, String>以解决类型错误
-  Future<Map<String, String>> dealParams(Map<String, String> params, Map<String, String> headers) async {
+  Future<Map<String, String>> dealParams(Map<String, String> params, Map<String, dynamic> headers) async {
     final cookie = headers['cookie'] ?? headers['Cookie'] ?? '';
     if (cookie.isEmpty) return params;
 
@@ -158,14 +158,14 @@ class DouyinClient {
     return buffer.toString();
   }
 
-  Future<Map<String, dynamic>> commonRequest(Map<String, String> params, Map<String, String> headers) async {
+  Future<Map<String, dynamic>> commonRequest(Map<String, String> params, Map<String, dynamic> headers) async {
     // 确保JS已加载
     if (!_isJsLoaded) {
       await _initJsRuntime();
     }
     // 合并参数和请求头，确保类型正确
     final newParams = Map<String, String>.from(commonParams)..addAll(params);
-    final newHeaders = Map<String, String>.from(commonHeaders)..addAll(headers);
+    final newHeaders = Map<String, dynamic>.from(commonHeaders)..addAll(headers);
 
     final processedParams = await dealParams(newParams, newHeaders);
 

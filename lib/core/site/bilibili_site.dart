@@ -166,7 +166,14 @@ class BiliBiliSite implements LiveSite {
             var urlList = codecItem["url_info"];
             var baseUrl = codecItem["base_url"].toString();
             for (var urlItem in urlList) {
-              urls.add("${urlItem["host"]}$baseUrl${urlItem["extra"]}");
+              if (!urlItem["host"].contains("gotcha104")) {
+                urls.add("${urlItem["host"]}$baseUrl${urlItem["extra"]}");
+              }
+            }
+            if (urls.isEmpty) {
+              for (var urlItem in urlList) {
+                urls.add("${urlItem["host"]}$baseUrl${urlItem["extra"]}");
+              }
             }
           }
         }
@@ -353,9 +360,8 @@ class BiliBiliSite implements LiveSite {
         queryParameters: queryParams,
         header: await getHeader(),
       );
-      List<String> serverHosts = (roomDanmakuResult["data"]["host_list"] as List)
-          .map<String>((e) => e["host"].toString())
-          .toList();
+      List<String> serverHosts =
+          (roomDanmakuResult["data"]["host_list"] as List).map<String>((e) => e["host"].toString()).toList();
       return LiveRoom(
         roomId: roomId,
         title: roomInfo["room_info"]["title"].toString(),
