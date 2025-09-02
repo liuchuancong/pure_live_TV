@@ -1,33 +1,23 @@
-// ignore_for_file: no_leading_underscores_for_local_identifiers
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:dart_tars_protocol/tars_input_stream.dart';
-import 'package:dart_tars_protocol/tars_output_stream.dart';
 import 'package:dart_tars_protocol/tars_struct.dart';
-import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/core/common/core_log.dart';
+import 'package:dart_tars_protocol/tars_input_stream.dart';
+import 'package:pure_live/common/models/live_message.dart';
+import 'package:dart_tars_protocol/tars_output_stream.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
+// ignore_for_file: no_leading_underscores_for_local_identifiers
 
 class HuyaDanmakuArgs {
-  final int ayyuid;
+  final dynamic ayyuid;
   final int topSid;
   final int subSid;
-  HuyaDanmakuArgs({
-    required this.ayyuid,
-    required this.topSid,
-    required this.subSid,
-  });
+  HuyaDanmakuArgs({required this.ayyuid, required this.topSid, required this.subSid});
   @override
   String toString() {
-    return json.encode({
-      "ayyuid": ayyuid,
-      "topSid": topSid,
-      "subSid": subSid,
-    });
+    return json.encode({"ayyuid": ayyuid, "topSid": topSid, "subSid": subSid});
   }
 }
 
@@ -76,8 +66,7 @@ class HuyaDanmaku implements LiveDanmaku {
   }
 
   void joinRoom() {
-    var joinData =
-        getJoinData(danmakuArgs.ayyuid, danmakuArgs.topSid, danmakuArgs.topSid);
+    var joinData = getJoinData(danmakuArgs.ayyuid, danmakuArgs.topSid, danmakuArgs.topSid);
     webScoketUtils?.sendMessage(joinData);
   }
 
@@ -125,8 +114,7 @@ class HuyaDanmaku implements LiveDanmaku {
         wSPushMessage.readFrom(stream);
         if (wSPushMessage.uri == 1400) {
           HYMessage messageNotice = HYMessage();
-          messageNotice
-              .readFrom(TarsInputStream(Uint8List.fromList(wSPushMessage.msg)));
+          messageNotice.readFrom(TarsInputStream(Uint8List.fromList(wSPushMessage.msg)));
           var uname = messageNotice.userInfo.nickName;
           var content = messageNotice.content;
 
@@ -135,9 +123,7 @@ class HuyaDanmaku implements LiveDanmaku {
           onMessage?.call(
             LiveMessage(
               type: LiveMessageType.chat,
-              color: color <= 0
-                  ? LiveMessageColor.white
-                  : LiveMessageColor.numberToColor(color),
+              color: color <= 0 ? LiveMessageColor.white : LiveMessageColor.numberToColor(color),
               message: content,
               userName: uname,
             ),

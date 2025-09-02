@@ -93,13 +93,17 @@ class FavoriteController extends GetxController {
 
     try {
       for (var i = 0; i < groupedList.length; i++) {
-        final rooms = await Future.wait(groupedList[i]);
-        for (var room in rooms) {
-          try {
-            settings.updateRoom(room);
-          } catch (e) {
-            debugPrint('Error during refresh for a single request: $e');
+        try {
+          final rooms = await Future.wait(groupedList[i]);
+          for (var room in rooms) {
+            try {
+              settings.updateRoom(room);
+            } catch (e) {
+              debugPrint('Error during refresh for a single request: $e');
+            }
           }
+        } catch (e) {
+          debugPrint('Error during refresh for a batch of requests: $e');
         }
         syncRooms();
       }

@@ -239,47 +239,52 @@ class HuyaSite implements LiveSite {
       var baseSteamInfoList = data['stream']['baseSteamInfoList'] as List<dynamic>;
       var flvLines = data['stream']['flv']['multiLine'];
       var hlsLines = data['stream']['hls']['multiLine'];
-      for (var item in flvLines) {
-        if ((item["url"]?.toString() ?? "").isNotEmpty) {
-          var currentStream = baseSteamInfoList.firstWhere(
-            (element) => element["sCdnType"] == item["cdnType"],
-            orElse: () => null,
-          );
-          if (currentStream != null) {
-            topSid = currentStream["lChannelId"];
-            subSid = currentStream["lSubChannelId"];
-            huyaLines.add(
-              HuyaLineModel(
-                line: currentStream['sFlvUrl'],
-                lineType: HuyaLineType.flv,
-                flvAntiCode: currentStream["sFlvAntiCode"].toString(),
-                hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
-                streamName: currentStream["sStreamName"].toString(),
-                cdnType: item["sCdnType"].toString(),
-              ),
+      if (flvLines != null) {
+        for (var item in flvLines) {
+          if ((item["url"]?.toString() ?? "").isNotEmpty) {
+            var currentStream = baseSteamInfoList.firstWhere(
+              (element) => element["sCdnType"] == item["cdnType"],
+              orElse: () => null,
             );
+            if (currentStream != null) {
+              topSid = currentStream["lChannelId"];
+              subSid = currentStream["lSubChannelId"];
+              huyaLines.add(
+                HuyaLineModel(
+                  line: currentStream['sFlvUrl'],
+                  lineType: HuyaLineType.flv,
+                  flvAntiCode: currentStream["sFlvAntiCode"].toString(),
+                  hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
+                  streamName: currentStream["sStreamName"].toString(),
+                  cdnType: item["sCdnType"].toString(),
+                ),
+              );
+            }
           }
         }
       }
-      for (var item in hlsLines) {
-        if ((item["url"]?.toString() ?? "").isNotEmpty) {
-          var currentStream = baseSteamInfoList.firstWhere(
-            (element) => element["sCdnType"] == item["cdnType"],
-            orElse: () => null,
-          );
-          if (currentStream != null) {
-            topSid = currentStream["lChannelId"];
-            subSid = currentStream["lSubChannelId"];
-            huyaLines.add(
-              HuyaLineModel(
-                line: currentStream['sHlsUrl'],
-                lineType: HuyaLineType.hls,
-                flvAntiCode: currentStream["sFlvAntiCode"].toString(),
-                hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
-                streamName: currentStream["sStreamName"].toString(),
-                cdnType: item["sCdnType"].toString(),
-              ),
+
+      if (hlsLines != null) {
+        for (var item in hlsLines) {
+          if ((item["url"]?.toString() ?? "").isNotEmpty) {
+            var currentStream = baseSteamInfoList.firstWhere(
+              (element) => element["sCdnType"] == item["cdnType"],
+              orElse: () => null,
             );
+            if (currentStream != null) {
+              topSid = currentStream["lChannelId"];
+              subSid = currentStream["lSubChannelId"];
+              huyaLines.add(
+                HuyaLineModel(
+                  line: currentStream['sHlsUrl'],
+                  lineType: HuyaLineType.hls,
+                  flvAntiCode: currentStream["sFlvAntiCode"].toString(),
+                  hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
+                  streamName: currentStream["sStreamName"].toString(),
+                  cdnType: item["sCdnType"].toString(),
+                ),
+              );
+            }
           }
         }
       }
