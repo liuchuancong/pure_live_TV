@@ -74,13 +74,11 @@ class DouyinSite implements LiveSite {
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [];
-    developer.log('111111');
     var result = await HttpClient.instance.getText(
       "https://live.douyin.com/",
       queryParameters: {},
       header: await getRequestHeaders(),
     );
-    developer.log(result);
     var renderData = RegExp(r'\{\\"pathname\\":\\"\/\\",\\"categoryData.*?\]\\n').firstMatch(result)?.group(0) ?? "";
     var renderDataJson = json.decode(
       renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', ""),
@@ -120,7 +118,6 @@ class DouyinSite implements LiveSite {
   @override
   Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
     var ids = category.areaId?.split(',');
-    developer.log(ids.toString());
     var partitionId = ids?[0];
     var partitionType = ids?[1];
     var requestparam = await DouyinClient().commonRequest({
@@ -172,7 +169,6 @@ class DouyinSite implements LiveSite {
       "partition_type": '1',
       "req_from": 2.toString(),
     }, await getRequestHeaders());
-    developer.log(requestparam.toString());
     var result = await HttpClient.instance.getJson(
       "https://live.douyin.com/webcast/web/partition/detail/room/v2/",
       queryParameters: requestparam['params'],
@@ -250,37 +246,26 @@ class DouyinSite implements LiveSite {
   Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
     try {
       var detail = await getRoomWebDetail(roomId);
-      var requestHeader = await getRequestHeaders();
       var webRid = roomId;
 
       var realRoomId = detail["roomStore"]["roomInfo"]["room"]["id_str"].toString();
       var userUniqueId = detail["userStore"]["odin"]["user_unique_id"].toString();
-
-      var requestparam = await DouyinClient().commonRequest({"web_rid": webRid, "room_id_str": realRoomId}, {});
-      var result = await HttpClient.instance.getJson(
-        "https://live.douyin.com/webcast/room/web/enter/",
-        queryParameters: requestparam['params'],
-        header: requestHeader,
-      );
-      var roomInfo = result["data"]["data"][0];
-      var userInfo = result["data"]["user"];
-      var partition = result["data"]['partition_road_map'];
+      var roomInfo = detail["roomStore"]["roomInfo"]["room"];
+      var owner = roomInfo["owner"];
+      var anchor = detail["roomStore"]["roomInfo"]["anchor"];
       var roomStatus = (asT<int?>(roomInfo["status"]) ?? 0) == 2;
-
       return LiveRoom(
         roomId: roomId,
         title: roomInfo["title"].toString(),
         cover: roomStatus ? roomInfo["cover"]["url_list"][0].toString() : "",
-        nick: userInfo["nickname"].toString(),
-        avatar: userInfo["avatar_thumb"]["url_list"][0].toString(),
+        nick: roomStatus ? owner["nickname"].toString() : anchor["nickname"].toString(),
+        avatar: roomStatus
+            ? owner["avatar_thumb"]["url_list"][0].toString()
+            : anchor["avatar_thumb"]["url_list"][0].toString(),
         watching: roomInfo?["room_view_stats"]?["display_value"].toString() ?? '',
-        liveStatus: roomStatus
-            ? LiveStatus.live
-            : result["status_code"] == 10011
-                ? LiveStatus.offline
-                : LiveStatus.banned,
+        liveStatus: roomStatus ? LiveStatus.live : LiveStatus.offline,
         link: "https://live.douyin.com/$webRid",
-        area: partition?['partition']?['title'].toString() ?? '',
+        area: '',
         status: roomStatus,
         platform: Sites.douyinSite,
         introduction: roomInfo["title"].toString(),
@@ -291,7 +276,7 @@ class DouyinSite implements LiveSite {
           userId: userUniqueId,
           cookie: headers["cookie"],
         ),
-        data: roomInfo["stream_url"],
+        data: roomStatus ? roomInfo["stream_url"] : {},
       );
     } catch (e) {
       developer.log(e.toString(), name: "result");
