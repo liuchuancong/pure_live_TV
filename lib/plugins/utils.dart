@@ -219,7 +219,9 @@ class Utils {
               (e) => RadioListTile<T>(
                 title: Text(e.toString()),
                 value: e,
+                // ignore: deprecated_member_use
                 groupValue: value,
+                // ignore: deprecated_member_use
                 onChanged: (e) {
                   Navigator.of(Get.context!).pop(e);
                 },

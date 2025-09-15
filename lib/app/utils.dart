@@ -127,7 +127,9 @@ class Utils {
               (e) => RadioListTile<T>(
                 title: Text(e.toString()),
                 value: e,
+                // ignore: deprecated_member_use
                 groupValue: value,
+                // ignore: deprecated_member_use
                 onChanged: (e) {
                   Navigator.of(Get.context!).pop(e);
                 },
@@ -152,7 +154,9 @@ class Utils {
               (e) => RadioListTile<T>(
                 title: Text((contents[e] ?? '-').tr),
                 value: e,
+                // ignore: deprecated_member_use
                 groupValue: value,
+                // ignore: deprecated_member_use
                 onChanged: (e) {
                   Navigator.of(Get.context!).pop(e);
                 },
