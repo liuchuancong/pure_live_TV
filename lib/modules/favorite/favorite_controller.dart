@@ -64,54 +64,38 @@ class FavoriteController extends GetxController {
 
   Future<bool> onRefresh() async {
     loading.value = true;
-    List<Future<LiveRoom>> futures = [];
-    if (settings.favoriteRooms.value.isEmpty) {
-      loading.value = false;
-      return false;
-    }
-    for (final room in settings.favoriteRooms.value) {
-      if (room.platform!.isNotEmpty) {
-        futures.add(
-          Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!),
-        );
-      }
-    }
-    List<List<Future<LiveRoom>>> groupedList = [];
-
-    // 每次循环处理四个元素
-    for (int i = 0; i < futures.length; i += 1) {
-      // 获取当前循环开始到下一个四个元素的位置（但不超过原列表长度）
-      int end = i + 1;
-      if (end > futures.length) {
-        end = futures.length;
-      }
-      // 截取当前四个元素的子列表
-      List<Future<LiveRoom>> subList = futures.sublist(i, end);
-      // 将子列表添加到结果列表中
-      groupedList.add(subList);
-    }
-
     try {
-      for (var i = 0; i < groupedList.length; i++) {
+      // 如果没有收藏的房间，直接结束刷新
+      if (settings.favoriteRooms.value.isEmpty) {
+        loading.value = false;
+        return false;
+      }
+
+      // 逐个处理每个收藏的房间
+      for (final room in settings.favoriteRooms.value) {
         try {
-          final rooms = await Future.wait(groupedList[i]);
-          for (var room in rooms) {
-            try {
-              settings.updateRoom(room);
-            } catch (e) {
-              debugPrint('Error during refresh for a single request: $e');
-            }
-          }
+          // 获取房间详情
+          final liveRoom =
+              await Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!);
+
+          // 更新房间信息
+          settings.updateRoom(liveRoom);
         } catch (e) {
-          debugPrint('Error during refresh for a batch of requests: $e');
+          debugPrint('刷新单个房间时出错: $e');
         }
-        syncRooms();
+
+        // 每个请求后间隔1秒，最后一个请求不需要延迟
+        if (room != settings.favoriteRooms.value.last && room.platform == Sites.douyinSite) {
+          await Future.delayed(const Duration(seconds: 1));
+        }
       }
     } catch (e) {
+      debugPrint('刷新过程中发生错误: $e');
+    } finally {
+      syncRooms();
+      isFirstLoad = false;
       loading.value = false;
     }
-    isFirstLoad = false;
-    loading.value = false;
     return false;
   }
 }
