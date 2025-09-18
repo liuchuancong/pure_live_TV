@@ -148,8 +148,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/keystore/
-    - assets/js/webmssdk.js
-    - assets/js/douyin.js
+    - assets/js/
     - assets/pure_live_web/
     - assets/pure_live_web/assets/
     - assets/pure_live_web/assets/fonts/

@@ -46,7 +46,7 @@ class DouyuDanmaku implements LiveDanmaku {
     webScoketUtils?.connect();
   }
 
-  void joinRoom(String roomId) {
+  void joinRoom(dynamic roomId) {
     webScoketUtils?.sendMessage(serializeDouyu("type@=loginreq/roomid@=$roomId/"));
     webScoketUtils?.sendMessage(serializeDouyu("type@=joingroup/rid@=$roomId/gid@=-9999/"));
   }
@@ -74,8 +74,11 @@ class DouyuDanmaku implements LiveDanmaku {
 
       var type = jsonData["type"]?.toString();
       //斗鱼好像不会返回人气值
-      //有些直播间存在阴间弹幕，不知道什么情况
       if (type == "chatmsg") {
+        // 屏蔽阴间弹幕
+        if (jsonData["dms"] == null) {
+          return;
+        }
         var col = int.tryParse(jsonData["col"].toString()) ?? 0;
         var liveMsg = LiveMessage(
           type: LiveMessageType.chat,
