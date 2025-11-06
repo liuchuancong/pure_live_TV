@@ -24,47 +24,31 @@ class _VideoPlayerState extends State<VideoPlayer> {
     );
   }
 
-  Widget _buildExoPlayerVideo() {
-    return Stack(
-      children: [
-        BetterPlayer(
-          key: widget.controller.playerKey,
-          controller: widget.controller.betterPlayerController,
-        ),
-        _buildVideoPanel(),
-      ],
-    );
-  }
-
   Widget _buildVideo() {
-    if (widget.controller.videoPlayerIndex == 0) {
-      return Obx(() => widget.controller.mediaPlayerControllerInitialized.value
-          ? media_kit_video.Video(
-              key: widget.controller.key,
-              controller: widget.controller.mediaPlayerController,
-              fit: widget.controller.settings.videofitArrary[widget.controller.settings.videoFitIndex.value],
-              controls: widget.controller.room.platform == Sites.iptvSite
-                  ? media_kit_video.MaterialVideoControls
-                  : (state) => _buildVideoPanel(),
-            )
-          : Card(
-              elevation: 0,
-              margin: const EdgeInsets.all(0),
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              clipBehavior: Clip.antiAlias,
-              color: Get.theme.focusColor,
-              child: CachedNetworkImage(
-                cacheManager: CustomCacheManager.instance,
-                imageUrl: widget.controller.room.cover!,
-                fit: BoxFit.fill,
-                errorWidget: (context, error, stackTrace) => const Center(
-                  child: Icon(Icons.live_tv_rounded, size: 48),
-                ),
+    return Obx(() => widget.controller.mediaPlayerControllerInitialized.value
+        ? media_kit_video.Video(
+            key: widget.controller.key,
+            controller: widget.controller.mediaPlayerController,
+            fit: widget.controller.settings.videofitArrary[widget.controller.settings.videoFitIndex.value],
+            controls: widget.controller.room.platform == Sites.iptvSite
+                ? media_kit_video.MaterialVideoControls
+                : (state) => _buildVideoPanel(),
+          )
+        : Card(
+            elevation: 0,
+            margin: const EdgeInsets.all(0),
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            clipBehavior: Clip.antiAlias,
+            color: Get.theme.focusColor,
+            child: CachedNetworkImage(
+              cacheManager: CustomCacheManager.instance,
+              imageUrl: widget.controller.room.cover!,
+              fit: BoxFit.fill,
+              errorWidget: (context, error, stackTrace) => const Center(
+                child: Icon(Icons.live_tv_rounded, size: 48),
               ),
-            ));
-    } else {
-      return _buildExoPlayerVideo();
-    }
+            ),
+          ));
   }
 
   @override

@@ -91,8 +91,6 @@ class VideoController with ChangeNotifier {
 
   int doubleClickTimeStamp = 0;
 
-  late BetterPlayerController betterPlayerController;
-
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
   var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
@@ -169,8 +167,7 @@ class VideoController with ChangeNotifier {
     danmakuFontSize.value = settings.danmakuFontSize.value;
     danmakuFontBorder.value = settings.danmakuFontBorder.value;
     danmakuOpacity.value = settings.danmakuOpacity.value;
-    videoPlayerIndex =
-        settings.videoPlayerIndex.value == 1 && room.platform == Sites.huyaSite ? 0 : settings.videoPlayerIndex.value;
+    videoPlayerIndex = settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
     scrollController = ScrollController();
     scrollController.addListener(() {
@@ -298,77 +295,40 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    if (videoPlayerIndex == 0) {
-      player = Player();
-      mediaPlayerController = settings.playerCompatMode.value
-          ? media_kit_video.VideoController(player,
-              configuration: media_kit_video.VideoControllerConfiguration(
-                vo: 'mediacodec_embed',
-                hwdec: 'mediacodec',
-              ))
-          : media_kit_video.VideoController(player,
-              configuration: media_kit_video.VideoControllerConfiguration(
-                enableHardwareAcceleration: enableCodec,
-                androidAttachSurfaceAfterVideoParameters: false,
-              ));
-      setDataSource(datasource);
-      mediaPlayerController.player.stream.playing.listen((bool playing) {
-        if (playing) {
-          if (!mediaPlayerControllerInitialized.value) {
-            mediaPlayerControllerInitialized.value = true;
-          }
-          isPlaying.value = true;
-        } else {
-          isPlaying.value = false;
+    player = Player();
+    mediaPlayerController = settings.playerCompatMode.value
+        ? media_kit_video.VideoController(player,
+            configuration: media_kit_video.VideoControllerConfiguration(
+              vo: 'mediacodec_embed',
+              hwdec: 'mediacodec',
+            ))
+        : media_kit_video.VideoController(player,
+            configuration: media_kit_video.VideoControllerConfiguration(
+              enableHardwareAcceleration: enableCodec,
+              androidAttachSurfaceAfterVideoParameters: false,
+            ));
+    setDataSource(datasource);
+    mediaPlayerController.player.stream.playing.listen((bool playing) {
+      if (playing) {
+        if (!mediaPlayerControllerInitialized.value) {
+          mediaPlayerControllerInitialized.value = true;
         }
-      });
-      mediaPlayerController.player.stream.error.listen((event) {
-        if (event.toString().contains('Failed to open')) {
-          hasError.value = true;
-          isPlaying.value = false;
-        }
-      });
-    } else {
-      BetterPlayerConfiguration betterPlayerConfiguration = BetterPlayerConfiguration(
-        aspectRatio: 16 / 9,
-        autoPlay: true,
-        fit: videoFit.value,
-        autoDetectFullscreenDeviceOrientation: true,
-        allowedScreenSleep: false,
-        autoDetectFullscreenAspectRatio: true,
-        errorBuilder: (context, errorMessage) => Container(),
-      );
-      betterPlayerController = BetterPlayerController(betterPlayerConfiguration);
-      betterPlayerController.setControlsEnabled(false);
-      betterPlayerController.addEventsListener(mobileStateListener);
-      setDataSource(datasource);
-    }
-  }
-
-  dynamic mobileStateListener(BetterPlayerEvent state) {
-    if (betterPlayerController.videoPlayerController != null) {
-      if (state.betterPlayerEventType == BetterPlayerEventType.exception) {
-        hasError.value = betterPlayerController.videoPlayerController?.value.hasError ?? true;
+        isPlaying.value = true;
+      } else {
+        isPlaying.value = false;
       }
-      isPlaying.value = betterPlayerController.isPlaying() ?? false;
-      isBuffering.value = betterPlayerController.isBuffering() ?? false;
-    }
+    });
+    mediaPlayerController.player.stream.error.listen((event) {
+      if (event.toString().contains('Failed to open')) {
+        hasError.value = true;
+        isPlaying.value = false;
+      }
+    });
   }
 
   void setDataSource(String url) async {
-    if (videoPlayerIndex == 0) {
-      player.pause();
-      player.open(Media(url, httpHeaders: headers));
-    } else {
-      betterPlayerController.setupDataSource(BetterPlayerDataSource(
-        BetterPlayerDataSourceType.network,
-        url,
-        videoFormat: room.platform == Sites.bilibiliSite ? BetterPlayerVideoFormat.hls : null,
-        liveStream: true,
-        headers: headers,
-      ));
-      betterPlayerController.pause();
-    }
+    player.pause();
+    player.open(Media(url, httpHeaders: headers));
   }
 
   void onKeyEvent(KeyEvent key) {
@@ -687,12 +647,7 @@ class VideoController with ChangeNotifier {
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
-    if (videoPlayerIndex == 0) {
-      player.dispose();
-    } else {
-      betterPlayerController.removeEventsListener(mobileStateListener);
-      betterPlayerController.dispose();
-    }
+    player.dispose();
   }
 
   void refresh() async {
@@ -730,20 +685,11 @@ class VideoController with ChangeNotifier {
     }
     settings.videoFitIndex.value = index;
 
-    if (videoPlayerIndex == 0) {
-      key.currentState?.update(fit: settings.videofitArrary[index]);
-    } else {
-      betterPlayerController.setOverriddenFit(videoFit.value);
-      betterPlayerController.retryDataSource();
-    }
+    key.currentState?.update(fit: settings.videofitArrary[index]);
   }
 
   void togglePlayPause() {
-    if (videoPlayerIndex == 0) {
-      mediaPlayerController.player.playOrPause();
-    } else {
-      isPlaying.value ? betterPlayerController.pause() : betterPlayerController.play();
-    }
+    mediaPlayerController.player.playOrPause();
   }
 
   void prevPlayChannel() {

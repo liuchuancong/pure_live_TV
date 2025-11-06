@@ -35,15 +35,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   @override
-  void initState() {
-    SettingsService settings = Get.find<SettingsService>();
-    if (settings.videoPlayerIndex.value > 1) {
-      settings.videoPlayerIndex.value = 0;
-    }
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
         designSize: const Size(1920, 1080),

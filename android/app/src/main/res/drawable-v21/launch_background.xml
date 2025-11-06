@@ -4,11 +4,19 @@
     <item android:drawable="?android:colorBackground" />
 
     <!-- You can insert your own image assets here -->
-     <item>
-        <!-- 中间的图片 -->
+    <!-- <item>
         <bitmap
             android:gravity="center"
-            android:scaleType="fitXY"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/launch_image" />
+    </item> -->
+     <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:startColor="#141e30"
+                android:centerColor="#243b55"
+                android:endColor="#141e30"
+                android:angle="135" />
+        </shape>
     </item>
 </layer-list>

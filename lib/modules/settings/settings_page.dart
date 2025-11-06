@@ -49,21 +49,21 @@ class SettingsPage extends GetView<SettingsService> {
                     controller.preferResolution.value = e;
                   },
                 )),
-            AppStyle.vGap24,
-            Obx(
-              () => SettingsItemWidget(
-                focusNode: controller.videoPlayerNode,
-                title: "播放器设置",
-                items: const {
-                  0: "Mpv播放器",
-                  1: "ExoPlayer播放器",
-                },
-                value: controller.videoPlayerIndex.value,
-                onChanged: (e) {
-                  controller.videoPlayerIndex.value = e;
-                },
-              ),
-            ),
+            // AppStyle.vGap24,
+            // Obx(
+            //   () => SettingsItemWidget(
+            //     focusNode: controller.videoPlayerNode,
+            //     title: "播放器设置",
+            //     items: const {
+            //       0: "Mpv播放器",
+            //       1: "ExoPlayer播放器",
+            //     },
+            //     value: controller.videoPlayerIndex.value,
+            //     onChanged: (e) {
+            //       controller.videoPlayerIndex.value = e;
+            //     },
+            //   ),
+            // ),
             AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
