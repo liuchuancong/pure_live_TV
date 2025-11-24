@@ -1,0 +1,9 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="tv.danmaku.ijk.media.player" >
+4
+5    <uses-sdk android:minSdkVersion="21" />
+5-->C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:4:5-5:37
+5-->C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:5:9-34
+6
+7</manifest>

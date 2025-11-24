@@ -486,6 +486,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flv_lzc:
+    dependency: "direct main"
+    description:
+      name: flv_lzc
+      sha256: cfec2cd681c5c1dafc0f150c9fcd0c20a43dcef634ecbed8f3a5b466bd84707b
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.1"
   font_awesome_flutter:
     dependency: "direct main"
     description:

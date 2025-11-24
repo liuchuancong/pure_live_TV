@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:flv_lzc/fijkplayer.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -91,6 +92,8 @@ class VideoController with ChangeNotifier {
 
   int doubleClickTimeStamp = 0;
 
+  final FijkPlayer ijkPlayer = FijkPlayer();
+
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
   var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
@@ -167,7 +170,8 @@ class VideoController with ChangeNotifier {
     danmakuFontSize.value = settings.danmakuFontSize.value;
     danmakuFontBorder.value = settings.danmakuFontBorder.value;
     danmakuOpacity.value = settings.danmakuOpacity.value;
-    videoPlayerIndex = settings.videoPlayerIndex.value;
+    videoPlayerIndex =
+        settings.videoPlayerIndex.value == 1 && room.platform == Sites.huyaSite ? 0 : settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
     scrollController = ScrollController();
     scrollController.addListener(() {
@@ -295,40 +299,49 @@ class VideoController with ChangeNotifier {
   }
 
   void initVideoController() async {
-    player = Player();
-    mediaPlayerController = settings.playerCompatMode.value
-        ? media_kit_video.VideoController(player,
-            configuration: media_kit_video.VideoControllerConfiguration(
-              vo: 'mediacodec_embed',
-              hwdec: 'mediacodec',
-            ))
-        : media_kit_video.VideoController(player,
-            configuration: media_kit_video.VideoControllerConfiguration(
-              enableHardwareAcceleration: enableCodec,
-              androidAttachSurfaceAfterVideoParameters: false,
-            ));
-    setDataSource(datasource);
-    mediaPlayerController.player.stream.playing.listen((bool playing) {
-      if (playing) {
-        if (!mediaPlayerControllerInitialized.value) {
-          mediaPlayerControllerInitialized.value = true;
+    if (videoPlayerIndex == 0) {
+      player = Player();
+      mediaPlayerController = settings.playerCompatMode.value
+          ? media_kit_video.VideoController(player,
+              configuration: media_kit_video.VideoControllerConfiguration(
+                vo: 'mediacodec_embed',
+                hwdec: 'mediacodec',
+              ))
+          : media_kit_video.VideoController(player,
+              configuration: media_kit_video.VideoControllerConfiguration(
+                enableHardwareAcceleration: enableCodec,
+                androidAttachSurfaceAfterVideoParameters: false,
+              ));
+      setDataSource(datasource);
+      mediaPlayerController.player.stream.playing.listen((bool playing) {
+        if (playing) {
+          if (!mediaPlayerControllerInitialized.value) {
+            mediaPlayerControllerInitialized.value = true;
+          }
+          isPlaying.value = true;
+        } else {
+          isPlaying.value = false;
         }
-        isPlaying.value = true;
-      } else {
-        isPlaying.value = false;
-      }
-    });
-    mediaPlayerController.player.stream.error.listen((event) {
-      if (event.toString().contains('Failed to open')) {
-        hasError.value = true;
-        isPlaying.value = false;
-      }
-    });
+      });
+      mediaPlayerController.player.stream.error.listen((event) {
+        if (event.toString().contains('Failed to open')) {
+          hasError.value = true;
+          isPlaying.value = false;
+        }
+      });
+    } else {
+      setDataSource(datasource);
+    }
   }
 
   void setDataSource(String url) async {
-    player.pause();
-    player.open(Media(url, httpHeaders: headers));
+    if (videoPlayerIndex == 0) {
+      player.pause();
+      player.open(Media(url, httpHeaders: headers));
+    } else {
+      await ijkPlayer.setOption(FijkOption.formatCategory, "headers", headers);
+      ijkPlayer.setDataSource(url, autoPlay: autoPlay);
+    }
   }
 
   void onKeyEvent(KeyEvent key) {
@@ -647,7 +660,12 @@ class VideoController with ChangeNotifier {
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
-    player.dispose();
+    if (videoPlayerIndex == 0) {
+      player.dispose();
+    } else {
+      ijkPlayer.release();
+    }
+    await Future.delayed(const Duration(milliseconds: 10));
   }
 
   void refresh() async {
@@ -685,11 +703,21 @@ class VideoController with ChangeNotifier {
     }
     settings.videoFitIndex.value = index;
 
-    key.currentState?.update(fit: settings.videofitArrary[index]);
+    if (videoPlayerIndex == 0) {
+      key.currentState?.update(fit: settings.videofitArrary[index]);
+    } else {}
   }
 
   void togglePlayPause() {
-    mediaPlayerController.player.playOrPause();
+    if (videoPlayerIndex == 0) {
+      mediaPlayerController.player.playOrPause();
+    } else {
+      if (isPlaying.value) {
+        ijkPlayer.pause();
+      } else {
+        ijkPlayer.start();
+      }
+    }
   }
 
   void prevPlayChannel() {

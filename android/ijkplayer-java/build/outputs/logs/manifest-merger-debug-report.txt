@@ -1,0 +1,18 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:1:1-7:12
+INJECTED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:1:1-7:12
+	package
+		ADDED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:2:5-42
+		INJECTED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:1:11-69
+uses-sdk
+ADDED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:4:5-5:37
+INJECTED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:4:5-5:37
+INJECTED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:4:5-5:37
+	android:targetSdkVersion
+		INJECTED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		ADDED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml:5:9-34
+		INJECTED from C:\Users\XA-158\projects\flutter\mytv-android\ijkplayer-java\src\main\AndroidManifest.xml

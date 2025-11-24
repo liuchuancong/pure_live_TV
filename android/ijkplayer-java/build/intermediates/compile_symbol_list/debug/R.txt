@@ -1,0 +1,1 @@
+int string ijkplayer_dummy 0x0
