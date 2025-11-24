@@ -48,13 +48,10 @@ android {
 
     defaultConfig {
         applicationId "com.mystyle.purelive"
-        minSdkVersion 21
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 33  
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a' 
-        }
     }
 
     signingConfigs {
