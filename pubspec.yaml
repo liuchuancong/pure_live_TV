@@ -56,9 +56,6 @@ dependencies:
     git:
       url:  https://github.com/xiaoyaocz/dart_simple_live.git
       path: ./simple_live_core/packages/tars_dart
-  media_kit: ^1.2.1 # Primary package.
-  media_kit_video: ^1.3.1 # For video rendering.
-  media_kit_libs_video: ^1.0.7 # Native video dependencies.
   share_handler: ^0.0.19
   bordered_text: ^2.0.0
   flutter_color: ^2.1.0
@@ -148,13 +145,6 @@ flutter:
     - assets/icons/
     - assets/keystore/
     - assets/js/
-    - assets/pure_live_web/
-    - assets/pure_live_web/assets/
-    - assets/pure_live_web/assets/fonts/
-    - assets/pure_live_web/assets/shaders/
-    - assets/pure_live_web/canvaskit/
-    - assets/pure_live_web/canvaskit/chromium/
-    - assets/pure_live_web/icons/
     - assets/statement.txt
     - assets/images/
     - assets/icons/

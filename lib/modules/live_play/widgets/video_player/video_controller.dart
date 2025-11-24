@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:canvas_danmaku/danmaku_controller.dart';
@@ -9,7 +8,6 @@ import 'package:canvas_danmaku/models/danmaku_option.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
-import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
@@ -96,13 +94,6 @@ class VideoController with ChangeNotifier {
   var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
 
   static const danmakuAbleKey = ValueKey(DanmakuSettingClickType.danmakuAble);
-
-  // A [GlobalKey<VideoState>] is required to access the programmatic fullscreen interface.
-  late final GlobalKey<media_kit_video.VideoState> key = GlobalKey<media_kit_video.VideoState>();
-  // CeoController] to handle video output from [Player].
-  late media_kit_video.VideoController mediaPlayerController;
-
-  late Player player;
   // 是否手动暂停
   var isActivePause = true.obs;
 
@@ -294,42 +285,9 @@ class VideoController with ChangeNotifier {
     danmukuNodeIndex.value = 0;
   }
 
-  void initVideoController() async {
-    player = Player();
-    mediaPlayerController = settings.playerCompatMode.value
-        ? media_kit_video.VideoController(player,
-            configuration: media_kit_video.VideoControllerConfiguration(
-              vo: 'mediacodec_embed',
-              hwdec: 'mediacodec',
-            ))
-        : media_kit_video.VideoController(player,
-            configuration: media_kit_video.VideoControllerConfiguration(
-              enableHardwareAcceleration: enableCodec,
-              androidAttachSurfaceAfterVideoParameters: false,
-            ));
-    setDataSource(datasource);
-    mediaPlayerController.player.stream.playing.listen((bool playing) {
-      if (playing) {
-        if (!mediaPlayerControllerInitialized.value) {
-          mediaPlayerControllerInitialized.value = true;
-        }
-        isPlaying.value = true;
-      } else {
-        isPlaying.value = false;
-      }
-    });
-    mediaPlayerController.player.stream.error.listen((event) {
-      if (event.toString().contains('Failed to open')) {
-        hasError.value = true;
-        isPlaying.value = false;
-      }
-    });
-  }
+  void initVideoController() async {}
 
-  void setDataSource(String url) async {
-    player.pause();
-    player.open(Media(url, httpHeaders: headers));
-  }
+  void setDataSource(String url) async {}
 
   void onKeyEvent(KeyEvent key) {
     if (key is KeyUpEvent) {
@@ -647,7 +605,6 @@ class VideoController with ChangeNotifier {
     hasError.value = false;
     livePlayController.success.value = false;
     hasDestory = true;
-    player.dispose();
   }
 
   void refresh() async {
@@ -684,13 +641,9 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
-
-    key.currentState?.update(fit: settings.videofitArrary[index]);
   }
 
-  void togglePlayPause() {
-    mediaPlayerController.player.playOrPause();
-  }
+  void togglePlayPause() {}
 
   void prevPlayChannel() {
     showChangeNameFlag.value = true;
