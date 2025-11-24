@@ -84,6 +84,9 @@ android {
         }
     }
 }
+dependencies {
+    implementation(project(":ijkplayer-java"))
+}
 
 flutter {
     source = "../.."
