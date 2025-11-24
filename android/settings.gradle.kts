@@ -29,3 +29,4 @@ plugins {
 }
 
 include(":app")
+include(":ijkplayer-java")
