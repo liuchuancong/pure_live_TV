@@ -1,8 +1,10 @@
+import 'dart:math';
 import 'package:get/get.dart';
 import 'package:flv_lzc/fijkplayer.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
+import 'package:pure_live/modules/live_play/widgets/video_player/fijk_helper.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller_panel.dart';
 
@@ -25,14 +27,56 @@ class _VideoPlayerState extends State<VideoPlayer> {
     );
   }
 
+  Widget _buildIjkPanel(
+    FijkPlayer fijkPlayer,
+    FijkData fijkData,
+    BuildContext context,
+    Size viewSize,
+    Rect texturePos,
+  ) {
+    Rect rect = widget.controller.ijkPlayer.value.fullScreen
+        ? Rect.fromLTWH(0, 0, viewSize.width, viewSize.height)
+        : Rect.fromLTRB(
+            max(0.0, texturePos.left),
+            max(0.0, texturePos.top),
+            min(viewSize.width, texturePos.right),
+            min(viewSize.height, texturePos.bottom),
+          );
+    return Positioned.fromRect(
+      rect: rect,
+      child: VideoControllerPanel(controller: widget.controller),
+    );
+  }
+
   Widget _buildIjkPlayerVideo() {
-    return Stack(
-      children: [
-        FijkView(
-          player: widget.controller.ijkPlayer,
+    return Material(
+      key: ValueKey(widget.controller.videoFit.value),
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            Container(
+              color: Colors.black, // 设置你想要的背景色
+            ),
+            FijkView(
+              player: widget.controller.ijkPlayer,
+              fit: FijkHelper.getIjkBoxFit(widget.controller.videoFit.value),
+              fs: false,
+              color: Colors.black,
+              panelBuilder: (
+                FijkPlayer fijkPlayer,
+                FijkData fijkData,
+                BuildContext context,
+                Size viewSize,
+                Rect texturePos,
+              ) =>
+                  Container(),
+            ),
+            VideoControllerPanel(controller: widget.controller),
+          ],
         ),
-        _buildVideoPanel(),
-      ],
+      ),
     );
   }
 

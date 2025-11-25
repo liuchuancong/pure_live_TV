@@ -11,6 +11,7 @@ import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
+import 'package:pure_live/modules/live_play/widgets/video_player/fijk_helper.dart';
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
@@ -92,7 +93,7 @@ class VideoController with ChangeNotifier {
 
   int doubleClickTimeStamp = 0;
 
-  final FijkPlayer ijkPlayer = FijkPlayer();
+  late FijkPlayer ijkPlayer;
 
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
@@ -330,6 +331,7 @@ class VideoController with ChangeNotifier {
         }
       });
     } else {
+      ijkPlayer = FijkPlayer();
       setDataSource(datasource);
     }
   }
@@ -339,9 +341,15 @@ class VideoController with ChangeNotifier {
       player.pause();
       player.open(Media(url, httpHeaders: headers));
     } else {
-      await ijkPlayer.setOption(FijkOption.formatCategory, "headers", headers);
+      await FijkHelper.setFijkOption(ijkPlayer, enableCodec: enableCodec, headers: headers);
       ijkPlayer.setDataSource(url, autoPlay: autoPlay);
+      ijkPlayer.addListener(_playerListener);
     }
+  }
+
+  void _playerListener() {
+    isPlaying.value = ijkPlayer.state == FijkState.started;
+    hasError.value = ijkPlayer.state == FijkState.error;
   }
 
   void onKeyEvent(KeyEvent key) {
