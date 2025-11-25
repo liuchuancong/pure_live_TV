@@ -149,6 +149,13 @@ flutter:
     - assets/icons/
     - assets/keystore/
     - assets/js/
+    - assets/pure_live_web/
+    - assets/pure_live_web/assets/
+    - assets/pure_live_web/assets/fonts/
+    - assets/pure_live_web/assets/shaders/
+    - assets/pure_live_web/canvaskit/
+    - assets/pure_live_web/canvaskit/chromium/
+    - assets/pure_live_web/icons/
     - assets/statement.txt
     - assets/images/
     - assets/icons/
