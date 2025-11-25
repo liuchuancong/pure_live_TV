@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:get/get.dart';
 import 'package:flv_lzc/fijkplayer.dart';
 import 'package:pure_live/common/index.dart';
@@ -24,27 +23,6 @@ class _VideoPlayerState extends State<VideoPlayer> {
   Widget _buildVideoPanel() {
     return VideoControllerPanel(
       controller: widget.controller,
-    );
-  }
-
-  Widget _buildIjkPanel(
-    FijkPlayer fijkPlayer,
-    FijkData fijkData,
-    BuildContext context,
-    Size viewSize,
-    Rect texturePos,
-  ) {
-    Rect rect = widget.controller.ijkPlayer.value.fullScreen
-        ? Rect.fromLTWH(0, 0, viewSize.width, viewSize.height)
-        : Rect.fromLTRB(
-            max(0.0, texturePos.left),
-            max(0.0, texturePos.top),
-            min(viewSize.width, texturePos.right),
-            min(viewSize.height, texturePos.bottom),
-          );
-    return Positioned.fromRect(
-      rect: rect,
-      child: VideoControllerPanel(controller: widget.controller),
     );
   }
 
