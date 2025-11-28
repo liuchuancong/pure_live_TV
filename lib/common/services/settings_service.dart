@@ -149,8 +149,9 @@ class SettingsService extends GetxController {
   };
 
   // Make a custom ColorSwatch to name map from the above custom colors.
-  final Map<ColorSwatch<Object>, String> colorsNameMap =
-      themeColors.map((key, value) => MapEntry(ColorTools.createPrimarySwatch(value), key));
+  final Map<ColorSwatch<Object>, String> colorsNameMap = themeColors.map(
+    (key, value) => MapEntry(ColorTools.createPrimarySwatch(value), key),
+  );
 
   final StopWatchTimer _stopWatchTimer = StopWatchTimer(mode: StopWatchMode.countDown); // Create instance.
 
@@ -253,7 +254,7 @@ class SettingsService extends GetxController {
     BoxFit.fill,
     BoxFit.cover,
     BoxFit.fitWidth,
-    BoxFit.fitHeight
+    BoxFit.fitHeight,
   ];
 
   final preferResolution = (PrefUtil.getString('preferResolution') ?? resolutions[0]).obs;
@@ -355,14 +356,12 @@ class SettingsService extends GetxController {
   LiveRoom getLiveRoomByRoomId(String roomId, String platform) {
     if (!favoriteRooms.any((element) => element.roomId == roomId && element.platform == platform) &&
         !historyRooms.any((element) => element.roomId == roomId && element.platform == platform)) {
-      return LiveRoom(
-        roomId: roomId,
-        platform: platform,
-        liveStatus: LiveStatus.unknown,
-      );
+      return LiveRoom(roomId: roomId, platform: platform, liveStatus: LiveStatus.unknown);
     }
-    return favoriteRooms.firstWhere((element) => element.roomId == roomId && element.platform == platform,
-        orElse: () => historyRooms.firstWhere((element) => element.roomId == roomId && element.platform == platform));
+    return favoriteRooms.firstWhere(
+      (element) => element.roomId == roomId && element.platform == platform,
+      orElse: () => historyRooms.firstWhere((element) => element.roomId == roomId && element.platform == platform),
+    );
   }
 
   bool addRoom(LiveRoom room) {
@@ -434,13 +433,17 @@ class SettingsService extends GetxController {
       ((PrefUtil.getStringList('favoriteAreas') ?? []).map((e) => LiveArea.fromJson(jsonDecode(e))).toList()).obs;
 
   bool isFavoriteArea(LiveArea area) {
-    return favoriteAreas.any((element) =>
-        element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType);
+    return favoriteAreas.any(
+      (element) =>
+          element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType,
+    );
   }
 
   bool addArea(LiveArea area) {
-    if (favoriteAreas.any((element) =>
-        element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType)) {
+    if (favoriteAreas.any(
+      (element) =>
+          element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType,
+    )) {
       return false;
     }
     favoriteAreas.add(area);
@@ -448,8 +451,10 @@ class SettingsService extends GetxController {
   }
 
   bool removeArea(LiveArea area) {
-    if (!favoriteAreas.any((element) =>
-        element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType)) {
+    if (!favoriteAreas.any(
+      (element) =>
+          element.areaId == area.areaId && element.platform == area.platform && element.areaType == area.areaType,
+    )) {
       return false;
     }
     favoriteAreas.remove(area);
@@ -497,8 +502,9 @@ class SettingsService extends GetxController {
         ? (json['favoriteAreas'] as List).map<LiveArea>((e) => LiveArea.fromJson(jsonDecode(e))).toList()
         : [];
     shieldList.value = json['shieldList'] != null ? (json['shieldList'] as List).map((e) => e.toString()).toList() : [];
-    hotAreasList.value =
-        json['hotAreasList'] != null ? (json['hotAreasList'] as List).map((e) => e.toString()).toList() : [];
+    hotAreasList.value = json['hotAreasList'] != null
+        ? (json['hotAreasList'] as List).map((e) => e.toString()).toList()
+        : [];
     themeModeName.value = json['themeMode'] ?? "System";
     enableDynamicTheme.value = json['enableDynamicTheme'] ?? false;
     enableDenseFavorites.value = json['enableDenseFavorites'] ?? false;

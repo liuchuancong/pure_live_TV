@@ -2,8 +2,8 @@ import java.util.Properties // 添加Properties类的导入
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    // Flutter Gradle插件必须在Android和Kotlin插件之后应用
+    id("kotlin-android")
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -35,18 +35,17 @@ android {
         disable.add("NullSafeMutableLiveData")
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     defaultConfig {
         applicationId = "com.mystyle.purelive"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        multiDexEnabled = true
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -57,27 +56,12 @@ android {
             keyPassword = keystoreProperties["keyPassword"].toString()
             storeFile = file(keystoreProperties["storeFile"].toString())
             storePassword = keystoreProperties["storePassword"].toString()
-            isV1SigningEnabled = true
-            isV2SigningEnabled = true
         }
     }
-    
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            pickFirsts += "lib/**/libc++_shared.so"
-        }
-    }
-    
+
     buildTypes {
        release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                file("proguard-rules.pro")
-            )
         }
        debug {
             signingConfig = signingConfigs.getByName("release")

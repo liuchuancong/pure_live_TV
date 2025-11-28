@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 2.0.0+1
 
 environment:
-  sdk: '>=3.0.6 <4.0.0'
+  sdk: ^3.9.2
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -33,8 +33,6 @@ dependencies:
 
   flutter_localizations:
     sdk: flutter
-  #hashlib
-  hashlib: ^2.0.0
   flutter_js: ^0.8.5
   html: ^0.15.4
   http: ^1.1.0
@@ -49,7 +47,6 @@ dependencies:
   # barrage wall
   quiver: ^3.2.1
   flex_color_picker: ^3.3.0
-  visibility_detector: ^0.4.0+2
   # database
   font_awesome_flutter: ^10.6.0
   tars_dart:
@@ -60,13 +57,8 @@ dependencies:
   media_kit_video: ^1.3.1 # For video rendering.
   media_kit_libs_video: ^1.0.7 # Native video dependencies.
   flv_lzc: ^1.0.1
-  share_handler: ^0.0.19
   bordered_text: ^2.0.0
   flutter_color: ^2.1.0
-  url_protocol:
-    git:
-      url: https://github.com/LucasXu0/flutter_url_protocol.git
-      commit: 77a8420
   protobuf: ^4.0.0
   fixnum: ^1.1.0
   dio: ^5.3.3
@@ -90,7 +82,7 @@ dependencies:
   crypto: ^3.0.6
   brotli: ^0.6.0
   device_info_plus: ^11.2.0
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.8
   remixicon: ^1.0.0 #Remix图标
   lottie: ^3.1.0 #Lottie动画
   marquee_list: ^1.0.0
@@ -120,7 +112,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^6.0.0
+  flutter_lints: ^5.0.0
 
 # flutter pub run flutter_launcher_icons
 flutter_icons:

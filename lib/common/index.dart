@@ -15,7 +15,6 @@ export 'package:pure_live/common/index.dart';
 export 'package:pure_live/routes/app_pages.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:pure_live/routes/route_path.dart';
-export 'package:share_handler/share_handler.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 export 'package:group_button/group_button.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
