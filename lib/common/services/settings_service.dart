@@ -327,7 +327,7 @@ class SettingsService extends GetxController {
   static final List<Map<dynamic, String>> currentBoxImageSources = [
     {"不使用": 'default'},
     {"必应随机": 'https://bing.img.run/rand.php'},
-    {"kf666888": 'http://www.kf666888.cn/api/tvbox/img'},
+    {"timeline": 'https://gallery.timeline.ink/flip/rand'},
     {"picsum": 'https://picsum.photos/1280/720/?blur=10'},
     {"dmoe": 'https://www.dmoe.cc/random.php'},
     {"btstu动漫": 'https://api.btstu.cn/sjbz/?lx=dongman'},

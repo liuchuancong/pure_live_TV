@@ -730,7 +730,70 @@ class VideoController with ChangeNotifier {
         };
         danmakuSpeed.value = handleDanmuKeyRight(items, danmakuSpeed.value);
       case DanmakuSettingClickType.danmakuArea:
-        Map<dynamic, String> items = {0.25: "1/4", 0.5: "1/2", 0.75: "3/4", 1.0: "全屏"};
+        Map<dynamic, String> items = {
+          0.1: '10%',
+          0.2: '20%',
+          0.3: '30%',
+          0.4: '40%',
+          0.5: '50%',
+          0.6: '60%',
+          0.7: '70%',
+          0.8: '80%',
+          0.9: '90%',
+          1.0: '100%',
+        };
+        danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
+        break;
+      case DanmakuSettingClickType.danmakuTopArea:
+        Map<dynamic, String> items = {
+          0: '0',
+          5: '5',
+          10: '10',
+          15: '15',
+          20: '20',
+          25: '25',
+          30: '30',
+          35: '35',
+          40: '40',
+          45: '45',
+          50: '50',
+          55: '55',
+          60: '60',
+          65: '65',
+          70: '70',
+          75: '75',
+          80: '80',
+          85: '85',
+          90: '90',
+          95: '95',
+          100: '100',
+        };
+        danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
+        break;
+      case DanmakuSettingClickType.danmakuBottomArea:
+        Map<dynamic, String> items = {
+          0: '0',
+          5: '5',
+          10: '10',
+          15: '15',
+          20: '20',
+          25: '25',
+          30: '30',
+          35: '35',
+          40: '40',
+          45: '45',
+          50: '50',
+          55: '55',
+          60: '60',
+          65: '65',
+          70: '70',
+          75: '75',
+          80: '80',
+          85: '85',
+          90: '90',
+          95: '95',
+          100: '100',
+        };
         danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
         break;
       case DanmakuSettingClickType.danmakuOpacity:
@@ -791,7 +854,42 @@ class VideoController with ChangeNotifier {
         danmakuFontSize.value = handleDanmuKeyLeft(items, danmakuFontSize.value);
         break;
       case DanmakuSettingClickType.danmakuSpeed:
-        Map<dynamic, String> items = {18.0: "很慢", 14.0: "较慢", 12.0: "慢", 10.0: "正常", 8.0: "快", 6.0: "较快", 4.0: "很快"};
+        Map<dynamic, String> items = {
+          4.0: "速度1",
+          6.0: "速度2",
+          8.0: "速度3",
+          10.0: "速度4",
+          12.0: "速度5",
+          14.0: "速度6",
+          16.0: "速度7",
+          18.0: "速度8",
+          20.0: "速度9",
+          22.0: "速度10",
+          24.0: "速度11",
+          26.0: "速度12",
+          28.0: "速度13",
+          30.0: "速度14",
+          32.0: "速度15",
+          34.0: "速度16",
+          36.0: "速度17",
+          38.0: "速度18",
+          40.0: "速度19",
+          42.0: "速度20",
+          44.0: "速度21",
+          46.0: "速度22",
+          48.0: "速度23",
+          50.0: "速度24",
+          52.0: "速度25",
+          54.0: "速度26",
+          56.0: "速度27",
+          58.0: "速度28",
+          60.0: "速度29",
+          62.0: "速度30",
+          64.0: "速度31",
+          66.0: "速度32",
+          68.0: "速度33",
+          70.0: "速度34",
+        };
         danmakuSpeed.value = handleDanmuKeyLeft(items, danmakuSpeed.value);
       case DanmakuSettingClickType.danmakuArea:
         Map<dynamic, String> items = {0.2: "1/5", 0.25: "1/4", 0.5: "1/2", 0.6: "3/5", 0.75: "3/4", 1.0: "全屏"};
@@ -811,6 +909,59 @@ class VideoController with ChangeNotifier {
           1.0: "100%",
         };
         danmakuOpacity.value = handleDanmuKeyLeft(items, danmakuOpacity.value);
+        break;
+      case DanmakuSettingClickType.danmakuTopArea:
+        Map<dynamic, String> items = {
+          0: '0',
+          5: '5',
+          10: '10',
+          15: '15',
+          20: '20',
+          25: '25',
+          30: '30',
+          35: '35',
+          40: '40',
+          45: '45',
+          50: '50',
+          55: '55',
+          60: '60',
+          65: '65',
+          70: '70',
+          75: '75',
+          80: '80',
+          85: '85',
+          90: '90',
+          95: '95',
+          100: '100',
+        };
+        danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
+        break;
+      case DanmakuSettingClickType.danmakuBottomArea:
+        Map<dynamic, String> items = {
+          0: '0',
+          5: '5',
+          10: '10',
+          15: '15',
+          20: '20',
+          25: '25',
+          30: '30',
+          35: '35',
+          40: '40',
+          45: '45',
+          50: '50',
+          55: '55',
+          60: '60',
+          65: '65',
+          70: '70',
+          75: '75',
+          80: '80',
+          85: '85',
+          90: '90',
+          95: '95',
+          100: '100',
+        };
+        danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
+        break;
       case DanmakuSettingClickType.danmakuStorke:
         Map<dynamic, String> items = {
           0.0: "2",
@@ -835,4 +986,13 @@ class VideoController with ChangeNotifier {
 
 enum BottomButtonClickType { favorite, refresh, playPause, danmaku, settings, qualityName, changeLine, boxFit }
 
-enum DanmakuSettingClickType { danmakuAble, danmakuSize, danmakuSpeed, danmakuArea, danmakuOpacity, danmakuStorke }
+enum DanmakuSettingClickType {
+  danmakuAble,
+  danmakuSize,
+  danmakuSpeed,
+  danmakuArea,
+  danmakuTopArea,
+  danmakuBottomArea,
+  danmakuOpacity,
+  danmakuStorke,
+}
