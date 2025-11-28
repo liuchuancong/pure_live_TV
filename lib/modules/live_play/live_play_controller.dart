@@ -11,10 +11,7 @@ import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/modules/live_play/widgets/index.dart';
 
 class LivePlayController extends StateController {
-  LivePlayController({
-    required this.room,
-    required this.site,
-  });
+  LivePlayController({required this.room, required this.site});
   final String site;
 
   late final Site currentSite = Sites.of(site);
@@ -214,8 +211,9 @@ class LivePlayController extends StateController {
   }
 
   void resetGlobalListState() {
-    var index = settings.currentPlayList.indexWhere((element) =>
-        element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform);
+    var index = settings.currentPlayList.indexWhere(
+      (element) => element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform,
+    );
     currentChannelIndex.value = index > -1 ? index : 0;
     settings.currentPlayListNodeIndex.value = currentChannelIndex.value;
   }
@@ -333,12 +331,7 @@ class LivePlayController extends StateController {
       );
     }
     messages.add(
-      LiveMessage(
-        type: LiveMessageType.chat,
-        userName: "系统消息",
-        message: "开始连接弹幕服务器",
-        color: LiveMessageColor.white,
-      ),
+      LiveMessage(type: LiveMessageType.chat, userName: "系统消息", message: "开始连接弹幕服务器", color: LiveMessageColor.white),
     );
     liveDanmaku.onMessage = (msg) {
       if (msg.type == LiveMessageType.chat) {
@@ -350,22 +343,12 @@ class LivePlayController extends StateController {
     };
     liveDanmaku.onClose = (msg) {
       messages.add(
-        LiveMessage(
-          type: LiveMessageType.chat,
-          userName: "系统消息",
-          message: msg,
-          color: LiveMessageColor.white,
-        ),
+        LiveMessage(type: LiveMessageType.chat, userName: "系统消息", message: msg, color: LiveMessageColor.white),
       );
     };
     liveDanmaku.onReady = () {
       messages.add(
-        LiveMessage(
-          type: LiveMessageType.chat,
-          userName: "系统消息",
-          message: "弹幕服务器连接正常",
-          color: LiveMessageColor.white,
-        ),
+        LiveMessage(type: LiveMessageType.chat, userName: "系统消息", message: "弹幕服务器连接正常", color: LiveMessageColor.white),
       );
     };
   }
@@ -392,7 +375,7 @@ class LivePlayController extends StateController {
       SmartDialog.showToast(S.current.double_click_to_exit);
       return await Future.value(false);
     }
-    if (videoController != null && videoController!.hasDestory == false) {
+    if (videoController != null) {
       videoController?.focusNode.requestFocus();
       videoController!.destory();
     }
@@ -444,8 +427,10 @@ class LivePlayController extends StateController {
   }
 
   void getPlayUrl() async {
-    var playUrl =
-        await currentSite.liveSite.getPlayUrls(detail: detail.value!, quality: qualites[currentQuality.value]);
+    var playUrl = await currentSite.liveSite.getPlayUrls(
+      detail: detail.value!,
+      quality: qualites[currentQuality.value],
+    );
     if (playUrl.isEmpty) {
       SmartDialog.showToast("无法读取播放地址,请按确定键重新获取", displayTime: const Duration(seconds: 2));
       getVideoSuccess.value = false;
@@ -479,15 +464,11 @@ class LivePlayController extends StateController {
         "upgrade-insecure-requests": "1",
         "user-agent":
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-        "referer": "https://live.bilibili.com"
+        "referer": "https://live.bilibili.com",
       };
     } else if (currentSite.id == 'huya') {
       var ua = await HuyaSite().getHuYaUA();
-      headers = {
-        "user-agent": ua,
-        "origin": "https://www.huya.com",
-        "cookie": settings.huyaCookie.value,
-      };
+      headers = {"user-agent": ua, "origin": "https://www.huya.com", "cookie": settings.huyaCookie.value};
     }
     videoController = VideoController(
       playerKey: playerKey,
@@ -581,7 +562,7 @@ class LivePlayController extends StateController {
   void resetRoom(Site site, String roomId) async {
     success.value = false;
     hasError.value = false;
-    if (videoController != null && videoController!.hasDestory == false) {
+    if (videoController != null) {
       await videoController?.destory();
       videoController = null;
     }

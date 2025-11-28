@@ -1,17 +1,14 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
-import 'package:flv_lzc/fijkplayer.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:canvas_danmaku/danmaku_controller.dart';
 import 'package:canvas_danmaku/models/danmaku_option.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
+import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
-import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
-import 'package:pure_live/modules/live_play/widgets/video_player/fijk_helper.dart';
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
@@ -36,19 +33,9 @@ class VideoController with ChangeNotifier {
 
   double initBrightness = 0.0;
 
-  bool hasDestory = false;
-
-  final hasError = false.obs;
-
-  final isPlaying = false.obs;
-
-  final isBuffering = false.obs;
-
   LivePlayController livePlayController = Get.find<LivePlayController>();
 
   final SettingsService settings = Get.find<SettingsService>();
-
-  final mediaPlayerControllerInitialized = false.obs;
 
   int videoPlayerIndex = 0;
 
@@ -57,12 +44,6 @@ class VideoController with ChangeNotifier {
   AppFocusNode focusNode = AppFocusNode();
 
   late ScrollController scrollController;
-  // Controller ui status
-  ///State of navigator on widget created
-  late NavigatorState navigatorState;
-
-  ///Flag which determines if widget has initialized
-  final initialized = false.obs;
 
   Timer? showControllerTimer;
   // Controller ui status
@@ -93,24 +74,27 @@ class VideoController with ChangeNotifier {
 
   int doubleClickTimeStamp = 0;
 
-  late FijkPlayer ijkPlayer;
-
   var currentBottomClickType = BottomButtonClickType.favorite.obs;
 
   var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
 
   static const danmakuAbleKey = ValueKey(DanmakuSettingClickType.danmakuAble);
-
-  // A [GlobalKey<VideoState>] is required to access the programmatic fullscreen interface.
-  late final GlobalKey<media_kit_video.VideoState> key = GlobalKey<media_kit_video.VideoState>();
-  // CeoController] to handle video output from [Player].
-  late media_kit_video.VideoController mediaPlayerController;
-
-  late Player player;
   // 是否手动暂停
   var isActivePause = true.obs;
 
   Timer? hasActivePause;
+
+  final globalPlayer = SwitchableGlobalPlayer();
+
+  final hasError = false.obs;
+
+  final isPlaying = false.obs;
+
+  final isLoading = false.obs;
+
+  late StreamSubscription<bool> _loadingSub;
+  late StreamSubscription<bool> _playingSub;
+  late StreamSubscription<String?> _errorSub;
 
   // 五秒关闭控制器
   void enableController() {
@@ -142,6 +126,20 @@ class VideoController with ChangeNotifier {
     danmukuNodeIndex.value = 0;
   }
 
+  initSubscriptions() {
+    _loadingSub = globalPlayer.onLoading.listen((loading) {
+      isLoading.value = loading;
+    });
+    _playingSub = globalPlayer.onPlaying.listen((playing) {
+      isPlaying.value = playing;
+    });
+    _errorSub = globalPlayer.onError.listen((error) {
+      if (error != null && error.isNotEmpty) {
+        hasError.value = true;
+      }
+    });
+  }
+
   // Danmaku player control
   late DanmakuController danmakuController;
   final hideDanmaku = false.obs;
@@ -163,7 +161,6 @@ class VideoController with ChangeNotifier {
     this.autoPlay = true,
     BoxFit fitMode = BoxFit.contain,
   }) {
-    hasDestory = false;
     videoFit.value = settings.videofitArrary[settings.videoFitIndex.value];
     hideDanmaku.value = settings.hideDanmaku.value;
     danmakuArea.value = settings.danmakuArea.value;
@@ -171,8 +168,7 @@ class VideoController with ChangeNotifier {
     danmakuFontSize.value = settings.danmakuFontSize.value;
     danmakuFontBorder.value = settings.danmakuFontBorder.value;
     danmakuOpacity.value = settings.danmakuOpacity.value;
-    videoPlayerIndex =
-        settings.videoPlayerIndex.value == 1 && room.platform == Sites.huyaSite ? 0 : settings.videoPlayerIndex.value;
+    videoPlayerIndex = settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
     scrollController = ScrollController();
     scrollController.addListener(() {
@@ -186,11 +182,12 @@ class VideoController with ChangeNotifier {
         }
       });
     });
+    globalPlayer.setDataSource(datasource, headers);
     initPagesConfig();
+    initSubscriptions();
   }
 
   void initPagesConfig() {
-    initVideoController();
     initDanmaku();
     initOperateFocusNodes();
     initDanmukuSettingFocusNodes();
@@ -297,59 +294,6 @@ class VideoController with ChangeNotifier {
 
   void initDanmukuSettingFocusNodes() {
     danmukuNodeIndex.value = 0;
-  }
-
-  void initVideoController() async {
-    if (videoPlayerIndex == 0) {
-      player = Player();
-      mediaPlayerController = settings.playerCompatMode.value
-          ? media_kit_video.VideoController(player,
-              configuration: media_kit_video.VideoControllerConfiguration(
-                vo: 'mediacodec_embed',
-                hwdec: 'mediacodec',
-              ))
-          : media_kit_video.VideoController(player,
-              configuration: media_kit_video.VideoControllerConfiguration(
-                enableHardwareAcceleration: enableCodec,
-                androidAttachSurfaceAfterVideoParameters: false,
-              ));
-      setDataSource(datasource);
-      mediaPlayerController.player.stream.playing.listen((bool playing) {
-        if (playing) {
-          if (!mediaPlayerControllerInitialized.value) {
-            mediaPlayerControllerInitialized.value = true;
-          }
-          isPlaying.value = true;
-        } else {
-          isPlaying.value = false;
-        }
-      });
-      mediaPlayerController.player.stream.error.listen((event) {
-        if (event.toString().contains('Failed to open')) {
-          hasError.value = true;
-          isPlaying.value = false;
-        }
-      });
-    } else {
-      ijkPlayer = FijkPlayer();
-      setDataSource(datasource);
-    }
-  }
-
-  void setDataSource(String url) async {
-    if (videoPlayerIndex == 0) {
-      player.pause();
-      player.open(Media(url, httpHeaders: headers));
-    } else {
-      await FijkHelper.setFijkOption(ijkPlayer, enableCodec: enableCodec, headers: headers);
-      ijkPlayer.setDataSource(url, autoPlay: autoPlay);
-      ijkPlayer.addListener(_playerListener);
-    }
-  }
-
-  void _playerListener() {
-    isPlaying.value = ijkPlayer.state == FijkState.started;
-    hasError.value = ijkPlayer.state == FijkState.error;
   }
 
   void onKeyEvent(KeyEvent key) {
@@ -634,30 +578,29 @@ class VideoController with ChangeNotifier {
   }
 
   void updateDanmaku() {
-    danmakuController.updateOption(DanmakuOption(
-      fontSize: danmakuFontSize.value,
-      area: danmakuArea.value,
-      duration: danmakuSpeed.value.toInt(),
-      opacity: danmakuOpacity.value,
-      fontWeight: danmakuFontBorder.value.toInt(),
-    ));
+    danmakuController.updateOption(
+      DanmakuOption(
+        fontSize: danmakuFontSize.value,
+        area: danmakuArea.value,
+        duration: danmakuSpeed.value.toInt(),
+        opacity: danmakuOpacity.value,
+        fontWeight: danmakuFontBorder.value.toInt(),
+      ),
+    );
   }
 
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value || !livePlayController.success.value) return;
     if (danmakuController.running) {
-      danmakuController.addDanmaku(DanmakuContentItem(
-        msg.message,
-        color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b),
-      ));
+      danmakuController.addDanmaku(
+        DanmakuContentItem(msg.message, color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
+      );
     }
   }
 
   @override
   void dispose() async {
-    if (hasDestory == false) {
-      await destory();
-    }
+    await destory();
     super.dispose();
   }
 
@@ -667,12 +610,6 @@ class VideoController with ChangeNotifier {
     isPlaying.value = false;
     hasError.value = false;
     livePlayController.success.value = false;
-    hasDestory = true;
-    if (videoPlayerIndex == 0) {
-      player.dispose();
-    } else {
-      ijkPlayer.release();
-    }
     await Future.delayed(const Duration(milliseconds: 10));
   }
 
@@ -699,7 +636,10 @@ class VideoController with ChangeNotifier {
     await destory();
     Timer(const Duration(seconds: 2), () {
       livePlayController.onInitPlayerState(
-          reloadDataType: ReloadDataType.changeQuality, line: currentLineIndex, currentQuality: currentQuality);
+        reloadDataType: ReloadDataType.changeQuality,
+        line: currentLineIndex,
+        currentQuality: currentQuality,
+      );
     });
   }
 
@@ -710,23 +650,9 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
-
-    if (videoPlayerIndex == 0) {
-      key.currentState?.update(fit: settings.videofitArrary[index]);
-    } else {}
   }
 
-  void togglePlayPause() {
-    if (videoPlayerIndex == 0) {
-      mediaPlayerController.player.playOrPause();
-    } else {
-      if (isPlaying.value) {
-        ijkPlayer.pause();
-      } else {
-        ijkPlayer.start();
-      }
-    }
-  }
+  void togglePlayPause() {}
 
   void prevPlayChannel() {
     showChangeNameFlag.value = true;
@@ -761,10 +687,7 @@ class VideoController with ChangeNotifier {
   void handleDanmuKeyRightEvent() {
     switch (currentDanmukuClickType.value) {
       case DanmakuSettingClickType.danmakuAble:
-        Map<dynamic, String> items = {
-          0: "关",
-          1: "开",
-        };
+        Map<dynamic, String> items = {0: "关", 1: "开"};
         hideDanmaku.value = handleDanmuKeyRight(items, hideDanmaku.value ? 0 : 1) == 0;
       case DanmakuSettingClickType.danmakuSize:
         Map<dynamic, String> items = {
@@ -826,12 +749,7 @@ class VideoController with ChangeNotifier {
         };
         danmakuSpeed.value = handleDanmuKeyRight(items, danmakuSpeed.value);
       case DanmakuSettingClickType.danmakuArea:
-        Map<dynamic, String> items = {
-          0.25: "1/4",
-          0.5: "1/2",
-          0.75: "3/4",
-          1.0: "全屏",
-        };
+        Map<dynamic, String> items = {0.25: "1/4", 0.5: "1/2", 0.75: "3/4", 1.0: "全屏"};
         danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
         break;
       case DanmakuSettingClickType.danmakuOpacity:
@@ -868,10 +786,7 @@ class VideoController with ChangeNotifier {
   void handleDanmuKeyLeftEvent() {
     switch (currentDanmukuClickType.value) {
       case DanmakuSettingClickType.danmakuAble:
-        Map<dynamic, String> items = {
-          0: "关",
-          1: "开",
-        };
+        Map<dynamic, String> items = {0: "关", 1: "开"};
         hideDanmaku.value = handleDanmuKeyLeft(items, hideDanmaku.value ? 0 : 1) == 0;
       case DanmakuSettingClickType.danmakuSize:
         Map<dynamic, String> items = {
@@ -895,25 +810,10 @@ class VideoController with ChangeNotifier {
         danmakuFontSize.value = handleDanmuKeyLeft(items, danmakuFontSize.value);
         break;
       case DanmakuSettingClickType.danmakuSpeed:
-        Map<dynamic, String> items = {
-          18.0: "很慢",
-          14.0: "较慢",
-          12.0: "慢",
-          10.0: "正常",
-          8.0: "快",
-          6.0: "较快",
-          4.0: "很快",
-        };
+        Map<dynamic, String> items = {18.0: "很慢", 14.0: "较慢", 12.0: "慢", 10.0: "正常", 8.0: "快", 6.0: "较快", 4.0: "很快"};
         danmakuSpeed.value = handleDanmuKeyLeft(items, danmakuSpeed.value);
       case DanmakuSettingClickType.danmakuArea:
-        Map<dynamic, String> items = {
-          0.2: "1/5",
-          0.25: "1/4",
-          0.5: "1/2",
-          0.6: "3/5",
-          0.75: "3/4",
-          1.0: "全屏",
-        };
+        Map<dynamic, String> items = {0.2: "1/5", 0.25: "1/4", 0.5: "1/2", 0.6: "3/5", 0.75: "3/4", 1.0: "全屏"};
         danmakuArea.value = handleDanmuKeyLeft(items, danmakuArea.value);
         break;
       case DanmakuSettingClickType.danmakuOpacity:

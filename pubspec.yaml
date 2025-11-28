@@ -101,6 +101,7 @@ dependencies:
   dia_router: ^0.1.7
   dia_cors: ^0.1.2
   group_button: ^5.3.4
+  rxdart: ^0.27.7
 dev_dependencies:
   flutter_test:
     sdk: flutter
