@@ -750,6 +750,72 @@ class DanmakuSetting extends StatelessWidget {
   }
 }
 
+class ResolutionPanel extends StatelessWidget {
+  const ResolutionPanel({super.key, required this.controller});
+
+  final VideoController controller;
+
+  static const double width = 380;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => AnimatedPositioned(
+        top: 0,
+        bottom: 0,
+        right: controller.showSettting.value ? 0 : -width,
+        width: width,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          padding: AppStyle.edgeInsetsA12,
+          child: ResolutionSetting(controller: controller),
+        ),
+      ),
+    );
+  }
+}
+
+class ResolutionSetting extends StatelessWidget {
+  const ResolutionSetting({super.key, required this.controller});
+
+  final VideoController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: Get.theme.cardColor, borderRadius: BorderRadius.circular(10)),
+      child: Column(
+        children: [
+          AppStyle.vGap24,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AppStyle.hGap32,
+              Text(
+                "清晰度",
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
+              ),
+              AppStyle.hGap24,
+              const Spacer(),
+            ],
+          ),
+          Expanded(
+            child: ListView(
+              padding: AppStyle.edgeInsetsA48,
+              children: [
+                Padding(
+                  padding: AppStyle.edgeInsetsH20,
+                  child: Text("视频", style: AppStyle.textStyleWhite.copyWith(fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ChannelVideoWidget extends StatelessWidget {
   const ChannelVideoWidget({super.key, required this.controller, required this.barHeight});
 

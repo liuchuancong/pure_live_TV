@@ -152,6 +152,13 @@ class VideoController with ChangeNotifier {
     this.autoPlay = true,
     BoxFit fitMode = BoxFit.contain,
   }) {
+    danmakuController = DanmakuController(
+      onAddDanmaku: (item) {},
+      onUpdateOption: (option) {},
+      onPause: () {},
+      onResume: () {},
+      onClear: () {},
+    );
     videoFit.value = settings.videofitArrary[settings.videoFitIndex.value];
     hideDanmaku.value = settings.hideDanmaku.value;
     danmakuArea.value = settings.danmakuArea.value;

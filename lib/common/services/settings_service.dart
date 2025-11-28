@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
@@ -327,9 +328,11 @@ class SettingsService extends GetxController {
   static final List<Map<dynamic, String>> currentBoxImageSources = [
     {"不使用": 'default'},
     {"必应随机": 'https://bing.img.run/rand.php'},
-    {"timeline": 'https://gallery.timeline.ink/flip/rand'},
+    {"mtyqx": 'https://api.mtyqx.cn/tapi/random.php'},
+    {'alcy': 'https://t.alcy.cc/'},
     {"picsum": 'https://picsum.photos/1280/720/?blur=10'},
     {"dmoe": 'https://www.dmoe.cc/random.php'},
+    {'loliApi': 'https://www.loliapi.com/bg/'},
     {"btstu动漫": 'https://api.btstu.cn/sjbz/?lx=dongman'},
     {"btstu妹子": 'http://api.btstu.cn/sjbz/?lx=meizi'},
     {"btstu随机": 'http://api.btstu.cn/sjbz/?lx=suiji'},
@@ -342,9 +345,30 @@ class SettingsService extends GetxController {
     var url = currentBoxImageSources.map((e) => e.values.first).toList()[currentBoxImageIndex.value];
     if (url == "default") {
       currentBoxImage.value = "";
+    } else if (url == "https://t.alcy.cc/") {
+      var category = ['ycy', 'moez', 'ai', 'ysz', 'ys', 'mp', 'moemp', 'ysmp', 'aimp', 'tx', 'lai', 'xhl', 'bd'];
+      var index = Random().nextInt(category.length);
+      var requestUrl = url + category[index];
+      Dio dio = Dio();
+      var response = await dio.get(requestUrl, options: Options(responseType: ResponseType.bytes));
+      String base64String = base64Encode(response.data);
+      if (base64String.length > 30) {
+        currentBoxImage.value = base64String;
+      } else {
+        SmartDialog.showToast("图片加载失败,请重新获取");
+      }
     } else {
       Dio dio = Dio();
-      var response = await dio.get(url, options: Options(responseType: ResponseType.bytes));
+      var response = await dio.get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {
+            'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+          },
+        ),
+      );
       String base64String = base64Encode(response.data);
       if (base64String.length > 30) {
         currentBoxImage.value = base64String;

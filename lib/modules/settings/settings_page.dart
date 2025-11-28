@@ -34,30 +34,23 @@ class SettingsPage extends GetView<SettingsService> {
               ],
             ),
             AppStyle.vGap24,
-            Obx(() => SettingsItemWidget(
-                  focusNode: controller.preferResolutionNode,
-                  title: "首选清晰度",
-                  items: const {
-                    "原画": "原画",
-                    "蓝光8M": "蓝光8M",
-                    "蓝光4M": "蓝光4M",
-                    "超清": "超清",
-                    "流畅": "流畅",
-                  },
-                  value: controller.preferResolution.value,
-                  onChanged: (e) {
-                    controller.preferResolution.value = e;
-                  },
-                )),
+            Obx(
+              () => SettingsItemWidget(
+                focusNode: controller.preferResolutionNode,
+                title: "首选清晰度",
+                items: const {"原画": "原画", "蓝光8M": "蓝光8M", "蓝光4M": "蓝光4M", "超清": "超清", "流畅": "流畅"},
+                value: controller.preferResolution.value,
+                onChanged: (e) {
+                  controller.preferResolution.value = e;
+                },
+              ),
+            ),
             AppStyle.vGap24,
             Obx(
               () => SettingsItemWidget(
                 focusNode: controller.videoPlayerNode,
                 title: "播放器设置",
-                items: const {
-                  0: "Mpv播放器",
-                  1: "Ijk播放器",
-                },
+                items: const {0: "Mpv播放器", 1: "Ijk播放器"},
                 value: controller.videoPlayerIndex.value,
                 onChanged: (e) {
                   controller.videoPlayerIndex.value = e;
