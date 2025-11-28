@@ -297,7 +297,7 @@ class QualiteNameButton extends StatelessWidget {
           selected: controller.currentBottomClickType.value == BottomButtonClickType.qualityName,
           iconData: Icons.swap_vertical_circle_outlined,
           onTap: () {
-            // controller.showQualityPanel.value = true;
+            controller.changeQuality();
           },
           text: controller.qualiteName,
         ),
