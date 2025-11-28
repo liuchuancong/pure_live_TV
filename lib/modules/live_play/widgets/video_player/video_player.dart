@@ -31,8 +31,37 @@ class _VideoPlayerState extends State<VideoPlayer> {
     );
   }
 
+  Widget buildLoading() {
+    return Material(
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          Container(
+            color: Colors.black, // 设置你想要的背景色
+          ),
+          Container(
+            color: Colors.black,
+            child: const Center(
+              child: SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(strokeWidth: 6, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildVideo() {
-    return controller.globalPlayer.getVideoWidget(VideoControllerPanel(controller: controller));
+    return Obx(() {
+      if (!controller.isPlaying.value) return buildLoading();
+      if (controller.isPlaying.value) {
+        return controller.globalPlayer.getVideoWidget(VideoControllerPanel(controller: controller));
+      }
+      return placeholderWidget();
+    });
   }
 
   @override

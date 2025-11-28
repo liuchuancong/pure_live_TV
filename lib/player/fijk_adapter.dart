@@ -55,7 +55,7 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   Future<void> pause() => _player.pause();
 
   @override
-  Widget getVideoWidget(int index) {
+  Widget getVideoWidget(int index, Widget? controls) {
     return FijkView(
       player: _player,
       fit: FijkHelper.getIjkBoxFit(SettingsService.videofitList[index]),

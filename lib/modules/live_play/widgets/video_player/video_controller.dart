@@ -3,12 +3,12 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
-import 'package:canvas_danmaku/danmaku_controller.dart';
-import 'package:canvas_danmaku/models/danmaku_option.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
-import 'package:canvas_danmaku/models/danmaku_content_item.dart';
+import 'package:pure_live/pkg/canvas_danmaku/danmaku_controller.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
+import 'package:pure_live/pkg/canvas_danmaku/models/danmaku_option.dart';
+import 'package:pure_live/pkg/canvas_danmaku/models/danmaku_content_item.dart';
 
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
@@ -79,10 +79,6 @@ class VideoController with ChangeNotifier {
   var currentDanmukuClickType = DanmakuSettingClickType.danmakuAble.obs;
 
   static const danmakuAbleKey = ValueKey(DanmakuSettingClickType.danmakuAble);
-  // 是否手动暂停
-  var isActivePause = true.obs;
-
-  Timer? hasActivePause;
 
   final globalPlayer = SwitchableGlobalPlayer();
 
@@ -92,9 +88,7 @@ class VideoController with ChangeNotifier {
 
   final isLoading = false.obs;
 
-  late StreamSubscription<bool> _loadingSub;
   late StreamSubscription<bool> _playingSub;
-  late StreamSubscription<String?> _errorSub;
 
   // 五秒关闭控制器
   void enableController() {
@@ -127,16 +121,11 @@ class VideoController with ChangeNotifier {
   }
 
   initSubscriptions() {
-    _loadingSub = globalPlayer.onLoading.listen((loading) {
-      isLoading.value = loading;
-    });
     _playingSub = globalPlayer.onPlaying.listen((playing) {
-      isPlaying.value = playing;
-    });
-    _errorSub = globalPlayer.onError.listen((error) {
-      if (error != null && error.isNotEmpty) {
-        hasError.value = true;
+      if (playing) {
+        isLoading.value = false;
       }
+      isPlaying.value = playing;
     });
   }
 
@@ -144,6 +133,8 @@ class VideoController with ChangeNotifier {
   late DanmakuController danmakuController;
   final hideDanmaku = false.obs;
   final danmakuArea = 1.0.obs;
+  final danmakuTopArea = 0.0.obs;
+  final danmakuBottomArea = 0.0.obs;
   final danmakuSpeed = 8.0.obs;
   final danmakuFontSize = 16.0.obs;
   final danmakuFontBorder = 4.0.obs;
@@ -182,8 +173,8 @@ class VideoController with ChangeNotifier {
         }
       });
     });
-    globalPlayer.setDataSource(datasource, headers);
     initPagesConfig();
+    globalPlayer.setDataSource(datasource, headers);
     initSubscriptions();
   }
 
@@ -198,13 +189,6 @@ class VideoController with ChangeNotifier {
     showController.listen((p0) {
       if (showController.value) {
         showChangeNameFlag.value = false;
-        if (isPlaying.value) {
-          // 取消手动暂停
-          isActivePause.value = false;
-        }
-      }
-      if (isPlaying.value) {
-        hasActivePause?.cancel();
       }
     });
 
@@ -215,6 +199,7 @@ class VideoController with ChangeNotifier {
           SmartDialog.showToast("当前视频播放出错,正在为您切换路线");
           changeLine();
           hasErrorTimer?.cancel();
+          hasError.value = false;
         });
       }
     });
@@ -263,28 +248,6 @@ class VideoController with ChangeNotifier {
     });
     danmukuNodeIndex.listen((p0) {
       currentDanmukuClickType.value = DanmakuSettingClickType.values[danmukuNodeIndex.value];
-    });
-
-    isPlaying.listen((p0) {
-      // 代表手动暂停了
-      if (!isPlaying.value) {
-        if (showController.value) {
-          isActivePause.value = true;
-          hasActivePause?.cancel();
-        } else {
-          if (isActivePause.value) {
-            hasActivePause = Timer(const Duration(seconds: 20), () {
-              // 暂停了
-              SmartDialog.showToast("系统监测视频已停止播放,正在为您刷新视频");
-              isActivePause.value = false;
-              refresh();
-            });
-          }
-        }
-      } else {
-        hasActivePause?.cancel();
-        isActivePause.value = false;
-      }
     });
   }
 
@@ -511,7 +474,7 @@ class VideoController with ChangeNotifier {
             changeQuality();
             break;
           case BottomButtonClickType.changeLine:
-            changeLine(active: true);
+            changeLine();
             break;
           case BottomButtonClickType.boxFit:
             setVideoFit();
@@ -538,10 +501,22 @@ class VideoController with ChangeNotifier {
       PrefUtil.setBool('hideDanmaku', data);
       settings.hideDanmaku.value = data;
     });
-    danmakuArea.value = PrefUtil.getDouble('danmakuArea') ?? 1.0;
+    danmakuArea.value = PrefUtil.getDouble('danmakuArea') ?? 0.0;
     danmakuArea.listen((data) {
       PrefUtil.setDouble('danmakuArea', data);
       settings.danmakuArea.value = data;
+      updateDanmaku();
+    });
+    danmakuTopArea.value = PrefUtil.getDouble('danmakuTopArea') ?? 0.0;
+    danmakuTopArea.listen((data) {
+      PrefUtil.setDouble('danmakuTopArea', data);
+      settings.danmakuTopArea.value = data;
+      updateDanmaku();
+    });
+    danmakuBottomArea.value = PrefUtil.getDouble('danmakuBottomArea') ?? 0.0;
+    danmakuBottomArea.listen((data) {
+      PrefUtil.setDouble('danmakuBottomArea', data);
+      settings.danmakuBottomArea.value = data;
       updateDanmaku();
     });
     danmakuSpeed.value = PrefUtil.getDouble('danmakuSpeed') ?? 8;
@@ -568,13 +543,6 @@ class VideoController with ChangeNotifier {
       settings.danmakuOpacity.value = data;
       updateDanmaku();
     });
-
-    videoFit.listen((p0) {
-      if (p0 != settings.videofitArrary[settings.videoFitIndex.value]) {
-        var index = settings.videofitArrary.indexWhere((element) => element == videoFit.value);
-        settings.videoFitIndex.value = index;
-      }
-    });
   }
 
   void updateDanmaku() {
@@ -582,6 +550,8 @@ class VideoController with ChangeNotifier {
       DanmakuOption(
         fontSize: danmakuFontSize.value,
         area: danmakuArea.value,
+        topAreaDistance: danmakuTopArea.value,
+        bottomAreaDistance: danmakuBottomArea.value,
         duration: danmakuSpeed.value.toInt(),
         opacity: danmakuOpacity.value,
         fontWeight: danmakuFontBorder.value.toInt(),
@@ -590,8 +560,8 @@ class VideoController with ChangeNotifier {
   }
 
   void sendDanmaku(LiveMessage msg) {
-    if (hideDanmaku.value || !livePlayController.success.value) return;
-    if (danmakuController.running) {
+    if (hideDanmaku.value) return;
+    if (isPlaying.value) {
       danmakuController.addDanmaku(
         DanmakuContentItem(msg.message, color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
       );
@@ -610,29 +580,29 @@ class VideoController with ChangeNotifier {
     isPlaying.value = false;
     hasError.value = false;
     livePlayController.success.value = false;
+    globalPlayer.pause();
+    _playingSub.cancel();
     await Future.delayed(const Duration(milliseconds: 10));
   }
 
   void refresh() async {
+    isLoading.value = true;
     await destory();
     Timer(const Duration(seconds: 2), () {
       livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
     });
   }
 
-  void changeLine({bool active = false}) async {
-    // 播放错误 不一定是线路问题 先切换路线解决 后面尝试通知用户切换播放器
+  void changeLine() async {
+    isLoading.value = true;
     await destory();
     Timer(const Duration(seconds: 2), () {
-      livePlayController.onInitPlayerState(
-        reloadDataType: ReloadDataType.changeLine,
-        line: currentLineIndex,
-        active: active,
-      );
+      livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.changeLine, line: currentLineIndex);
     });
   }
 
   void changeQuality() async {
+    isLoading.value = true;
     await destory();
     Timer(const Duration(seconds: 2), () {
       livePlayController.onInitPlayerState(
@@ -650,11 +620,18 @@ class VideoController with ChangeNotifier {
       index = 0;
     }
     settings.videoFitIndex.value = index;
+    globalPlayer.changeVideoFit(index);
   }
 
-  void togglePlayPause() {}
+  void togglePlayPause() {
+    globalPlayer.togglePlayPause();
+  }
 
   void prevPlayChannel() {
+    globalPlayer.pause();
+    isPlaying.value = false;
+    hasError.value = false;
+    isLoading.value = true;
     showChangeNameFlag.value = true;
     showChangeNameTimer?.cancel();
     showChangeNameTimer = Timer(const Duration(milliseconds: 2000), () {
@@ -665,6 +642,10 @@ class VideoController with ChangeNotifier {
   }
 
   void nextPlayChannel() {
+    globalPlayer.pause();
+    isPlaying.value = false;
+    hasError.value = false;
+    isLoading.value = true;
     showChangeNameFlag.value = true;
     showChangeNameTimer?.cancel();
     showChangeNameTimer = Timer(const Duration(milliseconds: 2000), () {

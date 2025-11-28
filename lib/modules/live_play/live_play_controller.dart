@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/core/site/huya_site.dart';
+import 'package:pure_live/plugins/emoji_manager.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
@@ -60,16 +61,12 @@ class LivePlayController extends StateController {
 
   /// 双击退出Timer
   Timer? doubleClickTimer;
-
-  var isFirstLoad = true.obs;
   // 0 代表向上 1 代表向下
   int isNextOrPrev = 0;
 
   int _currentTimeStamp = 0;
   // 当前直播间信息 下一个频道或者上一个
   var currentPlayRoom = LiveRoom().obs;
-
-  var getVideoSuccess = true.obs;
 
   var currentChannelIndex = 0.obs;
 
@@ -83,9 +80,7 @@ class LivePlayController extends StateController {
 
   var hasError = false.obs;
 
-  var loadTimeOut = true.obs;
-  // 是否是手动切换线路
-  var isActive = false.obs;
+  var isFirstLoad = true.obs;
 
   @override
   void onClose() {
@@ -97,51 +92,9 @@ class LivePlayController extends StateController {
   @override
   void onInit() {
     // 发现房间ID 会变化 使用静态列表ID 对比
-
     currentPlayRoom.value = room;
     onInitPlayerState();
-
-    isFirstLoad.listen((p0) {
-      if (isFirstLoad.value) {
-        loadTimeOut.value = true;
-        Timer(const Duration(seconds: 5), () {
-          isFirstLoad.value = false;
-          loadTimeOut.value = false;
-          Timer(const Duration(seconds: 5), () {
-            loadTimeOut.value = true;
-          });
-        });
-      } else {
-        // 防止闪屏
-        Timer(const Duration(seconds: 2), () {
-          loadTimeOut.value = false;
-          Timer(const Duration(seconds: 5), () {
-            loadTimeOut.value = true;
-          });
-        });
-      }
-    });
-
-    isLastLine.listen((p0) {
-      if (isLastLine.value && hasError.value && isActive.value == false) {
-        // 刷新到了最后一路线 并且有错误
-        SmartDialog.showToast("当前房间无法播放,正在为您每10秒刷新直播间信息...", displayTime: const Duration(seconds: 2));
-        Timer(const Duration(seconds: 1), () {
-          loadRefreshRoomTimer?.cancel();
-          loadRefreshRoomTimer = Timer(const Duration(seconds: 10), () {
-            isLastLine.value = false;
-            isFirstLoad.value = true;
-            restoryQualityAndLines();
-            resetRoom(Sites.of(currentPlayRoom.value.platform!), currentPlayRoom.value.roomId!);
-          });
-        });
-      } else {
-        if (success.value) {
-          isActive.value = false;
-          loadRefreshRoomTimer?.cancel();
-        }
-      }
-    });
+    EmojiManager().preload(site);
     super.onInit();
   }
 
@@ -149,10 +102,7 @@ class LivePlayController extends StateController {
     ReloadDataType reloadDataType = ReloadDataType.refreash,
     int line = 0,
     int currentQuality = 0,
-    bool active = false,
   }) async {
-    isActive.value = active;
-    isFirstLoad.value = true;
     var liveRoom = await currentSite.liveSite.getRoomDetail(
       roomId: currentPlayRoom.value.roomId!,
       platform: currentPlayRoom.value.platform!,
@@ -160,16 +110,6 @@ class LivePlayController extends StateController {
     isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
     if (isLastLine.value) {
       hasError.value = true;
-    } else {
-      hasError.value = false;
-    }
-    // active 代表用户是否手动切换路线 只有不是手动自动切换才会显示路线错误信息
-
-    if (isLastLine.value && hasError.value && active == false) {
-      disPoserPlayer();
-      restoryQualityAndLines();
-      getVideoSuccess.value = false;
-      isFirstLoad.value = false;
       return liveRoom;
     } else {
       handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
@@ -177,15 +117,12 @@ class LivePlayController extends StateController {
       resetGlobalListState();
       if (liveRoom.liveStatus == LiveStatus.unknown) {
         SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
-        getVideoSuccess.value = false;
-        isFirstLoad.value = false;
         return liveRoom;
       }
 
       liveStatus.value = liveRoom.status! || liveRoom.isRecord!;
       if (liveStatus.value) {
         getPlayQualites();
-        getVideoSuccess.value = true;
         if (currentPlayRoom.value.platform == Sites.iptvSite) {
           settings.addRoomToHistory(currentPlayRoom.value);
         } else {
@@ -199,9 +136,7 @@ class LivePlayController extends StateController {
           liveDanmaku.start(liveRoom.danmakuData);
         }
       } else {
-        isFirstLoad.value = false;
         success.value = false;
-        getVideoSuccess.value = true;
         SmartDialog.showToast("当前主播未开播或主播已下播", displayTime: const Duration(seconds: 2));
         restoryQualityAndLines();
       }
@@ -236,14 +171,12 @@ class LivePlayController extends StateController {
     resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {
       SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
-      getVideoSuccess.value = false;
       return liveRoom;
     }
 
     liveStatus.value = liveRoom.status! || liveRoom.isRecord!;
     if (liveStatus.value) {
       getPlayQualites();
-      getVideoSuccess.value = true;
       if (currentPlayRoom.value.platform == Sites.iptvSite) {
         settings.addRoomToHistory(currentPlayRoom.value);
       } else {
@@ -278,7 +211,6 @@ class LivePlayController extends StateController {
   void disPoserPlayer() {
     videoController?.dispose();
     videoController = null;
-    liveDanmaku.stop();
     success.value = false;
     focusNode.requestFocus();
     liveDanmaku.stop();
@@ -290,6 +222,7 @@ class LivePlayController extends StateController {
     int quality = 0,
   }) {
     disPoserPlayer();
+    isFirstLoad.value = false;
     try {
       if (reloadDataType == ReloadDataType.refreash) {
         restoryQualityAndLines();
@@ -299,14 +232,12 @@ class LivePlayController extends StateController {
         } else {
           currentLineIndex.value = currentLineIndex.value + 1;
         }
-        isFirstLoad.value = false;
       } else if (reloadDataType == ReloadDataType.changeQuality) {
         if (quality == qualites.length - 1) {
           currentQuality.value = 0;
         } else {
           currentQuality.value = currentQuality.value + 1;
         }
-        isFirstLoad.value = false;
       }
     } catch (e) {
       restoryQualityAndLines();
@@ -337,7 +268,9 @@ class LivePlayController extends StateController {
       if (msg.type == LiveMessageType.chat) {
         if (settings.shieldList.every((element) => !msg.message.contains(element))) {
           messages.add(msg);
-          videoController?.sendDanmaku(msg);
+          if (videoController != null) {
+            videoController?.sendDanmaku(msg);
+          }
         }
       }
     };
@@ -388,8 +321,6 @@ class LivePlayController extends StateController {
       var playQualites = await currentSite.liveSite.getPlayQualites(detail: detail.value!);
       if (playQualites.isEmpty) {
         SmartDialog.showToast("无法读取视频信息,请按确定键重新获取", displayTime: const Duration(seconds: 2));
-        getVideoSuccess.value = false;
-        isFirstLoad.value = false;
         success.value = false;
         return;
       }
@@ -409,12 +340,10 @@ class LivePlayController extends StateController {
           currentQuality.value = middle;
         }
       }
-      isFirstLoad.value = false;
+
       getPlayUrl();
     } catch (e) {
       SmartDialog.showToast("无法读取视频信息,请按确定键重新获取");
-      getVideoSuccess.value = false;
-      isFirstLoad.value = false;
       success.value = false;
     }
   }
@@ -433,8 +362,6 @@ class LivePlayController extends StateController {
     );
     if (playUrl.isEmpty) {
       SmartDialog.showToast("无法读取播放地址,请按确定键重新获取", displayTime: const Duration(seconds: 2));
-      getVideoSuccess.value = false;
-      isFirstLoad.value = false;
       success.value = false;
       return;
     }
@@ -481,9 +408,7 @@ class LivePlayController extends StateController {
       currentLineIndex: currentLineIndex.value,
       currentQuality: currentQuality.value,
     );
-
     success.value = true;
-    isActive.value = false;
   }
 
   void nextChannel() {
@@ -502,11 +427,13 @@ class LivePlayController extends StateController {
     var nextChannel = liveChannels[index];
     settings.currentPlayListNodeIndex.value = index;
     currentChannelIndex.value = index;
+    isFirstLoad.value = true;
     currentPlayRoom.value = nextChannel;
     isNextOrPrev = 1;
     channelTimer?.cancel();
     channelTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       lastChannelIndex.value = currentChannelIndex.value;
+      EmojiManager().preload(Sites.of(nextChannel.platform!).id);
       resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
     });
   }
@@ -515,7 +442,7 @@ class LivePlayController extends StateController {
     //读取正在直播的频道
     _currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
     var liveChannels = settings.currentPlayList;
-    log(liveChannels.length.toString());
+    isFirstLoad.value = true;
     if (liveChannels.isEmpty) {
       SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
       return;
@@ -534,6 +461,7 @@ class LivePlayController extends StateController {
     channelTimer?.cancel();
     channelTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       lastChannelIndex.value = currentChannelIndex.value;
+      EmojiManager().preload(Sites.of(nextChannel.platform!).id);
       resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
     });
   }
@@ -542,7 +470,6 @@ class LivePlayController extends StateController {
     //读取正在直播的频道
     _currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
     var liveChannels = settings.currentPlayList;
-    log(liveChannels.length.toString());
     if (liveChannels.isEmpty) {
       SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
       return;
@@ -552,9 +479,11 @@ class LivePlayController extends StateController {
     var nextChannel = liveChannels[index];
     currentPlayRoom.value = nextChannel;
     isNextOrPrev = 0;
+    isFirstLoad.value = true;
     channelTimer?.cancel();
     channelTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       lastChannelIndex.value = currentChannelIndex.value;
+      EmojiManager().preload(Sites.of(nextChannel.platform!).id);
       resetRoom(Sites.of(nextChannel.platform!), nextChannel.roomId!);
     });
   }
@@ -566,9 +495,6 @@ class LivePlayController extends StateController {
       await videoController?.destory();
       videoController = null;
     }
-    isFirstLoad.value = true;
-    getVideoSuccess.value = true;
-    loadTimeOut.value = true;
     focusNode.requestFocus();
     Timer(const Duration(milliseconds: 200), () {
       if (lastChannelIndex.value == currentChannelIndex.value) {

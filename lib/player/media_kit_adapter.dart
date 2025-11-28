@@ -8,7 +8,6 @@ import 'package:pure_live/common/services/settings_service.dart';
 class MediaKitPlayerAdapter implements UnifiedPlayer {
   late Player _player;
   late VideoController _controller;
-  late final GlobalKey<VideoState> key = GlobalKey<VideoState>();
   final SettingsService settings = Get.find<SettingsService>();
   bool _isPlaying = false;
   @override
@@ -45,11 +44,11 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
   Future<void> pause() => _player.pause();
 
   @override
-  Widget getVideoWidget(int index) {
+  Widget getVideoWidget(int index, Widget? controls) {
     return Video(
       controller: _controller,
       fit: SettingsService.videofitList[index],
-      controls: (state) => NoVideoControls,
+      controls: NoVideoControls, // 不显示默认控制栏
     );
   }
 

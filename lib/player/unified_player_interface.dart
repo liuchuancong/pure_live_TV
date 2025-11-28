@@ -14,7 +14,7 @@ abstract class UnifiedPlayer {
   Future<void> pause();
 
   // 获取用于渲染的 Widget（由具体实现返回 Video 或 FijkView）
-  Widget getVideoWidget(int index);
+  Widget getVideoWidget(int index, Widget? controls);
 
   // 释放资源
   void dispose();

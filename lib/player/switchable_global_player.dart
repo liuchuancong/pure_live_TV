@@ -86,7 +86,7 @@ class SwitchableGlobalPlayer {
               Container(
                 color: Colors.black, // 设置你想要的背景色
               ),
-              _currentPlayer?.getVideoWidget(settings.videoFitIndex.value) ?? SizedBox(),
+              _currentPlayer?.getVideoWidget(settings.videoFitIndex.value, child) ?? SizedBox(),
               child ?? SizedBox(),
             ],
           ),

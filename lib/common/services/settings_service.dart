@@ -51,6 +51,18 @@ class SettingsService extends GetxController {
       PrefUtil.setDouble('danmakuArea', value);
     });
 
+    danmakuTopArea.listen((value) {
+      PrefUtil.setDouble('danmakuTopArea', value);
+    });
+
+    danmakuBottomArea.listen((value) {
+      PrefUtil.setDouble('danmakuBottomArea', value);
+    });
+
+    danmakuSpeed.listen((value) {
+      PrefUtil.setDouble('danmakuSpeed', value);
+    });
+
     danmakuSpeed.listen((value) {
       PrefUtil.setDouble('danmakuSpeed', value);
     });
@@ -229,6 +241,8 @@ class SettingsService extends GetxController {
   final videoFitIndex = (PrefUtil.getInt('videoFitIndex') ?? 0).obs;
   final hideDanmaku = (PrefUtil.getBool('hideDanmaku') ?? false).obs;
   final danmakuArea = (PrefUtil.getDouble('danmakuArea') ?? 1.0).obs;
+  final danmakuTopArea = (PrefUtil.getDouble('danmakuTopArea') ?? 0.0).obs;
+  final danmakuBottomArea = (PrefUtil.getDouble('danmakuBottomArea') ?? 0.5).obs;
   final danmakuSpeed = (PrefUtil.getDouble('danmakuSpeed') ?? 8.0).obs;
   final danmakuFontSize = (PrefUtil.getDouble('danmakuFontSize') ?? 16.0).obs;
   final danmakuFontBorder = (PrefUtil.getDouble('danmakuFontBorder') ?? 4.0).obs;
@@ -515,6 +529,18 @@ class SettingsService extends GetxController {
     huyaCookie.value = json['huyaCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
+    hideDanmaku.value = json['hideDanmaku'] ?? false;
+    danmakuTopArea.value = json['danmakuTopArea'] != null
+        ? double.parse(json['danmakuTopArea'].toString()) > 0.4
+              ? 0.4
+              : double.parse(json['danmakuTopArea'].toString())
+        : 0.0;
+    danmakuArea.value = json['danmakuArea'] != null
+        ? double.parse(json['danmakuArea'].toString()) > 1.0
+              ? 1.0
+              : double.parse(json['danmakuArea'].toString())
+        : 1.0;
+    danmakuBottomArea.value = double.parse(json['danmakuBottomArea'].toString());
   }
 
   Map<String, dynamic> toJson() {
@@ -539,6 +565,13 @@ class SettingsService extends GetxController {
 
     json['videoFitIndex'] = videoFitIndex.value;
     json['hideDanmaku'] = hideDanmaku.value;
+    json['danmakuArea'] = danmakuArea.value;
+    json['danmakuTopArea'] = danmakuTopArea.value;
+    json['danmakuBottomArea'] = danmakuBottomArea.value;
+    json['danmakuSpeed'] = danmakuSpeed.value;
+    json['danmakuFontSize'] = danmakuFontSize.value;
+    json['danmakuFontBorder'] = danmakuFontBorder.value;
+    json['danmakuOpacity'] = danmakuOpacity.value;
     json['doubleExit'] = doubleExit.value;
     json['videoPlayerIndex'] = videoPlayerIndex.value;
     json['enableCodec'] = enableCodec.value;
