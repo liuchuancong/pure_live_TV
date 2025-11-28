@@ -93,14 +93,18 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
 
   // 每帧绘制时调用
   void _onFrame(Duration timestamp) {
-    // 判断当前页面是否可见（处于栈顶）
-    final isVisible = ModalRoute.of(context)?.isCurrent ?? false;
-    if (isVisible) {
-      // 可见时重新绑定回调
-      _bindControllerCallbacks();
+    try {
+      // 判断当前页面是否可见（处于栈顶）
+      final isVisible = ModalRoute.of(context)?.isCurrent ?? false;
+      if (isVisible) {
+        // 可见时重新绑定回调
+        _bindControllerCallbacks();
+      }
+      // 继续监听下一帧（避免只触发一次）
+      WidgetsBinding.instance.addPostFrameCallback(_onFrame);
+    } catch (e) {
+      debugPrint(e.toString());
     }
-    // 继续监听下一帧（避免只触发一次）
-    WidgetsBinding.instance.addPostFrameCallback(_onFrame);
   }
 
   // 绑定回调的方法

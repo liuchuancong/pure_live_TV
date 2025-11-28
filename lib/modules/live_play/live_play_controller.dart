@@ -405,6 +405,7 @@ class LivePlayController extends StateController {
       autoPlay: true,
       headers: headers,
       qualiteName: qualites[currentQuality.value].quality,
+      qualites: qualites.value,
       currentLineIndex: currentLineIndex.value,
       currentQuality: currentQuality.value,
     );

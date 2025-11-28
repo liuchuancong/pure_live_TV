@@ -10,6 +10,7 @@ class SettingsItemWidget extends StatelessWidget {
   final String title;
   final bool autofocus;
   final Function(dynamic) onChanged;
+  final Function(bool)? onSelectionChanged;
   final bool useFocus;
   final bool selected;
   const SettingsItemWidget({
@@ -21,11 +22,13 @@ class SettingsItemWidget extends StatelessWidget {
     this.autofocus = false,
     this.selected = false,
     this.useFocus = true,
+    this.onSelectionChanged,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    onSelectionChanged?.call(selected);
     return HighlightWidget(
       focusNode: focusNode,
       autofocus: autofocus,
@@ -56,10 +59,7 @@ class SettingsItemWidget extends StatelessWidget {
                 padding: AppStyle.edgeInsetsA24,
                 child: Row(
                   children: [
-                    Text(
-                      title,
-                      style: focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
-                    ),
+                    Text(title, style: focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite),
                     const Spacer(),
                     if (focusNode.isFoucsed.value && items.isNotEmpty)
                       Icon(
@@ -91,17 +91,10 @@ class SettingsItemWidget extends StatelessWidget {
               padding: AppStyle.edgeInsetsA24,
               child: Row(
                 children: [
-                  Text(
-                    title,
-                    style: selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
-                  ),
+                  Text(title, style: selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite),
                   const Spacer(),
                   if (selected && items.isNotEmpty)
-                    Icon(
-                      Icons.chevron_left,
-                      size: 40.w,
-                      color: selected ? Colors.black : Colors.white,
-                    ),
+                    Icon(Icons.chevron_left, size: 40.w, color: selected ? Colors.black : Colors.white),
                   AppStyle.hGap12,
                   ConstrainedBox(
                     constraints: BoxConstraints(minWidth: 120.w),
@@ -113,11 +106,7 @@ class SettingsItemWidget extends StatelessWidget {
                   ),
                   AppStyle.hGap12,
                   if (selected && items.isNotEmpty)
-                    Icon(
-                      Icons.chevron_right,
-                      size: 40.w,
-                      color: selected ? Colors.black : Colors.white,
-                    ),
+                    Icon(Icons.chevron_right, size: 40.w, color: selected ? Colors.black : Colors.white),
                 ],
               ),
             ),

@@ -297,7 +297,7 @@ class QualiteNameButton extends StatelessWidget {
           selected: controller.currentBottomClickType.value == BottomButtonClickType.qualityName,
           iconData: Icons.swap_vertical_circle_outlined,
           onTap: () {
-            controller.changeQuality();
+            // controller.showQualityPanel.value = true;
           },
           text: controller.qualiteName,
         ),
@@ -485,7 +485,7 @@ class DanmakuSetting extends StatelessWidget {
             children: [
               AppStyle.hGap32,
               Text(
-                "设置",
+                "弹幕设置",
                 style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
@@ -494,12 +494,9 @@ class DanmakuSetting extends StatelessWidget {
           ),
           Expanded(
             child: ListView(
+              controller: controller.danmakuScrollController,
               padding: AppStyle.edgeInsetsA48,
               children: [
-                Padding(
-                  padding: AppStyle.edgeInsetsH20,
-                  child: Text("弹幕", style: AppStyle.textStyleWhite.copyWith(fontWeight: FontWeight.bold)),
-                ),
                 AppStyle.vGap24,
                 Obx(
                   () => SettingsItemWidget(
@@ -543,6 +540,15 @@ class DanmakuSetting extends StatelessWidget {
                     value: controller.danmakuFontSize.value,
                     onChanged: (e) {
                       controller.danmakuFontSize.value = e;
+                    },
+                    onSelectionChanged: (bool isFocus) {
+                      if (isFocus) {
+                        controller.danmakuScrollController.animateTo(
+                          0,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.ease,
+                        );
+                      }
                     },
                   ),
                 ),
@@ -593,6 +599,15 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuSpeed.value = e;
                     },
+                    onSelectionChanged: (bool isFocus) {
+                      if (isFocus) {
+                        controller.danmakuScrollController.animateTo(
+                          0,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.ease,
+                        );
+                      }
+                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -618,6 +633,14 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuArea.value = e;
                     },
+                    onSelectionChanged: (bool isFocus) {
+                      if (!isFocus) return;
+                      controller.danmakuScrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.ease,
+                      );
+                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -628,31 +651,39 @@ class DanmakuSetting extends StatelessWidget {
                     selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuTopArea,
                     title: "距离顶部",
                     items: {
-                      0: '0',
-                      5: '5',
-                      10: '10',
-                      15: '15',
-                      20: '20',
-                      25: '25',
-                      30: '30',
-                      35: '35',
-                      40: '40',
-                      45: '45',
-                      50: '50',
-                      55: '55',
-                      60: '60',
-                      65: '65',
-                      70: '70',
-                      75: '75',
-                      80: '80',
-                      85: '85',
-                      90: '90',
-                      95: '95',
-                      100: '100',
+                      0.0: '0',
+                      5.0: '5',
+                      10.0: '10',
+                      15.0: '15',
+                      20.0: '20',
+                      25.0: '25',
+                      30.0: '30',
+                      35.0: '35',
+                      40.0: '40',
+                      45.0: '45',
+                      50.0: '50',
+                      55.0: '55',
+                      60.0: '60',
+                      65.0: '65',
+                      70.0: '70',
+                      75.0: '75',
+                      80.0: '80',
+                      85.0: '85',
+                      90.0: '90',
+                      95.0: '95',
+                      100.0: '100',
                     },
                     value: controller.danmakuTopArea.value,
                     onChanged: (e) {
                       controller.danmakuTopArea.value = e;
+                    },
+                    onSelectionChanged: (bool isFocus) {
+                      if (!isFocus) return;
+                      controller.danmakuScrollController.animateTo(
+                        300,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.ease,
+                      );
                     },
                   ),
                 ),
@@ -664,31 +695,39 @@ class DanmakuSetting extends StatelessWidget {
                     selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuBottomArea,
                     title: "距离底部",
                     items: {
-                      0: '0',
-                      5: '5',
-                      10: '10',
-                      15: '15',
-                      20: '20',
-                      25: '25',
-                      30: '30',
-                      35: '35',
-                      40: '40',
-                      45: '45',
-                      50: '50',
-                      55: '55',
-                      60: '60',
-                      65: '65',
-                      70: '70',
-                      75: '75',
-                      80: '80',
-                      85: '85',
-                      90: '90',
-                      95: '95',
-                      100: '100',
+                      0.0: '0',
+                      5.0: '5',
+                      10.0: '10',
+                      15.0: '15',
+                      20.0: '20',
+                      25.0: '25',
+                      30.0: '30',
+                      35.0: '35',
+                      40.0: '40',
+                      45.0: '45',
+                      50.0: '50',
+                      55.0: '55',
+                      60.0: '60',
+                      65.0: '65',
+                      70.0: '70',
+                      75.0: '75',
+                      80.0: '80',
+                      85.0: '85',
+                      90.0: '90',
+                      95.0: '95',
+                      100.0: '100',
                     },
                     value: controller.danmakuBottomArea.value,
                     onChanged: (e) {
                       controller.danmakuBottomArea.value = e;
+                    },
+                    onSelectionChanged: (bool isFocus) {
+                      if (!isFocus) return;
+                      controller.danmakuScrollController.animateTo(
+                        300,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.ease,
+                      );
                     },
                   ),
                 ),
@@ -715,6 +754,14 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuOpacity.value = e;
                     },
+                    onSelectionChanged: (bool isFocus) {
+                      if (!isFocus) return;
+                      controller.danmakuScrollController.animateTo(
+                        300,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.ease,
+                      );
+                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -738,6 +785,15 @@ class DanmakuSetting extends StatelessWidget {
                     value: controller.danmakuFontBorder.value,
                     onChanged: (e) {
                       controller.danmakuFontBorder.value = e;
+                    },
+                    onSelectionChanged: (bool isFocus) {
+                      if (isFocus) {
+                        controller.danmakuScrollController.animateTo(
+                          300,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.ease,
+                        );
+                      }
                     },
                   ),
                 ),

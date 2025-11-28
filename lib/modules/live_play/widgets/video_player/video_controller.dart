@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/pkg/canvas_danmaku/danmaku_controller.dart';
@@ -43,13 +44,19 @@ class VideoController with ChangeNotifier {
 
   AppFocusNode focusNode = AppFocusNode();
 
+  AppFocusNode danmukuFocusNode = AppFocusNode();
+
   late ScrollController scrollController;
+
+  late ScrollController danmakuScrollController;
 
   Timer? showControllerTimer;
   // Controller ui status
   final showController = false.obs;
   //  Settting ui status
   final showSettting = false.obs;
+
+  final showQualityPanel = false.obs;
 
   final showPlayListPanel = false.obs;
 
@@ -89,6 +96,8 @@ class VideoController with ChangeNotifier {
   final isLoading = false.obs;
 
   late StreamSubscription<bool> _playingSub;
+
+  final List<LivePlayQuality> qualites;
 
   // 五秒关闭控制器
   void enableController() {
@@ -151,6 +160,7 @@ class VideoController with ChangeNotifier {
     required this.currentQuality,
     this.autoPlay = true,
     BoxFit fitMode = BoxFit.contain,
+    required this.qualites,
   }) {
     danmakuController = DanmakuController(
       onAddDanmaku: (item) {},
@@ -169,10 +179,22 @@ class VideoController with ChangeNotifier {
     videoPlayerIndex = settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
     scrollController = ScrollController();
+    danmakuScrollController = ScrollController();
     scrollController.addListener(() {
       Future.delayed(Duration.zero, () {
         if (showPlayListPanel.value) {
           scrollController.animateTo(
+            (100 * (beforePlayNodeIndex.value)).toDouble(),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    });
+    danmakuScrollController.addListener(() {
+      Future.delayed(Duration.zero, () {
+        if (showPlayListPanel.value) {
+          danmakuScrollController.animateTo(
             (100 * (beforePlayNodeIndex.value)).toDouble(),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
@@ -210,6 +232,19 @@ class VideoController with ChangeNotifier {
         });
       }
     });
+    showQualityPanel.listen((p0) {
+      if (showQualityPanel.value) {
+        showControllerTimer?.cancel();
+        showController.value = false;
+        showPlayListPanel.value = false;
+        danmukuNodeIndex.value = 0;
+        currentNodeIndex.value = 0;
+        showSettting.value = false;
+        cancleFocus();
+      } else {
+        disableController();
+      }
+    });
     showSettting.listen((p0) {
       if (showSettting.value) {
         showControllerTimer?.cancel();
@@ -228,6 +263,7 @@ class VideoController with ChangeNotifier {
         showControllerTimer?.cancel();
         showController.value = false;
         showSettting.value = false;
+        showQualityPanel.value = false;
         danmukuNodeIndex.value = 0;
         currentNodeIndex.value = 0;
         scrollController.animateTo(
@@ -753,55 +789,55 @@ class VideoController with ChangeNotifier {
         break;
       case DanmakuSettingClickType.danmakuTopArea:
         Map<dynamic, String> items = {
-          0: '0',
-          5: '5',
-          10: '10',
-          15: '15',
-          20: '20',
-          25: '25',
-          30: '30',
-          35: '35',
-          40: '40',
-          45: '45',
-          50: '50',
-          55: '55',
-          60: '60',
-          65: '65',
-          70: '70',
-          75: '75',
-          80: '80',
-          85: '85',
-          90: '90',
-          95: '95',
-          100: '100',
+          0.0: '0',
+          5.0: '5',
+          10.0: '10',
+          15.0: '15',
+          20.0: '20',
+          25.0: '25',
+          30.0: '30',
+          35.0: '35',
+          40.0: '40',
+          45.0: '45',
+          50.0: '50',
+          55.0: '55',
+          60.0: '60',
+          65.0: '65',
+          70.0: '70',
+          75.0: '75',
+          80.0: '80',
+          85.0: '85',
+          90.0: '90',
+          95.0: '95',
+          100.0: '100',
         };
-        danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
+        danmakuTopArea.value = handleDanmuKeyRight(items, danmakuTopArea.value);
         break;
       case DanmakuSettingClickType.danmakuBottomArea:
         Map<dynamic, String> items = {
-          0: '0',
-          5: '5',
-          10: '10',
-          15: '15',
-          20: '20',
-          25: '25',
-          30: '30',
-          35: '35',
-          40: '40',
-          45: '45',
-          50: '50',
-          55: '55',
-          60: '60',
-          65: '65',
-          70: '70',
-          75: '75',
-          80: '80',
-          85: '85',
-          90: '90',
-          95: '95',
-          100: '100',
+          0.0: '0',
+          5.0: '5',
+          10.0: '10',
+          15.0: '15',
+          20.0: '20',
+          25.0: '25',
+          30.0: '30',
+          35.0: '35',
+          40.0: '40',
+          45.0: '45',
+          50.0: '50',
+          55.0: '55',
+          60.0: '60',
+          65.0: '65',
+          70.0: '70',
+          75.0: '75',
+          80.0: '80',
+          85.0: '85',
+          90.0: '90',
+          95.0: '95',
+          100.0: '100',
         };
-        danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
+        danmakuBottomArea.value = handleDanmuKeyRight(items, danmakuBottomArea.value);
         break;
       case DanmakuSettingClickType.danmakuOpacity:
         Map<dynamic, String> items = {
@@ -919,53 +955,53 @@ class VideoController with ChangeNotifier {
         break;
       case DanmakuSettingClickType.danmakuTopArea:
         Map<dynamic, String> items = {
-          0: '0',
-          5: '5',
-          10: '10',
-          15: '15',
-          20: '20',
-          25: '25',
-          30: '30',
-          35: '35',
-          40: '40',
-          45: '45',
-          50: '50',
-          55: '55',
-          60: '60',
-          65: '65',
-          70: '70',
-          75: '75',
-          80: '80',
-          85: '85',
-          90: '90',
-          95: '95',
-          100: '100',
+          0.0: '0',
+          5.0: '5',
+          10.0: '10',
+          15.0: '15',
+          20.0: '20',
+          25.0: '25',
+          30.0: '30',
+          35.0: '35',
+          40.0: '40',
+          45.0: '45',
+          50.0: '50',
+          55.0: '55',
+          60.0: '60',
+          65.0: '65',
+          70.0: '70',
+          75.0: '75',
+          80.0: '80',
+          85.0: '85',
+          90.0: '90',
+          95.0: '95',
+          100.0: '100',
         };
         danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
         break;
       case DanmakuSettingClickType.danmakuBottomArea:
         Map<dynamic, String> items = {
-          0: '0',
-          5: '5',
-          10: '10',
-          15: '15',
-          20: '20',
-          25: '25',
-          30: '30',
-          35: '35',
-          40: '40',
-          45: '45',
-          50: '50',
-          55: '55',
-          60: '60',
-          65: '65',
-          70: '70',
-          75: '75',
-          80: '80',
-          85: '85',
-          90: '90',
-          95: '95',
-          100: '100',
+          0.0: '0',
+          5.0: '5',
+          10.0: '10',
+          15.0: '15',
+          20.0: '20',
+          25.0: '25',
+          30.0: '30',
+          35.0: '35',
+          40.0: '40',
+          45.0: '45',
+          50.0: '50',
+          55.0: '55',
+          60.0: '60',
+          65.0: '65',
+          70.0: '70',
+          75.0: '75',
+          80.0: '80',
+          85.0: '85',
+          90.0: '90',
+          95.0: '95',
+          100.0: '100',
         };
         danmakuArea.value = handleDanmuKeyRight(items, danmakuArea.value);
         break;
