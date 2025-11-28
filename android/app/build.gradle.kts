@@ -35,11 +35,11 @@ android {
         disable.add("NullSafeMutableLiveData")
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -62,6 +62,10 @@ android {
     buildTypes {
        release {
             signingConfig = signingConfigs.getByName("release")
+           proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                file("proguard-rules.pro")
+            )
         }
        debug {
             signingConfig = signingConfigs.getByName("release")
