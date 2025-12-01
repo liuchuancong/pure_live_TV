@@ -3,12 +3,8 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'package:get/get.dart';
 import 'package:dia/dia.dart';
-import 'package:path/path.dart' as p;
-import 'package:dia_cors/dia_cors.dart';
 import 'package:dia_body/dia_body.dart';
-import 'package:dia_static/dia_static.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:dia_router/dia_router.dart' as dia_router;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pure_live/plugins/file_recover_utils.dart';
@@ -21,18 +17,6 @@ final app = App((req) => ContextRequest(req));
 
 class LocalHttpServer {
   final SettingsService settings = Get.find<SettingsService>();
-  Future<void> readAssetsFiles() async {
-    final assets = await rootBundle.loadString('AssetManifest.json');
-    var assetList = jsonDecode(assets) as Map<String, dynamic>;
-    assetList.removeWhere((key, value) => !key.startsWith('assets/pure_live_web'));
-    final directory = await getApplicationCacheDirectory();
-    for (final assetPath in assetList.keys) {
-      final assetData = await rootBundle.load(assetPath);
-      final file = File('${directory.path}/$assetPath');
-      await file.create(recursive: true);
-      await file.writeAsBytes(assetData.buffer.asUint8List());
-    }
-  }
 
   void startServer(String port) async {
     try {
@@ -43,14 +27,6 @@ class LocalHttpServer {
           return;
         }
       }
-
-      await readAssetsFiles();
-      final directory = await getApplicationCacheDirectory();
-
-      app.use(serve(p.join(directory.path, 'assets${Platform.pathSeparator}pure_live_web'),
-          prefix: '/pure_live', index: 'index.html'));
-      app.use(body());
-      app.use(cors());
       final router = dia_router.Router('/api');
       router.get('/getSettings', (ctx, next) async {
         ctx.body = jsonEncode(settings.toJson());
