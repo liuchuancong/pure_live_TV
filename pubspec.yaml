@@ -33,7 +33,6 @@ dependencies:
 
   flutter_localizations:
     sdk: flutter
-  flutter_js: ^0.8.5
   html: ^0.15.4
   http: ^1.1.0
   url_launcher: ^6.1.12
@@ -142,7 +141,6 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/keystore/
-    - assets/js/
     - assets/statement.txt
     - assets/images/
     - assets/icons/
