@@ -102,6 +102,8 @@ dependencies:
   rxdart: ^0.27.7
   dart_quickjs:
     git: https://github.com/xiaoyaocz/dart_quickjs.git
+  open_filex: ^4.7.0
+  permission_handler: ^12.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

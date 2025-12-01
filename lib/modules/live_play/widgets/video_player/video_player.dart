@@ -55,13 +55,14 @@ class _VideoPlayerState extends State<VideoPlayer> {
   }
 
   Widget _buildVideo() {
-    return Obx(() {
-      if (!controller.isPlaying.value) return buildLoading();
-      if (controller.isPlaying.value) {
-        return controller.globalPlayer.getVideoWidget(VideoControllerPanel(controller: controller));
-      }
-      return placeholderWidget();
-    });
+    return VideoControllerPanel(controller: controller);
+    // return Obx(() {
+    //   if (!controller.isPlaying.value) return buildLoading();
+    //   if (controller.isPlaying.value) {
+    //     return controller.globalPlayer.getVideoWidget(VideoControllerPanel(controller: controller));
+    //   }
+    //   return placeholderWidget();
+    // });
   }
 
   @override

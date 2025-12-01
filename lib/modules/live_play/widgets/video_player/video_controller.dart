@@ -97,6 +97,8 @@ class VideoController with ChangeNotifier {
 
   late StreamSubscription<bool> _playingSub;
 
+  late StreamSubscription<String?> _errorSub;
+
   final List<LivePlayQuality> qualites;
 
   // 五秒关闭控制器
@@ -135,6 +137,15 @@ class VideoController with ChangeNotifier {
         isLoading.value = false;
       }
       isPlaying.value = playing;
+    });
+
+    _errorSub = globalPlayer.onError.listen((error) {
+      if (error != null) {
+        // hasError.value = true;
+        // isLoading.value = false;
+        debugPrint("error: $error");
+        SmartDialog.showToast("当前视频播放出错,请检查网络或稍后再试");
+      }
     });
   }
 
@@ -226,7 +237,7 @@ class VideoController with ChangeNotifier {
         hasErrorTimer?.cancel();
         hasErrorTimer = Timer(const Duration(milliseconds: 2000), () {
           SmartDialog.showToast("当前视频播放出错,正在为您切换路线");
-          changeLine();
+          // changeLine();
           hasErrorTimer?.cancel();
           hasError.value = false;
         });
@@ -250,6 +261,7 @@ class VideoController with ChangeNotifier {
         showControllerTimer?.cancel();
         showController.value = false;
         showPlayListPanel.value = false;
+        showQualityPanel.value = false;
         danmukuNodeIndex.value = 0;
         currentNodeIndex.value = 0;
         cancleFocus();
@@ -338,8 +350,10 @@ class VideoController with ChangeNotifier {
     }
     // 如果没有显示控制面板
     if (!showController.value) {
-      // 如果没有显示弹幕控制面板和关注列表
-      if (!showSettting.value && !showPlayListPanel.value) {
+      // 如果没有显示弹幕控制面板和关注列表和清晰度面板
+      debugPrint("key.logicalKey: ${key.logicalKey}");
+      debugPrint('${showSettting.value} ${showPlayListPanel.value} ${showQualityPanel.value}');
+      if (!showSettting.value && !showPlayListPanel.value && !showQualityPanel.value) {
         // 点击OK、Enter、Select键时显示/隐藏控制器
         if (key.logicalKey == LogicalKeyboardKey.select ||
             key.logicalKey == LogicalKeyboardKey.enter ||
@@ -429,6 +443,21 @@ class VideoController with ChangeNotifier {
           settings.currentPlayListNodeIndex.value = beforePlayNodeIndex.value;
           livePlayController.playFavoriteChannel();
         }
+      } else if (showQualityPanel.value) {
+        // 展示清晰度面板
+        var qualityIndex = qualites.indexWhere((element) => element.quality == qualiteName);
+        if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
+          qualityIndex++;
+          if (qualityIndex == qualites.length) {
+            qualityIndex = 0;
+          }
+        } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
+          if (qualityIndex == -1) {
+            qualityIndex = qualites.length - 1;
+          }
+          qualityIndex--;
+        }
+        changeQuality(qualityIndex);
       } else {
         //没有控制面板以及关注列表显示了 设置面板
         var danmakuIndex = danmukuNodeIndex.value;
@@ -514,10 +543,11 @@ class VideoController with ChangeNotifier {
             showSettting.value = true;
             break;
           case BottomButtonClickType.qualityName:
-            changeQuality();
+            showQualityPanel.value = true;
             break;
           case BottomButtonClickType.changeLine:
-            changeLine();
+            // changeLine();
+            showQualityPanel.value = true;
             break;
           case BottomButtonClickType.boxFit:
             setVideoFit();
@@ -625,6 +655,7 @@ class VideoController with ChangeNotifier {
     livePlayController.success.value = false;
     globalPlayer.pause();
     _playingSub.cancel();
+    _errorSub.cancel();
     await Future.delayed(const Duration(milliseconds: 10));
   }
 
@@ -636,7 +667,7 @@ class VideoController with ChangeNotifier {
     });
   }
 
-  void changeLine() async {
+  void changeLine(currentLineIndex) async {
     isLoading.value = true;
     await destory();
     Timer(const Duration(seconds: 2), () {
@@ -644,14 +675,14 @@ class VideoController with ChangeNotifier {
     });
   }
 
-  void changeQuality() async {
+  void changeQuality(qualityIndex) async {
     isLoading.value = true;
     await destory();
     Timer(const Duration(seconds: 2), () {
       livePlayController.onInitPlayerState(
         reloadDataType: ReloadDataType.changeQuality,
         line: currentLineIndex,
-        currentQuality: currentQuality,
+        currentQuality: qualityIndex,
       );
     });
   }

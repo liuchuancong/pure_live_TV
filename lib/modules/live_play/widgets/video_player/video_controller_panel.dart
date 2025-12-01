@@ -43,6 +43,7 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
                   ChannelVideoWidget(controller: controller, barHeight: 100),
                   DanmakuViewer(controller: controller),
                   SettingsPanel(controller: controller),
+                  ResolutionPanel(controller: controller),
                   FavoriteChoose(controller: controller),
                   TopActionBar(controller: controller, barHeight: barHeight),
                   BottomActionBar(controller: controller, barHeight: barHeight),
@@ -271,7 +272,7 @@ class LineButton extends StatelessWidget {
           selected: controller.currentBottomClickType.value == BottomButtonClickType.changeLine,
           iconData: Icons.density_small_rounded,
           onTap: () {
-            controller.changeLine();
+            // controller.changeLine();
           },
           text: '线路${controller.currentLineIndex + 1}',
         ),
@@ -297,7 +298,7 @@ class QualiteNameButton extends StatelessWidget {
           selected: controller.currentBottomClickType.value == BottomButtonClickType.qualityName,
           iconData: Icons.swap_vertical_circle_outlined,
           onTap: () {
-            controller.changeQuality();
+            controller.showChangeNameFlag.value = true;
           },
           text: controller.qualiteName,
         ),
@@ -541,15 +542,6 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuFontSize.value = e;
                     },
-                    onSelectionChanged: (bool isFocus) {
-                      if (isFocus) {
-                        controller.danmakuScrollController.animateTo(
-                          0,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.ease,
-                        );
-                      }
-                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -599,15 +591,6 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuSpeed.value = e;
                     },
-                    onSelectionChanged: (bool isFocus) {
-                      if (isFocus) {
-                        controller.danmakuScrollController.animateTo(
-                          0,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.ease,
-                        );
-                      }
-                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -632,14 +615,6 @@ class DanmakuSetting extends StatelessWidget {
                     value: controller.danmakuArea.value,
                     onChanged: (e) {
                       controller.danmakuArea.value = e;
-                    },
-                    onSelectionChanged: (bool isFocus) {
-                      if (!isFocus) return;
-                      controller.danmakuScrollController.animateTo(
-                        0,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.ease,
-                      );
                     },
                   ),
                 ),
@@ -677,14 +652,6 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuTopArea.value = e;
                     },
-                    onSelectionChanged: (bool isFocus) {
-                      if (!isFocus) return;
-                      controller.danmakuScrollController.animateTo(
-                        300,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.ease,
-                      );
-                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -721,14 +688,6 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuBottomArea.value = e;
                     },
-                    onSelectionChanged: (bool isFocus) {
-                      if (!isFocus) return;
-                      controller.danmakuScrollController.animateTo(
-                        300,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.ease,
-                      );
-                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -754,14 +713,6 @@ class DanmakuSetting extends StatelessWidget {
                     onChanged: (e) {
                       controller.danmakuOpacity.value = e;
                     },
-                    onSelectionChanged: (bool isFocus) {
-                      if (!isFocus) return;
-                      controller.danmakuScrollController.animateTo(
-                        300,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.ease,
-                      );
-                    },
                   ),
                 ),
                 AppStyle.vGap24,
@@ -785,15 +736,6 @@ class DanmakuSetting extends StatelessWidget {
                     value: controller.danmakuFontBorder.value,
                     onChanged: (e) {
                       controller.danmakuFontBorder.value = e;
-                    },
-                    onSelectionChanged: (bool isFocus) {
-                      if (isFocus) {
-                        controller.danmakuScrollController.animateTo(
-                          300,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.ease,
-                        );
-                      }
                     },
                   ),
                 ),
@@ -819,7 +761,7 @@ class ResolutionPanel extends StatelessWidget {
       () => AnimatedPositioned(
         top: 0,
         bottom: 0,
-        right: controller.showSettting.value ? 0 : -width,
+        right: controller.showQualityPanel.value ? 0 : -width,
         width: width,
         duration: const Duration(milliseconds: 200),
         child: Container(
@@ -848,7 +790,7 @@ class ResolutionSetting extends StatelessWidget {
             children: [
               AppStyle.hGap32,
               Text(
-                "清晰度",
+                "清晰度设置",
                 style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
@@ -856,14 +798,20 @@ class ResolutionSetting extends StatelessWidget {
             ],
           ),
           Expanded(
-            child: ListView(
-              padding: AppStyle.edgeInsetsA48,
-              children: [
-                Padding(
-                  padding: AppStyle.edgeInsetsH20,
-                  child: Text("视频", style: AppStyle.textStyleWhite.copyWith(fontWeight: FontWeight.bold)),
-                ),
-              ],
+            child: Column(
+              children: controller.qualites.asMap().entries.map((e) {
+                var quality = e.value;
+                return Obx(() {
+                  return Padding(
+                    padding: AppStyle.edgeInsetsA24,
+                    child: HighlightButton(
+                      text: quality.quality,
+                      focusNode: AppFocusNode(),
+                      selected: controller.qualiteName == quality.quality,
+                    ),
+                  );
+                });
+              }).toList(),
             ),
           ),
         ],
