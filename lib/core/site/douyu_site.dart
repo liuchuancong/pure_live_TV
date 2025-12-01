@@ -6,6 +6,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
+import 'package:pure_live/core/scripts/douyu_sign.dart';
 import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/common/http_client.dart';
@@ -24,14 +25,6 @@ class DouyuSite implements LiveSite {
 
   @override
   String name = "斗鱼直播";
-
-  Future<String> Function(String, String) getDouyuSign = (html, rid) async {
-    throw Exception("You must call setDouyuSignFunction to set the function first");
-  };
-
-  void setDouyuSignFunction(Future<String> Function(String, String) func) {
-    getDouyuSign = func;
-  }
 
   @override
   LiveDanmaku getDanmaku() => DouyuDanmaku();
@@ -252,7 +245,7 @@ class DouyuSite implements LiveSite {
         liveStatus: roomInfo["show_status"] == 1 ? LiveStatus.live : LiveStatus.offline,
         status: roomInfo["show_status"] == 1,
         danmakuData: roomInfo["room_id"].toString(),
-        data: await getDouyuSign(crptext, roomInfo["room_id"].toString()),
+        data: DouyuSign.getSign(crptext, roomInfo["room_id"].toString()),
         platform: Sites.douyuSite,
         link: "https://www.douyu.com/$roomId",
         isRecord: roomInfo["videoLoop"] == 1,
@@ -354,7 +347,8 @@ class DouyuSite implements LiveSite {
 
   Future<String> getPlayArgs(String html, String rid) async {
     //取加密的js
-    html = RegExp(
+    html =
+        RegExp(
           r"(vdwdae325w_64we[\s\S]*function ub98484234[\s\S]*?)function",
           multiLine: true,
         ).firstMatch(html)?.group(1) ??

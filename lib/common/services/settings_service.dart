@@ -100,6 +100,10 @@ class SettingsService extends GetxController {
       PrefUtil.setString('huyaCookie', value);
     });
 
+    douyinCookie.listen((value) {
+      PrefUtil.setString('douyinCookie', value);
+    });
+
     webPort.listen((value) {
       PrefUtil.setString('webPort', value);
     });
@@ -263,6 +267,8 @@ class SettingsService extends GetxController {
   final bilibiliCookie = (PrefUtil.getString('bilibiliCookie') ?? '').obs;
 
   final huyaCookie = (PrefUtil.getString('huyaCookie') ?? '').obs;
+
+  final douyinCookie = (PrefUtil.getString('douyinCookie') ?? '').obs;
 
   static const List<BoxFit> videofitList = [
     BoxFit.contain,
@@ -551,20 +557,9 @@ class SettingsService extends GetxController {
     preferPlatform.value = json['preferPlatform'] ?? platforms[0];
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
     huyaCookie.value = json['huyaCookie'] ?? '';
+    douyinCookie.value = json['douyinCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
-    hideDanmaku.value = json['hideDanmaku'] ?? false;
-    danmakuTopArea.value = json['danmakuTopArea'] != null
-        ? double.parse(json['danmakuTopArea'].toString()) > 0.4
-              ? 0.4
-              : double.parse(json['danmakuTopArea'].toString())
-        : 0.0;
-    danmakuArea.value = json['danmakuArea'] != null
-        ? double.parse(json['danmakuArea'].toString()) > 1.0
-              ? 1.0
-              : double.parse(json['danmakuArea'].toString())
-        : 1.0;
-    danmakuBottomArea.value = double.parse(json['danmakuBottomArea'].toString());
   }
 
   Map<String, dynamic> toJson() {
@@ -601,6 +596,7 @@ class SettingsService extends GetxController {
     json['enableCodec'] = enableCodec.value;
     json['bilibiliCookie'] = bilibiliCookie.value;
     json['huyaCookie'] = huyaCookie.value;
+    json['douyinCookie'] = douyinCookie.value;
     json['shieldList'] = shieldList.map<String>((e) => e.toString()).toList();
     json['hotAreasList'] = hotAreasList.map<String>((e) => e.toString()).toList();
 
@@ -639,6 +635,7 @@ class SettingsService extends GetxController {
       'enableCodec': true,
       'bilibiliCookie': '',
       'huyaCookie': '',
+      'douyinCookie': '',
       'shieldList': [],
       "hotAreasList": [],
       "webPortEnable": false,

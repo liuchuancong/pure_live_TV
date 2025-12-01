@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 import 'site/douyu_site.dart';
 import 'site/douyin_site.dart';
 import 'interface/live_site.dart';
-import 'package:pure_live/core/sign/douyu.dart';
-import 'package:pure_live/core/sign/douyin.dart';
 import 'package:pure_live/core/site/cc_site.dart';
 import 'package:pure_live/core/site/iptv_site.dart';
 import 'package:pure_live/core/site/bilibili_site.dart';
@@ -22,21 +20,9 @@ class Sites {
   static const String iptvSite = "iptv";
   static List<Site> supportSites = [
     Site(id: "bilibili", name: "哔哩", logo: "assets/images/bilibili_2.png", liveSite: BiliBiliSite()),
-    Site(
-      id: "douyu",
-      name: "斗鱼",
-      logo: "assets/images/douyu.png",
-      liveSite: DouyuSite()..setDouyuSignFunction(DouyuSign.getSign),
-    ),
+    Site(id: "douyu", name: "斗鱼", logo: "assets/images/douyu.png", liveSite: DouyuSite()),
     Site(id: "huya", name: "虎牙", logo: "assets/images/huya.png", liveSite: HuyaSite()),
-    Site(
-      id: "douyin",
-      name: "抖音",
-      logo: "assets/images/douyin.png",
-      liveSite: DouyinSite()
-        ..setAbogusUrlFunction(DouyinSign.getAbogusUrl)
-        ..setSignatureFunction(DouyinSign.getSignature),
-    ),
+    Site(id: "douyin", name: "抖音", logo: "assets/images/douyin.png", liveSite: DouyinSite()),
     Site(id: "kuaishou", name: "快手", logo: "assets/images/kuaishou.png", liveSite: KuaishowSite()),
     Site(id: "cc", name: "网易CC", logo: "assets/images/cc.png", liveSite: CCSite()),
     Site(id: "iptv", name: "网络", logo: "assets/images/logo.png", liveSite: IptvSite()),

@@ -101,6 +101,8 @@ dependencies:
   dia_cors: ^0.1.2
   group_button: ^5.3.4
   rxdart: ^0.27.7
+  dart_quickjs:
+    git: https://github.com/xiaoyaocz/dart_quickjs.git
 dev_dependencies:
   flutter_test:
     sdk: flutter

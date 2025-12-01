@@ -86,8 +86,6 @@ class BiliBiliSite implements LiveSite {
         "$baseUrl?platform=web&parent_area_id=${category.areaType}&area_id=${category.areaId}&sort_type=&page=$page&w_webid=${await getAccessId()}";
 
     var queryParams = await getWbiSign(url);
-
-    developer.log(queryParams.toString(), name: "queryParams");
     var result = await HttpClient.instance.getJson(baseUrl, queryParameters: queryParams, header: await getHeader());
     developer.log(result.toString(), name: "result");
     var hasMore = result["data"]["has_more"] == 1;
@@ -129,7 +127,6 @@ class BiliBiliSite implements LiveSite {
     for (var item in result["data"]["playurl_info"]["playurl"]["g_qn_desc"]) {
       qualitiesMap[int.tryParse(item["qn"].toString()) ?? 0] = item["desc"].toString();
     }
-
     for (var item in result["data"]["playurl_info"]["playurl"]["stream"][0]["format"][0]["codec"][0]["accept_qn"]) {
       var qualityItem = LivePlayQuality(quality: qualitiesMap[item] ?? "未知清晰度", data: item);
       qualities.add(qualityItem);
@@ -155,7 +152,6 @@ class BiliBiliSite implements LiveSite {
     );
 
     var streamList = result["data"]["playurl_info"]["playurl"]["stream"];
-
     for (var streamItem in streamList) {
       var formatList = streamItem["format"];
       for (var formatItem in formatList) {
@@ -166,14 +162,22 @@ class BiliBiliSite implements LiveSite {
             var urlList = codecItem["url_info"];
             var baseUrl = codecItem["base_url"].toString();
             for (var urlItem in urlList) {
-              if (!urlItem["host"].contains("gotcha104")) {
-                urls.add("${urlItem["host"]}$baseUrl${urlItem["extra"]}");
+              var videoUrl = "${urlItem["host"]}$baseUrl${urlItem["extra"]}";
+              if (videoUrl.contains(".mcdn.bilivideo")) {
+                videoUrl = 'https://proxy-tf-all-ws.bilivideo.com/?url=${Uri.encodeComponent(videoUrl)}';
+              } else if (videoUrl.contains("/upgcxcode/")) {
+                //CDN列表
+                var cdnList = {
+                  'ali': 'upos-sz-mirrorali.bilivideo.com',
+                  'cos': 'upos-sz-mirrorcos.bilivideo.com',
+                  'hw': 'upos-sz-mirrorhw.bilivideo.com',
+                };
+                //取一个CDN
+                var cdn = cdnList['ali'] ?? "";
+                var reg = RegExp(r'(http|https)://(.*?)/upgcxcode/');
+                videoUrl = videoUrl.replaceAll(reg, "https://$cdn/upgcxcode/");
               }
-            }
-            if (urls.isEmpty) {
-              for (var urlItem in urlList) {
-                urls.add("${urlItem["host"]}$baseUrl${urlItem["extra"]}");
-              }
+              urls.add(videoUrl);
             }
           }
         }
@@ -360,8 +364,9 @@ class BiliBiliSite implements LiveSite {
         queryParameters: queryParams,
         header: await getHeader(),
       );
-      List<String> serverHosts =
-          (roomDanmakuResult["data"]["host_list"] as List).map<String>((e) => e["host"].toString()).toList();
+      List<String> serverHosts = (roomDanmakuResult["data"]["host_list"] as List)
+          .map<String>((e) => e["host"].toString())
+          .toList();
       return LiveRoom(
         roomId: roomId,
         title: roomInfo["room_info"]["title"].toString(),

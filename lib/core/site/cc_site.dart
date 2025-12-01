@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
+import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_room.dart';
@@ -25,75 +26,87 @@ class CCSite implements LiveSite {
 
   @override
   LiveDanmaku getDanmaku() => EmptyDanmaku();
+  final String kUserAgent =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 
+  final SettingsService settings = Get.find<SettingsService>();
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [
-      LiveCategory(id: "1", name: "网游", children: []),
-      LiveCategory(id: "2", name: "单机", children: []),
-      LiveCategory(id: "4", name: "网游竞技", children: []),
-      LiveCategory(id: "5", name: "娱乐", children: []),
+      LiveCategory(id: "1", name: "全部", children: []),
+      LiveCategory(id: "2", name: "端游", children: []),
+      LiveCategory(id: "4", name: "手游", children: []),
+      LiveCategory(id: "5", name: "其他", children: []),
     ];
-
-    for (var item in categories) {
-      var items = await getSubCategores(item);
-      item.children.addAll(items);
+    var res = await HttpClient.instance.getText(
+      "https://cc.163.com/category/",
+      queryParameters: {"format": "json"},
+      header: {"user-agent": kUserAgent},
+    );
+    var result = jsonDecode(res);
+    try {
+      for (var item in categories) {
+        List games = result['game_list'];
+        if (item.id == "2") {
+          games = games.where((x) => x["game_tag"] == "pc_game").toList();
+        } else if (item.id == "4") {
+          games = games.where((x) => x["game_tag"] == "mobile_game").toList();
+        } else if (item.id == "5") {
+          games = games.where((x) => x["game_tag"] == "other").toList();
+        }
+        var items = await getSubCategores(item, games);
+        item.children.addAll(items);
+      }
+    } catch (e) {
+      CoreLog.error(e);
     }
     return categories;
   }
 
-  final String kUserAgent =
-      "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36 Edg/117.0.0.0";
-
-  final SettingsService settings = Get.find<SettingsService>();
-  Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory) async {
-    var result = await HttpClient.instance.getJson(
-      "https://api.cc.163.com/v1/wapcc/gamecategory",
-      queryParameters: {"catetype": liveCategory.id},
-      header: {"user-agent": kUserAgent},
-    );
-
+  Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory, List result) async {
     List<LiveArea> subs = [];
-    for (var item in result["data"]["category_info"]["game_list"]) {
+    for (var item in result) {
       var gid = item["gametype"].toString();
       var subCategory = LiveArea(
         areaId: gid,
-        areaName: item["name"] ?? '',
+        areaName: item["gamename"] ?? '',
         areaType: liveCategory.id,
         platform: Sites.ccSite,
-        areaPic: item["cover"],
+        areaPic: item["img"],
         typeName: liveCategory.name,
       );
       subs.add(subCategory);
     }
-
     return subs;
   }
 
   @override
   Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
     var result = await HttpClient.instance.getJson(
-      "https://cc.163.com/api/category/${category.areaId}",
-      queryParameters: {"format": "json", "tag_id": "0", "start": (page - 1) * 20, "size": 20},
+      "https://cc.163.com/_next/data/nextjs/category/${category.areaId}.json",
+      queryParameters: {"game": category.areaId},
     );
     var items = <LiveRoom>[];
-    for (var item in result["lives"]) {
-      var roomItem = LiveRoom(
-        roomId: item["cuteid"].toString(),
-        title: item["title"].toString(),
-        cover: item["cover"].toString(),
-        nick: item["nickname"].toString(),
-        watching: item["vision_visitor"].toString(),
-        avatar: item["purl"],
-        area: item["game_name"] ?? '',
-        liveStatus: LiveStatus.live,
-        status: true,
-        platform: Sites.ccSite,
-      );
-      items.add(roomItem);
+    try {
+      for (var item in result["pageProps"]["gametypeData"]["lives"]) {
+        var roomItem = LiveRoom(
+          roomId: item["cuteid"].toString(),
+          title: item["title"].toString(),
+          cover: item["cover"].toString(),
+          nick: item["nickname"].toString(),
+          watching: item["webcc_visitor"].toString(),
+          avatar: item["purl"],
+          area: item["game_name"] ?? '',
+          liveStatus: LiveStatus.live,
+          status: true,
+          platform: Sites.ccSite,
+        );
+        items.add(roomItem);
+      }
+    } catch (e) {
+      CoreLog.error(e);
     }
-    var hasMore = result["lives"].length >= 20;
-    return LiveCategoryResult(hasMore: hasMore, items: items);
+    return LiveCategoryResult(hasMore: false, items: items);
   }
 
   @override
