@@ -48,8 +48,6 @@ class VideoController with ChangeNotifier {
 
   late ScrollController scrollController;
 
-  late ScrollController danmakuScrollController;
-
   Timer? showControllerTimer;
   // Controller ui status
   final showController = false.obs;
@@ -73,8 +71,6 @@ class VideoController with ChangeNotifier {
 
   Timer? showChangeNameTimer;
 
-  Timer? hasErrorTimer;
-
   var beforePlayNodeIndex = 0.obs;
 
   Timer? doubleClickTimer;
@@ -89,8 +85,6 @@ class VideoController with ChangeNotifier {
 
   final globalPlayer = SwitchableGlobalPlayer();
 
-  final hasError = false.obs;
-
   final isPlaying = false.obs;
 
   final isLoading = false.obs;
@@ -100,6 +94,8 @@ class VideoController with ChangeNotifier {
   late StreamSubscription<String?> _errorSub;
 
   final List<LivePlayQuality> qualites;
+
+  final qualityCurrentIndex = 0.obs;
 
   // 五秒关闭控制器
   void enableController() {
@@ -141,10 +137,11 @@ class VideoController with ChangeNotifier {
 
     _errorSub = globalPlayer.onError.listen((error) {
       if (error != null) {
-        // hasError.value = true;
-        // isLoading.value = false;
-        debugPrint("error: $error");
-        SmartDialog.showToast("当前视频播放出错,请检查网络或稍后再试");
+        debugPrint("Error: $error");
+        if (error.contains("Failed to open")) {
+          SmartDialog.showToast("当前视频播放出错,正在切换线路");
+          changeLine();
+        }
       }
     });
   }
@@ -189,23 +186,12 @@ class VideoController with ChangeNotifier {
     danmakuOpacity.value = settings.danmakuOpacity.value;
     videoPlayerIndex = settings.videoPlayerIndex.value;
     beforePlayNodeIndex.value = settings.currentPlayListNodeIndex.value;
+    qualityCurrentIndex.value = currentQuality;
     scrollController = ScrollController();
-    danmakuScrollController = ScrollController();
     scrollController.addListener(() {
       Future.delayed(Duration.zero, () {
         if (showPlayListPanel.value) {
           scrollController.animateTo(
-            (100 * (beforePlayNodeIndex.value)).toDouble(),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    });
-    danmakuScrollController.addListener(() {
-      Future.delayed(Duration.zero, () {
-        if (showPlayListPanel.value) {
-          danmakuScrollController.animateTo(
             (100 * (beforePlayNodeIndex.value)).toDouble(),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
@@ -232,17 +218,6 @@ class VideoController with ChangeNotifier {
       }
     });
 
-    hasError.listen((p0) {
-      if (hasError.value && !livePlayController.isLastLine.value) {
-        hasErrorTimer?.cancel();
-        hasErrorTimer = Timer(const Duration(milliseconds: 2000), () {
-          SmartDialog.showToast("当前视频播放出错,正在为您切换路线");
-          // changeLine();
-          hasErrorTimer?.cancel();
-          hasError.value = false;
-        });
-      }
-    });
     showQualityPanel.listen((p0) {
       if (showQualityPanel.value) {
         showControllerTimer?.cancel();
@@ -342,6 +317,7 @@ class VideoController with ChangeNotifier {
     if (key is KeyUpEvent) {
       return;
     }
+
     // 点击Menu打开/关闭设置
     if (key.logicalKey == LogicalKeyboardKey.keyM || key.logicalKey == LogicalKeyboardKey.contextMenu) {
       showPlayListPanel.value = false;
@@ -351,8 +327,6 @@ class VideoController with ChangeNotifier {
     // 如果没有显示控制面板
     if (!showController.value) {
       // 如果没有显示弹幕控制面板和关注列表和清晰度面板
-      debugPrint("key.logicalKey: ${key.logicalKey}");
-      debugPrint('${showSettting.value} ${showPlayListPanel.value} ${showQualityPanel.value}');
       if (!showSettting.value && !showPlayListPanel.value && !showQualityPanel.value) {
         // 点击OK、Enter、Select键时显示/隐藏控制器
         if (key.logicalKey == LogicalKeyboardKey.select ||
@@ -445,19 +419,26 @@ class VideoController with ChangeNotifier {
         }
       } else if (showQualityPanel.value) {
         // 展示清晰度面板
-        var qualityIndex = qualites.indexWhere((element) => element.quality == qualiteName);
+        var qualityIndex = qualityCurrentIndex.value;
         if (key.logicalKey == LogicalKeyboardKey.arrowDown) {
           qualityIndex++;
           if (qualityIndex == qualites.length) {
             qualityIndex = 0;
           }
+          qualityCurrentIndex.value = qualityIndex;
         } else if (key.logicalKey == LogicalKeyboardKey.arrowUp) {
+          qualityIndex--;
           if (qualityIndex == -1) {
             qualityIndex = qualites.length - 1;
           }
-          qualityIndex--;
+          qualityCurrentIndex.value = qualityIndex;
+        } else if (key.logicalKey == LogicalKeyboardKey.select ||
+            key.logicalKey == LogicalKeyboardKey.enter ||
+            key.logicalKey == LogicalKeyboardKey.space) {
+          changeQuality(qualityIndex);
+          showQualityPanel.value = false;
+          return; // 防止继续执行下面的 changeQuality（如果上面没 return）
         }
-        changeQuality(qualityIndex);
       } else {
         //没有控制面板以及关注列表显示了 设置面板
         var danmakuIndex = danmukuNodeIndex.value;
@@ -547,7 +528,6 @@ class VideoController with ChangeNotifier {
             break;
           case BottomButtonClickType.changeLine:
             // changeLine();
-            showQualityPanel.value = true;
             break;
           case BottomButtonClickType.boxFit:
             setVideoFit();
@@ -651,7 +631,6 @@ class VideoController with ChangeNotifier {
     cancleFocus();
     cancledanmakuFocus();
     isPlaying.value = false;
-    hasError.value = false;
     livePlayController.success.value = false;
     globalPlayer.pause();
     _playingSub.cancel();
@@ -667,7 +646,7 @@ class VideoController with ChangeNotifier {
     });
   }
 
-  void changeLine(currentLineIndex) async {
+  void changeLine() async {
     isLoading.value = true;
     await destory();
     Timer(const Duration(seconds: 2), () {
@@ -704,7 +683,6 @@ class VideoController with ChangeNotifier {
   void prevPlayChannel() {
     globalPlayer.pause();
     isPlaying.value = false;
-    hasError.value = false;
     isLoading.value = true;
     showChangeNameFlag.value = true;
     showChangeNameTimer?.cancel();
@@ -718,7 +696,6 @@ class VideoController with ChangeNotifier {
   void nextPlayChannel() {
     globalPlayer.pause();
     isPlaying.value = false;
-    hasError.value = false;
     isLoading.value = true;
     showChangeNameFlag.value = true;
     showChangeNameTimer?.cancel();

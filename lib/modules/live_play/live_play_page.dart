@@ -60,11 +60,7 @@ class LivePlayPage extends GetWidget<LivePlayController> {
         child: Container(
           color: Colors.black,
           child: Obx(
-            () => controller.hasError.value
-                ? ErrorVideoWidget(controller: controller)
-                : controller.success.value
-                ? VideoPlayer(controller: controller.videoController!)
-                : buildLoading(),
+            () => controller.success.value ? VideoPlayer(controller: controller.videoController!) : buildLoading(),
           ),
         ),
       ),

@@ -78,8 +78,6 @@ class LivePlayController extends StateController {
   // 切换线路会添加到这个数组里面
   var isLastLine = false.obs;
 
-  var hasError = false.obs;
-
   var isFirstLoad = true.obs;
 
   @override
@@ -109,7 +107,6 @@ class LivePlayController extends StateController {
     );
     isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
     if (isLastLine.value) {
-      hasError.value = true;
       return liveRoom;
     } else {
       handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
@@ -223,28 +220,13 @@ class LivePlayController extends StateController {
   }) {
     disPoserPlayer();
     isFirstLoad.value = false;
-    try {
-      if (reloadDataType == ReloadDataType.refreash) {
-        restoryQualityAndLines();
-      } else if (reloadDataType == ReloadDataType.changeLine) {
-        if (line == playUrls.length - 1) {
-          currentLineIndex.value = 0;
-        } else {
-          currentLineIndex.value = currentLineIndex.value + 1;
-        }
-      } else if (reloadDataType == ReloadDataType.changeQuality) {
-        if (quality == qualites.length - 1) {
-          currentQuality.value = 0;
-        } else {
-          currentQuality.value = currentQuality.value + 1;
-        }
-      }
-    } catch (e) {
+    if (reloadDataType == ReloadDataType.refreash) {
       restoryQualityAndLines();
-      if (reloadDataType == ReloadDataType.changeLine) {
-        SmartDialog.showToast("切换线路失败", displayTime: const Duration(seconds: 2));
-      } else if (reloadDataType == ReloadDataType.changeQuality) {
-        SmartDialog.showToast("切换清晰度失败", displayTime: const Duration(seconds: 2));
+    } else if (reloadDataType == ReloadDataType.changeLine) {
+      if (line == playUrls.length - 1) {
+        currentLineIndex.value = 0;
+      } else {
+        currentLineIndex.value = currentLineIndex.value + 1;
       }
     }
   }
@@ -289,6 +271,11 @@ class LivePlayController extends StateController {
   Future<bool> onBackPressed() async {
     if (videoController!.showSettting.value) {
       videoController?.showSettting.value = false;
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
+    if (videoController!.showQualityPanel.value) {
+      videoController?.showQualityPanel.value = false;
       videoController?.focusNode.requestFocus();
       return await Future.value(false);
     }
@@ -491,7 +478,6 @@ class LivePlayController extends StateController {
 
   void resetRoom(Site site, String roomId) async {
     success.value = false;
-    hasError.value = false;
     if (videoController != null) {
       await videoController?.destory();
       videoController = null;

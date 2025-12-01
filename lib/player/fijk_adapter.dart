@@ -32,6 +32,7 @@ class FijkPlayerAdapter implements UnifiedPlayer {
     if (_player.state == FijkState.error) {
       _errorSubject.add("FijkPlayer error: ${_player.value.exception.message}");
     }
+    debugPrint("FijkPlayer error: ${_player.value.exception.message}");
     if (_player.state == FijkState.prepared ||
         _player.state == FijkState.started ||
         _player.state == FijkState.paused) {
@@ -44,6 +45,7 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   @override
   Future<void> setDataSource(String url, Map<String, String> headers) async {
     final SettingsService settings = Get.find<SettingsService>();
+    await _player.reset();
     await FijkHelper.setFijkOption(_player, enableCodec: settings.enableCodec.value, headers: headers);
     await _player.setDataSource(url, autoPlay: true);
   }

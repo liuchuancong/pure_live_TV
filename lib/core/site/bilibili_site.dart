@@ -43,6 +43,9 @@ class BiliBiliSite implements LiveSite {
       buvid3 = buvidInfo["b_3"] ?? "";
       buvid4 = buvidInfo["b_4"] ?? "";
     }
+    if (settings.bilibiliCookie.value.isNotEmpty) {
+      cookie = settings.bilibiliCookie.value;
+    }
     return cookie.isEmpty
         ? {"user-agent": kDefaultUserAgent, "referer": kDefaultReferer, "cookie": 'buvid3=$buvid3;buvid4=$buvid4;'}
         : {

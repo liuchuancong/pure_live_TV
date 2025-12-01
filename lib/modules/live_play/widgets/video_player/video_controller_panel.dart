@@ -35,20 +35,16 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
   Widget build(BuildContext context) {
     return Material(
       type: MaterialType.transparency,
-      child: Obx(
-        () => controller.hasError.value
-            ? ErrorWidget(controller: controller)
-            : Stack(
-                children: [
-                  ChannelVideoWidget(controller: controller, barHeight: 100),
-                  DanmakuViewer(controller: controller),
-                  SettingsPanel(controller: controller),
-                  ResolutionPanel(controller: controller),
-                  FavoriteChoose(controller: controller),
-                  TopActionBar(controller: controller, barHeight: barHeight),
-                  BottomActionBar(controller: controller, barHeight: barHeight),
-                ],
-              ),
+      child: Stack(
+        children: [
+          ChannelVideoWidget(controller: controller, barHeight: 100),
+          DanmakuViewer(controller: controller),
+          SettingsPanel(controller: controller),
+          ResolutionPanel(controller: controller),
+          FavoriteChoose(controller: controller),
+          TopActionBar(controller: controller, barHeight: barHeight),
+          BottomActionBar(controller: controller, barHeight: barHeight),
+        ],
       ),
     );
   }
@@ -495,7 +491,6 @@ class DanmakuSetting extends StatelessWidget {
           ),
           Expanded(
             child: ListView(
-              controller: controller.danmakuScrollController,
               padding: AppStyle.edgeInsetsA48,
               children: [
                 AppStyle.vGap24,
@@ -807,7 +802,7 @@ class ResolutionSetting extends StatelessWidget {
                     child: HighlightButton(
                       text: quality.quality,
                       focusNode: AppFocusNode(),
-                      selected: controller.qualiteName == quality.quality,
+                      selected: controller.qualityCurrentIndex.value == e.key,
                     ),
                   );
                 });
