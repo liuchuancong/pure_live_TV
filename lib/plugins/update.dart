@@ -1,9 +1,5 @@
 import 'dart:io';
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:open_filex/open_filex.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/common/utils/version_util.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
