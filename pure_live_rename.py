@@ -3,12 +3,12 @@ import shutil
 import time
 source_dir_name = 'E:/project/pure_live_release_Tv/'
 # target_apk_dir_name = 'E:/project/pure_live_TV/build/app/outputs/flutter-apk/'
-target_files = ['app-arm64-v8a-release.apk','app-armeabi-v7a-release.apk','app-release.apk']
+target_files = ['app-arm64-v8a-release.apk','app-armeabi-v7a-release.apk']
 build_path = []
 buildcellctions = []
 target_apk_dir_name = 'C:/Users/XA-158/projects/flutter/pure_live_TV/build/app/outputs/flutter-apk/'
 files = []
-dirArr = ['电视高版本.apk','电视低版本.apk','电视版本All.apk']
+dirArr = ['app-arm64-v8a-release-TV.apk','app-armeabi-v7a-release-TV.apk']
 def traversal_dirs(path):
     for item in os.scandir(path):
         if item.is_dir():
