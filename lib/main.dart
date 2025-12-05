@@ -35,7 +35,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    initGlopalPlayer();
+    Future.delayed(const Duration(seconds: 3), () {
+      initGlopalPlayer();
+    });
   }
 
   initGlopalPlayer() async {

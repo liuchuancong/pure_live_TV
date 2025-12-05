@@ -37,8 +37,8 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
   /// 弹幕配置
   DanmakuOption _option = DanmakuOption();
 
-  /// 滚动弹幕
-  final List<DanmakuItem> _scrollDanmakuItems = [];
+  /// 滚动弹幕（按轨道的 yPosition 分组存储，key 是轨道的 y 坐标，value 是该轨道的弹幕列表）
+  final Map<double, List<DanmakuItem>> _scrollDanmakuByTrack = {};
 
   /// 顶部弹幕
   final List<DanmakuItem> _topDanmakuItems = [];
@@ -88,23 +88,6 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
     );
 
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback(_onFrame);
-  }
-
-  // 每帧绘制时调用
-  void _onFrame(Duration timestamp) {
-    try {
-      // 判断当前页面是否可见（处于栈顶）
-      final isVisible = ModalRoute.of(context)?.isCurrent ?? false;
-      if (isVisible) {
-        // 可见时重新绑定回调
-        _bindControllerCallbacks();
-      }
-      // 继续监听下一帧（避免只触发一次）
-      WidgetsBinding.instance.addPostFrameCallback(_onFrame);
-    } catch (e) {
-      debugPrint(e.toString());
-    }
   }
 
   // 绑定回调的方法
@@ -151,7 +134,6 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
     if (!_running || !mounted) {
       return;
     }
-
     if (content.type == DanmakuItemType.special) {
       if (!_option.hideSpecial) {
         (content as SpecialDanmakuContentItem).painterCache = TextPainter(
@@ -216,7 +198,10 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
           bool scrollCanAddToTrack = _scrollCanAddToTrack(yPosition, danmakuWidth);
 
           if (scrollCanAddToTrack) {
-            _scrollDanmakuItems.add(
+            if (!_scrollDanmakuByTrack.containsKey(yPosition)) {
+              _scrollDanmakuByTrack[yPosition] = [];
+            }
+            _scrollDanmakuByTrack[yPosition]!.add(
               DanmakuItem(
                 yPosition: yPosition,
                 xPosition: _viewWidth,
@@ -226,6 +211,7 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
                 content: content,
                 paragraph: paragraph,
                 strokeParagraph: strokeParagraph,
+                cachedWidth: danmakuWidth,
               ),
             );
             break;
@@ -233,7 +219,10 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
 
           /// 无法填充自己发送的弹幕时强制添加
           if (content.selfSend && idx == _trackCount) {
-            _scrollDanmakuItems.add(
+            if (!_scrollDanmakuByTrack.containsKey(yPosition)) {
+              _scrollDanmakuByTrack[yPosition] = [];
+            }
+            _scrollDanmakuByTrack[yPosition]!.add(
               DanmakuItem(
                 yPosition: _trackYPositions[0],
                 xPosition: _viewWidth,
@@ -243,6 +232,7 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
                 content: content,
                 paragraph: paragraph,
                 strokeParagraph: strokeParagraph,
+                cachedWidth: danmakuWidth,
               ),
             );
             break;
@@ -251,7 +241,10 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
           /// 海量弹幕启用时进行随机添加
           if (_option.massiveMode && idx == _trackCount) {
             var randomYPosition = _trackYPositions[_random.nextInt(_trackYPositions.length)];
-            _scrollDanmakuItems.add(
+            if (!_scrollDanmakuByTrack.containsKey(yPosition)) {
+              _scrollDanmakuByTrack[yPosition] = [];
+            }
+            _scrollDanmakuByTrack[yPosition]!.add(
               DanmakuItem(
                 yPosition: randomYPosition,
                 xPosition: _viewWidth,
@@ -261,6 +254,7 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
                 content: content,
                 paragraph: paragraph,
                 strokeParagraph: strokeParagraph,
+                cachedWidth: danmakuWidth,
               ),
             );
             break;
@@ -322,7 +316,8 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
         break;
       case DanmakuItemType.scroll:
       case DanmakuItemType.special:
-        if (!_animationController.isAnimating && (_scrollDanmakuItems.isNotEmpty || _specialDanmakuItems.isNotEmpty)) {
+        if (!_animationController.isAnimating &&
+            (_scrollDanmakuByTrack.isNotEmpty || _specialDanmakuItems.isNotEmpty)) {
           _animationController.repeat();
         }
         break;
@@ -375,7 +370,7 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
 
     /// 需要隐藏弹幕时清理已有弹幕
     if (option.hideScroll && !_option.hideScroll) {
-      _scrollDanmakuItems.clear();
+      _scrollDanmakuByTrack.clear();
     }
     if (option.hideTop && !_option.hideTop) {
       _topDanmakuItems.clear();
@@ -388,14 +383,16 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
 
     /// 清理已经存在的 Paragraph 缓存
     if (needClearParagraph) {
-      for (DanmakuItem item in _scrollDanmakuItems) {
-        if (item.paragraph != null) {
-          item.paragraph = null;
+      _scrollDanmakuByTrack.forEach((trackY, items) {
+        for (DanmakuItem item in items) {
+          if (item.paragraph != null) {
+            item.paragraph = null;
+          }
+          if (item.strokeParagraph != null) {
+            item.strokeParagraph = null;
+          }
         }
-        if (item.strokeParagraph != null) {
-          item.strokeParagraph = null;
-        }
-      }
+      });
       for (DanmakuItem item in _topDanmakuItems) {
         if (item.paragraph != null) {
           item.paragraph = null;
@@ -424,7 +421,7 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
   void clearDanmakus() {
     if (!mounted) return;
     setState(() {
-      _scrollDanmakuItems.clear();
+      _scrollDanmakuByTrack.clear();
       _topDanmakuItems.clear();
       _bottomDanmakuItems.clear();
       _specialDanmakuItems.clear();
@@ -434,18 +431,20 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
 
   /// 确定滚动弹幕是否可以添加
   bool _scrollCanAddToTrack(double yPosition, double newDanmakuWidth) {
-    for (var item in _scrollDanmakuItems) {
-      if (item.yPosition == yPosition) {
-        final existingEndPosition = item.xPosition + item.width;
-        // 首先保证进入屏幕时不发生重叠，其次保证知道移出屏幕前不与速度慢的弹幕(弹幕宽度较小)发生重叠
-        if (_viewWidth - existingEndPosition < 0) {
+    // 直接获取当前轨道的弹幕列表（若轨道不存在则为空）
+    final trackItems = _scrollDanmakuByTrack[yPosition] ?? [];
+
+    // 仅遍历当前轨道的弹幕，判断是否可以添加新弹幕
+    for (var item in trackItems) {
+      final existingEndPosition = item.xPosition + item.width;
+      // 原有判断逻辑不变（确保不重叠）
+      if (_viewWidth - existingEndPosition < 0) {
+        return false;
+      }
+      if (item.width < newDanmakuWidth) {
+        if ((1 - ((_viewWidth - item.xPosition) / (item.width + _viewWidth))) >
+            ((_viewWidth) / (_viewWidth + newDanmakuWidth))) {
           return false;
-        }
-        if (item.width < newDanmakuWidth) {
-          if ((1 - ((_viewWidth - item.xPosition) / (item.width + _viewWidth))) >
-              ((_viewWidth) / (_viewWidth + newDanmakuWidth))) {
-            return false;
-          }
         }
       }
     }
@@ -473,16 +472,21 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
   }
 
   // 基于Stopwatch的计时器同步
+  // 基于Stopwatch的计时器同步
   void _startTick() async {
-    // _stopwatch.reset();
     _stopwatch.start();
-
     final staticDuration = _option.duration * 1000;
 
     while (_running && mounted) {
       await Future.delayed(const Duration(milliseconds: 16));
-      // 移除屏幕外滚动弹幕
-      _scrollDanmakuItems.removeWhere((item) => item.xPosition + item.width < 0);
+      // 移除屏幕外滚动弹幕（遍历所有轨道）
+      _scrollDanmakuByTrack.forEach((trackY, items) {
+        items.removeWhere((item) => item.xPosition + item.width < 0);
+        // 清理空轨道
+        if (items.isEmpty) {
+          _scrollDanmakuByTrack.remove(trackY);
+        }
+      });
       // 移除顶部弹幕
       _topDanmakuItems.removeWhere((item) => (_tick - item.creationTime) >= staticDuration);
       // 移除底部弹幕
@@ -491,8 +495,9 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
       _specialDanmakuItems.removeWhere(
         (item) => (_tick - item.creationTime) >= (item.content as SpecialDanmakuContentItem).duration,
       );
-      // 暂停动画
-      if (_scrollDanmakuItems.isNotEmpty || _specialDanmakuItems.isNotEmpty) {
+
+      // 若存在滚动或高级弹幕，触发重绘
+      if (_scrollDanmakuByTrack.isNotEmpty || _specialDanmakuItems.isNotEmpty) {
         if (mounted) setState(() {});
       }
 
@@ -552,10 +557,12 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
                           child: AnimatedBuilder(
                             animation: _animationController,
                             builder: (context, child) {
+                              List<DanmakuItem> allScrollDanmakus = [];
+                              _scrollDanmakuByTrack.forEach((trackY, items) => allScrollDanmakus.addAll(items));
                               return CustomPaint(
                                 painter: ScrollDanmakuPainter(
                                   _animationController.value,
-                                  _scrollDanmakuItems,
+                                  allScrollDanmakus,
                                   _option.duration,
                                   _option.fontSize,
                                   _option.fontWeight,

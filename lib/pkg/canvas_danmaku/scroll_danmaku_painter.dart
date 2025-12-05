@@ -47,8 +47,8 @@ class ScrollDanmakuPainter extends CustomPainter {
   void _drawDanmakus(Canvas canvas, Size size, double startPosition) {
     for (var item in scrollDanmakuItems) {
       item.lastDrawTick ??= item.creationTime;
-      final currentWidth = Utils.calculateMixedContentWidth(item.content, fontSize);
-      final endPosition = -currentWidth; // 使用临时宽度计算结束位置
+      final currentWidth = item.cachedWidth;
+      final endPosition = -currentWidth!;
       final distance = startPosition - endPosition;
       item.xPosition = item.xPosition + (((item.lastDrawTick! - tick) / totalDuration) * distance);
       if (item.xPosition < -currentWidth || item.xPosition > size.width) {
@@ -69,7 +69,12 @@ class ScrollDanmakuPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant ScrollDanmakuPainter oldDelegate) {
+    // 仅当关键参数变化时重绘
+    return progress != oldDelegate.progress ||
+        scrollDanmakuItems.length != oldDelegate.scrollDanmakuItems.length ||
+        tick != oldDelegate.tick ||
+        fontSize != oldDelegate.fontSize ||
+        showStroke != oldDelegate.showStroke;
   }
 }

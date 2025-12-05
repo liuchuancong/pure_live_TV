@@ -27,6 +27,8 @@ class DanmakuItem {
   ui.Paragraph? paragraph;
   ui.Paragraph? strokeParagraph;
 
+  double? cachedWidth;
+
   DanmakuItem({
     required this.content,
     required this.creationTime,
@@ -37,5 +39,6 @@ class DanmakuItem {
     this.paragraph,
     this.strokeParagraph,
     this.lastDrawTick,
+    this.cachedWidth,
   });
 }

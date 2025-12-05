@@ -92,6 +92,9 @@ class SpecialDanmakuPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant SpecialDanmakuPainter oldDelegate) {
-    return true;
+    return progress != oldDelegate.progress ||
+        specialDanmakuItems.length != oldDelegate.specialDanmakuItems.length ||
+        tick != oldDelegate.tick ||
+        fontSize != oldDelegate.fontSize;
   }
 }
