@@ -14,7 +14,7 @@ on:
 
 jobs:
   build-android:
-    runs-on: macos-latest
+    runs-on: windows-latest
     permissions:
       contents: write
     steps:
