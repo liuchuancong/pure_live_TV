@@ -1,4 +1,4 @@
-name: app-build-action
+name: build-android-Tv
 
 # 推送Tag时触发 或者 手动触发
 on:

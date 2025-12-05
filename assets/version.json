@@ -1,7 +1,7 @@
 {
-  "version": "1.6.2",
+  "version": "2.0.3",
   "version_num": 10506,
-  "version_desc": "-Fix:修复横屏显示问题. \n -Fix:直播间按热度显示. \n -Fix:优化windows 初始窗口设置.",
+  "version_desc": "-Fix:优化直播间. \n -Add:新增App内更新. \n -Fix:优化弹幕（无法显示请设置区域大小）.",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live/releases"
 }
