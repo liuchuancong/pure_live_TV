@@ -77,16 +77,10 @@ class HomePage extends GetView<HomeController> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               AppStyle.hGap48,
-              Text(
-                "纯粹直播",
-                style: AppStyle.titleStyleWhite,
-              ),
+              Text("纯粹直播", style: AppStyle.titleStyleWhite),
               AppStyle.hGap24,
               const Spacer(),
-              Obx(() => Text(
-                    controller.datetime.value,
-                    style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w),
-                  )),
+              Obx(() => Text(controller.datetime.value, style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w))),
               AppStyle.hGap32,
               HighlightButton(
                 focusNode: controller.focusNodes.first,
@@ -98,6 +92,23 @@ class HomePage extends GetView<HomeController> {
                 },
               ),
               AppStyle.hGap48,
+              Obx(
+                () => controller.hasNewVersion.value
+                    ? Row(
+                        children: [
+                          HighlightButton(
+                            focusNode: controller.versionFocusNode,
+                            iconData: Icons.vertical_align_bottom_sharp,
+                            text: "新版本",
+                            onTap: () {
+                              Get.toNamed(RoutePath.kVersionPage);
+                            },
+                          ),
+                          AppStyle.hGap48,
+                        ],
+                      )
+                    : const SizedBox(),
+              ),
             ],
           ),
           Expanded(
@@ -114,15 +125,7 @@ class HomePage extends GetView<HomeController> {
                       children: [
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            buildViews(),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                          ],
+                          children: [const SizedBox(width: 5), buildViews(), const SizedBox(width: 5)],
                         ),
                       ],
                     ),
@@ -138,20 +141,11 @@ class HomePage extends GetView<HomeController> {
                         width: 64.w,
                         height: 64.w,
                         child: Center(
-                          child: Icon(
-                            Icons.history,
-                            color: Colors.white,
-                            size: 56.w,
-                          ),
+                          child: Icon(Icons.history, color: Colors.white, size: 56.w),
                         ),
                       ),
                       AppStyle.hGap24,
-                      Expanded(
-                        child: Text(
-                          "最近观看",
-                          style: AppStyle.titleStyleWhite,
-                        ),
-                      ),
+                      Expanded(child: Text("最近观看", style: AppStyle.titleStyleWhite)),
                       Obx(
                         () => Visibility(
                           visible: controller.loadding.value,
@@ -160,16 +154,10 @@ class HomePage extends GetView<HomeController> {
                               SizedBox(
                                 width: 48.w,
                                 height: 48.w,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 4.w,
-                                ),
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 4.w),
                               ),
                               AppStyle.hGap16,
-                              Text(
-                                "正在更新...",
-                                style: AppStyle.textStyleWhite,
-                              ),
+                              Text("正在更新...", style: AppStyle.textStyleWhite),
                             ],
                           ),
                         ),
@@ -187,46 +175,39 @@ class HomePage extends GetView<HomeController> {
                     ],
                   ),
                 ),
-                Obx(() => MasonryGridView.count(
-                      padding: AppStyle.edgeInsetsA48,
-                      itemCount: controller.rooms.value.length,
-                      crossAxisCount: 5,
-                      crossAxisSpacing: 24.w,
-                      mainAxisSpacing: 20.w,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (_, i) {
-                        var item = controller.rooms.value[i];
-                        return RoomCard(
-                          room: item,
-                          dense: true,
-                          useDefaultLongTapEvent: false,
-                          roomTypePage: EnterRoomTypePage.homePage,
-                          onLongTap: () {
-                            controller.removeItem(item);
-                          },
-                          focusNode: controller.hisToryFocusNodes[i],
-                        );
-                      },
-                    )),
+                Obx(
+                  () => MasonryGridView.count(
+                    padding: AppStyle.edgeInsetsA48,
+                    itemCount: controller.rooms.value.length,
+                    crossAxisCount: 5,
+                    crossAxisSpacing: 24.w,
+                    mainAxisSpacing: 20.w,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (_, i) {
+                      var item = controller.rooms.value[i];
+                      return RoomCard(
+                        room: item,
+                        dense: true,
+                        useDefaultLongTapEvent: false,
+                        roomTypePage: EnterRoomTypePage.homePage,
+                        onLongTap: () {
+                          controller.removeItem(item);
+                        },
+                        focusNode: controller.hisToryFocusNodes[i],
+                      );
+                    },
+                  ),
+                ),
                 Obx(
                   () => Visibility(
                     visible: controller.rooms.isEmpty,
                     child: Column(
                       children: [
                         AppStyle.vGap24,
-                        LottieBuilder.asset(
-                          'assets/lotties/empty.json',
-                          width: 160.w,
-                          height: 160.w,
-                          repeat: false,
-                        ),
+                        LottieBuilder.asset('assets/lotties/empty.json', width: 160.w, height: 160.w, repeat: false),
                         AppStyle.vGap24,
-                        Text(
-                          "暂无任何历史记录\n您可以从其他端同步数据到此处",
-                          textAlign: TextAlign.center,
-                          style: AppStyle.textStyleWhite,
-                        ),
+                        Text("暂无任何历史记录\n您可以从其他端同步数据到此处", textAlign: TextAlign.center, style: AppStyle.textStyleWhite),
                         AppStyle.vGap16,
                         HighlightButton(
                           focusNode: controller.syncNode,
@@ -239,7 +220,7 @@ class HomePage extends GetView<HomeController> {
                       ],
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -259,9 +240,7 @@ class HomePage extends GetView<HomeController> {
       builder: (_) => AlertDialog(
         backgroundColor: Get.theme.cardColor,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppStyle.radius16,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppStyle.radius16),
         contentPadding: AppStyle.edgeInsetsA48,
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -275,18 +254,11 @@ class HomePage extends GetView<HomeController> {
                   children: [
                     Padding(
                       padding: AppStyle.edgeInsetsR12,
-                      child: Icon(
-                        Icons.live_tv,
-                        size: 40.w,
-                        color: Colors.white,
-                      ),
+                      child: Icon(Icons.live_tv, size: 40.w, color: Colors.white),
                     ),
                     Text(
                       '直播间搜索',
-                      style: TextStyle(
-                        fontSize: 28.w,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 28.w, color: Colors.white),
                     ),
                   ],
                 ),

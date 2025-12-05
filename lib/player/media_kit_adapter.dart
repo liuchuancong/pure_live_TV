@@ -47,6 +47,8 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
   Widget getVideoWidget(int index, Widget? controls) {
     return Video(
       controller: _controller,
+      pauseUponEnteringBackgroundMode: !settings.enableBackgroundPlay.value,
+      resumeUponEnteringForegroundMode: !settings.enableBackgroundPlay.value,
       fit: SettingsService.videofitList[index],
       controls: NoVideoControls, // 不显示默认控制栏
     );
@@ -59,10 +61,31 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
 
   @override
   Stream<bool> get onPlaying => _player.stream.playing;
+
   @override
   Stream<String?> get onError => _player.stream.error.map((e) => e);
   @override
   Stream<bool> get onLoading => _player.stream.buffering;
+
   @override
   bool get isPlayingNow => _isPlaying;
+
+  @override
+  Stream<int?> get height => _player.stream.height;
+
+  @override
+  Stream<int?> get width => _player.stream.width;
+
+  @override
+  Stream<double?> get volume => _player.stream.volume;
+
+  @override
+  void setVolume(double value) {
+    _player.setVolume(value);
+  }
+
+  @override
+  void stop() {
+    _player.stop();
+  }
 }

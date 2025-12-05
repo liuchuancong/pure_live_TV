@@ -7,6 +7,7 @@ import 'package:pure_live/modules/sync/sync_binding.dart';
 import 'package:pure_live/modules/home/home_binding.dart';
 import 'package:pure_live/modules/search/search_page.dart';
 import 'package:pure_live/modules/areas/areas_binding.dart';
+import 'package:pure_live/modules/version/version_page.dart';
 import 'package:pure_live/modules/account/account_bing.dart';
 import 'package:pure_live/modules/account/account_page.dart';
 import 'package:pure_live/modules/popular/popular_page.dart';
@@ -14,6 +15,7 @@ import 'package:pure_live/modules/history/history_page.dart';
 import 'package:pure_live/modules/search/search_binding.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
+import 'package:pure_live/modules/version/version_binding.dart';
 import 'package:pure_live/modules/popular/popular_binding.dart';
 import 'package:pure_live/modules/agreement/agreement_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_page.dart';
@@ -31,6 +33,7 @@ import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
 import 'package:pure_live/modules/account/bilibili/qr_login_page.dart';
 import 'package:pure_live/modules/account/bilibili/bilibili_bings.dart';
 import 'package:pure_live/modules/agreement/agreement_page_binding.dart';
+
 
 // auth
 
@@ -126,5 +129,10 @@ class AppPages {
     ]),
     // 喜爱分区
     GetPage(name: RoutePath.kFavoriteAreas, page: () => const FavoriteAreasPage()),
+
+    // VersionPage
+    GetPage(name: RoutePath.kVersionPage, page: () => const VersionPage(), bindings: [
+      VersionBinding(),
+    ]),
   ];
 }

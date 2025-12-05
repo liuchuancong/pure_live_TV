@@ -527,7 +527,7 @@ class VideoController with ChangeNotifier {
             showQualityPanel.value = true;
             break;
           case BottomButtonClickType.changeLine:
-            // changeLine();
+            changeLine();
             break;
           case BottomButtonClickType.boxFit:
             setVideoFit();
@@ -635,35 +635,28 @@ class VideoController with ChangeNotifier {
     globalPlayer.pause();
     _playingSub.cancel();
     _errorSub.cancel();
-    await Future.delayed(const Duration(milliseconds: 10));
   }
 
   void refresh() async {
     isLoading.value = true;
     await destory();
-    Timer(const Duration(seconds: 2), () {
-      livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
-    });
+    livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash);
   }
 
   void changeLine() async {
     isLoading.value = true;
     await destory();
-    Timer(const Duration(seconds: 2), () {
-      livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.changeLine, line: currentLineIndex);
-    });
+    livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.changeLine, line: currentLineIndex);
   }
 
   void changeQuality(qualityIndex) async {
     isLoading.value = true;
     await destory();
-    Timer(const Duration(seconds: 2), () {
-      livePlayController.onInitPlayerState(
-        reloadDataType: ReloadDataType.changeQuality,
-        line: currentLineIndex,
-        currentQuality: qualityIndex,
-      );
-    });
+    livePlayController.onInitPlayerState(
+      reloadDataType: ReloadDataType.changeQuality,
+      line: currentLineIndex,
+      currentQuality: qualityIndex,
+    );
   }
 
   void setVideoFit() {

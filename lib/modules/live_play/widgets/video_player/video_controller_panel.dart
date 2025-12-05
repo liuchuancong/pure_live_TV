@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -375,7 +376,19 @@ class DanmakuButton extends StatelessWidget {
           useFocus: false,
           focusNode: AppFocusNode(),
           selected: controller.currentBottomClickType.value == BottomButtonClickType.danmaku,
-          iconData: controller.hideDanmaku.value ? CustomIcons.danmaku_close : CustomIcons.danmaku_open,
+          icon: controller.hideDanmaku.value
+              ? SvgPicture.asset(
+                  width: 60.w,
+                  'assets/images/video/danmu_close.svg',
+                  // ignore: deprecated_member_use
+                  color: Colors.white,
+                )
+              : SvgPicture.asset(
+                  'assets/images/video/danmu_open.svg',
+                  // ignore: deprecated_member_use
+                  color: Colors.white,
+                  width: 60.w,
+                ),
           onTap: () {
             controller.hideDanmaku.toggle();
           },
@@ -399,7 +412,12 @@ class SettingsButton extends StatelessWidget {
           useFocus: false,
           focusNode: AppFocusNode(),
           selected: controller.currentBottomClickType.value == BottomButtonClickType.settings,
-          iconData: CustomIcons.danmaku_setting,
+          icon: SvgPicture.asset(
+            'assets/images/video/danmu_setting.svg',
+            width: 60.w,
+            // ignore: deprecated_member_use
+            color: Colors.white,
+          ),
           onTap: () {
             controller.showSettting.value = true;
           },

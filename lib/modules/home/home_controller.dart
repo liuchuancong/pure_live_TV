@@ -5,6 +5,7 @@ import 'package:pure_live/app/utils.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/common/utils/version_util.dart';
 import 'package:pure_live/common/base/base_controller.dart';
 
 class HomeController extends BasePageController {
@@ -12,20 +13,21 @@ class HomeController extends BasePageController {
   static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区"];
 
   late ScrollController listScrollController;
-
+  final hasNewVersion = false.obs;
   static List<IconData> mainPageIconOptions = [
     Icons.favorite_border,
     Remix.fire_line,
     Remix.apps_line,
     Remix.search_2_line,
     Icons.history,
-    Icons.view_module_rounded
+    Icons.view_module_rounded,
   ];
   var rooms = <LiveRoom>[].obs;
   var currentNodeIndex = 1.obs;
   // button列表再加上设置最近观看
   List<AppFocusNode> focusNodes = List.generate(mainPageOptions.length + 2, (_) => AppFocusNode());
   List<AppFocusNode> hisToryFocusNodes = [];
+  AppFocusNode versionFocusNode = AppFocusNode();
   final syncNode = AppFocusNode();
   final pageController = GroupButtonController(selectedIndex: 0);
   var refreshIsOk = true.obs;
@@ -40,10 +42,19 @@ class HomeController extends BasePageController {
       listScrollController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.linear);
     });
     focusNodes[mainPageOptions.length].isFoucsed.listen((p0) {
-      listScrollController.animateTo(listScrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200), curve: Curves.linear);
+      listScrollController.animateTo(
+        listScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.linear,
+      );
     });
+    checkNewVersion();
     super.onInit();
+  }
+
+  checkNewVersion() async {
+    await VersionUtil().checkUpdate();
+    hasNewVersion.value = VersionUtil.hasNewVersion();
   }
 
   void removeItem(LiveRoom item) async {
@@ -75,8 +86,10 @@ class HomeController extends BasePageController {
   @override
   Future<List<LiveRoom>> getData(int page, int pageSize) async {
     List<Future<LiveRoom>> futures = [];
-    var historyRooms =
-        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(8).toList();
+    var historyRooms = settingsService.historyRooms.value
+        .where((room) => room.liveStatus == LiveStatus.live)
+        .take(8)
+        .toList();
     if (historyRooms.isEmpty) {
       return [];
     }
@@ -91,8 +104,10 @@ class HomeController extends BasePageController {
     } catch (e) {
       return historyRooms;
     }
-    historyRooms =
-        settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(8).toList();
+    historyRooms = settingsService.historyRooms.value
+        .where((room) => room.liveStatus == LiveStatus.live)
+        .take(8)
+        .toList();
     rooms.value = historyRooms;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return historyRooms;

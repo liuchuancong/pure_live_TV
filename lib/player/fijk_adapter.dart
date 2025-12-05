@@ -14,6 +14,9 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   final BehaviorSubject<String?> _errorSubject = BehaviorSubject.seeded(null);
 
   final BehaviorSubject<bool> _loadingSubject = BehaviorSubject.seeded(false);
+
+  final BehaviorSubject<int?> _heightSubject = BehaviorSubject.seeded(null);
+  final BehaviorSubject<int?> _widthSubject = BehaviorSubject.seeded(null);
   bool _isPlaying = false;
 
   @override
@@ -32,11 +35,14 @@ class FijkPlayerAdapter implements UnifiedPlayer {
     if (_player.state == FijkState.error) {
       _errorSubject.add("FijkPlayer error: ${_player.value.exception.message}");
     }
-    debugPrint("FijkPlayer error: ${_player.value.exception.message}");
     if (_player.state == FijkState.prepared ||
         _player.state == FijkState.started ||
         _player.state == FijkState.paused) {
       _loadingSubject.add(false);
+      int actualWidth = _player.value.size!.width.toInt();
+      int actualHeight = _player.value.size!.height.toInt();
+      _heightSubject.add(actualHeight);
+      _widthSubject.add(actualWidth);
     } else if (_player.state == FijkState.asyncPreparing || _player.state == FijkState.initialized) {
       _loadingSubject.add(true);
     }
@@ -86,4 +92,22 @@ class FijkPlayerAdapter implements UnifiedPlayer {
 
   @override
   bool get isPlayingNow => _isPlaying;
+
+  @override
+  Stream<int?> get width => _widthSubject.stream;
+  @override
+  Stream<int?> get height => _heightSubject.stream;
+
+  @override
+  Stream<double?> get volume => throw UnimplementedError();
+
+  @override
+  void setVolume(double value) {
+    throw UnimplementedError();
+  }
+
+  @override
+  void stop() {
+    _player.stop();
+  }
 }

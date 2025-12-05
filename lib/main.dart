@@ -84,7 +84,7 @@ class _MyAppState extends State<MyApp> {
             initialRoute: settings.isFirstInApp.value ? RoutePath.kAgreementPage : RoutePath.kInitial,
             defaultTransition: Transition.native,
             getPages: AppPages.routes,
-            navigatorObservers: [GetXRouterObserver()],
+            navigatorObservers: [GetXRouterObserver(), BackButtonObserver()],
           );
         });
       },

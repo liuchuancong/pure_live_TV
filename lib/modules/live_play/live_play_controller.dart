@@ -9,6 +9,7 @@ import 'package:pure_live/plugins/emoji_manager.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
+import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/modules/live_play/widgets/index.dart';
 
 class LivePlayController extends StateController {
@@ -84,7 +85,46 @@ class LivePlayController extends StateController {
   void onClose() {
     videoController?.dispose();
     liveDanmaku.stop();
+    SwitchableGlobalPlayer().stop();
     super.onClose();
+  }
+
+  Future<bool> onBackPressed() async {
+    if (videoController!.showSettting.value) {
+      videoController?.showSettting.value = false;
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
+    if (videoController!.showQualityPanel.value) {
+      videoController?.showQualityPanel.value = false;
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
+    if (videoController!.showPlayListPanel.value) {
+      videoController?.showPlayListPanel.value = false;
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
+    if (videoController!.showController.value) {
+      videoController?.disableController();
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
+    if (videoController != null) {
+      videoController?.focusNode.requestFocus();
+      videoController?.destory();
+      liveDanmaku.stop();
+      SwitchableGlobalPlayer().stop();
+    }
+    return await Future.value(true);
+  }
+
+  @override
+  void dispose() {
+    videoController?.destory();
+    liveDanmaku.stop();
+    SwitchableGlobalPlayer().stop();
+    super.dispose();
   }
 
   @override
@@ -268,40 +308,6 @@ class LivePlayController extends StateController {
     };
   }
 
-  Future<bool> onBackPressed() async {
-    if (videoController!.showSettting.value) {
-      videoController?.showSettting.value = false;
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    if (videoController!.showQualityPanel.value) {
-      videoController?.showQualityPanel.value = false;
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    if (videoController!.showPlayListPanel.value) {
-      videoController?.showPlayListPanel.value = false;
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    if (videoController!.showController.value) {
-      videoController?.disableController();
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    int nowExitTime = DateTime.now().millisecondsSinceEpoch;
-    if (nowExitTime - lastExitTime > 1000) {
-      lastExitTime = nowExitTime;
-      SmartDialog.showToast(S.current.double_click_to_exit);
-      return await Future.value(false);
-    }
-    if (videoController != null) {
-      videoController?.focusNode.requestFocus();
-      videoController!.destory();
-    }
-    return await Future.value(true);
-  }
-
   /// 初始化播放器
   void getPlayQualites() async {
     try {
@@ -314,18 +320,25 @@ class LivePlayController extends StateController {
       qualites.value = playQualites;
       // 第一次加载 使用系统默认线路
       if (isFirstLoad.value) {
-        int qualityLevel = settings.resolutionsList.indexOf(settings.preferResolution.value);
-        if (qualityLevel == 0) {
-          //最高
-          currentQuality.value = 0;
-        } else if (qualityLevel == settings.resolutionsList.length - 1) {
-          //最低
-          currentQuality.value = playQualites.length - 1;
-        } else {
-          //中间值
-          int middle = (playQualites.length / 2).floor();
-          currentQuality.value = middle;
+        String userPrefer = settings.preferResolution.value;
+        List<String> availableQualities = playQualites.map((e) => e.quality).toList();
+        int matchedIndex = availableQualities.indexOf(userPrefer);
+        // 尝试直接匹配用户偏好的分辨率
+        if (matchedIndex != -1) {
+          currentQuality.value = matchedIndex;
+          isFirstLoad.value = false;
+          getPlayUrl();
+          return;
         }
+        // 未匹配到，根据用户偏好的"级别"选择最接近的清晰度
+        List<String> systemResolutions = settings.resolutionsList;
+        int preferLevel = systemResolutions.indexOf(userPrefer);
+        double preferRatio = preferLevel / (systemResolutions.length - 1);
+        int targetIndex = (preferRatio * (availableQualities.length - 1)).round();
+        // 确保索引在有效范围内
+        targetIndex = targetIndex.clamp(0, availableQualities.length - 1);
+        currentQuality.value = targetIndex;
+        isFirstLoad.value = false;
       }
 
       getPlayUrl();

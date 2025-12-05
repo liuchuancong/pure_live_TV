@@ -12,7 +12,7 @@ class HighlightIconButton extends StatelessWidget {
   final bool selected;
   final bool useFocus;
   const HighlightIconButton({
-    required this.iconData,
+    this.iconData,
     this.icon,
     this.onTap,
     required this.focusNode,
@@ -41,8 +41,8 @@ class HighlightIconButton extends StatelessWidget {
             color: useFocus
                 ? (focusNode.isFoucsed.value || selected ? Colors.white : Colors.black)
                 : selected
-                    ? Colors.black
-                    : Colors.white,
+                ? Colors.black
+                : Colors.white,
           );
     }
     return const SizedBox();

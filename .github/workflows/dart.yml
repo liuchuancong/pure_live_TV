@@ -1,86 +1,99 @@
 name: app-build-action
-#推送Tag时触发
+
+# 推送Tag时触发 或者 手动触发
 on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the release'
+        required: false
+        default: 'v1.0.0'
   push:
-    branches:
-      - master 
+    tags:
+      - "v*"
+
 jobs:
-  build-windows-msix-android:
+  build-android:
     runs-on: macos-latest
     permissions:
       contents: write
     steps:
-      #签出代码 
-      - uses: actions/checkout@v3
+      # 签出代码
+      - name: 签出代码
+        uses: actions/checkout@v4
         with:
-          ref: master
-      #APK签名设置
-            #APK签名设置
-      - name: Download Android keystore
+          ref: ${{ github.event.inputs.tag_name }}
+
+      # APK签名设置
+      - name: 下载Android keystore
         id: android_keystore
-        uses: timheuer/base64-to-file@v1.2.4
+        uses: timheuer/base64-to-file@v1.2
         with:
-            fileName: key.jks
-            encodedString: ${{ secrets.KEYSTORE_BASE64 }}
-      - name: Create the Keystore
+          fileName: key.jks
+          encodedString: ${{ secrets.KEYSTORE_BASE64 }}
+      - name: 创建key.properties
         run: |
           echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
           echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          #设置JAVA环境
-      - uses: actions/setup-java@v3
+
+      # 设置JAVA环境
+      - name: 设置JAVA环境
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: "12.x"
+          java-version: "17"
           cache: 'gradle'
-      #设置Flutter
-      - name: Flutter action
+
+      # 设置Flutter
+      - name: 设置Flutter环境
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.13.9'
-          cache: true 
-      #更新Flutter的packages
-      - name: Restore packages
-        run: |
-          flutter pub get
-      #打包APK
-      - name: Build APK_SPLIT
-        run: |
-          flutter build apk --split-per-abi
-      - name: Build APK
-        run: |
-          flutter build apk
-      #上传APK至Artifacts
-      - name: Upload APK to Artifacts
-        uses: actions/upload-artifact@v3
+          channel: stable
+          cache: true
+
+      # 更新Flutter的packages
+      - name: 更新Flutter的packages
+        run: flutter pub get
+
+      # 打包APK
+      - name: 打包APK
+        run: flutter build apk --release --split-per-abi
+      
+      # 上传APK至Artifacts
+      - name: 上传APK至Artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: app-release.apk
+          name: android
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
-      #读取版本信息
-      - name: Read version
+
+      # 读取版本信息
+      - name: 读取版本信息
         id: version
         uses: juliangruber/read-file-action@v1
         with:
           path: assets/version.json
-      - name: Echo version
-        run: echo "${{ fromJson(steps.version.outputs.content).version }}"
-      - name: Echo version content
-        run: echo "${{ fromJson(steps.version.outputs.content).version_desc }}"
-      #上传至Release
-      - name: Upload Release
-        uses: ncipollo/release-action@v1
+
+      # 上传至Release
+      - name: 上传至Release
+        uses: softprops/action-gh-release@v2.2.1
         with:
-          allowUpdates: true
-          artifactErrorsFailBuild: true
-          artifacts: "build/app/outputs/flutter-apk/app-x86_64-release.apk,build/app/outputs/flutter-apk/app-arm64-v8a-release.apk,build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk,build/app/outputs/flutter-apk/app-release.apk"
-          name: "${{ fromJson(steps.version.outputs.content).version }}"
+          name: "${{ github.event.inputs.tag_name }}"
           body: "${{ fromJson(steps.version.outputs.content).version_desc }}"
-          prerelease: ${{ fromJson(steps.version.outputs.content).prerelease }}
+          prerelease: false
           token: ${{ secrets.TOKEN }}
-      #完成
-      - run: echo "This job's status is ${{ job.status }}."
+          files: |
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+
+      # 完成
+      - name: 输出任务状态
+        if: always()
+        run: echo "🍏 Android job's status is ${{ job.status }}."
+
+  

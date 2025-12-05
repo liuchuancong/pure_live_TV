@@ -78,10 +78,8 @@ class RoutePath {
 
   /// webview
   static const kFavoriteAreas = "/favorite_areas";
+
+  static const kVersionPage = "/version_page";
 }
 
-enum RouteChangeType {
-  push,
-  pop,
-  replace,
-}
+enum RouteChangeType { push, pop, replace }
