@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'proto/douyin.pb.dart';
 import 'package:pure_live/core/site/douyin_site.dart';
+import 'package:pure_live/core/scripts/douyin_sign.dart';
 import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
@@ -75,7 +76,7 @@ class DouyinDanmaku implements LiveDanmaku {
       },
     );
 
-    var sign = await getSignature(danmakuArgs.roomId, danmakuArgs.userId);
+    var sign = DouyinSign.getSignature(danmakuArgs.roomId, danmakuArgs.userId);
 
     var url = "$uri&signature=$sign";
     var backupUrl = url.replaceAll("webcast3-ws-web-lq", "webcast5-ws-web-lf");
@@ -183,13 +184,5 @@ class DouyinDanmaku implements LiveDanmaku {
     onMessage = null;
     onClose = null;
     webScoketUtils?.close();
-  }
-
-  Future<String> Function(String, String) getSignature = (roomId, uniqueId) async {
-    return "";
-  };
-
-  void setSignatureFunction(Future<String> Function(String, String) func) {
-    getSignature = func;
   }
 }
