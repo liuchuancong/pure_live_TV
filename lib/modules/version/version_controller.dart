@@ -20,7 +20,7 @@ class VersionController extends BaseController {
     await VersionUtil().checkUpdate();
     hasNewVersion.value = VersionUtil.hasNewVersion();
     appFocusNodes = getMirrorUrls(apkUrl.value).map((e) => AppFocusNode()).toList();
-    appFocusNodes = getMirrorUrls(apkUrl2.value).map((e) => AppFocusNode()).toList();
+    appFocus2Nodes = getMirrorUrls(apkUrl2.value).map((e) => AppFocusNode()).toList();
     if (hasNewVersion.value) {
       apkUrl.value =
           '${VersionUtil.projectUrl}/releases/download/v${VersionUtil.latestVersion}/app-armeabi-v7a-release.apk';

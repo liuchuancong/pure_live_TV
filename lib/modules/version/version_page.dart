@@ -10,9 +10,8 @@ import 'package:pure_live/common/widgets/button/highlight_button.dart';
 
 class VersionPage extends GetView<VersionController> {
   const VersionPage({super.key});
-  Widget _buildDownloadSection({required String title, required String urls}) {
+  Widget _buildDownloadSection({required String title, required String urls, required bool isArmV7a}) {
     final List<String> mirrorUrls = getMirrorUrls(urls);
-    bool isLine1 = controller.apkUrl.value == urls;
     if (mirrorUrls.isEmpty) {
       return Card(
         margin: EdgeInsets.zero,
@@ -54,7 +53,7 @@ class VersionPage extends GetView<VersionController> {
                   SizedBox(
                     width: buttonWidth,
                     child: HighlightButton(
-                      focusNode: isLine1 ? controller.appFocusNodes[i] : controller.appFocus2Nodes[i],
+                      focusNode: isArmV7a ? controller.appFocusNodes[i] : controller.appFocus2Nodes[i],
                       iconData: Icons.download_rounded,
                       text: '地址 ${i + 1}',
                       autofocus: true,
@@ -109,13 +108,24 @@ class VersionPage extends GetView<VersionController> {
                         children: [Text("暂无新版本", style: AppStyle.textStyleWhite)],
                       ),
                     )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildDownloadSection(title: 'ARM64 (arm64-v8a) 版本', urls: controller.apkUrl2.value),
-                        const SizedBox(height: 24),
-                        _buildDownloadSection(title: 'ARM32 (armeabi-v7a) 版本', urls: controller.apkUrl.value),
-                      ],
+                  : Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDownloadSection(
+                            title: 'ARM64 (arm64-v8a) 版本',
+                            urls: controller.apkUrl2.value,
+                            isArmV7a: false,
+                          ),
+                          const SizedBox(height: 24),
+                          _buildDownloadSection(
+                            title: 'ARM32 (armeabi-v7a) 版本',
+                            urls: controller.apkUrl.value,
+                            isArmV7a: true,
+                          ),
+                        ],
+                      ),
                     ),
             ),
           ),

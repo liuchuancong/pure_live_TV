@@ -500,10 +500,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: deac63260090e0866d92d6041e4a776049eb83db
+      resolved-ref: "988181b1da2512d3f33cc6639aedf7889ce0505d"
       url: "https://github.com/liuchuancong/flv_lzc.git"
     source: git
-    version: "1.0.2"
+    version: "1.0.3"
   font_awesome_flutter:
     dependency: "direct main"
     description:
