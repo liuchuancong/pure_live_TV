@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 2.0.3+3
+version: 2.0.4+4
 
 environment:
   sdk: ^3.9.2
@@ -52,22 +52,12 @@ dependencies:
     git:
       url:  https://github.com/xiaoyaocz/dart_simple_live.git
       path: ./simple_live_core/packages/tars_dart
-  media_kit:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: main
-      path: ./media_kit
-  media_kit_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: main
-      path: ./media_kit_video
-  media_kit_libs_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: main
-      path: ./libs/universal/media_kit_libs_video
-  flv_lzc: ^1.0.1
+    # video player 
+  media_kit: ^1.2.3 # Primary package.
+  media_kit_video: ^2.0.1 # For video rendering.
+  media_kit_libs_video: ^1.0.7 # Native video dependencies.
+  flv_lzc:
+    git: https://github.com/liuchuancong/flv_lzc.git
   bordered_text: ^2.0.0
   flutter_color: ^2.1.0
   protobuf: ^4.0.0
@@ -117,27 +107,7 @@ dependencies:
     git: https://github.com/xiaoyaocz/dart_quickjs.git
   open_filex: ^4.7.0
   permission_handler: ^12.0.1
-dependency_overrides:
-  media_kit:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: main
-      path: ./media_kit
-  media_kit_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: main
-      path: ./media_kit_video
-  media_kit_libs_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: main
-      path: ./libs/universal/media_kit_libs_video
-  media_kit_libs_android_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      ref: main
-      path: ./libs/android/media_kit_libs_android_video
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
