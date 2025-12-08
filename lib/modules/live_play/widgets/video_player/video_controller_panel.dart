@@ -381,12 +381,16 @@ class DanmakuButton extends StatelessWidget {
                   width: 60.w,
                   'assets/images/video/danmu_close.svg',
                   // ignore: deprecated_member_use
-                  color: Colors.white,
+                  color: controller.currentBottomClickType.value == BottomButtonClickType.danmaku
+                      ? Colors.black
+                      : Colors.white,
                 )
               : SvgPicture.asset(
                   'assets/images/video/danmu_open.svg',
                   // ignore: deprecated_member_use
-                  color: Colors.white,
+                  color: controller.currentBottomClickType.value == BottomButtonClickType.danmaku
+                      ? Colors.black
+                      : Colors.white,
                   width: 60.w,
                 ),
           onTap: () {
@@ -416,7 +420,9 @@ class SettingsButton extends StatelessWidget {
             'assets/images/video/danmu_setting.svg',
             width: 60.w,
             // ignore: deprecated_member_use
-            color: Colors.white,
+            color: controller.currentBottomClickType.value == BottomButtonClickType.settings
+                ? Colors.black
+                : Colors.white,
           ),
           onTap: () {
             controller.showSettting.value = true;

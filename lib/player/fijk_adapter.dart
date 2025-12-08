@@ -76,9 +76,13 @@ class FijkPlayerAdapter implements UnifiedPlayer {
 
   @override
   void dispose() {
-    _player.release();
-    _playingSubject.close();
-    _errorSubject.close();
+    try {
+      _playingSubject.close();
+      _errorSubject.close();
+      _player.release();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   @override
@@ -102,12 +106,17 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   Stream<double?> get volume => throw UnimplementedError();
 
   @override
-  void setVolume(double value) {
+  Future<void> setVolume(double value) {
     throw UnimplementedError();
   }
 
   @override
   void stop() {
     _player.stop();
+  }
+
+  @override
+  void release() {
+    _player.release();
   }
 }

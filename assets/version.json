@@ -1,7 +1,7 @@
 {
-  "version": "2.0.3",
+  "version": "2.0.4",
   "version_num": 10506,
-  "version_desc": "-Fix:优化直播间. \n -Add:新增App内更新. \n -Fix:优化弹幕（无法显示请设置区域大小）.",
+  "version_desc": "-Fix:优化播放器. \n -Add:优化App内更新. \n -Fix:优化弹幕按钮",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live/releases"
 }
