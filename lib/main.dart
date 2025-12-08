@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  initGlopalPlayer() async {
+  Future<void> initGlopalPlayer() async {
     final settings = Get.find<SettingsService>();
     await SwitchableGlobalPlayer().init(PlayerEngine.values[settings.videoPlayerIndex.value]);
   }

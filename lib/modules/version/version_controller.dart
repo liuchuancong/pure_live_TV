@@ -16,7 +16,7 @@ class VersionController extends BaseController {
     checkNewVersion();
   }
 
-  checkNewVersion() async {
+  Future<void> checkNewVersion() async {
     await VersionUtil().checkUpdate();
     hasNewVersion.value = VersionUtil.hasNewVersion();
     appFocusNodes = getMirrorUrls(apkUrl.value).map((e) => AppFocusNode()).toList();

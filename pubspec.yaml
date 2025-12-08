@@ -58,7 +58,7 @@ dependencies:
   media_kit_libs_video: ^1.0.7 # Native video dependencies.
   flv_lzc:
     git: https://github.com/liuchuancong/flv_lzc.git
-  bordered_text: ^2.0.0
+  bordered_text: ^3.0.0
   flutter_color: ^2.1.0
   protobuf: ^4.0.0
   fixnum: ^1.1.0
@@ -82,18 +82,18 @@ dependencies:
   logger: ^2.0.2+1
   crypto: ^3.0.6
   brotli: ^0.6.0
-  device_info_plus: ^11.2.0
+  device_info_plus: ^12.3.0
   cupertino_icons: ^1.0.8
   remixicon: ^1.0.0 #Remix图标
   lottie: ^3.1.0 #Lottie动画
   marquee_list: ^1.0.0
   flutter_screenutil: ^5.9.0 #UI适配
-  network_info_plus: ^6.1.0
+  network_info_plus: ^7.0.0
   dart_tars_protocol:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0
   flutter_inappwebview: ^6.2.0-beta.2
-  connectivity_plus: ^6.1.1 
+  connectivity_plus: ^7.0.0 
   qr_flutter: ^4.1.0 
   # 给web端通信
   dia: ^0.1.4
@@ -119,7 +119,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # flutter pub run flutter_launcher_icons
 flutter_icons:

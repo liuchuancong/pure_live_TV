@@ -52,7 +52,7 @@ class HomeController extends BasePageController {
     super.onInit();
   }
 
-  checkNewVersion() async {
+  Future<void> checkNewVersion() async {
     await VersionUtil().checkUpdate();
     hasNewVersion.value = VersionUtil.hasNewVersion();
   }

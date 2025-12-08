@@ -127,7 +127,7 @@ class VideoController with ChangeNotifier {
     danmukuNodeIndex.value = 0;
   }
 
-  initSubscriptions() {
+  void initSubscriptions() {
     _playingSub = globalPlayer.onPlaying.listen((playing) {
       if (playing) {
         isLoading.value = false;
@@ -649,7 +649,7 @@ class VideoController with ChangeNotifier {
     livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.changeLine, line: currentLineIndex);
   }
 
-  void changeQuality(qualityIndex) async {
+  void changeQuality(int qualityIndex) async {
     isLoading.value = true;
     await destory();
     livePlayController.onInitPlayerState(
