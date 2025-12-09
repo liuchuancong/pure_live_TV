@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:io' as io;
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:dia/dia.dart';
 import 'package:path/path.dart' as p;
@@ -8,10 +9,10 @@ import 'package:dia_cors/dia_cors.dart';
 import 'package:dia_body/dia_body.dart';
 import 'package:dia_static/dia_static.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:dia_router/dia_router.dart' as dia_router;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pure_live/plugins/file_recover_utils.dart';
+import 'package:flutter/services.dart' show rootBundle, AssetManifest;
 
 class ContextRequest extends Context with dia_router.Routing, ParsedBody {
   ContextRequest(super.request);
@@ -22,15 +23,28 @@ final app = App((req) => ContextRequest(req));
 class LocalHttpServer {
   final SettingsService settings = Get.find<SettingsService>();
   Future<void> readAssetsFiles() async {
-    final assets = await rootBundle.loadString('AssetManifest.json');
-    var assetList = jsonDecode(assets) as Map<String, dynamic>;
-    assetList.removeWhere((key, value) => !key.startsWith('assets/pure_live_web'));
-    final directory = await getApplicationCacheDirectory();
-    for (final assetPath in assetList.keys) {
-      final assetData = await rootBundle.load(assetPath);
-      final file = File('${directory.path}/$assetPath');
-      await file.create(recursive: true);
-      await file.writeAsBytes(assetData.buffer.asUint8List());
+    try {
+      final AssetManifest assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      final List<String> allAssets = assetManifest.listAssets();
+      final pureLiveAssets = allAssets.where((path) => path.startsWith('assets/pure_live_web/')).toList();
+      if (pureLiveAssets.isEmpty) {
+        log('⚠️ No assets found under assets/pure_live_web/');
+        return;
+      }
+      final directory = await getApplicationCacheDirectory();
+      for (final assetPath in pureLiveAssets) {
+        try {
+          final assetData = await rootBundle.load(assetPath);
+          final file = File('${directory.path}/$assetPath');
+          await file.create(recursive: true);
+          await file.writeAsBytes(assetData.buffer.asUint8List());
+        } catch (e) {
+          log('❌ Failed to copy asset "$assetPath": $e');
+        }
+      }
+      log('✅ Successfully copied ${pureLiveAssets.length} assets to cache.');
+    } catch (e) {
+      log(e.toString(), name: 'readAssetsFiles');
     }
   }
 
@@ -105,6 +119,7 @@ class LocalHttpServer {
       settings.webPort.value = port;
       settings.webPortEnable.value = true;
     } catch (e) {
+      log(e.toString(), name: 'LocalHttpServer');
       settings.webPortEnable.value = false;
       settings.httpErrorMsg.value = e.toString();
     }

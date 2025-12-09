@@ -112,6 +112,7 @@ flutter:
     - assets/pure_live_web/assets/fonts/
     - assets/pure_live_web/assets/shaders/
     - assets/pure_live_web/canvaskit/
+    - assets/pure_live_web/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf
     - assets/pure_live_web/canvaskit/chromium/
     - assets/pure_live_web/icons/
     - assets/images/
