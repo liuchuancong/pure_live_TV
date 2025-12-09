@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
@@ -330,6 +331,17 @@ class SettingsService extends GetxController {
   final currentPlayListNodeIndex = 0.obs;
 
   final currentBoxImage = (PrefUtil.getString('currentBoxImage') ?? "").obs;
+  Uint8List? _cachedBytes;
+  String? _cachedBase64;
+
+  MemoryImage? get cachedBackgroundImage {
+    if (currentBoxImage.isEmpty) return null;
+    if (_cachedBase64 != currentBoxImage.value) {
+      _cachedBase64 = currentBoxImage.value;
+      _cachedBytes = base64Decode(currentBoxImage.value);
+    }
+    return _cachedBytes != null ? MemoryImage(_cachedBytes!) : null;
+  }
 
   static final List<Map<dynamic, String>> currentBoxImageSources = [
     {"不使用": 'default'},

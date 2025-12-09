@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 
@@ -18,31 +17,33 @@ class _AppScaffoldState extends State<AppScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    final SettingsService settingsService = Get.find<SettingsService>();
+    final service = Get.find<SettingsService>();
     return Scaffold(
-      body: Obx(
-        () => Stack(
+      body: Obx(() {
+        final bg = service.cachedBackgroundImage;
+        return Stack(
           children: [
+            // 底层：始终有渐变
             Container(
-              decoration: settingsService.currentBoxImage.isEmpty
-                  ? const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xff141e30), Color(0xff243b55), Color(0xff141e30)],
-                      ),
-                    )
-                  : BoxDecoration(
-                      image: DecorationImage(
-                        image: MemoryImage(base64Decode(settingsService.currentBoxImage.value)),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xff141e30), Color(0xff243b55), Color(0xff141e30)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
             ),
+            // 上层：如果有图就叠加上去
+            if (bg != null)
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(image: bg, fit: BoxFit.cover),
+                ),
+              ),
             Positioned.fill(child: widget.child),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 }
