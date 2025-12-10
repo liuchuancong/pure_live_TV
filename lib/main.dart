@@ -1,13 +1,21 @@
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:pure_live/common/consts/app_consts.dart';
+import 'package:pure_live/common/utils/hive_pref_util.dart';
 import 'package:pure_live/routes/getx_router_observer.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   PrefUtil.prefs = await SharedPreferences.getInstance();
+  final appDir = await getApplicationDocumentsDirectory();
+  String path = '${appDir.path}${Platform.pathSeparator}pure_live_Tv';
+  await Hive.initFlutter(path);
+  await HivePrefUtil.init();
   MediaKit.ensureInitialized();
   // 初始化服务
   initService();
@@ -57,7 +65,7 @@ class _MyAppState extends State<MyApp> {
           return GetMaterialApp(
             debugShowCheckedModeBanner: false,
             title: '纯粹直播',
-            themeMode: SettingsService.themeModes[settings.themeModeName.value]!,
+            themeMode: AppConsts.themeModes[settings.themeModeName.value]!,
             theme: AppStyle.lightTheme,
             builder: FlutterSmartDialog.init(
               loadingBuilder: (msg) => Center(
@@ -73,7 +81,7 @@ class _MyAppState extends State<MyApp> {
                 child: child!,
               ),
             ),
-            locale: SettingsService.languages[settings.languageName.value]!,
+            locale: AppConsts.languages[settings.languageName.value]!,
             supportedLocales: S.delegate.supportedLocales,
             localizationsDelegates: const [
               S.delegate,

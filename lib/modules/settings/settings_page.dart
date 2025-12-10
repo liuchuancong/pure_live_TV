@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
@@ -87,10 +88,10 @@ class SettingsPage extends GetView<SettingsService> {
               () => SettingsItemWidget(
                 focusNode: controller.preferPlatformNode,
                 title: "默认平台",
-                items: SettingsService.platforms.asMap(),
-                value: SettingsService.platforms.indexOf(controller.preferPlatform.value),
+                items: AppConsts.platforms.asMap(),
+                value: AppConsts.platforms.indexOf(controller.preferPlatform.value),
                 onChanged: (e) {
-                  controller.preferPlatform.value = SettingsService.platforms[e];
+                  controller.preferPlatform.value = AppConsts.platforms[e];
                 },
               ),
             ),
@@ -123,11 +124,11 @@ class SettingsPage extends GetView<SettingsService> {
                 focusNode: controller.currentImageIndexNode,
                 title: "壁纸选择",
                 items: controller.getBoxImageItems(),
-                value: SettingsService.currentBoxImageSources
+                value: AppConsts.currentBoxImageSources
                     .map((e) => e.keys.first)
                     .toList()[controller.currentBoxImageIndex.value],
                 onChanged: (e) {
-                  var index = SettingsService.currentBoxImageSources.map((e) => e.keys.first).toList().indexOf(e);
+                  var index = AppConsts.currentBoxImageSources.map((e) => e.keys.first).toList().indexOf(e);
                   controller.currentBoxImageIndex.value = index;
                 },
               ),

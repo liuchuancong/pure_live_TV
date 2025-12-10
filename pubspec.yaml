@@ -1,7 +1,7 @@
 name: pure_live
 description: A new Flutter project.
 publish_to: 'none'
-version: 2.0.4+4
+version: 2.0.5+5
 
 environment:
   sdk: ^3.9.2
@@ -85,7 +85,8 @@ dependencies:
     git: https://github.com/xiaoyaocz/dart_quickjs.git
   open_filex: ^4.7.0
   permission_handler: ^12.0.1
-
+  hive_ce: ^2.15.1
+  hive_ce_flutter: ^2.3.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

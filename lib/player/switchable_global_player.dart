@@ -20,7 +20,6 @@ class SwitchableGlobalPlayer {
   final isPlaying = false.obs;
   final hasError = false.obs;
   final currentVolume = 0.5.obs;
-  final isInPipMode = false.obs;
 
   // 依赖
   final SettingsService settings = Get.find<SettingsService>();
@@ -64,14 +63,10 @@ class SwitchableGlobalPlayer {
 
   Future<void> switchEngine(PlayerEngine newEngine) async {
     if (newEngine == _currentEngine) return;
-
-    _cleanup(); // 清理旧播放器和订阅
-
+    _cleanup();
     _currentPlayer = _createPlayer(newEngine);
     _currentEngine = newEngine;
     videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
-
-    _subscribeToPlayerEvents();
   }
 
   // ------------------ 数据源设置 ------------------

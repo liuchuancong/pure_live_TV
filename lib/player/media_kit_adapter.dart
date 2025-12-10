@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'unified_player_interface.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:pure_live/player/player_consts.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 
@@ -63,7 +64,7 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
       controller: _controller,
       pauseUponEnteringBackgroundMode: !settings.enableBackgroundPlay.value,
       resumeUponEnteringForegroundMode: !settings.enableBackgroundPlay.value,
-      fit: SettingsService.videofitList[index],
+      fit: PlayerConsts.videofitList[index],
       controls: NoVideoControls,
     );
   }

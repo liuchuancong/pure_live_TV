@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'unified_player_interface.dart';
 import 'package:flv_lzc/fijkplayer.dart';
 import 'package:pure_live/player/fijk_helper.dart';
+import 'package:pure_live/player/player_consts.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 
 class FijkPlayerAdapter implements UnifiedPlayer {
@@ -66,7 +67,7 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   Widget getVideoWidget(int index, Widget? controls) {
     return FijkView(
       player: _player,
-      fit: FijkHelper.getIjkBoxFit(SettingsService.videofitList[index]),
+      fit: FijkHelper.getIjkBoxFit(PlayerConsts.videofitList[index]),
       fs: false,
       color: Colors.black,
       panelBuilder: (FijkPlayer fijkPlayer, FijkData fijkData, BuildContext context, Size viewSize, Rect texturePos) =>
