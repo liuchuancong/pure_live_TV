@@ -1,7 +1,7 @@
 {
-  "version": "2.0.5",
+  "version": "2.0.6",
   "version_num": 10507,
-  "version_desc": "-Fix:迁移数据至Hive数据库，解决数据丢失问题.\n -Restore: 修复了浏览器同步的问题. ",
+  "version_desc": "-Fix:迁移数据至Hive数据库，解决数据丢失问题.\n",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live/releases"
 }
