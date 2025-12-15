@@ -16,9 +16,9 @@ class LivePlayController extends StateController {
   LivePlayController({required this.room, required this.site});
   final String site;
 
-  late final Site currentSite = Sites.of(site);
+  late Site currentSite;
 
-  late final LiveDanmaku liveDanmaku = Sites.of(site).liveSite.getDanmaku();
+  late LiveDanmaku liveDanmaku;
 
   final settings = Get.find<SettingsService>();
 
@@ -141,6 +141,8 @@ class LivePlayController extends StateController {
     int line = 0,
     int currentQuality = 0,
   }) async {
+    currentSite = Sites.of(site);
+    liveDanmaku = currentSite.liveSite.getDanmaku();
     var liveRoom = await currentSite.liveSite.getRoomDetail(
       roomId: currentPlayRoom.value.roomId!,
       platform: currentPlayRoom.value.platform!,
@@ -195,6 +197,8 @@ class LivePlayController extends StateController {
     int line = 0,
     int currentQuality = 0,
   }) async {
+    currentSite = Sites.of(site);
+    liveDanmaku = currentSite.liveSite.getDanmaku();
     channelTimer?.cancel();
     handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
     var liveRoom = await currentSite.liveSite.getRoomDetail(

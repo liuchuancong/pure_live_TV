@@ -1,7 +1,7 @@
 name: pure_live
 description: A new Flutter project.
 publish_to: 'none'
-version: 2.0.5+5
+version: 2.0.6+6
 
 environment:
   sdk: ^3.9.2
@@ -30,10 +30,22 @@ dependencies:
     git:
       url:  https://github.com/xiaoyaocz/dart_simple_live.git
       path: ./simple_live_core/packages/tars_dart
-    # video player 
-  media_kit: ^1.2.3 # Primary package.
-  media_kit_video: ^2.0.1 # For video rendering.
-  media_kit_libs_video: ^1.0.7 # Native video dependencies.
+  # video player 
+  media_kit:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit
+  media_kit_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit_video
+  media_kit_libs_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/universal/media_kit_libs_video
   flv_lzc:
     git: https://github.com/liuchuancong/flv_lzc.git
   bordered_text: ^3.0.0
@@ -87,6 +99,27 @@ dependencies:
   permission_handler: ^12.0.1
   hive_ce: ^2.15.1
   hive_ce_flutter: ^2.3.3
+dependency_overrides:
+  media_kit:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit
+  media_kit_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit_video
+  media_kit_libs_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/universal/media_kit_libs_video
+  media_kit_libs_android_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/android/media_kit_libs_android_video
 dev_dependencies:
   flutter_test:
     sdk: flutter
