@@ -1,0 +1,2 @@
+# 忽略整个 assets 目录的语言统计
+assets/* linguist-vendored
