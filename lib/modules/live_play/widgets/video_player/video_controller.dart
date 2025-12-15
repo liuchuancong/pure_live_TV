@@ -85,11 +85,7 @@ class VideoController with ChangeNotifier {
 
   final globalPlayer = SwitchableGlobalPlayer();
 
-  final isPlaying = false.obs;
-
   final isLoading = false.obs;
-
-  late StreamSubscription<bool> _playingSub;
 
   late StreamSubscription<String?> _errorSub;
 
@@ -128,13 +124,6 @@ class VideoController with ChangeNotifier {
   }
 
   void initSubscriptions() {
-    _playingSub = globalPlayer.onPlaying.listen((playing) {
-      if (playing) {
-        isLoading.value = false;
-      }
-      isPlaying.value = playing;
-    });
-
     _errorSub = globalPlayer.onError.listen((error) {
       if (error != null) {
         debugPrint("Error: $error");
@@ -614,11 +603,9 @@ class VideoController with ChangeNotifier {
 
   void sendDanmaku(LiveMessage msg) {
     if (hideDanmaku.value) return;
-    if (isPlaying.value) {
-      danmakuController.addDanmaku(
-        DanmakuContentItem(msg.message, color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
-      );
-    }
+    danmakuController.addDanmaku(
+      DanmakuContentItem(msg.message, color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
+    );
   }
 
   @override
@@ -630,10 +617,8 @@ class VideoController with ChangeNotifier {
   Future<void> destory() async {
     cancleFocus();
     cancledanmakuFocus();
-    isPlaying.value = false;
     livePlayController.success.value = false;
-    globalPlayer.pause();
-    _playingSub.cancel();
+    globalPlayer.stop();
     _errorSub.cancel();
   }
 
@@ -656,6 +641,7 @@ class VideoController with ChangeNotifier {
       reloadDataType: ReloadDataType.changeQuality,
       line: currentLineIndex,
       currentQuality: qualityIndex,
+      isReCalculate: false,
     );
   }
 
@@ -675,7 +661,6 @@ class VideoController with ChangeNotifier {
 
   void prevPlayChannel() {
     globalPlayer.pause();
-    isPlaying.value = false;
     isLoading.value = true;
     showChangeNameFlag.value = true;
     showChangeNameTimer?.cancel();
@@ -688,7 +673,6 @@ class VideoController with ChangeNotifier {
 
   void nextPlayChannel() {
     globalPlayer.pause();
-    isPlaying.value = false;
     isLoading.value = true;
     showChangeNameFlag.value = true;
     showChangeNameTimer?.cancel();

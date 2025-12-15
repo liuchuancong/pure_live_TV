@@ -22,8 +22,6 @@ class LivePlayController extends StateController {
 
   final settings = Get.find<SettingsService>();
 
-  final messages = <LiveMessage>[].obs;
-
   // 控制唯一子组件
   VideoController? videoController;
 
@@ -83,10 +81,14 @@ class LivePlayController extends StateController {
 
   @override
   void onClose() {
-    videoController?.dispose();
-    liveDanmaku.stop();
-    SwitchableGlobalPlayer().stop();
+    disPoserPlayer();
     super.onClose();
+  }
+
+  @override
+  dispose() {
+    videoController?.dispose();
+    super.dispose();
   }
 
   Future<bool> onBackPressed() async {
@@ -110,26 +112,12 @@ class LivePlayController extends StateController {
       videoController?.focusNode.requestFocus();
       return await Future.value(false);
     }
-    if (videoController != null) {
-      videoController?.focusNode.requestFocus();
-      videoController?.destory();
-      liveDanmaku.stop();
-      SwitchableGlobalPlayer().stop();
-    }
+    disPoserPlayer();
     return await Future.value(true);
   }
 
   @override
-  void dispose() {
-    videoController?.destory();
-    liveDanmaku.stop();
-    SwitchableGlobalPlayer().stop();
-    super.dispose();
-  }
-
-  @override
   void onInit() {
-    // 发现房间ID 会变化 使用静态列表ID 对比
     currentPlayRoom.value = room;
     onInitPlayerState();
     EmojiManager().preload(site);
@@ -140,48 +128,49 @@ class LivePlayController extends StateController {
     ReloadDataType reloadDataType = ReloadDataType.refreash,
     int line = 0,
     int currentQuality = 0,
+    bool isReCalculate = true,
   }) async {
-    currentSite = Sites.of(site);
+    currentSite = Sites.of(currentPlayRoom.value.platform!);
     liveDanmaku = currentSite.liveSite.getDanmaku();
     var liveRoom = await currentSite.liveSite.getRoomDetail(
       roomId: currentPlayRoom.value.roomId!,
       platform: currentPlayRoom.value.platform!,
     );
-    isLastLine.value = calcIsLastLine(reloadDataType, line) && reloadDataType == ReloadDataType.changeLine;
-    if (isLastLine.value) {
-      return liveRoom;
-    } else {
-      handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
-      detail.value = liveRoom;
-      resetGlobalListState();
-      if (liveRoom.liveStatus == LiveStatus.unknown) {
-        SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
-        return liveRoom;
-      }
-
-      liveStatus.value = liveRoom.status! || liveRoom.isRecord!;
-      if (liveStatus.value) {
-        getPlayQualites();
-        if (currentPlayRoom.value.platform == Sites.iptvSite) {
-          settings.addRoomToHistory(currentPlayRoom.value);
-        } else {
-          settings.addRoomToHistory(liveRoom);
-        }
-        // start danmaku server
-        List<String> except = ['kuaishou', 'iptv', 'cc'];
-        if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
-          liveDanmaku.stop();
-          initDanmau();
-          liveDanmaku.start(liveRoom.danmakuData);
-        }
-      } else {
-        success.value = false;
-        SmartDialog.showToast("当前主播未开播或主播已下播", displayTime: const Duration(seconds: 2));
-        restoryQualityAndLines();
-      }
-
+    handleCurrentLineAndQuality(
+      reloadDataType: reloadDataType,
+      line: line,
+      quality: currentQuality,
+      isReCalculate: isReCalculate,
+    );
+    detail.value = liveRoom;
+    resetGlobalListState();
+    if (liveRoom.liveStatus == LiveStatus.unknown) {
+      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
       return liveRoom;
     }
+
+    liveStatus.value = liveRoom.status! || liveRoom.isRecord!;
+    if (liveStatus.value) {
+      getPlayQualites();
+      if (currentPlayRoom.value.platform == Sites.iptvSite) {
+        settings.addRoomToHistory(currentPlayRoom.value);
+      } else {
+        settings.addRoomToHistory(liveRoom);
+      }
+      // start danmaku server
+      List<String> except = ['kuaishou', 'iptv', 'cc'];
+      if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
+        liveDanmaku.stop();
+        initDanmau();
+        liveDanmaku.start(liveRoom.danmakuData);
+      }
+    } else {
+      success.value = false;
+      SmartDialog.showToast("当前主播未开播或主播已下播", displayTime: const Duration(seconds: 2));
+      restoryQualityAndLines();
+    }
+
+    return liveRoom;
   }
 
   void resetGlobalListState() {
@@ -196,11 +185,12 @@ class LivePlayController extends StateController {
     ReloadDataType reloadDataType = ReloadDataType.refreash,
     int line = 0,
     int currentQuality = 0,
+    bool isReCalculate = true,
   }) async {
-    currentSite = Sites.of(site);
+    currentSite = Sites.of(currentPlayRoom.value.platform!);
     liveDanmaku = currentSite.liveSite.getDanmaku();
     channelTimer?.cancel();
-    handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, quality: currentQuality);
+    handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, isReCalculate: isReCalculate);
     var liveRoom = await currentSite.liveSite.getRoomDetail(
       roomId: currentPlayRoom.value.roomId!,
       platform: currentPlayRoom.value.platform!,
@@ -250,50 +240,41 @@ class LivePlayController extends StateController {
   }
 
   void disPoserPlayer() {
-    videoController?.dispose();
-    videoController = null;
+    if (videoController != null) {
+      videoController?.dispose();
+      videoController = null;
+    }
     success.value = false;
+    isFirstLoad.value = true;
     focusNode.requestFocus();
     liveDanmaku.stop();
+    SwitchableGlobalPlayer().dispose();
   }
 
   void handleCurrentLineAndQuality({
     ReloadDataType reloadDataType = ReloadDataType.refreash,
     int line = 0,
+    bool isReCalculate = true,
     int quality = 0,
   }) {
-    disPoserPlayer();
-    isFirstLoad.value = false;
-    if (reloadDataType == ReloadDataType.refreash) {
-      restoryQualityAndLines();
-    } else if (reloadDataType == ReloadDataType.changeLine) {
+    if (reloadDataType == ReloadDataType.changeLine && isReCalculate) {
       if (line == playUrls.length - 1) {
         currentLineIndex.value = 0;
       } else {
         currentLineIndex.value = currentLineIndex.value + 1;
       }
+    } else if (reloadDataType == ReloadDataType.changeQuality) {
+      currentQuality.value = quality;
     }
   }
 
   /// 初始化弹幕接收事件
   void initDanmau() {
-    if (detail.value!.isRecord!) {
-      messages.add(
-        LiveMessage(
-          type: LiveMessageType.chat,
-          userName: "系统消息",
-          message: "当前主播未开播，正在轮播录像",
-          color: LiveMessageColor.white,
-        ),
-      );
-    }
-    messages.add(
-      LiveMessage(type: LiveMessageType.chat, userName: "系统消息", message: "开始连接弹幕服务器", color: LiveMessageColor.white),
-    );
+    // 移除系统消息添加逻辑（原messages相关）
     liveDanmaku.onMessage = (msg) {
       if (msg.type == LiveMessageType.chat) {
         if (settings.shieldList.every((element) => !msg.message.contains(element))) {
-          messages.add(msg);
+          // 保留弹幕发送到播放器的核心功能，移除messages添加
           if (videoController != null) {
             videoController?.sendDanmaku(msg);
           }
@@ -301,14 +282,10 @@ class LivePlayController extends StateController {
       }
     };
     liveDanmaku.onClose = (msg) {
-      messages.add(
-        LiveMessage(type: LiveMessageType.chat, userName: "系统消息", message: msg, color: LiveMessageColor.white),
-      );
+      // 移除messages添加逻辑
     };
     liveDanmaku.onReady = () {
-      messages.add(
-        LiveMessage(type: LiveMessageType.chat, userName: "系统消息", message: "弹幕服务器连接正常", color: LiveMessageColor.white),
-      );
+      // 移除messages添加逻辑
     };
   }
 
@@ -494,12 +471,7 @@ class LivePlayController extends StateController {
   }
 
   void resetRoom(Site site, String roomId) async {
-    success.value = false;
-    if (videoController != null) {
-      await videoController?.destory();
-      videoController = null;
-    }
-    focusNode.requestFocus();
+    disPoserPlayer();
     Timer(const Duration(milliseconds: 200), () {
       if (lastChannelIndex.value == currentChannelIndex.value) {
         resetPlayerState();
@@ -537,7 +509,6 @@ class LivePlayController extends StateController {
         key.logicalKey == LogicalKeyboardKey.controlLeft) {
       restoryQualityAndLines();
       resetRoom(Sites.of(currentPlayRoom.value.platform!), currentPlayRoom.value.roomId!);
-      onInitPlayerState();
     }
   }
 

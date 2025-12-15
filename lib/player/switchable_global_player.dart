@@ -20,7 +20,7 @@ class SwitchableGlobalPlayer {
   final isPlaying = false.obs;
   final hasError = false.obs;
   final currentVolume = 0.5.obs;
-
+  bool playerHasInit = false;
   // 依赖
   final SettingsService settings = Get.find<SettingsService>();
 
@@ -50,6 +50,8 @@ class SwitchableGlobalPlayer {
     if (_currentPlayer != null) return;
     _currentPlayer = _createPlayer(engine);
     _currentEngine = engine;
+    _currentPlayer!.init();
+    playerHasInit = true;
   }
 
   UnifiedPlayer _createPlayer(PlayerEngine engine) {
@@ -63,19 +65,23 @@ class SwitchableGlobalPlayer {
 
   Future<void> switchEngine(PlayerEngine newEngine) async {
     if (newEngine == _currentEngine) return;
-    _cleanup();
+    _cleanup(); // 清理旧播放器和订阅
     _currentPlayer = _createPlayer(newEngine);
     _currentEngine = newEngine;
     videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
+    _currentPlayer!.init();
+    playerHasInit = true;
   }
 
   // ------------------ 数据源设置 ------------------
 
   Future<void> setDataSource(String url, Map<String, String> headers) async {
     try {
-      await stop();
       await Future.delayed(Duration(milliseconds: 100));
-      _currentPlayer ??= _createPlayer(_currentEngine);
+      if (!playerHasInit || _currentPlayer == null) {
+        _currentPlayer ??= _createPlayer(_currentEngine);
+      }
+
       _cleanupSubscriptions();
       videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
       unawaited(
@@ -89,11 +95,13 @@ class SwitchableGlobalPlayer {
 
       try {
         await _currentPlayer!.init();
+        await Future.delayed(Duration(milliseconds: 100));
         await _currentPlayer!.setDataSource(url, headers);
 
         unawaited(
           Future.microtask(() {
             isInitialized.value = true;
+
             _subscribeToPlayerEvents();
           }),
         );
