@@ -81,6 +81,7 @@ class FijkPlayerAdapter implements UnifiedPlayer {
       _playingSubject.close();
       _errorSubject.close();
       _player.release();
+      _player.removeListener(_playerListener);
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -104,11 +105,11 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   Stream<int?> get height => _heightSubject.stream;
 
   @override
-  Stream<double?> get volume => throw UnimplementedError();
+  Stream<double?> get volume => 1.0.obs.stream;
 
   @override
-  Future<void> setVolume(double value) {
-    throw UnimplementedError();
+  Future<void> setVolume(double value) async {
+    await _player.setVolume(value);
   }
 
   @override

@@ -239,16 +239,21 @@ class LivePlayController extends StateController {
     return false;
   }
 
-  void disPoserPlayer() {
-    if (videoController != null) {
-      videoController?.dispose();
-      videoController = null;
+  Future<void> disPoserPlayer() async {
+    try {
+      if (videoController != null) {
+        videoController?.dispose();
+        videoController = null;
+      }
+      success.value = false;
+      isFirstLoad.value = true;
+      focusNode.requestFocus();
+      liveDanmaku.stop();
+      SwitchableGlobalPlayer().dispose();
+      await Future.delayed(Duration(seconds: 1));
+    } catch (e) {
+      log(e.toString(), name: 'disPoserPlayer');
     }
-    success.value = false;
-    isFirstLoad.value = true;
-    focusNode.requestFocus();
-    liveDanmaku.stop();
-    SwitchableGlobalPlayer().dispose();
   }
 
   void handleCurrentLineAndQuality({

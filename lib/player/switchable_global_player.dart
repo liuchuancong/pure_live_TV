@@ -101,7 +101,6 @@ class SwitchableGlobalPlayer {
         unawaited(
           Future.microtask(() {
             isInitialized.value = true;
-
             _subscribeToPlayerEvents();
           }),
         );
@@ -173,7 +172,6 @@ class SwitchableGlobalPlayer {
 
   void _subscribeToPlayerEvents() {
     _cleanupSubscriptions();
-
     final orientationStream = CombineLatestStream.combine2<int?, int?, bool>(
       width.where((w) => w != null && w > 0),
       height.where((h) => h != null && h > 0),
@@ -186,7 +184,7 @@ class SwitchableGlobalPlayer {
 
     _isPlayingSubscription = onPlaying.listen((playing) => isPlaying.value = playing);
     _errorSubscription = onError.listen((error) => hasError.value = error != null);
-    _volumeSubscription = volume.listen((v) => currentVolume.value = v ?? 0.5);
+    _volumeSubscription = volume.listen((v) => currentVolume.value = v ?? 1.0);
   }
 
   void _cleanupSubscriptions() {
