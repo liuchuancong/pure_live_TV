@@ -1,4 +1,7 @@
 import com.android.build.gradle.BaseExtension
+import java.util.Properties
+import java.io.File
+
 allprojects {
     repositories {
         google()
@@ -6,10 +9,31 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
+// --- 核心修改：直接从 pubspec.yaml 解析 versionCode ---
+val pubspecVersionCode: String by lazy {
+    try {
+        val pubspecFile = rootProject.file("../pubspec.yaml")
+        if (pubspecFile.exists()) {
+            val versionLine = pubspecFile.readLines().find { it.trim().startsWith("version:") }
+            // 提取 + 之后的数字，例如 "2.0.7+18" 提取出 "18"
+            versionLine?.substringAfterLast("+")?.trim() ?: "1"
+        } else {
+            "1"
+        }
+    } catch (e: Exception) {
+        "1"
+    }
+}
+
+// 依然保留 local.properties 加载（用于其他 Flutter 路径配置）
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
@@ -20,15 +44,45 @@ subprojects {
 subprojects {
     afterEvaluate {
         extensions.findByType(BaseExtension::class.java)?.apply {
-            // 配置命名空间
-            if (namespace.isNullOrBlank() && project.group != null) {
+            if (namespace.isNullOrBlank()) {
                 namespace = project.group.toString()
+            }
+        }
+
+        // 暴力拦截 Manifest：使用从 pubspec.yaml 获取的原始 buildNumber
+        tasks.matching { it.name.contains("process", ignoreCase = true) && it.name.contains("Manifest") }.configureEach {
+            doLast {
+                val targetVersionCode = pubspecVersionCode
+                
+                outputs.files.forEach { outputDir ->
+                    if (outputDir.exists()) {
+                        outputDir.walkTopDown().forEach { file ->
+                            if (file.name == "AndroidManifest.xml") {
+                                try {
+                                    val content = file.readText(Charsets.UTF_8)
+                                    val pattern = "android:versionCode=\"\\d+\""
+                                    val regex = pattern.toRegex()
+
+                                    if (regex.containsMatchIn(content)) {
+                                        val replacement = "android:versionCode=\"$targetVersionCode\""
+                                        val updatedContent = content.replace(regex, replacement)
+                                        file.writeText(updatedContent, Charsets.UTF_8)
+                                        println(">>> [PUBSPEC_SYNC] Found: ${file.absolutePath} -> Fixed to $targetVersionCode")
+                                    }
+                                } catch (e: Exception) { }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
+
 subprojects {
-    project.evaluationDependsOn(":app")
+    if (project.name != "app") {
+        evaluationDependsOn(":app")
+    }
 }
 
 tasks.register<Delete>("clean") {
