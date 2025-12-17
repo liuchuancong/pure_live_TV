@@ -85,7 +85,7 @@ jobs:
         with:
           name: ${{ github.event.inputs.tag_name || github.ref_name }}
           body: |
-            📦 纯粹直播 v${{ github.ref_name }}
+            📦 纯粹直播 ${{ github.ref_name }}
             本软件为开源项目,无广告，无病毒，若安装时出现病毒误报，可自行斟酌。
             📺 TV 版本
             • 安装程序：支持 Android TV 6.0+ (armeabi-v7a, arm64-v8a)
