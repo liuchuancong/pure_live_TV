@@ -1,11 +1,10 @@
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:flutter/material.dart';
 import 'unified_player_interface.dart';
 import 'package:flv_lzc/fijkplayer.dart';
+import 'package:pure_live/common/index.dart';
 import 'package:pure_live/player/fijk_helper.dart';
 import 'package:pure_live/player/player_consts.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 
 class FijkPlayerAdapter implements UnifiedPlayer {
   final FijkPlayer _player = FijkPlayer();
@@ -35,6 +34,7 @@ class FijkPlayerAdapter implements UnifiedPlayer {
     }
     if (_player.state == FijkState.error) {
       _errorSubject.add("FijkPlayer error: ${_player.value.exception.message}");
+      SmartDialog.showToast("FijkPlayer error: ${_player.value.exception.message}", displayTime: Duration(seconds: 5));
     }
     if (_player.state == FijkState.prepared ||
         _player.state == FijkState.started ||

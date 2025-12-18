@@ -5,6 +5,7 @@ import 'unified_player_interface.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/player/player_consts.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 
 class MediaKitPlayerAdapter implements UnifiedPlayer {
@@ -42,6 +43,9 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
           );
     _player.stream.playing.listen((playing) {
       _isPlaying = playing;
+    });
+    _player.stream.error.listen((error) {
+      SmartDialog.showToast("MediaKit error: $error", displayTime: Duration(seconds: 5));
     });
   }
 
