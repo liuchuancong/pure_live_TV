@@ -1,4 +1,3 @@
-import 'package:flv_lzc/fijkplayer.dart';
 import 'package:pure_live/common/index.dart';
 
 /// FijkPlayer Helper

@@ -1,7 +1,7 @@
 {
-  "version": "2.0.7",
-  "version_num": 10507,
-  "version_desc": "-Fix: 禁用Impeller, 新的渲染引擎可能导致无法打开",
+  "version": "2.0.8",
+  "version_num": 10508,
+  "version_desc": "-Fix: 修复虎牙断流",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live/releases"
 }

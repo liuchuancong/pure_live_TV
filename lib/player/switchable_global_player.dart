@@ -18,6 +18,7 @@ class SwitchableGlobalPlayer {
   final isInitialized = false.obs;
   final isVerticalVideo = false.obs;
   final isPlaying = false.obs;
+  final isComplete = false.obs;
   final hasError = false.obs;
   final currentVolume = 0.5.obs;
   bool playerHasInit = false;
@@ -34,17 +35,16 @@ class SwitchableGlobalPlayer {
   StreamSubscription<bool>? _isPlayingSubscription;
   StreamSubscription<String?>? _errorSubscription;
   StreamSubscription<double?>? _volumeSubscription;
+  StreamSubscription<bool>? _isCompleteSubscription;
   // Getter（安全访问）
   UnifiedPlayer? get currentPlayer => _currentPlayer;
 
   Stream<bool> get onLoading => _currentPlayer?.onLoading ?? Stream.value(false);
   Stream<bool> get onPlaying => _currentPlayer?.onPlaying ?? Stream.value(false);
+  Stream<bool> get onComplete => _currentPlayer?.onComplete ?? Stream.value(false);
   Stream<String?> get onError => _currentPlayer?.onError ?? Stream.value(null);
   Stream<int?> get width => _currentPlayer?.width ?? Stream.value(null);
   Stream<int?> get height => _currentPlayer?.height ?? Stream.value(null);
-  Stream<double?> get volume => _currentPlayer?.volume ?? Stream.value(null);
-
-  // ------------------ 初始化 & 切换 ------------------
 
   Future<void> init(PlayerEngine engine) async {
     if (_currentPlayer != null) return;
@@ -73,15 +73,12 @@ class SwitchableGlobalPlayer {
     playerHasInit = true;
   }
 
-  // ------------------ 数据源设置 ------------------
-
   Future<void> setDataSource(String url, Map<String, String> headers) async {
     try {
       await Future.delayed(Duration(milliseconds: 100));
-      if (!playerHasInit || _currentPlayer == null) {
+      if (!playerHasInit) {
         _currentPlayer ??= _createPlayer(_currentEngine);
       }
-
       _cleanupSubscriptions();
       videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
       unawaited(
@@ -117,6 +114,7 @@ class SwitchableGlobalPlayer {
   Future<void> setVolume(double volume) async {
     final clamped = volume.clamp(0.0, 1.0);
     currentVolume.value = clamped;
+    await _currentPlayer?.setVolume(clamped);
   }
 
   Future<void> play() => _currentPlayer?.play() ?? Future.value();
@@ -140,12 +138,29 @@ class SwitchableGlobalPlayer {
     videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
   }
 
-  // ------------------ UI ------------------
-
   Widget getVideoWidget(Widget? child) {
     return Obx(() {
       if (!isInitialized.value) {
-        return Container(color: Colors.black);
+        return Material(
+          child: Stack(
+            fit: StackFit.passthrough,
+            children: [
+              Container(
+                color: Colors.black, // 设置你想要的背景色
+              ),
+              Container(
+                color: Colors.black,
+                child: const Center(
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(strokeWidth: 4, color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
       }
       return KeyedSubtree(
         key: videoKey,
@@ -168,8 +183,6 @@ class SwitchableGlobalPlayer {
     });
   }
 
-  // ------------------ 清理 ------------------
-
   void _subscribeToPlayerEvents() {
     _cleanupSubscriptions();
     final orientationStream = CombineLatestStream.combine2<int?, int?, bool>(
@@ -183,8 +196,15 @@ class SwitchableGlobalPlayer {
     });
 
     _isPlayingSubscription = onPlaying.listen((playing) => isPlaying.value = playing);
-    _errorSubscription = onError.listen((error) => hasError.value = error != null);
-    _volumeSubscription = volume.listen((v) => currentVolume.value = v ?? 1.0);
+    _errorSubscription = onError.listen((error) {
+      hasError.value = error != null;
+      log('onError: $error', error: error, name: 'SwitchableGlobalPlayer');
+    });
+
+    _isCompleteSubscription = onComplete.listen((complete) {
+      log('complete: $complete', name: 'SwitchableGlobalPlayer');
+      isComplete.value = complete;
+    });
   }
 
   void _cleanupSubscriptions() {
@@ -192,6 +212,7 @@ class SwitchableGlobalPlayer {
     _isPlayingSubscription?.cancel();
     _errorSubscription?.cancel();
     _volumeSubscription?.cancel();
+    _isCompleteSubscription?.cancel();
   }
 
   void _cleanup() {
@@ -199,6 +220,7 @@ class SwitchableGlobalPlayer {
     _currentPlayer?.dispose();
     _currentPlayer = null;
     isInitialized.value = false;
+    playerHasInit = false;
   }
 
   void dispose() {

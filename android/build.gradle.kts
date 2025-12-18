@@ -15,7 +15,6 @@ val pubspecVersionCode: String by lazy {
         val pubspecFile = rootProject.file("../pubspec.yaml")
         if (pubspecFile.exists()) {
             val versionLine = pubspecFile.readLines().find { it.trim().startsWith("version:") }
-            // 提取 + 之后的数字，例如 "2.0.7+18" 提取出 "18"
             versionLine?.substringAfterLast("+")?.trim() ?: "1"
         } else {
             "1"

@@ -133,6 +133,11 @@ class VideoController with ChangeNotifier {
         }
       }
     });
+    globalPlayer.onComplete.listen((bool isComplete) {
+      if (isComplete) {
+        refresh();
+      }
+    });
   }
 
   // Danmaku player control

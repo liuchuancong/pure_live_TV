@@ -1,7 +1,7 @@
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
 import 'unified_player_interface.dart';
-import 'package:flv_lzc/fijkplayer.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/player/fijk_helper.dart';
 import 'package:pure_live/player/player_consts.dart';
@@ -17,8 +17,10 @@ class FijkPlayerAdapter implements UnifiedPlayer {
 
   final BehaviorSubject<int?> _heightSubject = BehaviorSubject.seeded(null);
   final BehaviorSubject<int?> _widthSubject = BehaviorSubject.seeded(null);
-  bool _isPlaying = false;
+  final BehaviorSubject<bool> _completeSubject = BehaviorSubject.seeded(false);
 
+  bool _isPlaying = false;
+  bool isInitialized = false;
   @override
   Future<void> init() async {
     _player.addListener(_playerListener);
@@ -29,12 +31,20 @@ class FijkPlayerAdapter implements UnifiedPlayer {
     if (_isPlaying != isPlaying) {
       _isPlaying = isPlaying;
     }
+    if (_player.state == FijkState.completed) {
+      log('Fijkplayer: The Video is completed');
+      _completeSubject.add(true);
+    }
+    if (!isInitialized) {
+      isInitialized = true;
+      _player.setVolume(1.0);
+    }
     if (_playingSubject.value != isPlaying) {
       _playingSubject.add(isPlaying);
     }
     if (_player.state == FijkState.error) {
       _errorSubject.add("FijkPlayer error: ${_player.value.exception.message}");
-      SmartDialog.showToast("FijkPlayer error: ${_player.value.exception.message}", displayTime: Duration(seconds: 5));
+      SmartDialog.showToast('FijkPlayer error: ${_player.value.exception.message}');
     }
     if (_player.state == FijkState.prepared ||
         _player.state == FijkState.started ||
@@ -105,11 +115,8 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   Stream<int?> get height => _heightSubject.stream;
 
   @override
-  Stream<double?> get volume => 1.0.obs.stream;
-
-  @override
-  Future<void> setVolume(double value) async {
-    await _player.setVolume(value);
+  Future<void> setVolume(double value) {
+    throw UnimplementedError();
   }
 
   @override
@@ -121,4 +128,7 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   void release() {
     _player.release();
   }
+
+  @override
+  Stream<bool> get onComplete => _completeSubject.stream;
 }
