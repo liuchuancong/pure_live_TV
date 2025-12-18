@@ -56,7 +56,7 @@ class SettingsItemWidget extends StatelessWidget {
       child: useFocus
           ? Obx(
               () => Padding(
-                padding: AppStyle.edgeInsetsA24,
+                padding: AppStyle.edgeInsetsA20,
                 child: Row(
                   children: [
                     Text(title, style: focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite),
@@ -88,7 +88,7 @@ class SettingsItemWidget extends StatelessWidget {
               ),
             )
           : Padding(
-              padding: AppStyle.edgeInsetsA24,
+              padding: AppStyle.edgeInsetsA20,
               child: Row(
                 children: [
                   Text(title, style: selected ? AppStyle.textStyleBlack : AppStyle.textStyleWhite),

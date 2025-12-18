@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
 import 'package:pure_live/common/widgets/button/home_big_button.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
@@ -11,7 +10,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
-  void handleMainPageButtonTap(int index) {
+  void handleMainPageButtonTap(int index, BuildContext context) {
     controller.currentNodeIndex.value = index + 1;
     controller.pageController.unselectAll();
     controller.pageController.selectIndex(index);
@@ -26,7 +25,7 @@ class HomePage extends GetView<HomeController> {
         Get.toNamed(RoutePath.kAreas);
         break;
       case 3:
-        showSearchDialog();
+        showSearchDialog(context);
         break;
       case 4:
         Get.toNamed(RoutePath.kHistory);
@@ -38,7 +37,7 @@ class HomePage extends GetView<HomeController> {
     }
   }
 
-  Widget buildViews() {
+  Widget buildViews(BuildContext context) {
     return GroupButton(
       controller: controller.pageController,
       isRadio: false,
@@ -62,7 +61,7 @@ class HomePage extends GetView<HomeController> {
         focusNode: controller.focusNodes[index + 1],
         text: HomeController.mainPageOptions[index],
         iconData: HomeController.mainPageIconOptions[index],
-        onTap: () => handleMainPageButtonTap(index),
+        onTap: () => handleMainPageButtonTap(index, context),
       ),
     );
   }
@@ -125,7 +124,7 @@ class HomePage extends GetView<HomeController> {
                       children: [
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [const SizedBox(width: 5), buildViews(), const SizedBox(width: 5)],
+                          children: [const SizedBox(width: 5), buildViews(context), const SizedBox(width: 5)],
                         ),
                       ],
                     ),
@@ -229,77 +228,83 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  void showSearchDialog() {
+  void showSearchDialog(BuildContext context) {
     var textController = TextEditingController();
-    var roomFocusNode = AppFocusNode()..isFoucsed.value = true;
-    Timer(const Duration(milliseconds: 100), () {
-      roomFocusNode.requestFocus();
-    });
+    final roomFocusNode = FocusNode();
+    // 安全检查
+    if (!context.mounted) return;
     showDialog(
-      context: Get.context!,
-      builder: (_) => AlertDialog(
-        backgroundColor: Get.theme.cardColor,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: AppStyle.radius16),
-        contentPadding: AppStyle.edgeInsetsA48,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: AppStyle.edgeInsetsR12,
-                      child: Icon(Icons.live_tv, size: 40.w, color: Colors.white),
-                    ),
-                    Text(
-                      '直播间搜索',
-                      style: TextStyle(fontSize: 28.w, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            AppStyle.vGap48,
-            SizedBox(
-              width: 700.w,
-              child: TextField(
-                controller: textController,
-                focusNode: roomFocusNode,
-                style: AppStyle.textStyleWhite,
-                textInputAction: TextInputAction.search,
-                onSubmitted: (e) {
-                  if (e.isEmpty) {
-                    return;
-                  }
-                  // 关闭键盘在关闭弹窗
-                  Navigator.of(Get.context!).pop();
-                  roomFocusNode.unfocus();
-                  Timer(const Duration(milliseconds: 100), () {
-                    Get.toNamed(RoutePath.kSearch, arguments: e);
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: "点击输入关键字搜索",
-                  hintStyle: AppStyle.textStyleWhite,
-                  border: OutlineInputBorder(
-                    borderRadius: AppStyle.radius16,
-                    borderSide: BorderSide(width: 4.w),
+      context: context,
+      builder: (dialogContext) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (dialogContext.mounted) {
+            roomFocusNode.requestFocus();
+          }
+        });
+        return AlertDialog(
+          backgroundColor: Get.theme.cardColor,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: AppStyle.radius16),
+          contentPadding: AppStyle.edgeInsetsA48,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: AppStyle.edgeInsetsR12,
+                        child: Icon(Icons.live_tv, size: 40.w, color: Colors.white),
+                      ),
+                      Text(
+                        '直播间搜索',
+                        style: TextStyle(fontSize: 28.w, color: Colors.white),
+                      ),
+                    ],
                   ),
-                  filled: true,
-                  isDense: true,
-                  fillColor: Get.theme.primaryColor,
-                  contentPadding: AppStyle.edgeInsetsA32,
+                ],
+              ),
+              AppStyle.vGap48,
+              SizedBox(
+                width: 700.w,
+                child: TextField(
+                  controller: textController,
+                  focusNode: roomFocusNode,
+                  style: AppStyle.textStyleWhite,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (e) {
+                    if (e.isEmpty) {
+                      return;
+                    }
+                    // 关闭键盘在关闭弹窗
+                    Navigator.of(Get.context!).pop();
+                    roomFocusNode.unfocus();
+                    Timer(const Duration(milliseconds: 100), () {
+                      Get.toNamed(RoutePath.kSearch, arguments: e);
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: "点击输入关键字搜索",
+                    hintStyle: AppStyle.textStyleWhite,
+                    border: OutlineInputBorder(
+                      borderRadius: AppStyle.radius16,
+                      borderSide: BorderSide(width: 4.w),
+                    ),
+                    filled: true,
+                    isDense: true,
+                    fillColor: Get.theme.primaryColor,
+                    contentPadding: AppStyle.edgeInsetsA32,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

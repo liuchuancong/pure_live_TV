@@ -22,9 +22,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Future.delayed(const Duration(seconds: 1), () {
-    //   initGlopalPlayer();
-    // });
+    Future.delayed(const Duration(seconds: 1), () {
+      initGlopalPlayer();
+    });
   }
 
   Future<void> initGlopalPlayer() async {
