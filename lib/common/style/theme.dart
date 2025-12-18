@@ -1,14 +1,12 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppColors {
   Color? primaryColor;
   ColorScheme? colorScheme;
-  AppColors({
-    this.primaryColor,
-    this.colorScheme,
-  }) : assert(colorScheme == null || primaryColor == null);
+  AppColors({this.primaryColor, this.colorScheme}) : assert(colorScheme == null || primaryColor == null);
   static ColorScheme lightColorScheme = ColorScheme.fromSwatch(
     primarySwatch: Colors.pink,
     brightness: Brightness.dark,
@@ -18,82 +16,42 @@ class AppColors {
 
   ThemeData get darkThemeData {
     return ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: primaryColor,
-        colorScheme: colorScheme?.copyWith(
-          error: const Color.fromARGB(255, 255, 99, 71),
-        ),
-        brightness: Brightness.dark);
+      useMaterial3: true,
+      colorSchemeSeed: primaryColor,
+      colorScheme: colorScheme?.copyWith(error: const Color.fromARGB(255, 255, 99, 71)),
+      brightness: Brightness.dark,
+    );
   }
 }
 
 class AppStyle {
   static ThemeData lightTheme = ThemeData(
     colorScheme: AppColors.lightColorScheme,
-    appBarTheme: const AppBarTheme(
-      elevation: 0,
-      centerTitle: true,
-    ),
+    appBarTheme: const AppBarTheme(elevation: 0, centerTitle: true),
     scaffoldBackgroundColor: const Color(0xfffafafa),
-    radioTheme: RadioThemeData(
-      fillColor: WidgetStateProperty.all(AppColors.lightColorScheme.primary),
-    ),
-    checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.all(AppColors.lightColorScheme.primary),
-    ),
+    textTheme: ThemeData.light().textTheme.apply(fontFamily: GoogleFonts.roboto().fontFamily),
+    primaryTextTheme: ThemeData.light().primaryTextTheme.apply(fontFamily: GoogleFonts.roboto().fontFamily),
+    radioTheme: RadioThemeData(fillColor: WidgetStateProperty.all(AppColors.lightColorScheme.primary)),
+    checkboxTheme: CheckboxThemeData(fillColor: WidgetStateProperty.all(AppColors.lightColorScheme.primary)),
   );
 
-  static SizedBox get vGap4 => SizedBox(
-        height: 4.w,
-      );
-  static SizedBox get vGap8 => SizedBox(
-        height: 8.w,
-      );
-  static SizedBox get vGap12 => SizedBox(
-        height: 12.w,
-      );
-  static SizedBox get vGap16 => SizedBox(
-        height: 16.w,
-      );
-  static SizedBox get vGap24 => SizedBox(
-        height: 24.w,
-      );
-  static SizedBox get vGap32 => SizedBox(
-        height: 32.w,
-      );
-  static SizedBox get vGap40 => SizedBox(
-        height: 40.w,
-      );
-  static SizedBox get vGap48 => SizedBox(
-        height: 48.w,
-      );
-  static SizedBox get hGap4 => SizedBox(
-        width: 4.w,
-      );
-  static SizedBox get hGap8 => SizedBox(
-        width: 8.w,
-      );
-  static SizedBox get hGap12 => SizedBox(
-        width: 12.w,
-      );
-  static SizedBox get hGap16 => SizedBox(
-        width: 16.w,
-      );
-  static SizedBox get hGap20 => SizedBox(
-        width: 20.w,
-      );
-  static SizedBox get hGap24 => SizedBox(
-        width: 24.w,
-      );
-  static SizedBox get hGap32 => SizedBox(
-        width: 32.w,
-      );
-  static SizedBox get hGap40 => SizedBox(
-        width: 40.w,
-      );
-  static SizedBox get hGap48 => SizedBox(
-        width: 48.w,
-      );
+  static SizedBox get vGap4 => SizedBox(height: 4.w);
+  static SizedBox get vGap8 => SizedBox(height: 8.w);
+  static SizedBox get vGap12 => SizedBox(height: 12.w);
+  static SizedBox get vGap16 => SizedBox(height: 16.w);
+  static SizedBox get vGap24 => SizedBox(height: 24.w);
+  static SizedBox get vGap32 => SizedBox(height: 32.w);
+  static SizedBox get vGap40 => SizedBox(height: 40.w);
+  static SizedBox get vGap48 => SizedBox(height: 48.w);
+  static SizedBox get hGap4 => SizedBox(width: 4.w);
+  static SizedBox get hGap8 => SizedBox(width: 8.w);
+  static SizedBox get hGap12 => SizedBox(width: 12.w);
+  static SizedBox get hGap16 => SizedBox(width: 16.w);
+  static SizedBox get hGap20 => SizedBox(width: 20.w);
+  static SizedBox get hGap24 => SizedBox(width: 24.w);
+  static SizedBox get hGap32 => SizedBox(width: 32.w);
+  static SizedBox get hGap40 => SizedBox(width: 40.w);
+  static SizedBox get hGap48 => SizedBox(width: 48.w);
 
   static EdgeInsets get edgeInsetsH4 => EdgeInsets.symmetric(horizontal: 4.w);
   static EdgeInsets get edgeInsetsH8 => EdgeInsets.symmetric(horizontal: 8.w);
@@ -163,39 +121,19 @@ class AppStyle {
   /// 底部导航条的高度
   static double get bottomBarHeight => MediaQuery.of(Get.context!).padding.bottom;
 
-  static TextStyle get titleStyleWhite => TextStyle(
-        color: Colors.white,
-        fontSize: 40.w,
-      );
-  static TextStyle get titleStyleBlack => TextStyle(
-        color: colorBlack33,
-        fontSize: 40.w,
-      );
-  static TextStyle get textStyleWhite => TextStyle(
-        color: Colors.white,
-        fontSize: 32.w,
-      );
-  static TextStyle get textStyleBlack => TextStyle(
-        color: colorBlack33,
-        fontSize: 32.w,
-      );
-  static TextStyle get subTextStyleWhite => TextStyle(
-        color: Colors.white54,
-        fontSize: 24.w,
-        height: 1.0,
-      );
-  static TextStyle get subTextStyleBlack => TextStyle(
-        color: Colors.black54,
-        fontSize: 24.w,
-        height: 1.0,
-      );
+  static TextStyle get titleStyleWhite => TextStyle(color: Colors.white, fontSize: 40.w);
+  static TextStyle get titleStyleBlack => TextStyle(color: colorBlack33, fontSize: 40.w);
+  static TextStyle get textStyleWhite => TextStyle(color: Colors.white, fontSize: 32.w);
+  static TextStyle get textStyleBlack => TextStyle(color: colorBlack33, fontSize: 32.w);
+  static TextStyle get subTextStyleWhite => TextStyle(color: Colors.white54, fontSize: 24.w, height: 1.0);
+  static TextStyle get subTextStyleBlack => TextStyle(color: Colors.black54, fontSize: 24.w, height: 1.0);
 
   static List<BoxShadow> get highlightShadow => [
-        BoxShadow(
-          blurRadius: 6.w,
-          spreadRadius: 2.w,
-          color: Colors.pink.shade400,
-          //color: Color.fromARGB(255, 255, 120, 167),
-        )
-      ];
+    BoxShadow(
+      blurRadius: 6.w,
+      spreadRadius: 2.w,
+      color: Colors.pink.shade400,
+      //color: Color.fromARGB(255, 255, 120, 167),
+    ),
+  ];
 }

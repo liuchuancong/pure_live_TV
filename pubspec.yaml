@@ -99,6 +99,7 @@ dependencies:
   permission_handler: ^12.0.1
   hive_ce: ^2.15.1
   hive_ce_flutter: ^2.3.3
+  google_fonts: ^6.3.3
 dependency_overrides:
   media_kit:
     git:
