@@ -4,6 +4,7 @@ import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/common/utils/pref_util.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/site/bilibili_site.dart';
+import 'package:pure_live/common/utils/hive_pref_util.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:pure_live/common/services/settings_service.dart';
@@ -21,7 +22,7 @@ class BiliBiliAccountService extends GetxController {
   static const String kBilibiliCookie = "bilibiliCookie";
   @override
   void onInit() {
-    cookie.value = PrefUtil.getString(kBilibiliCookie) ?? '';
+    cookie.value = HivePrefUtil.getString(kBilibiliCookie) ?? '';
     logined.value = cookie.isNotEmpty;
     loadUserInfo();
     super.onInit();
@@ -35,9 +36,7 @@ class BiliBiliAccountService extends GetxController {
       try {
         var result = await HttpClient.instance.getJson(
           "https://api.bilibili.com/x/member/web/account",
-          header: {
-            "Cookie": cookie,
-          },
+          header: {"Cookie": cookie},
         );
         if (result["code"] == 0) {
           var info = BiliBiliUserInfoModel.fromJson(result["data"]);
@@ -76,7 +75,7 @@ class BiliBiliAccountService extends GetxController {
     uid = 0;
     name.value = "未登录";
     setSite();
-    PrefUtil.setString(kBilibiliCookie, '');
+    HivePrefUtil.setString(kBilibiliCookie, '');
     logined.value = false;
     CookieManager cookieManager = CookieManager.instance();
     await cookieManager.deleteAllCookies();
