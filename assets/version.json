@@ -1,7 +1,7 @@
 {
-  "version": "2.0.8",
+  "version": "2.0.9",
   "version_num": 10508,
-  "version_desc": "-Fix: 修复虎牙断流",
+  "version_desc": "-Fixed: 优化播放器. -Fixed: 修复TV 存储. -Intro: 新版本采用真实的版本号. 之前过高的请备份数据后卸载升级.TV端请使用浏览器扫描二维码备份到手机后卸载升级.",
   "prerelease":false,
-  "download_url": "https://github.com/liuchuancong/pure_live/releases"
+  "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
