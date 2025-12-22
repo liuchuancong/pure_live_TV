@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:async';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -139,21 +140,53 @@ class HuyaSite implements LiveSite {
     return ls;
   }
 
+  List<String> uaList = [
+    'https://raw.kkgithub.com/liuchuancong/pure_live/master/assets/play_config.json',
+    'https://wget.la/https://raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
+    'https://hk.gh-proxy.org/https:/raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
+    'https://ghfast.top/https://raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
+    'https://gh.catmak.name/https://raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
+    'https://ghproxy.net/https://raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
+    'https://fastly.jsdelivr.net/gh/liuchuancong/pure_live@master/assets/play_config.json',
+    'https://g.blfrp.cn/https://raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
+    'https://cdn.jsdelivr.net/gh/liuchuancong/pure_live@master/assets/play_config.json',
+  ];
+
   // 每次访问播放虎牙都需要获取一次，不太合理，倾向于在客户端获取保存替换
   Future<String> getHuYaUA() async {
-    if (playUserAgent != null) {
-      return playUserAgent!;
-    }
+    if (playUserAgent != null) return playUserAgent!;
+    const String defaultUA = "HYSDK(Windows,30000002)_APP(pc_exe&7030003&official)_SDK(trans&2.29.0.5493)";
     try {
-      var result = await HttpClient.instance.getJson(
-        "https://cdn.jsdelivr.net/gh/liuchuancong/pure_live@master/assets/play_config.json",
-        queryParameters: {"ts": DateTime.now().millisecondsSinceEpoch},
-      );
-      playUserAgent = json.decode(result)['huya']['user_agent'];
+      final List<Future<String>> requests = uaList.map((url) async {
+        final response = await HttpClient.instance.getJson("$url?ts=${DateTime.now().millisecondsSinceEpoch}");
+        var data = (response is String) ? json.decode(response) : response;
+        return data['huya']['user_agent'] as String;
+      }).toList();
+
+      playUserAgent = await _getFirstSuccess(requests).timeout(const Duration(seconds: 5));
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("UA获取失败，使用默认值: $e");
     }
-    return playUserAgent ?? "HYSDK(Windows,30000002)_APP(pc_exe&7030003&official)_SDK(trans&2.29.0.5493)";
+    return playUserAgent ?? defaultUA;
+  }
+
+  Future<T> _getFirstSuccess<T>(List<Future<T>> futures) {
+    var completer = Completer<T>();
+    int errorCount = 0;
+
+    for (var future in futures) {
+      future
+          .then((value) {
+            if (!completer.isCompleted) completer.complete(value);
+          })
+          .catchError((e) {
+            errorCount++;
+            if (errorCount == futures.length && !completer.isCompleted) {
+              completer.completeError("All requests failed");
+            }
+          });
+    }
+    return completer.future;
   }
 
   Future<String> getPlayUrl(HuyaLineModel line, int bitRate) async {
