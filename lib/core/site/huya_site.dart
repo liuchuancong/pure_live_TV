@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:async';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
@@ -23,13 +24,18 @@ import 'package:pure_live/model/tars/get_cdn_token_resp.dart';
 class HuyaSite implements LiveSite {
   @override
   String id = "huya";
-
+  static const baseUrl = "https://m.huya.com/";
   @override
   String name = "虎牙直播";
-  final BaseTarsHttp tupClient = BaseTarsHttp("http://wup.huya.com", "liveui");
   @override
   LiveDanmaku getDanmaku() => HuyaDanmaku();
-  String? playUserAgent;
+
+  static String? playUserAgent;
+
+  // ignore: constant_identifier_names
+  static const String HYSDK_UA = "HYSDK(Windows,30000002)_APP(pc_exe&7030003&official)_SDK(trans&2.29.0.5493)";
+  static Map<String, String> requestHeaders = {'Origin': baseUrl, 'Referer': baseUrl, 'User-Agent': HYSDK_UA};
+  final BaseTarsHttp tupClient = BaseTarsHttp("http://wup.huya.com", "liveui", headers: requestHeaders);
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [
@@ -151,42 +157,59 @@ class HuyaSite implements LiveSite {
     'https://g.blfrp.cn/https://raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
     'https://cdn.jsdelivr.net/gh/liuchuancong/pure_live@master/assets/play_config.json',
   ];
-
   // 每次访问播放虎牙都需要获取一次，不太合理，倾向于在客户端获取保存替换
   Future<String> getHuYaUA() async {
-    if (playUserAgent != null) return playUserAgent!;
-    const String defaultUA = "HYSDK(Windows,30000002)_APP(pc_exe&7030003&official)_SDK(trans&2.29.0.5493)";
+    // 1. 缓存拦截
+    if (playUserAgent != null) {
+      debugPrint("UA 获取成功，使用缓存");
+      return playUserAgent!;
+    }
+
+    final cancelToken = CancelToken();
+    // 使用 Completer 确保只接收第一个成功的响应
+    final completer = Completer<String>();
+    bool isAlreadySet = false;
+
     try {
-      final List<Future<String>> requests = uaList.map((url) async {
-        final response = await HttpClient.instance.getJson("$url?ts=${DateTime.now().millisecondsSinceEpoch}");
-        var data = (response is String) ? json.decode(response) : response;
-        return data['huya']['user_agent'] as String;
-      }).toList();
+      // 2. 启动并发请求（不等待它们完成）
+      for (final url in uaList) {
+        // 这里的 getJson 内部不要让它在 catchError 时吞掉逻辑
+        HttpClient.instance
+            .getJson("$url?ts=${DateTime.now().millisecondsSinceEpoch}", cancel: cancelToken)
+            .then((response) {
+              // 只要有一个成功，立即处理
+              if (isAlreadySet) return;
 
-      playUserAgent = await _getFirstSuccess(requests).timeout(const Duration(seconds: 5));
+              final data = (response is String) ? json.decode(response) : response;
+              final String? ua = data?['huya']?['user_agent'];
+
+              if (ua != null && !isAlreadySet) {
+                isAlreadySet = true;
+                playUserAgent = ua; // 立即写入全局变量
+                debugPrint("✅ 获胜线路: $url");
+
+                // 关键：先完成 Future，再取消其他请求
+                if (!completer.isCompleted) completer.complete(ua);
+
+                // 延迟取消，防止正在运行的这行逻辑崩溃
+                Future.microtask(() => cancelToken.cancel("done"));
+              }
+            })
+            .catchError((_) {
+              // 忽略报错，等待其他线路
+            });
+      }
+
+      // 3. 阻塞等待结果或 5 秒超时
+      final result = await completer.future.timeout(const Duration(seconds: 5));
+      return result;
     } catch (e) {
-      debugPrint("UA获取失败，使用默认值: $e");
+      debugPrint("⚠️ UA 获取失败，使用兜底值: $e");
+      playUserAgent = HYSDK_UA;
+      return HYSDK_UA;
+    } finally {
+      playUserAgent ??= HYSDK_UA;
     }
-    return playUserAgent ?? defaultUA;
-  }
-
-  Future<T> _getFirstSuccess<T>(List<Future<T>> futures) {
-    var completer = Completer<T>();
-    int errorCount = 0;
-
-    for (var future in futures) {
-      future
-          .then((value) {
-            if (!completer.isCompleted) completer.complete(value);
-          })
-          .catchError((e) {
-            errorCount++;
-            if (errorCount == futures.length && !completer.isCompleted) {
-              completer.completeError("All requests failed");
-            }
-          });
-    }
-    return completer.future;
   }
 
   Future<String> getPlayUrl(HuyaLineModel line, int bitRate) async {
@@ -270,12 +293,19 @@ class HuyaSite implements LiveSite {
       //读取可用线路
 
       var baseSteamInfoList = data['stream']['baseSteamInfoList'] as List<dynamic>;
+      List<dynamic> validLines = baseSteamInfoList.where((line) {
+        int pc = line['iPCPriorityRate'] ?? -1;
+        int web = line['iWebPriorityRate'] ?? -1;
+        int mobile = line['iMobilePriorityRate'] ?? -1;
+        return pc > 0 || web > 0 || mobile > 0;
+      }).toList();
+
       var flvLines = data['stream']['flv']['multiLine'];
       var hlsLines = data['stream']['hls']['multiLine'];
       if (flvLines != null) {
         for (var item in flvLines) {
           if ((item["url"]?.toString() ?? "").isNotEmpty) {
-            var currentStream = baseSteamInfoList.firstWhere(
+            var currentStream = validLines.firstWhere(
               (element) => element["sCdnType"] == item["cdnType"],
               orElse: () => null,
             );
@@ -300,7 +330,7 @@ class HuyaSite implements LiveSite {
       if (hlsLines != null) {
         for (var item in hlsLines) {
           if ((item["url"]?.toString() ?? "").isNotEmpty) {
-            var currentStream = baseSteamInfoList.firstWhere(
+            var currentStream = validLines.firstWhere(
               (element) => element["sCdnType"] == item["cdnType"],
               orElse: () => null,
             );

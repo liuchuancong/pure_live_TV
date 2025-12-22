@@ -1,8 +1,6 @@
-import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:pure_live/initialized.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/core/site/huya_site.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:pure_live/routes/getx_router_observer.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
@@ -27,12 +25,6 @@ class _MyAppState extends State<MyApp> {
     Future.delayed(const Duration(seconds: 1), () {
       initGlopalPlayer();
     });
-    try {
-      var site = (Sites.of(Sites.huyaSite).liveSite as HuyaSite);
-      site.getHuYaUA();
-    } catch (e) {
-      log(e.toString(), name: "init");
-    }
   }
 
   Future<void> initGlopalPlayer() async {
