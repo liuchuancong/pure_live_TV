@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/common/utils/pref_util.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/site/bilibili_site.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';

@@ -12,6 +12,7 @@ import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
+import 'package:json_repair_flutter/json_repair_flutter.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 class SettingsService extends GetxController {
@@ -519,8 +520,9 @@ class SettingsService extends GetxController {
   bool recover(File file) {
     try {
       final json = file.readAsStringSync();
-      fromJson(jsonDecode(json));
+      fromJson(repairJson(json));
     } catch (e) {
+      log(e.toString(), name: 'recover');
       return false;
     }
     return true;
@@ -537,16 +539,31 @@ class SettingsService extends GetxController {
 
   // ========== JSON序列化/反序列化 ==========
   void fromJson(Map<String, dynamic> json) async {
-    favoriteRooms.value = json['favoriteRooms'] != null
-        ? (json['favoriteRooms'] as List).map<LiveRoom>((e) => LiveRoom.fromJson(jsonDecode(e))).toList()
-        : [];
-    favoriteAreas.value = json['favoriteAreas'] != null
-        ? (json['favoriteAreas'] as List).map<LiveArea>((e) => LiveArea.fromJson(jsonDecode(e))).toList()
-        : [];
-    shieldList.value = json['shieldList'] != null ? (json['shieldList'] as List).map((e) => e.toString()).toList() : [];
-    hotAreasList.value = json['hotAreasList'] != null
-        ? (json['hotAreasList'] as List).map((e) => e.toString()).toList()
-        : [];
+    // 1. 定義內部輔助解析函數，處理兼容性邏輯
+    List<T> safeParseList<T>(dynamic data, T Function(Map<String, dynamic>) fromJsonFactory) {
+      if (data == null || data is! List) return [];
+      return data.map<T>((e) {
+        if (e is Map<String, dynamic>) {
+          return fromJsonFactory(e);
+        } else if (e is String) {
+          try {
+            return fromJsonFactory(jsonDecode(e));
+          } catch (err) {
+            debugPrint("解析單項數據失敗: $err");
+          }
+        }
+        return fromJsonFactory({}); // 備選方案
+      }).toList();
+    }
+
+    // 2. 解析列表數據 (自動處理 String/Map 兼容)
+    favoriteRooms.value = safeParseList<LiveRoom>(json['favoriteRooms'], (m) => LiveRoom.fromJson(m));
+    favoriteAreas.value = safeParseList<LiveArea>(json['favoriteAreas'], (m) => LiveArea.fromJson(m));
+
+    // 3. 解析普通列表與基本類型
+    shieldList.value = (json['shieldList'] as List?)?.map((e) => e.toString()).toList() ?? [];
+    hotAreasList.value = (json['hotAreasList'] as List?)?.map((e) => e.toString()).toList() ?? [];
+
     themeModeName.value = json['themeMode'] ?? "System";
     enableDynamicTheme.value = json['enableDynamicTheme'] ?? false;
     enableDenseFavorites.value = json['enableDenseFavorites'] ?? false;
@@ -559,22 +576,27 @@ class SettingsService extends GetxController {
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
 
-    // 恢复备份时同步到 Hive
-    await HivePrefUtil.setString('themeMode', themeModeName.value);
-    await HivePrefUtil.setBool('enableDynamicTheme', enableDynamicTheme.value);
-    await HivePrefUtil.setBool('enableDenseFavorites', enableDenseFavorites.value);
-    await HivePrefUtil.setString('language', languageName.value);
-    await HivePrefUtil.setString('preferResolution', preferResolution.value);
-    await HivePrefUtil.setString('preferPlatform', preferPlatform.value);
-    await HivePrefUtil.setString('bilibiliCookie', bilibiliCookie.value);
-    await HivePrefUtil.setString('huyaCookie', huyaCookie.value);
-    await HivePrefUtil.setString('douyinCookie', douyinCookie.value);
-    await HivePrefUtil.setString('themeColorSwitch', themeColorSwitch.value);
-    await HivePrefUtil.setString('webPort', webPort.value);
-    await HivePrefUtil.setStringList('shieldList', shieldList);
-    await HivePrefUtil.setStringList('hotAreasList', hotAreasList);
-    await HivePrefUtil.setStringList('favoriteRooms', favoriteRooms.map((e) => jsonEncode(e.toJson())).toList());
-    await HivePrefUtil.setStringList('favoriteAreas', favoriteAreas.map((e) => jsonEncode(e.toJson())).toList());
+    // 4. 恢復備份時同步到 Hive
+    // 使用 Future.wait 並行執行所有異步操作，效率更高
+    await Future.wait([
+      HivePrefUtil.setString('themeMode', themeModeName.value),
+      HivePrefUtil.setBool('enableDynamicTheme', enableDynamicTheme.value),
+      HivePrefUtil.setBool('enableDenseFavorites', enableDenseFavorites.value),
+      HivePrefUtil.setString('language', languageName.value),
+      HivePrefUtil.setString('preferResolution', preferResolution.value),
+      HivePrefUtil.setString('preferPlatform', preferPlatform.value),
+      HivePrefUtil.setString('bilibiliCookie', bilibiliCookie.value),
+      HivePrefUtil.setString('huyaCookie', huyaCookie.value),
+      HivePrefUtil.setString('douyinCookie', douyinCookie.value),
+      HivePrefUtil.setString('themeColorSwitch', themeColorSwitch.value),
+      HivePrefUtil.setString('webPort', webPort.value),
+      // 注意：確保傳入的是 List<String> 類型
+      HivePrefUtil.setStringList('shieldList', shieldList.value),
+      HivePrefUtil.setStringList('hotAreasList', hotAreasList.value),
+      // 保存至 Hive 時，維持 StringList 格式以確保底層兼容性
+      HivePrefUtil.setStringList('favoriteRooms', favoriteRooms.value.map((e) => jsonEncode(e.toJson())).toList()),
+      HivePrefUtil.setStringList('favoriteAreas', favoriteAreas.value.map((e) => jsonEncode(e.toJson())).toList()),
+    ]);
   }
 
   Map<String, dynamic> toJson() {

@@ -640,6 +640,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.9.0"
+  json_repair_flutter:
+    dependency: "direct main"
+    description:
+      name: json_repair_flutter
+      sha256: "60609b02c0f535d8df7027e0d00ae31fa20f220c1c18d47838d18b2bbcd66630"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.0.2"
   leak_tracker:
     dependency: transitive
     description:

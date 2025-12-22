@@ -68,7 +68,7 @@ class _MyAppState extends State<MyApp> {
                 child: child!,
               ),
             ),
-            locale: AppConsts.languages[settings.languageName.value]!,
+            locale: AppConsts.languages["简体中文"],
             supportedLocales: S.delegate.supportedLocales,
             localizationsDelegates: const [
               S.delegate,

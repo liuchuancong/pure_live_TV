@@ -100,6 +100,7 @@ dependencies:
   hive_ce: ^2.15.1
   hive_ce_flutter: ^2.3.3
   google_fonts: ^6.3.3
+  json_repair_flutter: ^2.0.2
 dependency_overrides:
   media_kit:
     git:
