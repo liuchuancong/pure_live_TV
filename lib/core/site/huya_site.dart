@@ -9,6 +9,8 @@ import 'package:pure_live/common/index.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:pure_live/model/live_category.dart';
+import 'package:pure_live/core/common/core_log.dart';
+import 'package:pure_live/core/tars/huya_user_id.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:tars_dart/tars/net/base_tars_http.dart';
 import 'package:pure_live/core/common/http_client.dart';
@@ -18,8 +20,8 @@ import 'package:pure_live/model/live_search_result.dart';
 import 'package:pure_live/core/danmaku/huya_danmaku.dart';
 import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/model/tars/get_cdn_token_req.dart';
-import 'package:pure_live/model/tars/get_cdn_token_resp.dart';
+import 'package:pure_live/core/tars/get_cdn_token_ex_req.dart';
+import 'package:pure_live/core/tars/get_cdn_token_ex_resp.dart';
 
 class HuyaSite implements LiveSite {
   @override
@@ -33,7 +35,7 @@ class HuyaSite implements LiveSite {
   static String? playUserAgent;
 
   // ignore: constant_identifier_names
-  static const String HYSDK_UA = "HYSDK(Windows,30000002)_APP(pc_exe&7030003&official)_SDK(trans&2.29.0.5493)";
+  static const String HYSDK_UA = "HYSDK(Windows, 30000002)_APP(pc_exe&7060000&official)_SDK(trans&2.32.3.5646)";
   static Map<String, String> requestHeaders = {'Origin': baseUrl, 'Referer': baseUrl, 'User-Agent': HYSDK_UA};
   final BaseTarsHttp tupClient = BaseTarsHttp("http://wup.huya.com", "liveui", headers: requestHeaders);
   @override
@@ -166,14 +168,12 @@ class HuyaSite implements LiveSite {
     }
 
     final cancelToken = CancelToken();
-    // 使用 Completer 确保只接收第一个成功的响应
     final completer = Completer<String>();
     bool isAlreadySet = false;
 
     try {
       // 2. 启动并发请求（不等待它们完成）
       for (final url in uaList) {
-        // 这里的 getJson 内部不要让它在 catchError 时吞掉逻辑
         HttpClient.instance
             .getJson("$url?ts=${DateTime.now().millisecondsSinceEpoch}", cancel: cancelToken)
             .then((response) {
@@ -185,22 +185,15 @@ class HuyaSite implements LiveSite {
 
               if (ua != null && !isAlreadySet) {
                 isAlreadySet = true;
-                playUserAgent = ua; // 立即写入全局变量
+                playUserAgent = ua;
                 debugPrint("✅ 获胜线路: $url");
-
-                // 关键：先完成 Future，再取消其他请求
                 if (!completer.isCompleted) completer.complete(ua);
-
-                // 延迟取消，防止正在运行的这行逻辑崩溃
                 Future.microtask(() => cancelToken.cancel("done"));
               }
             })
-            .catchError((_) {
-              // 忽略报错，等待其他线路
-            });
+            .catchError((_) {});
       }
 
-      // 3. 阻塞等待结果或 5 秒超时
       final result = await completer.future.timeout(const Duration(seconds: 5));
       return result;
     } catch (e) {
@@ -213,14 +206,9 @@ class HuyaSite implements LiveSite {
   }
 
   Future<String> getPlayUrl(HuyaLineModel line, int bitRate) async {
-    var req = GetCdnTokenReq();
-    req.cdnType = line.cdnType;
-    req.streamName = line.streamName;
-    var resp = await tupClient.tupRequest("getCdnTokenInfo", req, GetCdnTokenResp());
-    var url = '${line.line}/${resp.streamName}.flv?${resp.flvAntiCode}&codec=264';
-    if (line.lineType == HuyaLineType.hls) {
-      url = '${line.line}/${resp.streamName}.m3u8?${resp.hlsAntiCode}&codec=264';
-    }
+    var antiCode = await getCndTokenInfoEx(line.streamName);
+    antiCode = buildAntiCode(line.streamName, line.presenterUid, antiCode);
+    var url = '${line.line}/${line.streamName}.flv?$antiCode&codec=264';
     if (bitRate > 0) {
       url += "&ratio=$bitRate";
     }
@@ -293,25 +281,23 @@ class HuyaSite implements LiveSite {
       //读取可用线路
 
       var baseSteamInfoList = data['stream']['baseSteamInfoList'] as List<dynamic>;
-      List<dynamic> validLines = baseSteamInfoList.where((line) {
-        int pc = line['iPCPriorityRate'] ?? -1;
-        int web = line['iWebPriorityRate'] ?? -1;
-        int mobile = line['iMobilePriorityRate'] ?? -1;
-        return pc > 0 || web > 0 || mobile > 0;
-      }).toList();
 
       var flvLines = data['stream']['flv']['multiLine'];
       var hlsLines = data['stream']['hls']['multiLine'];
       if (flvLines != null) {
         for (var item in flvLines) {
           if ((item["url"]?.toString() ?? "").isNotEmpty) {
-            var currentStream = validLines.firstWhere(
+            var currentStream = baseSteamInfoList.firstWhere(
               (element) => element["sCdnType"] == item["cdnType"],
               orElse: () => null,
             );
             if (currentStream != null) {
-              topSid = currentStream["lChannelId"];
-              subSid = currentStream["lSubChannelId"];
+              topSid = currentStream["lChannelId"].runtimeType == String
+                  ? int.tryParse(currentStream["lChannelId"].toString()) ?? 0
+                  : currentStream["lChannelId"];
+              subSid = currentStream["lSubChannelId"].runtimeType == String
+                  ? int.tryParse(currentStream["lSubChannelId"].toString()) ?? 0
+                  : currentStream["lSubChannelId"];
               huyaLines.add(
                 HuyaLineModel(
                   line: currentStream['sFlvUrl'],
@@ -320,6 +306,7 @@ class HuyaSite implements LiveSite {
                   hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
                   streamName: currentStream["sStreamName"].toString(),
                   cdnType: item["sCdnType"].toString(),
+                  presenterUid: topSid,
                 ),
               );
             }
@@ -330,13 +317,17 @@ class HuyaSite implements LiveSite {
       if (hlsLines != null) {
         for (var item in hlsLines) {
           if ((item["url"]?.toString() ?? "").isNotEmpty) {
-            var currentStream = validLines.firstWhere(
+            var currentStream = baseSteamInfoList.firstWhere(
               (element) => element["sCdnType"] == item["cdnType"],
               orElse: () => null,
             );
             if (currentStream != null) {
-              topSid = currentStream["lChannelId"];
-              subSid = currentStream["lSubChannelId"];
+              topSid = currentStream["lChannelId"].runtimeType == String
+                  ? int.tryParse(currentStream["lChannelId"].toString()) ?? 0
+                  : currentStream["lChannelId"];
+              subSid = currentStream["lSubChannelId"].runtimeType == String
+                  ? int.tryParse(currentStream["lSubChannelId"].toString()) ?? 0
+                  : currentStream["lSubChannelId"];
               huyaLines.add(
                 HuyaLineModel(
                   line: currentStream['sHlsUrl'],
@@ -345,6 +336,7 @@ class HuyaSite implements LiveSite {
                   hlsAntiCode: currentStream["sHlsAntiCode"].toString(),
                   streamName: currentStream["sStreamName"].toString(),
                   cdnType: item["sCdnType"].toString(),
+                  presenterUid: topSid,
                 ),
               );
             }
@@ -586,6 +578,77 @@ class HuyaSite implements LiveSite {
     //尚不支持
     return Future.value([]);
   }
+
+  // 构造 anticode, python转写
+  /// [stream] streamname [presenterUid] 用户id [antiCode] 页面anti
+  ///
+  /// return ture anticode
+  String buildAntiCode(String stream, int presenterUid, String antiCode) {
+    var mapAnti = Uri(query: antiCode).queryParametersAll;
+    if (!mapAnti.containsKey("fm")) {
+      return antiCode;
+    }
+
+    var ctype = mapAnti["ctype"]?.first ?? "huya_pc_exe";
+    var platformId = int.tryParse(mapAnti["t"]?.first ?? "0");
+
+    bool isWap = platformId == 103;
+    var clacStartTime = DateTime.now().millisecondsSinceEpoch;
+
+    CoreLog.i("using $presenterUid | ctype-{$ctype} | platformId - {$platformId} | isWap - {$isWap} | $clacStartTime");
+
+    var seqId = presenterUid + clacStartTime;
+    final secretHash = md5.convert(utf8.encode('$seqId|$ctype|$platformId')).toString();
+
+    final convertUid = rotl64(presenterUid);
+    final calcUid = isWap ? presenterUid : convertUid;
+    final fm = Uri.decodeComponent(mapAnti['fm']!.first);
+    final secretPrefix = utf8.decode(base64.decode(fm)).split('_').first;
+    var wsTime = mapAnti['wsTime']!.first;
+    final secretStr = '${secretPrefix}_${calcUid}_${stream}_${secretHash}_$wsTime';
+
+    final wsSecret = md5.convert(utf8.encode(secretStr)).toString();
+
+    final rnd = Random();
+    final ct = ((int.parse(wsTime, radix: 16) + rnd.nextDouble()) * 1000).toInt();
+    final uuid = (((ct % 1e10) + rnd.nextDouble()) * 1e3 % 0xffffffff).toInt().toString();
+    final Map<String, dynamic> antiCodeRes = {
+      'wsSecret': wsSecret,
+      'wsTime': wsTime,
+      'seqid': seqId,
+      'ctype': ctype,
+      'ver': '1',
+      'fs': mapAnti['fs']!.first,
+      'fm': Uri.encodeComponent(mapAnti['fm']!.first),
+      't': platformId,
+    };
+    if (isWap) {
+      antiCodeRes.addAll({'uid': presenterUid, 'uuid': uuid});
+    } else {
+      antiCodeRes['u'] = convertUid;
+    }
+
+    return antiCodeRes.entries.map((e) => '${e.key}=${e.value}').join('&');
+  }
+
+  /// return sFlvToken
+  Future<String> getCndTokenInfoEx(String stream) async {
+    var func = "getCdnTokenInfoEx";
+    var tid = HuyaUserId();
+    tid.sHuYaUA = "pc_exe&7060000&official";
+    var tReq = GetCdnTokenExReq();
+    tReq.tId = tid;
+    tReq.sStreamName = stream;
+    var resp = await tupClient.tupRequest(func, tReq, GetCdnTokenExResp());
+    return resp.sFlvToken;
+  }
+
+  int rotl64(int t) {
+    final low = t & 0xFFFFFFFF;
+    final rotatedLow = ((low << 8) | (low >> 24)) & 0xFFFFFFFF;
+    final high = t & ~0xFFFFFFFF;
+    return high | rotatedLow;
+  }
 }
 
 class HuyaUrlDataModel {
@@ -612,6 +675,7 @@ class HuyaLineModel {
   final String hlsAntiCode;
   final String streamName;
   final HuyaLineType lineType;
+  final int presenterUid;
   int bitRate;
   HuyaLineModel({
     required this.line,
@@ -620,11 +684,12 @@ class HuyaLineModel {
     required this.hlsAntiCode,
     required this.streamName,
     required this.cdnType,
+    required this.presenterUid,
     this.bitRate = 0,
   });
   @override
   String toString() {
-    return 'HuyaLineModel{line: $line, flvAntiCode: $flvAntiCode, hlsAntiCode: $hlsAntiCode, streamName: $streamName, lineType: $lineType}';
+    return 'HuyaLineModel{line: $line, flvAntiCode: $flvAntiCode, hlsAntiCode: $hlsAntiCode, streamName: $streamName, lineType: $lineType, presenterUid: $presenterUid}';
   }
 }
 
