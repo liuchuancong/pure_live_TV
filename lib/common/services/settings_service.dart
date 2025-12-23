@@ -12,7 +12,6 @@ import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
-import 'package:json_repair_flutter/json_repair_flutter.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 class SettingsService extends GetxController {
@@ -40,7 +39,7 @@ class SettingsService extends GetxController {
   final enableScreenKeepOn = (HivePrefUtil.getBool('enableScreenKeepOn') ?? true).obs;
   final enableAutoCheckUpdate = (HivePrefUtil.getBool('enableAutoCheckUpdate') ?? true).obs;
   final enableFullScreenDefault = (HivePrefUtil.getBool('enableFullScreenDefault') ?? false).obs;
-  final doubleExit = (HivePrefUtil.getBool('doubleExit') ?? true).obs;
+
   final isFirstInApp = (HivePrefUtil.getBool('isFirstInApp') ?? true).obs;
 
   // 播放器相关
@@ -258,10 +257,6 @@ class SettingsService extends GetxController {
 
     danmakuOpacity.listen((value) async {
       await HivePrefUtil.setDouble('danmakuOpacity', value);
-    });
-
-    doubleExit.listen((value) async {
-      await HivePrefUtil.setBool('doubleExit', value);
     });
 
     enableCodec.listen((value) async {
@@ -520,7 +515,7 @@ class SettingsService extends GetxController {
   bool recover(File file) {
     try {
       final json = file.readAsStringSync();
-      fromJson(repairJson(json));
+      fromJson(jsonDecode(json));
     } catch (e) {
       log(e.toString(), name: 'recover');
       return false;
@@ -559,17 +554,21 @@ class SettingsService extends GetxController {
     // 2. 解析列表數據 (自動處理 String/Map 兼容)
     favoriteRooms.value = safeParseList<LiveRoom>(json['favoriteRooms'], (m) => LiveRoom.fromJson(m));
     favoriteAreas.value = safeParseList<LiveArea>(json['favoriteAreas'], (m) => LiveArea.fromJson(m));
-
     // 3. 解析普通列表與基本類型
     shieldList.value = (json['shieldList'] as List?)?.map((e) => e.toString()).toList() ?? [];
     hotAreasList.value = (json['hotAreasList'] as List?)?.map((e) => e.toString()).toList() ?? [];
-
-    themeModeName.value = json['themeMode'] ?? "System";
+    themeModeName.value = AppConsts.themeModes.keys.firstWhere((e) => e == json['themeMode'], orElse: () => "System");
     enableDynamicTheme.value = json['enableDynamicTheme'] ?? false;
     enableDenseFavorites.value = json['enableDenseFavorites'] ?? false;
-    languageName.value = json['languageName'] ?? "简体中文";
-    preferResolution.value = json['preferResolution'] ?? PlayerConsts.resolutions[0];
-    preferPlatform.value = json['preferPlatform'] ?? AppConsts.platforms[0];
+    languageName.value = AppConsts.languages.keys.firstWhere((e) => e == json['languageName'], orElse: () => "简体中文");
+    preferResolution.value = PlayerConsts.resolutions.firstWhere(
+      (e) => e == json['preferResolution'],
+      orElse: () => PlayerConsts.resolutions[0],
+    );
+    preferPlatform.value = AppConsts.platforms.firstWhere(
+      (e) => e == json['preferPlatform'],
+      orElse: () => AppConsts.platforms[0],
+    );
     bilibiliCookie.value = json['bilibiliCookie'] ?? '';
     huyaCookie.value = json['huyaCookie'] ?? '';
     douyinCookie.value = json['douyinCookie'] ?? '';
@@ -604,11 +603,9 @@ class SettingsService extends GetxController {
     json['favoriteRooms'] = favoriteRooms.map<String>((e) => jsonEncode(e.toJson())).toList();
     json['favoriteAreas'] = favoriteAreas.map<String>((e) => jsonEncode(e.toJson())).toList();
     json['themeMode'] = themeModeName.value;
-
     json['autoRefreshTime'] = autoRefreshTime.value;
     json['autoShutDownTime'] = autoShutDownTime.value;
     json['enableAutoShutDownTime'] = enableAutoShutDownTime.value;
-
     json['enableDynamicTheme'] = enableDynamicTheme.value;
     json['enableDenseFavorites'] = enableDenseFavorites.value;
     json['enableBackgroundPlay'] = enableBackgroundPlay.value;
@@ -618,7 +615,6 @@ class SettingsService extends GetxController {
     json['preferResolution'] = preferResolution.value;
     json['preferPlatform'] = preferPlatform.value;
     json['languageName'] = languageName.value;
-
     json['videoFitIndex'] = videoFitIndex.value;
     json['hideDanmaku'] = hideDanmaku.value;
     json['danmakuArea'] = danmakuArea.value;
@@ -628,7 +624,6 @@ class SettingsService extends GetxController {
     json['danmakuFontSize'] = danmakuFontSize.value;
     json['danmakuFontBorder'] = danmakuFontBorder.value;
     json['danmakuOpacity'] = danmakuOpacity.value;
-    json['doubleExit'] = doubleExit.value;
     json['videoPlayerIndex'] = videoPlayerIndex.value;
     json['enableCodec'] = enableCodec.value;
     json['bilibiliCookie'] = bilibiliCookie.value;
@@ -636,7 +631,6 @@ class SettingsService extends GetxController {
     json['douyinCookie'] = douyinCookie.value;
     json['shieldList'] = shieldList.map<String>((e) => e.toString()).toList();
     json['hotAreasList'] = hotAreasList.map<String>((e) => e.toString()).toList();
-
     json['themeColorSwitch'] = themeColorSwitch.value;
     json['webPort'] = webPort.value;
     json['webPortEnable'] = false;

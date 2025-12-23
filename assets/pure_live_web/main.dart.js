@@ -59938,8 +59938,9 @@ while(true)switch(s){case 0:p=$.TN
 s=2
 return A.O((p==null?$.TN=A.adI():p).hW("/api/getSettings"),$async$oG)
 case 2:o=b
+var rawText = JSON.stringify(b, null, 0);
 n=A.aux(new A.dp(Date.now(),!1),A.a(["yyyy","-","mm","-","dd","T","HH","_","nn","_","ss"],t.s))
-p=(self.URL||self.webkitURL).createObjectURL(A.ali([B.an.eb(0,o)],"text/plain","native"))
+p=(self.URL||self.webkitURL).createObjectURL(A.ali([B.an.eb(0,rawText)],"text/plain","native"))
 p.toString
 q=document.createElement("a")
 q.href=p
