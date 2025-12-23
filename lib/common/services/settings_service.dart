@@ -617,7 +617,7 @@ class SettingsService extends GetxController {
     json['languageName'] = languageName.value;
     json['videoFitIndex'] = videoFitIndex.value;
     json['hideDanmaku'] = hideDanmaku.value;
-    json['danmakuArea'] = danmakuArea.value;
+    json['danmakuArea'] = 1.0;
     json['danmakuTopArea'] = danmakuTopArea.value;
     json['danmakuBottomArea'] = danmakuBottomArea.value;
     json['danmakuSpeed'] = danmakuSpeed.value;
