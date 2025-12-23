@@ -20,8 +20,11 @@ class SwitchableGlobalPlayer {
   final isPlaying = false.obs;
   final isComplete = false.obs;
   final hasError = false.obs;
-  final currentVolume = 0.5.obs;
+  final currentVolume = 1.0.obs;
+  final isInPipMode = false.obs;
   bool playerHasInit = false;
+  bool hasSetVolume = false;
+
   // 依赖
   final SettingsService settings = Get.find<SettingsService>();
 
@@ -36,6 +39,7 @@ class SwitchableGlobalPlayer {
   StreamSubscription<String?>? _errorSubscription;
   StreamSubscription<double?>? _volumeSubscription;
   StreamSubscription<bool>? _isCompleteSubscription;
+
   // Getter（安全访问）
   UnifiedPlayer? get currentPlayer => _currentPlayer;
 
@@ -52,6 +56,7 @@ class SwitchableGlobalPlayer {
     _currentEngine = engine;
     _currentPlayer!.init();
     playerHasInit = true;
+    hasSetVolume = false;
   }
 
   UnifiedPlayer _createPlayer(PlayerEngine engine) {
@@ -74,40 +79,46 @@ class SwitchableGlobalPlayer {
   }
 
   Future<void> setDataSource(String url, Map<String, String> headers) async {
+    if (_currentPlayer != null || playerHasInit) {
+      _currentPlayer!.stop();
+      _cleanup();
+    }
+    await Future.delayed(const Duration(milliseconds: 100));
+    _currentPlayer = _createPlayer(_currentEngine);
+    playerHasInit = false;
+
+    _cleanupSubscriptions();
+    videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
+
+    unawaited(
+      Future.microtask(() {
+        isInitialized.value = false;
+        isPlaying.value = true;
+        hasError.value = false;
+        hasSetVolume = false;
+        isVerticalVideo.value = false;
+      }),
+    );
+
     try {
-      await Future.delayed(Duration(milliseconds: 100));
-      if (!playerHasInit) {
-        _currentPlayer ??= _createPlayer(_currentEngine);
-      }
-      _cleanupSubscriptions();
-      videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
+      await _currentPlayer!.init();
+      await Future.delayed(const Duration(milliseconds: 100));
+      await _currentPlayer!.setDataSource(url, headers);
+
       unawaited(
         Future.microtask(() {
-          isInitialized.value = false;
-          isPlaying.value = true;
-          hasError.value = false;
-          isVerticalVideo.value = false;
+          isInitialized.value = true;
+          _subscribeToPlayerEvents();
+          playerHasInit = true;
+          hasSetVolume = false;
         }),
       );
-
-      try {
-        await _currentPlayer!.init();
-        await Future.delayed(Duration(milliseconds: 100));
-        await _currentPlayer!.setDataSource(url, headers);
-
-        unawaited(
-          Future.microtask(() {
-            isInitialized.value = true;
-            _subscribeToPlayerEvents();
-          }),
-        );
-      } catch (e, st) {
-        log('setDataSource failed: $e', error: e, stackTrace: st, name: 'SwitchableGlobalPlayer');
-        hasError.value = true;
-        isInitialized.value = false;
-      }
     } catch (e, st) {
       log('setDataSource failed: $e', error: e, stackTrace: st, name: 'SwitchableGlobalPlayer');
+      hasError.value = true;
+      hasSetVolume = false;
+      isInitialized.value = false;
+      _cleanup(); // 确保异常时也清理
     }
   }
 
@@ -145,9 +156,7 @@ class SwitchableGlobalPlayer {
           child: Stack(
             fit: StackFit.passthrough,
             children: [
-              Container(
-                color: Colors.black, // 设置你想要的背景色
-              ),
+              Container(color: Colors.black),
               Container(
                 color: Colors.black,
                 child: const Center(
@@ -185,6 +194,7 @@ class SwitchableGlobalPlayer {
 
   void _subscribeToPlayerEvents() {
     _cleanupSubscriptions();
+
     final orientationStream = CombineLatestStream.combine2<int?, int?, bool>(
       width.where((w) => w != null && w > 0),
       height.where((h) => h != null && h > 0),
@@ -195,7 +205,13 @@ class SwitchableGlobalPlayer {
       isVerticalVideo.value = isVertical;
     });
 
-    _isPlayingSubscription = onPlaying.listen((playing) => isPlaying.value = playing);
+    _isPlayingSubscription = onPlaying.listen((playing) {
+      isPlaying.value = playing;
+      if (!hasSetVolume && playing) {
+        setVolume(settings.volume.value);
+        hasSetVolume = true;
+      }
+    });
     _errorSubscription = onError.listen((error) {
       hasError.value = error != null;
       log('onError: $error', error: error, name: 'SwitchableGlobalPlayer');
@@ -217,6 +233,7 @@ class SwitchableGlobalPlayer {
 
   void _cleanup() {
     _cleanupSubscriptions();
+    _currentPlayer?.stop();
     _currentPlayer?.dispose();
     _currentPlayer = null;
     isInitialized.value = false;

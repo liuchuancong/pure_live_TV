@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'dart:developer';
+import 'dart:async';
 import 'package:get/get.dart';
+import 'dart:developer' as dev;
 import 'package:rxdart/rxdart.dart';
 import 'unified_player_interface.dart';
 import 'package:media_kit/media_kit.dart';
@@ -13,29 +14,43 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
   late VideoController _controller;
   final SettingsService settings = Get.find<SettingsService>();
 
-  // 👇 使用 BehaviorSubject 缓存状态（与 FijkPlayerAdapter 一致）
+  // Subjects with correct types
   final _playingSubject = BehaviorSubject<bool>.seeded(false);
   final _errorSubject = BehaviorSubject<String?>.seeded(null);
   final _loadingSubject = BehaviorSubject<bool>.seeded(false);
-  final _widthSubject = BehaviorSubject<int?>.seeded(null);
-  final _heightSubject = BehaviorSubject<int?>.seeded(null);
+  final _widthSubject = BehaviorSubject<int?>.seeded(null); // ✅ int?
+  final _heightSubject = BehaviorSubject<int?>.seeded(null); // ✅ int?
   final _completeSubject = BehaviorSubject<bool>.seeded(false);
 
   bool _isPlaying = false;
   bool isInitialized = false;
+  bool _disposed = false;
+
+  // Stream subscriptions — use correct generic types
+  StreamSubscription<bool>? _playingSub;
+  StreamSubscription<String>? _errorSub;
+  StreamSubscription<bool>? _completedSub;
+  StreamSubscription<bool>? _bufferingSub;
+  StreamSubscription<int?>? _widthSub; // ✅ int?
+  StreamSubscription<int?>? _heightSub; // ✅ int?
 
   @override
   Future<void> init() async {
+    if (_disposed) return;
+
     _isPlaying = false;
     isInitialized = false;
+    _disposed = false;
 
     _player = Player();
 
-    var pp = _player.platform as NativePlayer;
+    // Platform-specific configuration
     if (Platform.isAndroid) {
+      final pp = _player.platform as NativePlayer;
       await pp.setProperty('force-seekable', 'yes');
     }
 
+    // Initialize controller based on settings
     _controller = settings.playerCompatMode.value
         ? VideoController(
             _player,
@@ -49,8 +64,9 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
             ),
           );
 
-    // 👇 监听 media_kit 原生流，并同步到 BehaviorSubject
-    _player.stream.playing.listen((playing) {
+    // Listen to player streams
+    _playingSub = _player.stream.playing.listen((playing) {
+      if (_disposed || _playingSubject.isClosed) return;
       _isPlaying = playing;
       if (_playingSubject.value != playing) {
         _playingSubject.add(playing);
@@ -58,56 +74,64 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
 
       if (!isInitialized) {
         isInitialized = true;
-        _player.setVolume(100);
       }
     });
 
-    _player.stream.error.listen((error) {
+    _errorSub = _player.stream.error.listen((error) {
+      if (_disposed || _errorSubject.isClosed) return;
       final msg = 'MediaKitPlayer error: $error';
       SmartDialog.showToast(msg);
       _errorSubject.add(msg);
     });
 
-    _player.stream.completed.listen((isComplete) {
+    _completedSub = _player.stream.completed.listen((isComplete) {
+      if (_disposed || _completeSubject.isClosed) return;
       if (isComplete) {
-        log('MediakitPlayer: The Video is completed');
+        dev.log('MediakitPlayer: The Video is completed');
         _completeSubject.add(true);
       }
     });
 
-    _player.stream.buffering.listen((buffering) {
+    _bufferingSub = _player.stream.buffering.listen((buffering) {
+      if (_disposed || _loadingSubject.isClosed) return;
       if (_loadingSubject.value != buffering) {
         _loadingSubject.add(buffering);
       }
     });
 
-    _player.stream.width.listen((w) {
+    _widthSub = _player.stream.width.listen((w) {
+      if (_disposed || _widthSubject.isClosed) return;
       if (_widthSubject.value != w) {
         _widthSubject.add(w);
       }
     });
 
-    _player.stream.height.listen((h) {
+    _heightSub = _player.stream.height.listen((h) {
+      if (_disposed || _heightSubject.isClosed) return;
       if (_heightSubject.value != h) {
         _heightSubject.add(h);
       }
-    });
-    _player.stream.error.listen((error) {
-      SmartDialog.showToast("MediaKit error: $error", displayTime: Duration(seconds: 5));
     });
   }
 
   @override
   Future<void> setDataSource(String url, Map<String, String> headers) async {
+    if (_disposed) return;
     await _player.pause();
     await _player.open(Media(url, httpHeaders: headers));
   }
 
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() async {
+    if (_disposed) return;
+    await _player.play();
+  }
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() async {
+    if (_disposed) return;
+    await _player.pause();
+  }
 
   @override
   Widget getVideoWidget(int index, Widget? controls) {
@@ -123,7 +147,18 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
 
   @override
   void dispose() {
-    // 👇 先关闭所有 subject
+    if (_disposed) return;
+    _disposed = true;
+
+    // Cancel all stream subscriptions
+    _playingSub?.cancel();
+    _errorSub?.cancel();
+    _completedSub?.cancel();
+    _bufferingSub?.cancel();
+    _widthSub?.cancel();
+    _heightSub?.cancel();
+
+    // Close all subjects
     _playingSubject.close();
     _errorSubject.close();
     _loadingSubject.close();
@@ -131,14 +166,15 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
     _heightSubject.close();
     _completeSubject.close();
 
+    // Dispose the player
     try {
       _player.dispose();
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint('MediaKitPlayerAdapter dispose error: $e');
     }
   }
 
-  // 👇 统一返回缓存流
+  // UnifiedPlayer interface implementations
   @override
   Stream<bool> get onPlaying => _playingSubject.stream;
 
@@ -162,16 +198,19 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
 
   @override
   Future<void> setVolume(double value) async {
-    await _player.setVolume(value * 100);
+    if (_disposed) return;
+    final vol = (value * 100).clamp(0.0, 100.0);
+    await _player.setVolume(vol);
   }
 
   @override
   void stop() {
+    if (_disposed) return;
     _player.stop();
   }
 
   @override
   void release() {
-    _player.dispose();
+    dispose();
   }
 }
