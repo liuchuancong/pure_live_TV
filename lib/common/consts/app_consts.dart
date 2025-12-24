@@ -32,6 +32,30 @@ class AppConsts {
   // 播放器类型
   static const List<String> players = ['Mpv播放器', 'IJK播放器'];
 
+  // 音频延时
+  static const Map<String, String> audioDelayMap = {
+    "0.0": "同步 (0ms)",
+    "-0.025": "-25 ms",
+    "-0.05": "-50 ms",
+    "-0.075": "-75 ms",
+    "-0.1": "-100 ms",
+    "-0.125": "-125 ms",
+    "-0.15": "-150 ms",
+    "-0.175": "-175 ms",
+    "-0.2": "-200 ms (推荐)",
+    "-0.225": "-225 ms",
+    "-0.25": "-250 ms",
+    "-0.275": "-275 ms",
+    "-0.3": "-300 ms",
+    "-0.35": "-350 ms",
+    "-0.4": "-400 ms",
+    "-0.5": "-500 ms",
+    "-1.0": "-1000 ms",
+    "0.05": "+50 ms",
+    "0.1": "+100 ms",
+    "0.2": "+200 ms",
+  };
+
   // 主题模式映射
   static const Map<String, ThemeMode> themeModes = {
     "System": ThemeMode.system,

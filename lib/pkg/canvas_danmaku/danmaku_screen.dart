@@ -539,7 +539,7 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
         _trackCount.clamp(0, (displayHeight / _danmakuHeight).floor());
         _trackYPositions.clear();
         for (int i = 0; i < _trackCount; i++) {
-          double trackY = topOffset + (i * _danmakuHeight) + (_danmakuHeight / 2);
+          double trackY = topOffset + (i * _danmakuHeight);
           _trackYPositions.add(trackY);
         }
 

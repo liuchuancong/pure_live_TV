@@ -48,6 +48,7 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
     if (Platform.isAndroid) {
       final pp = _player.platform as NativePlayer;
       await pp.setProperty('force-seekable', 'yes');
+      await pp.setProperty('audio-delay', settings.audioDelay.value.toString());
     }
 
     // Initialize controller based on settings

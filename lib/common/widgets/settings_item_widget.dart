@@ -37,19 +37,25 @@ class SettingsItemWidget extends StatelessWidget {
       borderRadius: AppStyle.radius16,
       onLeftKey: () {
         if (items.isEmpty) return KeyEventResult.handled;
-        if (items.keys.first == value) {
-          onChanged(items.keys.last);
+        final keys = items.keys.toList();
+        final currentIndex = keys.indexOf(value);
+        if (currentIndex <= 0) {
+          onChanged(keys.last);
         } else {
-          onChanged(items.keys.elementAt(items.keys.toList().indexOf(value) - 1));
+          // 否则选择前一个
+          onChanged(keys[currentIndex - 1]);
         }
         return KeyEventResult.handled;
       },
+
       onRightKey: () {
         if (items.isEmpty) return KeyEventResult.handled;
-        if (items.keys.last == value) {
-          onChanged(items.keys.first);
+        final keys = items.keys.toList();
+        final currentIndex = keys.indexOf(value);
+        if (currentIndex == -1 || currentIndex == keys.length - 1) {
+          onChanged(keys.first);
         } else {
-          onChanged(items.keys.elementAt(items.keys.toList().indexOf(value) + 1));
+          onChanged(keys[currentIndex + 1]);
         }
         return KeyEventResult.handled;
       },

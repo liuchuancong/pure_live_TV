@@ -72,18 +72,36 @@ class SettingsPage extends GetView<SettingsService> {
                 },
               ),
             ),
-            AppStyle.vGap24,
-            Obx(
-              () => SettingsItemWidget(
-                focusNode: controller.playerCompatModeNode,
-                title: "兼容模式",
-                items: const {0: "关闭", 1: "打开"},
-                value: controller.playerCompatMode.value ? 1 : 0,
-                onChanged: (e) {
-                  controller.playerCompatMode.value = e == 1;
-                },
-              ),
-            ),
+            Obx(() {
+              if (controller.videoPlayerIndex.value != 0) return const SizedBox.shrink();
+
+              return Column(
+                children: [
+                  AppStyle.vGap24,
+                  SettingsItemWidget(
+                    focusNode: controller.audioDelayNode,
+                    title: "音频调节",
+                    items: AppConsts.audioDelayMap,
+                    value: controller.audioDelay.value.toString(),
+                    onChanged: (e) {
+                      double val = double.tryParse(e.toString()) ?? 0.0;
+                      controller.audioDelay.value = val;
+                    },
+                  ),
+                  AppStyle.vGap24,
+                  SettingsItemWidget(
+                    focusNode: controller.playerCompatModeNode,
+                    title: "兼容模式",
+                    items: const {0: "关闭", 1: "打开"},
+                    value: controller.playerCompatMode.value ? 1 : 0,
+                    onChanged: (e) {
+                      controller.playerCompatMode.value = e == 1;
+                    },
+                  ),
+                ],
+              );
+            }),
+
             Obx(
               () => SettingsItemWidget(
                 focusNode: controller.preferPlatformNode,

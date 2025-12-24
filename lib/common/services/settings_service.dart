@@ -46,6 +46,7 @@ class SettingsService extends GetxController {
   final videoFitIndex = (HivePrefUtil.getInt('videoFitIndex') ?? 0).obs;
   final videoPlayerIndex = (HivePrefUtil.getInt('videoPlayerIndex') ?? 0).obs;
   final enableCodec = (HivePrefUtil.getBool('enableCodec') ?? true).obs;
+  final audioDelay = (HivePrefUtil.getDouble('audioDelay') ?? 0.0).obs;
   final playerCompatMode = (HivePrefUtil.getBool('playerCompatMode') ?? false).obs;
   final preferResolution = (HivePrefUtil.getString('preferResolution') ?? PlayerConsts.resolutions[0]).obs;
   final preferPlatform = (HivePrefUtil.getString('preferPlatform') ?? AppConsts.platforms[0]).obs;
@@ -103,6 +104,7 @@ class SettingsService extends GetxController {
   final AppFocusNode preferResolutionNode = AppFocusNode();
   final AppFocusNode videoPlayerNode = AppFocusNode();
   final AppFocusNode enableCodecNode = AppFocusNode();
+  final AppFocusNode audioDelayNode = AppFocusNode();
   final AppFocusNode playerCompatModeNode = AppFocusNode();
   final AppFocusNode preferPlatformNode = AppFocusNode();
   final AppFocusNode dataSyncNode = AppFocusNode();
@@ -261,6 +263,10 @@ class SettingsService extends GetxController {
 
     enableCodec.listen((value) async {
       await HivePrefUtil.setBool('enableCodec', value);
+    });
+
+    audioDelay.listen((value) async {
+      await HivePrefUtil.setDouble('audioDelay', value);
     });
 
     videoPlayerIndex.listen((value) async {
@@ -626,6 +632,7 @@ class SettingsService extends GetxController {
     json['danmakuOpacity'] = danmakuOpacity.value;
     json['videoPlayerIndex'] = videoPlayerIndex.value;
     json['enableCodec'] = enableCodec.value;
+    json['audioDelay'] = audioDelay.value;
     json['bilibiliCookie'] = bilibiliCookie.value;
     json['huyaCookie'] = huyaCookie.value;
     json['douyinCookie'] = douyinCookie.value;
