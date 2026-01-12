@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:marquee_list/marquee_list.dart';
@@ -39,9 +40,45 @@ class RoomCard extends StatefulWidget {
 
 class _RoomCardState extends State<RoomCard> {
   EnterRoomTypePage get roomTypePage => widget.roomTypePage;
-  void onTap() {
+  Future<String?> getFinalUrl(String requestUrl) async {
+    try {
+      final url = Uri.parse(requestUrl);
+      final client = http.Client();
+      log("requestUrl: $requestUrl");
+      // 1. 发送请求
+      final request = http.Request('GET', url)..followRedirects = false;
+      final response = await client.send(request);
+      log("Status Code: ${response.statusCode}");
+      // 2. 获取重定向地址
+      final redirectUrl = response.headers['location'];
+      log("roomId is 0, skip $redirectUrl");
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        return null;
+      }
+      final segments = Uri.parse(redirectUrl).pathSegments;
+      if (segments.isNotEmpty) {
+        return segments.last;
+      }
+
+      return null;
+    } catch (e) {
+      log("Error occurred: $e");
+      return null;
+    }
+  }
+
+  void onTap() async {
     handleCurrentPlayList();
-    AppNavigator.toLiveRoomDetail(liveRoom: widget.room);
+    String roomId = widget.room.roomId!;
+    if (widget.room.platform == Sites.huyaSite) {
+      if (widget.room.roomId == '0') {
+        var roomIdInfo = await getFinalUrl('https://www.huya.com/yy/${widget.room.userId!}');
+        if (roomIdInfo != null) {
+          roomId = roomIdInfo;
+        }
+      }
+    }
+    AppNavigator.toLiveRoomDetail(liveRoom: widget.room.copyWith(roomId: roomId));
   }
 
   void handleCurrentPlayList() {
@@ -65,23 +102,28 @@ class _RoomCardState extends State<RoomCard> {
         rooms.add(roomItem);
       }
       settingsService.currentPlayList.value = rooms;
-      settingsService.currentPlayListNodeIndex.value =
-          rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+      settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
+        (element) => element.roomId == widget.room.roomId,
+      );
     } else {
       switch (roomTypePage) {
         case EnterRoomTypePage.homePage:
-          var rooms =
-              settingsService.historyRooms.value.where((room) => room.liveStatus == LiveStatus.live).take(8).toList();
+          var rooms = settingsService.historyRooms.value
+              .where((room) => room.liveStatus == LiveStatus.live)
+              .take(8)
+              .toList();
           settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value =
-              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
+            (element) => element.roomId == widget.room.roomId,
+          );
           break;
         case EnterRoomTypePage.areasRoomPage:
           var areaRoomsController = Get.find<AreaRoomsController>();
           var rooms = areaRoomsController.list.value;
           settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value =
-              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
+            (element) => element.roomId == widget.room.roomId,
+          );
           break;
         case EnterRoomTypePage.favoritePage:
           var favoriteController = Get.find<FavoriteController>();
@@ -89,30 +131,34 @@ class _RoomCardState extends State<RoomCard> {
               ? favoriteController.onlineRooms.value
               : favoriteController.offlineRooms.value;
           settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value =
-              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
+            (element) => element.roomId == widget.room.roomId,
+          );
           break;
         case EnterRoomTypePage.searchPage:
           var searchRoomController = Get.find<SearchRoomController>();
           var rooms = searchRoomController.list.value;
           settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value =
-              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
+            (element) => element.roomId == widget.room.roomId,
+          );
           break;
 
         case EnterRoomTypePage.historyPage:
           var historyRoomsController = Get.find<HistoryPageController>();
           var rooms = historyRoomsController.list.value;
           settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value =
-              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
+            (element) => element.roomId == widget.room.roomId,
+          );
           break;
         case EnterRoomTypePage.popularPage:
           var popularGridController = Get.find<PopularGridController>();
           var rooms = popularGridController.list.value;
           settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value =
-              rooms.indexWhere((element) => element.roomId == widget.room.roomId);
+          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
+            (element) => element.roomId == widget.room.roomId,
+          );
           break;
       }
     }
@@ -120,9 +166,12 @@ class _RoomCardState extends State<RoomCard> {
 
   ImageProvider? getRoomAvatar(String avatar) {
     try {
-      return CachedNetworkImageProvider(avatar, errorListener: (err) {
-        log("CachedNetworkImageProvider: Image failed to load!");
-      });
+      return CachedNetworkImageProvider(
+        avatar,
+        errorListener: (err) {
+          log("CachedNetworkImageProvider: Image failed to load!");
+        },
+      );
     } catch (e) {
       return null;
     }
@@ -162,10 +211,7 @@ class _RoomCardState extends State<RoomCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.w),
-                topRight: Radius.circular(16.w),
-              ),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(16.w), topRight: Radius.circular(16.w)),
               child: Stack(
                 children: [
                   Hero(
@@ -174,9 +220,7 @@ class _RoomCardState extends State<RoomCard> {
                       aspectRatio: 16 / 9,
                       child: Card(
                         margin: const EdgeInsets.all(0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0)),
                         clipBehavior: Clip.antiAlias,
                         color: Theme.of(context).focusColor,
                         elevation: 0,
@@ -249,12 +293,7 @@ class _RoomCardState extends State<RoomCard> {
                 child: widget.focusNode.isFoucsed.value && widget.room.title!.isNotEmpty
                     ? MarqueeList(
                         scrollDirection: Axis.horizontal,
-                        children: [
-                          Text(
-                            widget.room.title ?? '未设置标题',
-                            style: AppStyle.textStyleBlack,
-                          ),
-                        ],
+                        children: [Text(widget.room.title ?? '未设置标题', style: AppStyle.textStyleBlack)],
                       )
                     : Container(
                         alignment: Alignment.centerLeft,
@@ -299,13 +338,7 @@ class _RoomCardState extends State<RoomCard> {
 }
 
 class CountChip extends StatelessWidget {
-  const CountChip({
-    super.key,
-    required this.icon,
-    required this.count,
-    this.dense = false,
-    this.color = Colors.black,
-  });
+  const CountChip({super.key, required this.icon, required this.count, this.dense = false, this.color = Colors.black});
 
   final IconData icon;
   final String count;
@@ -325,17 +358,12 @@ class CountChip extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: Colors.white.withValues(alpha: 0.8),
-              size: dense ? 18 : 20,
-            ),
+            Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: dense ? 18 : 20),
             Text(
               count,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: dense ? 15 : 18,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.8), fontSize: dense ? 15 : 18),
             ),
           ],
         ),
