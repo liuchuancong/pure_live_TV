@@ -1,5 +1,5 @@
 {
-  "version": "2.0.10",
+  "version": "2.0.12",
   "version_num": 10508,
   "version_desc": "-Fixed: 修复与移动端同步. \n -Fixed: 添加延时设置. \n -Fixed: 修复断流",
   "prerelease":false,
