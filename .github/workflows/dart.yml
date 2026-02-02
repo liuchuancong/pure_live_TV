@@ -59,7 +59,7 @@ jobs:
 
       # 打包APK
       - name: 打包APK
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
       
       # 上传APK至Artifacts
       - name: 上传APK至Artifacts

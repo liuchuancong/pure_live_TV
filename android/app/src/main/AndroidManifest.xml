@@ -1,4 +1,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="com.mystyle.purelive">
+    <uses-sdk android:minSdkVersion="21"
+    tools:overrideLibrary="androidx.camera.core,de.bytepark.autoorientation, 
+                               androidx.camera.camera2, 
+                               androidx.camera.lifecycle, 
+                               androidx.camera.video, 
+                               androidx.camera.view,
+                               dev.steenbakker.mobile_scanner,
+                               io.flutter.plugins.sharedpreferences,
+                               io.flutter.plugins.shared_preferences_android,
+                               io.flutter.plugins.urllauncher,
+                               androidx.datastore.preferences.core,
+                               androidx.datastore.core,
+                               androidx.datastore.preferences,
+                               androidx.datastore.datastore,
+                               androidx.camera.featurecombinationquery,
+                               com.example.my_flutter_plugin" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
