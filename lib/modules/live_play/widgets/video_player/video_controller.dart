@@ -16,7 +16,7 @@ class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
 
   final LiveRoom room;
-
+  List<String> playUrs;
   final String datasourceType;
 
   final String qualiteName;
@@ -161,6 +161,7 @@ class VideoController with ChangeNotifier {
     required this.qualiteName,
     required this.currentLineIndex,
     required this.currentQuality,
+    required this.playUrs,
     this.autoPlay = true,
     BoxFit fitMode = BoxFit.contain,
     required this.qualites,
@@ -195,7 +196,7 @@ class VideoController with ChangeNotifier {
       });
     });
     initPagesConfig();
-    globalPlayer.setDataSource(datasource, headers);
+    globalPlayer.setDataSource(datasource, playUrs, headers);
     initSubscriptions();
   }
 

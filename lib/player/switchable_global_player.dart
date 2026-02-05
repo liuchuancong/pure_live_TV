@@ -78,7 +78,7 @@ class SwitchableGlobalPlayer {
     playerHasInit = true;
   }
 
-  Future<void> setDataSource(String url, Map<String, String> headers) async {
+  Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers) async {
     if (_currentPlayer != null || playerHasInit) {
       _currentPlayer!.stop();
       _cleanup();
@@ -103,7 +103,7 @@ class SwitchableGlobalPlayer {
     try {
       await _currentPlayer!.init();
       await Future.delayed(const Duration(milliseconds: 100));
-      await _currentPlayer!.setDataSource(url, headers);
+      await _currentPlayer!.setDataSource(url, playUrls, headers);
 
       unawaited(
         Future.microtask(() {

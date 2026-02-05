@@ -390,6 +390,7 @@ class LivePlayController extends StateController {
     videoController = VideoController(
       playerKey: playerKey,
       room: detail.value!,
+      playUrs: playUrls.value,
       datasourceType: 'network',
       datasource: playUrls.value[currentLineIndex.value],
       autoPlay: true,
