@@ -1,7 +1,7 @@
 {
-  "version": "2.0.13",
+  "version": "2.0.14",
   "version_num": 10508,
-  "version_desc": "-Fixed: 支持android 5.0",
+  "version_desc": "-Fixed: 修复抖音分类",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
