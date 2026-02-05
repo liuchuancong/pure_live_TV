@@ -35,7 +35,7 @@ class HuyaSite implements LiveSite {
   static String? playUserAgent;
 
   // ignore: constant_identifier_names
-  static const String HYSDK_UA = "HYSDK(Windows, 30000002)_APP(pc_exe&7060000&official)_SDK(trans&2.32.3.5646)";
+  static const String HYSDK_UA = "HYSDK(Windows,30000002)_APP(pc_exe&7070000&official)_SDK(trans&2.33.0.5678)";
   static Map<String, String> requestHeaders = {'Origin': baseUrl, 'Referer': baseUrl, 'User-Agent': HYSDK_UA};
   final BaseTarsHttp tupClient = BaseTarsHttp("http://wup.huya.com", "liveui", headers: requestHeaders);
   @override
@@ -379,6 +379,18 @@ class HuyaSite implements LiveSite {
     }
   }
 
+  String? findRoomId(List list, int targetUid, int targetYyid) {
+    try {
+      final matchingObject = list.firstWhere(
+        (item) => item['uid'] == targetUid && item['yyid'] == targetYyid,
+        orElse: () => throw StateError("No matching object found"), // 当找不到匹配项时抛出错误
+      );
+      return matchingObject["room_id"].toString();
+    } catch (e) {
+      return null;
+    }
+  }
+
   @override
   Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
     var resultText = await HttpClient.instance.getJson(
@@ -398,6 +410,7 @@ class HuyaSite implements LiveSite {
     var result = json.decode(resultText);
     var items = <LiveRoom>[];
     var queryList = result["response"]["3"]["docs"] ?? [];
+    var responseList = result["response"]["1"]["docs"] ?? [];
     for (var item in queryList) {
       var cover = item["game_screenshot"].toString();
       if (!cover.contains("?")) {
@@ -408,10 +421,12 @@ class HuyaSite implements LiveSite {
       if (title.isEmpty) {
         title = item["game_roomName"]?.toString() ?? "";
       }
+      var roomId = findRoomId(responseList, item['uid'], item['yyid']);
       var roomItem = LiveRoom(
-        roomId: item["room_id"].toString(),
+        roomId: roomId ?? item["room_id"].toString(),
         title: title,
         cover: cover,
+        userId: item["yyid"].toString(),
         nick: item["game_nick"].toString(),
         area: item["gameName"].toString(),
         status: true,

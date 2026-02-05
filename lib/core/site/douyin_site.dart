@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:get/get.dart';
+import 'dart:developer' as developer;
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/core/common/core_log.dart';
@@ -37,7 +38,7 @@ class DouyinSite implements LiveSite {
       "ttwid=1%7CB1qls3GdnZhUov9o2NxOMxxYS2ff6OSvEWbv0ytbES4%7C1680522049%7C280d802d6d478e3e78d0c807f7c487e7ffec0ae4e5fdd6a0fe74c3c6af149511";
 
   /// 用户设置的 cookie
-  String cookie = "";
+  static String cookie = "";
 
   Map<String, dynamic> headers = {
     "Authority": kDefaultAuthority,
@@ -69,21 +70,40 @@ class DouyinSite implements LiveSite {
     }
   }
 
+  String extractCategoryDataJson(String source) {
+    final startPattern = r'{\"pathname\":\"/\",\"categoryData\":';
+    int startIndex = source.indexOf(startPattern);
+    if (startIndex == -1) return '';
+    int openBraces = 0;
+    bool foundFirstBrace = false;
+    for (int i = startIndex; i < source.length; i++) {
+      if (source[i] == '{') {
+        openBraces++;
+        foundFirstBrace = true;
+      } else if (source[i] == '}') {
+        openBraces--;
+      }
+      if (foundFirstBrace && openBraces == 0) {
+        String rawData = source.substring(startIndex, i + 1);
+        return rawData.replaceAll('\\"', '"').replaceAll(r'\\', r'\');
+      }
+    }
+    return '';
+  }
+
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [];
     var result = await HttpClient.instance.getText(
       "https://live.douyin.com/",
-      queryParameters: {},
+      queryParameters: {"from_nav": "1"},
       header: await getRequestHeaders(),
     );
 
-    var renderData = RegExp(r'\{\\"pathname\\":\\"\/\\",\\"categoryData.*?\]\\n').firstMatch(result)?.group(0) ?? "";
-    var renderDataJson = json.decode(
-      renderData.trim().replaceAll('\\"', '"').replaceAll(r"\\", r"\").replaceAll(']\\n', ""),
-    );
-
-    for (var item in renderDataJson["categoryData"]) {
+    String extracted = extractCategoryDataJson(result);
+    var renderDataJson = json.decode(extracted);
+    var data = renderDataJson["categoryData"];
+    for (var item in data) {
       List<LiveArea> subs = [];
       var id = '${item["partition"]["id_str"]},${item["partition"]["type"]}';
       for (var subItem in item["sub_partition"]) {
@@ -579,14 +599,16 @@ class DouyinSite implements LiveSite {
         "webid": "7382872326016435738",
       },
     );
-    //var requlestUrl = await getAbogusUrl(uri.toString());
     var requlestUrl = uri.toString();
     var headResp = await HttpClient.instance.head('https://live.douyin.com', header: headers);
     var dyCookie = "";
+    developer.log(headResp.headers["set-cookie"].toString());
     headResp.headers["set-cookie"]?.forEach((element) {
       var cookie = element.split(";")[0];
       if (cookie.contains("ttwid")) {
         dyCookie += "$cookie;";
+      } else {
+        dyCookie += settings.douyinCookie.value;
       }
       if (cookie.contains("__ac_nonce")) {
         dyCookie += "$cookie;";
@@ -612,6 +634,7 @@ class DouyinSite implements LiveSite {
         'user-agent': kDefaultUserAgent,
       },
     );
+    developer.log(result.toString());
     if (result == "" || result == 'blocked') {
       throw Exception("抖音直播搜索被限制，请稍后再试");
     }
