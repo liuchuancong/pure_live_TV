@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:get/get.dart';
-import 'dart:developer' as dev;
 import 'package:rxdart/rxdart.dart';
 import 'unified_player_interface.dart';
 import 'package:media_kit/media_kit.dart';
@@ -36,8 +35,64 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
 
   @override
   Future<void> init() async {
-    _player = Player();
+    if (_disposed) return;
 
+    _isPlaying = false;
+    isInitialized = false;
+    _disposed = false;
+
+    _player = Player();
+    if (settings.customPlayerOutput.value) {
+      if (_player.platform is NativePlayer) {
+        await (_player.platform as dynamic).setProperty('ao', settings.audioOutputDriver.value);
+      }
+    }
+    // Platform-specific configuration
+    if (Platform.isAndroid) {
+      final pp = _player.platform as NativePlayer;
+      await pp.setProperty('force-seekable', 'yes');
+    }
+    if (_player.platform is NativePlayer) {
+      if (_player.platform is NativePlayer) {
+        final native = _player.platform as dynamic;
+
+        // 1. 设置协议白名单
+        await native.setProperty('protocol_whitelist', 'httpproxy,udp,rtp,tcp,tls,data,file,http,https,crypto');
+
+        // 2. 合并设置 demuxer 参数 (用逗号分隔，不要分两次 set)
+        // 这样同时开启了重连和 5 秒超时
+        // Optimized reconnection parameters
+        await native.setproperty(
+          'demuxer-lavf-o',
+          'reconnect=1,reconnect_at_eof=1,reconnect_streamed=1,reconnect_on_network_error=1,reconnect_on_http_error=4xx,5xx,timeout=5000000',
+        );
+        await native.setproperty('stream-lavf-o', 'reconnect_streamed=1,reconnect_delay_max=5');
+      }
+    }
+
+    // Initialize controller based on settings
+    _controller = settings.playerCompatMode.value
+        ? VideoController(
+            _player,
+            configuration: VideoControllerConfiguration(vo: 'mediacodec_embed', hwdec: 'mediacodec'),
+          )
+        : settings.customPlayerOutput.value
+        ? VideoController(
+            _player,
+            configuration: VideoControllerConfiguration(
+              vo: settings.videoOutputDriver.value,
+              hwdec: settings.videoHardwareDecoder.value,
+            ),
+          )
+        : VideoController(
+            _player,
+            configuration: VideoControllerConfiguration(
+              enableHardwareAcceleration: settings.enableCodec.value,
+              androidAttachSurfaceAfterVideoParameters: false,
+            ),
+          );
+
+    // Listen to player streams
     _playingSub = _player.stream.playing.listen((playing) {
       if (_disposed || _playingSubject.isClosed) return;
       _isPlaying = playing;
@@ -60,7 +115,6 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
     _completedSub = _player.stream.completed.listen((isComplete) {
       if (_disposed || _completeSubject.isClosed) return;
       if (isComplete) {
-        dev.log('MediakitPlayer: The Video is completed');
         _completeSubject.add(true);
       }
     });
@@ -90,7 +144,7 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
   @override
   Future<void> setDataSource(String url, Map<String, String> headers) async {
     if (_disposed) return;
-    await _player.pause();
+    await _player.stop();
     await _player.open(Media(url, httpHeaders: headers));
   }
 
