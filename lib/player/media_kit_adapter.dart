@@ -36,36 +36,8 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
 
   @override
   Future<void> init() async {
-    if (_disposed) return;
-
-    _isPlaying = false;
-    isInitialized = false;
-    _disposed = false;
-
     _player = Player();
 
-    // Platform-specific configuration
-    if (Platform.isAndroid) {
-      final pp = _player.platform as NativePlayer;
-      await pp.setProperty('force-seekable', 'yes');
-      await pp.setProperty('audio-delay', settings.audioDelay.value.toString());
-    }
-
-    // Initialize controller based on settings
-    _controller = settings.playerCompatMode.value
-        ? VideoController(
-            _player,
-            configuration: VideoControllerConfiguration(vo: 'mediacodec_embed', hwdec: 'mediacodec'),
-          )
-        : VideoController(
-            _player,
-            configuration: VideoControllerConfiguration(
-              enableHardwareAcceleration: settings.enableCodec.value,
-              androidAttachSurfaceAfterVideoParameters: false,
-            ),
-          );
-
-    // Listen to player streams
     _playingSub = _player.stream.playing.listen((playing) {
       if (_disposed || _playingSubject.isClosed) return;
       _isPlaying = playing;
