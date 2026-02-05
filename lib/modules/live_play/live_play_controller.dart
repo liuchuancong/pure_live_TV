@@ -119,7 +119,11 @@ class LivePlayController extends StateController {
   @override
   void onInit() {
     currentPlayRoom.value = room;
-    onInitPlayerState();
+    onInitPlayerState(
+      reloadDataType: detail.value!.platform == Sites.bilibiliSite
+          ? ReloadDataType.changeLine
+          : ReloadDataType.refreash,
+    );
     EmojiManager().preload(site);
     super.onInit();
   }
