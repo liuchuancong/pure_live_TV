@@ -1,7 +1,7 @@
 {
   "version": "2.0.14",
   "version_num": 10508,
-  "version_desc": "-Fixed: 修复抖音分类",
+  "version_desc": "-Fixed: 修复抖音分类.\n-Fixed: 添加关注自动刷新.\n-Fixed: 优化首页历史自动更新.\n-Added: 新增自动刷新间隔设置.\n-Fixed: Mpv播放器音量.",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
