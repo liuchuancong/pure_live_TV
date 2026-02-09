@@ -293,6 +293,7 @@ class _RoomCardState extends State<RoomCard> {
                 child: widget.focusNode.isFoucsed.value && widget.room.title!.isNotEmpty
                     ? MarqueeList(
                         scrollDirection: Axis.horizontal,
+                        scrollDuration: const Duration(seconds: 2),
                         children: [Text(widget.room.title ?? '未设置标题', style: AppStyle.textStyleBlack)],
                       )
                     : Container(
