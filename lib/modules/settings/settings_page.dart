@@ -35,25 +35,29 @@ class SettingsPage extends GetView<SettingsService> {
             ],
           ),
           AppStyle.vGap24,
-          SettingsItemWidget(
-            focusNode: controller.autoRefreshTimeNode,
-            title: "自动更新关注",
-            items: const {0: "关闭", 1: "打开"},
-            value: controller.autoRefreshFavorite.value ? 1 : 0,
-            onChanged: (e) {
-              controller.autoRefreshFavorite.value = e == 1;
-            },
+          Obx(
+            () => SettingsItemWidget(
+              focusNode: controller.autoRefreshTimeNode,
+              title: "自动更新关注",
+              items: const {0: "关闭", 1: "打开"},
+              value: controller.autoRefreshFavorite.value ? 1 : 0,
+              onChanged: (e) {
+                controller.autoRefreshFavorite.value = e == 1;
+              },
+            ),
           ),
           AppStyle.vGap24,
-          SettingsItemWidget(
-            focusNode: controller.autoRefreshIntervalNode,
-            title: "自动更新关注",
-            // 建议将原本的开关改为具体的间隔时间，或者额外加一行
-            items: const {0: "关闭", 10: "10分钟", 20: "20分钟", 30: "30分钟", 60: "1小时", 120: "2小时"},
-            value: controller.autoRefreshInterval.value, // 使用新的变量存储间隔（秒）
-            onChanged: (e) {
-              controller.autoRefreshInterval.value = e as int;
-            },
+          Obx(
+            () => SettingsItemWidget(
+              focusNode: controller.autoRefreshIntervalNode,
+              title: "自动更新关注间隔时间",
+              // 建议将原本的开关改为具体的间隔时间，或者额外加一行
+              items: const {0: "关闭", 10: "10分钟", 20: "20分钟", 30: "30分钟", 60: "1小时", 120: "2小时"},
+              value: controller.autoRefreshInterval.value, // 使用新的变量存储间隔（秒）
+              onChanged: (e) {
+                controller.autoRefreshInterval.value = e as int;
+              },
+            ),
           ),
           AppStyle.vGap24,
           Obx(
