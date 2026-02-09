@@ -43,7 +43,7 @@ class LivePlayPage extends GetWidget<LivePlayController> {
               child: SizedBox(
                 width: 32,
                 height: 32,
-                child: CircularProgressIndicator(strokeWidth: 6, color: Colors.white),
+                child: CircularProgressIndicator(strokeWidth: 4, color: Colors.white),
               ),
             ),
           ),
