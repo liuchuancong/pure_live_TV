@@ -86,17 +86,16 @@ jobs:
           name: ${{ github.event.inputs.tag_name || github.ref_name }}
           body: |
             📦 纯粹直播 ${{ github.ref_name }}
+            本次更新内容：
+            ${{ fromJson(steps.version.outputs.content).version_desc }}
+            🔗 下载地址：https://github.com/liuchuancong/pure_live_TV/releases/latest
             本软件为开源项目,无广告，无病毒，若安装时出现病毒误报，可自行斟酌。
             📺 TV 版本
-            • 安装程序：支持 Android TV 6.0+ (armeabi-v7a, arm64-v8a)
+            • 安装程序：支持 Android TV 5.0+ (armeabi-v7a, arm64-v8a)
             • 已实现TV同步直播源
             • 支持多种播放器切换 
             • 支持弹幕显示
             • 支持应用內更新
-            下载地址：https://github.com/liuchuancong/pure_live_TV/releases/latest
-
-            本次更新内容：
-            ${{ fromJson(steps.version.outputs.content).version_desc }}
           prerelease: false
           files: |
             build/app/outputs/flutter-apk/app-x86_64-release.apk
