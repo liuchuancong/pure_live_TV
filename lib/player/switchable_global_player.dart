@@ -208,7 +208,7 @@ class SwitchableGlobalPlayer {
     _isPlayingSubscription = onPlaying.listen((playing) {
       isPlaying.value = playing;
       if (!hasSetVolume && playing) {
-        setVolume(settings.volume.value);
+        setVolume(1.0);
         hasSetVolume = true;
       }
     });
