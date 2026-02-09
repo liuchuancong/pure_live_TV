@@ -26,14 +26,14 @@ class BackButtonObserver extends RouteObserver<PageRoute<dynamic>> {
   @override
   void didPop(Route route, Route? previousRoute) {
     super.didPop(route, previousRoute);
-    if (route.settings.name == RoutePath.kInitial) {
-      try {
-        final controller = Get.find<HomeController>();
-        controller.refreshData();
-      } catch (e) {
-        log("BackButtonObserver Error: ${e.toString()}");
-      }
-    } else if (route.settings.name == RoutePath.kLivePlay) {
+    try {
+      final controller = Get.find<HomeController>();
+      controller.refreshData();
+      log('refreshData');
+    } catch (e) {
+      log("BackButtonObserver Error: ${e.toString()}");
+    }
+    if (route.settings.name == RoutePath.kLivePlay) {
       Get.find<LivePlayController>().onDelete();
       SwitchableGlobalPlayer().stop();
     }
