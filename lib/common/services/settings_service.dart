@@ -313,6 +313,10 @@ class SettingsService extends GetxController {
     preferPlatform.listen((value) async {
       await HivePrefUtil.setString('preferPlatform', value);
     });
+
+    maxConcurrentRefresh.listen((value) async {
+      await HivePrefUtil.setInt('maxConcurrentRefresh', value);
+    });
   }
 
   // ========== 配置修改方法 ==========
