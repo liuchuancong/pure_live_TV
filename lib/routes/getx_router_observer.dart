@@ -1,5 +1,7 @@
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/modules/home/home_controller.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 
@@ -24,8 +26,14 @@ class BackButtonObserver extends RouteObserver<PageRoute<dynamic>> {
   @override
   void didPop(Route route, Route? previousRoute) {
     super.didPop(route, previousRoute);
-    // 处理路由弹出事件
-    if (route.settings.name == RoutePath.kLivePlay) {
+    if (route.settings.name == RoutePath.kInitial) {
+      try {
+        final controller = Get.find<HomeController>();
+        controller.refreshData();
+      } catch (e) {
+        log("BackButtonObserver Error: ${e.toString()}");
+      }
+    } else if (route.settings.name == RoutePath.kLivePlay) {
       Get.find<LivePlayController>().onDelete();
       SwitchableGlobalPlayer().stop();
     }
