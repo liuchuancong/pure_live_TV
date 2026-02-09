@@ -26,7 +26,9 @@ class FavoriteController extends GetxController {
     syncRooms();
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
-    onRefresh();
+    if (settings.autoRefreshFavorite.value) {
+      onRefresh();
+    }
   }
 
   final onlineRooms = [].obs;

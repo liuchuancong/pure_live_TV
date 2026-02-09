@@ -35,6 +35,16 @@ class SettingsPage extends GetView<SettingsService> {
             ],
           ),
           AppStyle.vGap24,
+          SettingsItemWidget(
+            focusNode: controller.autoRefreshTimeNode,
+            title: "自动更新关注",
+            items: const {0: "关闭", 1: "打开"},
+            value: controller.autoRefreshFavorite.value ? 1 : 0,
+            onChanged: (e) {
+              controller.autoRefreshFavorite.value = e == 1;
+            },
+          ),
+          AppStyle.vGap24,
           Obx(
             () => SettingsItemWidget(
               focusNode: controller.maxConcurrentRefreshNode,
