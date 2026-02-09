@@ -88,6 +88,7 @@ dependencies:
   hive_ce: ^2.15.1
   hive_ce_flutter: ^2.3.3
   google_fonts: ^8.0.0
+  pool: ^1.5.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

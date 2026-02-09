@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:pool/pool.dart';
 import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -25,6 +26,7 @@ class FavoriteController extends GetxController {
     syncRooms();
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
+    onRefresh();
   }
 
   final onlineRooms = [].obs;
@@ -63,39 +65,55 @@ class FavoriteController extends GetxController {
   }
 
   Future<bool> onRefresh() async {
+    final Pool refreshPool = Pool(settings.maxConcurrentRefresh.value);
     loading.value = true;
     try {
-      // 如果没有收藏的房间，直接结束刷新
-      if (settings.favoriteRooms.value.isEmpty) {
+      final rooms = settings.favoriteRooms.value.where((room) {
+        return room.roomId != null && room.roomId!.isNotEmpty && room.platform != null && room.platform!.isNotEmpty;
+      }).toList();
+
+      if (rooms.isEmpty) {
+        debugPrint('没有有效的收藏房间需要刷新');
         loading.value = false;
         return false;
       }
 
-      // 逐个处理每个收藏的房间
-      for (final room in settings.favoriteRooms.value) {
-        try {
-          // 获取房间详情
-          final liveRoom =
-              await Sites.of(room.platform!).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!);
+      final List<Future<void>> tasks = rooms.map((room) {
+        return refreshPool.withResource(() async {
+          try {
+            if (room.platform == null || room.roomId == null) {
+              debugPrint('跳过无效房间数据');
+              return;
+            }
 
-          // 更新房间信息
-          settings.updateRoom(liveRoom);
-        } catch (e) {
-          debugPrint('刷新单个房间时出错: $e');
-        }
+            final liveRoom = await Sites.of(
+              room.platform!,
+            ).liveSite.getRoomDetail(roomId: room.roomId!, platform: room.platform!);
 
-        // 每个请求后间隔1秒，最后一个请求不需要延迟
-        if (room != settings.favoriteRooms.value.last && room.platform == Sites.douyinSite) {
-          await Future.delayed(const Duration(seconds: 1));
-        }
-      }
+            settings.updateRoom(liveRoom);
+          } catch (e, stack) {
+            debugPrint('================ 刷新失败记录 ================');
+            debugPrint('平台 (Platform): ${room.platform}');
+            debugPrint('房间号 (RoomID): ${room.roomId}');
+            debugPrint('昵称 (Nickname): ${room.nick}');
+            debugPrint('原始标题 (Title): ${room.title}');
+            debugPrint('具体错误类型: $e');
+            debugPrint('堆栈追踪: $stack');
+            debugPrint('============================================');
+          }
+        });
+      }).toList();
+
+      //  并发启动所有任务并等待它们全部执行完毕
+      await Future.wait(tasks);
     } catch (e) {
-      debugPrint('刷新过程中发生错误: $e');
+      debugPrint('刷新过程中发生全局错误: $e');
     } finally {
+      // 4. 数据同步和状态重置
       syncRooms();
       isFirstLoad = false;
       loading.value = false;
     }
-    return false;
+    return true;
   }
 }

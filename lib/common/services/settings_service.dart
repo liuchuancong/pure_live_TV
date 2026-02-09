@@ -39,7 +39,7 @@ class SettingsService extends GetxController {
   final enableScreenKeepOn = (HivePrefUtil.getBool('enableScreenKeepOn') ?? true).obs;
   final enableAutoCheckUpdate = (HivePrefUtil.getBool('enableAutoCheckUpdate') ?? true).obs;
   final enableFullScreenDefault = (HivePrefUtil.getBool('enableFullScreenDefault') ?? false).obs;
-
+  final maxConcurrentRefresh = (HivePrefUtil.getInt('maxConcurrentRefresh') ?? 5).obs;
   final isFirstInApp = (HivePrefUtil.getBool('isFirstInApp') ?? true).obs;
 
   // 播放器相关
@@ -101,6 +101,7 @@ class SettingsService extends GetxController {
   final httpErrorMsg = ''.obs;
 
   // 焦点节点相关
+  final AppFocusNode maxConcurrentRefreshNode = AppFocusNode();
   final AppFocusNode preferResolutionNode = AppFocusNode();
   final AppFocusNode videoPlayerNode = AppFocusNode();
   final AppFocusNode enableCodecNode = AppFocusNode();
@@ -618,6 +619,7 @@ class SettingsService extends GetxController {
     json['enableScreenKeepOn'] = enableScreenKeepOn.value;
     json['enableAutoCheckUpdate'] = enableAutoCheckUpdate.value;
     json['enableFullScreenDefault'] = enableFullScreenDefault.value;
+    json['enableDanmaku'] = maxConcurrentRefresh.value;
     json['preferResolution'] = preferResolution.value;
     json['preferPlatform'] = preferPlatform.value;
     json['languageName'] = languageName.value;
