@@ -41,6 +41,7 @@ class SettingsService extends GetxController {
   final enableFullScreenDefault = (HivePrefUtil.getBool('enableFullScreenDefault') ?? false).obs;
   final maxConcurrentRefresh = (HivePrefUtil.getInt('maxConcurrentRefresh') ?? 5).obs;
   final autoRefreshFavorite = (HivePrefUtil.getBool('autoRefreshFavorite') ?? true).obs;
+  final autoRefreshInterval = (HivePrefUtil.getInt('autoRefreshInterval') ?? 10).obs;
   final isFirstInApp = (HivePrefUtil.getBool('isFirstInApp') ?? true).obs;
 
   // 播放器相关
@@ -104,6 +105,7 @@ class SettingsService extends GetxController {
   // 焦点节点相关
   final AppFocusNode maxConcurrentRefreshNode = AppFocusNode();
   final AppFocusNode autoRefreshTimeNode = AppFocusNode();
+  final AppFocusNode autoRefreshIntervalNode = AppFocusNode();
   final AppFocusNode preferResolutionNode = AppFocusNode();
   final AppFocusNode videoPlayerNode = AppFocusNode();
   final AppFocusNode enableCodecNode = AppFocusNode();
@@ -322,6 +324,10 @@ class SettingsService extends GetxController {
 
     autoRefreshFavorite.listen((value) async {
       await HivePrefUtil.setBool('autoRefreshFavorite', value);
+    });
+
+    autoRefreshInterval.listen((value) async {
+      await HivePrefUtil.setInt('autoRefreshInterval', value);
     });
   }
 
@@ -631,6 +637,7 @@ class SettingsService extends GetxController {
     json['enableFullScreenDefault'] = enableFullScreenDefault.value;
     json['maxConcurrentRefresh'] = maxConcurrentRefresh.value;
     json['autoRefreshFavorite'] = autoRefreshFavorite.value;
+    json['autoRefreshInterval'] = autoRefreshInterval.value;
     json['preferResolution'] = preferResolution.value;
     json['preferPlatform'] = preferPlatform.value;
     json['languageName'] = languageName.value;

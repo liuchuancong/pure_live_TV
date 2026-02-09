@@ -17,6 +17,8 @@ class FavoriteController extends GetxController {
   bool isFirstLoad = true;
 
   var loading = true.obs;
+
+  DateTime? lastRefreshTime;
   @override
   void onInit() {
     super.onInit();
@@ -27,7 +29,14 @@ class FavoriteController extends GetxController {
     // 监听settings rooms变化
     settings.favoriteRooms.listen((rooms) => syncRooms());
     if (settings.autoRefreshFavorite.value) {
-      onRefresh();
+      int interval = settings.autoRefreshInterval.value;
+      if (interval == 0) return;
+      DateTime now = DateTime.now();
+      DateTime last = lastRefreshTime ?? now.subtract(Duration(days: 1));
+      if (now.difference(last).inMinutes >= interval) {
+        onRefresh();
+        lastRefreshTime = now;
+      }
     }
   }
 
