@@ -32,6 +32,7 @@ class SettingsService extends GetxController {
   final autoRefreshTime = (HivePrefUtil.getInt('autoRefreshTime') ?? 3).obs;
   final autoShutDownTime = (HivePrefUtil.getInt('autoShutDownTime') ?? 120).obs;
   final enableAutoShutDownTime = (HivePrefUtil.getBool('enableAutoShutDownTime') ?? false).obs;
+  DateTime? lastRefreshTime;
 
   // 界面与交互相关
   final enableDenseFavorites = (HivePrefUtil.getBool('enableDenseFavorites') ?? false).obs;

@@ -18,7 +18,6 @@ class FavoriteController extends GetxController {
 
   var loading = true.obs;
 
-  DateTime? lastRefreshTime;
   @override
   void onInit() {
     super.onInit();
@@ -32,10 +31,10 @@ class FavoriteController extends GetxController {
       int interval = settings.autoRefreshInterval.value;
       if (interval == 0) return;
       DateTime now = DateTime.now();
-      DateTime last = lastRefreshTime ?? now.subtract(Duration(days: 1));
+      DateTime last = settings.lastRefreshTime ?? now.subtract(Duration(days: 1));
       if (now.difference(last).inMinutes >= interval) {
         onRefresh();
-        lastRefreshTime = now;
+        settings.lastRefreshTime = now;
       }
     }
   }
