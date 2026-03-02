@@ -56,7 +56,6 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
       await native.setProperty('network-timeout', '30'); // 给 mpv 30秒的总容忍时间
       await native.setProperty('demuxer-lavf-probsize', '1048576'); // 减半探测大小
       await native.setProperty('demuxer-lavf-analyzeduration', '3'); // 减少解析时间
-      await native.setProperty('volume-max', '200');
     }
     if (settings.customPlayerOutput.value) {
       if (_player.platform is NativePlayer) {
