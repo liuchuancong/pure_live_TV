@@ -359,6 +359,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "videofit_fill": MessageLookupByLibrary.simpleMessage("Fill"),
     "videofit_fitheight": MessageLookupByLibrary.simpleMessage("AdaptHeight"),
     "videofit_fitwidth": MessageLookupByLibrary.simpleMessage("AdaptWidth"),
+    "videofit_scaleDown": MessageLookupByLibrary.simpleMessage("ScaleDown"),
     "what_is_new": MessageLookupByLibrary.simpleMessage("New Features"),
   };
 }

@@ -128,9 +128,9 @@ class VideoPlayerAdapter implements UnifiedPlayer {
   Future<void> pause() async => await _player?.pause();
 
   @override
-  void stop() {
-    _player?.pause();
-    _player?.seekTo(Duration.zero);
+  Future<void> stop() async {
+    await _player?.pause();
+    await _player?.seekTo(Duration.zero);
   }
 
   @override
@@ -155,7 +155,9 @@ class VideoPlayerAdapter implements UnifiedPlayer {
   }
 
   @override
-  void release() => dispose();
+  Future<void> release() async {
+    dispose();
+  }
 
   // UnifiedPlayer 接口实现
   @override

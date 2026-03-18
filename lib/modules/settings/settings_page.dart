@@ -131,7 +131,6 @@ class SettingsPage extends GetView<SettingsService> {
           ),
           Obx(() {
             if (controller.videoPlayerIndex.value != 0) return const SizedBox.shrink();
-
             return Column(
               children: [
                 AppStyle.vGap24,
@@ -158,7 +157,23 @@ class SettingsPage extends GetView<SettingsService> {
               ],
             );
           }),
-
+          Obx(() {
+            if (controller.videoPlayerIndex.value != 2) return const SizedBox.shrink();
+            return Column(
+              children: [
+                AppStyle.vGap24,
+                SettingsItemWidget(
+                  focusNode: controller.useFallbackPlayerNode,
+                  title: "Exo无法播放时使用备用播放器",
+                  items: const {0: "Mpv播放器", 1: "Ijk播放器"},
+                  value: controller.useFallbackPlayer.value,
+                  onChanged: (e) {
+                    controller.useFallbackPlayer.value = e;
+                  },
+                ),
+              ],
+            );
+          }),
           Obx(
             () => SettingsItemWidget(
               focusNode: controller.preferPlatformNode,

@@ -11,6 +11,7 @@ import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/modules/live_play/widgets/index.dart';
+import 'package:pure_live/modules/live_play/widgets/video_player/controller/video_danmaku.dart';
 
 class LivePlayController extends StateController {
   LivePlayController({required this.room, required this.site});
@@ -104,6 +105,11 @@ class LivePlayController extends StateController {
     }
     if (videoController!.showPlayListPanel.value) {
       videoController?.showPlayListPanel.value = false;
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
+    if (videoController!.showLinePanel.value) {
+      videoController?.showLinePanel.value = false;
       videoController?.focusNode.requestFocus();
       return await Future.value(false);
     }
@@ -267,11 +273,7 @@ class LivePlayController extends StateController {
     int quality = 0,
   }) {
     if (reloadDataType == ReloadDataType.changeLine && isReCalculate) {
-      if (line == playUrls.length - 1) {
-        currentLineIndex.value = 0;
-      } else {
-        currentLineIndex.value = currentLineIndex.value + 1;
-      }
+      currentLineIndex.value = line;
     } else if (reloadDataType == ReloadDataType.changeQuality) {
       currentQuality.value = quality;
     }
@@ -285,7 +287,7 @@ class LivePlayController extends StateController {
         if (settings.shieldList.every((element) => !msg.message.contains(element))) {
           // 保留弹幕发送到播放器的核心功能，移除messages添加
           if (videoController != null) {
-            videoController?.sendDanmaku(msg);
+            videoController?.sendDanmakuMessage(msg);
           }
         }
       }
@@ -390,7 +392,7 @@ class LivePlayController extends StateController {
     videoController = VideoController(
       playerKey: playerKey,
       room: detail.value!,
-      playUrs: playUrls.value,
+      playUrls: playUrls.value,
       datasourceType: 'network',
       datasource: playUrls.value[currentLineIndex.value],
       autoPlay: true,

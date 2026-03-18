@@ -35,7 +35,7 @@ abstract class UnifiedPlayer<T> {
 
   bool get isPlayingNow;
 
-  void stop() {}
+  Future<void> stop() async {}
 
-  void release() {}
+  Future<void> release() async {}
 }

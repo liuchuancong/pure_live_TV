@@ -985,6 +985,16 @@ class S {
     );
   }
 
+  /// `ScaleDown`
+  String get videofit_scaleDown {
+    return Intl.message(
+      'ScaleDown',
+      name: 'videofit_scaleDown',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Danmaku Setting`
   String get settings_danmaku_title {
     return Intl.message(

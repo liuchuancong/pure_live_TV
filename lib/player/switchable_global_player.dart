@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:developer';
 import 'fijk_adapter.dart';
-import 'package:get/get.dart';
 import 'media_kit_adapter.dart';
-import 'package:rxdart/rxdart.dart';
 import 'unified_player_interface.dart';
+import 'package:rxdart/rxdart.dart' as rx;
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/player/video_player_adapter.dart';
+import 'package:get/get.dart' hide Rx; // Avoid conflict with RxDart
 
 enum PlayerEngine { mediaKit, fijk, exo }
 
@@ -15,7 +15,7 @@ class SwitchableGlobalPlayer {
   factory SwitchableGlobalPlayer() => _instance;
   SwitchableGlobalPlayer._internal();
 
-  // 状态管理
+  // --- Observables ---
   final isInitialized = false.obs;
   final isVerticalVideo = false.obs;
   final isPlaying = false.obs;
@@ -23,26 +23,24 @@ class SwitchableGlobalPlayer {
   final hasError = false.obs;
   final currentVolume = 1.0.obs;
   final isInPipMode = false.obs;
-  bool playerHasInit = false;
-  bool hasSetVolume = false;
 
-  // 依赖
+  // --- Internal State Management ---
+  int _loadingToken = 0; // Prevents race conditions during fast switching
+  bool _hasSetVolume = false;
+  PlayerEngine _currentEngine = PlayerEngine.mediaKit;
+  UnifiedPlayer? _currentPlayer;
+
+  final _videoKey = ValueKey('player_${DateTime.now().millisecondsSinceEpoch}').obs;
+
+  // --- Dependencies ---
   final SettingsService settings = Get.find<SettingsService>();
 
-  // 播放器相关
-  UnifiedPlayer? _currentPlayer;
-  PlayerEngine _currentEngine = PlayerEngine.mediaKit;
-  ValueKey<String> videoKey = const ValueKey('video_0');
+  // --- Subscriptions ---
+  final rx.CompositeSubscription _subscriptions = rx.CompositeSubscription();
 
-  // 订阅
-  StreamSubscription<bool>? _orientationSubscription;
-  StreamSubscription<bool>? _isPlayingSubscription;
-  StreamSubscription<String?>? _errorSubscription;
-  StreamSubscription<double?>? _volumeSubscription;
-  StreamSubscription<bool>? _isCompleteSubscription;
-
-  // Getter（安全访问）
+  // --- Getters ---
   UnifiedPlayer? get currentPlayer => _currentPlayer;
+  PlayerEngine get currentEngine => _currentEngine;
 
   Stream<bool> get onLoading => _currentPlayer?.onLoading ?? Stream.value(false);
   Stream<bool> get onPlaying => _currentPlayer?.onPlaying ?? Stream.value(false);
@@ -53,11 +51,9 @@ class SwitchableGlobalPlayer {
 
   Future<void> init(PlayerEngine engine) async {
     if (_currentPlayer != null) return;
-    _currentPlayer = _createPlayer(engine);
     _currentEngine = engine;
-    _currentPlayer!.init();
-    playerHasInit = true;
-    hasSetVolume = false;
+    _currentPlayer = _createPlayer(engine);
+    await _currentPlayer!.init();
   }
 
   UnifiedPlayer _createPlayer(PlayerEngine engine) {
@@ -73,56 +69,102 @@ class SwitchableGlobalPlayer {
 
   Future<void> switchEngine(PlayerEngine newEngine) async {
     if (newEngine == _currentEngine) return;
-    _cleanup(); // 清理旧播放器和订阅
-    _currentPlayer = _createPlayer(newEngine);
+    _loadingToken++; // Invalidate pending setDataSource calls
+    await _cleanup();
     _currentEngine = newEngine;
-    videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
-    _currentPlayer!.init();
-    playerHasInit = true;
+    _currentPlayer = _createPlayer(newEngine);
+    _updateVideoKey();
+    await _currentPlayer!.init();
   }
 
   Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers) async {
-    if (_currentPlayer != null || playerHasInit) {
-      _currentPlayer!.stop();
-      _cleanup();
-    }
-    await Future.delayed(const Duration(milliseconds: 100));
-    _currentPlayer = _createPlayer(_currentEngine);
-    playerHasInit = false;
+    final int currentToken = ++_loadingToken;
+    log('setDataSource [$currentToken]: $url', name: 'SwitchableGlobalPlayer');
 
-    _cleanupSubscriptions();
-    videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
+    try {
+      // 1. Reset UI and stop current playback
+      _subscriptions.clear();
+      _resetStatus();
+      await _currentPlayer?.stop();
 
-    unawaited(
-      Future.microtask(() {
+      // Race condition check: Did a new request come in during 'stop'?
+      if (currentToken != _loadingToken) return;
+
+      // 2. Ensure player instance is ready (Shadowing to avoid null-checks)
+      var player = _currentPlayer;
+      if (player == null) {
+        player = _createPlayer(_currentEngine);
+        _currentPlayer = player;
+        await player.init();
+      }
+
+      if (currentToken != _loadingToken) return;
+
+      // 3. Load the source
+      await player.setDataSource(url, playUrls, headers);
+
+      // Final race condition check: Did the user switch channels while loading?
+      if (currentToken != _loadingToken) return;
+
+      _subscribeToPlayerEvents();
+      isInitialized.value = true;
+    } catch (e, st) {
+      if (currentToken == _loadingToken) {
+        log('setDataSource failed', error: e, stackTrace: st, name: 'SwitchableGlobalPlayer');
+        hasError.value = true;
         isInitialized.value = false;
-        isPlaying.value = true;
-        hasError.value = false;
-        hasSetVolume = false;
-        isVerticalVideo.value = false;
+        await _cleanup();
+      }
+    }
+  }
+
+  void _resetStatus() {
+    isInitialized.value = false;
+    isPlaying.value = false;
+    isComplete.value = false;
+    hasError.value = false;
+    isVerticalVideo.value = false;
+    _hasSetVolume = false;
+  }
+
+  void _updateVideoKey() {
+    _videoKey.value = ValueKey('player_${DateTime.now().millisecondsSinceEpoch}');
+  }
+
+  void _subscribeToPlayerEvents() {
+    _subscriptions.clear();
+
+    // Combined stream for orientation with .distinct() to reduce rebuilds
+    _subscriptions.add(
+      rx.Rx.combineLatest2<int?, int?, bool>(
+        width.where((w) => w != null && w > 0),
+        height.where((h) => h != null && h > 0),
+        (w, h) => h! > w!,
+      ).distinct().listen((isVertical) {
+        isVerticalVideo.value = isVertical;
       }),
     );
 
-    try {
-      await _currentPlayer!.init();
-      await Future.delayed(const Duration(milliseconds: 100));
-      await _currentPlayer!.setDataSource(url, playUrls, headers);
+    _subscriptions.add(
+      onPlaying.listen((playing) {
+        isPlaying.value = playing;
+        if (playing && !_hasSetVolume) {
+          setVolume(currentVolume.value);
+          _hasSetVolume = true;
+        }
+      }),
+    );
 
-      unawaited(
-        Future.microtask(() {
-          isInitialized.value = true;
-          _subscribeToPlayerEvents();
-          playerHasInit = true;
-          hasSetVolume = false;
-        }),
-      );
-    } catch (e, st) {
-      log('setDataSource failed: $e', error: e, stackTrace: st, name: 'SwitchableGlobalPlayer');
-      hasError.value = true;
-      hasSetVolume = false;
-      isInitialized.value = false;
-      _cleanup(); // 确保异常时也清理
-    }
+    _subscriptions.add(
+      onError.listen((error) {
+        if (error != null) {
+          hasError.value = true;
+          log('Player Error: $error', name: 'SwitchableGlobalPlayer');
+        }
+      }),
+    );
+
+    _subscriptions.add(onComplete.listen((complete) => isComplete.value = complete));
   }
 
   Future<void> setVolume(double volume) async {
@@ -142,40 +184,19 @@ class SwitchableGlobalPlayer {
     }
   }
 
-  Future<void> stop() async {
-    _currentPlayer?.stop();
-    dispose();
-  }
-
   void changeVideoFit(int index) {
     settings.videoFitIndex.value = index;
-    videoKey = ValueKey('video_${DateTime.now().millisecondsSinceEpoch}');
   }
 
   Widget getVideoWidget(Widget? child) {
     return Obx(() {
+      final engineKey = ValueKey("${_currentEngine.name}_${_videoKey.value}");
+
       if (!isInitialized.value) {
-        return Material(
-          child: Stack(
-            fit: StackFit.passthrough,
-            children: [
-              Container(color: Colors.black),
-              Container(
-                color: Colors.black,
-                child: const Center(
-                  child: SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(strokeWidth: 4, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
+        return _buildPlaceholder();
       }
       return KeyedSubtree(
-        key: videoKey,
+        key: engineKey,
         child: Material(
           key: ValueKey(settings.videoFitIndex.value),
           child: Scaffold(
@@ -195,57 +216,27 @@ class SwitchableGlobalPlayer {
     });
   }
 
-  void _subscribeToPlayerEvents() {
-    _cleanupSubscriptions();
-
-    final orientationStream = CombineLatestStream.combine2<int?, int?, bool>(
-      width.where((w) => w != null && w > 0),
-      height.where((h) => h != null && h > 0),
-      (w, h) => h! >= w!,
+  Widget _buildPlaceholder() {
+    return Container(
+      color: Colors.black,
+      child: const Center(child: CircularProgressIndicator(strokeWidth: 4, color: Colors.white70)),
     );
-
-    _orientationSubscription = orientationStream.listen((isVertical) {
-      isVerticalVideo.value = isVertical;
-    });
-
-    _isPlayingSubscription = onPlaying.listen((playing) {
-      isPlaying.value = playing;
-      if (!hasSetVolume && playing) {
-        setVolume(1.0);
-        hasSetVolume = true;
-      }
-    });
-    _errorSubscription = onError.listen((error) {
-      hasError.value = error != null;
-      log('onError: $error', error: error, name: 'SwitchableGlobalPlayer');
-    });
-
-    _isCompleteSubscription = onComplete.listen((complete) {
-      log('complete: $complete', name: 'SwitchableGlobalPlayer');
-      isComplete.value = complete;
-    });
   }
 
-  void _cleanupSubscriptions() {
-    _orientationSubscription?.cancel();
-    _isPlayingSubscription?.cancel();
-    _errorSubscription?.cancel();
-    _volumeSubscription?.cancel();
-    _isCompleteSubscription?.cancel();
-  }
-
-  void _cleanup() {
-    _cleanupSubscriptions();
-    _currentPlayer?.stop();
-    _currentPlayer?.dispose();
+  Future<void> _cleanup() async {
+    _subscriptions.clear();
+    final player = _currentPlayer;
     _currentPlayer = null;
-    isInitialized.value = false;
-    playerHasInit = false;
+
+    try {
+      await player?.stop();
+      player?.dispose();
+    } catch (_) {}
+
+    _resetStatus();
   }
 
-  void dispose() {
-    _cleanup();
-  }
+  Future<void> stop() async => await _cleanup();
 
-  PlayerEngine get currentEngine => _currentEngine;
+  void dispose() => _cleanup();
 }

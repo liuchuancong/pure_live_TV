@@ -243,6 +243,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "videofit_fill": MessageLookupByLibrary.simpleMessage("填充屏幕"),
     "videofit_fitheight": MessageLookupByLibrary.simpleMessage("适应高度"),
     "videofit_fitwidth": MessageLookupByLibrary.simpleMessage("适应宽度"),
+    "videofit_scaleDown": MessageLookupByLibrary.simpleMessage("等比缩小"),
     "what_is_new": MessageLookupByLibrary.simpleMessage("最新特性"),
   };
 }

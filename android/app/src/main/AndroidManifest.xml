@@ -13,6 +13,18 @@
                                androidx.datastore.core,
                                androidx.datastore.preferences,
                                androidx.datastore.datastore,
+                               io.flutter.plugins.videoplayer,
+                               androidx.media3.extractor,
+                               androidx.media3.container,
+                               androidx.media3.datasource,
+                               androidx.media3.decoder,
+                               androidx.media3.database,
+                               androidx.media3.common,
+                               androidx.media3.exoplayer,
+                               androidx.media3.exoplayer.dash,
+                               androidx.media3.exoplayer.hls,
+                               androidx.media3.exoplayer.rtsp,
+                               androidx.media3.exoplayer.smoothstreaming,
                                androidx.camera.featurecombinationquery,
                                com.example.my_flutter_plugin" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />

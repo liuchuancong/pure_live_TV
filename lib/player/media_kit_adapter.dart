@@ -225,13 +225,12 @@ class MediaKitPlayerAdapter implements UnifiedPlayer {
   }
 
   @override
-  void stop() {
-    if (_disposed) return;
-    _player.stop();
+  Future<void> stop() async {
+    await _player.stop();
   }
 
   @override
-  void release() {
+  Future<void> release() async {
     dispose();
   }
 }

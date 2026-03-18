@@ -130,7 +130,7 @@
     "videofit_cover": "Cover",
     "videofit_fitwidth": "AdaptWidth",
     "videofit_fitheight": "AdaptHeight",
-
+    "videofit_scaleDown": "ScaleDown",
     "settings_danmaku_title": "Danmaku Setting",
 
     "settings_danmaku_area": "Danmaku area",

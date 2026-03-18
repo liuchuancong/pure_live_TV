@@ -175,13 +175,13 @@ class FijkPlayerAdapter implements UnifiedPlayer {
   }
 
   @override
-  void stop() {
+  Future<void> stop() async {
     if (_disposed) return;
-    _player.stop();
+    await _player.stop();
   }
 
   @override
-  void release() {
+  Future<void> release() async {
     dispose(); // delegate to dispose to avoid double-release
   }
 }

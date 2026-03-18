@@ -76,6 +76,15 @@ class AppConsts {
     BoxFit.scaleDown,
   ];
 
+  static const List<String> videoFitChineseTranslation = [
+    "等比适配", // 对应 BoxFit.contain
+    "拉伸填充", // 对应 BoxFit.fill
+    "等比覆盖", // 对应 BoxFit.cover
+    "适配宽度", // 对应 BoxFit.fitWidth
+    "适配高度", // 对应 BoxFit.fitHeight
+    "等比缩小", // 对应 BoxFit.scaleDown
+  ];
+
   static Map<String, Color> themeColors = {
     "Crimson": const Color.fromARGB(255, 220, 20, 60),
     "Orange": Colors.orange,

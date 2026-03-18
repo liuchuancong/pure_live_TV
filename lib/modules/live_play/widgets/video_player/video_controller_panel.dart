@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/pkg/canvas_danmaku/danmaku_screen.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
@@ -11,6 +12,9 @@ import 'package:pure_live/pkg/canvas_danmaku/models/danmaku_option.dart';
 import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
 import 'package:pure_live/common/widgets/button/highlight_icon_button.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
+import 'package:pure_live/modules/live_play/widgets/video_player/models/video_enums.dart';
+import 'package:pure_live/modules/live_play/widgets/video_player/controller/video_constants.dart';
+// 导入常量类
 
 class VideoControllerPanel extends StatefulWidget {
   final VideoController controller;
@@ -42,6 +46,7 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
           DanmakuViewer(controller: controller),
           SettingsPanel(controller: controller),
           ResolutionPanel(controller: controller),
+          LinePanel(controller: controller),
           FavoriteChoose(controller: controller),
           TopActionBar(controller: controller, barHeight: barHeight),
           BottomActionBar(controller: controller, barHeight: barHeight),
@@ -269,7 +274,8 @@ class LineButton extends StatelessWidget {
           selected: controller.currentBottomClickType.value == BottomButtonClickType.changeLine,
           iconData: Icons.density_small_rounded,
           onTap: () {
-            // controller.changeLine();
+            // 点击弹出线路面板
+            controller.showLinePanel.value = true;
           },
           text: '线路${controller.currentLineIndex + 1}',
         ),
@@ -311,13 +317,7 @@ class BoxFitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fitmodes = [
-      S.of(context).videofit_contain,
-      S.of(context).videofit_fill,
-      S.of(context).videofit_cover,
-      S.of(context).videofit_fitwidth,
-      S.of(context).videofit_fitheight,
-    ];
+    final fitmodes = AppConsts.videoFitChineseTranslation;
     return Container(
       alignment: Alignment.center,
       padding: AppStyle.edgeInsetsA12,
@@ -523,7 +523,7 @@ class DanmakuSetting extends StatelessWidget {
                     useFocus: false,
                     focusNode: AppFocusNode(),
                     key: VideoController.danmakuAbleKey,
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuAble,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuAble,
                     title: "弹幕开关",
                     items: const {0: "关", 1: "开"},
                     value: controller.hideDanmaku.value ? 0 : 1,
@@ -537,26 +537,10 @@ class DanmakuSetting extends StatelessWidget {
                   () => SettingsItemWidget(
                     useFocus: false,
                     focusNode: AppFocusNode(),
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuSize,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuSize,
                     title: "弹幕大小",
-                    items: {
-                      10.0: "10",
-                      12.0: "12",
-                      14.0: "14",
-                      16.0: "16",
-                      18.0: "18",
-                      20.0: "20",
-                      22.0: "22",
-                      24.0: "24",
-                      26.0: "26",
-                      28.0: "28",
-                      32.0: "32",
-                      40.0: "40",
-                      48.0: "48",
-                      56.0: "56",
-                      64.0: "64",
-                      72.0: "72",
-                    },
+                    // 使用常量类定义
+                    items: DanmakuConstants.sizeMap,
                     value: controller.danmakuFontSize.value,
                     onChanged: (e) {
                       controller.danmakuFontSize.value = e;
@@ -568,44 +552,10 @@ class DanmakuSetting extends StatelessWidget {
                   () => SettingsItemWidget(
                     useFocus: false,
                     focusNode: AppFocusNode(),
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuSpeed,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuSpeed,
                     title: "弹幕速度",
-                    items: {
-                      4.0: "速度1",
-                      6.0: "速度2",
-                      8.0: "速度3",
-                      10.0: "速度4",
-                      12.0: "速度5",
-                      14.0: "速度6",
-                      16.0: "速度7",
-                      18.0: "速度8",
-                      20.0: "速度9",
-                      22.0: "速度10",
-                      24.0: "速度11",
-                      26.0: "速度12",
-                      28.0: "速度13",
-                      30.0: "速度14",
-                      32.0: "速度15",
-                      34.0: "速度16",
-                      36.0: "速度17",
-                      38.0: "速度18",
-                      40.0: "速度19",
-                      42.0: "速度20",
-                      44.0: "速度21",
-                      46.0: "速度22",
-                      48.0: "速度23",
-                      50.0: "速度24",
-                      52.0: "速度25",
-                      54.0: "速度26",
-                      56.0: "速度27",
-                      58.0: "速度28",
-                      60.0: "速度29",
-                      62.0: "速度30",
-                      64.0: "速度31",
-                      66.0: "速度32",
-                      68.0: "速度33",
-                      70.0: "速度34",
-                    },
+                    // 使用常量类定义
+                    items: DanmakuConstants.speedMap,
                     value: controller.danmakuSpeed.value,
                     onChanged: (e) {
                       controller.danmakuSpeed.value = e;
@@ -617,20 +567,10 @@ class DanmakuSetting extends StatelessWidget {
                   () => SettingsItemWidget(
                     useFocus: false,
                     focusNode: AppFocusNode(),
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuArea,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuArea,
                     title: "显示区域",
-                    items: {
-                      0.1: '10%',
-                      0.2: '20%',
-                      0.3: '30%',
-                      0.4: '40%',
-                      0.5: '50%',
-                      0.6: '60%',
-                      0.7: '70%',
-                      0.8: '80%',
-                      0.9: '90%',
-                      1.0: '100%',
-                    },
+                    // 使用常量类定义
+                    items: DanmakuConstants.areaMap,
                     value: controller.danmakuArea.value,
                     onChanged: (e) {
                       controller.danmakuArea.value = e;
@@ -642,31 +582,10 @@ class DanmakuSetting extends StatelessWidget {
                   () => SettingsItemWidget(
                     useFocus: false,
                     focusNode: AppFocusNode(),
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuTopArea,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuTopArea,
                     title: "距离顶部",
-                    items: {
-                      0.0: '0',
-                      5.0: '5',
-                      10.0: '10',
-                      15.0: '15',
-                      20.0: '20',
-                      25.0: '25',
-                      30.0: '30',
-                      35.0: '35',
-                      40.0: '40',
-                      45.0: '45',
-                      50.0: '50',
-                      55.0: '55',
-                      60.0: '60',
-                      65.0: '65',
-                      70.0: '70',
-                      75.0: '75',
-                      80.0: '80',
-                      85.0: '85',
-                      90.0: '90',
-                      95.0: '95',
-                      100.0: '100',
-                    },
+                    // 使用常量类定义
+                    items: DanmakuConstants.distanceMap,
                     value: controller.danmakuTopArea.value,
                     onChanged: (e) {
                       controller.danmakuTopArea.value = e;
@@ -678,31 +597,10 @@ class DanmakuSetting extends StatelessWidget {
                   () => SettingsItemWidget(
                     useFocus: false,
                     focusNode: AppFocusNode(),
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuBottomArea,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuBottomArea,
                     title: "距离底部",
-                    items: {
-                      0.0: '0',
-                      5.0: '5',
-                      10.0: '10',
-                      15.0: '15',
-                      20.0: '20',
-                      25.0: '25',
-                      30.0: '30',
-                      35.0: '35',
-                      40.0: '40',
-                      45.0: '45',
-                      50.0: '50',
-                      55.0: '55',
-                      60.0: '60',
-                      65.0: '65',
-                      70.0: '70',
-                      75.0: '75',
-                      80.0: '80',
-                      85.0: '85',
-                      90.0: '90',
-                      95.0: '95',
-                      100.0: '100',
-                    },
+                    // 使用常量类定义
+                    items: DanmakuConstants.distanceMap,
                     value: controller.danmakuBottomArea.value,
                     onChanged: (e) {
                       controller.danmakuBottomArea.value = e;
@@ -714,20 +612,10 @@ class DanmakuSetting extends StatelessWidget {
                   () => SettingsItemWidget(
                     useFocus: false,
                     focusNode: AppFocusNode(),
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuOpacity,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuOpacity,
                     title: "不透明度",
-                    items: {
-                      0.1: "10%",
-                      0.2: "20%",
-                      0.3: "30%",
-                      0.4: "40%",
-                      0.5: "50%",
-                      0.6: "60%",
-                      0.7: "70%",
-                      0.8: "80%",
-                      0.9: "90%",
-                      1.0: "100%",
-                    },
+                    // 使用常量类定义
+                    items: DanmakuConstants.areaMap,
                     value: controller.danmakuOpacity.value,
                     onChanged: (e) {
                       controller.danmakuOpacity.value = e;
@@ -739,19 +627,10 @@ class DanmakuSetting extends StatelessWidget {
                   () => SettingsItemWidget(
                     useFocus: false,
                     focusNode: AppFocusNode(),
-                    selected: controller.currentDanmukuClickType.value == DanmakuSettingClickType.danmakuStorke,
+                    selected: controller.currentDanmakuClickType.value == DanmakuSettingClickType.danmakuStorke,
                     title: "描边宽度",
-                    items: {
-                      0.0: "2",
-                      1.0: "4",
-                      2.0: "6",
-                      3.0: "8",
-                      4.0: "10",
-                      5.0: "12",
-                      6.0: "14",
-                      7.0: "16",
-                      8.0: "18",
-                    },
+                    // 使用常量类定义
+                    items: DanmakuConstants.strokeMap,
                     value: controller.danmakuFontBorder.value,
                     onChanged: (e) {
                       controller.danmakuFontBorder.value = e;
@@ -831,6 +710,79 @@ class ResolutionSetting extends StatelessWidget {
                   );
                 });
               }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class LinePanel extends StatelessWidget {
+  const LinePanel({super.key, required this.controller});
+
+  final VideoController controller;
+
+  static const double width = 380;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => AnimatedPositioned(
+        top: 0,
+        bottom: 0,
+        right: controller.showLinePanel.value ? 0 : -width,
+        width: width,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          padding: AppStyle.edgeInsetsA12,
+          child: LineSetting(controller: controller),
+        ),
+      ),
+    );
+  }
+}
+
+class LineSetting extends StatelessWidget {
+  const LineSetting({super.key, required this.controller});
+
+  final VideoController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: Get.theme.cardColor, borderRadius: BorderRadius.circular(10)),
+      child: Column(
+        children: [
+          AppStyle.vGap24,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AppStyle.hGap32,
+              Text(
+                "线路切换",
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
+              ),
+              AppStyle.hGap24,
+              const Spacer(),
+            ],
+          ),
+          Expanded(
+            child: ListView(
+              padding: AppStyle.edgeInsetsA48,
+              children: List.generate(
+                controller.playUrls.length,
+                (index) => Obx(() {
+                  return Padding(
+                    padding: AppStyle.edgeInsetsA24,
+                    child: HighlightButton(
+                      text: "线路${index + 1}",
+                      focusNode: AppFocusNode(),
+                      selected: controller.lineCurrentIndex.value == index,
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         ],
