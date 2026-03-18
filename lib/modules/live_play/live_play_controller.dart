@@ -170,8 +170,8 @@ class LivePlayController extends StateController {
       // start danmaku server
       List<String> except = ['kuaishou', 'iptv', 'cc'];
       if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
-        liveDanmaku.stop();
-        initDanmau();
+        liveDanmaku.stop(); // 确保启动前是停止状态
+        initDanmau(); // 仅初始化一次
         liveDanmaku.start(liveRoom.danmakuData);
       }
     } else {
@@ -197,6 +197,7 @@ class LivePlayController extends StateController {
     int currentQuality = 0,
     bool isReCalculate = true,
   }) async {
+    liveDanmaku.stop();
     currentSite = Sites.of(currentPlayRoom.value.platform!);
     liveDanmaku = currentSite.liveSite.getDanmaku();
     channelTimer?.cancel();
@@ -226,8 +227,7 @@ class LivePlayController extends StateController {
       // start danmaku server
       List<String> except = ['kuaishou', 'iptv', 'cc'];
       if (except.indexWhere((element) => element == liveRoom.platform!) == -1) {
-        liveDanmaku.stop();
-        initDanmau();
+        initDanmau(); // 仅初始化一次
         liveDanmaku.start(liveRoom.danmakuData);
       }
     }
@@ -251,6 +251,12 @@ class LivePlayController extends StateController {
 
   Future<void> disPoserPlayer() async {
     try {
+      // 优先停止弹幕，避免新实例创建前旧实例仍在运行
+      liveDanmaku.stop();
+      liveDanmaku.onMessage = null; // 清空回调，防止内存泄漏
+      liveDanmaku.onClose = null;
+      liveDanmaku.onReady = null;
+
       if (videoController != null) {
         videoController?.dispose();
         videoController = null;
@@ -258,9 +264,8 @@ class LivePlayController extends StateController {
       success.value = false;
       isFirstLoad.value = true;
       focusNode.requestFocus();
-      liveDanmaku.stop();
       SwitchableGlobalPlayer().dispose();
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(Duration(milliseconds: 500)); // 缩短延迟，避免新实例提前创建
     } catch (e) {
       log(e.toString(), name: 'disPoserPlayer');
     }
@@ -281,6 +286,9 @@ class LivePlayController extends StateController {
 
   /// 初始化弹幕接收事件
   void initDanmau() {
+    liveDanmaku.onMessage = null;
+    liveDanmaku.onClose = null;
+    liveDanmaku.onReady = null;
     // 移除系统消息添加逻辑（原messages相关）
     liveDanmaku.onMessage = (msg) {
       if (msg.type == LiveMessageType.chat) {
@@ -292,12 +300,8 @@ class LivePlayController extends StateController {
         }
       }
     };
-    liveDanmaku.onClose = (msg) {
-      // 移除messages添加逻辑
-    };
-    liveDanmaku.onReady = () {
-      // 移除messages添加逻辑
-    };
+    liveDanmaku.onClose = (msg) {};
+    liveDanmaku.onReady = () {};
   }
 
   /// 初始化播放器
