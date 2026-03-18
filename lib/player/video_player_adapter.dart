@@ -89,7 +89,6 @@ class VideoPlayerAdapter implements UnifiedPlayer {
         _errorSubject.add(null);
       }
     } catch (e) {
-      dev.log('VideoPlayer setDataSource error: $e');
       _errorSubject.add(e.toString());
       SmartDialog.showToast('播放器初始化失败');
     } finally {

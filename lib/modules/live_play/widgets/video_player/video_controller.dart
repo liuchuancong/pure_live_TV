@@ -231,10 +231,34 @@ class VideoController with ChangeNotifier {
   /// 初始化订阅
   void _initSubscriptions() {
     // 播放器错误监听
-    _errorSub = globalPlayer.onError.listen((error) {
-      if (error != null && error.contains("Failed to open")) {
-        SmartDialog.showToast("当前视频播放出错,请刷新后重试");
+    _errorSub = globalPlayer.onError.listen((error) async {
+      if (error == null || error.isEmpty) return;
+
+      log('Player Error Caught: $error', name: 'VideoController');
+
+      // 1. 处理硬件解码失败 (ExoPlayer 专属错误)
+      if (error.contains("ExoPlaybackException") ||
+          error.contains("NO_EXCEEDS_CAPABILITIES") ||
+          error.contains("MediaCodecVideoRenderer")) {
+        SmartDialog.showToast("硬件解码失败，正在尝试切换引擎...");
+        // 延迟一小会儿执行，防止 UI 渲染冲突
+        await destroy();
+        await Future.delayed(const Duration(milliseconds: 500));
+        await SwitchableGlobalPlayer().switchEngine(PlayerEngine.values[settings.useFallbackPlayer.value]);
+        await Future.delayed(const Duration(milliseconds: 800));
+        log('Player Error Caught: $error', name: 'refresh');
+        refresh();
+        return;
       }
+
+      // 2. 处理无法打开资源 (通用错误)
+      if (error.contains("Failed to open") || error.contains("IO_ERROR")) {
+        SmartDialog.showToast("当前线路连接失败，请刷新后重试");
+        return;
+      }
+
+      // 3. 其他未知错误
+      log("Unhandled Player Error: $error");
     });
   }
 
@@ -374,15 +398,14 @@ class VideoController with ChangeNotifier {
     // 取消焦点
     cancelFocus();
     cancelDanmakuFocus();
-
+    livePlayController.liveDanmaku.stop();
     // 重置播放状态
     livePlayController.success.value = false;
 
-    // 停止播放器
-    globalPlayer.stop();
-
     // 取消订阅
     await _errorSub.cancel();
+    // 停止播放器
+    globalPlayer.stop();
 
     // 取消所有定时器
     showControllerTimer?.cancel();

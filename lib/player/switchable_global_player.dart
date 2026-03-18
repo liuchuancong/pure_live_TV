@@ -41,11 +41,11 @@ class SwitchableGlobalPlayer {
   // --- Getters ---
   UnifiedPlayer? get currentPlayer => _currentPlayer;
   PlayerEngine get currentEngine => _currentEngine;
-
+  final _errorController = rx.BehaviorSubject<String?>.seeded(null);
   Stream<bool> get onLoading => _currentPlayer?.onLoading ?? Stream.value(false);
   Stream<bool> get onPlaying => _currentPlayer?.onPlaying ?? Stream.value(false);
   Stream<bool> get onComplete => _currentPlayer?.onComplete ?? Stream.value(false);
-  Stream<String?> get onError => _currentPlayer?.onError ?? Stream.value(null);
+  Stream<String?> get onError => _errorController.stream;
   Stream<int?> get width => _currentPlayer?.width ?? Stream.value(null);
   Stream<int?> get height => _currentPlayer?.height ?? Stream.value(null);
 
@@ -125,6 +125,7 @@ class SwitchableGlobalPlayer {
     hasError.value = false;
     isVerticalVideo.value = false;
     _hasSetVolume = false;
+    _errorController.add(null);
   }
 
   void _updateVideoKey() {
@@ -154,15 +155,18 @@ class SwitchableGlobalPlayer {
         }
       }),
     );
-
-    _subscriptions.add(
-      onError.listen((error) {
-        if (error != null) {
-          hasError.value = true;
-          log('Player Error: $error', name: 'SwitchableGlobalPlayer');
-        }
-      }),
-    );
+    if (_currentPlayer != null) {
+      _subscriptions.add(
+        _currentPlayer!.onError.listen((error) {
+          if (error != null) {
+            hasError.value = true;
+            _errorController.add(error); // 转发错误到外部
+          } else {
+            _errorController.add(null);
+          }
+        }),
+      );
+    }
 
     _subscriptions.add(onComplete.listen((complete) => isComplete.value = complete));
   }
