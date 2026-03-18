@@ -33,10 +33,12 @@ dependencies:
   # video player
   media_kit: ^1.2.6 # Primary package.
   media_kit_video: ^2.0.1 # For video rendering.
-  media_kit_libs_video: ^1.0.7 # Native video dependencies. 
+  media_kit_libs_video: ^1.0.7 # Native video dependencies.
+  video_player: ^2.11.1 
   flv_lzc:
     git: https://github.com/liuchuancong/flv_lzc.git
   bordered_text: ^3.0.0
+  dart_sm: ^0.1.5
   flutter_color: ^2.1.0
   protobuf: ^4.0.0
   fixnum: ^1.1.0

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 // unified_player_interface.dart
 
-abstract class UnifiedPlayer {
-  // 初始化
+abstract class UnifiedPlayer<T> {
   Future<void> init();
 
   // 设置播放源

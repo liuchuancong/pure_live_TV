@@ -6,8 +6,9 @@ import 'media_kit_adapter.dart';
 import 'package:rxdart/rxdart.dart';
 import 'unified_player_interface.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/player/video_player_adapter.dart';
 
-enum PlayerEngine { mediaKit, fijk }
+enum PlayerEngine { mediaKit, fijk, exo }
 
 class SwitchableGlobalPlayer {
   static final SwitchableGlobalPlayer _instance = SwitchableGlobalPlayer._internal();
@@ -65,6 +66,8 @@ class SwitchableGlobalPlayer {
         return MediaKitPlayerAdapter();
       case PlayerEngine.fijk:
         return FijkPlayerAdapter();
+      case PlayerEngine.exo:
+        return VideoPlayerAdapter();
     }
   }
 
