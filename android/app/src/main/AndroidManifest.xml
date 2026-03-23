@@ -24,6 +24,7 @@
                                androidx.media3.exoplayer.dash,
                                androidx.media3.exoplayer.hls,
                                androidx.media3.exoplayer.rtsp,
+                               dev.fluttercommunity.plus.wakelock,
                                androidx.media3.exoplayer.smoothstreaming,
                                androidx.camera.featurecombinationquery,
                                com.example.my_flutter_plugin" />
