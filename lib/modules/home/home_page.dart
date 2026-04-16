@@ -273,6 +273,7 @@ class HomePage extends GetView<HomeController> {
                 child: CustomTVTextField(
                   controller: controller.roomSearchController,
                   textStyle: AppStyle.textStyleWhite,
+                  isFocused: true,
                   onFieldSubmitted: (e) {
                     if (e.isEmpty) {
                       return;
