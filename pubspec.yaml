@@ -26,6 +26,7 @@ dependencies:
   flex_color_picker: ^3.3.0
   # database
   font_awesome_flutter: ^10.6.0
+  custom_tv_text_field: ^1.0.8
   tars_dart:
     git:
       url:  https://github.com/xiaoyaocz/dart_simple_live.git

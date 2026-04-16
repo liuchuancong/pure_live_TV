@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
+import 'package:custom_tv_text_field/custom_tv_text_field.dart';
 import 'package:pure_live/common/widgets/button/home_big_button.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -229,8 +230,6 @@ class HomePage extends GetView<HomeController> {
   }
 
   void showSearchDialog(BuildContext context) {
-    var textController = TextEditingController();
-    final roomFocusNode = FocusNode();
     // 安全检查
     if (!context.mounted) return;
     showDialog(
@@ -238,7 +237,7 @@ class HomePage extends GetView<HomeController> {
       builder: (dialogContext) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (dialogContext.mounted) {
-            roomFocusNode.requestFocus();
+            controller.roomSearchFieldKey.currentState?.openKeyboard();
           }
         });
         return AlertDialog(
@@ -271,18 +270,15 @@ class HomePage extends GetView<HomeController> {
               AppStyle.vGap48,
               SizedBox(
                 width: 700.w,
-                child: TextField(
-                  controller: textController,
-                  focusNode: roomFocusNode,
-                  style: AppStyle.textStyleWhite,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (e) {
+                child: CustomTVTextField(
+                  controller: controller.roomSearchController,
+                  textStyle: AppStyle.textStyleWhite,
+                  onFieldSubmitted: (e) {
                     if (e.isEmpty) {
                       return;
                     }
                     // 关闭键盘在关闭弹窗
                     Navigator.of(Get.context!).pop();
-                    roomFocusNode.unfocus();
                     Timer(const Duration(milliseconds: 100), () {
                       Get.toNamed(RoutePath.kSearch, arguments: e);
                     });
