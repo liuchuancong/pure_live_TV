@@ -10,6 +10,8 @@ import 'package:pure_live/common/base/base_controller.dart';
 
 class HomeController extends BasePageController {
   var datetime = "00:00".obs;
+  static final _formatter = DateFormat('yyyy年MM月dd日 HH:mm:ss', 'zh_CN');
+  Timer? _timer;
   static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区"];
 
   late ScrollController listScrollController;
@@ -76,11 +78,14 @@ class HomeController extends BasePageController {
   }
 
   void initTimer() {
-    Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      DateTime now = DateTime.now();
-      DateFormat formatter = DateFormat('yyyy年MM月dd日 HH:mm:ss', 'zh_CN');
-      datetime.value = formatter.format(now);
+    _updateTime();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateTime();
     });
+  }
+
+  void _updateTime() {
+    datetime.value = _formatter.format(DateTime.now());
   }
 
   @override
@@ -111,5 +116,12 @@ class HomeController extends BasePageController {
     rooms.value = historyRooms;
     hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
     return historyRooms;
+  }
+
+  @override
+  void onClose() {
+    _timer?.cancel();
+    _timer = null;
+    super.onClose();
   }
 }
