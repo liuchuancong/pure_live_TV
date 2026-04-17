@@ -27,6 +27,7 @@
                                dev.fluttercommunity.plus.wakelock,
                                androidx.media3.exoplayer.smoothstreaming,
                                androidx.camera.featurecombinationquery,
+                               androidx.core,
                                androidx.core.ktx,
                                com.example.my_flutter_plugin" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
