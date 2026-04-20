@@ -273,6 +273,7 @@ class HomePage extends GetView<HomeController> {
               AppStyle.vGap48,
               SizedBox(
                 width: 700.w,
+                height: 80.h,
                 child: AndroidTVTextField(
                   focusNode: controller.searchFocusNode,
                   controller: controller.roomSearchController,
