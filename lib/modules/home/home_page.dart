@@ -236,9 +236,12 @@ class HomePage extends GetView<HomeController> {
       context: context,
       builder: (dialogContext) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (dialogContext.mounted) {
-            controller.roomSearchFieldKey.currentState?.openKeyboard();
-          }
+          // 延迟一小段时间确保 UI 完全渲染后再请求焦点
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (dialogContext.mounted) {
+              controller.roomSearchFieldKey.currentState?.openKeyboard();
+            }
+          });
         });
         return AlertDialog(
           backgroundColor: Get.theme.cardColor,
@@ -273,6 +276,7 @@ class HomePage extends GetView<HomeController> {
                 child: CustomTVTextField(
                   controller: controller.roomSearchController,
                   textStyle: AppStyle.textStyleWhite,
+                  key: controller.roomSearchFieldKey,
                   isFocused: true,
                   onFieldSubmitted: (e) {
                     if (e.isEmpty) {
@@ -280,8 +284,8 @@ class HomePage extends GetView<HomeController> {
                     }
                     // 关闭键盘在关闭弹窗
                     Navigator.of(Get.context!).pop();
-                    Timer(const Duration(milliseconds: 100), () {
-                      Get.toNamed(RoutePath.kSearch, arguments: e);
+                    Future.delayed(const Duration(milliseconds: 200), () {
+                      Get.toNamed(RoutePath.kSearch, arguments: e.trim());
                     });
                   },
                   decoration: InputDecoration(

@@ -15,7 +15,7 @@ class HomeController extends BasePageController {
   Timer? _timer;
   static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区"];
   final roomSearchController = TextEditingController();
-  final roomSearchFieldKey = GlobalKey<CustomTVTextFieldState>();
+  final GlobalKey<CustomTVTextFieldState> roomSearchFieldKey = GlobalKey<CustomTVTextFieldState>();
   final roomFocusNode = FocusNode();
   late ScrollController listScrollController;
   final hasNewVersion = false.obs;
