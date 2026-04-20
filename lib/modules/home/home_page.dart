@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
-import 'package:custom_tv_text_field/custom_tv_text_field.dart';
+import 'package:android_tv_text_field/native_textfield_tv.dart';
 import 'package:pure_live/common/widgets/button/home_big_button.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -239,7 +239,7 @@ class HomePage extends GetView<HomeController> {
           // 延迟一小段时间确保 UI 完全渲染后再请求焦点
           Future.delayed(const Duration(milliseconds: 300), () {
             if (dialogContext.mounted) {
-              controller.roomSearchFieldKey.currentState?.openKeyboard();
+              controller.searchFocusNode.requestFocus();
             }
           });
         });
@@ -273,12 +273,10 @@ class HomePage extends GetView<HomeController> {
               AppStyle.vGap48,
               SizedBox(
                 width: 700.w,
-                child: CustomTVTextField(
+                child: AndroidTVTextField(
+                  focusNode: controller.searchFocusNode,
                   controller: controller.roomSearchController,
-                  textStyle: AppStyle.textStyleWhite,
-                  key: controller.roomSearchFieldKey,
-                  isFocused: true,
-                  onFieldSubmitted: (e) {
+                  onSubmitted: (e) {
                     if (e.isEmpty) {
                       return;
                     }
@@ -288,18 +286,10 @@ class HomePage extends GetView<HomeController> {
                       Get.toNamed(RoutePath.kSearch, arguments: e.trim());
                     });
                   },
-                  decoration: InputDecoration(
-                    hintText: "点击输入关键字搜索",
-                    hintStyle: AppStyle.textStyleWhite,
-                    border: OutlineInputBorder(
-                      borderRadius: AppStyle.radius16,
-                      borderSide: BorderSide(width: 4.w),
-                    ),
-                    filled: true,
-                    isDense: true,
-                    fillColor: Get.theme.primaryColor,
-                    contentPadding: AppStyle.edgeInsetsA32,
-                  ),
+                  hint: "点击输入关键字搜索",
+                  backgroundColor: Get.theme.primaryColor, // 对应你之前的颜色
+                  textColor: Colors.white,
+                  maxLines: 1,
                 ),
               ),
             ],

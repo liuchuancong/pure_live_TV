@@ -7,16 +7,15 @@ import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/utils/version_util.dart';
 import 'package:pure_live/common/base/base_controller.dart';
-import 'package:custom_tv_text_field/custom_tv_text_field.dart';
+import 'package:android_tv_text_field/native_textfield_tv.dart';
 
 class HomeController extends BasePageController {
   var datetime = "00:00".obs;
   static final _formatter = DateFormat('yyyy年MM月dd日 HH:mm:ss', 'zh_CN');
   Timer? _timer;
   static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区"];
-  final roomSearchController = TextEditingController();
-  final GlobalKey<CustomTVTextFieldState> roomSearchFieldKey = GlobalKey<CustomTVTextFieldState>();
-  final roomFocusNode = FocusNode();
+  final NativeTextFieldController roomSearchController = NativeTextFieldController();
+  final searchFocusNode = FocusNode();
   late ScrollController listScrollController;
   final hasNewVersion = false.obs;
   static List<IconData> mainPageIconOptions = [
