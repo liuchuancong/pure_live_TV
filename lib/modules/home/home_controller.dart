@@ -13,7 +13,7 @@ class HomeController extends BasePageController {
   var datetime = "00:00".obs;
   static final _formatter = DateFormat('yyyy年MM月dd日 HH:mm:ss', 'zh_CN');
   Timer? _timer;
-  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "搜索直播", "观看记录", "关注分区"];
+  static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "关注分区", '链接放映', "搜索直播", "观看记录"];
   final NativeTextFieldController roomSearchController = NativeTextFieldController();
   final searchFocusNode = FocusNode();
   late ScrollController listScrollController;
@@ -22,9 +22,10 @@ class HomeController extends BasePageController {
     Icons.favorite_border,
     Remix.fire_line,
     Remix.apps_line,
+    Icons.view_module_rounded,
+    Icons.movie_creation_outlined,
     Remix.search_2_line,
     Icons.history,
-    Icons.view_module_rounded,
   ];
   var rooms = <LiveRoom>[].obs;
   var currentNodeIndex = 1.obs;

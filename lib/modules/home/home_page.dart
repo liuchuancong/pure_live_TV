@@ -26,13 +26,16 @@ class HomePage extends GetView<HomeController> {
         Get.toNamed(RoutePath.kAreas);
         break;
       case 3:
-        showSearchDialog(context);
+        Get.toNamed(RoutePath.kFavoriteAreas);
         break;
       case 4:
-        Get.toNamed(RoutePath.kHistory);
+        Get.toNamed(RoutePath.kToolbox);
         break;
       case 5:
-        Get.toNamed(RoutePath.kFavoriteAreas);
+        showSearchDialog(context);
+        break;
+      case 6:
+        Get.toNamed(RoutePath.kHistory);
         break;
       default:
     }
@@ -43,7 +46,7 @@ class HomePage extends GetView<HomeController> {
       controller: controller.pageController,
       isRadio: false,
       options: GroupButtonOptions(
-        spacing: 48.w,
+        spacing: 30.w,
         runSpacing: 10,
         groupingType: GroupingType.wrap,
         direction: Axis.horizontal,

@@ -33,9 +33,6 @@ class RoutePath {
   /// 关于
   static const kAbout = "/about";
 
-  /// 版本历史记录
-  static const kVersionHistory = "/version_history";
-
   /// 历史记录
   static const kHistory = "/history";
 
@@ -80,6 +77,8 @@ class RoutePath {
   static const kFavoriteAreas = "/favorite_areas";
 
   static const kVersionPage = "/version_page";
+
+  static const kToolbox = "/tool_box";
 }
 
 enum RouteChangeType { push, pop, replace }
