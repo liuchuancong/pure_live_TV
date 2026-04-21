@@ -12,6 +12,7 @@ class HighlightListTile extends StatelessWidget {
   final Widget? trailing;
   final AppFocusNode focusNode;
   final Function()? onTap;
+  final Function(bool hasFocus)? onFocusChange;
   final bool autofocus;
   final bool selected;
   final bool useFocus;
@@ -19,6 +20,7 @@ class HighlightListTile extends StatelessWidget {
     this.subtitle,
     required this.title,
     this.leading,
+    this.onFocusChange, // 构造函数中接收
     this.onTap,
     required this.focusNode,
     this.autofocus = false,
@@ -30,11 +32,15 @@ class HighlightListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (useFocus) {
+      focusNode.isFoucsed.listen((hasFocus) {
+        onFocusChange?.call(hasFocus);
+      });
+    }
+
     return Obx(
       () => IconTheme(
-        data: IconThemeData(
-          color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
-        ),
+        data: IconThemeData(color: focusNode.isFoucsed.value ? Colors.black : Colors.white),
         child: useFocus
             ? HighlightWidget(
                 onTap: onTap,
@@ -118,11 +124,7 @@ class HighlightListTile extends StatelessWidget {
                       ),
                       AppStyle.hGap12,
                       if (onTap != null && selected && trailing == null)
-                        Icon(
-                          Icons.chevron_right,
-                          size: 40.w,
-                          color: selected ? Colors.black : Colors.white,
-                        ),
+                        Icon(Icons.chevron_right, size: 40.w, color: selected ? Colors.black : Colors.white),
                       if (trailing != null) trailing!,
                     ],
                   ),

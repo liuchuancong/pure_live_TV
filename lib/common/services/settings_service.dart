@@ -105,10 +105,11 @@ class SettingsService extends GetxController {
   final webPort = (HivePrefUtil.getString('webPort') ?? "9527").obs;
   final webPortEnable = false.obs;
   final httpErrorMsg = ''.obs;
-
+  final ScrollController scrollController = ScrollController();
   // 焦点节点相关
   final AppFocusNode maxConcurrentRefreshNode = AppFocusNode();
   final AppFocusNode autoRefreshTimeNode = AppFocusNode();
+  final AppFocusNode backFocusNode = AppFocusNode();
   final AppFocusNode autoRefreshIntervalNode = AppFocusNode();
   final AppFocusNode preferResolutionNode = AppFocusNode();
   final AppFocusNode videoPlayerNode = AppFocusNode();

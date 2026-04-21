@@ -14,12 +14,14 @@ class HighlightButton extends StatelessWidget {
   final bool autofocus;
   final bool selected;
   final bool useFocus;
+  final Function(bool hasFocus)? onFocusChange;
   const HighlightButton({
     this.iconData,
     required this.text,
     this.icon,
     this.onTap,
     required this.focusNode,
+    this.onFocusChange, // 构造函数中接收
     this.autofocus = false,
     this.selected = false,
     this.useFocus = true,
@@ -27,6 +29,12 @@ class HighlightButton extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    if (useFocus) {
+      focusNode.isFoucsed.listen((hasFocus) {
+        onFocusChange?.call(hasFocus);
+      });
+    }
+
     return useFocus
         ? Obx(
             () => HighlightWidget(
@@ -41,9 +49,7 @@ class HighlightButton extends StatelessWidget {
                 height: 64.w,
                 //width: 64.w,
                 padding: AppStyle.edgeInsetsH24,
-                decoration: BoxDecoration(
-                  borderRadius: AppStyle.radius32,
-                ),
+                decoration: BoxDecoration(borderRadius: AppStyle.radius32),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -52,7 +58,9 @@ class HighlightButton extends StatelessWidget {
                     Text(
                       text,
                       style: TextStyle(
-                          fontSize: 28.w, color: (focusNode.isFoucsed.value || selected ? Colors.black : Colors.white)),
+                        fontSize: 28.w,
+                        color: (focusNode.isFoucsed.value || selected ? Colors.black : Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -71,9 +79,7 @@ class HighlightButton extends StatelessWidget {
               height: 64.w,
               //width: 64.w,
               padding: AppStyle.edgeInsetsH24,
-              decoration: BoxDecoration(
-                borderRadius: AppStyle.radius32,
-              ),
+              decoration: BoxDecoration(borderRadius: AppStyle.radius32),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -94,7 +100,8 @@ class HighlightButton extends StatelessWidget {
       return useFocus
           ? Padding(
               padding: AppStyle.edgeInsetsR12,
-              child: icon ??
+              child:
+                  icon ??
                   Icon(
                     iconData,
                     size: 40.w,
@@ -103,12 +110,7 @@ class HighlightButton extends StatelessWidget {
             )
           : Padding(
               padding: AppStyle.edgeInsetsR12,
-              child: icon ??
-                  Icon(
-                    iconData,
-                    size: 40.w,
-                    color: selected ? Colors.black : Colors.white,
-                  ),
+              child: icon ?? Icon(iconData, size: 40.w, color: selected ? Colors.black : Colors.white),
             );
     }
     return const SizedBox();

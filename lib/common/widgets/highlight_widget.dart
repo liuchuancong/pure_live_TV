@@ -74,7 +74,8 @@ class HighlightWidget extends StatelessWidget {
                       currentTimeStamp = 0;
                       return onLongTap?.call() ?? KeyEventResult.ignored;
                     }
-                    return onTap?.call() ?? KeyEventResult.ignored;
+                    onTap?.call();
+                    return KeyEventResult.ignored;
                   }
                 }
                 if (e is KeyDownEvent) {
@@ -120,7 +121,7 @@ class HighlightWidget extends StatelessWidget {
                                     spreadRadius: 2.w,
                                     color: themeColor,
                                     //color: Color.fromARGB(255, 255, 120, 167),
-                                  )
+                                  ),
                                 ]
                               : null,
                           color: (focusNode.isFoucsed.value || selected) ? foucsedColor : color,
@@ -150,7 +151,7 @@ class HighlightWidget extends StatelessWidget {
                               spreadRadius: 2.w,
                               color: themeColor,
                               //color: Color.fromARGB(255, 255, 120, 167),
-                            )
+                            ),
                           ]
                         : null,
                     color: selected ? foucsedColor : color,

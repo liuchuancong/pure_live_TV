@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
@@ -9,7 +8,6 @@ import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
 
 class SettingsPage extends GetView<SettingsService> {
   const SettingsPage({super.key});
-
   BuildContext get context => Get.context!;
 
   @override
@@ -17,6 +15,7 @@ class SettingsPage extends GetView<SettingsService> {
     return AppScaffold(
       child: ListView(
         padding: AppStyle.edgeInsetsA48,
+        controller: controller.scrollController,
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
           AppStyle.vGap32,
@@ -24,10 +23,21 @@ class SettingsPage extends GetView<SettingsService> {
             children: [
               AppStyle.hGap48,
               HighlightButton(
-                focusNode: AppFocusNode(),
+                focusNode: controller.backFocusNode,
                 iconData: Icons.arrow_back,
                 text: "返回",
                 autofocus: true,
+                onFocusChange: (hasFocus) {
+                  if (hasFocus) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      controller.scrollController.animateTo(
+                        0.0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    });
+                  }
+                },
                 onTap: () {
                   Navigator.of(Get.context!).pop();
                 },
@@ -192,6 +202,17 @@ class SettingsPage extends GetView<SettingsService> {
             onTap: () {
               Get.toNamed(RoutePath.kSettingsHotAreas);
             },
+            onFocusChange: (hasFocus) {
+              if (hasFocus) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  controller.scrollController.animateTo(
+                    controller.scrollController.position.maxScrollExtent, // 滚动到最大可滚动范围
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                });
+              }
+            },
           ),
           HighlightListTile(
             title: "三方认证",
@@ -215,6 +236,17 @@ class SettingsPage extends GetView<SettingsService> {
             focusNode: controller.currentImageNode,
             onTap: () {
               Get.toNamed(RoutePath.kWallpaperPage);
+            },
+            onFocusChange: (hasFocus) {
+              if (hasFocus) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  controller.scrollController.animateTo(
+                    controller.scrollController.position.maxScrollExtent, // 滚动到最大可滚动范围
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                });
+              }
             },
           ),
           SizedBox(height: 40.h),
