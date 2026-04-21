@@ -1,7 +1,7 @@
 {
-  "version": "2.0.15",
-  "version_num": 10508,
-  "version_desc": "-Fixed: 优化UI显示. \n-Added: ExoPlayer播放器",
+  "version": "2.0.16",
+  "version_num": 12016,
+  "version_desc": "-Fixed: 优化壁纸显示.添加更多壁纸源. \n-Added: 添加douyin ttwid 设置.\n-Added: 添加扫码连接访问",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
