@@ -21,6 +21,7 @@ class _AppScaffoldState extends State<AppScaffold> {
     return Scaffold(
       body: Obx(() {
         final bg = service.cachedBackgroundImage;
+        final fit = service.currentBoxFit;
         return Stack(
           children: [
             // 底层：始终有渐变
@@ -37,7 +38,7 @@ class _AppScaffoldState extends State<AppScaffold> {
             if (bg != null)
               Container(
                 decoration: BoxDecoration(
-                  image: DecorationImage(image: bg, fit: BoxFit.cover),
+                  image: DecorationImage(image: bg, fit: fit),
                 ),
               ),
             Positioned.fill(child: widget.child),

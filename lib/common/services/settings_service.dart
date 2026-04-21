@@ -96,6 +96,8 @@ class SettingsService extends GetxController {
   // 图片与界面定制相关
   final currentBoxImage = (HivePrefUtil.getString('currentBoxImage') ?? "").obs;
   final currentBoxImageIndex = (HivePrefUtil.getInt('currentBoxImageIndex') ?? 0).obs;
+  final backgroundImageFitIndex = (HivePrefUtil.getInt('backgroundImageFitIndex') ?? 2).obs;
+
   Uint8List? _cachedBytes;
   String? _cachedBase64;
 
@@ -312,6 +314,10 @@ class SettingsService extends GetxController {
       await HivePrefUtil.setInt('currentBoxImageIndex', value);
     });
 
+    backgroundImageFitIndex.listen((value) async {
+      await HivePrefUtil.setInt('backgroundImageFitIndex', value);
+    });
+
     playerCompatMode.listen((value) async {
       await HivePrefUtil.setBool('playerCompatMode', value);
     });
@@ -375,41 +381,80 @@ class SettingsService extends GetxController {
     }
   }
 
+  BoxFit get currentBoxFit => BoxFit.values[backgroundImageFitIndex.value];
+
+  void setBoxFitIndex(int index) {
+    backgroundImageFitIndex.value = index;
+  }
+
   // ========== 图片相关方法 ==========
   Future<void> getImage() async {
-    var url = AppConsts.currentBoxImageSources.map((e) => e.values.first).toList()[currentBoxImageIndex.value];
+    // 1. Get the current source name and base URL
+    var selectedSource = AppConsts.currentBoxImageSources[currentBoxImageIndex.value];
+    String name = selectedSource.keys.first;
+    String url = selectedSource.values.first;
+
     if (url == "default") {
       currentBoxImage.value = "";
-    } else if (url == "https://t.alcy.cc/") {
-      var category = ['ycy', 'moez', 'ai', 'ysz', 'ys', 'mp', 'moemp', 'ysmp', 'aimp', 'tx', 'lai', 'xhl', 'bd'];
-      var index = math.Random().nextInt(category.length);
-      var requestUrl = url + category[index];
-      Dio dio = Dio();
-      var response = await dio.get(requestUrl, options: Options(responseType: ResponseType.bytes));
-      String base64String = base64Encode(response.data);
-      if (base64String.length > 30) {
-        currentBoxImage.value = base64String;
-      } else {
-        SmartDialog.showToast("图片加载失败,请重新获取");
+      return;
+    }
+
+    Dio dio = Dio();
+    String? finalImageUrl;
+
+    try {
+      // 2. Handle Wuming API (JSON response)
+      if (url.contains('://jkapi.com')) {
+        // Find the corresponding apiKey
+        var keyMap = AppConsts.wumingApiKeys.firstWhere((element) => element.containsKey(name), orElse: () => {});
+
+        if (keyMap.isNotEmpty) {
+          String apiKey = keyMap[name]!;
+          // Construct URL with type=json and apiKey
+          String requestUrl = "$url${url.contains('?') ? '&' : '?'}type=json&apiKey=$apiKey";
+
+          // First request to get the JSON
+          var jsonRes = await dio.get(requestUrl);
+          if (jsonRes.statusCode == 200 && jsonRes.data != null) {
+            // Extract the URL from the "image_url" key
+            finalImageUrl = jsonRes.data['image_url'] ?? jsonRes.data['content'];
+          }
+        }
       }
-    } else {
-      Dio dio = Dio();
-      var response = await dio.get(
-        url,
-        options: Options(
-          responseType: ResponseType.bytes,
-          headers: {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-          },
-        ),
-      );
-      String base64String = base64Encode(response.data);
-      if (base64String.length > 30) {
-        currentBoxImage.value = base64String;
-      } else {
-        SmartDialog.showToast("图片加载失败,请重新获取");
+      // 3. Handle Alcy (Path-based category)
+      else if (url == "https://alcy.cc") {
+        var category = ['ycy', 'moez', 'ai', 'ysz', 'ys', 'mp', 'moemp', 'ysmp', 'aimp', 'tx', 'lai', 'xhl', 'bd'];
+        finalImageUrl = url + category[math.Random().nextInt(category.length)];
       }
+      // 4. Handle other direct image APIs
+      else {
+        finalImageUrl = url;
+      }
+
+      // 5. Download image and convert to Base64
+      if (finalImageUrl != null && finalImageUrl.isNotEmpty) {
+        var response = await dio.get(
+          finalImageUrl,
+          options: Options(
+            responseType: ResponseType.bytes,
+            headers: {
+              'User-Agent':
+                  "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.97 Safari/537.36 Core/1.116.567.400 QQBrowser/19.7.6764.400",
+            },
+          ),
+        );
+
+        String base64String = base64Encode(response.data);
+        if (base64String.length > 30) {
+          currentBoxImage.value = base64String;
+        } else {
+          SmartDialog.showToast("The image content is invalid.");
+        }
+      } else {
+        SmartDialog.showToast("Failed to retrieve a valid image URL.");
+      }
+    } catch (e) {
+      SmartDialog.showToast("Error: $e");
     }
   }
 

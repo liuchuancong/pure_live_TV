@@ -15,15 +15,35 @@ class AppConsts {
   static final List<Map<dynamic, String>> currentBoxImageSources = [
     {"不使用": 'default'},
     {"必应随机": 'https://bing.img.run/rand.php'},
+    {'小晓API': 'https://v2.xxapi.cn/api/wallpaper'},
+    {'无铭必应每日壁纸': 'https://jkapi.com/api/bing_img'},
+    {'无铭随机美囡图片': 'https://jkapi.com/api/meinv_img'},
+    {'无铭随机黑絲图片': 'https://jkapi.com/api/heisi_img'},
+    {'无铭随机白絲图片': 'https://jkapi.com/api/baisi_img'},
+    {'无铭随机抖音美女图片': 'https://jkapi.com/api/dymm_img'},
+    {'无铭半次元cosplay': 'https://jkapi.com/api/bcy_cos'},
+    {'无铭动漫壁纸': 'https://jkapi.com/api/dm_wallpaper'},
+    {'无铭随机唯美女生图片': 'https://jkapi.com/api/wm_girl'},
     {"mtyqx": 'https://api.mtyqx.cn/tapi/random.php'},
-    {'alcy': 'https://t.alcy.cc/'},
+    {'栗次元': 'https://t.alcy.cc/'},
     {"picsum": 'https://picsum.photos/1280/720/?blur=10'},
     {"dmoe": 'https://www.dmoe.cc/random.php'},
     {'loliApi': 'https://www.loliapi.com/bg/'},
-    {"btstu动漫": 'https://api.btstu.cn/sjbz/?lx=dongman'},
-    {"btstu妹子": 'http://api.btstu.cn/sjbz/?lx=meizi'},
-    {"btstu随机": 'http://api.btstu.cn/sjbz/?lx=suiji'},
+    {"搏天动漫": 'https://api.btstu.cn/sjbz/?lx=dongman'},
+    {"搏天妹子": 'http://api.btstu.cn/sjbz/?lx=meizi'},
+    {"搏天随机": 'http://api.btstu.cn/sjbz/?lx=suiji'},
     {"catvod": 'https://pictures.catvod.eu.org/'},
+  ];
+
+  static const List<Map<dynamic, String>> wumingApiKeys = [
+    {'无铭必应每日壁纸': '0f57c17bca42966996d6a8bc28594858'},
+    {'无铭随机美囡图片': '872080c8858c40e6a1eb2ba86694d4d8'},
+    {'无铭随机黑絲图片': '0c0c7a39e084db0e9c7cf2e25318f42c'},
+    {'无铭随机白絲图片': '7605369407c689e9b2804bfc56a82ac7'},
+    {'无铭随机抖音美女图片': '7b6c5500e52878bc46264cd140196699'},
+    {'无铭半次元cosplay': 'f5bce3b84b7409fbe8abb2246b46f4c8'},
+    {'无铭动漫壁纸': '95e3a0e608a8b1bed6d513346f929202'},
+    {'无铭随机唯美女生图片': '0a7c2239bc57624cac60967937da8a1b'},
   ];
 
   // 平台列表
@@ -75,6 +95,10 @@ class AppConsts {
     BoxFit.fitHeight,
     BoxFit.scaleDown,
   ];
+
+  Map<dynamic, String> getFitItems() {
+    return {0: "拉伸填充", 1: "完整包含", 2: "等比覆盖", 3: "等宽自适应", 4: "等高自适应 ", 5: "原始大小", 6: "等比缩放"};
+  }
 
   static const List<String> videoFitChineseTranslation = [
     "等比适配", // 对应 BoxFit.contain

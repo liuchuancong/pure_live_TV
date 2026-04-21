@@ -209,26 +209,12 @@ class SettingsPage extends GetView<SettingsService> {
               Get.toNamed(RoutePath.kSync);
             },
           ),
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.currentImageIndexNode,
-              title: "壁纸选择",
-              items: controller.getBoxImageItems(),
-              value: AppConsts.currentBoxImageSources
-                  .map((e) => e.keys.first)
-                  .toList()[controller.currentBoxImageIndex.value],
-              onChanged: (e) {
-                var index = AppConsts.currentBoxImageSources.map((e) => e.keys.first).toList().indexOf(e);
-                controller.currentBoxImageIndex.value = index;
-              },
-            ),
-          ),
           HighlightListTile(
-            title: "切换壁纸",
-            trailing: const Icon(Icons.change_circle_rounded),
+            title: "壁纸设置",
+            trailing: const Icon(Icons.chevron_right),
             focusNode: controller.currentImageNode,
             onTap: () {
-              controller.getImage();
+              Get.toNamed(RoutePath.kWallpaperPage);
             },
           ),
         ],

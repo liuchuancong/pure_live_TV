@@ -19,6 +19,7 @@ import 'package:pure_live/modules/settings/settings_page.dart';
 import 'package:pure_live/modules/toolbox/boolbox_binding.dart';
 import 'package:pure_live/modules/version/version_binding.dart';
 import 'package:pure_live/modules/popular/popular_binding.dart';
+import 'package:pure_live/modules/wallpaper/wallpaper_page.dart';
 import 'package:pure_live/modules/agreement/agreement_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_page.dart';
 import 'package:pure_live/modules/live_play/live_play_page.dart';
@@ -34,7 +35,10 @@ import 'package:pure_live/modules/history/history_rooms_binding.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_binding.dart';
 import 'package:pure_live/modules/account/bilibili/qr_login_page.dart';
 import 'package:pure_live/modules/account/bilibili/bilibili_bings.dart';
+import 'package:pure_live/modules/wallpaper/wallpaper_page_binding.dart';
 import 'package:pure_live/modules/agreement/agreement_page_binding.dart';
+import 'package:pure_live/modules/account/douyin/douyin_cookie_page.dart';
+import 'package:pure_live/modules/account/douyin/douyin_cookie_binding.dart';
 
 // auth
 
@@ -81,5 +85,11 @@ class AppPages {
     GetPage(name: RoutePath.kVersionPage, page: () => const VersionPage(), bindings: [VersionBinding()]),
 
     GetPage(name: RoutePath.kToolbox, page: () => const ToolBoxPage(), bindings: [ToolBoxBinding()]),
+
+    // DouyinCookiePage
+    GetPage(name: RoutePath.kDouyinCookie, page: () => const DouyinCookiePage(), bindings: [DouyinCookieBinding()]),
+
+    // WallpaperPage
+    GetPage(name: RoutePath.kWallpaperPage, page: () => const WallpaperPage(), bindings: [WallpaperPageBinding()]),
   ];
 }

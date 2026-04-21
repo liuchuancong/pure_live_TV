@@ -79,6 +79,12 @@ class RoutePath {
   static const kVersionPage = "/version_page";
 
   static const kToolbox = "/tool_box";
+
+  //  抖音cookie设置
+  static const kDouyinCookie = "/douyin_cookie";
+
+  // WallpaperPage
+  static const kWallpaperPage = "/wallpaper_page";
 }
 
 enum RouteChangeType { push, pop, replace }
