@@ -217,6 +217,7 @@ class SettingsPage extends GetView<SettingsService> {
               Get.toNamed(RoutePath.kWallpaperPage);
             },
           ),
+          SizedBox(height: 40.h),
         ],
       ),
     );
