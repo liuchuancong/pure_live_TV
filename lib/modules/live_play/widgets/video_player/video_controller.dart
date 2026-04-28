@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'package:get/get.dart';
 import 'models/video_enums.dart';
@@ -9,11 +11,11 @@ import 'controller/video_key_handler.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/model/live_play_quality.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
 import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/pkg/canvas_danmaku/danmaku_controller.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
-
 // 导入所需文件（无需显式导入扩展）
 
 // 项目依赖
@@ -85,6 +87,12 @@ class VideoController with ChangeNotifier {
   static const danmakuAbleKey = ValueKey(DanmakuSettingClickType.danmakuAble);
   // 线路面板显示控制
   final RxBool showLinePanel = false.obs;
+  final RxBool showQrCodePanel = false.obs;
+  final RxString serverIp = "".obs;
+  NetworkInfo networkInfo = NetworkInfo();
+  HttpServer? _server;
+  final Set<WebSocket> _clients = {};
+  final RxString fullServerUrl = "".obs;
 
   // ==================== 构造函数 ====================
   VideoController({
@@ -120,6 +128,8 @@ class VideoController with ChangeNotifier {
     _initSubscriptions();
     // 初始化名称定时器
     _initNameTimer();
+
+    _startUnifiedServer();
   }
 
   /// 初始化弹幕控制器（核心修复：直接调用扩展方法）
@@ -179,6 +189,14 @@ class VideoController with ChangeNotifier {
       if (show) {
         // 直接调用扩展方法
         hideAllPanelsExcept(PanelType.lines);
+      } else {
+        disableController();
+      }
+    });
+
+    showQrCodePanel.listen((show) {
+      if (show) {
+        hideAllPanelsExcept(PanelType.qrCode);
       } else {
         disableController();
       }
@@ -306,6 +324,178 @@ class VideoController with ChangeNotifier {
     videoFit.value = settings.videofitArrary[index];
   }
 
+  void showShieldSetting() {
+    showQrCodePanel.value = true;
+  }
+
+  void _startUnifiedServer() async {
+    try {
+      final interfaces = await NetworkInterface.list(type: InternetAddressType.IPv4);
+      final ip = interfaces.firstWhere((i) => !i.name.contains('lo')).addresses.first.address;
+
+      _server = await HttpServer.bind(InternetAddress.anyIPv4, 8888);
+      fullServerUrl.value = "http://$ip:8888";
+
+      _server!.listen((HttpRequest request) async {
+        // 1. Handle WebSocket Upgrade
+        if (WebSocketTransformer.isUpgradeRequest(request)) {
+          WebSocket socket = await WebSocketTransformer.upgrade(request);
+          _clients.add(socket);
+          // Send initial list to phone
+          socket.add(jsonEncode({"type": "init", "data": settings.shieldList.value}));
+
+          socket.listen((msg) => _handleWsMessage(msg), onDone: () => _clients.remove(socket));
+          return;
+        }
+
+        // 2. Handle Web Remote (GET)
+        if (request.method == 'GET') {
+          request.response
+            ..headers.contentType = ContentType.html
+            ..write(_buildRemoteHtml())
+            ..close();
+        }
+      });
+    } catch (e) {
+      debugPrint("Server Error: $e");
+    }
+  }
+
+  void stopServer() async {
+    try {
+      // 1. Close all active WebSocket clients first
+      for (var client in _clients) {
+        await client.close(WebSocketStatus.goingAway, "Server shutting down");
+      }
+      _clients.clear();
+
+      if (_server != null) {
+        await _server!.close(force: true);
+        _server = null;
+        fullServerUrl.value = "";
+        debugPrint("Server stopped successfully.");
+      }
+    } catch (e) {
+      debugPrint("Error stopping server: $e");
+    }
+  }
+
+  void _handleWsMessage(dynamic message) {
+    final data = jsonDecode(message);
+    final String action = data['action'];
+    final String value = data['value'];
+
+    if (action == 'add' && !settings.shieldList.contains(value)) {
+      settings.shieldList.add(value);
+    } else if (action == 'delete') {
+      settings.shieldList.remove(value);
+    }
+    settings.shieldList.value = List.from(settings.shieldList); // 触发更新
+    _broadcastList();
+  }
+
+  void _broadcastList() {
+    final msg = jsonEncode({"type": "update", "data": settings.shieldList});
+    for (var client in _clients) {
+      client.add(msg);
+    }
+  }
+
+  String _buildRemoteHtml() {
+    return '''
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PureLive 远程同步</title>
+    <style>
+      body { font-family: -apple-system, system-ui; padding: 20px; background: #f4f4f9; color: #333; }
+      .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+      h2 { margin-top: 0; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
+      
+      /* 状态小点 */
+      .status { font-size: 12px; font-weight: normal; color: #ff3b30; display: flex; align-items: center; }
+      .status.online { color: #34c759; }
+      .dot { width: 8px; height: 8px; background: currentColor; border-radius: 50%; margin-right: 5px; }
+
+      .input-group { display: flex; gap: 10px; margin: 15px 0; }
+      input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+      
+      button { padding: 12px 20px; background: #007AFF; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+      button:active { background: #0056b3; }
+
+      /* 屏蔽词标签布局 */
+      #list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      .tag { background: #f0f0f5; padding: 8px 12px; border-radius: 20px; font-size: 14px; display: flex; align-items: center; color: #555; border: 1px solid #e1e1e6; }
+      .tag b { margin-left: 8px; color: #ff3b30; cursor: pointer; font-size: 18px; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>
+        屏蔽词同步
+        <div id="status" class="status"><span class="dot"></span><span id="stateText">未连接</span></div>
+      </h2>
+      <p style="color: #666; font-size: 14px;">在下方添加屏蔽词，电视端将实时同步：</p>
+      <div class="input-group">
+        <input type="text" id="ipt" placeholder="输入内容...">
+        <button onclick="send('add')">添加</button>
+      </div>
+      <div id="list"></div>
+    </div>
+
+    <script>
+      let ws;
+      const statusDiv = document.getElementById('status');
+      const stateText = document.getElementById('stateText');
+      const listDiv = document.getElementById('list');
+
+      function connect() {
+        ws = new WebSocket('ws://' + location.host);
+        
+        ws.onopen = () => {
+          statusDiv.className = 'status online';
+          stateText.innerText = '已连接';
+        };
+
+        ws.onclose = () => {
+          statusDiv.className = 'status';
+          stateText.innerText = '已断开';
+          setTimeout(connect, 2000); // 自动重连
+        };
+
+        ws.onmessage = (e) => {
+          const msg = JSON.parse(e.data);
+          if (msg.type === 'init' || msg.type === 'update') {
+            render(msg.data);
+          }
+        };
+      }
+
+      function render(data) {
+        listDiv.innerHTML = data.map(i => `
+          <div class="tag">
+            \${i}
+            <b onclick="send('delete', '\${i}')">×</b>
+          </div>
+        `).join('');
+      }
+
+      function send(action, val) {
+        const value = val || document.getElementById('ipt').value.trim();
+        if(!value) return;
+        ws.send(JSON.stringify({ action, value }));
+        if(!val) document.getElementById('ipt').value = '';
+      }
+
+      connect();
+    </script>
+  </body>
+  </html>
+  ''';
+  }
+
   /// 播放/暂停切换
   void togglePlayPause() => globalPlayer.togglePlayPause();
 
@@ -398,6 +588,7 @@ class VideoController with ChangeNotifier {
     // 取消焦点
     cancelFocus();
     cancelDanmakuFocus();
+    stopServer();
     livePlayController.liveDanmaku.stop();
     // 重置播放状态
     livePlayController.success.value = false;

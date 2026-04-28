@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
@@ -47,6 +48,7 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
           SettingsPanel(controller: controller),
           ResolutionPanel(controller: controller),
           LinePanel(controller: controller),
+          ShieldPanel(controller: controller),
           FavoriteChoose(controller: controller),
           TopActionBar(controller: controller, barHeight: barHeight),
           BottomActionBar(controller: controller, barHeight: barHeight),
@@ -334,6 +336,129 @@ class BoxFitButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class ShieldButton extends StatelessWidget {
+  const ShieldButton({super.key, required this.controller});
+  final VideoController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      padding: AppStyle.edgeInsetsA12,
+      child: Obx(
+        () => HighlightButton(
+          useFocus: false,
+          focusNode: AppFocusNode(),
+          selected: controller.currentBottomClickType.value == BottomButtonClickType.shieldSetting,
+          iconData: Icons.dynamic_feed_rounded,
+          text: '弹幕过滤',
+          onTap: () {
+            controller.showShieldSetting();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class ShieldPanel extends StatelessWidget {
+  const ShieldPanel({super.key, required this.controller});
+  final VideoController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      return AnimatedPositioned(
+        duration: const Duration(milliseconds: 300),
+        right: controller.showQrCodePanel.value ? 0 : -500.w,
+        top: 0,
+        bottom: 0,
+        child: Container(
+          width: 500.w,
+          decoration: BoxDecoration(
+            color: Get.theme.cardColor.withValues(alpha: 0.98),
+            border: Border(
+              left: BorderSide(color: Colors.white10, width: 1.w),
+            ),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 32.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Header with Return Button
+              Row(
+                children: [
+                  HighlightButton(
+                    focusNode: AppFocusNode(),
+                    iconData: Icons.arrow_back,
+                    text: "返回",
+                    autofocus: true,
+                    onTap: () {
+                      controller.showQrCodePanel.value = false;
+                    },
+                  ),
+                  AppStyle.hGap24,
+                  Text(
+                    "屏蔽设置",
+                    style: AppStyle.titleStyleWhite.copyWith(fontSize: 32.w, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              AppStyle.vGap32,
+
+              // 2. QR Code Section (Centered)
+              Align(
+                alignment: Alignment.center,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.w)),
+                      child: QrImageView(data: controller.fullServerUrl.value, version: QrVersions.auto, size: 220.w),
+                    ),
+                    AppStyle.vGap16,
+                    Text(
+                      "手机扫码 远程增删",
+                      style: AppStyle.textStyleWhite.copyWith(fontSize: 20.w, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+
+              AppStyle.vGap24,
+              const Divider(color: Colors.white12),
+              AppStyle.vGap16,
+
+              // 3. Shield List (Wrap Layout)
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Obx(
+                    () => Wrap(
+                      spacing: 12.w,
+                      runSpacing: 12.h,
+                      children: controller.settings.shieldList.asMap().entries.map((entry) {
+                        return HighlightButton(
+                          focusNode: AppFocusNode(),
+                          text: entry.value,
+                          // Customizing icon to show delete intent
+                          iconData: Icons.close_rounded,
+                          onTap: () {
+                            controller.settings.shieldList.removeAt(entry.key);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 

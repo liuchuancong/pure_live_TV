@@ -275,6 +275,9 @@ extension VideoKeyHandler on VideoController {
       case BottomButtonClickType.changeLine:
         showLinePanel.value = true;
         break;
+      case BottomButtonClickType.shieldSetting:
+        showQrCodePanel.value = true;
+        break;
       case BottomButtonClickType.boxFit:
         setVideoFit();
         break;

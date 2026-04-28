@@ -1,5 +1,15 @@
 /// 底部按钮类型
-enum BottomButtonClickType { favorite, refresh, playPause, danmaku, settings, qualityName, changeLine, boxFit }
+enum BottomButtonClickType {
+  favorite,
+  refresh,
+  playPause,
+  danmaku,
+  settings,
+  qualityName,
+  changeLine,
+  boxFit,
+  shieldSetting,
+}
 
 /// 弹幕设置类型
 enum DanmakuSettingClickType {
@@ -14,4 +24,4 @@ enum DanmakuSettingClickType {
 }
 
 /// 面板类型
-enum PanelType { playlist, quality, settings, lines }
+enum PanelType { playlist, quality, settings, lines, qrCode }

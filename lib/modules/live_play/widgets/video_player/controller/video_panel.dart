@@ -15,6 +15,7 @@ extension VideoPanel on VideoController {
     if (type != PanelType.quality) showQualityPanel.value = false;
     if (type != PanelType.settings) showSettting.value = false;
     if (type != PanelType.lines) showLinePanel.value = false;
+    if (type != PanelType.qrCode) showQrCodePanel.value = false;
     danmukuNodeIndex.value = 0;
     currentNodeIndex.value = 0;
     cancelFocusInternal();
