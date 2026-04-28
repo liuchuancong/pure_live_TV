@@ -118,6 +118,11 @@ class LivePlayController extends StateController {
       videoController?.focusNode.requestFocus();
       return await Future.value(false);
     }
+    if (videoController!.showQrCodePanel.value) {
+      videoController?.disableController();
+      videoController?.focusNode.requestFocus();
+      return await Future.value(false);
+    }
     disPoserPlayer();
     return await Future.value(true);
   }

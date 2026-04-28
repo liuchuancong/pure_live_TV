@@ -225,6 +225,7 @@ class BottomActionBar extends StatelessWidget {
               QualiteNameButton(controller: controller),
               LineButton(controller: controller),
               BoxFitButton(controller: controller),
+              ShieldButton(controller: controller),
               const Spacer(),
             ],
           ),
@@ -391,15 +392,6 @@ class ShieldPanel extends StatelessWidget {
               // 1. Header with Return Button
               Row(
                 children: [
-                  HighlightButton(
-                    focusNode: AppFocusNode(),
-                    iconData: Icons.arrow_back,
-                    text: "返回",
-                    autofocus: true,
-                    onTap: () {
-                      controller.showQrCodePanel.value = false;
-                    },
-                  ),
                   AppStyle.hGap24,
                   Text(
                     "屏蔽设置",
@@ -409,7 +401,6 @@ class ShieldPanel extends StatelessWidget {
               ),
               AppStyle.vGap32,
 
-              // 2. QR Code Section (Centered)
               Align(
                 alignment: Alignment.center,
                 child: Column(

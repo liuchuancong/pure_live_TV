@@ -38,7 +38,11 @@ extension VideoKeyHandler on VideoController {
   /// 控制器隐藏时的键盘事件
   void handleKeyHiddenState(KeyEvent key) {
     // 无任何面板显示
-    if (!showSettting.value && !showPlayListPanel.value && !showQualityPanel.value && !showLinePanel.value) {
+    if (!showSettting.value &&
+        !showPlayListPanel.value &&
+        !showQualityPanel.value &&
+        !showLinePanel.value &&
+        !showQrCodePanel.value) {
       handleKeyNoPanel(key);
     }
     // 播放列表面板显示
@@ -52,11 +56,19 @@ extension VideoKeyHandler on VideoController {
     // 线路面板显示
     else if (showLinePanel.value) {
       handleKeyLinePanel(key);
-    }
-    // 设置面板显示
-    else {
+    } else if (showQrCodePanel.value) {
+      handlekeyPanelQrCode(key);
+    } else {
       handleKeySettingsPanel(key);
     }
+  }
+
+  void handlekeyPanelQrCode(KeyEvent key) {
+    if (key.logicalKey == LogicalKeyboardKey.escape || key.logicalKey == LogicalKeyboardKey.goBack) {
+      showQrCodePanel.value = false;
+      return;
+    }
+    log('KeyEvent in QrCode: ${key.logicalKey}', name: 'VideoKeyHandler');
   }
 
   /// 无面板时的键盘事件
