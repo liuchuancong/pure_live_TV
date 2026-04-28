@@ -53,7 +53,7 @@ class HighlightListTile extends StatelessWidget {
                   padding: AppStyle.edgeInsetsA24,
                   child: Row(
                     children: [
-                      if (leading != null) leading!,
+                      ?leading,
                       if (leading != null) AppStyle.hGap32,
                       Expanded(
                         child: Column(
@@ -83,7 +83,7 @@ class HighlightListTile extends StatelessWidget {
                           size: 40.w,
                           color: focusNode.isFoucsed.value ? Colors.black : Colors.white,
                         ),
-                      if (trailing != null) trailing!,
+                      ?trailing,
                     ],
                   ),
                 ),
@@ -99,7 +99,7 @@ class HighlightListTile extends StatelessWidget {
                   padding: AppStyle.edgeInsetsA24,
                   child: Row(
                     children: [
-                      if (leading != null) leading!,
+                      ?leading,
                       if (leading != null) AppStyle.hGap32,
                       Expanded(
                         child: Column(
@@ -125,7 +125,7 @@ class HighlightListTile extends StatelessWidget {
                       AppStyle.hGap12,
                       if (onTap != null && selected && trailing == null)
                         Icon(Icons.chevron_right, size: 40.w, color: selected ? Colors.black : Colors.white),
-                      if (trailing != null) trailing!,
+                      ?trailing,
                     ],
                   ),
                 ),

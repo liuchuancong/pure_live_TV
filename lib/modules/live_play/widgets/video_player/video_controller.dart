@@ -93,7 +93,7 @@ class VideoController with ChangeNotifier {
   HttpServer? _server;
   final Set<WebSocket> _clients = {};
   final RxString fullServerUrl = "".obs;
-
+  final shieldFocusNodes = <AppFocusNode>[].obs;
   // ==================== 构造函数 ====================
   VideoController({
     required this.playerKey,
@@ -130,6 +130,25 @@ class VideoController with ChangeNotifier {
     _initNameTimer();
 
     _startUnifiedServer();
+
+    ever(settings.shieldList, (_) => syncFocusNodes());
+  }
+
+  void syncFocusNodes() {
+    int dataLen = settings.shieldList.length;
+    int nodeLen = shieldFocusNodes.length;
+
+    if (nodeLen < dataLen) {
+      // 补充缺少的 Node
+      for (int i = 0; i < dataLen - nodeLen; i++) {
+        shieldFocusNodes.add(AppFocusNode());
+      }
+    } else if (nodeLen > dataLen) {
+      // 移除多余的 Node 并销毁
+      for (int i = 0; i < nodeLen - dataLen; i++) {
+        shieldFocusNodes.removeLast().dispose();
+      }
+    }
   }
 
   /// 初始化弹幕控制器（核心修复：直接调用扩展方法）
@@ -588,6 +607,9 @@ class VideoController with ChangeNotifier {
     // 取消焦点
     cancelFocus();
     cancelDanmakuFocus();
+    for (var node in shieldFocusNodes) {
+      node.dispose();
+    }
     stopServer();
     livePlayController.liveDanmaku.stop();
     // 重置播放状态

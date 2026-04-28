@@ -93,38 +93,37 @@ class LivePlayController extends StateController {
   }
 
   Future<bool> onBackPressed() async {
-    if (videoController!.showSettting.value) {
-      videoController?.showSettting.value = false;
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
+    final vc = videoController;
+    if (vc == null) return true;
+    // 1. 识别当前哪个面板处于打开状态
+
+    final simplePanels = [
+      vc.showSettting,
+      vc.showQualityPanel,
+      vc.showPlayListPanel,
+      vc.showLinePanel,
+      vc.showQrCodePanel,
+    ];
+
+    // 2. 检查普通面板
+    for (var panel in simplePanels) {
+      if (panel.value) {
+        panel.value = false;
+        vc.focusNode.requestFocus();
+        return false;
+      }
     }
-    if (videoController!.showQualityPanel.value) {
-      videoController?.showQualityPanel.value = false;
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
+
+    // 3. 检查特殊逻辑面板：控制器面板通常涉及计时器
+    if (vc.showController.value) {
+      vc.disableController();
+      vc.focusNode.requestFocus();
+      return false;
     }
-    if (videoController!.showPlayListPanel.value) {
-      videoController?.showPlayListPanel.value = false;
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    if (videoController!.showLinePanel.value) {
-      videoController?.showLinePanel.value = false;
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    if (videoController!.showController.value) {
-      videoController?.disableController();
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    if (videoController!.showQrCodePanel.value) {
-      videoController?.disableController();
-      videoController?.focusNode.requestFocus();
-      return await Future.value(false);
-    }
-    disPoserPlayer();
-    return await Future.value(true);
+
+    // 4. 没有任何面板，执行销毁并退出
+    await disPoserPlayer();
+    return true;
   }
 
   @override

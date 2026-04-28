@@ -431,8 +431,9 @@ class ShieldPanel extends StatelessWidget {
                       spacing: 12.w,
                       runSpacing: 12.h,
                       children: controller.settings.shieldList.asMap().entries.map((entry) {
+                        int index = entry.key;
                         return HighlightButton(
-                          focusNode: AppFocusNode(),
+                          focusNode: controller.shieldFocusNodes[index],
                           text: entry.value,
                           // Customizing icon to show delete intent
                           iconData: Icons.close_rounded,

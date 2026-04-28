@@ -11,9 +11,7 @@ class LivePlayPage extends GetWidget<LivePlayController> {
 
   @override
   Widget build(BuildContext context) {
-    if (settings.enableScreenKeepOn.value) {
-      WakelockPlus.toggle(enable: true);
-    }
+    WakelockPlus.toggle(enable: true);
     return BackButtonListener(onBackButtonPressed: onWillPop, child: buildVideoPlayer());
   }
 
