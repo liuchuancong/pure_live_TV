@@ -431,14 +431,17 @@ class ShieldPanel extends StatelessWidget {
                       spacing: 12.w,
                       runSpacing: 12.h,
                       children: controller.settings.shieldList.asMap().entries.map((entry) {
-                        int index = entry.key;
+                        final int index = entry.key;
+                        final String value = entry.value;
+                        if (index >= controller.shieldFocusNodes.length) return const SizedBox.shrink();
                         return HighlightButton(
                           focusNode: controller.shieldFocusNodes[index],
+                          selected: controller.shieldFocusNodes[index].hasFocus,
                           text: entry.value,
                           // Customizing icon to show delete intent
                           iconData: Icons.close_rounded,
                           onTap: () {
-                            controller.settings.shieldList.removeAt(entry.key);
+                            controller.removeShieldWord(value);
                           },
                         );
                       }).toList(),

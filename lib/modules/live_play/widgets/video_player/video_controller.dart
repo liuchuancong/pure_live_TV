@@ -132,6 +132,7 @@ class VideoController with ChangeNotifier {
     _startUnifiedServer();
 
     ever(settings.shieldList, (_) => syncFocusNodes());
+    syncFocusNodes(); // 初始同步焦点节点
   }
 
   void syncFocusNodes() {
@@ -148,6 +149,9 @@ class VideoController with ChangeNotifier {
       for (int i = 0; i < nodeLen - dataLen; i++) {
         shieldFocusNodes.removeLast().dispose();
       }
+    }
+    if (shieldFocusNodes.isNotEmpty) {
+      shieldFocusNodes.first.requestFocus();
     }
   }
 
@@ -397,6 +401,12 @@ class VideoController with ChangeNotifier {
     } catch (e) {
       debugPrint("Error stopping server: $e");
     }
+  }
+
+  void removeShieldWord(String word) {
+    settings.shieldList.remove(word);
+    settings.shieldList.value = List.from(settings.shieldList); // 触发更新
+    _broadcastList();
   }
 
   void _handleWsMessage(dynamic message) {
