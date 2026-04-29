@@ -267,7 +267,7 @@ class LivePlayController extends StateController {
       success.value = false;
       isFirstLoad.value = true;
       focusNode.requestFocus();
-      GlobalPlayerService.instance.playerManager.hardDispose();
+      GlobalPlayerService.instance.playerManager.close();
       await Future.delayed(Duration(milliseconds: 500)); // 缩短延迟，避免新实例提前创建
     } catch (e) {
       log(e.toString(), name: 'disPoserPlayer');

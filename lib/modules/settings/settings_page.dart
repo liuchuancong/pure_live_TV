@@ -141,51 +141,47 @@ class SettingsPage extends GetView<SettingsService> {
               },
             ),
           ),
-          Obx(() {
-            if (controller.videoPlayerIndex.value != 0) return const SizedBox.shrink();
-            return Column(
-              children: [
-                AppStyle.vGap24,
-                SettingsItemWidget(
-                  focusNode: controller.audioDelayNode,
-                  title: "音频调节",
-                  items: AppConsts.audioDelayMap,
-                  value: controller.audioDelay.value.toString(),
-                  onChanged: (e) {
-                    double val = double.tryParse(e.toString()) ?? 0.0;
-                    controller.audioDelay.value = val;
-                  },
-                ),
-                AppStyle.vGap24,
-                SettingsItemWidget(
-                  focusNode: controller.playerCompatModeNode,
-                  title: "兼容模式",
-                  items: const {0: "关闭", 1: "打开"},
-                  value: controller.playerCompatMode.value ? 1 : 0,
-                  onChanged: (e) {
-                    controller.playerCompatMode.value = e == 1;
-                  },
-                ),
-              ],
-            );
-          }),
-          Obx(() {
-            if (controller.videoPlayerIndex.value != 2) return const SizedBox.shrink();
-            return Column(
-              children: [
-                AppStyle.vGap24,
-                SettingsItemWidget(
-                  focusNode: controller.useFallbackPlayerNode,
-                  title: "Exo无法播放时使用备用播放器",
-                  items: const {0: "Mpv播放器", 1: "Ijk播放器"},
-                  value: controller.useFallbackPlayer.value,
-                  onChanged: (e) {
-                    controller.useFallbackPlayer.value = e;
-                  },
-                ),
-              ],
-            );
-          }),
+          AppStyle.vGap24,
+          Obx(
+            () => SettingsItemWidget(
+              focusNode: controller.useHardStopOnExitNode,
+              title: "播放器销毁设置",
+              items: const {0: "软停止缓存复用", 1: "强制释放"},
+              value: controller.useHardStopOnExit.value ? 1 : 0,
+              onChanged: (e) {
+                controller.useHardStopOnExit.value = e == 1;
+              },
+            ),
+          ),
+
+          if (controller.videoPlayerIndex.value == 0)
+            Obx(() {
+              return Column(
+                children: [
+                  AppStyle.vGap24,
+                  SettingsItemWidget(
+                    focusNode: controller.audioDelayNode,
+                    title: "音频调节",
+                    items: AppConsts.audioDelayMap,
+                    value: controller.audioDelay.value.toString(),
+                    onChanged: (e) {
+                      double val = double.tryParse(e.toString()) ?? 0.0;
+                      controller.audioDelay.value = val;
+                    },
+                  ),
+                  AppStyle.vGap24,
+                  SettingsItemWidget(
+                    focusNode: controller.playerCompatModeNode,
+                    title: "兼容模式",
+                    items: const {0: "关闭", 1: "打开"},
+                    value: controller.playerCompatMode.value ? 1 : 0,
+                    onChanged: (e) {
+                      controller.playerCompatMode.value = e == 1;
+                    },
+                  ),
+                ],
+              );
+            }),
           Obx(
             () => SettingsItemWidget(
               focusNode: controller.preferPlatformNode,

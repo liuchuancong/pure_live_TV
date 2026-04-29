@@ -26,7 +26,7 @@ class BackButtonObserver extends RouteObserver<PageRoute<dynamic>> {
     super.didPop(route, previousRoute);
     if (route.settings.name == RoutePath.kLivePlay) {
       Get.find<LivePlayController>().onDelete();
-      GlobalPlayerService.instance.playerManager.hardDispose();
+      GlobalPlayerService.instance.playerManager.close();
       final controller = Get.find<HomeController>();
       controller.refreshData();
     }

@@ -48,7 +48,7 @@ class SettingsService extends GetxController {
   // 播放器相关
   final videoFitIndex = (HivePrefUtil.getInt('videoFitIndex') ?? 0).obs;
   final videoPlayerIndex = (HivePrefUtil.getInt('videoPlayerIndex') ?? 0).obs;
-  final useFallbackPlayer = (HivePrefUtil.getInt('useFallbackPlayer') ?? 0).obs;
+  final useHardStopOnExit = (HivePrefUtil.getBool('useHardStopOnExit') ?? true).obs;
   final enableCodec = (HivePrefUtil.getBool('enableCodec') ?? true).obs;
   final audioDelay = (HivePrefUtil.getDouble('audioDelay') ?? 0.0).obs;
   final playerCompatMode = (HivePrefUtil.getBool('playerCompatMode') ?? false).obs;
@@ -122,7 +122,7 @@ class SettingsService extends GetxController {
   final AppFocusNode platformNode = AppFocusNode();
   final AppFocusNode currentImageNode = AppFocusNode();
   final AppFocusNode currentImageIndexNode = AppFocusNode();
-  final AppFocusNode useFallbackPlayerNode = AppFocusNode();
+  final AppFocusNode useHardStopOnExitNode = AppFocusNode();
 
   // 路由相关
   final routeChangeType = RouteChangeType.push.obs;
@@ -283,8 +283,8 @@ class SettingsService extends GetxController {
     videoPlayerIndex.listen((value) async {
       await HivePrefUtil.setInt('videoPlayerIndex', value);
     });
-    useFallbackPlayer.listen((value) {
-      HivePrefUtil.setInt('useFallbackPlayer', value);
+    useHardStopOnExit.listen((value) {
+      HivePrefUtil.setBool('useHardStopOnExit', value);
     });
 
     bilibiliCookie.listen((value) async {
@@ -703,7 +703,7 @@ class SettingsService extends GetxController {
     json['danmakuFontBorder'] = danmakuFontBorder.value;
     json['danmakuOpacity'] = danmakuOpacity.value;
     json['videoPlayerIndex'] = videoPlayerIndex.value;
-    json['useFallbackPlayer'] = useFallbackPlayer.value;
+    json['useHardStopOnExit'] = useHardStopOnExit.value;
     json['enableCodec'] = enableCodec.value;
     json['audioDelay'] = audioDelay.value;
     json['bilibiliCookie'] = bilibiliCookie.value;

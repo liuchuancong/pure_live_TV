@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'player_pool.dart';
+import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
 import 'line_fallback_manager.dart';
 import '../models/player_state.dart';
@@ -349,6 +350,12 @@ class PlayerManager {
   // =========================
   // soft stop
   // =========================
+
+  Future<void> close() async {
+    final SettingsService settings = Get.find<SettingsService>();
+    settings.useHardStopOnExit.value ? await hardDispose() : await softStop();
+  }
+
   Future<void> softStop() async {
     await _currentPlayer?.softStop();
   }

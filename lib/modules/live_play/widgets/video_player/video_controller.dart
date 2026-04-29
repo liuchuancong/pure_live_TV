@@ -582,7 +582,7 @@ class VideoController with ChangeNotifier {
 
   /// 切换频道通用逻辑
   void _switchChannel(VoidCallback switchAction) {
-    GlobalPlayerService.instance.playerManager.hardDispose();
+    GlobalPlayerService.instance.playerManager.close();
     isLoading.value = true;
     _resetNameTimer();
     switchAction();
@@ -651,7 +651,7 @@ class VideoController with ChangeNotifier {
     // 取消订阅
     await _errorSub.cancel();
     // 停止播放器
-    GlobalPlayerService.instance.playerManager.hardDispose();
+    GlobalPlayerService.instance.playerManager.close();
 
     // 取消所有定时器
     showControllerTimer?.cancel();
