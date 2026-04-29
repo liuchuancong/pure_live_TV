@@ -13,7 +13,7 @@ class BetterPlayerAdapter implements UnifiedPlayer {
 
   bool _initialized = false;
   bool _disposed = false;
-
+  bool _wasSoftStopped = false;
   final _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.idle);
   final _playingSubject = BehaviorSubject<bool>.seeded(false);
   final _loadingSubject = BehaviorSubject<bool>.seeded(false);
@@ -81,6 +81,10 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   @override
   Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers) async {
     try {
+      if (_wasSoftStopped) {
+        _wasSoftStopped = false;
+        await _controller?.setVolume(1.0);
+      }
       _loadingSubject.add(true);
 
       BetterPlayerDataSource dataSource = BetterPlayerDataSource(
@@ -88,6 +92,7 @@ class BetterPlayerAdapter implements UnifiedPlayer {
         url,
         headers: headers,
       );
+
       await _controller!.setupDataSource(dataSource);
 
       _stateSubject.add(PlayerState.ready);
@@ -125,6 +130,10 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   @override
   @override
   Future<void> softStop() async {
+    if (_controller != null) {
+      _wasSoftStopped = true;
+      await _controller!.setVolume(0.0); // 立即静音
+    }
     await _controller?.pause();
     await _controller?.seekTo(Duration.zero);
   }
