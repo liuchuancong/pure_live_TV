@@ -125,6 +125,7 @@ class SettingsPage extends GetView<SettingsService> {
                 controller.videoPlayerIndex.value = e;
                 GlobalPlayerService.instance.playerManager.switchEngine(
                   PlayerEngine.values[controller.videoPlayerIndex.value],
+                  isManual: true,
                 );
               },
             ),

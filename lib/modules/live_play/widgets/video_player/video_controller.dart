@@ -455,96 +455,203 @@ class VideoController with ChangeNotifier {
 
   String _buildRemoteHtml() {
     return '''
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PureLive 远程同步</title>
-    <style>
-      body { font-family: -apple-system, system-ui; padding: 20px; background: #f4f4f9; color: #333; }
-      .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-      h2 { margin-top: 0; font-size: 20px; display: flex; align-items: center; justify-content: space-between; }
-      
-      /* 状态小点 */
-      .status { font-size: 12px; font-weight: normal; color: #ff3b30; display: flex; align-items: center; }
-      .status.online { color: #34c759; }
-      .dot { width: 8px; height: 8px; background: currentColor; border-radius: 50%; margin-right: 5px; }
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- shrink-to-fit=no 解决夸克等浏览器的缩放问题 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  <title>PureLive 远程同步</title>
+  <style>
+    :root { 
+      --primary: #007AFF; 
+      --danger: #ff3b30; 
+      --bg: #f4f4f9; 
+    }
+    
+    * { 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+    
+    html, body {
+      /* 核心修复：禁止浏览器自动调整文字大小，解决夸克显示过小问题 */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
 
-      .input-group { display: flex; gap: 10px; margin: 15px 0; }
-      input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
-      
-      button { padding: 12px 20px; background: #007AFF; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-      button:active { background: #0056b3; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      margin: 0; 
+      padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom); 
+      background: var(--bg); 
+      color: #333; 
+      /* 确保基础字号在小屏设备上清晰可见 */
+      font-size: 16px; 
+      line-height: 1.5;
+    }
 
-      /* 屏蔽词标签布局 */
-      #list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-      .tag { background: #f0f0f5; padding: 8px 12px; border-radius: 20px; font-size: 14px; display: flex; align-items: center; color: #555; border: 1px solid #e1e1e6; }
-      .tag b { margin-left: 8px; color: #ff3b30; cursor: pointer; font-size: 18px; }
-    </style>
-  </head>
-  <body>
+    .container { 
+      max-width: 500px; 
+      margin: 15px auto; 
+    }
+
+    .card { 
+      background: white; 
+      padding: 20px; 
+      border-radius: 16px; 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
+    }
+
+    h2 { 
+      margin: 0 0 12px; 
+      font-size: 20px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+    }
+    
+    .status { font-size: 14px; color: #999; display: flex; align-items: center; }
+    .status.online { color: #34c759; font-weight: bold; }
+    .dot { width: 8px; height: 8px; background: currentColor; border-radius: 50%; margin-right: 6px; }
+
+    .input-group { 
+      display: flex; 
+      gap: 8px; 
+      margin: 20px 0; 
+    }
+    
+    input { 
+      flex: 1; 
+      padding: 12px; 
+      border: 2px solid #eee; 
+      border-radius: 10px; 
+      /* 强制设置最小字号，防止 iOS 输入时自动放大 */
+      font-size: 16px; 
+      outline: none; 
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    input:focus { border-color: var(--primary); }
+    
+    button { 
+      padding: 12px 20px; 
+      background: var(--primary); 
+      color: white; 
+      border: none; 
+      border-radius: 10px; 
+      font-size: 16px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      white-space: nowrap;
+    }
+    button:active { opacity: 0.7; transform: scale(0.96); }
+
+    #list { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 10px; 
+    }
+    
+    .tag { 
+      background: #f2f2f7; 
+      padding: 6px 14px; 
+      border-radius: 20px; 
+      font-size: 15px; 
+      display: flex; 
+      align-items: center; 
+      color: #444; 
+      border: 1px solid #e5e5ea;
+      animation: pop 0.25s ease-out;
+    }
+    
+    .tag b { 
+      margin-left: 8px; 
+      color: var(--danger); 
+      cursor: pointer; 
+      font-size: 18px; 
+      line-height: 1;
+      padding: 2px;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @media (max-width: 380px) {
+      h2 { font-size: 18px; }
+      .input-group { flex-direction: column; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
     <div class="card">
       <h2>
         屏蔽词同步
         <div id="status" class="status"><span class="dot"></span><span id="stateText">未连接</span></div>
       </h2>
-      <p style="color: #666; font-size: 14px;">在下方添加屏蔽词，电视端将实时同步：</p>
+      <p style="color: #666; font-size: 14px; margin-bottom: 10px;">添加词条后，电视端将立即实时同步：</p>
       <div class="input-group">
-        <input type="text" id="ipt" placeholder="输入内容...">
+        <input type="text" id="ipt" placeholder="输入屏蔽词..." autocomplete="off">
         <button onclick="send('add')">添加</button>
       </div>
       <div id="list"></div>
     </div>
+  </div>
 
-    <script>
-      let ws;
-      const statusDiv = document.getElementById('status');
-      const stateText = document.getElementById('stateText');
-      const listDiv = document.getElementById('list');
+  <script>
+    let ws;
+    const statusDiv = document.getElementById('status');
+    const stateText = document.getElementById('stateText');
+    const listDiv = document.getElementById('list');
+    const ipt = document.getElementById('ipt');
 
-      function connect() {
-        ws = new WebSocket('ws://' + location.host);
-        
-        ws.onopen = () => {
-          statusDiv.className = 'status online';
-          stateText.innerText = '已连接';
-        };
-
-        ws.onclose = () => {
-          statusDiv.className = 'status';
-          stateText.innerText = '已断开';
-          setTimeout(connect, 2000); // 自动重连
-        };
-
-        ws.onmessage = (e) => {
+    function connect() {
+      // 适配不同环境的 WebSocket 协议
+      const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+      ws = new WebSocket(protocol + location.host);
+      
+      ws.onopen = () => { statusDiv.className = 'status online'; stateText.innerText = '已连接'; };
+      ws.onclose = () => { statusDiv.className = 'status'; stateText.innerText = '已断开'; setTimeout(connect, 2000); };
+      ws.onmessage = (e) => {
+        try {
           const msg = JSON.parse(e.data);
-          if (msg.type === 'init' || msg.type === 'update') {
-            render(msg.data);
-          }
-        };
-      }
+          if (msg.type === 'init' || msg.type === 'update') render(msg.data);
+        } catch(err) { console.error("Data error", err); }
+      };
+    }
 
-      function render(data) {
-        listDiv.innerHTML = data.map(i => `
-          <div class="tag">
-            \${i}
-            <b onclick="send('delete', '\${i}')">×</b>
-          </div>
-        `).join('');
-      }
+    function render(data) {
+      if (!data) return;
+      listDiv.innerHTML = data.map(i => `
+        <div class="tag">
+          \${i}
+          <b onclick="send('delete', '\${i}')">×</b>
+        </div>
+      `).join('');
+    }
 
-      function send(action, val) {
-        const value = val || document.getElementById('ipt').value.trim();
-        if(!value) return;
+    function send(action, val) {
+      const value = val || ipt.value.trim();
+      if(!value) return;
+      if(ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ action, value }));
-        if(!val) document.getElementById('ipt').value = '';
+        if(!val) ipt.value = '';
+      } else {
+        alert("连接已断开，请刷新页面");
       }
+    }
 
-      connect();
-    </script>
-  </body>
-  </html>
+    // 监听键盘回车
+    ipt.addEventListener('keypress', (e) => { if(e.key === 'Enter') send('add'); });
+    
+    connect();
+  </script>
+</body>
+</html>
   ''';
   }
 

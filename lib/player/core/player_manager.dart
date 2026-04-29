@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'player_pool.dart';
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
@@ -126,9 +127,13 @@ class PlayerManager {
   Future<void> play(String url, List<String> playUrls, Map<String, String> headers) async {
     if (_disposed) return;
     if (_currentPlayer == null || _runtimeEngine == null) {
-      await initialize(engine: _defaultEngine ?? PlayerEngine.mediaKit);
+      final SettingsService settings = Get.find<SettingsService>();
+      _defaultEngine = PlayerEngine.values[settings.videoPlayerIndex.value];
+      _runtimeEngine = _defaultEngine;
+      await initialize(engine: _defaultEngine!);
     } else if (_runtimeEngine != _defaultEngine) {
-      await switchEngine(_defaultEngine!);
+      log("🔄 播放新视频 → 恢复默认引擎: $_defaultEngine");
+      await switchEngine(_defaultEngine!, isManual: false);
     }
     final player = _currentPlayer;
 
@@ -167,16 +172,13 @@ class PlayerManager {
     await play(_currentUrl!, _currentPlayUrls, _currentHeaders);
   }
 
-  // =========================
-  // switch engine
-  // =========================
+  /// 切换播放器引擎
+  /// [isManual] true = 用户手动选择（会保存为默认引擎）
+  /// [isManual] false = 自动降级（不修改默认引擎）
 
-  Future<void> switchEngine(PlayerEngine engine) async {
+  Future<void> switchEngine(PlayerEngine engine, {bool isManual = false}) async {
     if (_disposed) return;
-
-    if (_runtimeEngine == engine && _currentPlayer != null) {
-      return;
-    }
+    if (_runtimeEngine == engine && _currentPlayer != null) return;
 
     try {
       final oldPlayer = _currentPlayer;
@@ -184,12 +186,9 @@ class PlayerManager {
       await _clearSubscriptions();
       if (oldPlayer != null && oldPlayer.isInitialized) {
         try {
-          // 只有当播放器还在运行且没被销毁时才尝试暂停
-          if (oldPlayer.isPlayingNow) {
-            await oldPlayer.pause();
-          }
+          if (oldPlayer.isPlayingNow) await oldPlayer.pause();
         } catch (e) {
-          debugPrint("Pause old player failed, continuing switch: $e");
+          log("暂停旧播放器失败: $e");
         }
       }
 
@@ -198,7 +197,10 @@ class PlayerManager {
       _currentPlayer = newPlayer;
 
       _runtimeEngine = engine;
-
+      if (isManual) {
+        _defaultEngine = engine;
+        log("✅ 用户手动切换引擎 → 保存为默认: $engine", name: 'PlayerManager');
+      }
       _bindPlayerStreams(newPlayer);
     } catch (e, s) {
       final exception = PlayerException(
@@ -348,7 +350,7 @@ class PlayerManager {
   }
 
   // =========================
-  // soft stop
+  // close stop
   // =========================
 
   Future<void> close() async {
@@ -357,7 +359,18 @@ class PlayerManager {
   }
 
   Future<void> softStop() async {
-    await _currentPlayer?.softStop();
+    try {
+      // 如果播放器异常，直接强制硬销毁
+      if (_stateSubject.value == PlayerState.error) {
+        await hardDispose();
+        return;
+      }
+      await _currentPlayer?.softStop();
+      _stateSubject.add(PlayerState.idle);
+      _playingSubject.add(false);
+    } catch (e) {
+      await hardDispose();
+    }
   }
 
   Future<void> hardDispose() async {

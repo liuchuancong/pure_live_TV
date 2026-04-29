@@ -30,6 +30,10 @@ class BetterPlayerAdapter implements UnifiedPlayer {
       autoPlay: true,
       fit: BoxFit.contain,
       handleLifecycle: true,
+      fullScreenByDefault: false,
+      autoDispose: false,
+      looping: false,
+      controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
     );
 
     _controller = BetterPlayerController(betterPlayerConfiguration);

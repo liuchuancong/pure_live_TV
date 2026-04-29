@@ -158,7 +158,7 @@ class LivePlayController extends StateController {
     detail.value = liveRoom;
     resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {
-      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
+      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
       return liveRoom;
     }
 
@@ -179,7 +179,7 @@ class LivePlayController extends StateController {
       }
     } else {
       success.value = false;
-      SmartDialog.showToast("当前主播未开播或主播已下播", displayTime: const Duration(seconds: 2));
+      SmartDialog.showToast("当前主播未开播或主播已下播");
       restoryQualityAndLines();
     }
 
@@ -215,7 +215,7 @@ class LivePlayController extends StateController {
     detail.value = liveRoom;
     resetGlobalListState();
     if (liveRoom.liveStatus == LiveStatus.unknown) {
-      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取", displayTime: const Duration(seconds: 2));
+      SmartDialog.showToast("获取直播间信息失败,请按确定建重新获取");
       return liveRoom;
     }
 
@@ -312,7 +312,7 @@ class LivePlayController extends StateController {
     try {
       var playQualites = await currentSite.liveSite.getPlayQualites(detail: detail.value!);
       if (playQualites.isEmpty) {
-        SmartDialog.showToast("无法读取视频信息,请按确定键重新获取", displayTime: const Duration(seconds: 2));
+        SmartDialog.showToast("无法读取视频信息,请按确定键重新获取");
         success.value = false;
         return;
       }
@@ -360,7 +360,7 @@ class LivePlayController extends StateController {
       quality: qualites[currentQuality.value],
     );
     if (playUrl.isEmpty) {
-      SmartDialog.showToast("无法读取播放地址,请按确定键重新获取", displayTime: const Duration(seconds: 2));
+      SmartDialog.showToast("无法读取播放地址,请按确定键重新获取");
       success.value = false;
       return;
     }
@@ -417,7 +417,7 @@ class LivePlayController extends StateController {
     var liveChannels = settings.currentPlayList;
     log(liveChannels.length.toString());
     if (liveChannels.isEmpty) {
-      SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
+      SmartDialog.showToast("没有正在直播的频道");
       return;
     }
     var index = settings.currentPlayListNodeIndex.value;
@@ -445,7 +445,7 @@ class LivePlayController extends StateController {
     var liveChannels = settings.currentPlayList;
     isFirstLoad.value = true;
     if (liveChannels.isEmpty) {
-      SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
+      SmartDialog.showToast("没有正在直播的频道");
       return;
     }
     var index = settings.currentPlayListNodeIndex.value;
@@ -472,7 +472,7 @@ class LivePlayController extends StateController {
     _currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
     var liveChannels = settings.currentPlayList;
     if (liveChannels.isEmpty) {
-      SmartDialog.showToast("没有正在直播的频道", displayTime: const Duration(seconds: 2));
+      SmartDialog.showToast("没有正在直播的频道");
       return;
     }
     var index = settings.currentPlayListNodeIndex.value;

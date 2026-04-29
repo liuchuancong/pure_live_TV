@@ -43,11 +43,11 @@ class BiliBiliAccountService extends GetxController {
           uid = info.mid ?? 0;
           setSite();
         } else {
-          SmartDialog.showToast("哔哩哔哩登录已失效，请重新登录", displayTime: const Duration(seconds: 2));
+          SmartDialog.showToast("哔哩哔哩登录已失效，请重新登录");
           logout();
         }
       } catch (e) {
-        SmartDialog.showToast("获取哔哩哔哩用户信息失败，可前往账号管理重试", displayTime: const Duration(seconds: 2));
+        SmartDialog.showToast("获取哔哩哔哩用户信息失败，可前往账号管理重试");
       }
     });
   }

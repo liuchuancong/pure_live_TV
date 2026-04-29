@@ -38,6 +38,10 @@ class AppInitializer {
     MediaKit.ensureInitialized();
     initService();
     _isInitialized = true;
+    SmartDialog.config.toast = SmartConfigToast(
+      displayTime: const Duration(milliseconds: 3000),
+      intervalTime: const Duration(milliseconds: 100),
+    );
   }
 
   void initService() {
