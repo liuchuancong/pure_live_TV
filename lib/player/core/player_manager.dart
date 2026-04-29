@@ -124,7 +124,9 @@ class PlayerManager {
 
   Future<void> play(String url, List<String> playUrls, Map<String, String> headers) async {
     if (_disposed) return;
-    if (_runtimeEngine != _defaultEngine) {
+    if (_currentPlayer == null || _runtimeEngine == null) {
+      await initialize(engine: _defaultEngine ?? PlayerEngine.mediaKit);
+    } else if (_runtimeEngine != _defaultEngine) {
       await switchEngine(_defaultEngine!);
     }
     final player = _currentPlayer;
@@ -179,8 +181,16 @@ class PlayerManager {
       final oldPlayer = _currentPlayer;
 
       await _clearSubscriptions();
-
-      await oldPlayer?.pause();
+      if (oldPlayer != null && oldPlayer.isInitialized) {
+        try {
+          // 只有当播放器还在运行且没被销毁时才尝试暂停
+          if (oldPlayer.isPlayingNow) {
+            await oldPlayer.pause();
+          }
+        } catch (e) {
+          debugPrint("Pause old player failed, continuing switch: $e");
+        }
+      }
 
       final newPlayer = await playerPool.getPlayer(engine);
 
@@ -341,6 +351,24 @@ class PlayerManager {
   // =========================
   Future<void> softStop() async {
     await _currentPlayer?.softStop();
+  }
+
+  Future<void> hardDispose() async {
+    final player = _currentPlayer;
+    if (player != null) {
+      await player.hardDispose();
+    }
+    if (_runtimeEngine != null) {
+      await playerPool.removeFromCache(_runtimeEngine!);
+    }
+
+    // 清空 Dart 引用
+    _currentPlayer = null;
+    _runtimeEngine = null;
+
+    // 重置状态
+    _stateSubject.add(PlayerState.idle);
+    _playingSubject.add(false);
   }
 
   // =========================

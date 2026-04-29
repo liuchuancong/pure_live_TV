@@ -1,20 +1,18 @@
-class CoreError extends Error {
-  /// 错误码
-  final int statusCode;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-  /// 错误信息
+class CoreError extends Error {
+  final int statusCode;
   final String message;
 
-  CoreError(
-    this.message, {
-    this.statusCode = 0,
-  });
+  CoreError(this.message, {this.statusCode = 0}) {
+    SmartDialog.showToast(toString());
+  }
+
   @override
   String toString() {
     if (statusCode != 0) {
       return statusCodeToString(statusCode);
     }
-
     return message;
   }
 

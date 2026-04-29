@@ -108,6 +108,9 @@ class FijkAdapter implements UnifiedPlayer {
   Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers) async {
     try {
       _loadingSubject.add(true);
+      if (_player.state != FijkState.idle) {
+        await _player.reset();
+      }
       final SettingsService settings = Get.find<SettingsService>();
       await FijkHelper.setFijkOption(_player, enableCodec: settings.enableCodec.value, headers: headers);
       await _player.setDataSource(url, autoPlay: true);
@@ -162,7 +165,10 @@ class FijkAdapter implements UnifiedPlayer {
     _disposed = true;
 
     await _player.release();
-
+    _initialized = false;
+    _stateSubject.add(PlayerState.idle);
+    _playingSubject.add(false);
+    _loadingSubject.add(false);
     await _stateSubject.close();
     await _playingSubject.close();
     await _loadingSubject.close();

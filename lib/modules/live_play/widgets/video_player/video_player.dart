@@ -32,10 +32,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
   }
 
   Widget _buildVideo() {
-    int index = controller.settings.videoFitIndex.value;
     return Obx(
       () => GlobalPlayerService.instance.playerManager.getVideoWidget(
-        index,
+        controller.settings.videoFitIndex.value,
         fitList: controller.settings.videofitArrary,
         controls: VideoControllerPanel(controller: controller),
       ),

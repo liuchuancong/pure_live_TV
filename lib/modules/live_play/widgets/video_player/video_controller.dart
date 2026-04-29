@@ -121,7 +121,7 @@ class VideoController with ChangeNotifier {
     // 初始化播放器
     _initPlayer();
     // 初始化订阅
-    _initSubscriptions();
+    initPlayerListener();
     // 初始化名称定时器
     _initNameTimer();
 
@@ -326,9 +326,6 @@ class VideoController with ChangeNotifier {
         break;
     }
   }
-
-  /// 初始化订阅
-  void _initSubscriptions() {}
 
   /// 初始化名称显示定时器
   void _initNameTimer() {
@@ -585,7 +582,7 @@ class VideoController with ChangeNotifier {
 
   /// 切换频道通用逻辑
   void _switchChannel(VoidCallback switchAction) {
-    GlobalPlayerService.instance.playerManager.softStop();
+    GlobalPlayerService.instance.playerManager.hardDispose();
     isLoading.value = true;
     _resetNameTimer();
     switchAction();
@@ -654,7 +651,7 @@ class VideoController with ChangeNotifier {
     // 取消订阅
     await _errorSub.cancel();
     // 停止播放器
-    GlobalPlayerService.instance.playerManager.softStop();
+    GlobalPlayerService.instance.playerManager.hardDispose();
 
     // 取消所有定时器
     showControllerTimer?.cancel();

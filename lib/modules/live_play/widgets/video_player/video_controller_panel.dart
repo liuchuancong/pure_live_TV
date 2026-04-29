@@ -252,15 +252,16 @@ class PlayPauseButton extends StatelessWidget {
         initialData: manager.isPlayingNow,
         builder: (context, snapshot) {
           final isPlaying = snapshot.data ?? false;
-
-          return HighlightIconButton(
-            useFocus: false,
-            focusNode: AppFocusNode(),
-            selected: controller.currentBottomClickType.value == BottomButtonClickType.playPause,
-            iconData: isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            onTap: () {
-              controller.togglePlayPause();
-            },
+          return Obx(
+            () => HighlightIconButton(
+              useFocus: false,
+              focusNode: AppFocusNode(),
+              selected: controller.currentBottomClickType.value == BottomButtonClickType.playPause,
+              iconData: isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              onTap: () {
+                controller.togglePlayPause();
+              },
+            ),
           );
         },
       ),

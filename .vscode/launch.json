@@ -6,7 +6,6 @@
             "request": "launch",
             "type": "dart",
            "args": ["-v", "--android-skip-build-dependency-validation"],
-
             "env": {
               "http_proxy": "http://127.0.0.1:7890",
               "https_proxy": "http://127.0.0.1:7890",
