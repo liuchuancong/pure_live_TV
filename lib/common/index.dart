@@ -20,3 +20,4 @@ export 'package:group_button/group_button.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
 export 'package:pure_live/common/base/constant.dart';
 export 'package:flv_lzc/fijkplayer.dart';
+export 'package:pure_live/player/global_player_service.dart';

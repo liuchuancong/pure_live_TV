@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
-import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 
 class GetXRouterObserver extends NavigatorObserver {
@@ -27,7 +26,7 @@ class BackButtonObserver extends RouteObserver<PageRoute<dynamic>> {
     super.didPop(route, previousRoute);
     if (route.settings.name == RoutePath.kLivePlay) {
       Get.find<LivePlayController>().onDelete();
-      SwitchableGlobalPlayer().stop();
+      GlobalPlayerService.instance.playerManager.softStop();
       final controller = Get.find<HomeController>();
       controller.refreshData();
     }

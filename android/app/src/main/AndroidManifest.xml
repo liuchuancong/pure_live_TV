@@ -15,6 +15,9 @@
                                androidx.datastore.datastore,
                                io.flutter.plugins.videoplayer,
                                androidx.media3.extractor,
+                               androidx.media3.ui,
+                               androidx.media3.session,
+                               androidx.media3.datasource.cronet,
                                androidx.media3.container,
                                androidx.media3.datasource,
                                androidx.media3.decoder,
@@ -29,6 +32,7 @@
                                androidx.camera.featurecombinationquery,
                                androidx.core,
                                androidx.core.ktx,
+                               uz.shs.better_player_plus,
                                com.example.my_flutter_plugin" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />

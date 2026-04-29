@@ -9,7 +9,6 @@ import 'package:pure_live/plugins/emoji_manager.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
-import 'package:pure_live/player/switchable_global_player.dart';
 import 'package:pure_live/modules/live_play/widgets/index.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/controller/video_danmaku.dart';
 
@@ -268,7 +267,7 @@ class LivePlayController extends StateController {
       success.value = false;
       isFirstLoad.value = true;
       focusNode.requestFocus();
-      SwitchableGlobalPlayer().dispose();
+      GlobalPlayerService.instance.playerManager.softStop();
       await Future.delayed(Duration(milliseconds: 500)); // 缩短延迟，避免新实例提前创建
     } catch (e) {
       log(e.toString(), name: 'disPoserPlayer');

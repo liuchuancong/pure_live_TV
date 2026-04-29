@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
-import 'package:pure_live/player/switchable_global_player.dart';
+import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
@@ -123,7 +123,9 @@ class SettingsPage extends GetView<SettingsService> {
               value: controller.videoPlayerIndex.value,
               onChanged: (e) {
                 controller.videoPlayerIndex.value = e;
-                SwitchableGlobalPlayer().switchEngine(PlayerEngine.values[controller.videoPlayerIndex.value]);
+                GlobalPlayerService.instance.playerManager.switchEngine(
+                  PlayerEngine.values[controller.videoPlayerIndex.value],
+                );
               },
             ),
           ),

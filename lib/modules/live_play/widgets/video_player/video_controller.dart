@@ -13,14 +13,11 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
-import 'package:pure_live/player/switchable_global_player.dart';
+import 'package:pure_live/player/models/player_exception.dart';
+import 'package:pure_live/player/models/player_error_type.dart';
 import 'package:pure_live/pkg/canvas_danmaku/danmaku_controller.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
-// 导入所需文件（无需显式导入扩展）
 
-// 项目依赖
-
-/// 视频播放核心控制器
 class VideoController with ChangeNotifier {
   // ==================== 构造参数 ====================
   final GlobalKey playerKey;
@@ -38,7 +35,6 @@ class VideoController with ChangeNotifier {
   // ==================== 依赖服务 ====================
   final LivePlayController livePlayController = Get.find<LivePlayController>();
   final SettingsService settings = Get.find<SettingsService>();
-  final SwitchableGlobalPlayer globalPlayer = SwitchableGlobalPlayer();
 
   // ==================== UI状态（响应式） ====================
   final videoFit = BoxFit.contain.obs;
@@ -72,7 +68,7 @@ class VideoController with ChangeNotifier {
   Timer? showChangeNameTimer;
   Timer? doubleClickTimer;
   late ScrollController scrollController;
-  late StreamSubscription<String?> _errorSub;
+  late StreamSubscription<PlayerException> _errorSub;
 
   // ==================== 焦点管理 ====================
   final AppFocusNode focusNode = AppFocusNode();
@@ -266,42 +262,73 @@ class VideoController with ChangeNotifier {
 
   /// 初始化播放器
   void _initPlayer() {
-    globalPlayer.setDataSource(datasource, playUrls, headers);
+    GlobalPlayerService.instance.playerManager.play(datasource, playUrls, headers);
+  }
+
+  void initPlayerListener() {
+    final manager = GlobalPlayerService.instance.playerManager;
+    _errorSub = manager.onError.listen((error) {
+      _handlePlayerError(error);
+    });
+  }
+
+  void _handlePlayerError(PlayerException error) {
+    log(error.toString(), name: 'PlayerError');
+    switch (error.type) {
+      // =====================
+      // 网络错误
+      // =====================
+      case PlayerErrorType.network:
+        SmartDialog.showToast('网络连接失败');
+        break;
+      // =====================
+      // 播放源错误
+      // =====================
+      case PlayerErrorType.source:
+        SmartDialog.showToast('播放源异常');
+        break;
+      // =====================
+      // 解码错误
+      // =====================
+      case PlayerErrorType.codec:
+        SmartDialog.showToast('当前播放器解码失败');
+        break;
+      // =====================
+      // native 崩溃
+      // =====================
+      case PlayerErrorType.native:
+        SmartDialog.showToast('播放器异常');
+        break;
+      // =====================
+      // 初始化失败
+      // =====================
+      case PlayerErrorType.initialization:
+        SmartDialog.showToast('播放器初始化失败');
+        break;
+      // =====================
+      // texture 错误
+      // =====================
+      case PlayerErrorType.texture:
+        SmartDialog.showToast('视频渲染失败');
+        break;
+      // =====================
+      // 生命周期错误
+      // =====================
+      case PlayerErrorType.lifecycle:
+        SmartDialog.showToast('播放器状态异常');
+        break;
+      // =====================
+      // 未知错误
+      // =====================
+      case PlayerErrorType.unknown:
+        SmartDialog.showToast('未知播放错误');
+
+        break;
+    }
   }
 
   /// 初始化订阅
-  void _initSubscriptions() {
-    // 播放器错误监听
-    _errorSub = globalPlayer.onError.listen((error) async {
-      if (error == null || error.isEmpty) return;
-
-      log('Player Error Caught: $error', name: 'VideoController');
-
-      // 1. 处理硬件解码失败 (ExoPlayer 专属错误)
-      if (error.contains("ExoPlaybackException") ||
-          error.contains("NO_EXCEEDS_CAPABILITIES") ||
-          error.contains("MediaCodecVideoRenderer")) {
-        SmartDialog.showToast("硬件解码失败，正在尝试切换引擎...");
-        // 延迟一小会儿执行，防止 UI 渲染冲突
-        await destroy();
-        await Future.delayed(const Duration(milliseconds: 500));
-        await SwitchableGlobalPlayer().switchEngine(PlayerEngine.values[settings.useFallbackPlayer.value]);
-        await Future.delayed(const Duration(milliseconds: 800));
-        log('Player Error Caught: $error', name: 'refresh');
-        refresh();
-        return;
-      }
-
-      // 2. 处理无法打开资源 (通用错误)
-      if (error.contains("Failed to open") || error.contains("IO_ERROR")) {
-        SmartDialog.showToast("当前线路连接失败，请刷新后重试");
-        return;
-      }
-
-      // 3. 其他未知错误
-      log("Unhandled Player Error: $error");
-    });
-  }
+  void _initSubscriptions() {}
 
   /// 初始化名称显示定时器
   void _initNameTimer() {
@@ -343,7 +370,6 @@ class VideoController with ChangeNotifier {
     int index = settings.videoFitIndex.value;
     index = (index + 1) % settings.videofitArrary.length;
     settings.videoFitIndex.value = index;
-    globalPlayer.changeVideoFit(index);
     videoFit.value = settings.videofitArrary[index];
   }
 
@@ -526,7 +552,7 @@ class VideoController with ChangeNotifier {
   }
 
   /// 播放/暂停切换
-  void togglePlayPause() => globalPlayer.togglePlayPause();
+  void togglePlayPause() => GlobalPlayerService.instance.playerManager.togglePlayPause();
 
   /// 上一个频道
   void prevPlayChannel() => _switchChannel(livePlayController.prevChannel);
@@ -559,7 +585,7 @@ class VideoController with ChangeNotifier {
 
   /// 切换频道通用逻辑
   void _switchChannel(VoidCallback switchAction) {
-    globalPlayer.pause();
+    GlobalPlayerService.instance.playerManager.softStop();
     isLoading.value = true;
     _resetNameTimer();
     switchAction();
@@ -628,7 +654,7 @@ class VideoController with ChangeNotifier {
     // 取消订阅
     await _errorSub.cancel();
     // 停止播放器
-    globalPlayer.stop();
+    GlobalPlayerService.instance.playerManager.softStop();
 
     // 取消所有定时器
     showControllerTimer?.cancel();

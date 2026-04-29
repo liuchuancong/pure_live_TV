@@ -32,7 +32,14 @@ class _VideoPlayerState extends State<VideoPlayer> {
   }
 
   Widget _buildVideo() {
-    return controller.globalPlayer.getVideoWidget(VideoControllerPanel(controller: controller));
+    int index = controller.settings.videoFitIndex.value;
+    return Obx(
+      () => GlobalPlayerService.instance.playerManager.getVideoWidget(
+        index,
+        fitList: controller.settings.videofitArrary,
+        controls: VideoControllerPanel(controller: controller),
+      ),
+    );
   }
 
   @override

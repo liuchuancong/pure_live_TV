@@ -2,8 +2,8 @@ import 'package:get/get.dart';
 import 'package:pure_live/initialized.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
+import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/routes/getx_router_observer.dart';
-import 'package:pure_live/player/switchable_global_player.dart';
 
 void main(List<String> args) async {
   // 初始化
@@ -22,14 +22,25 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 1), () {
-      initGlopalPlayer();
-    });
+    initGlopalPlayer();
+  }
+
+  @override
+  void dispose() {
+    GlobalPlayerService.instance.dispose();
+    super.dispose();
   }
 
   Future<void> initGlopalPlayer() async {
     final settings = Get.find<SettingsService>();
-    await SwitchableGlobalPlayer().init(PlayerEngine.values[settings.videoPlayerIndex.value]);
+    PlayerEngine defaultEngine;
+    try {
+      // 防止用户设置了一个不存在的播放器引擎索引
+      defaultEngine = PlayerEngine.values[settings.videoPlayerIndex.value];
+    } catch (e) {
+      defaultEngine = PlayerEngine.mediaKit;
+    }
+    await GlobalPlayerService.instance.initialize(defaultEngine: defaultEngine);
   }
 
   @override
