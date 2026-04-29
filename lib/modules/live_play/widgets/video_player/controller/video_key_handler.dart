@@ -64,10 +64,6 @@ extension VideoKeyHandler on VideoController {
   }
 
   void handlekeyPanelQrCode(KeyEvent key) {
-    if (key.logicalKey == LogicalKeyboardKey.escape || key.logicalKey == LogicalKeyboardKey.goBack) {
-      showQrCodePanel.value = false;
-      return;
-    }
     log('KeyEvent in QrCode: ${key.logicalKey}', name: 'VideoKeyHandler');
   }
 
