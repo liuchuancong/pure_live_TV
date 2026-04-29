@@ -493,6 +493,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_markdown_plus:
+    dependency: "direct main"
+    description:
+      name: flutter_markdown_plus
+      sha256: "039177906850278e8fb1cd364115ee0a46281135932fa8ecea8455522166d2de"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.7"
   flutter_screenutil:
     dependency: "direct main"
     description:
@@ -752,6 +760,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.3.3"
+  markdown:
+    dependency: transitive
+    description:
+      name: markdown
+      sha256: ee85086ad7698b42522c6ad42fe195f1b9898e4d974a1af4576c1a3a176cada9
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "7.3.1"
   marquee_list:
     dependency: "direct main"
     description:

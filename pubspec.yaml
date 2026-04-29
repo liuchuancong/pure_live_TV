@@ -76,6 +76,7 @@ dependencies:
   flutter_inappwebview: ^6.2.0-beta.2
   connectivity_plus: ^7.0.0 
   qr_flutter: ^4.1.0 
+  flutter_markdown_plus: ^1.0.7
   # 给web端通信
   dia: ^0.1.4
   dia_static: ^0.1.2

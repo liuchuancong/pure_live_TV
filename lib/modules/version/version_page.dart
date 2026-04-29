@@ -5,11 +5,39 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/style/theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pure_live/common/widgets/app_scaffold.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:pure_live/modules/version/version_controller.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 
 class VersionPage extends GetView<VersionController> {
   const VersionPage({super.key});
+  Widget _buildUpdateNotes() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: MarkdownBody(
+            data: controller.updateNotes.value.replaceAll('\\n', '\n'),
+            softLineBreak: true,
+            styleSheet: MarkdownStyleSheet(
+              p: TextStyle(color: Colors.white, fontSize: 24.sp),
+              pPadding: EdgeInsets.only(bottom: 8.h),
+              h1: const TextStyle(color: Colors.white),
+              h2: const TextStyle(color: Colors.white),
+              listBullet: const TextStyle(color: Colors.white70),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildDownloadSection({required String title, required String urls, required bool isArmV7a}) {
     final List<String> mirrorUrls = getMirrorUrls(urls);
@@ -88,6 +116,11 @@ class VersionPage extends GetView<VersionController> {
                 iconData: Icons.arrow_back,
                 text: "返回",
                 autofocus: true,
+                onFocusChange: (hasFocus) {
+                  if (hasFocus) {
+                    controller.scrollController.jumpTo(0);
+                  }
+                },
                 onTap: () {
                   // Kept your original logic
                   Navigator.of(Get.context!).pop();
@@ -105,14 +138,15 @@ class VersionPage extends GetView<VersionController> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-              // --- ADDED OBX FOR LOADING ---
               child: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                return ListView(
+                  controller: controller.scrollController,
                   children: [
+                    _buildUpdateNotes(),
+                    const SizedBox(height: 24),
                     _buildDownloadSection(
                       title: 'ARM64 (arm64-v8a) 版本',
                       urls: controller.apkUrl2.value,
