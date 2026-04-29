@@ -4,8 +4,22 @@ class CoreError extends Error {
   final int statusCode;
   final String message;
 
+  static String? _lastMessage;
+  static DateTime? _lastShowTime;
+
   CoreError(this.message, {this.statusCode = 0}) {
-    SmartDialog.showToast(toString());
+    final currentMsg = toString();
+    final now = DateTime.now();
+
+    // 检查逻辑：如果消息不同，或者距离上次弹窗超过 10 秒，才允许显示
+    if (_lastMessage != currentMsg ||
+        _lastShowTime == null ||
+        now.difference(_lastShowTime!) > const Duration(seconds: 10)) {
+      SmartDialog.showToast(currentMsg);
+
+      _lastMessage = currentMsg;
+      _lastShowTime = now;
+    }
   }
 
   @override
