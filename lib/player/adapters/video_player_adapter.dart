@@ -133,7 +133,16 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   Future<void> hardDispose() async {
     if (_disposed) return;
     _disposed = true;
-    _controller?.dispose();
+    _initialized = false;
+    if (_controller != null) {
+      try {
+        await _controller!.setVolume(0.0);
+        await _controller!.pause();
+        _controller!.dispose();
+      } catch (e) {
+        debugPrint("BetterPlayer dispose error: $e");
+      }
+    }
 
     await _stateSubject.close();
     await _playingSubject.close();

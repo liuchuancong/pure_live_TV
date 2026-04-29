@@ -145,7 +145,7 @@ class PlayerManager {
       await switchEngine(_defaultEngine!, isManual: false);
     }
     final player = _currentPlayer;
-    _isSwitchingDueToFallback = false;
+
     if (player == null) {
       throw PlayerException(message: 'Current player is null', type: PlayerErrorType.lifecycle);
     }
@@ -168,6 +168,8 @@ class PlayerManager {
       final exception = PlayerException(message: 'Play failed', type: PlayerErrorType.unknown, error: e, stackTrace: s);
 
       await _handleError(exception);
+    } finally {
+      _isSwitchingDueToFallback = false;
     }
   }
 
@@ -383,14 +385,6 @@ class PlayerManager {
   }
 
   Future<void> hardDispose() async {
-    final player = _currentPlayer;
-    if (player != null) {
-      await player.hardDispose();
-    }
-    if (_runtimeEngine != null) {
-      await playerPool.removeFromCache(_runtimeEngine!);
-    }
-
     // 清空 Dart 引用
     _currentPlayer = null;
     _runtimeEngine = null;
@@ -398,6 +392,7 @@ class PlayerManager {
     // 重置状态
     _stateSubject.add(PlayerState.idle);
     _playingSubject.add(false);
+    await dispose();
   }
 
   // =========================
@@ -490,6 +485,10 @@ class PlayerManager {
 
         if (event) {
           _stateSubject.add(PlayerState.playing);
+          if (_isSwitchingDueToFallback) {
+            _errorCount = 0;
+            _isSwitchingDueToFallback = false;
+          }
         } else {
           _stateSubject.add(PlayerState.paused);
         }
