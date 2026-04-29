@@ -10,6 +10,7 @@ import 'package:pure_live/common/widgets/button/highlight_button.dart';
 
 class VersionPage extends GetView<VersionController> {
   const VersionPage({super.key});
+
   Widget _buildDownloadSection({required String title, required String urls, required bool isArmV7a}) {
     final List<String> mirrorUrls = getMirrorUrls(urls);
     if (mirrorUrls.isEmpty) {
@@ -40,7 +41,6 @@ class VersionPage extends GetView<VersionController> {
         LayoutBuilder(
           builder: (context, constraints) {
             final double maxWidth = constraints.maxWidth;
-            // 桌面端 4 列，移动端 2 列（更易点击）
             final int maxColumns = 4;
             const double spacing = 8.0;
             final double buttonWidth = (maxWidth - spacing * (maxColumns - 1)) / maxColumns;
@@ -53,7 +53,10 @@ class VersionPage extends GetView<VersionController> {
                   SizedBox(
                     width: buttonWidth,
                     child: HighlightButton(
-                      focusNode: isArmV7a ? controller.appFocusNodes[i] : controller.appFocus2Nodes[i],
+                      focusNode: isArmV7a
+                          ? (i < controller.appFocusNodes.length ? controller.appFocusNodes[i] : AppFocusNode())
+                          : (i < controller.appFocus2Nodes.length ? controller.appFocus2Nodes[i] : AppFocusNode()),
+                      // ------------------------------------------
                       iconData: Icons.download_rounded,
                       text: '地址 ${i + 1}',
                       autofocus: true,
@@ -86,6 +89,7 @@ class VersionPage extends GetView<VersionController> {
                 text: "返回",
                 autofocus: true,
                 onTap: () {
+                  // Kept your original logic
                   Navigator.of(Get.context!).pop();
                 },
               ),
@@ -99,34 +103,30 @@ class VersionPage extends GetView<VersionController> {
           ),
           AppStyle.vGap24,
           Expanded(
-            child: Obx(
-              () => !controller.hasNewVersion.value
-                  ? Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Text("暂无新版本", style: AppStyle.textStyleWhite)],
-                      ),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildDownloadSection(
-                            title: 'ARM64 (arm64-v8a) 版本',
-                            urls: controller.apkUrl2.value,
-                            isArmV7a: false,
-                          ),
-                          const SizedBox(height: 24),
-                          _buildDownloadSection(
-                            title: 'ARM32 (armeabi-v7a) 版本',
-                            urls: controller.apkUrl.value,
-                            isArmV7a: true,
-                          ),
-                        ],
-                      ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              // --- ADDED OBX FOR LOADING ---
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildDownloadSection(
+                      title: 'ARM64 (arm64-v8a) 版本',
+                      urls: controller.apkUrl2.value,
+                      isArmV7a: false,
                     ),
+                    const SizedBox(height: 24),
+                    _buildDownloadSection(
+                      title: 'ARM32 (armeabi-v7a) 版本',
+                      urls: controller.apkUrl.value,
+                      isArmV7a: true,
+                    ),
+                  ],
+                );
+              }),
             ),
           ),
         ],

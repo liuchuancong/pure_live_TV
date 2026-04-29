@@ -6,10 +6,14 @@ import 'package:pure_live/common/base/base_controller.dart';
 
 class VersionController extends BaseController {
   final hasNewVersion = false.obs;
+  final isLoading = true.obs; // 1. Added loading state
   final apkUrl = ''.obs;
   final apkUrl2 = ''.obs;
-  List<AppFocusNode> appFocusNodes = [];
-  List<AppFocusNode> appFocus2Nodes = [];
+
+  // Use RxList to ensure the UI reacts to changes
+  final appFocusNodes = <AppFocusNode>[].obs;
+  final appFocus2Nodes = <AppFocusNode>[].obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -17,15 +21,22 @@ class VersionController extends BaseController {
   }
 
   Future<void> checkNewVersion() async {
-    await VersionUtil().checkUpdate();
-    hasNewVersion.value = VersionUtil.hasNewVersion();
-    appFocusNodes = getMirrorUrls(apkUrl.value).map((e) => AppFocusNode()).toList();
-    appFocus2Nodes = getMirrorUrls(apkUrl2.value).map((e) => AppFocusNode()).toList();
-    if (hasNewVersion.value) {
-      apkUrl.value =
-          '${VersionUtil.projectUrl}/releases/download/v${VersionUtil.latestVersion}/app-armeabi-v7a-release.apk';
-      apkUrl2.value =
-          '${VersionUtil.projectUrl}/releases/download/v${VersionUtil.latestVersion}/app-arm64-v8a-release.apk';
+    isLoading.value = true;
+    try {
+      await VersionUtil().checkUpdate();
+      hasNewVersion.value = VersionUtil.hasNewVersion();
+
+      final version = VersionUtil.latestVersion;
+      final project = VersionUtil.projectUrl;
+
+      apkUrl.value = '$project/releases/download/v$version/app-armeabi-v7a-release.apk';
+      apkUrl2.value = '$project/releases/download/v$version/app-arm64-v8a-release.apk';
+
+      // 2. Generate nodes only after URLs are ready
+      appFocusNodes.assignAll(getMirrorUrls(apkUrl.value).map((e) => AppFocusNode()).toList());
+      appFocus2Nodes.assignAll(getMirrorUrls(apkUrl2.value).map((e) => AppFocusNode()).toList());
+    } finally {
+      isLoading.value = false; // 3. Stop loading
     }
   }
 }

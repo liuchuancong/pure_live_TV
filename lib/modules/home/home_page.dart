@@ -110,7 +110,19 @@ class HomePage extends GetView<HomeController> {
                           AppStyle.hGap48,
                         ],
                       )
-                    : const SizedBox(),
+                    : Row(
+                        children: [
+                          HighlightButton(
+                            focusNode: controller.versionFocusNode,
+                            iconData: Icons.vertical_align_center,
+                            text: "版本下载",
+                            onTap: () {
+                              Get.toNamed(RoutePath.kVersionPage);
+                            },
+                          ),
+                          AppStyle.hGap48,
+                        ],
+                      ),
               ),
             ],
           ),

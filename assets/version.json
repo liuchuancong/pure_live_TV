@@ -1,7 +1,7 @@
 {
-  "version": "2.0.16",
-  "version_num": 12016,
-  "version_desc": "-Fixed: 优化壁纸显示.添加更多壁纸源. \n-Added: 添加douyin ttwid 设置.\n-Added: 添加扫码连接访问",
+  "version": "2.0.17",
+  "version_num": 12017,
+  "version_desc": "-Fixed: 优化视频播放器. \n-Added: 添加直播间屏蔽词设置.",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
