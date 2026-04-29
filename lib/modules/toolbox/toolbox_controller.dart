@@ -50,7 +50,7 @@ class ToolBoxController extends GetxController {
   void initServer() async {
     String ip = await getLocalIP();
     if (ip.isEmpty) {
-      SmartDialog.showToast("无法获取局域网IP，请检查网络");
+      ToastUtil.show("无法获取局域网IP，请检查网络");
       return;
     }
     String primaryIp = ip.contains(';') ? ip.split(';').first : ip;
@@ -83,7 +83,7 @@ class ToolBoxController extends GetxController {
               // 2. 回到主线程直接赋值给输入框
               Future.microtask(() {
                 roomJumpToController.text = rawContent;
-                SmartDialog.showToast("已同步远程内容");
+                ToastUtil.show("已同步远程内容");
                 log("接收到的原始文本: $rawContent");
               });
             }
@@ -147,12 +147,12 @@ class ToolBoxController extends GetxController {
 
   void jumpToRoom(String e) async {
     if (e.isEmpty) {
-      SmartDialog.showToast("链接不能为空");
+      ToastUtil.show("链接不能为空");
       return;
     }
     var parseResult = await parse(e);
     if (parseResult.isEmpty || parseResult.first == "") {
-      SmartDialog.showToast("无法解析此链接");
+      ToastUtil.show("无法解析此链接");
       return;
     }
     String platform = parseResult[1];

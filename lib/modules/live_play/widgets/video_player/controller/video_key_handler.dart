@@ -228,7 +228,7 @@ extension VideoKeyHandler on VideoController {
     if (doubleClickTimeStamp == 0) {
       // 首次点击
       final tip = settings.isFavorite(room) ? "双击取消关注" : "双击关注";
-      SmartDialog.showToast(tip);
+      ToastUtil.show(tip);
       doubleClickTimeStamp = DateTime.now().millisecondsSinceEpoch;
 
       // 设置双击超时
@@ -252,10 +252,10 @@ extension VideoKeyHandler on VideoController {
   void toggleFavoriteAction(dynamic room) {
     if (settings.isFavorite(room)) {
       settings.removeRoom(room);
-      SmartDialog.showToast("已取消关注");
+      ToastUtil.show("已取消关注");
     } else {
       settings.addRoom(room);
-      SmartDialog.showToast("已关注");
+      ToastUtil.show("已关注");
     }
   }
 

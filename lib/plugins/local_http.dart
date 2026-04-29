@@ -53,7 +53,7 @@ class LocalHttpServer {
       final connectivityResults = await (Connectivity().checkConnectivity());
       for (var connectivityResult in connectivityResults) {
         if (connectivityResult == ConnectivityResult.none) {
-          SmartDialog.showToast('请在局域网下使用');
+          ToastUtil.show('请在局域网下使用');
           return;
         }
       }
@@ -79,9 +79,9 @@ class LocalHttpServer {
         ctx.body = settingStrings != null ? jsonEncode({'data': true}) : jsonEncode({'data': false});
         try {
           settings.fromJson(jsonDecode(settingStrings!));
-          SmartDialog.showToast('同步成功');
+          ToastUtil.show('同步成功');
         } catch (e) {
-          SmartDialog.showToast('同步失败');
+          ToastUtil.show('同步失败');
         }
       });
       router.post('/uploadFile', (ctx, next) async {
@@ -103,9 +103,9 @@ class LocalHttpServer {
             final file = File('${dir.path}${Platform.pathSeparator}${ctx.parsed['name']}');
             file.writeAsStringSync(ctx.parsed['file']);
             if (settings.recover(file)) {
-              SmartDialog.showToast("恢复备份成功");
+              ToastUtil.show("恢复备份成功");
             } else {
-              SmartDialog.showToast("恢复备份失败");
+              ToastUtil.show("恢复备份失败");
             }
           } else {
             next();

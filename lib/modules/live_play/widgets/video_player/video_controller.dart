@@ -279,49 +279,49 @@ class VideoController with ChangeNotifier {
       // 网络错误
       // =====================
       case PlayerErrorType.network:
-        SmartDialog.showToast('网络连接失败');
+        ToastUtil.show('网络连接失败');
         break;
       // =====================
       // 播放源错误
       // =====================
       case PlayerErrorType.source:
-        SmartDialog.showToast('播放源异常');
+        ToastUtil.show('播放源异常');
         break;
       // =====================
       // 解码错误
       // =====================
       case PlayerErrorType.codec:
-        SmartDialog.showToast('当前播放器解码失败');
+        ToastUtil.show('当前播放器解码失败');
         break;
       // =====================
       // native 崩溃
       // =====================
       case PlayerErrorType.native:
-        SmartDialog.showToast('播放器异常');
+        ToastUtil.show('播放器异常');
         break;
       // =====================
       // 初始化失败
       // =====================
       case PlayerErrorType.initialization:
-        SmartDialog.showToast('播放器初始化失败');
+        ToastUtil.show('播放器初始化失败');
         break;
       // =====================
       // texture 错误
       // =====================
       case PlayerErrorType.texture:
-        SmartDialog.showToast('视频渲染失败');
+        ToastUtil.show('视频渲染失败');
         break;
       // =====================
       // 生命周期错误
       // =====================
       case PlayerErrorType.lifecycle:
-        SmartDialog.showToast('播放器状态异常');
+        ToastUtil.show('播放器状态异常');
         break;
       // =====================
       // 未知错误
       // =====================
       case PlayerErrorType.unknown:
-        SmartDialog.showToast('未知播放错误');
+        ToastUtil.show('未知播放错误');
 
         break;
     }

@@ -62,6 +62,15 @@ class PlayerManager {
 
   bool _disposed = false;
 
+  int _errorCount = 0;
+
+  DateTime? _lastErrorTime;
+
+  static const int _maxErrorCount = 5;
+
+  static const Duration _errorResetDuration = Duration(seconds: 10);
+
+  bool _isSwitchingDueToFallback = false;
   // =========================
   // getter
   // =========================
@@ -131,12 +140,12 @@ class PlayerManager {
       _defaultEngine = PlayerEngine.values[settings.videoPlayerIndex.value];
       _runtimeEngine = _defaultEngine;
       await initialize(engine: _defaultEngine!);
-    } else if (_runtimeEngine != _defaultEngine) {
+    } else if (_runtimeEngine != _defaultEngine && !_isSwitchingDueToFallback) {
       log("🔄 播放新视频 → 恢复默认引擎: $_defaultEngine");
       await switchEngine(_defaultEngine!, isManual: false);
     }
     final player = _currentPlayer;
-
+    _isSwitchingDueToFallback = false;
     if (player == null) {
       throw PlayerException(message: 'Current player is null', type: PlayerErrorType.lifecycle);
     }
@@ -413,42 +422,61 @@ class PlayerManager {
 
   Future<void> _handleError(PlayerException error) async {
     _errorSubject.add(error);
-
     PlayerErrorDispatcher.instance.dispatch(error);
-
     _stateSubject.add(PlayerState.error);
+
+    // 检查是否在短时间内发生过多错误
+    DateTime now = DateTime.now();
+    if (_lastErrorTime != null && now.difference(_lastErrorTime!) > _errorResetDuration) {
+      _errorCount = 0;
+    }
+
+    _errorCount++;
+    _lastErrorTime = now;
+
+    // 如果错误次数过多，停止自动重试
+    if (_errorCount >= _maxErrorCount) {
+      log("❌ 错误次数过多 ($_errorCount)，停止自动重试");
+      return;
+    }
 
     // ======================
     // line fallback
     // ======================
-
     if (error.type == PlayerErrorType.network || error.type == PlayerErrorType.source) {
       if (_currentPlayUrls.isEmpty) {
-        throw error;
+        log("❌ 无备用线路可切换");
+        return;
       }
 
       final nextLine = lineManager.next(_currentPlayUrls);
+      log("🔄 线路降级: 尝试下一个线路");
 
       await play(nextLine, _currentPlayUrls, _currentHeaders);
-
       return;
     }
 
     // ======================
     // engine fallback
     // ======================
-
     if (fallbackManager.shouldFallback(error)) {
+      log("🔄 尝试引擎降级...");
       final nextEngine = await fallbackManager.fallback(_runtimeEngine!, error);
 
-      await switchEngine(nextEngine);
+      // 如果降级后的引擎和当前引擎相同，说明无法降级
+      if (nextEngine == _runtimeEngine) {
+        log("⚠️ 无法降级到其他引擎，当前引擎: $nextEngine");
+        return;
+      }
 
+      log("🔄 引擎降级: $_runtimeEngine -> $nextEngine");
+      _isSwitchingDueToFallback = true; // 设置降级标志
+      await switchEngine(nextEngine, isManual: false);
       await replay();
-
       return;
     }
 
-    throw error;
+    log("❌ 不满足降级条件，错误类型: ${error.type}");
   }
 
   // =========================

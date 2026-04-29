@@ -453,13 +453,13 @@ class SettingsService extends GetxController {
         if (base64String.length > 30) {
           currentBoxImage.value = base64String;
         } else {
-          SmartDialog.showToast("The image content is invalid.");
+          ToastUtil.show("The image content is invalid.");
         }
       } else {
-        SmartDialog.showToast("Failed to retrieve a valid image URL.");
+        ToastUtil.show("Failed to retrieve a valid image URL.");
       }
     } catch (e) {
-      SmartDialog.showToast("Error: $e");
+      ToastUtil.show("Error: $e");
     }
   }
 

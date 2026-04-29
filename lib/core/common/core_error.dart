@@ -1,25 +1,11 @@
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:pure_live/common/utils/toast_util.dart';
 
 class CoreError extends Error {
   final int statusCode;
   final String message;
 
-  static String? _lastMessage;
-  static DateTime? _lastShowTime;
-
   CoreError(this.message, {this.statusCode = 0}) {
-    final currentMsg = toString();
-    final now = DateTime.now();
-
-    // 检查逻辑：如果消息不同，或者距离上次弹窗超过 10 秒，才允许显示
-    if (_lastMessage != currentMsg ||
-        _lastShowTime == null ||
-        now.difference(_lastShowTime!) > const Duration(seconds: 10)) {
-      SmartDialog.showToast(currentMsg);
-
-      _lastMessage = currentMsg;
-      _lastShowTime = now;
-    }
+    ToastUtil.show(toString());
   }
 
   @override

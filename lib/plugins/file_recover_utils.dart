@@ -57,7 +57,7 @@ class FileRecoverUtils {
     try {
       dio.Response response = await dioInstance.download(url, m3ufile.path);
       if (response.statusCode != 200 && response.statusCode != 304) {
-        SmartDialog.showToast("文件下载失败请重试");
+        ToastUtil.show("文件下载失败请重试");
       }
       List jsonArr = [];
       final categories = File('${dir.path}${Platform.pathSeparator}categories.json');
@@ -78,10 +78,10 @@ class FileRecoverUtils {
       }
 
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      SmartDialog.showToast("恢复备份成功");
+      ToastUtil.show("恢复备份成功");
       return true;
     } catch (e) {
-      SmartDialog.showToast("恢复备份失败");
+      ToastUtil.show("恢复备份失败");
       return false;
     }
   }
@@ -105,10 +105,10 @@ class FileRecoverUtils {
         );
       }
       categories.writeAsStringSync(jsonEncode(categoriesArr.map((e) => e.toJson()).toList()));
-      SmartDialog.showToast("恢复备份成功");
+      ToastUtil.show("恢复备份成功");
       return true;
     } catch (e) {
-      SmartDialog.showToast("恢复备份失败");
+      ToastUtil.show("恢复备份失败");
       return false;
     }
   }

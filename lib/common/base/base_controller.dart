@@ -32,7 +32,7 @@ class BaseController extends GetxController {
       pageError.value = true;
       errorMsg.value = msg;
     } else {
-      SmartDialog.showToast(exceptionToString(msg));
+      ToastUtil.show(exceptionToString(msg));
     }
   }
 
@@ -147,11 +147,7 @@ class BasePageController<T> extends BaseController {
 
   void scrollToTopOrRefresh() {
     if (scrollController.offset > 0) {
-      scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.linear,
-      );
+      scrollController.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.linear);
     }
     refreshData();
   }

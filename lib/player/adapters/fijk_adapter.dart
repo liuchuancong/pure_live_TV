@@ -96,6 +96,7 @@ class FijkAdapter implements UnifiedPlayer {
           _loadingSubject.add(false);
           final exception = PlayerException(message: 'Fijk native error', type: PlayerErrorType.native);
           _errorSubject.add(exception);
+          _player.reset();
           PlayerErrorDispatcher.instance.dispatch(exception);
           break;
         default:
@@ -155,7 +156,11 @@ class FijkAdapter implements UnifiedPlayer {
 
   @override
   Future<void> softStop() async {
-    await _player.pause();
+    if (!_initialized) return;
+    await _player.reset();
+    _playingSubject.add(false);
+    _loadingSubject.add(false);
+    _stateSubject.add(PlayerState.idle);
   }
 
   @override
