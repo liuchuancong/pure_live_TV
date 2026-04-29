@@ -1,7 +1,7 @@
 {
   "version": "2.0.17",
   "version_num": 12017,
-  "version_desc": "-Fixed: 优化视频播放器. \n-Added: 添加直播间屏蔽词设置.",
+  "version_desc": "-Fixed:优化视频播放器.添加视频播放器缓存可在设置中切换.\n-Intro: 长按分区松开可以进行分区关注.\n-Added: 添加直播间屏蔽词设置.",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
