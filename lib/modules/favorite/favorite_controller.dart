@@ -21,20 +21,24 @@ class FavoriteController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
     onlineRoomsNodes.requestFocus();
-    // 初始化关注页
     syncRooms();
-    // 监听settings rooms变化
+
     settings.favoriteRooms.listen((rooms) => syncRooms());
+
     if (settings.autoRefreshFavorite.value) {
       int interval = settings.autoRefreshInterval.value;
-      if (interval == 0) return;
+      if (interval <= 0) return;
+
       DateTime now = DateTime.now();
-      DateTime last = settings.lastRefreshTime ?? now.subtract(Duration(days: 1));
+      DateTime last = settings.lastRefreshTime.value > 0
+          ? DateTime.fromMillisecondsSinceEpoch(settings.lastRefreshTime.value)
+          : now.subtract(const Duration(days: 1));
+
       if (now.difference(last).inMinutes >= interval) {
         onRefresh();
-        settings.lastRefreshTime = now;
+        int nowMillis = now.millisecondsSinceEpoch;
+        settings.lastRefreshTime.value = nowMillis;
       }
     }
   }
