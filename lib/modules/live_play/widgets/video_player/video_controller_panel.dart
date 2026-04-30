@@ -398,18 +398,6 @@ class ShieldPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Header with Return Button
-              Row(
-                children: [
-                  AppStyle.hGap24,
-                  Text(
-                    "屏蔽设置",
-                    style: AppStyle.titleStyleWhite.copyWith(fontSize: 32.w, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              AppStyle.vGap32,
-
               Align(
                 alignment: Alignment.center,
                 child: Column(
@@ -424,7 +412,7 @@ class ShieldPanel extends StatelessWidget {
                       child: QrImageView(
                         data: controller.fullServerUrl.value,
                         version: QrVersions.auto,
-                        size: 360.w,
+                        size: 220.w,
                         padding: AppStyle.edgeInsetsA24,
                         eyeStyle: const QrEyeStyle(color: Color(0xFF000000), eyeShape: QrEyeShape.square),
                         dataModuleStyle: const QrDataModuleStyle(
@@ -455,8 +443,8 @@ class ShieldPanel extends StatelessWidget {
                             () => Text(
                               controller.fullServerUrl.value.isEmpty ? "正在启动服务..." : controller.fullServerUrl.value,
                               style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 22.sp,
+                                color: Colors.white,
+                                fontSize: 28.sp,
                                 fontFamily: 'monospace', // 使用等宽字体更专业
                               ),
                             ),
@@ -476,6 +464,7 @@ class ShieldPanel extends StatelessWidget {
               // 3. Shield List (Wrap Layout)
               Expanded(
                 child: SingleChildScrollView(
+                  controller: controller.shieldScrollController,
                   child: Obx(
                     () => Wrap(
                       spacing: 12.w,
@@ -483,16 +472,14 @@ class ShieldPanel extends StatelessWidget {
                       children: controller.settings.shieldList.asMap().entries.map((entry) {
                         final int index = entry.key;
                         final String value = entry.value;
-                        if (index >= controller.shieldFocusNodes.length) return const SizedBox.shrink();
+                        final isSelected = controller.selectedShieldIndex.value == index;
                         return HighlightButton(
-                          focusNode: controller.shieldFocusNodes[index],
-                          selected: controller.shieldFocusNodes[index].hasFocus,
-                          text: entry.value,
-                          // Customizing icon to show delete intent
-                          iconData: Icons.close_rounded,
-                          onTap: () {
-                            controller.removeShieldWord(value);
-                          },
+                          useFocus: false,
+                          focusNode: AppFocusNode(),
+                          selected: isSelected,
+                          text: value,
+                          icon: Icon(Icons.close_rounded, size: 30.w, color: isSelected ? Colors.black : Colors.white),
+                          onTap: () => controller.removeShieldWord(value),
                         );
                       }).toList(),
                     ),
