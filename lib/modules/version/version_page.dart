@@ -11,6 +11,7 @@ import 'package:pure_live/common/widgets/button/highlight_button.dart';
 
 class VersionPage extends GetView<VersionController> {
   const VersionPage({super.key});
+
   Widget _buildUpdateNotes() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,21 +40,10 @@ class VersionPage extends GetView<VersionController> {
     );
   }
 
-  Widget _buildDownloadSection({required String title, required String urls, required bool isArmV7a}) {
+  // 修改：增加 focusNodes 参数以适配不同版本
+  Widget _buildDownloadSection({required String title, required String urls, required List<AppFocusNode> focusNodes}) {
     final List<String> mirrorUrls = getMirrorUrls(urls);
-    if (mirrorUrls.isEmpty) {
-      return Card(
-        margin: EdgeInsets.zero,
-        color: Theme.of(Get.context!).colorScheme.surfaceContainerHighest,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          child: Text(
-            '暂无 $title',
-            style: TextStyle(color: Theme.of(Get.context!).colorScheme.onSurfaceVariant, fontStyle: FontStyle.italic),
-          ),
-        ),
-      );
-    }
+    if (mirrorUrls.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +59,7 @@ class VersionPage extends GetView<VersionController> {
         LayoutBuilder(
           builder: (context, constraints) {
             final double maxWidth = constraints.maxWidth;
-            final int maxColumns = 4;
+            const int maxColumns = 4;
             const double spacing = 8.0;
             final double buttonWidth = (maxWidth - spacing * (maxColumns - 1)) / maxColumns;
 
@@ -81,16 +71,11 @@ class VersionPage extends GetView<VersionController> {
                   SizedBox(
                     width: buttonWidth,
                     child: HighlightButton(
-                      focusNode: isArmV7a
-                          ? (i < controller.appFocusNodes.length ? controller.appFocusNodes[i] : AppFocusNode())
-                          : (i < controller.appFocus2Nodes.length ? controller.appFocus2Nodes[i] : AppFocusNode()),
-                      // ------------------------------------------
+                      // 修改：直接使用传入的 focusNodes
+                      focusNode: i < focusNodes.length ? focusNodes[i] : AppFocusNode(),
                       iconData: Icons.download_rounded,
                       text: '地址 ${i + 1}',
-                      autofocus: true,
-                      onTap: () {
-                        downloadAndInstallApk(mirrorUrls[i]);
-                      },
+                      onTap: () => downloadAndInstallApk(mirrorUrls[i]),
                     ),
                   ),
               ],
@@ -117,14 +102,9 @@ class VersionPage extends GetView<VersionController> {
                 text: "返回",
                 autofocus: true,
                 onFocusChange: (hasFocus) {
-                  if (hasFocus) {
-                    controller.scrollController.jumpTo(0);
-                  }
+                  if (hasFocus) controller.scrollController.jumpTo(0);
                 },
-                onTap: () {
-                  // Kept your original logic
-                  Navigator.of(Get.context!).pop();
-                },
+                onTap: () => Navigator.of(Get.context!).pop(),
               ),
               AppStyle.hGap32,
               Text(
@@ -147,16 +127,36 @@ class VersionPage extends GetView<VersionController> {
                   children: [
                     _buildUpdateNotes(),
                     const SizedBox(height: 24),
+
+                    // 1. 标准版 - ARM64
                     _buildDownloadSection(
-                      title: 'ARM64 (arm64-v8a) 版本',
-                      urls: controller.apkUrl2.value,
-                      isArmV7a: false,
+                      title: '标准版 - ARM64 (v8a)',
+                      urls: controller.apkUrlv8.value,
+                      focusNodes: controller.appFocusNodesV8,
                     ),
                     const SizedBox(height: 24),
+
+                    // 2. 标准版 - ARM32
                     _buildDownloadSection(
-                      title: 'ARM32 (armeabi-v7a) 版本',
-                      urls: controller.apkUrl.value,
-                      isArmV7a: true,
+                      title: '标准版 - ARM32 (v7a)',
+                      urls: controller.apkUrlv7.value,
+                      focusNodes: controller.appFocusNodesV7,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 3. 精简版 - ARM64 (without-exo)
+                    _buildDownloadSection(
+                      title: '精简版 (No-Exo) - ARM64',
+                      urls: controller.apkUrlv8Exo.value,
+                      focusNodes: controller.appFocusNodesV8Exo,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 4. 精简版 - ARM32 (without-exo)
+                    _buildDownloadSection(
+                      title: '精简版 (No-Exo) - ARM32',
+                      urls: controller.apkUrlv7Exo.value,
+                      focusNodes: controller.appFocusNodesV7Exo,
                     ),
                   ],
                 );
