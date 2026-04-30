@@ -383,11 +383,11 @@ class ShieldPanel extends StatelessWidget {
     return Obx(() {
       return AnimatedPositioned(
         duration: const Duration(milliseconds: 300),
-        right: controller.showQrCodePanel.value ? 0 : -500.w,
+        right: controller.showQrCodePanel.value ? 0 : -800.w,
         top: 0,
         bottom: 0,
         child: Container(
-          width: 500.w,
+          width: 800.w,
           decoration: BoxDecoration(
             color: Get.theme.cardColor.withValues(alpha: 0.98),
             border: Border(
@@ -415,14 +415,27 @@ class ShieldPanel extends StatelessWidget {
                 child: Column(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(16.w),
+                      padding: EdgeInsets.all(32.w),
                       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.w)),
-                      child: QrImageView(data: controller.fullServerUrl.value, version: QrVersions.auto, size: 220.w),
+                      child: QrImageView(
+                        data: controller.fullServerUrl.value,
+                        version: QrVersions.auto,
+                        size: 400.w, // 3. Increased QR size to match the 800 width
+                        eyeStyle: const QrEyeStyle(color: Colors.black, eyeShape: QrEyeShape.square),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          color: Colors.black,
+                          dataModuleShape: QrDataModuleShape.square,
+                        ),
+                      ),
                     ),
                     AppStyle.vGap16,
                     Text(
                       "手机扫码 远程增删",
-                      style: AppStyle.textStyleWhite.copyWith(fontSize: 20.w, color: Colors.white70),
+                      style: AppStyle.textStyleWhite.copyWith(
+                        fontSize: 28.w,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
