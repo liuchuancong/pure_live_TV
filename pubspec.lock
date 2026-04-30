@@ -33,14 +33,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.13.1"
-  better_player_plus:
-    dependency: "direct main"
-    description:
-      name: better_player_plus
-      sha256: "75ca888158344b097a43e2da00a8012ab814c099f5239c9387a3845b1af86e2c"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.2.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -543,14 +535,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_widget_from_html_core:
-    dependency: transitive
-    description:
-      name: flutter_widget_from_html_core
-      sha256: "7ff010b116f6abc16429923e616fbc727f3f65ef4cee12ffdb280aeecbc21e7f"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.17.2"
   flv_lzc:
     dependency: "direct main"
     description:
@@ -1494,14 +1478,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.2.0"
-  visibility_detector:
-    dependency: transitive
-    description:
-      name: visibility_detector
-      sha256: dd5cc11e13494f432d15939c3aa8ae76844c42b723398643ce9addb88a5ed420
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.4.0+2"
   vm_service:
     dependency: transitive
     description:
