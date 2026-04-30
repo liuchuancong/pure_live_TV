@@ -23,6 +23,8 @@ class MediaKitAdapter implements UnifiedPlayer {
 
   bool _listenerBound = false;
 
+  bool _wasSoftStopped = false;
+
   String? _currentUrl;
 
   final _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.idle);
@@ -132,6 +134,10 @@ class MediaKitAdapter implements UnifiedPlayer {
     _currentUrl = url;
 
     try {
+      if (_wasSoftStopped) {
+        _wasSoftStopped = false;
+        await setVolume(1.0);
+      }
       _loadingSubject.add(true);
 
       _stateSubject.add(PlayerState.preparing);
@@ -374,9 +380,9 @@ class MediaKitAdapter implements UnifiedPlayer {
 
   @override
   Future<void> softStop() async {
+    _wasSoftStopped = true;
+    await _player.setVolume(0.0);
     await _player.pause();
-
-    await _player.seek(Duration.zero);
   }
 
   // =========================

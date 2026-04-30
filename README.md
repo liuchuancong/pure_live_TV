@@ -52,7 +52,7 @@
 - 本项目为 **非盈利性开源软件**，遵循 **[GPL-3.0 协议](LICENSE)**。  
 - **不提供任何 VIP 解锁、视频破解或盗链服务**。高清直播需您在对应平台拥有合法账号权限。  
 - 所有直播内容（视频、音频、图像等）**版权归属原平台所有**，本软件仅作技术聚合与转码展示。  
-- 若您认为本项目侵犯您的合法权益，请通过 [GitHub Issue](https://github.com/liuchuancong/pure_live/issues) 联系我们，我们将及时处理。
+- 若您认为本项目侵犯您的合法权益，请通过 [GitHub Issue](https://github.com/liuchuancong/pure_live_TV/issues) 联系我们，我们将及时处理。
 
 ---
 
@@ -118,7 +118,7 @@
 
 ## 🌟 Star 趋势
 
-[![Stargazers over time](https://starchart.cc/liuchuancong/pure_live.svg)](https://starchart.cc/liuchuancong/pure_live)
+[![Stargazers over time](https://starchart.cc/liuchuancong/pure_live_TV.svg)](https://starchart.cc/liuchuancong/pure_live_TV)
 
 ---
 
@@ -127,7 +127,7 @@
 如果您觉得本项目对您有帮助，欢迎扫码支持开发者一杯咖啡 ☕
 
 <p align="center">
-  <img src="https://github.com/liuchuancong/pure_live/blob/master/assets/images/wechat.png" width="250" alt="WeChat Donate">
+  <img src="https://github.com/liuchuancong/pure_live/blob/master/assets/images/wechat.png" width="400" alt="WeChat Donate">
 </p>
 
 > 您的支持是我持续维护的动力！感谢 ❤️

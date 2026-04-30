@@ -145,7 +145,7 @@ class PlayerManager {
       await switchEngine(_defaultEngine!, isManual: false);
     }
     final player = _currentPlayer;
-    _isSwitchingDueToFallback = false;
+
     if (player == null) {
       throw PlayerException(message: 'Current player is null', type: PlayerErrorType.lifecycle);
     }
@@ -168,6 +168,8 @@ class PlayerManager {
       final exception = PlayerException(message: 'Play failed', type: PlayerErrorType.unknown, error: e, stackTrace: s);
 
       await _handleError(exception);
+    } finally {
+      _isSwitchingDueToFallback = false;
     }
   }
 
@@ -184,33 +186,30 @@ class PlayerManager {
   /// 切换播放器引擎
   /// [isManual] true = 用户手动选择（会保存为默认引擎）
   /// [isManual] false = 自动降级（不修改默认引擎）
-
   Future<void> switchEngine(PlayerEngine engine, {bool isManual = false}) async {
     if (_disposed) return;
     if (_runtimeEngine == engine && _currentPlayer != null) return;
 
     try {
       final oldPlayer = _currentPlayer;
+      final oldEngine = _runtimeEngine;
 
       await _clearSubscriptions();
-      if (oldPlayer != null && oldPlayer.isInitialized) {
-        try {
-          if (oldPlayer.isPlayingNow) await oldPlayer.pause();
-        } catch (e) {
-          log("暂停旧播放器失败: $e");
-        }
-      }
 
       final newPlayer = await playerPool.getPlayer(engine);
-
       _currentPlayer = newPlayer;
-
       _runtimeEngine = engine;
+
       if (isManual) {
         _defaultEngine = engine;
         log("✅ 用户手动切换引擎 → 保存为默认: $engine", name: 'PlayerManager');
       }
+
       _bindPlayerStreams(newPlayer);
+
+      if (oldPlayer != null && oldEngine != null) {
+        unawaited(_safeDestroyPlayer(oldPlayer, oldEngine));
+      }
     } catch (e, s) {
       final exception = PlayerException(
         message: 'Switch engine failed',
@@ -218,10 +217,20 @@ class PlayerManager {
         error: e,
         stackTrace: s,
       );
-
       _errorSubject.add(exception);
+      // 即使切换失败，也要尝试恢复旧的状态或抛出异常
+      rethrow;
+    }
+  }
 
-      throw exception;
+  // 在 PlayerManager 类的底部添加此方法
+  Future<void> _safeDestroyPlayer(UnifiedPlayer player, PlayerEngine engine) async {
+    try {
+      await player.hardDispose();
+      await playerPool.removeFromCache(engine);
+    } catch (e, s) {
+      // 记录日志但不抛出，确保不影响主流程
+      log("⚠️ 销毁旧播放器实例时发生异常: $e", stackTrace: s);
     }
   }
 
@@ -383,6 +392,7 @@ class PlayerManager {
   }
 
   Future<void> hardDispose() async {
+    // 清空 Dart 引用
     final player = _currentPlayer;
     if (player != null) {
       await player.hardDispose();
@@ -390,14 +400,8 @@ class PlayerManager {
     if (_runtimeEngine != null) {
       await playerPool.removeFromCache(_runtimeEngine!);
     }
-
-    // 清空 Dart 引用
     _currentPlayer = null;
     _runtimeEngine = null;
-
-    // 重置状态
-    _stateSubject.add(PlayerState.idle);
-    _playingSubject.add(false);
   }
 
   // =========================
@@ -490,6 +494,10 @@ class PlayerManager {
 
         if (event) {
           _stateSubject.add(PlayerState.playing);
+          if (_isSwitchingDueToFallback) {
+            _errorCount = 0;
+            _isSwitchingDueToFallback = false;
+          }
         } else {
           _stateSubject.add(PlayerState.paused);
         }
