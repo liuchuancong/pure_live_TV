@@ -415,15 +415,20 @@ class ShieldPanel extends StatelessWidget {
                 child: Column(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(32.w),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.w)),
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.w),
+                        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10.w)],
+                      ),
                       child: QrImageView(
                         data: controller.fullServerUrl.value,
                         version: QrVersions.auto,
-                        size: 400.w, // 3. Increased QR size to match the 800 width
-                        eyeStyle: const QrEyeStyle(color: Colors.black, eyeShape: QrEyeShape.square),
+                        size: 360.w,
+                        padding: AppStyle.edgeInsetsA24,
+                        eyeStyle: const QrEyeStyle(color: Color(0xFF000000), eyeShape: QrEyeShape.square),
                         dataModuleStyle: const QrDataModuleStyle(
-                          color: Colors.black,
+                          color: Color(0xFF000000),
                           dataModuleShape: QrDataModuleShape.square,
                         ),
                       ),
@@ -433,10 +438,33 @@ class ShieldPanel extends StatelessWidget {
                       "手机扫码 远程增删",
                       style: AppStyle.textStyleWhite.copyWith(
                         fontSize: 28.w,
-                        color: Colors.white70,
+                        color: Colors.white, // 增强对比度
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    AppStyle.vGap12,
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(8.w)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.link, color: Get.theme.primaryColor, size: 24.w),
+                          AppStyle.hGap8,
+                          Obx(
+                            () => Text(
+                              controller.fullServerUrl.value.isEmpty ? "正在启动服务..." : controller.fullServerUrl.value,
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 22.sp,
+                                fontFamily: 'monospace', // 使用等宽字体更专业
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // -----------------------
                   ],
                 ),
               ),

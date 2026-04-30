@@ -378,10 +378,8 @@ class VideoController with ChangeNotifier {
     try {
       final interfaces = await NetworkInterface.list(type: InternetAddressType.IPv4);
       final ip = interfaces.firstWhere((i) => !i.name.contains('lo')).addresses.first.address;
-
       _server = await HttpServer.bind(InternetAddress.anyIPv4, 8888);
       fullServerUrl.value = "http://$ip:8888";
-
       _server!.listen((HttpRequest request) async {
         // 1. Handle WebSocket Upgrade
         if (WebSocketTransformer.isUpgradeRequest(request)) {
@@ -393,7 +391,6 @@ class VideoController with ChangeNotifier {
           socket.listen((msg) => _handleWsMessage(msg), onDone: () => _clients.remove(socket));
           return;
         }
-
         // 2. Handle Web Remote (GET)
         if (request.method == 'GET') {
           request.response
