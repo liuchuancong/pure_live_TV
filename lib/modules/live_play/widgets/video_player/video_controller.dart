@@ -371,12 +371,24 @@ class VideoController with ChangeNotifier {
     showQrCodePanel.value = true;
   }
 
-  void _startUnifiedServer() async {
+  // 这里的 port 默认为 8888
+  void _startUnifiedServer({int port = 8888}) async {
     try {
       final interfaces = await NetworkInterface.list(type: InternetAddressType.IPv4);
+      // 增加安全判断，防止网络未连接时崩溃
+      if (interfaces.isEmpty) {
+        debugPrint("No network interfaces found");
+        return;
+      }
       final ip = interfaces.firstWhere((i) => !i.name.contains('lo')).addresses.first.address;
-      _server = await HttpServer.bind(InternetAddress.anyIPv4, 8888);
-      fullServerUrl.value = "http://$ip:8888";
+
+      // 尝试绑定端口
+      _server = await HttpServer.bind(InternetAddress.anyIPv4, port);
+
+      // 成功绑定后更新 URL
+      fullServerUrl.value = "http://$ip:$port";
+      debugPrint("Server started on: ${fullServerUrl.value}");
+
       _server!.listen((HttpRequest request) async {
         // 1. Handle WebSocket Upgrade
         if (WebSocketTransformer.isUpgradeRequest(request)) {
@@ -384,10 +396,10 @@ class VideoController with ChangeNotifier {
           _clients.add(socket);
           // Send initial list to phone
           socket.add(jsonEncode({"type": "init", "data": settings.shieldList.value}));
-
           socket.listen((msg) => _handleWsMessage(msg), onDone: () => _clients.remove(socket));
           return;
         }
+
         // 2. Handle Web Remote (GET)
         if (request.method == 'GET') {
           request.response
@@ -397,7 +409,13 @@ class VideoController with ChangeNotifier {
         }
       });
     } catch (e) {
-      debugPrint("Server Error: $e");
+      // 如果是端口占用错误，递归尝试 port + 1
+      if (e.toString().contains("Address already in use")) {
+        debugPrint("Port $port is in use, trying ${port + 1}...");
+        _startUnifiedServer(port: port + 1);
+      } else {
+        debugPrint("Server Error: $e");
+      }
     }
   }
 
