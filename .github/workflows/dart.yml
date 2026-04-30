@@ -92,7 +92,6 @@ jobs:
             📦 纯粹直播 ${{ github.ref_name }}
             本次更新内容：
             ${{ fromJson(steps.version.outputs.content).version_desc }}
-            🔗 下载地址：https://github.com
             
             📺 版本说明：
             • 标准版：包含完整播放器内核 (来自 main 分支)
