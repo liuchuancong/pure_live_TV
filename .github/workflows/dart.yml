@@ -17,20 +17,26 @@ jobs:
     runs-on: macos-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        # 定义分支矩阵：分别从 main 和 without-exo 分支拉取代码打包
+        branch: [main, without-exo]
+    
     steps:
-      # 签出代码
+      # 1. 签出代码：根据矩阵变量动态切换分支
       - name: 签出代码
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag_name }}
+          ref: ${{ matrix.branch }}
 
-      # APK签名设置
+      # 2. APK签名设置
       - name: 下载Android keystore
         id: android_keystore
         uses: timheuer/base64-to-file@v1.2
         with:
           fileName: key.jks
           encodedString: ${{ secrets.KEYSTORE_BASE64 }}
+
       - name: 创建key.properties
         run: |
           echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > android/key.properties
@@ -38,7 +44,7 @@ jobs:
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
 
-      # 设置JAVA环境
+      # 3. 设置环境
       - name: 设置JAVA环境
         uses: actions/setup-java@v4
         with:
@@ -46,65 +52,60 @@ jobs:
           java-version: "17"
           cache: 'gradle'
 
-      # 设置Flutter
       - name: 设置Flutter环境
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-      # 更新Flutter的packages
       - name: 更新Flutter的packages
         run: flutter pub get
 
-      # 打包APK
+      # 4. 打包 APK
       - name: 打包APK
         run: flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
       
-      # 上传APK至Artifacts
-      - name: 上传APK至Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: android
-          path: |
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/app-x86_64-release.apk
+      # 5. 重命名文件 (关键)：区分不同分支的产物
+      - name: 重命名 APK 文件
+        run: |
+          cd build/app/outputs/flutter-apk/
+          if [ "${{ matrix.branch }}" = "without-exo" ]; then
+            for f in app-*-release.apk; do
+              mv "$f" "${f%-release.apk}-without-exo.apk"
+            done
+          fi
 
-      # 读取版本信息
+      # 6. 读取版本信息 (确保两个分支的 assets 目录下都有此文件)
       - name: 读取版本信息
         id: version
         uses: juliangruber/read-file-action@v1
         with:
           path: assets/version.json
 
-      # 上传至Release
-      # 上传至Release
+      # 7. 上传至 Release
       - name: 上传至Release
-        uses: softprops/action-gh-release@v2.2.1
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           name: ${{ github.event.inputs.tag_name || github.ref_name }}
           body: |
             📦 纯粹直播 ${{ github.ref_name }}
             本次更新内容：
             ${{ fromJson(steps.version.outputs.content).version_desc }}
-            🔗 下载地址：https://github.com/liuchuancong/pure_live_TV/releases/latest
+            🔗 下载地址：https://github.com
+            
+            📺 版本说明：
+            • 标准版：包含完整播放器内核 (来自 main 分支)
+            • 精简版：不含 Exo 内核，文件名带 -without-exo (来自 without-exo 分支)
+            
             本软件为开源项目,无广告，无病毒，若安装时出现病毒误报，可自行斟酌。
-            📺 TV 版本
-            • 安装程序：支持 Android TV 5.0+ (armeabi-v7a, arm64-v8a)
-            • 已实现TV同步直播源
-            • 支持多种播放器切换 
-            • 支持弹幕显示
-            • 支持应用內更新
           prerelease: false
-          files: |
-            build/app/outputs/flutter-apk/app-x86_64-release.apk
-            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+          # 使用通配符匹配当前任务产出的所有 APK
+          files: build/app/outputs/flutter-apk/app-*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # 完成
       - name: 输出任务状态
         if: always()
-        run: echo "🍏 Android job's status is ${{ job.status }}."
-
-  
+        run: echo "🍏 Branch ${{ matrix.branch }} build status is ${{ job.status }}."
