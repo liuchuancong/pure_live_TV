@@ -64,7 +64,33 @@ extension VideoKeyHandler on VideoController {
   }
 
   void handlekeyPanelQrCode(KeyEvent key) {
-    log('KeyEvent in QrCode: ${key.logicalKey}', name: 'VideoKeyHandler');
+    if (key is! KeyDownEvent) return; // Only handle the initial press
+
+    final list = settings.shieldList;
+    if (list.isEmpty) return;
+
+    int currentIndex = selectedShieldIndex.value;
+
+    if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
+      if (currentIndex < list.length - 1) {
+        selectedShieldIndex.value++;
+      } else {
+        selectedShieldIndex.value = 0;
+      }
+    } else if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      if (currentIndex > 0) {
+        selectedShieldIndex.value--;
+      } else {
+        selectedShieldIndex.value = list.length - 1;
+      }
+    } else if (isConfirmKey(key.logicalKey)) {
+      String word = list[currentIndex];
+      removeShieldWord(word);
+
+      if (selectedShieldIndex.value >= settings.shieldList.length && selectedShieldIndex.value > 0) {
+        selectedShieldIndex.value--;
+      }
+    }
   }
 
   /// 无面板时的键盘事件

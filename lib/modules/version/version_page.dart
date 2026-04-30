@@ -102,7 +102,11 @@ class VersionPage extends GetView<VersionController> {
                 text: "返回",
                 autofocus: true,
                 onFocusChange: (hasFocus) {
-                  if (hasFocus) controller.scrollController.jumpTo(0);
+                  if (hasFocus) {
+                    if (controller.scrollController.hasClients) {
+                      controller.scrollController.jumpTo(0);
+                    }
+                  }
                 },
                 onTap: () => Navigator.of(Get.context!).pop(),
               ),
@@ -111,10 +115,8 @@ class VersionPage extends GetView<VersionController> {
                 "版本更新",
                 style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
-              const Spacer(),
             ],
           ),
-          AppStyle.vGap24,
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -123,11 +125,10 @@ class VersionPage extends GetView<VersionController> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 return ListView(
+                  padding: EdgeInsets.zero,
                   controller: controller.scrollController,
                   children: [
                     _buildUpdateNotes(),
-                    const SizedBox(height: 24),
-
                     // 1. 标准版 - ARM64
                     _buildDownloadSection(
                       title: '标准版 - ARM64 (v8a)',
