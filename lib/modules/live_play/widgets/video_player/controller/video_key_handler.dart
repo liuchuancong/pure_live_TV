@@ -71,13 +71,13 @@ extension VideoKeyHandler on VideoController {
 
     int currentIndex = selectedShieldIndex.value;
 
-    if (key.logicalKey == LogicalKeyboardKey.arrowRight) {
+    if (key.logicalKey == LogicalKeyboardKey.arrowRight || key.logicalKey == LogicalKeyboardKey.arrowDown) {
       if (currentIndex < list.length - 1) {
         selectedShieldIndex.value++;
       } else {
         selectedShieldIndex.value = 0;
       }
-    } else if (key.logicalKey == LogicalKeyboardKey.arrowLeft) {
+    } else if (key.logicalKey == LogicalKeyboardKey.arrowLeft || key.logicalKey == LogicalKeyboardKey.arrowUp) {
       if (currentIndex > 0) {
         selectedShieldIndex.value--;
       } else {
