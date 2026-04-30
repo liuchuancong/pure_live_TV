@@ -118,7 +118,7 @@
 
 ## 🌟 Star 趋势
 
-[![Stargazers over time](https://starchart.cc/liuchuancong/pure_live.svg)](https://starchart.cc/liuchuancong/pure_live)
+[![Stargazers over time](https://starchart.cc/liuchuancong/pure_live_TV.svg)](https://starchart.cc/liuchuancong/pure_live_TV)
 
 ---
 
