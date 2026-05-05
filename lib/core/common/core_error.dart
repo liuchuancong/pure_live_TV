@@ -1,13 +1,8 @@
-import 'package:pure_live/common/utils/toast_util.dart';
-
 class CoreError extends Error {
   final int statusCode;
   final String message;
 
-  CoreError(this.message, {this.statusCode = 0}) {
-    ToastUtil.show(toString());
-  }
-
+  CoreError(this.message, {this.statusCode = 0});
   @override
   String toString() {
     if (statusCode != 0) {
