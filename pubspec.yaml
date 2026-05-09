@@ -53,7 +53,7 @@ dependencies:
   bordered_text: ^3.0.0
   dart_sm: ^0.1.5
   flutter_color: ^2.1.0
-  protobuf: ^4.0.0
+  protobuf: ^6.0.0
   fixnum: ^1.1.0
   dio: ^5.3.3
   dio_cookie_manager: ^3.1.1
