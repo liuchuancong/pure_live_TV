@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppColors {
@@ -29,8 +28,8 @@ class AppStyle {
     colorScheme: AppColors.lightColorScheme,
     appBarTheme: const AppBarTheme(elevation: 0, centerTitle: true),
     scaffoldBackgroundColor: const Color(0xfffafafa),
-    textTheme: ThemeData.light().textTheme.apply(fontFamily: GoogleFonts.roboto().fontFamily),
-    primaryTextTheme: ThemeData.light().primaryTextTheme.apply(fontFamily: GoogleFonts.roboto().fontFamily),
+    textTheme: ThemeData.light().textTheme.apply(fontFamily: 'PingFang'),
+    primaryTextTheme: ThemeData.light().primaryTextTheme.apply(fontFamily: 'PingFang'),
     radioTheme: RadioThemeData(fillColor: WidgetStateProperty.all(AppColors.lightColorScheme.primary)),
     checkboxTheme: CheckboxThemeData(fillColor: WidgetStateProperty.all(AppColors.lightColorScheme.primary)),
   );
