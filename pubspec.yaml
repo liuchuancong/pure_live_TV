@@ -103,7 +103,6 @@ dependencies:
   permission_handler: ^12.0.1
   hive_ce: ^2.15.1
   hive_ce_flutter: ^2.3.3
-  google_fonts: ^8.0.0
   pool: ^1.5.2
 dependency_overrides:
   wakelock_plus: ^1.4.0
@@ -189,6 +188,9 @@ flutter:
     - family: CustomIcons
       fonts:
         - asset: assets/icons/CustomIcons.ttf
+    - family: PingFang
+      fonts:
+        - asset: assets/PingFangSC.ttf
 flutter_intl:
   enabled: true
   arb_dir: lib/common/l10n
