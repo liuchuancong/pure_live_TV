@@ -114,7 +114,7 @@ class HomePage extends GetView<HomeController> {
                         children: [
                           HighlightButton(
                             focusNode: controller.versionFocusNode,
-                            iconData: Icons.vertical_align_center,
+                            iconData: Icons.download_for_offline_rounded,
                             text: "版本下载",
                             onTap: () {
                               Get.toNamed(RoutePath.kVersionPage);
