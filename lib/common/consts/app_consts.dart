@@ -50,7 +50,7 @@ class AppConsts {
   static const List<String> platforms = ['bilibili', 'douyu', 'huya', 'douyin', 'kuaishow', 'cc', '网络'];
 
   // 播放器类型
-  static const List<String> players = ['Mpv播放器', 'IJK播放器'];
+  static const List<String> players = ['Mpv播放器', 'IJK播放器', 'Exo播放器'];
 
   // 音频延时
   static const Map<String, String> audioDelayMap = {

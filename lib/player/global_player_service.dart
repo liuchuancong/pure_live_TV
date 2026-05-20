@@ -7,6 +7,8 @@ import 'adapters/media_kit_adapter.dart';
 import 'core/line_fallback_manager.dart';
 import 'core/preload_player_manager.dart';
 import 'core/engine_fallback_manager.dart';
+import 'package:pure_live/player/adapters/video_player_adapter.dart';
+
 
 class GlobalPlayerService {
   GlobalPlayerService._();
@@ -26,6 +28,8 @@ class GlobalPlayerService {
         switch (engine) {
           case PlayerEngine.mediaKit:
             return MediaKitAdapter();
+          case PlayerEngine.videoPlayer:
+            return BetterPlayerAdapter();
           case PlayerEngine.fijk:
             return FijkAdapter();
         }
