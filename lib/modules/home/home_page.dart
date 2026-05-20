@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
 import 'package:android_tv_text_field/native_textfield_tv.dart';

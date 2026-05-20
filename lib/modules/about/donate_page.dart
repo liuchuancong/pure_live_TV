@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
@@ -28,10 +28,7 @@ class DonatePage extends StatelessWidget {
               AppStyle.hGap32,
               Text(
                 "帮助与支持",
-                style: AppStyle.titleStyleWhite.copyWith(
-                  fontSize: 36.w,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
               const Spacer(),
@@ -40,36 +37,28 @@ class DonatePage extends StatelessWidget {
           AppStyle.vGap48,
           Expanded(
             child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: AppStyle.edgeInsetsA32,
-                    child: Text(
-                      "感谢您的使用！",
-                      style: AppStyle.titleStyleWhite,
-                    ),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: AppStyle.edgeInsetsA32,
+                  child: Text("感谢您的使用！", style: AppStyle.titleStyleWhite),
+                ),
+                AppStyle.vGap48,
+                Padding(
+                  padding: AppStyle.edgeInsetsA32,
+                  child: Text("如果您觉得有更好的建议或者意见，欢迎您联系我们。", style: AppStyle.titleStyleWhite),
+                ),
+                Padding(
+                  padding: AppStyle.edgeInsetsA32,
+                  child: Text(
+                    "QQ群：920447827",
+                    style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
                   ),
-                  AppStyle.vGap48,
-                  Padding(
-                    padding: AppStyle.edgeInsetsA32,
-                    child: Text(
-                      "如果您觉得有更好的建议或者意见，欢迎您联系我们。",
-                      style: AppStyle.titleStyleWhite,
-                    ),
-                  ),
-                  Padding(
-                    padding: AppStyle.edgeInsetsA32,
-                    child: Text(
-                      "QQ群：920447827",
-                      style: AppStyle.titleStyleWhite.copyWith(
-                        fontSize: 36.w,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ]),
-          )
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -85,10 +74,7 @@ class WechatItem extends StatelessWidget {
       child: Container(
         width: 300.w,
         padding: const EdgeInsets.all(12),
-        child: Image.asset(
-          'assets/images/wechat.png',
-          fit: BoxFit.contain,
-        ),
+        child: Image.asset('assets/images/wechat.png', fit: BoxFit.contain),
       ),
     );
   }

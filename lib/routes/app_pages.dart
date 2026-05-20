@@ -1,5 +1,5 @@
 import 'route_path.dart';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/modules/sync/sync_page.dart';
 import 'package:pure_live/modules/home/home_page.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
@@ -39,6 +39,8 @@ import 'package:pure_live/modules/wallpaper/wallpaper_page_binding.dart';
 import 'package:pure_live/modules/agreement/agreement_page_binding.dart';
 import 'package:pure_live/modules/account/douyin/douyin_cookie_page.dart';
 import 'package:pure_live/modules/account/douyin/douyin_cookie_binding.dart';
+import 'package:pure_live/modules/account/kuaishou/kuaishou_cookie_page.dart';
+import 'package:pure_live/modules/account/kuaishou/kuaishou_cookie_binding.dart';
 
 // auth
 
@@ -88,6 +90,12 @@ class AppPages {
 
     // DouyinCookiePage
     GetPage(name: RoutePath.kDouyinCookie, page: () => const DouyinCookiePage(), bindings: [DouyinCookieBinding()]),
+
+    GetPage(
+      name: RoutePath.kKuaishouCookie,
+      page: () => const KuaishouCookiePage(),
+      bindings: [KuaishouCookieBinding()],
+    ),
 
     // WallpaperPage
     GetPage(name: RoutePath.kWallpaperPage, page: () => const WallpaperPage(), bindings: [WallpaperPageBinding()]),

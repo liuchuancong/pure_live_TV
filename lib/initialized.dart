@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'common/utils/hive_pref_util.dart';
 import 'package:pure_live/common/index.dart';

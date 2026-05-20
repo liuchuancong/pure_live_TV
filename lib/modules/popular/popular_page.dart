@@ -1,5 +1,5 @@
-import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
@@ -31,10 +31,7 @@ class PopularPage extends GetView<PopularGridController> {
               AppStyle.hGap32,
               Text(
                 "热门直播",
-                style: AppStyle.titleStyleWhite.copyWith(
-                  fontSize: 36.w,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
               const Spacer(),
@@ -46,16 +43,10 @@ class PopularPage extends GetView<PopularGridController> {
                       SizedBox(
                         width: 48.w,
                         height: 48.w,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 4.w,
-                        ),
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 4.w),
                       ),
                       AppStyle.hGap16,
-                      Text(
-                        "正在更新...",
-                        style: AppStyle.textStyleWhite,
-                      ),
+                      Text("正在更新...", style: AppStyle.textStyleWhite),
                     ],
                   ),
                 ),
@@ -77,20 +68,19 @@ class PopularPage extends GetView<PopularGridController> {
             alignment: WrapAlignment.center,
             spacing: 36.w,
             children: List.generate(
-                Sites().availableSites().length,
-                (index) => Obx(() => HighlightButton(
-                      icon: Image.asset(
-                        Sites().availableSites()[index].logo,
-                        width: 48.w,
-                        height: 48.w,
-                      ),
-                      text: Sites().availableSites()[index].name,
-                      selected: controller.siteId.value == Sites().availableSites()[index].id,
-                      focusNode: controller.focusNodes[index + 1],
-                      onTap: () {
-                        controller.setSite(Sites().availableSites()[index].id);
-                      },
-                    ))).toList(),
+              Sites().availableSites().length,
+              (index) => Obx(
+                () => HighlightButton(
+                  icon: Image.asset(Sites().availableSites()[index].logo, width: 48.w, height: 48.w),
+                  text: Sites().availableSites()[index].name,
+                  selected: controller.siteId.value == Sites().availableSites()[index].id,
+                  focusNode: controller.focusNodes[index + 1],
+                  onTap: () {
+                    controller.setSite(Sites().availableSites()[index].id);
+                  },
+                ),
+              ),
+            ).toList(),
           ),
           AppStyle.vGap32,
           Expanded(
@@ -124,18 +114,9 @@ class PopularPage extends GetView<PopularGridController> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          LottieBuilder.asset(
-                            'assets/lotties/empty.json',
-                            width: 160.w,
-                            height: 160.w,
-                            repeat: false,
-                          ),
+                          LottieBuilder.asset('assets/lotties/empty.json', width: 160.w, height: 160.w, repeat: false),
                           AppStyle.vGap24,
-                          Text(
-                            "暂无热门直播\n请打开设置展示平台",
-                            textAlign: TextAlign.center,
-                            style: AppStyle.textStyleWhite,
-                          )
+                          Text("暂无热门直播\n请打开设置展示平台", textAlign: TextAlign.center, style: AppStyle.textStyleWhite),
                         ],
                       ),
                     ),

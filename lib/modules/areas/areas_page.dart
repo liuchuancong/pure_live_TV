@@ -1,5 +1,5 @@
-import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -35,10 +35,7 @@ class AreasPage extends GetView<AreasListController> {
               AppStyle.hGap32,
               Text(
                 "分区类别",
-                style: AppStyle.titleStyleWhite.copyWith(
-                  fontSize: 36.w,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
               const Spacer(),
@@ -48,10 +45,7 @@ class AreasPage extends GetView<AreasListController> {
                   child: SizedBox(
                     width: 48.w,
                     height: 48.w,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 4.w,
-                    ),
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 4.w),
                   ),
                 ),
               ),
@@ -72,20 +66,19 @@ class AreasPage extends GetView<AreasListController> {
             alignment: WrapAlignment.center,
             spacing: 36.w,
             children: List.generate(
-                Sites().availableSites().length,
-                (index) => Obx(() => HighlightButton(
-                      icon: Image.asset(
-                        Sites().availableSites()[index].logo,
-                        width: 48.w,
-                        height: 48.w,
-                      ),
-                      text: Sites().availableSites()[index].name,
-                      selected: controller.siteId.value == Sites().availableSites()[index].id,
-                      focusNode: controller.focusNodes[index + 1],
-                      onTap: () {
-                        controller.setSite(Sites().availableSites()[index].id);
-                      },
-                    ))).toList(),
+              Sites().availableSites().length,
+              (index) => Obx(
+                () => HighlightButton(
+                  icon: Image.asset(Sites().availableSites()[index].logo, width: 48.w, height: 48.w),
+                  text: Sites().availableSites()[index].name,
+                  selected: controller.siteId.value == Sites().availableSites()[index].id,
+                  focusNode: controller.focusNodes[index + 1],
+                  onTap: () {
+                    controller.setSite(Sites().availableSites()[index].id);
+                  },
+                ),
+              ),
+            ).toList(),
           ),
           AppStyle.vGap24,
           Expanded(
@@ -102,10 +95,7 @@ class AreasPage extends GetView<AreasListController> {
                           children: [
                             Padding(
                               padding: AppStyle.edgeInsetsV32,
-                              child: Text(
-                                item.name,
-                                style: AppStyle.titleStyleWhite,
-                              ),
+                              child: Text(item.name, style: AppStyle.titleStyleWhite),
                             ),
                             if (controller.siteId.value != Sites.iptvSite)
                               Obx(
@@ -117,7 +107,9 @@ class AreasPage extends GetView<AreasListController> {
                                   crossAxisSpacing: 20.w,
                                   mainAxisSpacing: 20.w,
                                   children: List.generate(
-                                      item.children.length, (index) => buildSubCategory(item.children[index])).toList(),
+                                    item.children.length,
+                                    (index) => buildSubCategory(item.children[index]),
+                                  ).toList(),
                                 ),
                               )
                             else
@@ -164,18 +156,9 @@ class AreasPage extends GetView<AreasListController> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          LottieBuilder.asset(
-                            'assets/lotties/empty.json',
-                            width: 160.w,
-                            height: 160.w,
-                            repeat: false,
-                          ),
+                          LottieBuilder.asset('assets/lotties/empty.json', width: 160.w, height: 160.w, repeat: false),
                           AppStyle.vGap24,
-                          Text(
-                            "暂无分区类目\n请打开设置展示平台",
-                            textAlign: TextAlign.center,
-                            style: AppStyle.textStyleWhite,
-                          )
+                          Text("暂无分区类目\n请打开设置展示平台", textAlign: TextAlign.center, style: AppStyle.textStyleWhite),
                         ],
                       ),
                     ),
@@ -220,9 +203,7 @@ class AreasPage extends GetView<AreasListController> {
           Container(
             width: 100.w,
             height: 100.w,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30.w),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.w)),
             child: CachedNetworkImage(
               imageUrl: item.areaPic!,
               cacheManager: CustomCacheManager.instance,

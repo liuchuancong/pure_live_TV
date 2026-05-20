@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:pure_live/player/models/player_engine.dart';
@@ -119,7 +119,7 @@ class SettingsPage extends GetView<SettingsService> {
             () => SettingsItemWidget(
               focusNode: controller.videoPlayerNode,
               title: "播放器设置",
-              items: const {0: "Mpv播放器", 1: "Ijk播放器", 2: "Exo播放器"},
+              items: const {0: "Mpv播放器", 1: "Ijk播放器"},
               value: controller.videoPlayerIndex.value,
               onChanged: (e) {
                 controller.videoPlayerIndex.value = e;

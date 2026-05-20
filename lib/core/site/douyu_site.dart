@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'dart:convert';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:pure_live/model/live_category.dart';

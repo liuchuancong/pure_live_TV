@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 
 class MenuButton {
@@ -14,9 +14,7 @@ class MenuButton {
   Widget build(BuildContext context) {
     return PopupMenuButton(
       tooltip: 'menu',
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       offset: const Offset(12, 0),
       position: PopupMenuPosition.under,
       icon: const Icon(Icons.menu_rounded),
@@ -27,42 +25,27 @@ class MenuButton {
         const PopupMenuItem(
           value: 5,
           padding: EdgeInsets.symmetric(horizontal: 12),
-          child: MenuListTile(
-            leading: Icon(Icons.assignment_ind_sharp),
-            text: '三方认证',
-          ),
+          child: MenuListTile(leading: Icon(Icons.assignment_ind_sharp), text: '三方认证'),
         ),
         PopupMenuItem(
           value: 0,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: MenuListTile(
-            leading: const Icon(Icons.settings_rounded),
-            text: S.of(context).settings_title,
-          ),
+          child: MenuListTile(leading: const Icon(Icons.settings_rounded), text: S.of(context).settings_title),
         ),
         PopupMenuItem(
           value: 1,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: MenuListTile(
-            leading: const Icon(Icons.info_rounded),
-            text: S.of(context).about,
-          ),
+          child: MenuListTile(leading: const Icon(Icons.info_rounded), text: S.of(context).about),
         ),
         PopupMenuItem(
           value: 2,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: MenuListTile(
-            leading: const Icon(Icons.contact_support),
-            text: S.of(context).contact,
-          ),
+          child: MenuListTile(leading: const Icon(Icons.contact_support), text: S.of(context).contact),
         ),
         PopupMenuItem(
           value: 3,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: MenuListTile(
-            leading: const Icon(Icons.history),
-            text: S.of(context).history,
-          ),
+          child: MenuListTile(leading: const Icon(Icons.history), text: S.of(context).history),
         ),
       ],
     );
@@ -74,29 +57,15 @@ class MenuListTile extends StatelessWidget {
   final String text;
   final Widget? trailing;
 
-  const MenuListTile({
-    super.key,
-    required this.leading,
-    required this.text,
-    this.trailing,
-  });
+  const MenuListTile({super.key, required this.leading, required this.text, this.trailing});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        if (leading != null) ...[
-          leading!,
-          const SizedBox(width: 12),
-        ],
-        Text(
-          text,
-          style: Theme.of(context).textTheme.labelMedium,
-        ),
-        if (trailing != null) ...[
-          const SizedBox(width: 24),
-          trailing!,
-        ],
+        if (leading != null) ...[leading!, const SizedBox(width: 12)],
+        Text(text, style: Theme.of(context).textTheme.labelMedium),
+        if (trailing != null) ...[const SizedBox(width: 24), trailing!],
       ],
     );
   }

@@ -83,6 +83,8 @@ class RoutePath {
   //  抖音cookie设置
   static const kDouyinCookie = "/douyin_cookie";
 
+  static const kKuaishouCookie = "/kuaishou_cookie";
+
   // WallpaperPage
   static const kWallpaperPage = "/wallpaper_page";
 }

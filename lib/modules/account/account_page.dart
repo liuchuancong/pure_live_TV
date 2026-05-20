@@ -1,5 +1,5 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/style/theme.dart';
 import 'package:pure_live/common/widgets/app_scaffold.dart';
@@ -71,6 +71,29 @@ class AccountPage extends GetView<AccountController> {
                     subtitle: "请输入ttwid登录",
                     onTap: () {
                       controller.douyinTap();
+                    },
+                  ),
+          ),
+          Obx(
+            () => controller.settings.kuaishouCookie.isNotEmpty
+                ? HighlightListTile(
+                    leading: Image.asset('assets/images/kuaishou.png', width: 36, height: 36),
+                    title: "快手直播",
+                    trailing: const Icon(Icons.chevron_right),
+                    focusNode: controller.nodes[4],
+                    subtitle: "已登录; 可修改Cookie",
+                    onTap: () {
+                      controller.kuaishouTap();
+                    },
+                  )
+                : HighlightListTile(
+                    leading: Image.asset('assets/images/kuaishou.png', width: 36, height: 36),
+                    title: "快手直播",
+                    trailing: const Icon(Icons.chevron_right),
+                    focusNode: controller.nodes[4],
+                    subtitle: "请输入Cookie",
+                    onTap: () {
+                      controller.kuaishouTap();
                     },
                   ),
           ),

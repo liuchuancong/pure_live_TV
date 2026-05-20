@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/modules/search/search_room_controller.dart';
 
 class SearchBinding extends Binding {
