@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/models/live_area.dart';
@@ -12,10 +12,7 @@ class AreaRoomsController extends BasePageController<LiveRoom> {
   // button列表再加上设置最近观看
   List<AppFocusNode> focusNodes = [];
   List<AppFocusNode> focusCateGoryNodes = [];
-  AreaRoomsController({
-    required this.site,
-    required this.subCategory,
-  });
+  AreaRoomsController({required this.site, required this.subCategory});
 
   @override
   void onInit() {

@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/modules/agreement/agreement_page_controller.dart';
 
 class AgreementPageBinding extends Binding {

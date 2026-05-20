@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:async';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/plugins/local_http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:pure_live/common/base/base_controller.dart';

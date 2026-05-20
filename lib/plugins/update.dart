@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/utils/toast_util.dart';
 import 'package:pure_live/common/utils/version_util.dart';
 import 'package:permission_handler/permission_handler.dart';

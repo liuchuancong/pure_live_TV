@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/model/live_category.dart';
@@ -50,22 +50,14 @@ class AreasListController extends BasePageController<AppLiveCategory> {
 class AppLiveCategory extends LiveCategory {
   var showAll = false.obs;
 
-  AppLiveCategory({
-    required super.id,
-    required super.name,
-    required super.children,
-  }) {
+  AppLiveCategory({required super.id, required super.name, required super.children}) {
     showAll.value = children.length < 19;
   }
 
   List<LiveArea> get take15 => children.take(15).toList();
 
   factory AppLiveCategory.fromLiveCategory(LiveCategory item) {
-    return AppLiveCategory(
-      children: item.children,
-      id: item.id,
-      name: item.name,
-    );
+    return AppLiveCategory(children: item.children, id: item.id, name: item.name);
   }
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};

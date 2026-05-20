@@ -1,6 +1,6 @@
-import 'package:get/get.dart';
 import '../video_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
 import 'package:pure_live/pkg/canvas_danmaku/models/danmaku_option.dart';

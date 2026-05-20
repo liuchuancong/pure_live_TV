@@ -1,5 +1,5 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/get/get.dart';
 
 /// 拓展FocusNode
 class AppFocusNode extends FocusNode {

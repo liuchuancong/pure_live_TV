@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/app/utils.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';

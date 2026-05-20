@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
-import 'package:get/get.dart';
 import 'package:flutter/services.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/core/site/huya_site.dart';

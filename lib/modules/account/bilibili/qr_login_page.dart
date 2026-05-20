@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -30,10 +30,7 @@ class BiliBiliQRLoginPage extends GetView<BiliBiliQRLoginController> {
               AppStyle.hGap32,
               Text(
                 "登录哔哩哔哩",
-                style: AppStyle.titleStyleWhite.copyWith(
-                  fontSize: 36.w,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
               const Spacer(),
@@ -42,90 +39,78 @@ class BiliBiliQRLoginPage extends GetView<BiliBiliQRLoginController> {
           AppStyle.vGap48,
           Expanded(
             child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Center(
-                    child: Obx(
-                      () {
-                        if (controller.qrStatus.value == QRStatus.loading) {
-                          return SizedBox(
-                            width: 64.w,
-                            height: 64.w,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 8.w,
-                              color: Colors.white,
-                            ),
-                          );
-                        }
-                        if (controller.qrStatus.value == QRStatus.failed) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                "二维码加载失败",
-                                style: AppStyle.textStyleWhite,
-                              ),
-                              HighlightButton(
-                                focusNode: AppFocusNode(),
-                                iconData: Icons.refresh,
-                                text: "重试",
-                                onTap: controller.loadQRCode,
-                              ),
-                            ],
-                          );
-                        }
-                        if (controller.qrStatus.value == QRStatus.failed) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                "二维码已失效",
-                                style: AppStyle.textStyleWhite,
-                              ),
-                              HighlightButton(
-                                focusNode: AppFocusNode(),
-                                iconData: Icons.refresh,
-                                text: "刷新",
-                                onTap: controller.loadQRCode,
-                              ),
-                            ],
-                          );
-                        }
-                        return Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: AppStyle.radius12,
-                              child: QrImageView(
-                                data: controller.qrcodeUrl.value,
-                                version: QrVersions.auto,
-                                backgroundColor: Colors.white,
-                                size: 360.w,
-                                padding: AppStyle.edgeInsetsA12,
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 8,
-                            ),
-                            Visibility(
-                              visible: controller.qrStatus.value == QRStatus.scanned,
-                              child: const Text("已扫描，请在手机上确认登录"),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                  child: Obx(() {
+                    if (controller.qrStatus.value == QRStatus.loading) {
+                      return SizedBox(
+                        width: 64.w,
+                        height: 64.w,
+                        child: CircularProgressIndicator(strokeWidth: 8.w, color: Colors.white),
+                      );
+                    }
+                    if (controller.qrStatus.value == QRStatus.failed) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("二维码加载失败", style: AppStyle.textStyleWhite),
+                          HighlightButton(
+                            focusNode: AppFocusNode(),
+                            iconData: Icons.refresh,
+                            text: "重试",
+                            onTap: controller.loadQRCode,
+                          ),
+                        ],
+                      );
+                    }
+                    if (controller.qrStatus.value == QRStatus.failed) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("二维码已失效", style: AppStyle.textStyleWhite),
+                          HighlightButton(
+                            focusNode: AppFocusNode(),
+                            iconData: Icons.refresh,
+                            text: "刷新",
+                            onTap: controller.loadQRCode,
+                          ),
+                        ],
+                      );
+                    }
+                    return Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: AppStyle.radius12,
+                          child: QrImageView(
+                            data: controller.qrcodeUrl.value,
+                            version: QrVersions.auto,
+                            backgroundColor: Colors.white,
+                            size: 360.w,
+                            padding: AppStyle.edgeInsetsA12,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Visibility(
+                          visible: controller.qrStatus.value == QRStatus.scanned,
+                          child: const Text("已扫描，请在手机上确认登录"),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+                Padding(
+                  padding: AppStyle.edgeInsetsA24,
+                  child: Text(
+                    "请使用哔哩哔哩手机客户端扫描二维码登录\n必须登录后才能观看哔哩哔哩直播",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 32.w),
                   ),
-                  Padding(
-                    padding: AppStyle.edgeInsetsA24,
-                    child: Text(
-                      "请使用哔哩哔哩手机客户端扫描二维码登录\n必须登录后才能观看哔哩哔哩直播",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 32.w),
-                    ),
-                  ),
-                ]),
-          )
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

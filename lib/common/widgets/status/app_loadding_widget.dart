@@ -1,5 +1,5 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pure_live/common/style/theme.dart';
 
@@ -14,18 +14,9 @@ class AppLoaddingWidget extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Theme.of(context).cardColor,
-          boxShadow: Get.isDarkMode
-              ? []
-              : [
-                  BoxShadow(
-                    blurRadius: 4,
-                    color: Colors.grey.withValues(alpha: .2),
-                  )
-                ],
+          boxShadow: Get.isDarkMode ? [] : [BoxShadow(blurRadius: 4, color: Colors.grey.withValues(alpha: .2))],
         ),
-        child: const CupertinoActivityIndicator(
-          radius: 10,
-        ),
+        child: const CupertinoActivityIndicator(radius: 10),
       ),
     );
   }
