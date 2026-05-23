@@ -4,6 +4,7 @@ import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
+import 'package:pure_live/plugins/area_pic_mapper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:pure_live/modules/areas/areas_list_controller.dart';
@@ -82,87 +83,116 @@ class AreasPage extends GetView<AreasListController> {
           ),
           AppStyle.vGap24,
           Expanded(
-            child: Obx(
-              () => Sites().availableSites().isNotEmpty
-                  ? ListView.builder(
-                      padding: AppStyle.edgeInsetsH48,
-                      itemCount: controller.list.length,
-                      controller: controller.scrollController,
-                      itemBuilder: (_, i) {
-                        var item = controller.list[i];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: AppStyle.edgeInsetsV32,
-                              child: Text(item.name, style: AppStyle.titleStyleWhite),
-                            ),
-                            if (controller.siteId.value != Sites.iptvSite)
-                              Obx(
-                                () => GridView.count(
-                                  shrinkWrap: true,
-                                  padding: AppStyle.edgeInsetsV8,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  crossAxisCount: 8,
-                                  crossAxisSpacing: 20.w,
-                                  mainAxisSpacing: 20.w,
-                                  children: List.generate(
-                                    item.children.length,
-                                    (index) => buildSubCategory(item.children[index]),
-                                  ).toList(),
-                                ),
-                              )
-                            else
-                              Obx(
-                                () => MasonryGridView.count(
-                                  padding: AppStyle.edgeInsetsA48,
-                                  itemCount: controller.list.isNotEmpty ? controller.list[0].children.length : 0,
-                                  crossAxisCount: 5,
-                                  crossAxisSpacing: 24.w,
-                                  mainAxisSpacing: 20.w,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemBuilder: (_, i) {
-                                    LiveArea liveArea = item.children[i];
-                                    var roomItem = LiveRoom(
-                                      roomId: liveArea.areaId,
-                                      title: liveArea.areaName,
-                                      cover: '',
-                                      nick: liveArea.typeName,
-                                      watching: '',
-                                      avatar:
-                                          'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',
-                                      area: '',
-                                      liveStatus: LiveStatus.live,
-                                      status: true,
-                                      platform: 'iptv',
-                                    );
-                                    return RoomCard(
-                                      room: roomItem,
-                                      dense: true,
-                                      focusNode: liveArea.focusNode,
-                                      isIptv: true,
-                                      areas: item.children,
-                                      roomTypePage: EnterRoomTypePage.areasRoomPage,
-                                    );
-                                  },
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          LottieBuilder.asset('assets/lotties/empty.json', width: 160.w, height: 160.w, repeat: false),
-                          AppStyle.vGap24,
-                          Text("暂无分区类目\n请打开设置展示平台", textAlign: TextAlign.center, style: AppStyle.textStyleWhite),
-                        ],
+            child: Obx(() {
+              if (Sites().availableSites().isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      LottieBuilder.asset('assets/lotties/empty.json', width: 160.w, height: 160.w, repeat: false),
+                      AppStyle.vGap24,
+                      Text("暂无分区类目\n请打开设置展示平台", textAlign: TextAlign.center, style: AppStyle.textStyleWhite),
+                    ],
+                  ),
+                );
+              }
+
+              if (controller.list.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              if (controller.siteId.value == Sites.douyinSite) {
+                final allChildren = controller.list.expand((cat) => cat.children).toList();
+
+                return SingleChildScrollView(
+                  padding: AppStyle.edgeInsetsH48,
+                  controller: controller.scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: AppStyle.edgeInsetsV32,
+                        child: Text(controller.list[0].name, style: AppStyle.titleStyleWhite),
                       ),
-                    ),
-            ),
+                      GridView.count(
+                        shrinkWrap: true,
+                        padding: AppStyle.edgeInsetsV8,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 8,
+                        crossAxisSpacing: 20.w,
+                        mainAxisSpacing: 20.w,
+                        children: allChildren.map((childItem) => buildSubCategory(childItem)).toList(),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: AppStyle.edgeInsetsH48,
+                itemCount: controller.list.length,
+                controller: controller.scrollController,
+                itemBuilder: (_, i) {
+                  var item = controller.list[i];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: AppStyle.edgeInsetsV32,
+                        child: Text(item.name, style: AppStyle.titleStyleWhite),
+                      ),
+                      if (controller.siteId.value != Sites.iptvSite)
+                        GridView.count(
+                          shrinkWrap: true,
+                          padding: AppStyle.edgeInsetsV8,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 8,
+                          crossAxisSpacing: 20.w,
+                          mainAxisSpacing: 20.w,
+                          children: List.generate(
+                            item.children.length,
+                            (index) => buildSubCategory(item.children[index]),
+                          ).toList(),
+                        )
+                      else
+                        MasonryGridView.count(
+                          padding: AppStyle.edgeInsetsA48,
+                          itemCount: item.children.length,
+                          crossAxisCount: 5,
+                          crossAxisSpacing: 24.w,
+                          mainAxisSpacing: 20.w,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (_, i) {
+                            LiveArea liveArea = item.children[i];
+                            var roomItem = LiveRoom(
+                              roomId: liveArea.areaId,
+                              title: liveArea.areaName,
+                              cover: '',
+                              nick: liveArea.typeName,
+                              watching: '',
+                              avatar:
+                                  'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',
+                              area: '',
+                              liveStatus: LiveStatus.live,
+                              status: true,
+                              platform: 'iptv',
+                            );
+                            return RoomCard(
+                              room: roomItem,
+                              dense: true,
+                              focusNode: liveArea.focusNode,
+                              isIptv: true,
+                              areas: item.children,
+                              roomTypePage: EnterRoomTypePage.areasRoomPage,
+                            );
+                          },
+                        ),
+                    ],
+                  );
+                },
+              );
+            }),
           ),
           AppStyle.vGap24,
         ],
@@ -187,8 +217,13 @@ class AreasPage extends GetView<AreasListController> {
   }
 
   Widget buildSubCategory(LiveArea item) {
+    final displayImageUrl = item.areaPic != null && item.areaPic!.isNotEmpty
+        ? item.areaPic!
+        : AreaPicMapper.getPic(item.areaName);
+
     return HighlightWidget(
       focusNode: item.focusNode,
+      foucsedColor: Colors.black,
       onTap: () {
         AppNavigator.toCategoryDetail(site: controller.site, category: item);
       },
@@ -204,26 +239,29 @@ class AreasPage extends GetView<AreasListController> {
             width: 100.w,
             height: 100.w,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.w)),
-            child: CachedNetworkImage(
-              imageUrl: item.areaPic!,
-              cacheManager: CustomCacheManager.instance,
-              fit: BoxFit.fill,
-              errorWidget: (context, error, stackTrace) => Center(
-                child: Icon(
-                  Icons.live_tv_rounded,
-                  size: 50,
-                  color: item.focusNode.isFoucsed.value ? Colors.black : Colors.white,
-                ),
-              ),
-            ),
+            child: displayImageUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: displayImageUrl,
+                    cacheManager: CustomCacheManager.instance,
+                    fit: BoxFit.fill,
+                    errorWidget: (context, error, stackTrace) => Center(
+                      child: Icon(
+                        Icons.live_tv_rounded,
+                        size: 50,
+                        color: item.focusNode.isFoucsed.value ? Colors.black : Colors.white,
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Icon(
+                      Icons.live_tv_rounded,
+                      size: 50,
+                      color: item.focusNode.isFoucsed.value ? Colors.black : Colors.white,
+                    ),
+                  ),
           ),
           AppStyle.vGap12,
-          Text(
-            item.areaName!,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            style: item.focusNode.isFoucsed.value ? AppStyle.textStyleBlack : AppStyle.textStyleWhite,
-          ),
+          Text(item.areaName!, maxLines: 1, textAlign: TextAlign.center, style: AppStyle.textStyleWhite),
         ],
       ),
     );
