@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import '../models/player_state.dart';
-import 'package:pure_live/get/get.dart';
 import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
 import 'package:pure_live/common/index.dart';
-import '../core/player_error_dispatcher.dart';
 import '../interface/unified_player_interface.dart';
 import 'package:pure_live/player/utils/fijk_helper.dart';
 
@@ -13,22 +11,21 @@ class FijkAdapter implements UnifiedPlayer {
   late final FijkPlayer _player;
 
   bool _initialized = false;
-
   bool _disposed = false;
 
+  VoidCallback? _playerListener;
+
   final _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.idle);
-
   final _playingSubject = BehaviorSubject<bool>.seeded(false);
-
   final _loadingSubject = BehaviorSubject<bool>.seeded(false);
 
-  final _errorSubject = BehaviorSubject<PlayerException>();
+  final _errorSubject = PublishSubject<PlayerException>();
 
   final _completeSubject = BehaviorSubject<bool>.seeded(false);
-
   final _widthSubject = BehaviorSubject<int?>.seeded(null);
-
   final _heightSubject = BehaviorSubject<int?>.seeded(null);
+
+  final List<StreamSubscription> _subscriptions = [];
 
   @override
   Future<void> init() async {
@@ -36,13 +33,9 @@ class FijkAdapter implements UnifiedPlayer {
 
     try {
       _stateSubject.add(PlayerState.initializing);
-
       _player = FijkPlayer();
-
       _bindListeners();
-
       _initialized = true;
-
       _stateSubject.add(PlayerState.initialized);
     } catch (e, s) {
       final exception = PlayerException(
@@ -51,27 +44,28 @@ class FijkAdapter implements UnifiedPlayer {
         error: e,
         stackTrace: s,
       );
-
-      _errorSubject.add(exception);
-
+      _safeAddError(exception);
       throw exception;
     }
   }
 
   void _bindListeners() {
-    _player.addListener(() {
+    // 先移除旧监听
+    _removePlayerListener();
+
+    _playerListener = () {
       final value = _player.value;
       final state = value.state;
 
-      // 1. 同步宽高 (修复宽高流为空的问题)
       if (value.size != null) {
-        if (_widthSubject.value != value.size!.width.toInt()) {
-          _widthSubject.add(value.size!.width.toInt());
-          _heightSubject.add(value.size!.height.toInt());
+        final w = value.size!.width.toInt();
+        final h = value.size!.height.toInt();
+        if (_widthSubject.value != w) {
+          _widthSubject.add(w);
+          _heightSubject.add(h);
         }
       }
 
-      // 2. 完善状态映射
       switch (state) {
         case FijkState.asyncPreparing:
         case FijkState.prepared:
@@ -95,18 +89,40 @@ class FijkAdapter implements UnifiedPlayer {
         case FijkState.error:
           _loadingSubject.add(false);
           final exception = PlayerException(message: 'Fijk native error', type: PlayerErrorType.native);
-          _errorSubject.add(exception);
+          _safeAddError(exception);
           _player.reset();
-          PlayerErrorDispatcher.instance.dispatch(exception);
           break;
         default:
           break;
       }
-    });
+    };
+
+    _player.addListener(_playerListener!);
+  }
+
+  Future<void> _cancelAllSubscriptions() async {
+    _removePlayerListener();
+
+    for (final sub in _subscriptions) {
+      await sub.cancel();
+    }
+    _subscriptions.clear();
+  }
+
+  void _removePlayerListener() {
+    if (_playerListener != null) {
+      _player.removeListener(_playerListener!);
+      _playerListener = null;
+    }
+  }
+
+  void _safeAddError(PlayerException exception) {
+    if (_disposed || _errorSubject.isClosed) return;
+    _errorSubject.add(exception);
   }
 
   @override
-  Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers) async {
+  Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers, {LiveRoom? room}) async {
     try {
       _loadingSubject.add(true);
       if (_player.state != FijkState.idle) {
@@ -116,6 +132,7 @@ class FijkAdapter implements UnifiedPlayer {
       await FijkHelper.setFijkOption(_player, enableCodec: settings.enableCodec.value, headers: headers);
       await _player.setDataSource(url, autoPlay: true);
       _stateSubject.add(PlayerState.ready);
+      await setVolume(1.0);
     } catch (e, s) {
       final exception = PlayerException(
         message: 'Fijk setDataSource failed',
@@ -123,9 +140,7 @@ class FijkAdapter implements UnifiedPlayer {
         error: e,
         stackTrace: s,
       );
-
-      _errorSubject.add(exception);
-
+      _safeAddError(exception);
       throw exception;
     } finally {
       _loadingSubject.add(false);
@@ -147,10 +162,8 @@ class FijkAdapter implements UnifiedPlayer {
 
   @override
   Future<void> play() => _player.start();
-
   @override
   Future<void> pause() => _player.pause();
-
   @override
   Future<void> stop() => _player.stop();
 
@@ -166,14 +179,18 @@ class FijkAdapter implements UnifiedPlayer {
   @override
   Future<void> hardDispose() async {
     if (_disposed) return;
-
     _disposed = true;
 
-    await _player.release();
+    //  取消所有监听
+    await _cancelAllSubscriptions();
+
+    try {
+      await _player.release();
+    } catch (_) {}
+
     _initialized = false;
-    _stateSubject.add(PlayerState.idle);
-    _playingSubject.add(false);
-    _loadingSubject.add(false);
+
+    // 关闭所有流
     await _stateSubject.close();
     await _playingSubject.close();
     await _loadingSubject.close();
@@ -188,33 +205,28 @@ class FijkAdapter implements UnifiedPlayer {
     await _player.setVolume(volume);
   }
 
+  // =========================
+  // GETTER
+  // =========================
   @override
   bool get isInitialized => _initialized;
-
   @override
   bool get isPlayingNow => _playingSubject.value;
-
   @override
   bool get isReusable => true;
 
   @override
   Stream<PlayerState> get onStateChanged => _stateSubject.stream;
-
   @override
   Stream<bool> get onPlaying => _playingSubject.stream;
-
   @override
   Stream<PlayerException> get onError => _errorSubject.stream;
-
   @override
   Stream<bool> get onLoading => _loadingSubject.stream;
-
   @override
   Stream<bool> get onComplete => _completeSubject.stream;
-
   @override
   Stream<int?> get width => _widthSubject.stream;
-
   @override
   Stream<int?> get height => _heightSubject.stream;
 }

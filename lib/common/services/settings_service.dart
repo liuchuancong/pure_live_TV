@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
@@ -12,6 +11,7 @@ import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
+import 'package:pure_live/core/iptv/services/auto_sync_scheduler.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 
 class SettingsService extends GetxController {
@@ -98,7 +98,13 @@ class SettingsService extends GetxController {
   final currentBoxImage = (HivePrefUtil.getString('currentBoxImage') ?? "").obs;
   final currentBoxImageIndex = (HivePrefUtil.getInt('currentBoxImageIndex') ?? 0).obs;
   final backgroundImageFitIndex = (HivePrefUtil.getInt('backgroundImageFitIndex') ?? 2).obs;
-
+  // ==============================
+  //  电视设置 (新增)
+  // ==============================
+  final selectedSourceName = (HivePrefUtil.getString('selectedSourceName') ?? '').obs;
+  final selectedSourceId = (HivePrefUtil.getString('selectedSourceId') ?? '').obs;
+  final isAutoSyncEnabled = (HivePrefUtil.getBool('isAutoSyncEnabled') ?? false).obs;
+  final autoSyncHoursInterval = (HivePrefUtil.getInt('autoSyncHoursInterval') ?? 24).obs;
   Uint8List? _cachedBytes;
   String? _cachedBase64;
 
@@ -183,7 +189,11 @@ class SettingsService extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
+    Future.delayed(const Duration(seconds: 3), () {
+      AutoSyncScheduler.instance.checkAndExecuteAutoSync();
+      AutoSyncScheduler.instance.loadHotResources();
+      AutoSyncScheduler.instance.loadDefaultEpgResources();
+    });
     // 执行旧数据迁移
     migrateOldPrefsData().then((_) {
       update(['migrate_complete']);
@@ -348,6 +358,20 @@ class SettingsService extends GetxController {
 
     lastRefreshTime.listen((value) async {
       await HivePrefUtil.setInt('lastRefreshTime', value);
+    });
+
+    selectedSourceName.listen((value) {
+      HivePrefUtil.setString('selectedSourceName', value);
+    });
+
+    selectedSourceId.listen((value) {
+      HivePrefUtil.setString('selectedSourceId', value);
+    });
+    isAutoSyncEnabled.listen((value) {
+      HivePrefUtil.setBool('isAutoSyncEnabled', value);
+    });
+    autoSyncHoursInterval.listen((value) {
+      HivePrefUtil.setInt('autoSyncHoursInterval', value);
     });
   }
 

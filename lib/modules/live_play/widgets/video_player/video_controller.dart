@@ -68,7 +68,7 @@ class VideoController with ChangeNotifier {
   Timer? showChangeNameTimer;
   Timer? doubleClickTimer;
   late ScrollController scrollController;
-  late StreamSubscription<PlayerException> _errorSub;
+  StreamSubscription<PlayerException>? _errorSub;
 
   // ==================== 焦点管理 ====================
   final AppFocusNode focusNode = AppFocusNode();
@@ -249,6 +249,7 @@ class VideoController with ChangeNotifier {
 
   void initPlayerListener() {
     final manager = GlobalPlayerService.instance.playerManager;
+    _errorSub?.cancel();
     _errorSub = manager.onError.listen((error) {
       _handlePlayerError(error);
     });
@@ -335,11 +336,13 @@ class VideoController with ChangeNotifier {
   // ==================== 核心业务方法 ====================
   /// 刷新播放
   Future<void> refresh() async {
+    await _errorSub?.cancel();
     _handlePlayerReload(() => livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.refreash));
   }
 
   /// 切换播放线路
   Future<void> changeLine(int index) async {
+    await _errorSub?.cancel();
     _handlePlayerReload(
       () => livePlayController.onInitPlayerState(reloadDataType: ReloadDataType.changeLine, line: index),
     );
@@ -348,6 +351,7 @@ class VideoController with ChangeNotifier {
 
   /// 切换画质
   Future<void> changeQuality(int qualityIndex) async {
+    await _errorSub?.cancel();
     _handlePlayerReload(
       () => livePlayController.onInitPlayerState(
         reloadDataType: ReloadDataType.changeQuality,
@@ -700,7 +704,8 @@ class VideoController with ChangeNotifier {
   }
 
   /// 切换频道通用逻辑
-  void _switchChannel(VoidCallback switchAction) {
+  void _switchChannel(VoidCallback switchAction) async {
+    await _errorSub?.cancel();
     GlobalPlayerService.instance.playerManager.close();
     isLoading.value = true;
     _resetNameTimer();
@@ -765,7 +770,7 @@ class VideoController with ChangeNotifier {
     livePlayController.success.value = false;
 
     // 取消订阅
-    await _errorSub.cancel();
+    await _errorSub?.cancel();
     // 停止播放器
     GlobalPlayerService.instance.playerManager.close();
 

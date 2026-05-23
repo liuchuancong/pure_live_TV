@@ -17,6 +17,8 @@ class GlobalPlayerService {
 
   bool _initialized = false;
 
+  bool get initialized => _initialized;
+
   Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) async {
     if (_initialized) return;
 
@@ -35,7 +37,10 @@ class GlobalPlayerService {
     // 2. Instantiate the Orchestrator with all its specialized managers
     playerManager = PlayerManager(
       playerPool: playerPool,
-      fallbackManager: EngineFallbackManager(defaultEngine: defaultEngine),
+      fallbackManager: EngineFallbackManager(
+        defaultEngine: PlayerEngine.mediaKit,
+        supportedEngines: PlayerEngine.values,
+      ),
       preloadManager: PreloadPlayerManager(),
       lineManager: LineFallbackManager(),
     );

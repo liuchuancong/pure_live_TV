@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 
 class WallpaperPreviewController extends GetxController {

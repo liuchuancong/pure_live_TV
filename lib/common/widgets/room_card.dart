@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'package:pure_live/get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
