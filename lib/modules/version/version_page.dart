@@ -129,6 +129,8 @@ class VersionPage extends GetView<VersionController> {
                   controller: controller.scrollController,
                   children: [
                     _buildUpdateNotes(),
+                    const SizedBox(height: 24),
+
                     // 1. 标准版 - ARM64
                     _buildDownloadSection(
                       title: '标准版 - ARM64 (v8a)',
@@ -145,7 +147,15 @@ class VersionPage extends GetView<VersionController> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 3. 精简版 - ARM64 (without-exo)
+                    // 3. 新增：标准版 - x86_64
+                    _buildDownloadSection(
+                      title: '标准版 - x86_64 (模拟器/电脑端)',
+                      urls: controller.apkUrlX86_64.value,
+                      focusNodes: controller.appFocusNodesX86_64,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 4. 精简版 - ARM64 (without-exo)
                     _buildDownloadSection(
                       title: '精简版 (No-Exo) - ARM64',
                       urls: controller.apkUrlv8Exo.value,
@@ -153,11 +163,19 @@ class VersionPage extends GetView<VersionController> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 4. 精简版 - ARM32 (without-exo)
+                    // 5. 精简版 - ARM32 (without-exo)
                     _buildDownloadSection(
                       title: '精简版 (No-Exo) - ARM32',
                       urls: controller.apkUrlv7Exo.value,
                       focusNodes: controller.appFocusNodesV7Exo,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 6. 新增：精简版 - x86_64 (without-exo)
+                    _buildDownloadSection(
+                      title: '精简版 (No-Exo) - x86_64',
+                      urls: controller.apkUrlX86_64Exo.value,
+                      focusNodes: controller.appFocusNodesX86_64Exo,
                     ),
                   ],
                 );
