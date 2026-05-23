@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 import 'player_pool.dart';
-import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
 import 'line_fallback_manager.dart';
 import '../models/player_state.dart';
@@ -9,6 +8,7 @@ import 'preload_player_manager.dart';
 import '../models/player_engine.dart';
 import 'engine_fallback_manager.dart';
 import 'player_error_dispatcher.dart';
+import 'package:pure_live/get/get.dart';
 import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
 import 'package:pure_live/common/index.dart';

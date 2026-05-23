@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/player_state.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/get/get.dart';
 import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
 import '../interface/unified_player_interface.dart';

@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
@@ -29,10 +29,7 @@ class FavoritePage extends GetView<FavoriteController> {
               AppStyle.hGap32,
               Text(
                 "我的关注",
-                style: AppStyle.titleStyleWhite.copyWith(
-                  fontSize: 36.w,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
               const Spacer(),
@@ -44,16 +41,10 @@ class FavoritePage extends GetView<FavoriteController> {
                       SizedBox(
                         width: 48.w,
                         height: 48.w,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 4.w,
-                        ),
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 4.w),
                       ),
                       AppStyle.hGap16,
-                      Text(
-                        "正在更新...",
-                        style: AppStyle.textStyleWhite,
-                      ),
+                      Text("正在更新...", style: AppStyle.textStyleWhite),
                     ],
                   ),
                 ),
@@ -89,7 +80,7 @@ class FavoritePage extends GetView<FavoriteController> {
                   controller.tabBottomIndex.value = 1;
                   controller.offlineRoomsNodes.requestFocus();
                 },
-              )
+              ),
             ],
           ),
           AppStyle.vGap48,
@@ -106,8 +97,9 @@ class FavoritePage extends GetView<FavoriteController> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (_, i) {
-                  var item =
-                      controller.tabBottomIndex.value == 0 ? controller.onlineRooms[i] : controller.offlineRooms[i];
+                  var item = controller.tabBottomIndex.value == 0
+                      ? controller.onlineRooms[i]
+                      : controller.offlineRooms[i];
                   return RoomCard(
                     focusNode: item.focusNode,
                     room: item,

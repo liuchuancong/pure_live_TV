@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:developer';
-import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:network_info_plus/network_info_plus.dart';

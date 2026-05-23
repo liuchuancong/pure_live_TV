@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/app/utils.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
@@ -32,39 +32,35 @@ class FavoriteAreasPage extends GetView<SettingsService> {
               AppStyle.hGap32,
               Text(
                 "关注分区",
-                style: AppStyle.titleStyleWhite.copyWith(
-                  fontSize: 36.w,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w, fontWeight: FontWeight.bold),
               ),
               AppStyle.hGap24,
               const Spacer(),
-              AppStyle.hGap24
+              AppStyle.hGap24,
             ],
           ),
           AppStyle.vGap24,
           Expanded(
-              child: Obx(
-            () => controller.favoriteAreas.isNotEmpty
-                ? Padding(
-                    padding: AppStyle.edgeInsetsA24,
-                    child: GridView.count(
-                      shrinkWrap: true,
-                      padding: AppStyle.edgeInsetsV8,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 8,
-                      crossAxisSpacing: 36.w,
-                      mainAxisSpacing: 36.w,
-                      children: List.generate(controller.favoriteAreas.length,
-                          (index) => buildSubCategory(controller.favoriteAreas[index])).toList(),
-                    ),
-                  )
-                : EmptyView(
-                    icon: Icons.area_chart_outlined,
-                    title: S.of(context).empty_areas_title,
-                    subtitle: '',
-                  ),
-          )),
+            child: Obx(
+              () => controller.favoriteAreas.isNotEmpty
+                  ? Padding(
+                      padding: AppStyle.edgeInsetsA24,
+                      child: GridView.count(
+                        shrinkWrap: true,
+                        padding: AppStyle.edgeInsetsV8,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 8,
+                        crossAxisSpacing: 36.w,
+                        mainAxisSpacing: 36.w,
+                        children: List.generate(
+                          controller.favoriteAreas.length,
+                          (index) => buildSubCategory(controller.favoriteAreas[index]),
+                        ).toList(),
+                      ),
+                    )
+                  : EmptyView(icon: Icons.area_chart_outlined, title: S.of(context).empty_areas_title, subtitle: ''),
+            ),
+          ),
           AppStyle.vGap24,
         ],
       ),
@@ -104,9 +100,7 @@ class FavoriteAreasPage extends GetView<SettingsService> {
           Container(
             width: 64.w,
             height: 64.w,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.w),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16.w)),
             child: CachedNetworkImage(
               imageUrl: item.areaPic!,
               cacheManager: CustomCacheManager.instance,

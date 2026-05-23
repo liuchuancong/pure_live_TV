@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/plugins/utils.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/models/live_room.dart';

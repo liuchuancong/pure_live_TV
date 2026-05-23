@@ -1,7 +1,7 @@
 {
-  "version": "2.0.18",
-  "version_num": 12018,
-  "version_desc": "-Fixed:部分UI,升级依赖",
+  "version": "2.0.19",
+  "version_num": 12019,
+  "version_desc": "-Fixed:添加快手cookies",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }

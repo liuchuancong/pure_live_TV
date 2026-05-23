@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
@@ -74,6 +74,7 @@ class SettingsService extends GetxController {
   final bilibiliCookie = (HivePrefUtil.getString('bilibiliCookie') ?? '').obs;
   final huyaCookie = (HivePrefUtil.getString('huyaCookie') ?? '').obs;
   final douyinCookie = (HivePrefUtil.getString('douyinCookie') ?? '').obs;
+  final kuaishouCookie = (HivePrefUtil.getString('kuaishouCookie') ?? '').obs;
   final dontAskExit = (HivePrefUtil.getBool('dontAskExit') ?? false).obs; // 补充
   final exitChoose = (HivePrefUtil.getString('exitChoose') ?? '').obs; // 补充
 
@@ -298,7 +299,9 @@ class SettingsService extends GetxController {
     douyinCookie.listen((value) async {
       await HivePrefUtil.setString('douyinCookie', value);
     });
-
+    kuaishouCookie.listen((value) {
+      HivePrefUtil.setString('kuaishouCookie', value);
+    });
     webPort.listen((value) async {
       await HivePrefUtil.setString('webPort', value);
     });
@@ -666,8 +669,12 @@ class SettingsService extends GetxController {
       HivePrefUtil.setString('bilibiliCookie', bilibiliCookie.value),
       HivePrefUtil.setString('huyaCookie', huyaCookie.value),
       HivePrefUtil.setString('douyinCookie', douyinCookie.value),
+      HivePrefUtil.setString('kuaishouCookie', kuaishouCookie.value),
       HivePrefUtil.setString('themeColorSwitch', themeColorSwitch.value),
       HivePrefUtil.setString('webPort', webPort.value),
+
+      // 注
+
       // 注意：確保傳入的是 List<String> 類型
       HivePrefUtil.setStringList('shieldList', shieldList.value),
       HivePrefUtil.setStringList('hotAreasList', hotAreasList.value),
@@ -713,6 +720,7 @@ class SettingsService extends GetxController {
     json['bilibiliCookie'] = bilibiliCookie.value;
     json['huyaCookie'] = huyaCookie.value;
     json['douyinCookie'] = douyinCookie.value;
+    json['kuaishouCookie'] = kuaishouCookie.value;
     json['shieldList'] = shieldList.map<String>((e) => e.toString()).toList();
     json['hotAreasList'] = hotAreasList.map<String>((e) => e.toString()).toList();
     json['themeColorSwitch'] = themeColorSwitch.value;

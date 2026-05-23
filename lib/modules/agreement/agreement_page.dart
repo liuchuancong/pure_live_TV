@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/modules/agreement/agreement_page_controller.dart';
@@ -17,41 +17,19 @@ class AgreementPage extends GetView<AgreementPageController> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                "使用须知",
-                textAlign: TextAlign.center,
-                style: AppStyle.titleStyleWhite,
-              ),
+              Text("使用须知", textAlign: TextAlign.center, style: AppStyle.titleStyleWhite),
               AppStyle.vGap24,
-              Text(
-                "欢迎使用纯粹直播 TV，请在使用前仔细阅读以下内容：",
-                style: AppStyle.textStyleWhite,
-              ),
+              Text("欢迎使用纯粹直播 TV，请在使用前仔细阅读以下内容：", style: AppStyle.textStyleWhite),
               AppStyle.vGap12,
-              Text(
-                "1. 本软件为开源软件，仅供学习交流使用，禁止用于任何商业用途。",
-                style: AppStyle.textStyleWhite,
-              ),
+              Text("1. 本软件为开源软件，仅供学习交流使用，禁止用于任何商业用途。", style: AppStyle.textStyleWhite),
               AppStyle.vGap12,
-              Text(
-                "2. 本软件不提供任何直播内容，所有直播内容均来自网络。",
-                style: AppStyle.textStyleWhite,
-              ),
+              Text("2. 本软件不提供任何直播内容，所有直播内容均来自网络。", style: AppStyle.textStyleWhite),
               AppStyle.vGap12,
-              Text(
-                "3. 本软件完全基于您个人意愿使用，您应该对自己的使用行为和所有结果承担全部责任。",
-                style: AppStyle.textStyleWhite,
-              ),
+              Text("3. 本软件完全基于您个人意愿使用，您应该对自己的使用行为和所有结果承担全部责任。", style: AppStyle.textStyleWhite),
               AppStyle.vGap12,
-              Text(
-                "4. 如果本软件存在侵犯您的合法权益的情况，请及时与作者联系，作者将会及时删除有关内容。",
-                style: AppStyle.textStyleWhite,
-              ),
+              Text("4. 如果本软件存在侵犯您的合法权益的情况，请及时与作者联系，作者将会及时删除有关内容。", style: AppStyle.textStyleWhite),
               AppStyle.vGap12,
-              Text(
-                "如您继续使用本软件即代表您已完全理解并同意上述内容。",
-                style: AppStyle.textStyleWhite,
-              ),
+              Text("如您继续使用本软件即代表您已完全理解并同意上述内容。", style: AppStyle.textStyleWhite),
               AppStyle.vGap32,
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -75,7 +53,7 @@ class AgreementPage extends GetView<AgreementPageController> {
                     },
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),

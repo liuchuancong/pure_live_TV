@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 
 /// APP页面跳转封装
@@ -12,9 +12,7 @@ class AppNavigator {
 
   /// 跳转至直播间
   static Future<void> toLiveRoomDetail({required LiveRoom liveRoom}) async {
-    Get.toNamed(RoutePath.kLivePlay, arguments: liveRoom, parameters: {
-      "site": liveRoom.platform!,
-    });
+    Get.toNamed(RoutePath.kLivePlay, arguments: liveRoom, parameters: {"site": liveRoom.platform!});
   }
 
   /// 跳转至哔哩哔哩登录

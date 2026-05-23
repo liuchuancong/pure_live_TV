@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:developer';
-import 'package:get/get.dart';
+import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:android_tv_text_field/native_textfield_tv.dart';
