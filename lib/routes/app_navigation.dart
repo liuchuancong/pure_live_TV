@@ -1,4 +1,3 @@
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 
 /// APP页面跳转封装

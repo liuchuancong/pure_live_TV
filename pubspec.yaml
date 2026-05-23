@@ -1,7 +1,7 @@
 name: pure_live
 description: A new Flutter project.
 publish_to: 'none'
-version: 2.0.18+18
+version: 2.0.20+20
 
 environment:
  sdk: '^3.12.0'
@@ -17,6 +17,16 @@ dependencies:
   url_launcher: ^6.1.12
   web_socket_channel: ^3.0.0
   cached_network_image: ^3.3.0
+  equatable: ^2.0.7
+  xml: ^6.5.0
+  archive: ^4.0.4
+  string_similarity: ^2.0.0
+  fuzzywuzzy: ^1.1.6
+  scrollview_observer: ^1.26.3
+  # Local database (SQLite)c
+  drift: ^2.22.1
+  sqlite3_flutter_libs: ^0.5.28
+  charset_converter: ^2.3.0
   # ui related
   flutter_staggered_grid_view: ^0.7.0
   #Widget
@@ -89,6 +99,7 @@ dependencies:
   connectivity_plus: ^7.0.0 
   qr_flutter: ^4.1.0 
   flutter_markdown_plus: ^1.0.7
+  uuid: ^4.5.3 # 生成唯一标识符 
   # 给web端通信
   dia: ^0.1.4
   dia_static: ^0.1.2

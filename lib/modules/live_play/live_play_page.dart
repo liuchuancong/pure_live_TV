@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'widgets/video_player/video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';

@@ -3,7 +3,6 @@ import 'dart:developer';
 import '../video_controller.dart';
 import '../models/video_enums.dart';
 import 'package:flutter/services.dart';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/controller/video_danmaku.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/controller/video_constants.dart';
