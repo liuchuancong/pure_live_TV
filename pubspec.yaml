@@ -1,7 +1,7 @@
 name: pure_live
 description: A new Flutter project.
 publish_to: 'none'
-version: 2.0.20+20
+version: 2.0.19+19
 
 environment:
   sdk: ">=3.8.0 <4.0.0" 
