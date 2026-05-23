@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'package:path/path.dart' as p;
 import 'package:drift/drift.dart' as drift;
 import 'package:pure_live/common/index.dart';
