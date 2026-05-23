@@ -160,9 +160,7 @@ class IptvImportManager {
         content = await CharsetConverter.decode("gbk", bytes);
       }
 
-      String finalProviderId = isHot || providerName == 'hot'
-          ? FileUtils.systemHotProviderId
-          : FileUtils.generateUuid();
+      String finalProviderId = isHot ? FileUtils.systemHotProviderId : FileUtils.generateUuid();
       final parsedResult = ext == '.txt'
           ? TxtParser().parse(content, providerId: finalProviderId)
           : M3uParser().parse(content, providerId: finalProviderId);
