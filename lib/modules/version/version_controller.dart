@@ -1,6 +1,4 @@
 import 'dart:developer';
-import 'package:flutter/material.dart';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/plugins/update.dart';
 import 'package:pure_live/app/app_focus_node.dart';
