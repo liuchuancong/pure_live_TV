@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 2.0.19+19
 
 environment:
-  sdk: ">=3.8.0 <4.0.0" 
+ sdk: '^3.12.0'
 dependencies:
   flutter:
     sdk: flutter
@@ -42,9 +42,22 @@ dependencies:
       url:  https://github.com/xiaoyaocz/dart_simple_live.git
       path: ./simple_live_core/packages/tars_dart
   # video player
-  media_kit: ^1.2.6 # Primary package.
-  media_kit_video: ^2.0.1 # For video rendering.
-  media_kit_libs_video: ^1.0.7 # Native video dependencies. 
+  media_kit:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit
+  media_kit_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit_video
+  media_kit_libs_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/universal/media_kit_libs_video
+  better_player_plus: ^1.2.0
   flv_lzc:
     git: https://github.com/liuchuancong/flv_lzc.git
   bordered_text: ^3.0.0
@@ -62,6 +75,7 @@ dependencies:
   shared_preferences: ^2.2.2
   flutter_cache_manager: ^3.3.1
   # utils
+
   intl: ^0.20.2
   timezone: ^0.11.0
   date_format: ^2.0.7
@@ -71,19 +85,19 @@ dependencies:
   logger: ^2.0.2+1
   crypto: ^3.0.6
   brotli: ^0.6.0
-  device_info_plus: ^12.3.0
+  device_info_plus: ^13.1.0
   cupertino_icons: ^1.0.8
   remixicon: ^1.0.0 #Remix图标
   lottie: ^3.1.0 #Lottie动画
   marquee_list: ^1.0.0
   flutter_screenutil: ^5.9.0 #UI适配
-  network_info_plus: ^7.0.0
+  network_info_plus: ^8.1.0
   dart_tars_protocol:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0
   flutter_inappwebview: ^6.2.0-beta.2
   connectivity_plus: ^7.0.0 
-  qr_flutter: ^4.1.0
+  qr_flutter: ^4.1.0 
   flutter_markdown_plus: ^1.0.7
   uuid: ^4.5.3 # 生成唯一标识符 
   # 给web端通信
@@ -95,12 +109,55 @@ dependencies:
   group_button: ^5.3.4
   rxdart: ^0.27.7
   dart_quickjs:
-    git: https://github.com/xiaoyaocz/dart_quickjs.git
+    git: https://github.com/liuchuancong/dart_quickjs.git
   open_filex: ^4.7.0
   permission_handler: ^12.0.1
   hive_ce: ^2.15.1
   hive_ce_flutter: ^2.3.3
   pool: ^1.5.2
+dependency_overrides:
+  wakelock_plus: ^1.4.0
+  native_toolchain_c: ^0.18.0
+  media_kit:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit
+  media_kit_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit_video
+  media_kit_libs_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/universal/media_kit_libs_video
+  media_kit_libs_linux:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/linux/media_kit_libs_linux
+  media_kit_libs_ios_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/ios/media_kit_libs_ios_video
+  media_kit_libs_android_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/android/media_kit_libs_android_video
+  media_kit_libs_windows_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/windows/media_kit_libs_windows_video
+  media_kit_libs_macos_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./libs/macos/media_kit_libs_macos_video
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -144,7 +201,7 @@ flutter:
         - asset: assets/icons/CustomIcons.ttf
     - family: PingFang
       fonts:
-        - asset: assets/PingFangSC.ttf
+        - asset: assets/MiSans-Regular.ttf
 flutter_intl:
   enabled: true
   arb_dir: lib/common/l10n

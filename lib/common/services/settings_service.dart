@@ -105,6 +105,7 @@ class SettingsService extends GetxController {
   final selectedSourceId = (HivePrefUtil.getString('selectedSourceId') ?? '').obs;
   final isAutoSyncEnabled = (HivePrefUtil.getBool('isAutoSyncEnabled') ?? false).obs;
   final autoSyncHoursInterval = (HivePrefUtil.getInt('autoSyncHoursInterval') ?? 24).obs;
+  final customIptvUserAgent = (HivePrefUtil.getString('customIptvUserAgent') ?? '').obs;
   Uint8List? _cachedBytes;
   String? _cachedBase64;
 
@@ -372,6 +373,9 @@ class SettingsService extends GetxController {
     });
     autoSyncHoursInterval.listen((value) {
       HivePrefUtil.setInt('autoSyncHoursInterval', value);
+    });
+    customIptvUserAgent.listen((value) async {
+      await HivePrefUtil.setString('customIptvUserAgent', value);
     });
   }
 
@@ -680,6 +684,7 @@ class SettingsService extends GetxController {
     douyinCookie.value = json['douyinCookie'] ?? '';
     themeColorSwitch.value = json['themeColorSwitch'] ?? Colors.blue.hex;
     webPort.value = json['webPort'] ?? '9527';
+    customIptvUserAgent.value = json['customIptvUserAgent'] ?? '';
 
     // 4. 恢復備份時同步到 Hive
     // 使用 Future.wait 並行執行所有異步操作，效率更高
@@ -696,8 +701,7 @@ class SettingsService extends GetxController {
       HivePrefUtil.setString('kuaishouCookie', kuaishouCookie.value),
       HivePrefUtil.setString('themeColorSwitch', themeColorSwitch.value),
       HivePrefUtil.setString('webPort', webPort.value),
-
-      // 注
+      HivePrefUtil.setString('customIptvUserAgent', customIptvUserAgent.value),
 
       // 注意：確保傳入的是 List<String> 類型
       HivePrefUtil.setStringList('shieldList', shieldList.value),
@@ -750,6 +754,7 @@ class SettingsService extends GetxController {
     json['themeColorSwitch'] = themeColorSwitch.value;
     json['webPort'] = webPort.value;
     json['webPortEnable'] = false;
+    json['customIptvUserAgent'] = customIptvUserAgent.value;
     return json;
   }
 

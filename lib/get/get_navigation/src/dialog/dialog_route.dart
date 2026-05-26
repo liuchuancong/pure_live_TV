@@ -1,22 +1,17 @@
+import '../router_report.dart';
 import 'package:flutter/widgets.dart';
 
-import '../router_report.dart';
 
 class GetDialogRoute<T> extends PopupRoute<T> {
   GetDialogRoute({
     required RoutePageBuilder pageBuilder,
-    bool barrierDismissible = true,
-    String? barrierLabel,
-    Color barrierColor = const Color(0x80000000),
-    Duration transitionDuration = const Duration(milliseconds: 200),
-    RouteTransitionsBuilder? transitionBuilder,
+    this._barrierDismissible = true,
+    this._barrierLabel,
+    this._barrierColor = const Color(0x80000000),
+    this._transitionDuration = const Duration(milliseconds: 200),
+    this._transitionBuilder,
     super.settings,
-  })  : widget = pageBuilder,
-        _barrierDismissible = barrierDismissible,
-        _barrierLabel = barrierLabel,
-        _barrierColor = barrierColor,
-        _transitionDuration = transitionDuration,
-        _transitionBuilder = transitionBuilder {
+  })  : widget = pageBuilder {
     RouterReportManager.instance.reportCurrentRoute(this);
   }
 
