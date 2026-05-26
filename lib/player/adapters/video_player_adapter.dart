@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import '../models/player_state.dart';
-import 'package:flutter/material.dart';
 import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
-import '../core/player_error_dispatcher.dart';
+import 'package:pure_live/common/index.dart';
 import '../interface/unified_player_interface.dart';
 import 'package:better_player_plus/better_player_plus.dart';
 
@@ -13,23 +12,27 @@ class BetterPlayerAdapter implements UnifiedPlayer {
 
   bool _initialized = false;
   bool _disposed = false;
-  bool _wasSoftStopped = false;
+
+  void Function(BetterPlayerEvent)? _eventListener;
+
   final _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.idle);
   final _playingSubject = BehaviorSubject<bool>.seeded(false);
   final _loadingSubject = BehaviorSubject<bool>.seeded(false);
-  final _errorSubject = BehaviorSubject<PlayerException>();
+  final _errorSubject = PublishSubject<PlayerException>();
   final _completeSubject = BehaviorSubject<bool>.seeded(false);
   final _widthSubject = BehaviorSubject<int?>.seeded(null);
   final _heightSubject = BehaviorSubject<int?>.seeded(null);
+
+  final List<StreamSubscription> _subscriptions = [];
 
   @override
   Future<void> init() async {
     if (_initialized) return;
 
-    const betterPlayerConfiguration = BetterPlayerConfiguration(
+    BetterPlayerConfiguration betterPlayerConfiguration = BetterPlayerConfiguration(
       autoPlay: true,
       fit: BoxFit.contain,
-      handleLifecycle: true,
+      handleLifecycle: false,
       fullScreenByDefault: false,
       autoDispose: false,
       looping: false,
@@ -43,8 +46,20 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   }
 
   void _bindListeners() {
-    _controller!.addEventsListener((BetterPlayerEvent event) {
+    // 先移除旧监听
+    _removeEventListener();
+
+    _eventListener = (BetterPlayerEvent event) {
       switch (event.betterPlayerEventType) {
+        case BetterPlayerEventType.initialized:
+        case BetterPlayerEventType.changedResolution:
+          final size = _controller?.videoPlayerController?.value.size;
+          if (size != null && size.width > 0) {
+            _widthSubject.add(size.width.toInt());
+            _heightSubject.add(size.height.toInt());
+          }
+          break;
+
         case BetterPlayerEventType.play:
           _playingSubject.add(true);
           _stateSubject.add(PlayerState.playing);
@@ -59,6 +74,9 @@ class BetterPlayerAdapter implements UnifiedPlayer {
           break;
         case BetterPlayerEventType.bufferingEnd:
           _loadingSubject.add(false);
+          if (_playingSubject.value) {
+            _stateSubject.add(PlayerState.playing);
+          }
           break;
         case BetterPlayerEventType.finished:
           _completeSubject.add(true);
@@ -69,33 +87,55 @@ class BetterPlayerAdapter implements UnifiedPlayer {
             message: event.parameters?['exception']?.toString() ?? 'BetterPlayer Error',
             type: PlayerErrorType.native,
           );
-          _errorSubject.add(exception);
-          PlayerErrorDispatcher.instance.dispatch(exception);
+          _safeAddError(exception);
           break;
         default:
           break;
       }
-    });
+    };
+
+    _controller!.addEventsListener(_eventListener!);
+  }
+
+  Future<void> _cancelAllSubscriptions() async {
+    _removeEventListener();
+
+    for (final sub in _subscriptions) {
+      await sub.cancel();
+    }
+    _subscriptions.clear();
+  }
+
+  void _removeEventListener() {
+    if (_eventListener != null && _controller != null) {
+      _controller!.removeEventsListener(_eventListener!);
+      _eventListener = null;
+    }
+  }
+
+  void _safeAddError(PlayerException exception) {
+    if (_disposed || _errorSubject.isClosed) return;
+    _errorSubject.add(exception);
   }
 
   @override
-  Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers) async {
+  Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers, {LiveRoom? room}) async {
     try {
-      if (_wasSoftStopped) {
-        _wasSoftStopped = false;
-        await _controller?.setVolume(1.0);
-      }
       _loadingSubject.add(true);
-
+      _widthSubject.add(null);
+      _heightSubject.add(null);
+      _completeSubject.add(false);
       BetterPlayerDataSource dataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
         url,
         headers: headers,
+        liveStream: true,
       );
 
       await _controller!.setupDataSource(dataSource);
 
       _stateSubject.add(PlayerState.ready);
+      await setVolume(1.0);
     } catch (e, s) {
       final exception = PlayerException(
         message: 'BetterPlayer setDataSource failed',
@@ -103,7 +143,7 @@ class BetterPlayerAdapter implements UnifiedPlayer {
         error: e,
         stackTrace: s,
       );
-      _errorSubject.add(exception);
+      _safeAddError(exception);
       throw exception;
     } finally {
       _loadingSubject.add(false);
@@ -117,7 +157,6 @@ class BetterPlayerAdapter implements UnifiedPlayer {
 
   @override
   Future<void> play() => _controller?.play() ?? Future.value();
-
   @override
   Future<void> pause() => _controller?.pause() ?? Future.value();
 
@@ -128,11 +167,9 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   }
 
   @override
-  @override
   Future<void> softStop() async {
     if (_controller != null) {
-      _wasSoftStopped = true;
-      await _controller!.setVolume(0.0); // 立即静音
+      await _controller!.setVolume(0.0);
     }
     await _controller?.pause();
     await _controller?.seekTo(Duration.zero);
@@ -143,11 +180,15 @@ class BetterPlayerAdapter implements UnifiedPlayer {
     if (_disposed) return;
     _disposed = true;
     _initialized = false;
+
+    await _cancelAllSubscriptions();
+
     if (_controller != null) {
       try {
         await _controller!.setVolume(0.0);
         await _controller!.pause();
         _controller!.dispose();
+        _controller = null;
       } catch (e) {
         debugPrint("BetterPlayer dispose error: $e");
       }

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 

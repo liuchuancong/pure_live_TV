@@ -1,5 +1,4 @@
 import 'package:lottie/lottie.dart';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/modules/search/search_room_controller.dart';

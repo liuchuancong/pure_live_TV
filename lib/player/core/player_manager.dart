@@ -1,16 +1,14 @@
 import 'dart:async';
 import 'dart:developer';
 import 'player_pool.dart';
-import 'package:rxdart/rxdart.dart';
 import 'line_fallback_manager.dart';
 import '../models/player_state.dart';
 import 'preload_player_manager.dart';
 import '../models/player_engine.dart';
 import 'engine_fallback_manager.dart';
-import 'player_error_dispatcher.dart';
-import 'package:pure_live/get/get.dart';
 import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
+import 'package:rxdart/rxdart.dart' hide Rx;
 import 'package:pure_live/common/index.dart';
 import '../interface/unified_player_interface.dart';
 
@@ -22,7 +20,6 @@ class PlayerManager {
   final PreloadPlayerManager preloadManager;
 
   final LineFallbackManager lineManager;
-
   PlayerManager({
     required this.playerPool,
     required this.fallbackManager,
@@ -30,19 +27,49 @@ class PlayerManager {
     required this.lineManager,
   });
 
+  // =========================
+  // player
+  // =========================
+
   UnifiedPlayer? _currentPlayer;
 
-  /// 当前运行播放器
   PlayerEngine? _runtimeEngine;
 
-  /// 用户默认播放器
   PlayerEngine? _defaultEngine;
+
+  // =========================
+  // play info
+  // =========================
 
   String? _currentUrl;
 
   List<String> _currentPlayUrls = [];
 
   Map<String, String> _currentHeaders = {};
+
+  // =========================
+  // rx state
+  // =========================
+
+  final RxBool isInitialized = false.obs;
+
+  final RxBool hasError = false.obs;
+
+  final RxBool isVerticalVideo = false.obs;
+
+  final RxBool isInPip = false.obs;
+
+  final RxBool isFloating = false.obs;
+
+  final RxBool isHovered = false.obs;
+
+  final RxInt videoFitIndex = 0.obs;
+
+  Rx<ValueKey> videoKey = Rx<ValueKey>(const ValueKey("video_0"));
+
+  // =========================
+  // stream state
+  // =========================
 
   final _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.idle);
 
@@ -58,19 +85,25 @@ class PlayerManager {
 
   final _heightSubject = BehaviorSubject<int?>.seeded(null);
 
+  // =========================
+  // subscriptions
+  // =========================
+
   final List<StreamSubscription> _subscriptions = [];
+
+  // =========================
+  // misc
+  // =========================
 
   bool _disposed = false;
 
-  int _errorCount = 0;
-
-  DateTime? _lastErrorTime;
-
-  static const int _maxErrorCount = 5;
-
-  static const Duration _errorResetDuration = Duration(seconds: 10);
-
   bool _isSwitchingDueToFallback = false;
+  bool _isHandlingError = false;
+
+  Timer? _hideTimer;
+
+  LiveRoom? currentFloatRoom;
+
   // =========================
   // getter
   // =========================
@@ -95,6 +128,18 @@ class PlayerManager {
 
   bool get isPlayingNow => _playingSubject.value;
 
+  double get currentVideoRatio {
+    final w = _widthSubject.value?.toDouble() ?? 1920;
+
+    final h = _heightSubject.value?.toDouble() ?? 1080;
+
+    if (w <= 0 || h <= 0) {
+      return 16 / 9;
+    }
+
+    return w / h;
+  }
+
   // =========================
   // initialize
   // =========================
@@ -106,14 +151,17 @@ class PlayerManager {
 
     try {
       _defaultEngine = engine;
+
       _runtimeEngine = engine;
 
       _currentPlayer = await playerPool.getPlayer(engine);
 
-      _bindPlayerStreams(_currentPlayer!);
-
+      await _bindPlayerStreams(_currentPlayer!);
+      isInitialized.value = true;
       _stateSubject.add(PlayerState.initialized);
     } catch (e, s) {
+      hasError.value = true;
+
       final exception = PlayerException(
         message: 'Initialize player failed',
         type: PlayerErrorType.initialization,
@@ -133,17 +181,20 @@ class PlayerManager {
   // play
   // =========================
 
-  Future<void> play(String url, List<String> playUrls, Map<String, String> headers) async {
+  Future<void> play(String url, List<String> playUrls, Map<String, String> headers, {LiveRoom? room}) async {
     if (_disposed) return;
+    if (room?.roomId != currentFloatRoom?.roomId) {
+      lineManager.reset();
+    }
     if (_currentPlayer == null || _runtimeEngine == null) {
-      final SettingsService settings = Get.find<SettingsService>();
+      final settings = Get.find<SettingsService>();
       _defaultEngine = PlayerEngine.values[settings.videoPlayerIndex.value];
       _runtimeEngine = _defaultEngine;
       await initialize(engine: _defaultEngine!);
     } else if (_runtimeEngine != _defaultEngine && !_isSwitchingDueToFallback) {
-      log("🔄 播放新视频 → 恢复默认引擎: $_defaultEngine");
       await switchEngine(_defaultEngine!, isManual: false);
     }
+
     final player = _currentPlayer;
 
     if (player == null) {
@@ -156,18 +207,28 @@ class PlayerManager {
 
     _currentHeaders = headers;
 
+    currentFloatRoom = room;
+
+    hasError.value = false;
+
     try {
       _stateSubject.add(PlayerState.preparing);
+      await player.setDataSource(url, playUrls, headers, room: room);
 
-      await player.setDataSource(url, playUrls, headers);
+      videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
 
       _stateSubject.add(PlayerState.ready);
     } on PlayerException catch (e) {
-      await _handleError(e);
+      if (!_isHandlingError) {
+        await _handleError(e);
+      }
     } catch (e, s) {
+      log(e.toString());
       final exception = PlayerException(message: 'Play failed', type: PlayerErrorType.unknown, error: e, stackTrace: s);
 
-      await _handleError(exception);
+      if (!_isHandlingError) {
+        await _handleError(exception);
+      }
     } finally {
       _isSwitchingDueToFallback = false;
     }
@@ -179,37 +240,43 @@ class PlayerManager {
 
   Future<void> replay() async {
     if (_currentUrl == null) return;
-
-    await play(_currentUrl!, _currentPlayUrls, _currentHeaders);
+    await play(_currentUrl!, _currentPlayUrls, _currentHeaders, room: currentFloatRoom);
   }
 
-  /// 切换播放器引擎
-  /// [isManual] true = 用户手动选择（会保存为默认引擎）
-  /// [isManual] false = 自动降级（不修改默认引擎）
+  // =========================
+  // switch engine
+  // =========================
+
   Future<void> switchEngine(PlayerEngine engine, {bool isManual = false}) async {
     if (_disposed) return;
-    if (_runtimeEngine == engine && _currentPlayer != null) return;
+
+    if (_runtimeEngine == engine && _currentPlayer != null) {
+      return;
+    }
 
     try {
       final oldPlayer = _currentPlayer;
+
       final oldEngine = _runtimeEngine;
 
       await _clearSubscriptions();
 
       final newPlayer = await playerPool.getPlayer(engine);
+
       _currentPlayer = newPlayer;
+
       _runtimeEngine = engine;
 
       if (isManual) {
         _defaultEngine = engine;
-        log("✅ 用户手动切换引擎 → 保存为默认: $engine", name: 'PlayerManager');
       }
 
-      _bindPlayerStreams(newPlayer);
-
+      await _bindPlayerStreams(newPlayer);
       if (oldPlayer != null && oldEngine != null) {
-        unawaited(_safeDestroyPlayer(oldPlayer, oldEngine));
+        await _safeDestroyPlayer(oldPlayer, oldEngine);
       }
+
+      videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
     } catch (e, s) {
       final exception = PlayerException(
         message: 'Switch engine failed',
@@ -217,20 +284,20 @@ class PlayerManager {
         error: e,
         stackTrace: s,
       );
+
       _errorSubject.add(exception);
-      // 即使切换失败，也要尝试恢复旧的状态或抛出异常
+
       rethrow;
     }
   }
 
-  // 在 PlayerManager 类的底部添加此方法
   Future<void> _safeDestroyPlayer(UnifiedPlayer player, PlayerEngine engine) async {
     try {
       await player.hardDispose();
+
       await playerPool.removeFromCache(engine);
     } catch (e, s) {
-      // 记录日志但不抛出，确保不影响主流程
-      log("⚠️ 销毁旧播放器实例时发生异常: $e", stackTrace: s);
+      log("destroy player error: $e", stackTrace: s);
     }
   }
 
@@ -263,145 +330,33 @@ class PlayerManager {
 
     _currentPlayer = player;
 
-    _bindPlayerStreams(player);
+    await _bindPlayerStreams(player);
   }
+
+  // =========================
+  // play control
+  // =========================
 
   Future<void> togglePlayPause() async {
     if (_currentPlayer == null) return;
 
-    try {
-      if (isPlayingNow) {
-        await pause();
-      } else {
-        await resume();
-      }
-    } catch (e, s) {
-      final exception = PlayerException(
-        message: 'Toggle play pause failed',
-        type: PlayerErrorType.lifecycle,
-        error: e,
-        stackTrace: s,
-      );
-
-      _errorSubject.add(exception);
-
-      rethrow;
+    if (isPlayingNow) {
+      await pause();
+    } else {
+      await resume();
     }
   }
-
-  // =========================
-  // pause
-  // =========================
 
   Future<void> pause() async {
     await _currentPlayer?.pause();
   }
 
-  // =========================
-  // resume
-  // =========================
-
   Future<void> resume() async {
     await _currentPlayer?.play();
   }
 
-  // =========================
-  // stop
-  // =========================
-
   Future<void> stop() async {
-    await _currentPlayer?.stop();
-  }
-
-  // =========================
-  // UI Rendering
-  // =========================
-
-  /// Returns the reactive video widget.
-  /// Uses [Obx] to ensure that when [seamlessSwitch] or [switchEngine] happens, the UI updates.
-  Widget getVideoWidget(int fitIndex, {Widget? controls, required List<BoxFit> fitList}) {
-    return StreamBuilder<PlayerState>(
-      stream: onStateChanged,
-      builder: (context, snapshot) {
-        if (_currentPlayer == null || snapshot.data == PlayerState.initializing) {
-          return _buildPlaceholder();
-        }
-
-        final boxFit = fitList[fitIndex];
-        // final engineKey = ValueKey("${_runtimeEngine!.name}_$_currentUrl");
-
-        return KeyedSubtree(
-          child: Container(
-            color: Colors.black,
-            width: double.infinity,
-            height: double.infinity,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: FittedBox(
-                    fit: boxFit,
-                    clipBehavior: Clip.hardEdge,
-                    child: StreamBuilder<List<int?>>(
-                      stream: CombineLatestStream.list([width, height]),
-                      builder: (context, sizeSnapshot) {
-                        final w = sizeSnapshot.data?[0]?.toDouble() ?? 1920.0;
-                        final h = sizeSnapshot.data?[1]?.toDouble() ?? 1080.0;
-                        return SizedBox(width: w, height: h, child: _currentPlayer!.getVideoWidget());
-                      },
-                    ),
-                  ),
-                ),
-                if (controls != null) Positioned.fill(child: controls),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: Colors.black,
-      child: const Center(child: CircularProgressIndicator(strokeWidth: 4, color: Colors.white70)),
-    );
-  }
-
-  // =========================
-  // close stop
-  // =========================
-
-  Future<void> close() async {
-    final SettingsService settings = Get.find<SettingsService>();
-    settings.useHardStopOnExit.value ? await hardDispose() : await softStop();
-  }
-
-  Future<void> softStop() async {
-    try {
-      // 如果播放器异常，直接强制硬销毁
-      if (_stateSubject.value == PlayerState.error) {
-        await hardDispose();
-        return;
-      }
-      await _currentPlayer?.softStop();
-      _stateSubject.add(PlayerState.idle);
-      _playingSubject.add(false);
-    } catch (e) {
-      await hardDispose();
-    }
-  }
-
-  Future<void> hardDispose() async {
-    // 清空 Dart 引用
-    final player = _currentPlayer;
-    if (player != null) {
-      await player.hardDispose();
-    }
-    if (_runtimeEngine != null) {
-      await playerPool.removeFromCache(_runtimeEngine!);
-    }
-    _currentPlayer = null;
-    _runtimeEngine = null;
+    await close();
   }
 
   // =========================
@@ -413,6 +368,109 @@ class PlayerManager {
   }
 
   // =========================
+  // fit
+  // =========================
+
+  void changeVideoFit(int index) {
+    videoFitIndex.value = index;
+  }
+
+  Widget getVideoWidget(int fitIndex, {Widget? controls, required List<BoxFit> fitList}) {
+    return Container(
+      color: Colors.black,
+      padding: const EdgeInsets.all(0),
+      child: StreamBuilder<bool>(
+        stream: onPlaying,
+        initialData: isPlayingNow,
+        builder: (context, snapshot) {
+          if (_currentPlayer == null) {
+            return _buildPlaceholder();
+          }
+          final boxFit = fitList[fitIndex];
+          return KeyedSubtree(
+            key: videoKey.value,
+            child: Container(
+              color: Colors.black,
+              width: double.infinity,
+              height: double.infinity,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black,
+                      child: FittedBox(
+                        fit: boxFit,
+                        clipBehavior: Clip.hardEdge,
+                        child: StreamBuilder<List<int?>>(
+                          stream: CombineLatestStream.list([width, height]),
+                          builder: (context, snapshot) {
+                            // 动态使用视频的真实宽高
+                            final vW = snapshot.data?[0]?.toDouble() ?? 1920.0;
+                            final vH = snapshot.data?[1]?.toDouble() ?? 1080.0;
+                            return SizedBox(width: vW, height: vH, child: _currentPlayer!.getVideoWidget());
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  if (controls != null) Positioned.fill(child: controls),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: Colors.black,
+      child: const Center(child: CircularProgressIndicator(strokeWidth: 4, color: Colors.white70)),
+    );
+  }
+
+  // =========================
+  // close
+  // =========================
+
+  Future<void> close() async {
+    final settings = Get.find<SettingsService>();
+    settings.useHardStopOnExit.value ? await hardDispose() : await softStop();
+  }
+
+  Future<void> softStop() async {
+    lineManager.reset();
+    try {
+      if (_stateSubject.value == PlayerState.error) {
+        await hardDispose();
+
+        return;
+      }
+
+      await _currentPlayer?.softStop();
+
+      _stateSubject.add(PlayerState.idle);
+
+      _playingSubject.add(false);
+    } catch (e) {
+      await hardDispose();
+    }
+  }
+
+  Future<void> hardDispose() async {
+    lineManager.reset();
+    await _clearSubscriptions();
+    if (_runtimeEngine != null) {
+      await playerPool.removeFromCache(_runtimeEngine!);
+    }
+    _currentPlayer = null;
+    _runtimeEngine = null;
+    isInitialized.value = false;
+  }
+
+  // =========================
   // retry
   // =========================
 
@@ -421,81 +479,95 @@ class PlayerManager {
   }
 
   // =========================
-  // handle error
+  // error
   // =========================
-
   Future<void> _handleError(PlayerException error) async {
-    _errorSubject.add(error);
-    PlayerErrorDispatcher.instance.dispatch(error);
-    _stateSubject.add(PlayerState.error);
-
-    // 检查是否在短时间内发生过多错误
-    DateTime now = DateTime.now();
-    if (_lastErrorTime != null && now.difference(_lastErrorTime!) > _errorResetDuration) {
-      _errorCount = 0;
-    }
-
-    _errorCount++;
-    _lastErrorTime = now;
-
-    // 如果错误次数过多，停止自动重试
-    if (_errorCount >= _maxErrorCount) {
-      log("❌ 错误次数过多 ($_errorCount)，停止自动重试");
+    if (_disposed) return;
+    if (_isHandlingError) {
+      log("skip duplicated error handling: ${error.message}");
       return;
     }
+    _isHandlingError = true;
 
-    // ======================
-    // line fallback
-    // ======================
-    if (error.type == PlayerErrorType.network || error.type == PlayerErrorType.source) {
-      if (_currentPlayUrls.isEmpty) {
-        log("❌ 无备用线路可切换");
+    try {
+      hasError.value = true;
+      _errorSubject.add(error);
+      _stateSubject.add(PlayerState.error);
+
+      bool lineSwitched = false;
+
+      if ((error.type == PlayerErrorType.network || error.type == PlayerErrorType.source) &&
+          _currentPlayUrls.length > 1) {
+        lineManager.markFailed(_currentUrl!);
+
+        if (!lineManager.hasAvailable(_currentPlayUrls)) {
+          log("no available lines, fallback engine");
+        } else {
+          final nextLine = lineManager.next(_currentPlayUrls);
+
+          if (nextLine != _currentUrl) {
+            lineSwitched = true;
+
+            log("switch line => $nextLine");
+
+            await Future.delayed(const Duration(seconds: 2));
+
+            await play(nextLine, _currentPlayUrls, _currentHeaders, room: currentFloatRoom);
+
+            return;
+          }
+        }
+      }
+      log(error.type.toString());
+      // =========================
+      // 2. 再尝试切播放器
+      // =========================
+
+      if (!lineSwitched && fallbackManager.shouldFallback(error)) {
+        final nextEngine = await fallbackManager.fallback(_runtimeEngine!, error);
+
+        // 防止重复切换
+        if (nextEngine == _runtimeEngine) {
+          log("skip fallback: nextEngine(${nextEngine.name}) == currentEngine(${_runtimeEngine?.name})");
+          return;
+        }
+
+        log(
+          "fallback engine: "
+          "${_runtimeEngine?.name} -> ${nextEngine.name}",
+        );
+        _isSwitchingDueToFallback = true;
+
+        // 给底层播放器一点释放时间
+        await Future.delayed(const Duration(milliseconds: 1200));
+
+        await switchEngine(nextEngine, isManual: false);
+
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        await replay();
+
         return;
       }
-
-      final nextLine = lineManager.next(_currentPlayUrls);
-      log("🔄 线路降级: 尝试下一个线路");
-
-      await play(nextLine, _currentPlayUrls, _currentHeaders);
-      return;
+    } catch (e, s) {
+      log("_handleError failed: $e", stackTrace: s);
+    } finally {
+      _isHandlingError = false;
     }
-
-    // ======================
-    // engine fallback
-    // ======================
-    if (fallbackManager.shouldFallback(error)) {
-      log("🔄 尝试引擎降级...");
-      final nextEngine = await fallbackManager.fallback(_runtimeEngine!, error);
-
-      // 如果降级后的引擎和当前引擎相同，说明无法降级
-      if (nextEngine == _runtimeEngine) {
-        log("⚠️ 无法降级到其他引擎，当前引擎: $nextEngine");
-        return;
-      }
-
-      log("🔄 引擎降级: $_runtimeEngine -> $nextEngine");
-      _isSwitchingDueToFallback = true; // 设置降级标志
-      await switchEngine(nextEngine, isManual: false);
-      await replay();
-      return;
-    }
-
-    log("❌ 不满足降级条件，错误类型: ${error.type}");
   }
-
   // =========================
-  // bind streams
+  // bind
   // =========================
 
-  void _bindPlayerStreams(UnifiedPlayer player) {
+  Future<void> _bindPlayerStreams(UnifiedPlayer player) async {
+    await _clearSubscriptions();
     _subscriptions.add(
-      player.onPlaying.listen((event) {
+      player.onPlaying.listen((event) async {
         _playingSubject.add(event);
-
         if (event) {
+          hasError.value = false;
           _stateSubject.add(PlayerState.playing);
           if (_isSwitchingDueToFallback) {
-            _errorCount = 0;
             _isSwitchingDueToFallback = false;
           }
         } else {
@@ -507,26 +579,53 @@ class PlayerManager {
     _subscriptions.add(
       player.onLoading.listen((event) {
         _loadingSubject.add(event);
-
-        if (event) {
+        if (event && _stateSubject.value != PlayerState.buffering) {
           _stateSubject.add(PlayerState.buffering);
         }
       }),
     );
 
-    _subscriptions.add(player.onComplete.listen(_completeSubject.add));
-
-    _subscriptions.add(player.onStateChanged.listen(_stateSubject.add));
-
     _subscriptions.add(
-      player.onError.listen((error) {
-        unawaited(_handleError(error));
+      player.onComplete.listen((event) {
+        _completeSubject.add(event);
       }),
     );
 
-    _subscriptions.add(player.width.listen(_widthSubject.add));
+    _subscriptions.add(
+      player.onStateChanged.listen((event) {
+        _stateSubject.add(event);
+      }),
+    );
 
-    _subscriptions.add(player.height.listen(_heightSubject.add));
+    _subscriptions.add(
+      player.onError.listen((error) {
+        if (!_isHandlingError) {
+          _handleError(error);
+        }
+      }),
+    );
+
+    _subscriptions.add(
+      player.width.listen((event) {
+        _widthSubject.add(event);
+      }),
+    );
+
+    _subscriptions.add(
+      player.height.listen((event) {
+        _heightSubject.add(event);
+      }),
+    );
+
+    _subscriptions.add(
+      CombineLatestStream.combine2<int?, int?, bool>(
+        width.where((w) => w != null && w > 0),
+        height.where((h) => h != null && h > 0),
+        (w, h) => h! >= w!,
+      ).distinct().listen((event) {
+        isVerticalVideo.value = event;
+      }),
+    );
   }
 
   // =========================
@@ -534,10 +633,10 @@ class PlayerManager {
   // =========================
 
   Future<void> _clearSubscriptions() async {
-    for (final item in _subscriptions) {
+    if (_subscriptions.isEmpty) return;
+    for (final item in _subscriptions.toList()) {
       await item.cancel();
     }
-
     _subscriptions.clear();
   }
 
@@ -549,6 +648,8 @@ class PlayerManager {
     if (_disposed) return;
 
     _disposed = true;
+
+    _hideTimer?.cancel();
 
     await _clearSubscriptions();
 

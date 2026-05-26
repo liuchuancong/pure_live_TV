@@ -9,24 +9,32 @@ class AppColors {
   static ColorScheme lightColorScheme = ColorScheme.fromSwatch(
     primarySwatch: Colors.pink,
     brightness: Brightness.dark,
-    //primaryColorDark: const Color(0xfff06595),
     accentColor: const Color(0xfff06595),
   );
 
   ThemeData get darkThemeData {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'PingFang',
       colorSchemeSeed: primaryColor,
       colorScheme: colorScheme?.copyWith(error: const Color.fromARGB(255, 255, 99, 71)),
       brightness: Brightness.dark,
+      textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'PingFang'),
+      primaryTextTheme: ThemeData.dark().primaryTextTheme.apply(fontFamily: 'PingFang'),
     );
   }
 }
 
 class AppStyle {
   static ThemeData lightTheme = ThemeData(
+    useMaterial3: true,
+    fontFamily: 'PingFang',
     colorScheme: AppColors.lightColorScheme,
-    appBarTheme: const AppBarTheme(elevation: 0, centerTitle: true),
+    appBarTheme: const AppBarTheme(
+      elevation: 0,
+      centerTitle: true,
+      titleTextStyle: TextStyle(fontFamily: 'PingFang', fontSize: 20, fontWeight: FontWeight.bold),
+    ),
     scaffoldBackgroundColor: const Color(0xfffafafa),
     textTheme: ThemeData.light().textTheme.apply(fontFamily: 'PingFang'),
     primaryTextTheme: ThemeData.light().primaryTextTheme.apply(fontFamily: 'PingFang'),
@@ -114,25 +122,19 @@ class AppStyle {
 
   static const colorBlack33 = Color(0xff333333);
 
-  /// 顶部状态栏的高度
   static double get statusBarHeight => MediaQuery.of(Get.context!).padding.top;
-
-  /// 底部导航条的高度
   static double get bottomBarHeight => MediaQuery.of(Get.context!).padding.bottom;
 
-  static TextStyle get titleStyleWhite => TextStyle(color: Colors.white, fontSize: 40.w);
-  static TextStyle get titleStyleBlack => TextStyle(color: colorBlack33, fontSize: 40.w);
-  static TextStyle get textStyleWhite => TextStyle(color: Colors.white, fontSize: 32.w);
-  static TextStyle get textStyleBlack => TextStyle(color: colorBlack33, fontSize: 32.w);
-  static TextStyle get subTextStyleWhite => TextStyle(color: Colors.white54, fontSize: 24.w, height: 1.0);
-  static TextStyle get subTextStyleBlack => TextStyle(color: Colors.black54, fontSize: 24.w, height: 1.0);
+  static TextStyle get titleStyleWhite => TextStyle(color: Colors.white, fontSize: 40.w, fontFamily: 'PingFang');
+  static TextStyle get titleStyleBlack => TextStyle(color: colorBlack33, fontSize: 40.w, fontFamily: 'PingFang');
+  static TextStyle get textStyleWhite => TextStyle(color: Colors.white, fontSize: 32.w, fontFamily: 'PingFang');
+  static TextStyle get textStyleBlack => TextStyle(color: colorBlack33, fontSize: 32.w, fontFamily: 'PingFang');
+  static TextStyle get subTextStyleWhite =>
+      TextStyle(color: Colors.white54, fontSize: 24.w, height: 1.0, fontFamily: 'PingFang');
+  static TextStyle get subTextStyleBlack =>
+      TextStyle(color: Colors.black54, fontSize: 24.w, height: 1.0, fontFamily: 'PingFang');
 
   static List<BoxShadow> get highlightShadow => [
-    BoxShadow(
-      blurRadius: 6.w,
-      spreadRadius: 2.w,
-      color: Colors.pink.shade400,
-      //color: Color.fromARGB(255, 255, 120, 167),
-    ),
+    BoxShadow(blurRadius: 6.w, spreadRadius: 2.w, color: Colors.pink.shade400),
   ];
 }

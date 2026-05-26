@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:pure_live/get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'common/utils/hive_pref_util.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/plugins/db_service.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:pure_live/plugins/cache_manager.dart';
+import 'package:pure_live/common/utils/app_path_manager.dart';
+import 'package:pure_live/core/iptv/services/channel_detail_controller.dart';
 
 class AppInitializer {
   // 单例实例
@@ -36,6 +39,8 @@ class AppInitializer {
     await Hive.initFlutter(path);
     await HivePrefUtil.init();
     MediaKit.ensureInitialized();
+    await AppPathManager().initialize();
+    await CustomImageCacheManager.initialize();
     initService();
     _isInitialized = true;
     SmartDialog.config.toast = SmartConfigToast(
@@ -46,6 +51,8 @@ class AppInitializer {
 
   void initService() {
     Get.put(SettingsService());
+    Get.lazyPut<DbService>(() => DbService()..init(), fenix: true);
+    Get.lazyPut(() => ChannelDetailController(), fenix: true);
   }
 
   // 检查是否已初始化

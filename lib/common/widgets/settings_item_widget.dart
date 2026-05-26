@@ -1,4 +1,3 @@
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/common/widgets/highlight_widget.dart';

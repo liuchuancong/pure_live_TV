@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/model/live_category.dart';
+import 'package:pure_live/plugins/area_pic_mapper.dart';
 import 'package:pure_live/common/base/base_controller.dart';
 
 class AreasListController extends BasePageController<AppLiveCategory> {
@@ -41,9 +41,12 @@ class AreasListController extends BasePageController<AppLiveCategory> {
 
   @override
   Future<List<AppLiveCategory>> getData(int page, int pageSize) async {
-    if (siteId.value.isEmpty) return [];
+    list.value = [];
     var result = await site.liveSite.getCategores(page, pageSize);
-    return result.map((e) => AppLiveCategory.fromLiveCategory(e)).toList();
+    var channels = result.map((e) => AppLiveCategory.fromLiveCategory(e)).toList();
+    AreaPicMapper.updateAreaListMaps(channels);
+
+    return channels;
   }
 }
 

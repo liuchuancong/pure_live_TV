@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/modules/agreement/agreement_page_controller.dart';

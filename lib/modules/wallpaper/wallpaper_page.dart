@@ -1,4 +1,3 @@
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:pure_live/common/widgets/settings_item_widget.dart';

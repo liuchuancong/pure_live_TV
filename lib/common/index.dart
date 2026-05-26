@@ -22,3 +22,4 @@ export 'package:pure_live/common/base/constant.dart';
 export 'package:flv_lzc/fijkplayer.dart';
 export 'package:pure_live/player/global_player_service.dart';
 export 'package:pure_live/common/utils/toast_util.dart';
+export 'package:pure_live/get/get.dart' hide VoidCallback;

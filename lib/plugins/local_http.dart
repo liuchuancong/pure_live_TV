@@ -4,15 +4,14 @@ import 'dart:io' as io;
 import 'dart:developer';
 import 'package:dia/dia.dart';
 import 'package:path/path.dart' as p;
-import 'package:pure_live/get/get.dart';
 import 'package:dia_cors/dia_cors.dart';
 import 'package:dia_body/dia_body.dart';
 import 'package:dia_static/dia_static.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:dia_router/dia_router.dart' as dia_router;
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:pure_live/plugins/file_recover_utils.dart';
 import 'package:flutter/services.dart' show rootBundle, AssetManifest;
+import 'package:pure_live/core/iptv/services/iptv_import_manager.dart';
 
 class ContextRequest extends Context with dia_router.Routing, ParsedBody {
   ContextRequest(super.request);
@@ -97,7 +96,7 @@ class LocalHttpServer {
         if (ctx.query['type'] != null) {
           String? type = ctx.query['type'];
           if (type == 'uploadM3u8File') {
-            FileRecoverUtils().recoverM3u8BackupByWeb(ctx.parsed['file'], ctx.parsed['name']);
+            IptvImportManager().importFromWebString(ctx.parsed['file'], ctx.parsed['name']);
           } else if (type == 'uploadRecoverFile') {
             var dir = await getApplicationCacheDirectory();
             final file = File('${dir.path}${Platform.pathSeparator}${ctx.parsed['name']}');

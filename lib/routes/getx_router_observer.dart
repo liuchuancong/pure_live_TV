@@ -1,4 +1,3 @@
-import 'package:pure_live/get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
@@ -26,6 +25,7 @@ class BackButtonObserver extends RouteObserver<PageRoute<dynamic>> {
     super.didPop(route, previousRoute);
     if (route.settings.name == RoutePath.kLivePlay) {
       Get.find<LivePlayController>().onDelete();
+
       GlobalPlayerService.instance.playerManager.close();
       final controller = Get.find<HomeController>();
       controller.refreshData();

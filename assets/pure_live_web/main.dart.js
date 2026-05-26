@@ -60000,7 +60000,7 @@ rZ(){var s=0,r=A.H(t.y),q,p,o,n,m,l,k,j
 var $async$rZ=A.I(function(a,b){if(a===1)return A.E(b,r)
 while(true)switch(s){case 0:j=J
 s=3
-return A.O($.abE().cO(A.a(["m3u"],t.s),"\u9009\u62e9M3u\u5907\u4efd\u6587\u4ef6",B.d2),$async$rZ)
+return A.O($.abE().cO(A.a(["m3u,txt"],t.s),"\u9009\u62e9M3u\u5907\u4efd\u6587\u4ef6",B.d2),$async$rZ)
 case 3:k=j.fp(b.a)
 try{o=k.b
 n=new A.dp(Date.now(),!1).I3()
