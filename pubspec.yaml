@@ -190,7 +190,7 @@ flutter:
         - asset: assets/icons/CustomIcons.ttf
     - family: PingFang
       fonts:
-        - asset: assets/PingFangSC.ttf
+        - asset: assets/MiSans-Regular.ttf
 flutter_intl:
   enabled: true
   arb_dir: lib/common/l10n
