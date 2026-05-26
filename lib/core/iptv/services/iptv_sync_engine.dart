@@ -57,7 +57,7 @@ class IptvSyncEngine {
         await tempFile.delete();
       }
       if (showTips) {
-        ToastUtil.show("同步成功");
+        ToastUtil.show('同步成功');
       }
       return success;
     } catch (e) {

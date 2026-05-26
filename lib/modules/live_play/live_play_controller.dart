@@ -148,6 +148,14 @@ class LivePlayController extends StateController {
       roomId: currentPlayRoom.value.roomId!,
       platform: currentPlayRoom.value.platform!,
     );
+    bool isIptv = currentSite.id == Sites.iptvSite;
+    if (isIptv) {
+      detail.value = null;
+      detail.value = liveRoom;
+      _initIptvPlayer();
+      return detail.value!;
+    }
+
     handleCurrentLineAndQuality(
       reloadDataType: reloadDataType,
       line: line,
@@ -185,6 +193,22 @@ class LivePlayController extends StateController {
     return liveRoom;
   }
 
+  // ================= IPTV =================
+  void _initIptvPlayer() {
+    final link = detail.value?.link;
+    log(' IPTV link: ${detail.value?.link}');
+    if (link == null || link.isEmpty) {
+      ToastUtil.show('IPTV link为空,请重新获取');
+      return;
+    }
+    qualites = RxList([LivePlayQuality(quality: '原画')]);
+    currentQuality.value = 0;
+    currentLineIndex.value = 0;
+    playUrls.value = [link];
+    setPlayer();
+    liveDanmaku.stop();
+  }
+
   void resetGlobalListState() {
     var index = settings.currentPlayList.indexWhere(
       (element) => element.roomId == currentPlayRoom.value.roomId && element.platform == currentPlayRoom.value.platform,
@@ -203,6 +227,7 @@ class LivePlayController extends StateController {
     currentSite = Sites.of(currentPlayRoom.value.platform!);
     liveDanmaku = currentSite.liveSite.getDanmaku();
     channelTimer?.cancel();
+
     handleCurrentLineAndQuality(reloadDataType: reloadDataType, line: line, isReCalculate: isReCalculate);
     var liveRoom = await currentSite.liveSite.getRoomDetail(
       roomId: currentPlayRoom.value.roomId!,
@@ -394,6 +419,10 @@ class LivePlayController extends StateController {
     } else if (currentSite.id == 'huya') {
       var ua = await HuyaSite().getHuYaUA();
       headers = {"user-agent": ua, "origin": "https://www.huya.com", "cookie": settings.huyaCookie.value};
+    } else if (currentSite.id == Sites.iptvSite) {
+      if (settings.customIptvUserAgent.value.isNotEmpty) {
+        headers = {"user-agent": settings.customIptvUserAgent.value};
+      }
     }
     videoController = VideoController(
       playerKey: playerKey,
