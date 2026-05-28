@@ -56,7 +56,12 @@ extension VideoDanmaku on VideoController {
   void sendDanmakuMessage(LiveMessage msg) {
     if (hideDanmaku.value) return;
     danmakuController.addDanmaku(
-      DanmakuContentItem(msg.message, color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b)),
+      DanmakuContentItem(
+        msg.message,
+        color: Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b),
+
+        fontFamily: 'PingFang',
+      ),
     );
   }
 
