@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:intl/intl.dart';
 import 'package:pure_live/app/utils.dart';
 import 'package:remixicon/remixicon.dart';
@@ -37,22 +38,25 @@ class HomeController extends BasePageController {
   var refreshIsOk = true.obs;
   @override
   void onInit() {
-    initTimer();
-    focusNodeListener();
-    hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
-    refreshData();
-    listScrollController = ScrollController();
-    focusNodes[1].isFoucsed.listen((p0) {
-      listScrollController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.linear);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initTimer();
+      focusNodeListener();
+      hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
+      refreshData();
+      listScrollController = ScrollController();
+      focusNodes[1].isFoucsed.listen((p0) {
+        listScrollController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.linear);
+      });
+      focusNodes[mainPageOptions.length].isFoucsed.listen((p0) {
+        listScrollController.animateTo(
+          listScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.linear,
+        );
+      });
+      checkNewVersion();
     });
-    focusNodes[mainPageOptions.length].isFoucsed.listen((p0) {
-      listScrollController.animateTo(
-        listScrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.linear,
-      );
-    });
-    checkNewVersion();
+
     super.onInit();
   }
 
@@ -109,6 +113,7 @@ class HomeController extends BasePageController {
         settingsService.updateRoomInHistory(room);
       }
     } catch (e) {
+      log(e.toString());
       return historyRooms;
     }
     historyRooms = settingsService.historyRooms.value
