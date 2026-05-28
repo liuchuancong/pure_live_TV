@@ -552,10 +552,11 @@ class SettingsService extends GetxController {
   }
 
   bool updateRoom(LiveRoom room) {
-    updateRoomInHistory(room);
     int idx = favoriteRooms.indexWhere((element) => element.roomId == room.roomId);
+    updateRoomInHistory(room);
     if (idx == -1) return false;
     favoriteRooms[idx] = room;
+    favoriteRooms.refresh();
     return true;
   }
 
