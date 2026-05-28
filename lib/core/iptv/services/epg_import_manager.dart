@@ -92,7 +92,7 @@ class EpgImportManager {
       File file = await FileUtils.convertPhysicalFile(media.content!);
       final ext = p.extension(file.path).toLowerCase();
       if (ext != '.xml' && ext != '.gz' && ext != '.json') {
-        ToastUtil.show("不支持的文件格式，仅限 M3U 或 TXT");
+        ToastUtil.show("不支持的文件格式");
         return false;
       }
       final success = await importEpgFile(file: file, sourceName: FileUtils.getBaseName(file.path));
@@ -130,12 +130,12 @@ class EpgImportManager {
       } else if (ext == '.json') {
         parsedResult = JsonEpgParser().parse(content, sourceId: '');
       } else {
-        if (showTips) ToastUtil.show("不支持的文件格式，仅限 M3U 或 TXT");
+        if (showTips) ToastUtil.show("不支持的文件格式");
         return false;
       }
 
       if (parsedResult == null || (parsedResult.channels.isEmpty && parsedResult.programmes.isEmpty)) {
-        if (showTips) ToastUtil.show("不支持的文件格式，仅限 M3U 或 TXT");
+        if (showTips) ToastUtil.show("不支持的文件格式");
         return false;
       }
 

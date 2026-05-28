@@ -1,9 +1,7 @@
 import 'dart:developer';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/plugins/race_http.dart';
 import 'package:pure_live/plugins/db_service.dart';
 import 'package:pure_live/core/iptv/local/database.dart';
-import 'package:pure_live/common/utils/githup_mirror.dart';
 import 'package:pure_live/common/utils/app_path_manager.dart';
 import 'package:pure_live/core/iptv/services/epg_sync_engine.dart';
 import 'package:pure_live/core/iptv/services/iptv_sync_engine.dart';
@@ -37,31 +35,32 @@ class AutoSyncScheduler {
   }
 
   Future<void> loadHotResources() async {
-    final mirror = GitHubMirror(owner: 'taksssss', repo: 'tv', branch: 'main');
-    final urls = mirror.mirrors('assets/51zmt.m3u');
-    final fastUrl = await RaceHttp.findFastestUrl(urls);
-    IptvImportManager().importFromNetworkUrl(fastUrl!, AppPathManager.iptvHotFile, forceUpdate: true, showTips: false);
+    final m3uUrl = 'https://iptv-org.github.io/iptv/countries/cn.m3u';
+    IptvImportManager().importFromNetworkUrl(
+      m3uUrl,
+      AppPathManager.iptvHotFile,
+      forceUpdate: true,
+      showTips: false,
+      isHot: true,
+    );
   }
 
   Future<void> loadDefaultEpgResources() async {
-    final mirror = GitHubMirror(owner: 'taksssss', repo: 'tv', branch: 'main');
-    final urls = mirror.mirrors('epg/51zmt.xml');
-    final fastUrl = await RaceHttp.findFastestUrl(urls);
+    final epgSource = 'https://epg.zsdc.eu.org/t.xml.gz';
     await EpgImportManager().importFromNetworkUrl(
-      fastUrl!,
+      epgSource,
       AppPathManager.iptvHotFile,
       forceUpdate: true,
       showTips: false,
     );
     var settings = Get.find<SettingsService>();
-    if (settings.selectedSourceId.isEmpty) {
-      final db = Get.find<DbService>().db;
-      List<EpgSource> epgSources = await db.getAllEpgSources();
-      if (epgSources.isNotEmpty && settings.selectedSourceId.value.isEmpty) {
-        final activeSource = epgSources.first;
-        settings.selectedSourceId.value = activeSource.id;
-        settings.selectedSourceName.value = activeSource.name;
-      }
+    final db = Get.find<DbService>().db;
+    List<EpgSource> epgSources = await db.getAllEpgSources();
+    // 强制设置
+    if (epgSources.isNotEmpty && settings.selectedSourceId.value.isEmpty) {
+      final activeSource = epgSources.first;
+      settings.selectedSourceId.value = activeSource.id;
+      settings.selectedSourceName.value = activeSource.name;
     }
   }
 }

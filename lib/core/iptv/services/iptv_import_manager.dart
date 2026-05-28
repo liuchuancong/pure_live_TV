@@ -21,33 +21,44 @@ class IptvImportManager {
     bool showTips = true,
     bool isHot = false,
   }) async {
-    final dir = await AppPathManager().getDir(AppPathManager.dirIptvCache);
-    final file = File(p.join(dir.path, 'download_iptv_${FileUtils.generateUuid()}.m3u'));
-
     try {
+      final String rawStringContent = await HttpClient.instance.getText(url);
+      final trimmedContent = rawStringContent.trim();
+
+      if (trimmedContent.isEmpty) {
+        if (showTips) {
+          ToastUtil.show("不支持的文件格式，仅限 M3U 或 TXT");
+        }
+        return false;
+      }
+
+      String extension = '.m3u';
+      final lowercaseUrl = url.toLowerCase().trim();
+
+      if (trimmedContent.startsWith('#EXTM3U')) {
+        extension = '.m3u';
+      } else if (trimmedContent.contains(',#genre#')) {
+        extension = '.txt';
+      } else if (lowercaseUrl.endsWith('.txt')) {
+        extension = '.txt';
+      } else if (lowercaseUrl.endsWith('.m3u') || lowercaseUrl.endsWith('.m3u8')) {
+        extension = '.m3u';
+      } else {
+        if (showTips) {
+          ToastUtil.show("不支持的文件格式，仅限 M3U 或 TXT");
+        }
+        return false;
+      }
+
+      final dir = await AppPathManager().getDir(AppPathManager.dirIptvCache);
+      final file = File(p.join(dir.path, 'download_iptv_${FileUtils.generateUuid()}$extension'));
+      await file.writeAsString(rawStringContent);
+
       String cleanName = p.basename(fileName);
       while (p.extension(cleanName).isNotEmpty) {
         cleanName = p.basenameWithoutExtension(cleanName);
       }
       fileName = cleanName;
-
-      final lowercaseUrl = url.toLowerCase().trim();
-      if (!{'.m3u', '.txt', '.m3u8'}.any((ext) => lowercaseUrl.endsWith(ext))) {
-        if (showTips) {
-          ToastUtil.show("不支持的文件格式，仅限 M3U 或 TXT");
-        }
-        return false;
-      }
-
-      final String rawStringContent = await HttpClient.instance.getText(url);
-      if (rawStringContent.trim().isEmpty) {
-        if (showTips) {
-          ToastUtil.show("不支持的文件格式，仅限 M3U 或 TXT");
-        }
-        return false;
-      }
-
-      await file.writeAsString(rawStringContent);
 
       final success = await importIptvFile(
         file: file,
@@ -64,7 +75,6 @@ class IptvImportManager {
       if (showTips) {
         ToastUtil.show("网络订阅源下载或解析失败");
       }
-      if (await file.exists()) await file.delete();
       return false;
     }
   }
@@ -76,11 +86,30 @@ class IptvImportManager {
     bool showTips = true,
   }) async {
     try {
+      String extension = '.m3u';
+      final lowerName = fileName.toLowerCase();
+      final trimmedContent = fileString.trim();
+
+      if (trimmedContent.startsWith('#EXTM3U')) {
+        extension = '.m3u';
+      } else if (trimmedContent.startsWith('{') || trimmedContent.startsWith('[')) {
+        extension = '.json';
+      } else if (lowerName.contains('.txt') || trimmedContent.contains(',#genre#')) {
+        extension = '.txt';
+      } else {
+        final lastDotIndex = lowerName.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+          final rawExt = lowerName.substring(lastDotIndex);
+          if (rawExt == '.m3u' || rawExt == '.m3u8' || rawExt == '.txt' || rawExt == '.json') {
+            extension = rawExt;
+          }
+        }
+      }
+
       final dir = await AppPathManager().getDir(AppPathManager.dirIptvCache);
-      final file = File(p.join(dir.path, 'web_iptv_${FileUtils.generateUuid()}.m3u'));
+      final file = File(p.join(dir.path, 'web_iptv_${FileUtils.generateUuid()}$extension'));
       await file.writeAsString(fileString);
 
-      // 彻底剥离 Web 字符串文件名的多重后缀
       String cleanName = p.basename(fileName);
       while (p.extension(cleanName).isNotEmpty) {
         cleanName = p.basenameWithoutExtension(cleanName);
@@ -160,7 +189,9 @@ class IptvImportManager {
         content = await CharsetConverter.decode("gbk", bytes);
       }
 
-      String finalProviderId = isHot ? FileUtils.systemHotProviderId : FileUtils.generateUuid();
+      String finalProviderId = isHot || providerName == 'hot'
+          ? FileUtils.systemHotProviderId
+          : FileUtils.generateUuid();
       final parsedResult = ext == '.txt'
           ? TxtParser().parse(content, providerId: finalProviderId)
           : M3uParser().parse(content, providerId: finalProviderId);

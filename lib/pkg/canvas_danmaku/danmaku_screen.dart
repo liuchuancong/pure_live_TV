@@ -104,6 +104,8 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
       pause();
+    } else if (state == AppLifecycleState.resumed) {
+      resume();
     }
   }
 
@@ -472,13 +474,14 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
   }
 
   // 基于Stopwatch的计时器同步
+  // 基于Stopwatch的计时器同步
   void _startTick() async {
     _stopwatch.start();
     final staticDuration = _option.duration * 1000;
 
     while (_running && mounted) {
       await Future.delayed(const Duration(milliseconds: 16));
-      final tracksToRemove = <double>[];
+      final List<double> tracksToRemove = [];
       // 移除屏幕外滚动弹幕（遍历所有轨道）
       _scrollDanmakuByTrack.forEach((trackY, items) {
         items.removeWhere((item) => item.xPosition + item.width < 0);

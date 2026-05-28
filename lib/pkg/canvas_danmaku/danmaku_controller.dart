@@ -9,16 +9,12 @@ class DanmakuController {
   Function? _onClear;
 
   DanmakuController({
-    required Function(DanmakuContentItem) onAddDanmaku,
-    required Function(DanmakuOption) onUpdateOption,
-    required Function onPause,
-    required Function onResume,
-    required Function onClear,
-  }) : _onAddDanmaku = onAddDanmaku,
-       _onUpdateOption = onUpdateOption,
-       _onPause = onPause,
-       _onResume = onResume,
-       _onClear = onClear;
+    required Function(DanmakuContentItem) this._onAddDanmaku,
+    required Function(DanmakuOption) this._onUpdateOption,
+    required Function this._onPause,
+    required Function this._onResume,
+    required Function this._onClear,
+  });
 
   // 添加setter方法允许更新回调
   set onAddDanmaku(Function(DanmakuContentItem) callback) => _onAddDanmaku = callback;
