@@ -1,7 +1,7 @@
 {
-  "version": "2.0.19",
+  "version": "2.0.20",
   "version_num": 12020,
-  "version_desc": "-Fixed:优化抖音分类显示以及优化背景色",
+  "version_desc": "-Fixed:优化弹幕字体显示",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
