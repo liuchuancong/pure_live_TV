@@ -41,7 +41,6 @@ class DanmakuContentItem {
 
     final result = <MixedContent>[];
     int lastIndex = 0;
-    final emojiCache = EmojiManager.instance.cache;
 
     for (final match in regex.allMatches(text)) {
       final matchedStr = match.group(0);
