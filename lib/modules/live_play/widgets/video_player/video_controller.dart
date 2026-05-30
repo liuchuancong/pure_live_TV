@@ -135,13 +135,7 @@ class VideoController with ChangeNotifier {
 
   /// 初始化弹幕控制器（核心修复：直接调用扩展方法）
   void _initDanmaku() {
-    danmakuController = DanmakuController(
-      onAddDanmaku: (item) {},
-      onUpdateOption: (option) {},
-      onPause: () {},
-      onResume: () {},
-      onClear: () {},
-    );
+    danmakuController = DanmakuController();
     // 直接调用扩展方法（扩展方法已添加到 VideoController 类）
     initDanmakuPersistence();
   }

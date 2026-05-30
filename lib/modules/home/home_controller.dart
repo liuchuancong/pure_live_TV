@@ -16,7 +16,7 @@ class HomeController extends BasePageController {
   static List<String> mainPageOptions = ["直播关注", "热门直播", "分区类别", "关注分区", '链接放映', "搜索直播", "观看记录"];
   final NativeTextFieldController roomSearchController = NativeTextFieldController();
   final searchFocusNode = FocusNode();
-  late ScrollController listScrollController;
+  final ScrollController listScrollController = ScrollController();
   final hasNewVersion = false.obs;
   static List<IconData> mainPageIconOptions = [
     Icons.favorite_border,
@@ -43,7 +43,6 @@ class HomeController extends BasePageController {
       focusNodeListener();
       hisToryFocusNodes = List.generate(rooms.length, (_) => AppFocusNode());
       refreshData();
-      listScrollController = ScrollController();
       focusNodes[1].isFoucsed.listen((p0) {
         listScrollController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.linear);
       });
