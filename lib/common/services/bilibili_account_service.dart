@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:pure_live/get/get.dart';
-import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/common/utils/toast_util.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/site/bilibili_site.dart';
