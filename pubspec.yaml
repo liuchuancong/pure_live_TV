@@ -136,11 +136,11 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/lotties/
-    - assets/emo/huya/
-    - assets/emo/douyu/
-    - assets/emo/douyin/
-    - assets/emo/bilibili/
-    - assets/emo/kuaishou/
+    - assets/emo/images/huya/
+    - assets/emo/images/douyu/
+    - assets/emo/images/douyin/
+    - assets/emo/images/bilibili/
+    - assets/emo/json/
     - assets/images/video/ 
   fonts:
     - family: CustomIcons

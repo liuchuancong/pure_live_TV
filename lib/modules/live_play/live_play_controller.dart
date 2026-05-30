@@ -132,7 +132,7 @@ class LivePlayController extends StateController {
           ? ReloadDataType.changeLine
           : ReloadDataType.refreash,
     );
-    EmojiManager().preload(site);
+    _preloadEmoji();
     super.onInit();
   }
 
@@ -292,7 +292,7 @@ class LivePlayController extends StateController {
       isFirstLoad.value = true;
       focusNode.requestFocus();
       GlobalPlayerService.instance.playerManager.close();
-      await Future.delayed(Duration(milliseconds: 500)); // 缩短延迟，避免新实例提前创建
+      _clearCacheEmoji();
     } catch (e) {
       log(e.toString(), name: 'disPoserPlayer');
     }
@@ -329,6 +329,15 @@ class LivePlayController extends StateController {
     };
     liveDanmaku.onClose = (msg) {};
     liveDanmaku.onReady = () {};
+  }
+
+  Future<void> _preloadEmoji() async {
+    EmojiManager().clearCache();
+    await EmojiManager().preload(site);
+  }
+
+  void _clearCacheEmoji() {
+    EmojiManager().clearCache();
   }
 
   /// 初始化播放器
