@@ -42,7 +42,9 @@ subprojects {
 
 subprojects {
     afterEvaluate {
-        extensions.findByType(BaseExtension::class.java)?.apply {
+        extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.apply {
+            defaultConfig.minSdk = 21  
+            
             if (namespace.isNullOrBlank()) {
                 namespace = project.group.toString()
             }
