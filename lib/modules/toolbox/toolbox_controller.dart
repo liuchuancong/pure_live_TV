@@ -155,23 +155,24 @@ class ToolBoxController extends GetxController {
       return;
     }
     String platform = parseResult[1];
-
-    AppNavigator.toLiveRoomDetail(
-      liveRoom: LiveRoom(
-        roomId: parseResult.first,
-        platform: platform,
-        title: "",
-        cover: '',
-        nick: "",
-        watching: '',
-        avatar: "",
-        area: '',
-        liveStatus: LiveStatus.live,
-        status: true,
-        data: '',
-        danmakuData: '',
-      ),
+    var room = LiveRoom(
+      roomId: parseResult.first,
+      platform: platform,
+      title: "",
+      cover: '',
+      nick: "",
+      watching: '',
+      avatar: "",
+      area: '',
+      liveStatus: LiveStatus.live,
+      status: true,
+      data: '',
+      danmakuData: '',
     );
+    final settingsService = Get.find<SettingsService>();
+    settingsService.currentPlayList.value = [room];
+    settingsService.currentPlayListNodeIndex.value = 0;
+    AppNavigator.toLiveRoomDetail(liveRoom: room);
   }
 
   Future<List> parse(String url) async {
