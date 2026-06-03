@@ -48,6 +48,7 @@ extension VideoDanmaku on VideoController {
         duration: danmakuSpeed.value.toInt(),
         opacity: danmakuOpacity.value,
         fontWeight: danmakuFontBorder.value.toInt(),
+        showStroke: false,
       ),
     );
   }

@@ -457,6 +457,12 @@ class _DanmakuScreenState extends State<DanmakuScreen> with TickerProviderStateM
                           child: AnimatedBuilder(
                             animation: _animationController,
                             builder: (context, child) {
+                              if (_flattenedScrollDanmakus.isEmpty &&
+                                  _topDanmakuItems.isEmpty &&
+                                  _bottomDanmakuItems.isEmpty &&
+                                  _specialDanmakuItems.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
                               return CustomPaint(
                                 size: Size(_viewWidth, _viewHeight),
                                 painter: ScrollDanmakuPainter(
