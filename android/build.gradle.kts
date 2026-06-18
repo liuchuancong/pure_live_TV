@@ -9,7 +9,6 @@ allprojects {
     }
 }
 
-// --- 核心修改：直接从 pubspec.yaml 解析 versionCode ---
 val pubspecVersionCode: String by lazy {
     try {
         val pubspecFile = rootProject.file("../pubspec.yaml")
@@ -24,7 +23,6 @@ val pubspecVersionCode: String by lazy {
     }
 }
 
-// 依然保留 local.properties 加载（用于其他 Flutter 路径配置）
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) {
@@ -45,7 +43,9 @@ subprojects {
          if (project.name != "app") {
             extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.apply {
                 defaultConfig.minSdk = 21 
-                
+                 if (compileSdkVersion == null || (compileSdkVersion!!.substringAfter("-").toIntOrNull() ?: 0) < 34) {
+                    compileSdkVersion("android-34")
+                }
                 if (namespace.isNullOrBlank()) {
                     namespace = project.group.toString()
                 }

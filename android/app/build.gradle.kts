@@ -2,7 +2,6 @@ import java.util.Properties // 添加Properties类的导入
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -31,17 +30,10 @@ android {
     namespace = "com.mystyle.purelive"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
-    lint {
-        disable.add("NullSafeMutableLiveData")
-        checkReleaseBuilds = false
-        abortOnError = false
-    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -78,7 +70,11 @@ android {
         }
     }
 }
-
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
 flutter {
     source = "../.."
 }    
