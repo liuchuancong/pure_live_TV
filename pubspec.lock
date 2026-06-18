@@ -331,6 +331,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.2"
+  dpad:
+    dependency: "direct main"
+    description:
+      name: dpad
+      sha256: "3f08643269c24c34bfd0672ba5141264c89b33f5e3c713bbf560e9e049769a07"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.0.0"
   drift:
     dependency: "direct main"
     description:
@@ -1225,14 +1233,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.3"
-  scrollview_observer:
-    dependency: "direct main"
-    description:
-      name: scrollview_observer
-      sha256: "5ce907c5757d0805de974de8b17c0185f982dfe805dde22a0acb016b39182ece"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.27.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1289,6 +1289,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.4.1"
+  skeletonizer_plus:
+    dependency: "direct main"
+    description:
+      name: skeletonizer_plus
+      sha256: cc12fda7ee866d4b81b6262a0fa7250aff077569bf9c5d638712b4d3cbd83640
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.0"
   sky_engine:
     dependency: transitive
     description: flutter
