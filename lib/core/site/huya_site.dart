@@ -1,23 +1,23 @@
 import 'dart:math';
 import 'dart:async';
 import 'dart:convert';
-import 'package:dio/dio.dart';
-import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:pure_live/core/common/log.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:pure_live/plugins/race_http.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/tars/huya_user_id.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
-import 'package:tars_dart/tars/net/base_tars_http.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/model/live_search_result.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:pure_live/core/danmaku/huya_danmaku.dart';
-import 'package:pure_live/model/live_category_result.dart';
+import 'package:pure_live/common/utils/githup_mirror.dart';
+import 'package:pure_live/pkg/tars/net/base_tars_http.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/tars/get_cdn_token_ex_req.dart';
 import 'package:pure_live/core/tars/get_cdn_token_ex_resp.dart';
@@ -30,11 +30,11 @@ class HuyaSite implements LiveSite {
   String name = "虎牙直播";
   @override
   LiveDanmaku getDanmaku() => HuyaDanmaku();
-
+  final Map<String, Future<String>> _tokenCache = {};
   static String? playUserAgent;
 
   // ignore: constant_identifier_names
-  static const String HYSDK_UA = "HYSDK(Windows,30000002)_APP(pc_exe&7070000&official)_SDK(trans&2.33.0.5678)";
+  static const String HYSDK_UA = "HYSDK(Windows,30000002)_APP(pc_exe&7090000&official)_SDK(trans&2.35.0.5996)";
   static Map<String, String> requestHeaders = {'Origin': baseUrl, 'Referer': baseUrl, 'User-Agent': HYSDK_UA};
   final BaseTarsHttp tupClient = BaseTarsHttp("http://wup.huya.com", "liveui", headers: requestHeaders);
   @override
@@ -56,7 +56,6 @@ class HuyaSite implements LiveSite {
   final String kUserAgent =
       "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36";
 
-  final SettingsService settings = Get.find<SettingsService>();
   Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory) async {
     var result = await HttpClient.instance.getJson(
       "https://live.cdn.huya.com/liveconfig/game/bussLive",
@@ -81,7 +80,7 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
+  Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
     var resultText = await HttpClient.instance.getJson(
       "https://www.huya.com/cache.php",
       queryParameters: {
@@ -91,7 +90,7 @@ class HuyaSite implements LiveSite {
         "gameId": category.areaId,
         "page": page,
       },
-      header: {"user-agent": kUserAgent, "Cookie": settings.huyaCookie.value},
+      header: {"user-agent": kUserAgent, "Cookie": SettingsService.to.cookieManager.huyaCookie.v},
     );
     var result = json.decode(resultText);
     var items = <LiveRoom>[];
@@ -118,8 +117,7 @@ class HuyaSite implements LiveSite {
       );
       items.add(roomItem);
     }
-    var hasMore = result["data"]["page"] < result["data"]["totalPage"];
-    return LiveCategoryResult(hasMore: hasMore, items: items);
+    return items;
   }
 
   @override
@@ -158,50 +156,19 @@ class HuyaSite implements LiveSite {
     'https://g.blfrp.cn/https://raw.githubusercontent.com/liuchuancong/pure_live/master/assets/play_config.json',
     'https://cdn.jsdelivr.net/gh/liuchuancong/pure_live@master/assets/play_config.json',
   ];
-  // 每次访问播放虎牙都需要获取一次，不太合理，倾向于在客户端获取保存替换
   Future<String> getHuYaUA() async {
-    // 1. 缓存拦截
     if (playUserAgent != null) {
-      debugPrint("UA 获取成功，使用缓存");
       return playUserAgent!;
     }
-
-    final cancelToken = CancelToken();
-    final completer = Completer<String>();
-    bool isAlreadySet = false;
-
-    try {
-      // 2. 启动并发请求（不等待它们完成）
-      for (final url in uaList) {
-        HttpClient.instance
-            .getJson("$url?ts=${DateTime.now().millisecondsSinceEpoch}", cancel: cancelToken)
-            .then((response) {
-              // 只要有一个成功，立即处理
-              if (isAlreadySet) return;
-
-              final data = (response is String) ? json.decode(response) : response;
-              final String? ua = data?['huya']?['user_agent'];
-
-              if (ua != null && !isAlreadySet) {
-                isAlreadySet = true;
-                playUserAgent = ua;
-                debugPrint("✅ 获胜线路: $url");
-                if (!completer.isCompleted) completer.complete(ua);
-                Future.microtask(() => cancelToken.cancel("done"));
-              }
-            })
-            .catchError((_) {});
-      }
-
-      final result = await completer.future.timeout(const Duration(seconds: 5));
-      return result;
-    } catch (e) {
-      debugPrint("⚠️ UA 获取失败，使用兜底值: $e");
-      playUserAgent = HYSDK_UA;
-      return HYSDK_UA;
-    } finally {
-      playUserAgent ??= HYSDK_UA;
+    final mirror = GitHubMirror(owner: 'liuchuancong', repo: 'pure_live', branch: 'master');
+    final urls = mirror.mirrors('assets/play_config.json');
+    final data = await RaceHttp.fetchJson(urls);
+    final String? ua = data?['huya']?['user_agent'];
+    if (ua != null) {
+      playUserAgent = ua;
     }
+    Log.d("HuyaSite: getHuYaUA: $ua");
+    return playUserAgent!;
   }
 
   Future<String> getPlayUrl(HuyaLineModel line, int bitRate) async {
@@ -215,44 +182,48 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
-    var resultText = await HttpClient.instance.getJson(
-      "https://www.huya.com/cache.php",
-      queryParameters: {"m": "LiveList", "do": "getLiveListByPage", "tagAll": 0, "page": page},
-      header: {
-        "user-agent": kUserAgent,
-        "Cookie": settings.huyaCookie.value,
-        "Origin": "https://www.huya.com",
-        "Referer": "https://www.huya.com/",
-      },
-    );
-    var result = json.decode(resultText);
-    var items = <LiveRoom>[];
-    for (var item in result["data"]["datas"]) {
-      var cover = item["screenshot"].toString();
-      if (!cover.contains("?")) {
-        cover += "?x-oss-process=style/w338_h190&";
-      }
-      var title = item["introduction"]?.toString() ?? "";
-      if (title.isEmpty) {
-        title = item["roomName"]?.toString() ?? "";
-      }
-      var roomItem = LiveRoom(
-        roomId: item["profileRoom"].toString(),
-        title: title,
-        cover: cover,
-        area: item["gameFullName"].toString(),
-        nick: item["nick"].toString(),
-        avatar: item["avatar180"],
-        watching: item["totalCount"].toString(),
-        platform: Sites.huyaSite,
-        liveStatus: LiveStatus.live,
-        status: true,
+  Future<List<LiveRoom>> getRecommendRooms({int page = 1, int pageSize = 30}) async {
+    try {
+      var resultText = await HttpClient.instance.getJson(
+        "https://www.huya.com/cache.php",
+        queryParameters: {"m": "LiveList", "do": "getLiveListByPage", "tagAll": 0, "page": page},
+        header: {
+          "user-agent": kUserAgent,
+          "Cookie": SettingsService.to.cookieManager.huyaCookie.v,
+          "Origin": "https://www.huya.com",
+          "Referer": "https://www.huya.com/",
+        },
       );
-      items.add(roomItem);
+
+      var result = json.decode(resultText);
+      var items = <LiveRoom>[];
+      for (var item in result["data"]["datas"]) {
+        var cover = item["screenshot"].toString();
+        if (!cover.contains("?")) {
+          cover += "?x-oss-process=style/w338_h190&";
+        }
+        var title = item["introduction"]?.toString() ?? "";
+        if (title.isEmpty) {
+          title = item["roomName"]?.toString() ?? "";
+        }
+        var roomItem = LiveRoom(
+          roomId: item["profileRoom"].toString(),
+          title: title,
+          cover: cover,
+          area: item["gameFullName"].toString(),
+          nick: item["nick"].toString(),
+          avatar: item["avatar180"],
+          watching: item["totalCount"].toString(),
+          platform: Sites.huyaSite,
+          liveStatus: LiveStatus.live,
+          status: true,
+        );
+        items.add(roomItem);
+      }
+      return items;
+    } catch (e) {
+      throw Exception(e.toString());
     }
-    var hasMore = result["data"]["page"] < result["data"]["totalPage"];
-    return LiveCategoryResult(hasMore: hasMore, items: items);
   }
 
   @override
@@ -267,7 +238,7 @@ class HuyaSite implements LiveSite {
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-site',
         "user-agent": kUserAgent,
-        "Cookie": settings.huyaCookie.value,
+        "Cookie": SettingsService.to.cookieManager.huyaCookie.v,
       },
     );
     var result = json.decode(resultText);
@@ -371,7 +342,12 @@ class HuyaSite implements LiveSite {
         link: "https://www.huya.com/$roomId",
       );
     } else {
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
+      LiveRoom liveRoom =
+          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+            (r) => r.roomId == roomId && r.platform == platform,
+          ) ??
+          LiveRoom(roomId: roomId, platform: platform);
+
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -391,7 +367,7 @@ class HuyaSite implements LiveSite {
   }
 
   @override
-  Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) async {
     var resultText = await HttpClient.instance.getJson(
       "https://search.cdn.huya.com/",
       queryParameters: {
@@ -436,11 +412,11 @@ class HuyaSite implements LiveSite {
       );
       items.add(roomItem);
     }
-    return LiveSearchRoomResult(hasMore: queryList.length > 0, items: items);
+    return items;
   }
 
   @override
-  Future<LiveSearchAnchorResult> searchAnchors(String keyword, {int page = 1}) async {
+  Future<List<LiveAnchorItem>> searchAnchors(String keyword, {int page = 1, int pageSize = 30}) async {
     var resultText = await HttpClient.instance.getJson(
       "https://search.cdn.huya.com/",
       queryParameters: {
@@ -451,8 +427,8 @@ class HuyaSite implements LiveSite {
         "v": 1,
         "typ": -5,
         "livestate": 0,
-        "rows": 20,
-        "start": (page - 1) * 20,
+        "rows": pageSize,
+        "start": (page - 1) * pageSize,
       },
     );
     var result = json.decode(resultText);
@@ -466,8 +442,7 @@ class HuyaSite implements LiveSite {
       );
       items.add(anchorItem);
     }
-    var hasMore = result["response"]["1"]["numFound"] > (page * 20);
-    return LiveSearchAnchorResult(hasMore: hasMore, items: items);
+    return items;
   }
 
   @override
@@ -541,7 +516,7 @@ class HuyaSite implements LiveSite {
 
   String processAnticode(String anticode, String streamName) {
     var query = Uri.splitQueryString(anticode);
-    final uid = int.parse(getUUid(settings.huyaCookie.value, streamName));
+    final uid = int.parse(getUUid(SettingsService.to.cookieManager.huyaCookie.v, streamName));
     query["ctype"] = "huya_live";
     query["t"] = "100";
 
@@ -646,15 +621,17 @@ class HuyaSite implements LiveSite {
   }
 
   /// return sFlvToken
-  Future<String> getCndTokenInfoEx(String stream) async {
-    var func = "getCdnTokenInfoEx";
-    var tid = HuyaUserId();
-    tid.sHuYaUA = "pc_exe&7060000&official";
-    var tReq = GetCdnTokenExReq();
-    tReq.tId = tid;
-    tReq.sStreamName = stream;
-    var resp = await tupClient.tupRequest(func, tReq, GetCdnTokenExResp());
-    return resp.sFlvToken;
+  Future<String> getCndTokenInfoEx(String stream) {
+    return _tokenCache.putIfAbsent(stream, () async {
+      var func = "getCdnTokenInfoEx";
+      var tid = HuyaUserId();
+      tid.sHuYaUA = "pc_exe&7060000&official";
+      var tReq = GetCdnTokenExReq();
+      tReq.tId = tid;
+      tReq.sStreamName = stream;
+      var resp = await tupClient.tupRequest(func, tReq, GetCdnTokenExResp());
+      return resp.sFlvToken;
+    });
   }
 
   int rotl64(int t) {

@@ -5,14 +5,12 @@ import 'package:pure_live/common/index.dart';
 import 'package:marquee_list/marquee_list.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
-import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/search/search_room_controller.dart';
 import 'package:pure_live/modules/popular/popular_grid_controller.dart';
 import 'package:pure_live/modules/history/history_rooms_controller.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_controller.dart';
 
-// ignore: must_be_immutable
 class RoomCard extends StatefulWidget {
   const RoomCard({
     super.key,

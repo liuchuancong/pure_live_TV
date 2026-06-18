@@ -1,9 +1,10 @@
+import 'package:dpad/dpad.dart';
+import 'package:flutter/material.dart';
 import 'package:pure_live/get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/app/app_focus_node.dart';
+import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:android_tv_text_field/native_textfield_tv.dart';
-import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:pure_live/modules/account/kuaishou/kuaishou_cookie_controller.dart';
 
 class KuaishouCookiePage extends GetView<KuaishouCookieController> {
@@ -11,75 +12,102 @@ class KuaishouCookiePage extends GetView<KuaishouCookieController> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              AppStyle.vGap32,
-              _buildHeader(),
-              Expanded(
-                child: Row(
-                  children: [
-                    // 左侧：深色卡片包裹二维码
-                    _buildQRCodeSection(),
-                    // 渐变分割线
-                    Container(
-                      width: 2.w,
-                      height: 300.h,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.transparent, Colors.white12, Colors.transparent],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
+    final theme = Theme.of(context);
+
+    return TvScaffold(
+      child: DpadRegion(
+        memoryKey: 'account/kuaishou_cookie_page',
+        horizontalEdge: DpadEdgeBehavior.stop,
+        verticalEdge: DpadEdgeBehavior.stop,
+        child: Column(
+          children: [
+            _buildHeader(theme),
+            Expanded(
+              child: Row(
+                children: [
+                  _buildQRCodeSection(theme),
+                  Container(
+                    width: 2,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.transparent, theme.colorScheme.onSurface.withOpacity(0.1), Colors.transparent],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
                     ),
-                    // 右侧：输入区域
-                    _buildInputSection(),
-                  ],
-                ),
+                  ),
+                  _buildInputSection(theme),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeData theme) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 48.w),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
       child: Row(
         children: [
-          HighlightButton(
-            focusNode: AppFocusNode(),
-            iconData: Icons.arrow_back,
-            text: "返回",
+          DpadFocusable(
             autofocus: true,
-            onTap: () => Get.back(),
+            effects: [
+              DpadScaleEffect(scale: 1.05),
+              DpadGlowEffect(color: theme.colorScheme.primary.withOpacity(0.3)),
+            ],
+            onSelect: () async => Get.back(),
+            builder: (context, state, child) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: state.focused
+                      ? theme.colorScheme.primary.withOpacity(0.12)
+                      : theme.colorScheme.primaryContainer.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.arrow_back,
+                      size: 18,
+                      color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "返回",
+                      style: TextStyle(
+                        color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: const SizedBox.shrink(),
           ),
-          AppStyle.hGap32,
-          Text(
-            "快手cookie设置",
-            style: AppStyle.titleStyleWhite.copyWith(fontSize: 38.w, fontWeight: FontWeight.w900, letterSpacing: 2),
-          ),
+          const SizedBox(width: 24),
+          Text("快手cookie设置", style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           const Spacer(),
-          // 状态指示器
           Obx(
             () => Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: controller.fullServerUrl.value.isNotEmpty
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20.w),
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 controller.fullServerUrl.value.isNotEmpty ? "局域网服务已启动" : "服务未启动",
                 style: TextStyle(
                   color: controller.fullServerUrl.value.isNotEmpty ? Colors.greenAccent : Colors.redAccent,
-                  fontSize: 20.w,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -89,7 +117,7 @@ class KuaishouCookiePage extends GetView<KuaishouCookieController> {
     );
   }
 
-  Widget _buildQRCodeSection() {
+  Widget _buildQRCodeSection(ThemeData theme) {
     return Expanded(
       flex: 4,
       child: Obx(
@@ -97,18 +125,19 @@ class KuaishouCookiePage extends GetView<KuaishouCookieController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (controller.fullServerUrl.value.isNotEmpty) ...[
-              // 二维码外框装饰
               Container(
-                padding: EdgeInsets.all(20.w),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24.w),
-                  boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20.w, offset: const Offset(0, 10))],
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+                  ],
                 ),
                 child: QrImageView(
                   data: controller.fullServerUrl.value,
                   version: QrVersions.auto,
-                  size: 320.w,
+                  size: 240,
                   eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
                   dataModuleStyle: const QrDataModuleStyle(
                     dataModuleShape: QrDataModuleShape.square,
@@ -116,67 +145,72 @@ class KuaishouCookiePage extends GetView<KuaishouCookieController> {
                   ),
                 ),
               ),
-              AppStyle.vGap32,
-              Text(
-                "扫码远程录入",
-                style: AppStyle.textStyleWhite.copyWith(fontSize: 30.w, fontWeight: FontWeight.bold),
-              ),
-              AppStyle.vGap12,
+              const SizedBox(height: 24),
+              Text("扫码远程录入", style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(8.w)),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.onSurface.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Text(
                   controller.fullServerUrl.value,
-                  style: TextStyle(color: Colors.white38, fontSize: 28.w, fontFamily: "monospace"),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                    fontSize: 14,
+                    fontFamily: "monospace",
+                  ),
                 ),
               ),
             ] else
-              const CircularProgressIndicator(),
+              CircularProgressIndicator(color: theme.colorScheme.primary),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputSection() {
+  Widget _buildInputSection(ThemeData theme) {
     return Expanded(
       flex: 6,
       child: Padding(
-        padding: EdgeInsets.all(48.w),
+        padding: const EdgeInsets.all(32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               "在此粘贴或输入快手cookie",
-              style: AppStyle.textStyleWhite.copyWith(fontSize: 28.w, color: Colors.white70),
+              style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
-            AppStyle.vGap24,
-            // 输入框容器
+            const SizedBox(height: 16),
             AndroidTVTextField(
-              focusNode: AppFocusNode(),
+              focusNode: FocusNode(),
               controller: controller.cookieInputController,
               hint: "等待手机扫码同步或点击输入...",
-              textColor: Colors.white,
+              textColor: theme.colorScheme.onSurface,
               maxLines: 3,
-              height: 160.h,
-              backgroundColor: Get.theme.primaryColor, // 对应你之前的颜色
+              height: 120,
+              backgroundColor: theme.colorScheme.surfaceContainerHigh,
               onSubmitted: (e) => controller.setCookies(e),
             ),
-            AppStyle.vGap40,
+            const SizedBox(height: 24),
             Row(
               children: [
                 _buildActionButton(
+                  theme: theme,
                   icon: Icons.settings,
                   label: "设置cookie",
-                  color: Get.theme.primaryColor,
+                  isPrimary: true,
                   onTap: () => controller.setCookies(controller.cookieInputController.text),
                 ),
-                AppStyle.hGap24,
+                const SizedBox(width: 16),
                 _buildActionButton(
+                  theme: theme,
                   icon: Icons.cleaning_services_rounded,
                   label: "清空",
-                  color: Colors.white12,
+                  isPrimary: false,
                   onTap: () => controller.cookieInputController.clear(),
                 ),
               ],
@@ -188,11 +222,60 @@ class KuaishouCookiePage extends GetView<KuaishouCookieController> {
   }
 
   Widget _buildActionButton({
+    required ThemeData theme,
     required IconData icon,
     required String label,
-    required Color color,
+    required bool isPrimary,
     required VoidCallback onTap,
   }) {
-    return HighlightButton(focusNode: AppFocusNode(), iconData: icon, text: label, onTap: onTap);
+    return DpadFocusable(
+      effects: [
+        DpadScaleEffect(scale: 1.05),
+        DpadGlowEffect(color: (isPrimary ? theme.colorScheme.primary : theme.colorScheme.onSurface).withOpacity(0.3)),
+      ],
+      onSelect: () async => onTap(),
+      builder: (context, state, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: state.focused
+                ? (isPrimary ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.15))
+                : (isPrimary
+                      ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+                      : theme.colorScheme.surfaceContainerHigh),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: state.focused
+                  ? (isPrimary ? theme.colorScheme.primary : theme.colorScheme.onSurface)
+                  : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: state.focused
+                    ? (isPrimary ? theme.colorScheme.onPrimary : theme.colorScheme.primary)
+                    : theme.colorScheme.onSurface,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: state.focused
+                      ? (isPrimary ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface)
+                      : theme.colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      child: const SizedBox.shrink(),
+    );
   }
 }

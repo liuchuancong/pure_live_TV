@@ -8,6 +8,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 class Utils {
   static DateFormat dateFormat = DateFormat("MM-dd HH:mm");
   static DateFormat dateFormatWithYear = DateFormat("yyyy-MM-dd HH:mm");
+  static DateFormat timeFormat = DateFormat("HH:mm:ss");
 
   /// 处理时间
   static String parseTime(DateTime? dt) {

@@ -143,7 +143,7 @@ class DouyinCookiePageController extends GetxController {
 
   void setTTwid(String e) async {
     final SettingsService settings = Get.find<SettingsService>();
-    settings.douyinCookie.value = e;
+    settings.cookieManager.douyinCookie.value = e;
     ToastUtil.show("TTwid已设置");
   }
 }

@@ -3,7 +3,6 @@ import 'package:pure_live/common/index.dart';
 import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 
 class FavoriteAreasPage extends GetView<SettingsService> {

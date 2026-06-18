@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:pure_live/get/get.dart';
 import 'package:pure_live/plugins/local_http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:pure_live/services/settings_service.dart';
 import 'package:pure_live/common/base/base_controller.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 
 class SyncController extends BaseController {
   final settingServer = Get.find<SettingsService>();

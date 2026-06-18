@@ -6,9 +6,7 @@ import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/model/live_search_result.dart';
 import 'package:pure_live/core/common/convert_helper.dart';
-import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/danmaku/bilibili_danmaku.dart';
 
@@ -18,11 +16,10 @@ class BiliBiliSite implements LiveSite {
 
   @override
   String name = "哔哩哔哩直播";
-  static String cookie = "";
-  static int userId = 0;
+  String get cookie => SettingsService.to.cookieManager.bilibiliCookie.v;
+  int get userId => SettingsService.to.cookieManager.bilibiliUid.v;
   @override
   LiveDanmaku getDanmaku() => BiliBiliDanmaku();
-  final SettingsService settings = Get.find<SettingsService>();
 
   static const String kDefaultUserAgent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36";
@@ -78,7 +75,7 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
+  Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
     try {
       const baseUrl = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList";
       var url =
@@ -89,7 +86,6 @@ class BiliBiliSite implements LiveSite {
       if (result["code"] == -352) {
         throw Exception(result);
       }
-      var hasMore = result["data"]["has_more"] == 1;
       var items = <LiveRoom>[];
       for (var item in result["data"]["list"]) {
         var roomItem = LiveRoom(
@@ -106,7 +102,7 @@ class BiliBiliSite implements LiveSite {
         );
         items.add(roomItem);
       }
-      return LiveCategoryResult(hasMore: hasMore, items: items);
+      return items;
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -185,14 +181,13 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
+  Future<List<LiveRoom>> getRecommendRooms({int page = 1, int pageSize = 30}) async {
     try {
       const baseUrl = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getListByArea";
-      var url = "$baseUrl?platform=web&sort=online&page_size=30&page=$page";
+      var url = "$baseUrl?platform=web&sort=online&page_size=$pageSize&page=$page";
       var queryParams = await getWbiSign(url);
       var result = await HttpClient.instance.getJson(baseUrl, queryParameters: queryParams, header: await getHeader());
 
-      var hasMore = (result["data"]["list"] as List).isNotEmpty;
       var items = <LiveRoom>[];
       for (var item in result["data"]["list"]) {
         var roomItem = LiveRoom(
@@ -208,7 +203,7 @@ class BiliBiliSite implements LiveSite {
         );
         items.add(roomItem);
       }
-      return LiveCategoryResult(hasMore: hasMore, items: items);
+      return items;
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -385,7 +380,12 @@ class BiliBiliSite implements LiveSite {
         ),
       );
     } catch (e) {
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
+      LiveRoom liveRoom =
+          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+            (r) => r.roomId == roomId && r.platform == platform,
+          ) ??
+          LiveRoom(roomId: roomId, platform: platform);
+
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -393,7 +393,7 @@ class BiliBiliSite implements LiveSite {
   }
 
   @override
-  Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) async {
     var result = await HttpClient.instance.getJson(
       "https://api.bilibili.com/x/web-interface/search/type?context=&search_type=live&cover_type=user_cover",
       queryParameters: {
@@ -429,11 +429,11 @@ class BiliBiliSite implements LiveSite {
       );
       items.add(roomItem);
     }
-    return LiveSearchRoomResult(hasMore: queryList.length > 0, items: items);
+    return items;
   }
 
   @override
-  Future<LiveSearchAnchorResult> searchAnchors(String keyword, {int page = 1}) async {
+  Future<List<LiveAnchorItem>> searchAnchors(String keyword, {int page = 1, int pageSize = 30}) async {
     var result = await HttpClient.instance.getJson(
       "https://api.bilibili.com/x/web-interface/search/type?context=&search_type=live_user&cover_type=user_cover",
       queryParameters: {
@@ -462,7 +462,7 @@ class BiliBiliSite implements LiveSite {
       );
       items.add(anchorItem);
     }
-    return LiveSearchAnchorResult(hasMore: items.length >= 40, items: items);
+    return items;
   }
 
   @override

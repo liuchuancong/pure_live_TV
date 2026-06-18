@@ -143,7 +143,7 @@ class KuaishouCookieController extends GetxController {
 
   void setCookies(String e) async {
     final SettingsService settings = Get.find<SettingsService>();
-    settings.kuaishouCookie.value = e;
+    settings.cookieManager.kuaishouCookie.value = e;
     ToastUtil.show("cookie已设置");
   }
 }

@@ -5,7 +5,6 @@ import 'package:pure_live/app/app_focus_node.dart';
 import 'package:pure_live/routes/app_navigation.dart';
 import 'package:pure_live/plugins/area_pic_mapper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/common/widgets/highlight_widget.dart';
 import 'package:pure_live/modules/areas/areas_list_controller.dart';
 import 'package:pure_live/common/widgets/button/highlight_button.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';

@@ -10,6 +10,20 @@ import 'package:pure_live/core/interface/live_danmaku.dart';
 class DouyuDanmaku implements LiveDanmaku {
   @override
   int heartbeatTime = 45 * 1000;
+  bool _connected = false;
+
+  @override
+  bool get isConnected => _connected;
+
+  @override
+  void markConnected() {
+    _connected = true;
+  }
+
+  @override
+  void markDisconnected() {
+    _connected = false;
+  }
 
   @override
   Function(LiveMessage msg)? onMessage;
@@ -31,15 +45,18 @@ class DouyuDanmaku implements LiveDanmaku {
       },
       onReady: () {
         onReady?.call();
+        markConnected();
         joinRoom(args);
       },
       onHeartBeat: () {
         heartbeat();
       },
       onReconnect: () {
+        markDisconnected();
         onClose?.call("与服务器断开连接，正在尝试重连");
       },
       onClose: (e) {
+        markDisconnected();
         onClose?.call("服务器连接失败$e");
       },
     );

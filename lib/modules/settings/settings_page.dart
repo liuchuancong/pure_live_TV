@@ -1,253 +1,189 @@
+import 'package:dpad/dpad.dart';
+import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/common/consts/app_consts.dart';
-import 'package:pure_live/player/models/player_engine.dart';
-import 'package:pure_live/common/widgets/settings_item_widget.dart';
-import 'package:pure_live/common/widgets/button/highlight_button.dart';
-import 'package:pure_live/common/widgets/button/highlight_list_tile.dart';
+import 'package:pure_live/widgets/tv_scaffold.dart';
+import 'package:pure_live/modules/settings/pages/refresh_settings.dart';
+import 'package:pure_live/modules/settings/pages/theme_settings_page.dart';
+import 'package:pure_live/modules/settings/pages/video_settings_page.dart';
+import 'package:pure_live/modules/settings/pages/local_config_preveiw.dart';
+import 'package:pure_live/modules/settings/pages/general_settings_page.dart';
+import 'package:pure_live/modules/settings/pages/platform_settings_page.dart';
+import 'package:pure_live/modules/settings/pages/navigation_settings_page.dart';
+import 'package:pure_live/modules/settings/pages/cache_data_settings_page.dart';
+import 'package:pure_live/modules/settings/pages/network_proxy_settings_page.dart';
+import 'package:pure_live/modules/settings/pages/player_kernel_settings_page.dart';
 
 class SettingsPage extends GetView<SettingsService> {
   const SettingsPage({super.key});
+
   BuildContext get context => Get.context!;
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      child: ListView(
-        padding: AppStyle.edgeInsetsA48,
-        controller: controller.scrollController,
-        physics: const BouncingScrollPhysics(),
-        children: <Widget>[
-          AppStyle.vGap32,
-          Row(
-            children: [
-              AppStyle.hGap48,
-              HighlightButton(
-                focusNode: controller.backFocusNode,
-                iconData: Icons.arrow_back,
-                text: "返回",
-                autofocus: true,
-                onFocusChange: (hasFocus) {
-                  if (hasFocus) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      controller.scrollController.animateTo(
-                        0.0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    });
-                  }
-                },
-                onTap: () {
-                  Navigator.of(Get.context!).pop();
-                },
-              ),
-            ],
-          ),
-          AppStyle.vGap24,
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.autoRefreshTimeNode,
-              title: "自动更新关注",
-              items: const {0: "关闭", 1: "打开"},
-              value: controller.autoRefreshFavorite.value ? 1 : 0,
-              onChanged: (e) {
-                controller.autoRefreshFavorite.value = e == 1;
-              },
-            ),
-          ),
-          AppStyle.vGap24,
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.autoRefreshIntervalNode,
-              title: "自动更新关注间隔时间",
-              // 建议将原本的开关改为具体的间隔时间，或者额外加一行
-              items: const {0: "关闭", 10: "10分钟", 20: "20分钟", 30: "30分钟", 60: "1小时", 120: "2小时"},
-              value: controller.autoRefreshInterval.value, // 使用新的变量存储间隔（秒）
-              onChanged: (e) {
-                controller.autoRefreshInterval.value = e as int;
-              },
-            ),
-          ),
-          AppStyle.vGap24,
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.maxConcurrentRefreshNode,
-              title: "刷新线程",
-              items: const {
-                1: "1",
-                2: "2",
-                3: "3",
-                4: "4",
-                5: "5",
-                6: "6",
-                7: "7",
-                8: "8",
-                9: "9",
-                10: "10",
-                11: "11",
-                12: "12",
-                13: "13",
-                14: "14",
-                15: "15",
-                16: "16",
-                17: "17",
-                18: "18",
-                19: "19",
-                20: "20",
-              },
-              value: controller.maxConcurrentRefresh.value,
-              onChanged: (e) {
-                controller.maxConcurrentRefresh.value = e;
-              },
-            ),
-          ),
-          AppStyle.vGap24,
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.preferResolutionNode,
-              title: "首选清晰度",
-              items: const {"原画": "原画", "蓝光8M": "蓝光8M", "蓝光4M": "蓝光4M", "超清": "超清", "流畅": "流畅"},
-              value: controller.preferResolution.value,
-              onChanged: (e) {
-                controller.preferResolution.value = e;
-              },
-            ),
-          ),
-          AppStyle.vGap24,
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.videoPlayerNode,
-              title: "播放器设置",
-              items: const {0: "Mpv播放器", 1: "Ijk播放器", 2: "Exo播放器"},
-              value: controller.videoPlayerIndex.value,
-              onChanged: (e) {
-                controller.videoPlayerIndex.value = e;
-                GlobalPlayerService.instance.playerManager.switchEngine(
-                  PlayerEngine.values[controller.videoPlayerIndex.value],
-                  isManual: true,
-                );
-              },
-            ),
-          ),
-          AppStyle.vGap24,
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.enableCodecNode,
-              title: "解码设置",
-              items: const {0: "软解码", 1: "硬解码"},
-              value: controller.enableCodec.value ? 1 : 0,
-              onChanged: (e) {
-                controller.enableCodec.value = e == 1;
-              },
-            ),
-          ),
-          AppStyle.vGap24,
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.useHardStopOnExitNode,
-              title: "播放器销毁设置",
-              items: const {0: "软停止缓存复用", 1: "强制释放"},
-              value: controller.useHardStopOnExit.value ? 1 : 0,
-              onChanged: (e) {
-                controller.useHardStopOnExit.value = e == 1;
-              },
-            ),
-          ),
+    final theme = Theme.of(context);
 
-          if (controller.videoPlayerIndex.value == 0)
-            Obx(() {
-              return Column(
-                children: [
-                  AppStyle.vGap24,
-                  SettingsItemWidget(
-                    focusNode: controller.audioDelayNode,
-                    title: "音频调节",
-                    items: AppConsts.audioDelayMap,
-                    value: controller.audioDelay.value.toString(),
-                    onChanged: (e) {
-                      double val = double.tryParse(e.toString()) ?? 0.0;
-                      controller.audioDelay.value = val;
-                    },
-                  ),
-                  AppStyle.vGap24,
-                  SettingsItemWidget(
-                    focusNode: controller.playerCompatModeNode,
-                    title: "兼容模式",
-                    items: const {0: "关闭", 1: "打开"},
-                    value: controller.playerCompatMode.value ? 1 : 0,
-                    onChanged: (e) {
-                      controller.playerCompatMode.value = e == 1;
-                    },
-                  ),
-                ],
-              );
-            }),
-          Obx(
-            () => SettingsItemWidget(
-              focusNode: controller.preferPlatformNode,
-              title: "默认平台",
-              items: AppConsts.platforms.asMap(),
-              value: AppConsts.platforms.indexOf(controller.preferPlatform.value),
-              onChanged: (e) {
-                controller.preferPlatform.value = AppConsts.platforms[e];
-              },
+    return TvScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(i18n("settings_title"), style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                DpadFocusable(
+                  effects: [
+                    DpadScaleEffect(scale: 1.05),
+                    DpadGlowEffect(color: theme.colorScheme.primary.withOpacity(0.3)),
+                  ],
+                  onSelect: () async => Get.to(() => LocalConfigPreviewPage()),
+                  builder: (context, state, child) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: state.focused
+                            ? theme.colorScheme.primary.withOpacity(0.12)
+                            : theme.colorScheme.primaryContainer.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Remix.file_text_line,
+                            size: 18,
+                            color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            i18n("config_preview"),
+                            style: TextStyle(
+                              color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const SizedBox.shrink(),
+                ),
+              ],
             ),
           ),
-          HighlightListTile(
-            title: "平台设置",
-            trailing: const Icon(Icons.chevron_right),
-            focusNode: controller.platformNode,
-            onTap: () {
-              Get.toNamed(RoutePath.kSettingsHotAreas);
-            },
-            onFocusChange: (hasFocus) {
-              if (hasFocus) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  controller.scrollController.animateTo(
-                    controller.scrollController.position.maxScrollExtent, // 滚动到最大可滚动范围
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                });
-              }
-            },
+          Expanded(
+            child: DpadRegion(
+              memoryKey: 'settings/main_menu',
+              horizontalEdge: DpadEdgeBehavior.stop,
+              verticalEdge: DpadEdgeBehavior.stop,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                children: [
+                  context.buildGroupTitle(i18n("theme_settings")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.palette_line,
+                      title: i18n("theme_customization"),
+                      subtitle: i18n("theme_customization_desc"),
+                      onTap: () async => Get.to(() => const ThemeSettingsPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("iptv_settings")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.tv_line,
+                      title: i18n("iptv_settings"),
+                      subtitle: i18n("manage_iptv_sources"),
+                      onTap: () async => Get.to(() => const IptvPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("refresh_settings")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.refresh_line,
+                      title: i18n("refresh_settings"),
+                      subtitle: i18n("refresh_settings_subtitle"),
+                      onTap: () async => Get.to(() => const RefreshSettingsPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("video_settings")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.film_line,
+                      title: i18n("video"),
+                      subtitle: i18n("video_desc"),
+                      onTap: () async => Get.to(() => const VideoSettingsPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("player_kernel_settings")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.cpu_line,
+                      title: i18n("player_kernel"),
+                      subtitle: i18n("player_kernel_desc"),
+                      onTap: () async => Get.to(() => const PlayerKernelSettingsPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("network_proxy_settings")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.global_line,
+                      title: i18n("custom_network_proxy"),
+                      subtitle: i18n("custom_network_proxy_desc"),
+                      onTap: () async => Get.to(() => const NetworkProxySettingsPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("general_settings")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.settings_4_line,
+                      title: i18n("general"),
+                      subtitle: i18n("general_desc"),
+                      onTap: () async => Get.to(() => const GeneralSettingsPage()),
+                    ),
+                    context.buildTile(
+                      icon: Remix.menu_line,
+                      title: i18n("navigation_display_settings"),
+                      subtitle: i18n("navigation_display_settings_desc"),
+                      onTap: () async => Get.to(() => const NavigationSettingsPage()),
+                    ),
+                    context.buildTile(
+                      icon: Remix.apps_2_line,
+                      title: i18n("platform_settings"),
+                      subtitle: i18n("platform_settings_desc"),
+                      onTap: () async => Get.to(() => const PlatformSettingsPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("data_manage")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.database_2_line,
+                      title: i18n("cache_and_data"),
+                      subtitle: i18n("cache_and_data_desc"),
+                      onTap: () async => Get.to(() => const CacheDataSettingsPage()),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  context.buildGroupTitle(i18n("backup_manage")),
+                  context.buildModernCard([
+                    context.buildTile(
+                      icon: Remix.cloud_line,
+                      title: i18n("backup_recover"),
+                      subtitle: i18n("backup_recover_desc"),
+                      onTap: () async => Get.to(() => const BackupPage()),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
           ),
-          HighlightListTile(
-            title: "三方认证",
-            trailing: const Icon(Icons.chevron_right),
-            focusNode: controller.accountNode,
-            onTap: () {
-              Get.toNamed(RoutePath.kSettingsAccount);
-            },
-          ),
-          HighlightListTile(
-            title: "数据同步",
-            trailing: const Icon(Icons.chevron_right),
-            focusNode: controller.dataSyncNode,
-            onTap: () {
-              Get.toNamed(RoutePath.kSync);
-            },
-          ),
-          HighlightListTile(
-            title: "壁纸设置",
-            trailing: const Icon(Icons.chevron_right),
-            focusNode: controller.currentImageNode,
-            onTap: () {
-              Get.toNamed(RoutePath.kWallpaperPage);
-            },
-            onFocusChange: (hasFocus) {
-              if (hasFocus) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  controller.scrollController.animateTo(
-                    controller.scrollController.position.maxScrollExtent, // 滚动到最大可滚动范围
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                });
-              }
-            },
-          ),
-          SizedBox(height: 40.h),
         ],
       ),
     );

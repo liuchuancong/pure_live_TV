@@ -1,21 +1,13 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'package:pure_live/get/get.dart';
-import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/common/index.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
-import 'package:pure_live/common/models/live_area.dart';
-import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/model/live_search_result.dart';
 import 'package:pure_live/core/danmaku/empty_danmaku.dart';
-import 'package:pure_live/common/models/live_message.dart';
-import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 
 class CCSite implements LiveSite {
   @override
@@ -29,7 +21,6 @@ class CCSite implements LiveSite {
   final String kUserAgent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 
-  final SettingsService settings = Get.find<SettingsService>();
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [
@@ -81,7 +72,7 @@ class CCSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
+  Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
     var result = await HttpClient.instance.getJson(
       "https://cc.163.com/_next/data/nextjs/category/${category.areaId}.json",
       queryParameters: {"game": category.areaId},
@@ -106,7 +97,7 @@ class CCSite implements LiveSite {
     } catch (e) {
       CoreLog.error(e);
     }
-    return LiveCategoryResult(hasMore: false, items: items);
+    return items;
   }
 
   @override
@@ -151,30 +142,33 @@ class CCSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
-    var result = await HttpClient.instance.getJson(
-      "https://cc.163.com/api/category/live/",
-      queryParameters: {"format": "json", "start": (page - 1) * 20, "size": 20},
-    );
-
-    var items = <LiveRoom>[];
-    for (var item in result["lives"]) {
-      var roomItem = LiveRoom(
-        roomId: item["cuteid"].toString(),
-        title: item["title"].toString(),
-        cover: item["cover"].toString(),
-        nick: item["nickname"].toString(),
-        watching: item["vision_visitor"].toString(),
-        avatar: item["purl"],
-        area: item["game_name"] ?? '',
-        liveStatus: LiveStatus.live,
-        status: true,
-        platform: Sites.ccSite,
+  Future<List<LiveRoom>> getRecommendRooms({int page = 1, int pageSize = 30}) async {
+    try {
+      var result = await HttpClient.instance.getJson(
+        "https://cc.163.com/api/category/live/",
+        queryParameters: {"format": "json", "start": (page - 1) * pageSize, "size": pageSize},
       );
-      items.add(roomItem);
+
+      var items = <LiveRoom>[];
+      for (var item in result["lives"]) {
+        var roomItem = LiveRoom(
+          roomId: item["cuteid"].toString(),
+          title: item["title"].toString(),
+          cover: item["cover"].toString(),
+          nick: item["nickname"].toString(),
+          watching: item["vision_visitor"].toString(),
+          avatar: item["purl"],
+          area: item["game_name"] ?? '',
+          liveStatus: LiveStatus.live,
+          status: true,
+          platform: Sites.ccSite,
+        );
+        items.add(roomItem);
+      }
+      return items;
+    } catch (e) {
+      throw Exception(e.toString());
     }
-    var hasMore = result["lives"].length >= 20;
-    return LiveCategoryResult(hasMore: hasMore, items: items);
   }
 
   @override
@@ -208,8 +202,12 @@ class CCSite implements LiveSite {
         data: roomInfo["quickplay"] ?? roomInfo["stream_list"],
       );
     } catch (e) {
-      log(e.toString(), name: 'CC.getRoomDetail');
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
+      LiveRoom liveRoom =
+          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+            (r) => r.roomId == roomId && r.platform == platform,
+          ) ??
+          LiveRoom(roomId: roomId, platform: platform);
+
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -217,7 +215,7 @@ class CCSite implements LiveSite {
   }
 
   @override
-  Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) async {
     var result = await HttpClient.instance.getJson(
       "https://cc.163.com/search/anchor",
       queryParameters: {"query": keyword, "size": 20, "page": page},
@@ -239,12 +237,11 @@ class CCSite implements LiveSite {
       );
       items.add(roomItem);
     }
-    var hasMore = queryList.length > 0;
-    return LiveSearchRoomResult(hasMore: hasMore, items: items);
+    return items;
   }
 
   @override
-  Future<LiveSearchAnchorResult> searchAnchors(String keyword, {int page = 1}) async {
+  Future<List<LiveAnchorItem>> searchAnchors(String keyword, {int page = 1, int pageSize = 30}) async {
     var resultText = await HttpClient.instance.getJson(
       "https://search.cdn.huya.com/",
       queryParameters: {
@@ -255,8 +252,8 @@ class CCSite implements LiveSite {
         "v": 1,
         "typ": -5,
         "livestate": 0,
-        "rows": 20,
-        "start": (page - 1) * 20,
+        "rows": pageSize,
+        "start": (page - 1) * pageSize,
       },
     );
     var result = json.decode(resultText);
@@ -270,8 +267,7 @@ class CCSite implements LiveSite {
       );
       items.add(anchorItem);
     }
-    var hasMore = result["response"]["1"]["numFound"] > (page * 20);
-    return LiveSearchAnchorResult(hasMore: hasMore, items: items);
+    return items;
   }
 
   @override

@@ -1,6 +1,6 @@
-import '../router_report.dart';
 import 'package:flutter/widgets.dart';
 
+import '../router_report.dart';
 
 class GetDialogRoute<T> extends PopupRoute<T> {
   GetDialogRoute({

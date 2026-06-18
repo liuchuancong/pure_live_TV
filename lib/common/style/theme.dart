@@ -1,26 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/get/get.dart';
+import 'package:pure_live/theme/tv_theme_data.dart';
+import 'package:pure_live/theme/tv_theme_extension.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppColors {
   Color? primaryColor;
   ColorScheme? colorScheme;
   AppColors({this.primaryColor, this.colorScheme}) : assert(colorScheme == null || primaryColor == null);
+
   static ColorScheme lightColorScheme = ColorScheme.fromSwatch(
     primarySwatch: Colors.pink,
     brightness: Brightness.dark,
     accentColor: const Color(0xfff06595),
   );
 
-  ThemeData get darkThemeData {
+  ThemeData getThemeData(TvThemeData tvTheme) {
     return ThemeData(
       useMaterial3: true,
       fontFamily: 'PingFang',
-      colorSchemeSeed: primaryColor,
-      colorScheme: colorScheme?.copyWith(error: const Color.fromARGB(255, 255, 99, 71)),
+      scaffoldBackgroundColor: tvTheme.backgroundColor,
+      cardColor: tvTheme.cardColor,
       brightness: Brightness.dark,
-      textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'PingFang'),
-      primaryTextTheme: ThemeData.dark().primaryTextTheme.apply(fontFamily: 'PingFang'),
+
+      colorScheme: ColorScheme.dark(
+        primary: tvTheme.focusColor,
+        surface: tvTheme.backgroundColor,
+        surfaceContainer: tvTheme.cardColor,
+        surfaceContainerHighest: tvTheme.cardColor.withOpacity(0.5),
+        onSurface: tvTheme.primaryTextColor,
+        onSurfaceVariant: tvTheme.secondaryTextColor,
+        error: const Color.fromARGB(255, 255, 99, 71),
+      ),
+
+      iconTheme: IconThemeData(color: tvTheme.primaryTextColor),
+
+      primaryIconTheme: IconThemeData(color: tvTheme.focusColor),
+
+      textTheme: TextTheme(
+        bodyLarge: TextStyle(color: tvTheme.primaryTextColor, fontFamily: 'PingFang'),
+        bodyMedium: TextStyle(color: tvTheme.secondaryTextColor, fontFamily: 'PingFang'),
+        titleLarge: TextStyle(color: tvTheme.primaryTextColor, fontWeight: FontWeight.bold, fontFamily: 'PingFang'),
+        titleMedium: TextStyle(color: tvTheme.primaryTextColor, fontWeight: FontWeight.w600, fontFamily: 'PingFang'),
+        labelMedium: TextStyle(color: tvTheme.secondaryTextColor, fontFamily: 'PingFang'),
+      ),
+
+      primaryTextTheme: TextTheme(
+        bodyLarge: TextStyle(color: tvTheme.focusColor, fontFamily: 'PingFang'),
+        bodyMedium: TextStyle(color: tvTheme.focusColor, fontFamily: 'PingFang'),
+      ),
+
+      extensions: [TvThemeExtension(tvTheme)],
     );
   }
 }

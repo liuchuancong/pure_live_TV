@@ -13,11 +13,10 @@ class AutoSyncScheduler {
   AutoSyncScheduler._internal();
 
   Future<void> checkAndExecuteAutoSync() async {
-    final settings = Get.find<SettingsService>();
-    if (!settings.isAutoSyncEnabled.value) return;
+    if (!SettingsService.to.iptv.isAutoSyncEnabled.v) return;
 
     final db = Get.find<DbService>().db;
-    final int hoursInterval = settings.autoSyncHoursInterval.value;
+    final int hoursInterval = SettingsService.to.iptv.autoSyncHoursInterval.v;
     final Duration checkInterval = Duration(hours: hoursInterval);
 
     try {
@@ -35,9 +34,9 @@ class AutoSyncScheduler {
   }
 
   Future<void> loadHotResources() async {
-    final m3uUrl = 'https://iptv-org.github.io/iptv/countries/cn.m3u';
+    final iptvUrl = 'https://iptv-org.github.io/iptv/countries/cn.m3u';
     IptvImportManager().importFromNetworkUrl(
-      m3uUrl,
+      iptvUrl,
       AppPathManager.iptvHotFile,
       forceUpdate: true,
       showTips: false,
@@ -53,14 +52,14 @@ class AutoSyncScheduler {
       forceUpdate: true,
       showTips: false,
     );
-    var settings = Get.find<SettingsService>();
-    final db = Get.find<DbService>().db;
-    List<EpgSource> epgSources = await db.getAllEpgSources();
-    // 强制设置
-    if (epgSources.isNotEmpty && settings.selectedSourceId.value.isEmpty) {
-      final activeSource = epgSources.first;
-      settings.selectedSourceId.value = activeSource.id;
-      settings.selectedSourceName.value = activeSource.name;
+    if (SettingsService.to.iptv.selectedSourceId.v.isEmpty) {
+      final db = Get.find<DbService>().db;
+      List<EpgSource> epgSources = await db.getAllEpgSources();
+      if (epgSources.isNotEmpty && SettingsService.to.iptv.selectedSourceId.v.isEmpty) {
+        final activeSource = epgSources.first;
+        SettingsService.to.iptv.selectedSourceId.v = activeSource.id;
+        SettingsService.to.iptv.selectedSourceName.v = activeSource.name;
+      }
     }
   }
 }

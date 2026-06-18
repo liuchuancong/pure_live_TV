@@ -2,23 +2,17 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'dart:developer' as developer;
-import 'package:pure_live/get/get.dart';
-import 'package:pure_live/core/sites.dart';
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:pure_live/common/index.dart';
 import 'package:pure_live/model/live_category.dart';
+import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/plugins/fake_useragent.dart';
-import 'package:pure_live/common/models/live_area.dart';
-import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/model/live_search_result.dart';
-import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/core/danmaku/empty_danmaku.dart';
-import 'package:pure_live/model/live_category_result.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 
 class KuaishowSite implements LiveSite {
   @override
@@ -84,8 +78,6 @@ class KuaishowSite implements LiveSite {
     'Sec-Fetch-User': '?1',
   };
 
-  final SettingsService settings = Get.find<SettingsService>();
-
   Future<List<LiveArea>> getAllSubCategores(
     LiveCategory liveCategory,
     int page,
@@ -138,7 +130,7 @@ class KuaishowSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
+  Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
     var api = category.areaId!.length < 7
         ? "https://live.kuaishou.com/live_api/gameboard/list"
         : "https://live.kuaishou.com/live_api/non-gameboard/list";
@@ -163,8 +155,7 @@ class KuaishowSite implements LiveSite {
       );
       items.add(roomItem);
     }
-    var hasMore = result["data"]["list"].length >= 20;
-    return LiveCategoryResult(hasMore: hasMore, items: items);
+    return items;
   }
 
   @override
@@ -191,37 +182,43 @@ class KuaishowSite implements LiveSite {
   }
 
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
-    var resultText = await HttpClient.instance.getJson("https://live.kuaishou.com/live_api/home/list", header: headers);
+  Future<List<LiveRoom>> getRecommendRooms({int page = 1, int pageSize = 30}) async {
+    try {
+      var resultText = await HttpClient.instance.getJson(
+        "https://live.kuaishou.com/live_api/home/list",
+        header: headers,
+      );
 
-    var result = resultText['data']['list'] ?? [];
-    var items = <LiveRoom>[];
-    for (var item in result) {
-      for (var sitem in item["gameLiveInfo"]) {
-        for (var titem in sitem["liveInfo"]) {
-          var author = titem["author"];
-          var gameInfo = titem["gameInfo"];
-          var roomItems = LiveRoom(
-            cover: gameInfo['poster'].toString(),
-            watching: titem["watchingCount"].toString(),
-            roomId: author["id"],
-            area: gameInfo["name"],
-            title: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
-            nick: author["name"].toString(),
-            avatar: author["avatar"].toString(),
-            introduction: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
-            notice: author["description"],
-            status: true,
-            liveStatus: LiveStatus.live,
-            platform: Sites.kuaishouSite,
-            data: titem["playUrls"],
-          );
-          items.add(roomItems);
+      var result = resultText['data']['list'] ?? [];
+      var items = <LiveRoom>[];
+      for (var item in result) {
+        for (var sitem in item["gameLiveInfo"]) {
+          for (var titem in sitem["liveInfo"]) {
+            var author = titem["author"];
+            var gameInfo = titem["gameInfo"];
+            var roomItems = LiveRoom(
+              cover: gameInfo['poster'].toString(),
+              watching: titem["watchingCount"].toString(),
+              roomId: author["id"],
+              area: gameInfo["name"],
+              title: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
+              nick: author["name"].toString(),
+              avatar: author["avatar"].toString(),
+              introduction: author["description"] != null ? author["description"].replaceAll("\n", " ") : '',
+              notice: author["description"],
+              status: true,
+              liveStatus: LiveStatus.live,
+              platform: Sites.kuaishouSite,
+              data: titem["playUrls"],
+            );
+            items.add(roomItems);
+          }
         }
       }
+      return items;
+    } catch (e) {
+      throw Exception(e.toString());
     }
-    var hasMore = false;
-    return LiveCategoryResult(hasMore: hasMore, items: items);
   }
 
   Future registerDid() async {
@@ -331,9 +328,10 @@ class KuaishowSite implements LiveSite {
     mHeaders['sec-fetch-mode'] = 'navigate';
     mHeaders['sec-fetch-site'] = 'same-origin';
     mHeaders['sec-fetch-user'] = '?1';
-    if (settings.kuaishouCookie.value.isNotEmpty) {
-      mHeaders['cookie'] = settings.kuaishouCookie.value;
+    if (SettingsService.to.cookieManager.kuaishouCookie.v.isNotEmpty) {
+      mHeaders['cookie'] = SettingsService.to.cookieManager.kuaishouCookie.v;
     }
+
     mHeaders['accept'] =
         'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9';
     await getCookie(url);
@@ -369,7 +367,12 @@ class KuaishowSite implements LiveSite {
         data: liveStream["playUrls"],
       );
     } catch (e) {
-      LiveRoom liveRoom = settings.getLiveRoomByRoomId(roomId, platform);
+      LiveRoom liveRoom =
+          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+            (r) => r.roomId == roomId && r.platform == platform,
+          ) ??
+          LiveRoom(roomId: roomId, platform: platform);
+
       liveRoom.liveStatus = LiveStatus.offline;
       liveRoom.status = false;
       return liveRoom;
@@ -377,14 +380,14 @@ class KuaishowSite implements LiveSite {
   }
 
   @override
-  Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) async {
     // 快手无法搜索主播，只能搜索游戏分类这里不做展示
-    return LiveSearchRoomResult(hasMore: false, items: []);
+    return [];
   }
 
   @override
-  Future<LiveSearchAnchorResult> searchAnchors(String keyword, {int page = 1}) async {
-    return LiveSearchAnchorResult(hasMore: false, items: []);
+  Future<List<LiveAnchorItem>> searchAnchors(String keyword, {int page = 1, int pageSize = 30}) async {
+    return [];
   }
 
   @override

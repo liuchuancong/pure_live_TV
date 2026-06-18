@@ -1,13 +1,23 @@
+import 'package:dpad/dpad.dart';
 import 'package:pure_live/initialized.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/consts/app_consts.dart';
-import 'package:pure_live/player/models/player_engine.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:pure_live/theme/tv_theme_controller.dart';
+import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/routes/getx_router_observer.dart';
 
 void main(List<String> args) async {
-  // 初始化
   await AppInitializer().initialize();
-  runApp(const MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('zh')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('zh'),
+      assetLoader: const RootBundleAssetLoader(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -31,15 +41,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> initGlopalPlayer() async {
-    final settings = Get.find<SettingsService>();
-    PlayerEngine defaultEngine;
-    try {
-      // 防止用户设置了一个不存在的播放器引擎索引
-      defaultEngine = PlayerEngine.values[settings.videoPlayerIndex.value];
-    } catch (e) {
-      defaultEngine = PlayerEngine.mediaKit;
-    }
-    await GlobalPlayerService.instance.initialize(defaultEngine: defaultEngine);
+    final String savedKey = SettingsService.to.player.videoPlayerKey.v;
+    final String validKey = PlayerConsts.engines.containsKey(savedKey) ? savedKey : PlayerConsts.defaultKey;
+    GlobalPlayerService.instance.initialize(defaultEngine: PlayerConsts.engines[validKey]!);
   }
 
   @override
@@ -50,24 +54,24 @@ class _MyAppState extends State<MyApp> {
       splitScreenMode: true,
       builder: (context, child) {
         final settings = Get.find<SettingsService>();
+
         return Obx(() {
+          final tvTheme = TvThemeController.to.currentTheme;
+          final currentThemeData = AppColors().getThemeData(tvTheme);
+
           return GetMaterialApp(
             debugShowCheckedModeBanner: false,
             title: '纯粹直播',
-            themeMode: AppConsts.themeModes[settings.themeModeName.value]!,
-            theme: AppStyle.lightTheme,
-            builder: FlutterSmartDialog.init(
-              loadingBuilder: (msg) => Center(
-                child: SizedBox(
-                  width: 64.w,
-                  height: 64.w,
-                  child: CircularProgressIndicator(strokeWidth: 8.w, color: Colors.white),
-                ),
-              ),
-              //字体大小不跟随系统变化
-              builder: (context, child) => MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
-                child: child!,
+            themeMode: AppConsts.themeModes[settings.theme.themeModeName.value]!,
+            theme: currentThemeData,
+            darkTheme: currentThemeData,
+            builder: Dpad.wrap(
+              theme: DpadThemeData(
+                scrollPadding: 64,
+                effects: [
+                  DpadScaleEffect(scale: 1.05),
+                  DpadGlowEffect(color: tvTheme.focusColor.withOpacity(0.4)),
+                ],
               ),
             ),
             locale: AppConsts.languages["简体中文"],
@@ -78,7 +82,7 @@ class _MyAppState extends State<MyApp> {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            initialRoute: settings.isFirstInApp.value ? RoutePath.kAgreementPage : RoutePath.kInitial,
+            initialRoute: settings.startup.isFirstInApp.value ? RoutePath.kAgreementPage : RoutePath.kInitial,
             defaultTransition: Transition.native,
             getPages: AppPages.routes,
             navigatorObservers: [GetXRouterObserver(), BackButtonObserver()],
