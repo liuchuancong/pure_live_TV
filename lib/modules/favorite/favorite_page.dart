@@ -93,8 +93,6 @@ class FavoritePage extends GetView<FavoriteController> {
                 crossAxisCount: 5,
                 crossAxisSpacing: 24.w,
                 mainAxisSpacing: 20.w,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (_, i) {
                   var item = controller.tabBottomIndex.value == 0
                       ? controller.onlineRooms[i]
