@@ -82,7 +82,6 @@ dependencies:
   dart_tars_protocol:
     git: https://github.com/xiaoyaocz/dart_tars_protocol.git
   html_unescape: ^2.0.0
-  flutter_inappwebview: ^6.2.0-beta.2
   connectivity_plus: ^7.0.0 
   qr_flutter: ^4.1.0 
   flutter_markdown_plus: ^1.0.7
