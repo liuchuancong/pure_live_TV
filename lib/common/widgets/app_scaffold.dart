@@ -19,7 +19,7 @@ class _AppScaffoldState extends State<AppScaffold> {
     final service = Get.find<SettingsService>();
     return Scaffold(
       body: Obx(() {
-        final bg = service.cachedBackgroundImage;
+        final bg = service.cachedBackgroundFileImage;
         final fit = service.currentBoxFit;
         return Stack(
           children: [

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:pure_live/common/index.dart';
@@ -11,6 +10,7 @@ import 'package:pure_live/common/consts/app_consts.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/common/utils/hive_pref_util.dart';
+import 'package:pure_live/common/utils/app_path_manager.dart';
 import 'package:pure_live/core/iptv/services/auto_sync_scheduler.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 
@@ -106,8 +106,8 @@ class SettingsService extends GetxController {
   final isAutoSyncEnabled = (HivePrefUtil.getBool('isAutoSyncEnabled') ?? false).obs;
   final autoSyncHoursInterval = (HivePrefUtil.getInt('autoSyncHoursInterval') ?? 24).obs;
   final customIptvUserAgent = (HivePrefUtil.getString('customIptvUserAgent') ?? '').obs;
-  Uint8List? _cachedBytes;
-  String? _cachedBase64;
+  String? _cachedImagePath;
+  FileImage? _cachedFileImage;
 
   // Web与网络相关
   final webPort = (HivePrefUtil.getString('webPort') ?? "9527").obs;
@@ -147,13 +147,16 @@ class SettingsService extends GetxController {
   List<String> get resolutionsList => PlayerConsts.resolutions;
   List<BoxFit> get videofitArrary => PlayerConsts.videofitList;
   List<String> get playerlist => PlayerConsts.players;
-  MemoryImage? get cachedBackgroundImage {
+  FileImage? get cachedBackgroundFileImage {
     if (currentBoxImage.isEmpty) return null;
-    if (_cachedBase64 != currentBoxImage.value) {
-      _cachedBase64 = currentBoxImage.value;
-      _cachedBytes = base64Decode(currentBoxImage.value);
-    }
-    return _cachedBytes != null ? MemoryImage(_cachedBytes!) : null;
+    final path = currentBoxImage.value;
+    if (path.length > 500) return null;
+    if (_cachedImagePath == path) return _cachedFileImage;
+    final file = File(path);
+    if (!file.existsSync()) return null;
+    _cachedImagePath = path;
+    _cachedFileImage = FileImage(file);
+    return _cachedFileImage;
   }
 
   // ========== 数据迁移方法 ==========
@@ -186,6 +189,18 @@ class SettingsService extends GetxController {
     }
   }
 
+  void _migrateBase64Wallpaper() async {
+    final value = currentBoxImage.value;
+    if (value.isEmpty || value.length < 500) return;
+    try {
+      final bytes = base64Decode(value);
+      final imageDir = await AppPathManager().getDir('WALLPAPER');
+      final file = File('${imageDir.path}${Platform.pathSeparator}bg.jpg');
+      await file.writeAsBytes(bytes);
+      currentBoxImage.value = file.path;
+    } catch (_) {}
+  }
+
   // ========== 初始化生命周期方法 ==========
   @override
   void onInit() {
@@ -199,6 +214,9 @@ class SettingsService extends GetxController {
     migrateOldPrefsData().then((_) {
       update(['migrate_complete']);
     });
+
+    // 迁移 base64 壁纸到文件
+    _migrateBase64Wallpaper();
 
     // 初始化变量监听
     _initVariableListeners();
@@ -467,7 +485,7 @@ class SettingsService extends GetxController {
         finalImageUrl = url;
       }
 
-      // 5. Download image and convert to Base64
+      // 5. Download image and save to file
       if (finalImageUrl != null && finalImageUrl.isNotEmpty) {
         var response = await dio.get(
           finalImageUrl,
@@ -480,9 +498,15 @@ class SettingsService extends GetxController {
           ),
         );
 
-        String base64String = base64Encode(response.data);
-        if (base64String.length > 30) {
-          currentBoxImage.value = base64String;
+        if (response.data != null && response.data.length > 30) {
+          final imageDir = await AppPathManager().getDir('WALLPAPER');
+          final file = File('${imageDir.path}${Platform.pathSeparator}bg.jpg');
+          await file.writeAsBytes(response.data);
+
+          _cachedFileImage = null;
+          _cachedImagePath = null;
+
+          currentBoxImage.value = file.path;
         } else {
           ToastUtil.show("The image content is invalid.");
         }
