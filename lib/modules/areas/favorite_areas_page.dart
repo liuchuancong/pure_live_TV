@@ -104,6 +104,8 @@ class FavoriteAreasPage extends GetView<SettingsService> {
               imageUrl: item.areaPic!,
               cacheManager: CustomCacheManager.instance,
               fit: BoxFit.fill,
+              memCacheWidth: 128,
+              memCacheHeight: 128,
               errorWidget: (context, error, stackTrace) => Center(
                 child: Icon(
                   Icons.live_tv_rounded,
