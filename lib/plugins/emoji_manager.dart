@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pure_live/core/emoji/models/unified_emoji_model.dart';
 
 class EmojiManager {
@@ -7,11 +8,18 @@ class EmojiManager {
   factory EmojiManager() => instance;
   EmojiManager._internal();
 
+  static const int _maxCacheSize = 100;
+  static const int _batchSize = 10;
+  static const int maxDecodeWidth = 40;
+  static const int maxDecodeHeight = 40;
+
   static final Map<String, ui.Image> _cache = {};
+  static final List<String> _insertionOrder = [];
   String? _currentLoadedSite;
   RegExp? _emojiRegex;
 
   Map<String, ui.Image> get cache => _cache;
+  List<String> get insertionOrder => _insertionOrder;
   RegExp? get emojiRegex => _emojiRegex;
 
   Future<void> preload(String site) async {
@@ -43,8 +51,11 @@ class EmojiManager {
       }
     }
 
-    await Future.wait(
-      assetPathToKeys.entries.map((entry) async {
+    // Batched loading to limit memory spike
+    final entries = assetPathToKeys.entries.toList();
+    for (int i = 0; i < entries.length; i += _batchSize) {
+      final batch = entries.sublist(i, (i + _batchSize).clamp(0, entries.length));
+      await Future.wait(batch.map((entry) async {
         final assetPath = entry.key;
         final keys = entry.value;
 
@@ -52,15 +63,15 @@ class EmojiManager {
           final assetData = await rootBundle.load(assetPath);
           final bytes = assetData.buffer.asUint8List();
 
-          final codec = await ui.instantiateImageCodec(bytes, targetWidth: 80, targetHeight: 80);
+          final codec = await ui.instantiateImageCodec(bytes, targetWidth: maxDecodeWidth, targetHeight: maxDecodeHeight);
           final frame = await codec.getNextFrame();
 
           for (final key in keys) {
             _addToCache(key, frame.image);
           }
         } catch (_) {}
-      }),
-    );
+      }));
+    }
 
     _rebuildRegex();
     _currentLoadedSite = site;
@@ -85,8 +96,16 @@ class EmojiManager {
         return;
       }
       _cache[key]?.dispose();
+      _insertionOrder.remove(key);
+    }
+    // Evict oldest entries when cache exceeds limit
+    while (_cache.length >= _maxCacheSize && _insertionOrder.isNotEmpty) {
+      final oldest = _insertionOrder.removeAt(0);
+      _cache[oldest]?.dispose();
+      _cache.remove(oldest);
     }
     _cache[key] = image;
+    _insertionOrder.add(key);
   }
 
   void clearCache() {
@@ -95,9 +114,13 @@ class EmojiManager {
       img.dispose();
     }
     _cache.clear();
+    _insertionOrder.clear();
     _emojiRegex = null;
     _currentLoadedSite = null;
   }
 
   static ui.Image? getEmoji(String emojiText) => _cache[emojiText];
+
+  @visibleForTesting
+  void addToCacheForTesting(String key, ui.Image image) => _addToCache(key, image);
 }
