@@ -23,9 +23,9 @@ class FavoriteController extends GetxController {
     onlineRoomsNodes.requestFocus();
     syncRooms();
 
-    settings.favoriteRooms.listen((rooms) => syncRooms());
+    settings.fav.favoriteRooms.listen((rooms) => syncRooms());
 
-    if (settings.autoRefreshFavorite.value) {
+    if (settings.refreshConfig.autoRefreshFavorite.value) {
       int interval = settings.autoRefreshInterval.value;
       if (interval <= 0) return;
 

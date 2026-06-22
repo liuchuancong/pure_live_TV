@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'package:pure_live/common/index.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 enum Device { phone, pad, tv }
@@ -21,16 +20,5 @@ class ScreenDevice {
       return Device.pad;
     }
     return Device.phone;
-  }
-
-  static Future<void> autoStartWebServer() async {
-    await const Duration(seconds: 2).delay();
-    var device = await getDeviceType();
-    if (Platform.isAndroid && device == Device.tv) {
-      final SettingsService service = Get.find<SettingsService>();
-      if (!service.webPortEnable.value) {
-        service.webPortEnable.value = true;
-      }
-    }
   }
 }

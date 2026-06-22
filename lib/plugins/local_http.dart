@@ -71,13 +71,13 @@ class LocalHttpServer {
       app.use(cors());
       final router = dia_router.Router('/api');
       router.get('/getSettings', (ctx, next) async {
-        ctx.body = jsonEncode(settings.toJson());
+        ctx.body = jsonEncode(settings.backup.exportAllSettings());
       });
       router.post('/setSettings', (ctx, next) async {
         var settingStrings = ctx.query['settings'];
         ctx.body = settingStrings != null ? jsonEncode({'data': true}) : jsonEncode({'data': false});
         try {
-          settings.fromJson(jsonDecode(settingStrings!));
+          settings.backup.importAllSettings(jsonDecode(settingStrings!));
           ToastUtil.show('同步成功');
         } catch (e) {
           ToastUtil.show('同步失败');
@@ -101,7 +101,7 @@ class LocalHttpServer {
             var dir = await getApplicationCacheDirectory();
             final file = File('${dir.path}${Platform.pathSeparator}${ctx.parsed['name']}');
             file.writeAsStringSync(ctx.parsed['file']);
-            if (settings.recover(file)) {
+            if (settings.backup.recover(file)) {
               ToastUtil.show("恢复备份成功");
             } else {
               ToastUtil.show("恢复备份失败");
@@ -115,12 +115,8 @@ class LocalHttpServer {
       });
 
       app.listen(io.InternetAddress.anyIPv4.address, int.parse(port));
-      settings.webPort.value = port;
-      settings.webPortEnable.value = true;
     } catch (e) {
       log(e.toString(), name: 'LocalHttpServer');
-      settings.webPortEnable.value = false;
-      settings.httpErrorMsg.value = e.toString();
     }
   }
 

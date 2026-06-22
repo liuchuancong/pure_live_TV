@@ -30,7 +30,7 @@ class TvSettingsMenuTile<T> extends StatelessWidget {
     final theme = Theme.of(context);
     final display = value != null ? (valueMap[value] ?? value.toString()) : '';
     final keys = valueMap.keys.toList();
-    final currentIndex = value != null ? keys.indexOf(value!) : -1;
+    final currentIndex = value != null ? keys.indexOf(value as T) : -1;
 
     return DpadFocusable(
       effects: [

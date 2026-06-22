@@ -65,7 +65,6 @@ class _RoomCardState extends State<RoomCard> {
   }
 
   void onTap() async {
-    handleCurrentPlayList();
     String roomId = widget.room.roomId!;
     if (widget.room.platform == Sites.huyaSite) {
       if (widget.room.roomId == '0') {
@@ -76,89 +75,6 @@ class _RoomCardState extends State<RoomCard> {
       }
     }
     AppNavigator.toLiveRoomDetail(liveRoom: widget.room.copyWith(roomId: roomId));
-  }
-
-  void handleCurrentPlayList() {
-    final SettingsService settingsService = Get.find<SettingsService>();
-    if (widget.isIptv) {
-      var rooms = [];
-      for (var liveArea in widget.areas) {
-        var roomItem = LiveRoom(
-          roomId: liveArea.areaId,
-          title: liveArea.areaName,
-          cover: '',
-          nick: liveArea.typeName,
-          watching: '',
-          avatar:
-              'https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast',
-          area: '',
-          liveStatus: LiveStatus.live,
-          status: true,
-          platform: 'iptv',
-        );
-        rooms.add(roomItem);
-      }
-      settingsService.currentPlayList.value = rooms;
-      settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
-        (element) => element.roomId == widget.room.roomId,
-      );
-    } else {
-      switch (roomTypePage) {
-        case EnterRoomTypePage.homePage:
-          var rooms = settingsService.historyRooms.value
-              .where((room) => room.liveStatus == LiveStatus.live)
-              .take(8)
-              .toList();
-          settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
-            (element) => element.roomId == widget.room.roomId,
-          );
-          break;
-        case EnterRoomTypePage.areasRoomPage:
-          var areaRoomsController = Get.find<AreaRoomsController>();
-          var rooms = areaRoomsController.list.value;
-          settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
-            (element) => element.roomId == widget.room.roomId,
-          );
-          break;
-        case EnterRoomTypePage.favoritePage:
-          var favoriteController = Get.find<FavoriteController>();
-          var rooms = favoriteController.tabBottomIndex.value == 0
-              ? favoriteController.onlineRooms.value
-              : favoriteController.offlineRooms.value;
-          settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
-            (element) => element.roomId == widget.room.roomId,
-          );
-          break;
-        case EnterRoomTypePage.searchPage:
-          var searchRoomController = Get.find<SearchRoomController>();
-          var rooms = searchRoomController.list.value;
-          settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
-            (element) => element.roomId == widget.room.roomId,
-          );
-          break;
-
-        case EnterRoomTypePage.historyPage:
-          var historyRoomsController = Get.find<HistoryPageController>();
-          var rooms = historyRoomsController.list.value;
-          settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
-            (element) => element.roomId == widget.room.roomId,
-          );
-          break;
-        case EnterRoomTypePage.popularPage:
-          var popularGridController = Get.find<PopularGridController>();
-          var rooms = popularGridController.list.value;
-          settingsService.currentPlayList.value = rooms;
-          settingsService.currentPlayListNodeIndex.value = rooms.indexWhere(
-            (element) => element.roomId == widget.room.roomId,
-          );
-          break;
-      }
-    }
   }
 
   ImageProvider? getRoomAvatar(String avatar) {
@@ -176,18 +92,18 @@ class _RoomCardState extends State<RoomCard> {
 
   Future<void> handleFollowLongTap() async {
     final SettingsService settingsService = Get.find<SettingsService>();
-    if (settingsService.isFavorite(widget.room)) {
+    if (settingsService.fav.isFavorite(widget.room)) {
       var result = await Utils.showAlertDialog("确定要取消关注此房间吗?", title: "取消关注");
       if (!result) {
         return;
       }
-      settingsService.removeRoom(widget.room);
+      settingsService.fav.removeRoom(widget.room);
     } else {
       var result = await Utils.showAlertDialog("确定要关注此房间吗?", title: "关注");
       if (!result) {
         return;
       }
-      settingsService.addRoom(widget.room);
+      settingsService.fav.addRoom(widget.room);
     }
   }
 
