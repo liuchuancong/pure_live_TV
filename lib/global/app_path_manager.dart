@@ -1,7 +1,5 @@
 import 'dart:io';
-import 'dart:developer';
 import 'package:path/path.dart' as p;
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AppPathManager {
@@ -9,153 +7,35 @@ class AppPathManager {
   factory AppPathManager() => _instance;
   AppPathManager._internal();
 
-  static const String dirAppData = 'AppData';
-  static const String softNameDir = 'PURE_LIVE';
   static const String dirIptvCache = 'IPTV_CACHE';
-  static const String iptvTable = 'pure_live_tv';
   static const String dirDownload = 'DOWNLOADS';
   static const String dirLogs = 'LOGS';
   static const String dirHiveDB = 'HIVE_DB';
   static const String dirImageCache = 'IMAGE_CACHE';
   static const String dirRecords = 'RECORDS';
-  static const String dirEmojiCache = 'EMOJI_CACHE';
-  static const String fontCacheDir = 'fontsDir';
   static const String iptvCategoryFile = 'categories.json';
   static const String iptvHotFile = 'hot.m3u';
   static const String iptvHotRemoteFile = 'https://raw.githubusercontent.com/YueChan/Live/main/GNTV.m3u';
 
-  String? _basePath;
+  String? _secureBasePath;
+  String? _cacheBasePath;
 
-  Future<void> initialize({String instanceId = ''}) async {
-    final sanitizedInstanceId = instanceId.replaceAll(RegExp(r'[\\/]'), '');
-
-    final Directory appDir = await getApplicationDocumentsDirectory();
+  Future<void> initialize() async {
     final Directory supportDir = await getApplicationSupportDirectory();
+    _secureBasePath = supportDir.path;
 
-    bool isRunningOnCDrive = false;
-    if (!kIsWeb && Platform.isWindows) {
-      final String exeDir = p.dirname(Platform.resolvedExecutable);
-      if (exeDir.startsWith(RegExp(r'^[cC]:'))) {
-        isRunningOnCDrive = true;
-        log('检测到当前程序运行在 C 盘，将强制跳过历史数据迁移。');
-      }
-    }
-
-    final List<String> extraOldBasePaths = [
-      p.join(appDir.path, softNameDir),
-      p.join(supportDir.path, softNameDir),
-      p.join(appDir.path, softNameDir.toLowerCase()),
-      p.join(supportDir.path, softNameDir.toLowerCase()),
-    ];
-
-    String oldBaseRoot = p.join(appDir.path, softNameDir.toLowerCase());
-    for (final path in extraOldBasePaths) {
-      final dir = Directory(path);
-      if (await dir.exists()) {
-        oldBaseRoot = path;
-        break;
-      }
-    }
-
-    String oldRootPath = oldBaseRoot;
-    if (sanitizedInstanceId.isNotEmpty) {
-      oldRootPath = p.join(oldBaseRoot, sanitizedInstanceId);
-    }
-
-    String rootPath = '';
-    if (kIsWeb) {
-      rootPath = softNameDir;
-    } else if (Platform.isWindows) {
-      final String exeDir = p.dirname(Platform.resolvedExecutable);
-      final String exeDirLower = exeDir.toLowerCase();
-      if (exeDirLower.contains('windowsapps') || exeDirLower.contains('program files')) {
-        rootPath = p.join(supportDir.path, softNameDir);
-      } else {
-        final testDir = Directory(p.join(exeDir, dirAppData));
-        try {
-          await testDir.create(recursive: true);
-          rootPath = testDir.path;
-        } catch (e) {
-          log('Windows 运行目录无写入权限，安全切换至应用支持目录: $e');
-          rootPath = p.join(supportDir.path, softNameDir);
-        }
-      }
+    List<Directory>? externalCacheDirs = await getExternalCacheDirectories();
+    if (externalCacheDirs != null && externalCacheDirs.isNotEmpty && externalCacheDirs.first.path.isNotEmpty) {
+      _cacheBasePath = externalCacheDirs.first.path;
     } else {
-      rootPath = p.join(appDir.path, softNameDir);
-    }
-
-    if (sanitizedInstanceId.isNotEmpty) {
-      rootPath = p.join(rootPath, sanitizedInstanceId);
-    }
-
-    final String canonicalOldRoot = p.canonicalize(oldRootPath);
-    final String canonicalNewRoot = p.canonicalize(rootPath);
-
-    final lockFile = File(p.join(rootPath, 'migrated.lock'));
-    final bool isAlreadyMigrated = !kIsWeb && await lockFile.exists();
-
-    if (!kIsWeb && canonicalOldRoot != canonicalNewRoot && !isAlreadyMigrated && !isRunningOnCDrive) {
-      final bool hasWritePermission = await _checkDirectoryWritable(rootPath);
-      if (hasWritePermission) {
-        await _migrateHiveFiles(oldRootPath, rootPath, lockFile);
-      } else {
-        log('迁移终止：目标新目录 $rootPath 没有写入权限！');
-      }
-    }
-
-    _basePath = rootPath;
-  }
-
-  Future<bool> _checkDirectoryWritable(String path) async {
-    try {
-      final testDir = Directory(path);
-      if (!await testDir.exists()) {
-        await testDir.create(recursive: true);
-      }
-      final testFile = File(p.join(path, '.permission_test_${DateTime.now().millisecondsSinceEpoch}'));
-      await testFile.writeAsString('test');
-      await testFile.delete();
-      return true;
-    } catch (e) {
-      log('目录写入权限检测失败 ($path): $e');
-      return false;
-    }
-  }
-
-  Future<void> _migrateHiveFiles(String oldRoot, String rootPath, File lockFile) async {
-    final oldDir = Directory(oldRoot);
-    if (!await oldDir.exists()) return;
-
-    final newDir = Directory(p.join(rootPath, dirHiveDB));
-    await newDir.create(recursive: true);
-
-    final files = ['app_settings.hive', 'app_instance.lock', 'app_settings.lock'];
-
-    for (final name in files) {
-      final oldFile = File(p.join(oldRoot, name));
-      final newFile = File(p.join(newDir.path, name));
-
-      if (await oldFile.exists()) {
-        try {
-          await oldFile.copy(newFile.path);
-          log('数据迁移成功 (原文件已保留): $name');
-        } catch (e) {
-          log('数据迁移失败: $name -> $e');
-        }
-      }
-    }
-
-    try {
-      await lockFile.create(recursive: true);
-      await lockFile.writeAsString('Migrated on ${DateTime.now()}');
-    } catch (e) {
-      log('创建迁移锁文件失败: $e');
+      final Directory tempDir = await getTemporaryDirectory();
+      _cacheBasePath = tempDir.path;
     }
   }
 
   Future<Directory> getDir(String segment) async {
-    final String targetPath = p.join(basePath, segment);
-    final Directory directory = Directory(targetPath);
+    final String base = (segment == dirHiveDB) ? secureBasePath : cacheBasePath;
+    final Directory directory = Directory(p.join(base, segment));
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }
@@ -168,13 +48,7 @@ class AppPathManager {
   Future<Directory> get hiveDbDir => getDir(dirHiveDB);
   Future<Directory> get imageCacheDir => getDir(dirImageCache);
   Future<Directory> get recordsDir => getDir(dirRecords);
-  Future<Directory> get emojiCacheDir => getDir(dirEmojiCache);
 
-  String get basePath => _basePath ?? (throw StateError("AppPathManager 尚未初始化"));
-
-  Future<String> getFontFamilyFolderPath(String id) async {
-    final downloadDir = await getDir(dirDownload);
-    final basePath = p.join(downloadDir.path, fontCacheDir);
-    return p.join(basePath, id);
-  }
+  String get secureBasePath => _secureBasePath ?? (throw StateError("AppPathManager 尚未初始化"));
+  String get cacheBasePath => _cacheBasePath ?? (throw StateError("AppPathManager 尚未初始化"));
 }

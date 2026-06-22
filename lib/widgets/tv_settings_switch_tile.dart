@@ -1,10 +1,11 @@
-import 'package:pure_live/common/index.dart';
+import 'package:dpad/dpad.dart';
+import 'package:flutter/material.dart';
 
 class TvSettingsSwitchTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final IconData? icon;
-  final RxBool value;
+  final bool value;
   final ValueChanged<bool>? onChanged;
 
   const TvSettingsSwitchTile({
@@ -23,20 +24,16 @@ class TvSettingsSwitchTile extends StatelessWidget {
     return DpadFocusable(
       effects: [
         DpadScaleEffect(scale: 1.02),
-        DpadGlowEffect(color: theme.colorScheme.primary.withOpacity(0.3)),
+        DpadGlowEffect(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
       ],
       onSelect: () {
-        final newValue = !value.value;
-        value.value = newValue;
-        onChanged?.call(newValue);
+        onChanged?.call(!value);
       },
       onDirection: (direction) {
-        if (direction == TraversalDirection.left && value.value) {
-          value.value = false;
+        if (direction == TraversalDirection.left && value) {
           onChanged?.call(false);
           return true;
-        } else if (direction == TraversalDirection.right && !value.value) {
-          value.value = true;
+        } else if (direction == TraversalDirection.right && !value) {
           onChanged?.call(true);
           return true;
         }
@@ -45,7 +42,7 @@ class TvSettingsSwitchTile extends StatelessWidget {
       builder: (context, state, child) {
         return Container(
           decoration: BoxDecoration(
-            color: state.focused ? theme.colorScheme.primaryContainer.withOpacity(0.15) : Colors.transparent,
+            color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -73,7 +70,7 @@ class TvSettingsSwitchTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           color: state.focused
-                              ? theme.colorScheme.primary.withOpacity(0.7)
+                              ? theme.colorScheme.primary.withValues(alpha: 0.7)
                               : theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -81,15 +78,7 @@ class TvSettingsSwitchTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Obx(
-                () => Switch(
-                  value: value.value,
-                  onChanged: (v) {
-                    value.value = v;
-                    onChanged?.call(v);
-                  },
-                ),
-              ),
+              Switch(value: value, onChanged: onChanged),
             ],
           ),
         );

@@ -35,7 +35,7 @@ class TvSettingsMenuTile<T> extends StatelessWidget {
     return DpadFocusable(
       effects: [
         DpadScaleEffect(scale: 1.02),
-        DpadGlowEffect(color: theme.colorScheme.primary.withOpacity(0.3)),
+        DpadGlowEffect(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
       ],
       onSelect: () => onTap?.call(),
       onDirection: (direction) {
@@ -56,7 +56,7 @@ class TvSettingsMenuTile<T> extends StatelessWidget {
       builder: (context, state, child) {
         return Container(
           decoration: BoxDecoration(
-            color: state.focused ? theme.colorScheme.primaryContainer.withOpacity(0.15) : Colors.transparent,
+            color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -87,7 +87,7 @@ class TvSettingsMenuTile<T> extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           color: state.focused
-                              ? theme.colorScheme.primary.withOpacity(0.7)
+                              ? theme.colorScheme.primary.withValues(alpha: 0.7)
                               : theme.colorScheme.onSurfaceVariant,
                         ),
                       ),

@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class TvTabBar extends StatelessWidget {
   final List<String> tabs;
@@ -36,10 +35,10 @@ class TvTabBar extends StatelessWidget {
             builder: (context, state, child) {
               final isSelected = currentIndex == idx;
               return Container(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.w),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
                   color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8.w),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   text,

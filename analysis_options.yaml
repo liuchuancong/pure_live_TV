@@ -1,9 +1,6 @@
 include: package:flutter_lints/flutter.yaml
-analyzer: 
-  exclude: 
-    - "**/*.g.dart"
-    - "**/*_en.dart"
-    - "**/*_zh_CN.dart"
-    - "**/*.js"
+analyzer:
+  errors:
+    invalid_annotation_target: ignore 
 linter:
   rules:

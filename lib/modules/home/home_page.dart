@@ -1,316 +1,81 @@
-import 'dart:async';
-import 'package:lottie/lottie.dart';
-import 'package:pure_live/common/index.dart';
-import 'package:pure_live/modules/home/home_controller.dart';
-import 'package:android_tv_text_field/native_textfield_tv.dart';
-import 'package:pure_live/common/widgets/button/home_big_button.dart';
-import 'package:pure_live/common/widgets/button/highlight_button.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter/material.dart';
+import 'package:pure_live/widgets/tv_button.dart';
+import 'package:pure_live/theme/styles/styles.dart';
+import 'package:pure_live/widgets/tv_scaffold.dart';
+import 'package:pure_live/theme/styles/app_styles.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/home/widgets/tv_diaital_clock.dart';
 
-class HomePage extends GetView<HomeController> {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  void handleMainPageButtonTap(int index, BuildContext context) {
-    controller.currentNodeIndex.value = index + 1;
-    controller.pageController.unselectAll();
-    controller.pageController.selectIndex(index);
-    switch (index) {
-      case 0:
-        Get.toNamed(RoutePath.kFavorite);
-        break;
-      case 1:
-        Get.toNamed(RoutePath.kPopular);
-        break;
-      case 2:
-        Get.toNamed(RoutePath.kAreas);
-        break;
-      case 3:
-        Get.toNamed(RoutePath.kFavoriteAreas);
-        break;
-      case 4:
-        Get.toNamed(RoutePath.kToolbox);
-        break;
-      case 5:
-        showSearchDialog(context);
-        break;
-      case 6:
-        Get.toNamed(RoutePath.kHistory);
-        break;
-      default:
-    }
-  }
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
-  Widget buildViews(BuildContext context) {
-    return GroupButton(
-      controller: controller.pageController,
-      isRadio: false,
-      options: GroupButtonOptions(
-        spacing: 30.w,
-        runSpacing: 10,
-        groupingType: GroupingType.wrap,
-        direction: Axis.horizontal,
-        borderRadius: BorderRadius.circular(4),
-        mainGroupAlignment: MainGroupAlignment.start,
-        crossGroupAlignment: CrossGroupAlignment.start,
-        groupRunAlignment: GroupRunAlignment.start,
-        textAlign: TextAlign.center,
-        textPadding: EdgeInsets.zero,
-        alignment: Alignment.center,
-      ),
-      buttons: HomeController.mainPageOptions,
-      maxSelected: 1,
-      buttonIndexedBuilder: (selected, index, context) => HomeBigButton(
-        key: ValueKey(index),
-        focusNode: controller.focusNodes[index + 1],
-        text: HomeController.mainPageOptions[index],
-        iconData: HomeController.mainPageIconOptions[index],
-        onTap: () => handleMainPageButtonTap(index, context),
+class _HomePageState extends State<HomePage> {
+  static const List<Map<String, dynamic>> _navigationMenus = [
+    {'title': '直播关注', 'icon': Icons.favorite_border},
+    {'title': '热门直播', 'icon': Icons.local_fire_department_outlined},
+    {'title': '分区类别', 'icon': Icons.apps_rounded},
+    {'title': '关注分区', 'icon': Icons.view_module_rounded},
+    {'title': '链接放映', 'icon': Icons.movie_creation_outlined},
+    {'title': '搜索直播', 'icon': Icons.search_rounded},
+    {'title': '观看记录', 'icon': Icons.history},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return TvScaffold(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [AppStyle.vGap32, _buildHeader(), const Spacer(), _buildMainContent(), AppStyle.vGap32],
+        ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return AppScaffold(
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        AppStyle.hGap48,
+        Text("纯粹直播", style: AppTextStyles.t32W600),
+        AppStyle.hGap24,
+        const Spacer(),
+        TvDigitalClock(style: AppTextStyles.t32W600),
+        AppStyle.hGap48,
+      ],
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Expanded(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppStyle.vGap32,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              AppStyle.hGap48,
-              Text("纯粹直播", style: AppStyle.titleStyleWhite),
-              AppStyle.hGap24,
-              const Spacer(),
-              Obx(() => Text(controller.datetime.value, style: AppStyle.titleStyleWhite.copyWith(fontSize: 36.w))),
-              AppStyle.hGap32,
-              HighlightButton(
-                focusNode: controller.focusNodes.first,
-                iconData: Icons.settings,
-                text: "设置",
-                onTap: () {
-                  controller.currentNodeIndex.value = 0;
-                  Get.toNamed(RoutePath.kSettings);
-                },
-              ),
-              AppStyle.hGap48,
-              Obx(
-                () => controller.hasNewVersion.value
-                    ? Row(
-                        children: [
-                          HighlightButton(
-                            focusNode: controller.versionFocusNode,
-                            iconData: Icons.vertical_align_bottom_sharp,
-                            text: "新版本",
-                            onTap: () {
-                              Get.toNamed(RoutePath.kVersionPage);
-                            },
-                          ),
-                          AppStyle.hGap48,
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          HighlightButton(
-                            focusNode: controller.versionFocusNode,
-                            iconData: Icons.download_for_offline_rounded,
-                            text: "版本下载",
-                            onTap: () {
-                              Get.toNamed(RoutePath.kVersionPage);
-                            },
-                          ),
-                          AppStyle.hGap48,
-                        ],
-                      ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: ListView(
-              padding: AppStyle.edgeInsetsV32,
-              children: [
-                Padding(
-                  padding: AppStyle.edgeInsetsH48,
-                  child: SizedBox(
-                    height: 200.h,
-                    child: ListView(
-                      controller: controller.listScrollController,
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [const SizedBox(width: 5), buildViews(context), const SizedBox(width: 5)],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                AppStyle.vGap32,
-                Padding(
-                  padding: AppStyle.edgeInsetsH48,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 64.w,
-                        height: 64.w,
-                        child: Center(
-                          child: Icon(Icons.history, color: Colors.white, size: 56.w),
-                        ),
-                      ),
-                      AppStyle.hGap24,
-                      Expanded(child: Text("最近观看", style: AppStyle.titleStyleWhite)),
-                      Obx(
-                        () => Visibility(
-                          visible: controller.loadding.value,
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 48.w,
-                                height: 48.w,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 4.w),
-                              ),
-                              AppStyle.hGap16,
-                              Text("正在更新...", style: AppStyle.textStyleWhite),
-                            ],
-                          ),
-                        ),
-                      ),
-                      AppStyle.hGap32,
-                      HighlightButton(
-                        focusNode: controller.focusNodes.last,
-                        iconData: Icons.refresh,
-                        text: "刷新",
-                        onTap: () {
-                          controller.refreshData();
-                          controller.currentNodeIndex.value = controller.focusNodes.length - 1;
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                Obx(
-                  () => MasonryGridView.count(
-                    padding: AppStyle.edgeInsetsA48,
-                    itemCount: controller.rooms.value.length,
-                    crossAxisCount: 5,
-                    crossAxisSpacing: 24.w,
-                    mainAxisSpacing: 20.w,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (_, i) {
-                      var item = controller.rooms.value[i];
-                      return RoomCard(
-                        room: item,
-                        dense: true,
-                        useDefaultLongTapEvent: false,
-                        roomTypePage: EnterRoomTypePage.homePage,
-                        onLongTap: () {
-                          controller.removeItem(item);
-                        },
-                        focusNode: controller.hisToryFocusNodes[i],
-                      );
-                    },
-                  ),
-                ),
-                Obx(
-                  () => Visibility(
-                    visible: controller.rooms.isEmpty,
-                    child: Column(
-                      children: [
-                        AppStyle.vGap24,
-                        LottieBuilder.asset('assets/lotties/empty.json', width: 160.w, height: 160.w, repeat: false),
-                        AppStyle.vGap24,
-                        Text("暂无任何历史记录\n您可以从其他端同步数据到此处", textAlign: TextAlign.center, style: AppStyle.textStyleWhite),
-                        AppStyle.vGap16,
-                        HighlightButton(
-                          focusNode: controller.syncNode,
-                          iconData: Icons.devices,
-                          text: "同步数据",
-                          onTap: () {
-                            controller.toSync();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          SizedBox(
+            height: 64.sp,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _navigationMenus.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final menu = _navigationMenus[index];
+
+                return TvButton(
+                  autofocus: index == 0,
+                  title: menu['title'] as String,
+                  icon: Icon(menu['icon'] as IconData),
+                  size: TvButtonSize.large,
+                  onTap: () {},
+                );
+              },
             ),
           ),
         ],
       ),
-    );
-  }
-
-  void showSearchDialog(BuildContext context) {
-    // 安全检查
-    if (!context.mounted) return;
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          // 延迟一小段时间确保 UI 完全渲染后再请求焦点
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (dialogContext.mounted) {
-              controller.searchFocusNode.requestFocus();
-            }
-          });
-        });
-        return AlertDialog(
-          backgroundColor: Get.theme.cardColor,
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: AppStyle.radius16),
-          contentPadding: AppStyle.edgeInsetsA48,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: AppStyle.edgeInsetsR12,
-                        child: Icon(Icons.live_tv, size: 40.w, color: Colors.white),
-                      ),
-                      Text(
-                        '直播间搜索',
-                        style: TextStyle(fontSize: 28.w, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              AppStyle.vGap48,
-              SizedBox(
-                width: 700.w,
-                height: 80.h,
-                child: AndroidTVTextField(
-                  focusNode: controller.searchFocusNode,
-                  controller: controller.roomSearchController,
-                  onSubmitted: (e) {
-                    if (e.isEmpty) {
-                      return;
-                    }
-                    // 关闭键盘在关闭弹窗
-                    Navigator.of(Get.context!).pop();
-                    Future.delayed(const Duration(milliseconds: 200), () {
-                      Get.toNamed(RoutePath.kSearch, arguments: e.trim());
-                    });
-                  },
-                  hint: "点击输入关键字搜索",
-                  backgroundColor: Get.theme.primaryColor, // 对应你之前的颜色
-                  textColor: Colors.white,
-                  maxLines: 1,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

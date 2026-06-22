@@ -1,95 +1,122 @@
-import 'package:pure_live/common/index.dart';
+import 'package:dpad/dpad.dart';
+import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pure_live/services/background/back_ground_source.dart';
+import 'package:pure_live/consts/back_ground_source.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/models/background/back_ground_config.dart';
 
 class TvScaffold extends StatelessWidget {
   final Widget child;
+
   const TvScaffold({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(() {
-        final bgCtrl = SettingsService.to.bg;
-        Widget bgWidget = switch (bgCtrl.source) {
-          BackgroundSource.none => const _NoneBackground(),
-          BackgroundSource.color => const _ColorBackground(),
-          BackgroundSource.gradient => const _GradientBackground(),
-          BackgroundSource.localImage ||
-          BackgroundSource.assetImage ||
-          BackgroundSource.networkImage => const _ImageBackground(),
-          BackgroundSource.assetVideo ||
-          BackgroundSource.localVideo ||
-          BackgroundSource.networkVideo => const _VideoBackground(),
-        };
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const IgnorePointer(child: _BackgroundLayer()),
 
-        return Stack(
-          children: [
-            bgWidget,
-            Obx(() => Container(color: Colors.black.withValues(alpha: bgCtrl.maskOpacity.value))),
-            DpadRegion(child: child),
-          ],
-        );
-      }),
-    );
-  }
-}
+          const IgnorePointer(child: _MaskLayer()),
 
-class _NoneBackground extends StatelessWidget {
-  const _NoneBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = SettingsService.to.bg;
-    return Container(color: bg.solidColor);
-  }
-}
-
-class _ColorBackground extends StatelessWidget {
-  const _ColorBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = SettingsService.to.bg;
-    return Obx(() => Container(color: bg.solidColor));
-  }
-}
-
-class _GradientBackground extends StatelessWidget {
-  const _GradientBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = SettingsService.to.bg;
-    return Obx(
-      () => Container(
-        decoration: BoxDecoration(gradient: LinearGradient(colors: bg.gradientColors)),
+          DpadRegion(child: child),
+        ],
       ),
     );
   }
 }
 
-class _ImageBackground extends StatelessWidget {
-  const _ImageBackground();
+class _BackgroundLayer extends StatelessWidget {
+  const _BackgroundLayer();
 
   @override
   Widget build(BuildContext context) {
-    final bg = SettingsService.to.bg;
+    return StreamBuilder<BackgroundConfigModel>(
+      stream: SettingsService.to.bg.configChanges,
+      initialData: SettingsService.to.bgState,
+      builder: (context, snapshot) {
+        final config = snapshot.data!;
+
+        return switch (config.source) {
+          BackgroundSource.none || BackgroundSource.color => _SolidBackground(config: config),
+
+          BackgroundSource.gradient => _GradientBackground(config: config),
+
+          BackgroundSource.localImage ||
+          BackgroundSource.assetImage ||
+          BackgroundSource.networkImage => _ImageBackground(config: config),
+
+          BackgroundSource.assetVideo ||
+          BackgroundSource.localVideo ||
+          BackgroundSource.networkVideo => const _VideoBackground(),
+        };
+      },
+    );
+  }
+}
+
+class _MaskLayer extends StatelessWidget {
+  const _MaskLayer();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<BackgroundConfigModel>(
+      stream: SettingsService.to.bg.configChanges,
+      initialData: SettingsService.to.bgState,
+      builder: (context, snapshot) {
+        final config = snapshot.data!;
+
+        return ColoredBox(color: Colors.black.withValues(alpha: config.maskOpacity));
+      },
+    );
+  }
+}
+
+class _SolidBackground extends StatelessWidget {
+  final BackgroundConfigModel config;
+
+  const _SolidBackground({required this.config});
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(color: config.solidColor);
+  }
+}
+
+class _GradientBackground extends StatelessWidget {
+  final BackgroundConfigModel config;
+
+  const _GradientBackground({required this.config});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: LinearGradient(colors: config.gradientColors)),
+    );
+  }
+}
+
+class _ImageBackground extends StatelessWidget {
+  final BackgroundConfigModel config;
+
+  const _ImageBackground({required this.config});
+
+  @override
+  Widget build(BuildContext context) {
+    final image = SettingsService.to.bg.cachedBackgroundImage;
+
     return Stack(
+      fit: StackFit.expand,
       children: [
-        Obx(
-          () => Container(
-            decoration: BoxDecoration(gradient: LinearGradient(colors: bg.gradientColors)),
-          ),
+        DecoratedBox(
+          decoration: BoxDecoration(gradient: LinearGradient(colors: config.gradientColors)),
         ),
-        if (bg.cachedBackgroundImage != null)
-          Positioned.fill(
-            child: Obx(
-              () => DecoratedBox(
-                decoration: BoxDecoration(
-                  image: DecorationImage(image: bg.cachedBackgroundImage!, fit: bg.boxFit),
-                ),
-              ),
+
+        if (image != null)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              image: DecorationImage(image: image, fit: config.boxFit),
             ),
           ),
       ],
@@ -102,7 +129,10 @@ class _VideoBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = SettingsService.to.bg;
-    return Positioned.fill(child: Video(controller: bg.videoController));
+    final controller = SettingsService.to.bg.videoController;
+
+    return SizedBox.expand(
+      child: Video(fit: BoxFit.cover, controller: controller),
+    );
   }
 }

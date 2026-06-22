@@ -14,10 +14,10 @@ class TvSettingsCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       elevation: 0,
       clipBehavior: Clip.antiAlias,
-      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.15),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.05), width: 0.5),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.05), width: 0.5),
       ),
       child: Column(
         children: List.generate(validChildren.length, (index) {
@@ -30,7 +30,7 @@ class TvSettingsCard extends StatelessWidget {
                   thickness: 0.5,
                   indent: 16,
                   endIndent: 16,
-                  color: theme.dividerColor.withOpacity(0.05),
+                  color: theme.dividerColor.withValues(alpha: 0.05),
                 ),
             ],
           );

@@ -1,222 +1,250 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:rxdart/rxdart.dart';
+import 'package:flutter/widgets.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:pure_live/common/index.dart';
+import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pure_live/services/background/back_ground_config.dart';
-import 'package:pure_live/services/background/back_ground_source.dart';
+import 'package:pure_live/consts/back_ground_source.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/models/background/back_ground_config.dart';
 
-class BackgroundController extends GetxController {
-  static BackgroundController get to => Get.find<BackgroundController>();
+part 'background_controller.g.dart';
 
-  final RxString sourceStr = hiveString('bgSource', bgSourceToString(BackgroundSource.none));
-  BackgroundSource get source => bgSourceFromString(sourceStr.value);
-  set source(BackgroundSource val) => sourceStr.value = bgSourceToString(val);
-
-  final RxString boxFitStr = hiveString('bgBoxFit', BoxFit.cover.name);
-  BoxFit get boxFit => BoxFit.values.firstWhere((e) => e.name == boxFitStr.value, orElse: () => BoxFit.cover);
-  set boxFit(BoxFit val) => boxFitStr.value = val.name;
-
-  final RxDouble maskOpacity = hiveDouble('bgMaskOpacity', 0.35);
-
-  final RxInt solidColorHex = hiveInt('bgSolidColor', 0xff141e30);
-  Color get solidColor => Color(solidColorHex.value);
-  set solidColor(Color c) => solidColorHex.value = c.value;
-
-  final RxString gradientHexList = hiveString('bgGradientColors', "0xff141e30,0xff243b55,0xff141e30");
-  List<Color> get gradientColors => gradientHexList.value.split(",").map((s) => Color(int.parse(s))).toList();
-  set gradientColors(List<Color> list) =>
-      gradientHexList.value = list.map((c) => "0xff${c.value.toRadixString(16)}").join(",");
-
-  final RxString assetImagePath = hiveString('bgAssetImagePath', "");
-  final RxString localImagePath = hiveString('bgLocalImagePath', "");
-  final RxString networkImageUrl = hiveString('bgNetworkImageUrl', "");
-
-  final RxString currentBoxImage = hiveString('bgCurrentBoxImageBase64', "");
-  String? _cachedBase64;
-  Uint8List? _cachedBytes;
-  MemoryImage? get cachedBackgroundImage {
-    if (currentBoxImage.isEmpty) return null;
-    if (_cachedBase64 != currentBoxImage.value) {
-      _cachedBase64 = currentBoxImage.value;
-      _cachedBytes = base64Decode(currentBoxImage.value);
-    }
-    return _cachedBytes != null ? MemoryImage(_cachedBytes!) : null;
-  }
-
-  final RxString assetVideoPath = hiveString('bgAssetVideoPath', "");
-  final RxString localVideoPath = hiveString('bgLocalVideoPath', "");
-  final RxString networkVideoUrl = hiveString('bgNetworkVideoUrl', "");
-
+@riverpod
+class BackgroundController extends _$BackgroundController {
   late final Player _videoPlayer;
   late final VideoController videoController;
 
   final _configStream = BehaviorSubject<BackgroundConfigModel>();
   Stream<BackgroundConfigModel> get configChanges => _configStream.stream;
 
+  String? _cachedBase64;
+  Uint8List? _cachedBytes;
+
   @override
-  void onInit() {
-    super.onInit();
+  BackgroundConfigModel build() {
     _videoPlayer = Player();
     videoController = VideoController(_videoPlayer);
     _videoPlayer.setVolume(0.0);
     _videoPlayer.setPlaylistMode(PlaylistMode.loop);
 
-    everAll([
-      sourceStr,
-      boxFitStr,
-      maskOpacity,
-      solidColorHex,
-      gradientHexList,
-      assetImagePath,
-      localImagePath,
-      networkImageUrl,
-      currentBoxImage,
-      assetVideoPath,
-      localVideoPath,
-      networkVideoUrl,
-    ], (_) => _emitConfig());
+    ref.onDispose(() {
+      _videoPlayer.dispose();
+      _configStream.close();
+    });
+
+    final sourceStr = HivePrefUtil.getString('bgSource') ?? 'none';
+    final boxFitName = HivePrefUtil.getString('bgBoxFit') ?? 'cover';
+    final maskOpacity = HivePrefUtil.getDouble('bgMaskOpacity') ?? 0.35;
+    final solidColorHex = HivePrefUtil.getString('bgSolidColorHex') ?? '141e30';
+    final gradientHexStr = HivePrefUtil.getString('bgGradientColors') ?? "141e30,243b55,141e30";
+
+    final assetImagePath = HivePrefUtil.getString('bgAssetImagePath') ?? "";
+    final localImagePath = HivePrefUtil.getString('bgLocalImagePath') ?? "";
+    final networkImageUrl = HivePrefUtil.getString('bgNetworkImageUrl') ?? "";
+    final currentBoxImageBase64 = HivePrefUtil.getString('bgCurrentBoxImageBase64') ?? "";
+
+    final assetVideoPath = HivePrefUtil.getString('bgAssetVideoPath') ?? "";
+    final localVideoPath = HivePrefUtil.getString('bgLocalVideoPath') ?? "";
+    final networkVideoUrl = HivePrefUtil.getString('bgNetworkVideoUrl') ?? "";
+
+    final model = BackgroundConfigModel(
+      source: bgSourceFromString(sourceStr),
+      boxFit: BoxFit.values.firstWhere((e) => e.name == boxFitName, orElse: () => BoxFit.cover),
+      maskOpacity: maskOpacity,
+      solidColor: HexColor(solidColorHex),
+      gradientColors: gradientHexStr.split(",").map((s) => HexColor(s)).toList(),
+      assetImagePath: assetImagePath.isEmpty ? null : assetImagePath,
+      localImagePath: localImagePath.isEmpty ? null : localImagePath,
+      networkImageUrl: networkImageUrl.isEmpty ? null : networkImageUrl,
+      currentBoxImageBase64: currentBoxImageBase64,
+      assetVideoPath: assetVideoPath.isEmpty ? null : assetVideoPath,
+      localVideoPath: localVideoPath.isEmpty ? null : localVideoPath,
+      networkVideoUrl: networkVideoUrl.isEmpty ? null : networkVideoUrl,
+    );
+
+    _configStream.add(model);
+    return model;
   }
 
-  void _emitConfig() {
-    final model = BackgroundConfigModel(
-      source: source,
-      boxFit: boxFit,
-      maskOpacity: maskOpacity.value,
-      solidColor: solidColor,
-      gradientColors: gradientColors,
-      assetImagePath: assetImagePath.value.isEmpty ? null : assetImagePath.value,
-      localImagePath: localImagePath.value.isEmpty ? null : localImagePath.value,
-      networkImageUrl: networkImageUrl.value.isEmpty ? null : networkImageUrl.value,
-      currentBoxImageBase64: currentBoxImage.value,
-      assetVideoPath: assetVideoPath.value.isEmpty ? null : assetVideoPath.value,
-      localVideoPath: localVideoPath.value.isEmpty ? null : localVideoPath.value,
-      networkVideoUrl: networkVideoUrl.value.isEmpty ? null : networkVideoUrl.value,
-    );
-    _configStream.add(model);
+  MemoryImage? get cachedBackgroundImage {
+    final base64Str = state.currentBoxImageBase64;
+    if (base64Str.isEmpty) return null;
+
+    if (_cachedBase64 != base64Str) {
+      _cachedBase64 = base64Str;
+      _cachedBytes = base64Decode(_cachedBase64!);
+    }
+    return MemoryImage(_cachedBytes!);
+  }
+
+  void _updateState(BackgroundConfigModel newModel) {
+    state = newModel;
+    _configStream.add(newModel);
+
+    HivePrefUtil.setString('bgSource', bgSourceToString(newModel.source));
+    HivePrefUtil.setString('bgBoxFit', newModel.boxFit.name);
+    HivePrefUtil.setDouble('bgMaskOpacity', newModel.maskOpacity);
+    HivePrefUtil.setString('bgSolidColorHex', newModel.solidColor.toHex());
+    HivePrefUtil.setString('bgGradientColors', newModel.gradientColors.map((c) => c.toHex()).join(","));
+
+    HivePrefUtil.setString('bgAssetImagePath', newModel.assetImagePath ?? "");
+    HivePrefUtil.setString('bgLocalImagePath', newModel.localImagePath ?? "");
+    HivePrefUtil.setString('bgNetworkImageUrl', newModel.networkImageUrl ?? "");
+    HivePrefUtil.setString('bgCurrentBoxImageBase64', newModel.currentBoxImageBase64);
+    HivePrefUtil.setString('bgAssetVideoPath', newModel.assetVideoPath ?? "");
+    HivePrefUtil.setString('bgLocalVideoPath', newModel.localVideoPath ?? "");
+    HivePrefUtil.setString('bgNetworkVideoUrl', newModel.networkVideoUrl ?? "");
   }
 
   Future<void> reloadBackgroundVideo() async {
     String? src;
-    switch (source) {
+    switch (state.source) {
       case BackgroundSource.assetVideo:
-        src = assetVideoPath.value;
+        src = state.assetVideoPath;
         break;
       case BackgroundSource.localVideo:
-        src = localVideoPath.value;
+        src = state.localVideoPath;
         break;
       case BackgroundSource.networkVideo:
-        src = networkVideoUrl.value;
+        src = state.networkVideoUrl;
         break;
       default:
         await _videoPlayer.stop();
         return;
     }
-    if (src.isNotEmpty) {
+    if (src != null && src.isNotEmpty) {
       await _videoPlayer.open(Media(src), play: true);
     }
   }
 
-  void setNone() => source = BackgroundSource.none;
+  void setNone() {
+    _updateState(state.copyWith(source: BackgroundSource.none));
+  }
+
   void setSolid(Color c) {
-    source = BackgroundSource.color;
-    solidColor = c;
+    _updateState(state.copyWith(source: BackgroundSource.color, solidColor: c));
   }
 
   void setGradient(List<Color> colors) {
-    source = BackgroundSource.gradient;
-    gradientColors = colors;
+    _updateState(state.copyWith(source: BackgroundSource.gradient, gradientColors: colors));
+  }
+
+  void setBoxFit(BoxFit fit) {
+    _updateState(state.copyWith(boxFit: fit));
+  }
+
+  void setMaskOpacity(double opacity) {
+    _updateState(state.copyWith(maskOpacity: opacity));
   }
 
   void setAssetImage(String path) {
-    source = BackgroundSource.assetImage;
-    assetImagePath.value = path;
-    localImagePath.value = "";
-    networkImageUrl.value = "";
+    _updateState(
+      state.copyWith(
+        source: BackgroundSource.assetImage,
+        assetImagePath: path,
+        localImagePath: "",
+        networkImageUrl: "",
+      ),
+    );
   }
 
   void setLocalImage(String path) {
-    source = BackgroundSource.localImage;
-    localImagePath.value = path;
-    assetImagePath.value = "";
-    networkImageUrl.value = "";
+    _updateState(
+      state.copyWith(
+        source: BackgroundSource.localImage,
+        localImagePath: path,
+        assetImagePath: "",
+        networkImageUrl: "",
+      ),
+    );
   }
 
   void setNetworkImage(String url) {
-    source = BackgroundSource.networkImage;
-    networkImageUrl.value = url;
-    assetImagePath.value = "";
-    localImagePath.value = "";
+    _updateState(
+      state.copyWith(
+        source: BackgroundSource.networkImage,
+        networkImageUrl: url,
+        assetImagePath: "",
+        localImagePath: "",
+      ),
+    );
+  }
+
+  void setCurrentBoxImage(String base64Str) {
+    _updateState(state.copyWith(currentBoxImageBase64: base64Str));
   }
 
   void setAssetVideo(String path) {
-    source = BackgroundSource.assetVideo;
-    assetVideoPath.value = path;
-    localVideoPath.value = "";
-    networkVideoUrl.value = "";
+    _updateState(
+      state.copyWith(
+        source: BackgroundSource.assetVideo,
+        assetVideoPath: path,
+        localVideoPath: "",
+        networkVideoUrl: "",
+      ),
+    );
   }
 
   void setLocalVideo(String path) {
-    source = BackgroundSource.localVideo;
-    localVideoPath.value = path;
-    assetVideoPath.value = "";
-    networkVideoUrl.value = "";
+    _updateState(
+      state.copyWith(
+        source: BackgroundSource.localVideo,
+        localVideoPath: path,
+        assetVideoPath: "",
+        networkVideoUrl: "",
+      ),
+    );
   }
 
   void setNetworkVideo(String url) {
-    source = BackgroundSource.networkVideo;
-    networkVideoUrl.value = url;
-    assetVideoPath.value = "";
-    localVideoPath.value = "";
+    _updateState(
+      state.copyWith(
+        source: BackgroundSource.networkVideo,
+        networkVideoUrl: url,
+        assetVideoPath: "",
+        localVideoPath: "",
+      ),
+    );
+  }
+
+  void importFromJson(Map<String, dynamic> json) {
+    final gradientHexStr = json["gradientHexList"] ?? "0xff141e30,0xff243b55,0xff141e30";
+    final colors = gradientHexStr.toString().split(",").map((s) => Color(int.parse(s))).toList();
+
+    final model = BackgroundConfigModel(
+      source: bgSourceFromString(json["source"] ?? 'none'),
+      boxFit: BoxFit.values.firstWhere((e) => e.name == json["boxFit"], orElse: () => BoxFit.cover),
+      maskOpacity: (json["maskOpacity"] ?? 0.35).toDouble(),
+      solidColor: Color(json["solidColorHex"] ?? 0xff141e30),
+      gradientColors: colors,
+      assetImagePath: json["assetImagePath"],
+      localImagePath: json["localImagePath"],
+      networkImageUrl: json["networkImageUrl"],
+      currentBoxImageBase64: json["currentBoxImage"] ?? "",
+      assetVideoPath: json["assetVideoPath"],
+      localVideoPath: json["localVideoPath"],
+      networkVideoUrl: json["networkVideoUrl"],
+    );
+    _updateState(model);
   }
 
   Map<String, dynamic> toJson() {
     return {
-      "source": sourceStr.value,
-      "boxFit": boxFitStr.value,
-      "maskOpacity": maskOpacity.value,
-      "solidColorHex": solidColorHex.value,
-      "gradientHexList": gradientHexList.value,
-      "assetImagePath": assetImagePath.value,
-      "localImagePath": localImagePath.value,
-      "networkImageUrl": networkImageUrl.value,
-      "currentBoxImage": currentBoxImage.value,
-      "assetVideoPath": assetVideoPath.value,
-      "localVideoPath": localVideoPath.value,
-      "networkVideoUrl": networkVideoUrl.value,
+      "source": bgSourceToString(state.source),
+      "boxFit": state.boxFit.name,
+      "maskOpacity": state.maskOpacity,
+      "solidColorHex": state.solidColor.toHex(),
+      "gradientHexList": state.gradientColors.map((c) => c.toHex()).join(","),
+      "assetImagePath": state.assetImagePath ?? "",
+      "localImagePath": state.localImagePath ?? "",
+      "networkImageUrl": state.networkImageUrl ?? "",
+      "currentBoxImage": state.currentBoxImageBase64,
+      "assetVideoPath": state.assetVideoPath ?? "",
+      "localVideoPath": state.localVideoPath ?? "",
+      "networkVideoUrl": state.networkVideoUrl ?? "",
     };
-  }
-
-  void fromJson(Map<String, dynamic> json) {
-    sourceStr.value = json["source"] ?? bgSourceToString(BackgroundSource.none);
-    boxFitStr.value = json["boxFit"] ?? BoxFit.cover.name;
-    maskOpacity.value = (json["maskOpacity"] ?? 0.35).toDouble();
-    solidColorHex.value = json["solidColorHex"] ?? 0xff141e30;
-    gradientHexList.value = json["gradientHexList"] ?? "0xff141e30,0xff243b55,0xff141e30";
-    assetImagePath.value = json["assetImagePath"] ?? "";
-    localImagePath.value = json["localImagePath"] ?? "";
-    networkImageUrl.value = json["networkImageUrl"] ?? "";
-    currentBoxImage.value = json["currentBoxImage"] ?? "";
-    assetVideoPath.value = json["assetVideoPath"] ?? "";
-    localVideoPath.value = json["localVideoPath"] ?? "";
-    networkVideoUrl.value = json["networkVideoUrl"] ?? "";
-  }
-
-  static Map<String, dynamic> extractConfig(Map<String, dynamic>? rootConfig) {
-    final bg = rootConfig?["background"] as Map<String, dynamic>? ?? {};
-    return bg;
-  }
-
-  static Map<String, dynamic> mergeConfig(Map<String, dynamic> rootConfig, Map<String, dynamic> updateFields) {
-    rootConfig["background"] = updateFields;
-    return rootConfig;
-  }
-
-  @override
-  void onClose() {
-    _configStream.close();
-    _videoPlayer.dispose();
-    super.onClose();
   }
 }

@@ -38,7 +38,7 @@ android {
 
     defaultConfig {
         applicationId = "com.mystyle.purelive"
-        minSdk = localProperties.getProperty("flutter.minSdkVersion")?.toInt()
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

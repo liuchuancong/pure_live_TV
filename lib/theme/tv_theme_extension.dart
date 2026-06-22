@@ -4,15 +4,16 @@ import 'package:flutter/material.dart';
 class TvThemeExtension extends ThemeExtension<TvThemeExtension> {
   final TvThemeData theme;
 
-  const TvThemeExtension(this.theme);
+  const TvThemeExtension({required this.theme});
 
   @override
   TvThemeExtension copyWith({TvThemeData? theme}) {
-    return TvThemeExtension(theme ?? this.theme);
+    return TvThemeExtension(theme: theme ?? this.theme);
   }
 
   @override
-  TvThemeExtension lerp(covariant ThemeExtension<TvThemeExtension>? other, double t) {
+  TvThemeExtension lerp(ThemeExtension<TvThemeExtension>? other, double t) {
+    if (other is! TvThemeExtension) return this;
     return this;
   }
 }

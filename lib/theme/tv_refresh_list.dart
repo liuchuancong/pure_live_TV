@@ -7,8 +7,6 @@ class TvRefreshList extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final Future<void> Function()? onLoadMore;
   final String memoryKey;
-  final Header? header;
-  final Footer? footer;
 
   const TvRefreshList({
     super.key,
@@ -16,8 +14,6 @@ class TvRefreshList extends StatelessWidget {
     required this.onRefresh,
     this.onLoadMore,
     required this.memoryKey,
-    this.header,
-    this.footer,
   });
 
   @override
@@ -26,8 +22,32 @@ class TvRefreshList extends StatelessWidget {
       memoryKey: memoryKey,
       verticalEdge: DpadEdgeBehavior.stop,
       child: EasyRefresh(
-        header: header ?? const ClassicHeader(triggerOffset: 70, clamping: true, position: IndicatorPosition.above),
-        footer: footer ?? ClassicFooter(triggerOffset: 70, clamping: true, position: IndicatorPosition.behind),
+        header: ClassicHeader(
+          triggerOffset: 50,
+          clamping: true,
+          position: IndicatorPosition.locator,
+          dragText: '',
+          armedText: '',
+          readyText: '',
+          processedText: '',
+          noMoreText: '',
+          failedText: '刷新失败',
+          showText: true,
+          showMessage: false,
+        ),
+        footer: ClassicFooter(
+          triggerOffset: 50,
+          clamping: true,
+          position: IndicatorPosition.locator,
+          dragText: '',
+          armedText: '',
+          readyText: '',
+          processedText: '',
+          noMoreText: '没有更多频道了',
+          failedText: '加载失败',
+          showText: true,
+          showMessage: false,
+        ),
         onRefresh: onRefresh,
         onLoad: onLoadMore,
         child: child,

@@ -3,8 +3,7 @@ import 'tv_settings_menu_tile.dart';
 import 'tv_settings_switch_tile.dart';
 import 'tv_settings_slider_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/get/get.dart';
-import 'package:pure_live/common/style/app_text_styles.dart';
+import 'package:pure_live/theme/styles/styles.dart';
 
 extension AppLayoutFactory on BuildContext {
   Widget buildGroupTitle(String text) {
@@ -13,9 +12,9 @@ extension AppLayoutFactory on BuildContext {
       padding: const EdgeInsets.only(left: 8, bottom: 8),
       child: Text(
         text,
-        style: AppTextStyles.t12.copyWith(
+        style: AppTextStyles.t32.copyWith(
           fontWeight: FontWeight.bold,
-          color: theme.colorScheme.primary.withOpacity(0.65),
+          color: theme.colorScheme.primary.withValues(alpha: 0.65),
           letterSpacing: 0.5,
         ),
       ),
@@ -28,7 +27,7 @@ extension AppLayoutFactory on BuildContext {
 
   Widget buildSwitchTile({
     required String title,
-    required RxBool value,
+    required bool value,
     IconData? icon,
     String? subtitle,
     Color? iconColor,

@@ -3,34 +3,38 @@ import 'themes/dark_theme.dart';
 import 'themes/blue_theme.dart';
 import 'themes/anime_theme.dart';
 import 'themes/cyber_theme.dart';
-import 'package:pure_live/common/index.dart';
+import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class TvThemeController extends GetxController {
-  static TvThemeController get to => Get.find();
+part 'tv_theme_controller.g.dart';
 
-  final RxString currentThemeId = hiveString('tvThemeId', darkTvTheme.id);
-
-  TvThemeData get currentTheme {
-    return themes.firstWhere((e) => e.id == currentThemeId.value, orElse: () => darkTvTheme);
-  }
-
+@riverpod
+class TvThemeController extends _$TvThemeController {
   final List<TvThemeData> themes = [darkTvTheme, blueTvTheme, animeTvTheme, cyberTvTheme];
 
+  @override
+  TvThemeData build() {
+    final themeId = HivePrefUtil.getString('tvThemeId') ?? darkTvTheme.id;
+    return themes.firstWhere((e) => e.id == themeId, orElse: () => darkTvTheme);
+  }
+
   void switchTheme(TvThemeData theme) {
-    currentThemeId.value = theme.id;
+    HivePrefUtil.setString('tvThemeId', theme.id);
+    state = theme;
   }
 
   void switchById(String id) {
-    final theme = themes.firstWhere((e) => e.id == id, orElse: () => darkTvTheme);
-    currentThemeId.value = theme.id;
+    final targetTheme = themes.firstWhere((e) => e.id == id, orElse: () => darkTvTheme);
+    switchTheme(targetTheme);
+  }
+
+  void importFromJson(Map<String, dynamic> json) {
+    final id = json['currentThemeId'] ?? darkTvTheme.id;
+    switchById(id);
   }
 
   Map<String, dynamic> toJson() {
-    return {'currentThemeId': currentThemeId.value};
-  }
-
-  void fromJson(Map<String, dynamic> json) {
-    currentThemeId.value = json['currentThemeId'] ?? darkTvTheme.id;
+    return {'currentThemeId': state.id};
   }
 
   static Map<String, dynamic> extractConfig(Map<String, dynamic>? rootConfig) {

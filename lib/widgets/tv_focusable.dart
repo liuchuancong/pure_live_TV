@@ -1,55 +1,48 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/theme/tv_theme_x.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
-class TvFocusable extends StatefulWidget {
+class TvFocusable extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
-
   final bool autofocus;
 
   const TvFocusable({super.key, required this.child, this.onTap, this.autofocus = false});
 
   @override
-  State<TvFocusable> createState() => _TvFocusableState();
-}
-
-class _TvFocusableState extends State<TvFocusable> {
-  bool focused = false;
-
-  @override
   Widget build(BuildContext context) {
+    final activeTheme = context.tvTheme;
+
     return DpadFocusable(
-      autofocus: widget.autofocus,
+      autofocus: autofocus,
+      onSelect: onTap,
 
-      onSelect: widget.onTap,
+      onFocusChange: (focused) {
+        if (!focused) return;
 
-      onFocusChange: (value) {
-        setState(() {
-          focused = value;
-        });
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          alignment: 0.2,
+        );
       },
 
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+      builder: (context, state, _) {
+        final isFocused = state.focused;
 
-        transform: Matrix4.identity()..scale(focused ? 1.06 : 1.0),
+        return child
+            .animate(target: isFocused ? 1 : 0, onPlay: (controller) => controller.stop())
+            .scale(begin: const Offset(1, 1), end: const Offset(1, 1.06), duration: 150.ms)
+            .boxShadow(
+              begin: const BoxShadow(color: Colors.transparent),
+              end: BoxShadow(blurRadius: 20, spreadRadius: 2, color: activeTheme.focusColor.withValues(alpha: 0.5)),
+              borderRadius: BorderRadius.circular(16),
+            );
+      },
 
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-
-          boxShadow: focused
-              ? [
-                  BoxShadow(
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: .5),
-                  ),
-                ]
-              : null,
-        ),
-
-        child: widget.child,
-      ),
+      child: const SizedBox.shrink(),
     );
   }
 }
