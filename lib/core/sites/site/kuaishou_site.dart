@@ -6,7 +6,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:collection/collection.dart';
 import 'package:pure_live/core/sites/sites.dart';
 import 'package:pure_live/core/models/index.dart';
-import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/core/network/http_client.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:random_user_agents/random_user_agents.dart';

@@ -4,7 +4,7 @@ import 'package:pure_live/utils/core_log.dart';
 import 'package:pure_live/core/sites/sites.dart';
 import 'package:pure_live/utils/type_utils.dart';
 import 'package:pure_live/core/models/index.dart';
-import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/core/network/http_client.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites/scripts/douyin_sign.dart';
 import 'package:pure_live/core/sites/interface/live_site.dart';

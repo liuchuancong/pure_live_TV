@@ -22,6 +22,6 @@ def generate_dart_export(target_dir: str, output_name: str = "index.dart", recur
 
 if __name__ == "__main__":
     # ========== 这里改你的目录 ==========
-    target_folder = r"C:\Users\XA-158\projects\flutter\pure_live_TV\lib\utils"
+    target_folder = r"C:\Users\XA-158\projects\flutter\pure_live_TV\lib\dialog"
     # ===================================
     generate_dart_export(target_dir=target_folder, recursive=True)

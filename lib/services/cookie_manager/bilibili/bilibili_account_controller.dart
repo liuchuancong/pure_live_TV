@@ -1,5 +1,5 @@
 import '../cookie_controller.dart';
-import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/core/network/http_client.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/core/models/bilibili_user_info/bilibili_user_info.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_model.dart';

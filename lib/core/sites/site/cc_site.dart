@@ -3,7 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:pure_live/utils/core_log.dart';
 import 'package:pure_live/core/sites/sites.dart';
 import 'package:pure_live/core/models/index.dart';
-import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/core/network/http_client.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites/interface/live_site.dart';
 import 'package:pure_live/core/sites/danmaku/empty_danmaku.dart';
