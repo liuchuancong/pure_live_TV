@@ -20,7 +20,7 @@ mixin ServerFixedPageMixin<T> on BaseControllerMixin {
       items: const [],
       currentPage: 1,
       canLoadMore: false,
-      controllerState: state.controllerState.copyWith(pageError: false),
+      controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
     );
     await loadFixedData(1);
   }
@@ -33,6 +33,12 @@ mixin ServerFixedPageMixin<T> on BaseControllerMixin {
 
   Future<void> loadFixedData(int pageKey) async {
     final int pageSize = state.pageSize;
+
+    if (pageKey == firstPageKey) {
+      state = state.copyWith(
+        controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
+      );
+    }
 
     final isNetworkSafe = await checkNetworkBeforeRequest();
     if (!isNetworkSafe) {
@@ -84,13 +90,21 @@ mixin ServerFixedPageMixin<T> on BaseControllerMixin {
         currentPage: pageKey,
         canLoadMore: combinedData.length >= pageSize,
         controllerState: state.controllerState.copyWith(
+          pageLoading: false,
           pageEmpty: (pageKey == 1 && combinedData.isEmpty),
           pageError: false,
         ),
       );
     } catch (e) {
-      handleError(e);
-      state = state.copyWith(currentPage: previousPageSnapshot, controllerState: controllerState);
+      if (e.toString().contains("NoSuchMethodError") && e.toString().contains("'[]'")) {
+        handleError("loginRequired");
+      } else {
+        handleError(e);
+      }
+      state = state.copyWith(
+        currentPage: previousPageSnapshot,
+        controllerState: controllerState.copyWith(pageLoading: false),
+      );
     }
   }
 }

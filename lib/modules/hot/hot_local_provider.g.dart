@@ -58,7 +58,7 @@ final class HotLocalProvider
   }
 }
 
-String _$hotLocalHash() => r'1d0d52858fafe91ef7a2e539ca313d469254772e';
+String _$hotLocalHash() => r'5b3af59c2b8acd33432bdb1079e013e7c56b232c';
 
 final class HotLocalFamily extends $Family
     with

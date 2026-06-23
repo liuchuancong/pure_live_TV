@@ -36,4 +36,8 @@ class HotAll extends _$HotAll with BaseControllerMixin, ServerAllPageMixin<LiveR
   Future<void> loadNextPage() async {
     await loadNextServerAllPage();
   }
+
+  Future<void> refreshData() async {
+    await refreshServerAllData();
+  }
 }

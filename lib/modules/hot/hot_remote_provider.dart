@@ -36,4 +36,8 @@ class HotRemote extends _$HotRemote with BaseControllerMixin, ServerRemotePageMi
   Future<void> loadNextPage() async {
     await loadNextRemotePage();
   }
+
+  Future<void> refreshData() async {
+    await refreshRemoteData();
+  }
 }

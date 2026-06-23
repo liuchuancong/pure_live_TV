@@ -41,4 +41,8 @@ class HotFixed extends _$HotFixed with BaseControllerMixin, ServerFixedPageMixin
   Future<void> loadNextPage() async {
     await loadNextFixedPage();
   }
+
+  Future<void> refreshData() async {
+    await refreshFixedData();
+  }
 }

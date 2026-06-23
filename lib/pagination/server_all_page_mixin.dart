@@ -16,7 +16,7 @@ mixin ServerAllPageMixin<T> on BaseControllerMixin {
       items: const [],
       currentPage: 1,
       canLoadMore: false,
-      controllerState: state.controllerState.copyWith(pageError: false),
+      controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
     );
     await loadServerAllData(1);
   }
@@ -33,6 +33,12 @@ mixin ServerAllPageMixin<T> on BaseControllerMixin {
       return;
     }
 
+    if (pageKey == firstPageKey) {
+      state = state.copyWith(
+        controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
+      );
+    }
+
     final isNetworkSafe = await checkNetworkBeforeRequest();
     if (!isNetworkSafe) {
       state = state.copyWith(controllerState: controllerState);
@@ -43,8 +49,12 @@ mixin ServerAllPageMixin<T> on BaseControllerMixin {
       final List<T> fetchedData = await fetchAllServerData();
       _processServerAllDistribution(fetchedData, pageKey);
     } catch (e) {
-      handleError(e);
-      state = state.copyWith(controllerState: controllerState);
+      if (e.toString().contains("NoSuchMethodError") && e.toString().contains("'[]'")) {
+        handleError("loginRequired");
+      } else {
+        handleError(e);
+      }
+      state = state.copyWith(controllerState: controllerState.copyWith(pageLoading: false));
     }
   }
 
@@ -58,7 +68,8 @@ mixin ServerAllPageMixin<T> on BaseControllerMixin {
         currentPage: 1,
         canLoadMore: false,
         totalCount: 0,
-        controllerState: state.controllerState.copyWith(pageEmpty: true, pageError: false),
+        // 核心修复点：使用 state.controllerState.copyWith 精准更新子模型
+        controllerState: state.controllerState.copyWith(pageLoading: false, pageEmpty: true, pageError: false),
       );
       return;
     }
@@ -81,7 +92,7 @@ mixin ServerAllPageMixin<T> on BaseControllerMixin {
       currentPage: targetPage,
       canLoadMore: endIndex < allItems.length,
       totalCount: allItems.length,
-      controllerState: state.controllerState.copyWith(pageEmpty: false, pageError: false),
+      controllerState: state.controllerState.copyWith(pageLoading: false, pageEmpty: false, pageError: false),
     );
   }
 }

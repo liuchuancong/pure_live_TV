@@ -23,11 +23,19 @@ mixin LocalReactivePageMixin<T> on BaseControllerMixin {
       currentPage: targetPage,
       canLoadMore: freshData.length > endIndex,
       totalCount: freshData.length,
-      controllerState: state.controllerState.copyWith(pageEmpty: chunkItems.isEmpty, pageError: false, errorMsg: ""),
+      controllerState: state.controllerState.copyWith(
+        pageLoading: false,
+        pageEmpty: chunkItems.isEmpty,
+        pageError: false,
+        errorMsg: "",
+      ),
     );
   }
 
   Future<void> refreshLocalData() async {
+    state = state.copyWith(
+      controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
+    );
     onExternalRefresh?.call();
     _processTvDataDistribution(state.allLocalItems, 1);
   }
@@ -47,7 +55,7 @@ mixin LocalReactivePageMixin<T> on BaseControllerMixin {
         currentPage: 1,
         canLoadMore: false,
         totalCount: 0,
-        controllerState: state.controllerState.copyWith(pageEmpty: true, pageError: false),
+        controllerState: state.controllerState.copyWith(pageLoading: false, pageEmpty: true, pageError: false),
       );
       return;
     }
@@ -70,7 +78,7 @@ mixin LocalReactivePageMixin<T> on BaseControllerMixin {
       currentPage: targetPage,
       canLoadMore: endIndex < pool.length,
       totalCount: pool.length,
-      controllerState: state.controllerState.copyWith(pageEmpty: false, pageError: false),
+      controllerState: state.controllerState.copyWith(pageLoading: false, pageEmpty: false, pageError: false),
     );
   }
 }

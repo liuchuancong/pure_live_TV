@@ -15,7 +15,7 @@ mixin ServerRemotePageMixin<T> on BaseControllerMixin {
       items: const [],
       currentPage: 1,
       canLoadMore: false,
-      controllerState: state.controllerState.copyWith(pageError: false),
+      controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
     );
     await loadRemoteData(1);
   }
@@ -28,6 +28,12 @@ mixin ServerRemotePageMixin<T> on BaseControllerMixin {
 
   Future<void> loadRemoteData(int pageKey) async {
     final int pageSize = state.pageSize;
+
+    if (pageKey == firstPageKey) {
+      state = state.copyWith(
+        controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
+      );
+    }
 
     final isNetworkSafe = await checkNetworkBeforeRequest();
     if (!isNetworkSafe) {
@@ -44,13 +50,20 @@ mixin ServerRemotePageMixin<T> on BaseControllerMixin {
         currentPage: pageKey,
         canLoadMore: hasMore,
         controllerState: state.controllerState.copyWith(
+          pageLoading: false,
           pageEmpty: (pageKey == 1 && newItems.isEmpty),
           pageError: false,
         ),
       );
     } catch (e) {
-      handleError(e);
-      state = state.copyWith(controllerState: controllerState);
+      if (e.toString().contains("NoSuchMethodError") && e.toString().contains("'[]'")) {
+        handleError("loginRequired");
+      } else {
+        handleError(e);
+      }
+      state = state.copyWith(
+        controllerState: controllerState.copyWith(pageLoading: false),
+      );
     }
   }
 }

@@ -7,7 +7,6 @@ import 'package:pure_live/widgets/tv_icon_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/pagination/models/base_paged_state.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class BasePagedTvView<T> extends ConsumerStatefulWidget {
   final ProviderBase<BasePagedState<T>> provider;
@@ -35,13 +34,20 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
 
 class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with SingleTickerProviderStateMixin {
   late final AnimationController _rotationController;
-  final ScrollController _internalScrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
     _rotationController = AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    _scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100.sp) {
+      widget.notifier.loadNextPage();
+    }
   }
 
   Future<void> _triggerRefresh() async {
@@ -67,8 +73,9 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
 
   @override
   void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
     _rotationController.dispose();
-    _internalScrollController.dispose();
     super.dispose();
   }
 
@@ -77,20 +84,88 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
     final currentTvTheme = context.tvTheme;
     final state = ref.watch(widget.provider);
 
-    final mappedIspState = PagingState<int, T>(
-      pages: [state.items],
-      keys: [state.currentPage],
-      hasNextPage: state.canLoadMore,
-      isLoading: state.controllerState.pageLoading || state.controllerState.loading,
-      error: state.controllerState.pageError ? state.controllerState.errorMsg : null,
-    );
+    if (state.items.isEmpty && state.controllerState.pageLoading) {
+      return Center(
+        child: SizedBox(
+          width: 48.sp,
+          height: 48.sp,
+          child: CircularProgressIndicator(
+            strokeWidth: 4.sp,
+            valueColor: AlwaysStoppedAnimation<Color>(currentTvTheme.focusColor),
+          ),
+        ),
+      );
+    }
+
+    if (state.items.isEmpty) {
+      if (state.controllerState.notLogin) {
+        return widget.notLoginBuilder != null
+            ? widget.notLoginBuilder!(context)
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.account_circle_outlined, size: 72.sp, color: currentTvTheme.secondaryTextColor),
+                    SizedBox(height: 16.sp),
+                    Text(
+                      "需要登录后访问",
+                      style: TextStyle(fontSize: 24.sp, color: currentTvTheme.primaryTextColor),
+                    ),
+                    SizedBox(height: 24.sp),
+                    TvButton(title: "去登录", size: TvButtonSize.medium, autofocus: true, onTap: () {}),
+                  ],
+                ),
+              );
+      }
+
+      if (state.controllerState.pageError) {
+        return widget.errorBuilder != null
+            ? widget.errorBuilder!(context, state.controllerState.errorMsg, _triggerRefresh)
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.wifi_off_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
+                    SizedBox(height: 16.sp),
+                    Text(
+                      state.controllerState.errorMsg.isEmpty ? "网络加载失败，请重试" : state.controllerState.errorMsg,
+                      style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
+                    ),
+                    SizedBox(height: 24.sp),
+                    TvButton(title: "重新加载", size: TvButtonSize.medium, autofocus: true, onTap: _triggerRefresh),
+                  ],
+                ),
+              );
+      }
+
+      if (state.controllerState.pageEmpty) {
+        return widget.emptyBuilder != null
+            ? widget.emptyBuilder!(context, _triggerRefresh)
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.inbox_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
+                    SizedBox(height: 16.sp),
+                    Text(
+                      "暂无直播间内容",
+                      style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
+                    ),
+                    SizedBox(height: 24.sp),
+                    TvButton(title: "刷新页面", size: TvButtonSize.medium, autofocus: true, onTap: _triggerRefresh),
+                  ],
+                ),
+              );
+      }
+    }
 
     return Column(
       children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: Padding(
-            padding: EdgeInsets.only(right: 16.sp, bottom: 8.sp),
+        DpadRegion(
+          child: Container(
+            alignment: Alignment.centerRight,
+            color: Colors.transparent,
+            padding: EdgeInsets.only(right: 16.sp, bottom: 20.sp),
             child: TvIconButton(
               icon: RotationTransition(turns: _rotationController, child: const Icon(Icons.refresh_rounded)),
               size: TvIconButtonSize.medium,
@@ -99,32 +174,18 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
             ),
           ),
         ),
+
         Expanded(
           child: DpadRegion(
-            child: PagedGridView<int, T>(
-              scrollController: _internalScrollController,
-              state: mappedIspState,
-              fetchNextPage: () {
-                widget.notifier.loadNextPage();
-              },
+            child: GridView.builder(
+              controller: _scrollController,
               gridDelegate: widget.gridDelegate,
-              builderDelegate: PagedChildBuilderDelegate<T>(
-                itemBuilder: widget.itemBuilder,
-                firstPageProgressIndicatorBuilder: (_) => Center(
-                  child: SizedBox(
-                    width: 48.sp,
-                    height: 48.sp,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 4.sp,
-                      valueColor: AlwaysStoppedAnimation<Color>(currentTvTheme.focusColor),
-                    ),
-                  ),
-                ),
-                newPageProgressIndicatorBuilder: (_) => Focus(
-                  canRequestFocus: false,
-                  descendantsAreFocusable: false,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24.sp),
+              itemCount: state.items.length + (state.canLoadMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == state.items.length) {
+                  return Focus(
+                    canRequestFocus: false,
+                    descendantsAreFocusable: false,
                     child: Center(
                       child: SizedBox(
                         width: 36.sp,
@@ -135,86 +196,10 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
                         ),
                       ),
                     ),
-                  ),
-                ),
-                firstPageErrorIndicatorBuilder: (_) {
-                  if (state.controllerState.notLogin) {
-                    return widget.notLoginBuilder != null
-                        ? widget.notLoginBuilder!(context)
-                        : Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.account_circle_outlined,
-                                  size: 72.sp,
-                                  color: currentTvTheme.secondaryTextColor,
-                                ),
-                                SizedBox(height: 16.sp),
-                                Text(
-                                  "需要登录后访问",
-                                  style: TextStyle(fontSize: 24.sp, color: currentTvTheme.primaryTextColor),
-                                ),
-                                SizedBox(height: 24.sp),
-                                TvButton(title: "去登录", size: TvButtonSize.medium, autofocus: true, onTap: () {}),
-                              ],
-                            ),
-                          );
-                  }
-
-                  return widget.errorBuilder != null
-                      ? widget.errorBuilder!(context, state.controllerState.errorMsg, _triggerRefresh)
-                      : Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.wifi_off_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
-                              SizedBox(height: 16.sp),
-                              Text(
-                                state.controllerState.errorMsg.isEmpty ? "网络加载失败，请重试" : state.controllerState.errorMsg,
-                                style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
-                              ),
-                              SizedBox(height: 24.sp),
-                              TvButton(
-                                title: "重新加载",
-                                size: TvButtonSize.medium,
-                                autofocus: true,
-                                onTap: _triggerRefresh,
-                              ),
-                            ],
-                          ),
-                        );
-                },
-                newPageErrorIndicatorBuilder: (_) => Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.sp),
-                  child: Center(
-                    child: TvButton(
-                      title: "加载更多失败，点击重试",
-                      size: TvButtonSize.small,
-                      onTap: () {
-                        widget.notifier.loadNextPage();
-                      },
-                    ),
-                  ),
-                ),
-                noItemsFoundIndicatorBuilder: (_) => widget.emptyBuilder != null
-                    ? widget.emptyBuilder!(context, _triggerRefresh)
-                    : Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.inbox_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
-                            SizedBox(height: 16.sp),
-                            Text(
-                              "暂无直播间内容",
-                              style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
-                            ),
-                            SizedBox(height: 24.sp),
-                            TvButton(title: "刷新页面", size: TvButtonSize.medium, autofocus: true, onTap: _triggerRefresh),
-                          ],
-                        ),
-                      ),
-              ),
+                  );
+                }
+                return widget.itemBuilder(context, state.items[index], index);
+              },
             ),
           ),
         ),

@@ -41,4 +41,8 @@ class HotLocal extends _$HotLocal with BaseControllerMixin, LocalReactivePageMix
   Future<void> loadNextPage() async {
     await loadNextLocalPage();
   }
+
+  Future<void> refreshData() async {
+    await refreshLocalData();
+  }
 }
