@@ -3,16 +3,16 @@ import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'dart:developer' as developer;
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:pure_live/common/index.dart';
-import 'package:pure_live/model/live_category.dart';
-import 'package:pure_live/model/live_anchor_item.dart';
-import 'package:pure_live/plugins/fake_useragent.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/model/live_play_quality.dart';
-import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/danmaku/empty_danmaku.dart';
+import 'package:collection/collection.dart';
+import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
+import 'package:random_user_agents/random_user_agents.dart';
+import 'package:pure_live/core/sites/interface/live_site.dart';
+import 'package:pure_live/core/sites/danmaku/empty_danmaku.dart';
+import 'package:pure_live/core/sites/interface/live_danmaku.dart';
 
 class KuaishowSite implements LiveSite {
   @override
@@ -131,7 +131,7 @@ class KuaishowSite implements LiveSite {
 
   @override
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
-    var api = category.areaId!.length < 7
+    var api = category.areaId.length < 7
         ? "https://live.kuaishou.com/live_api/gameboard/list"
         : "https://live.kuaishou.com/live_api/non-gameboard/list";
     var result = await HttpClient.instance.getJson(
@@ -320,16 +320,15 @@ class KuaishowSite implements LiveSite {
     headers['cookie'] = cookie;
     var url = "https://live.kuaishou.com/u/$roomId";
     var mHeaders = headers;
-    var fakeUseragent = FakeUserAgent.getRandomUserAgent();
-    mHeaders['User-Agent'] = fakeUseragent['userAgent'];
-    mHeaders['sec-ch-ua'] = 'Google Chrome;v=${fakeUseragent['v']}, Chromium;v=${fakeUseragent['v']}, Not=A?Brand;v=24';
-    mHeaders['sec-ch-ua-platform'] = fakeUseragent['device'];
+    String fakeUseragent = RandomUserAgents((ua) => ua.contains("Windows")).getUserAgent();
+
+    mHeaders['User-Agent'] = fakeUseragent;
     mHeaders['sec-fetch-dest'] = 'document';
     mHeaders['sec-fetch-mode'] = 'navigate';
     mHeaders['sec-fetch-site'] = 'same-origin';
     mHeaders['sec-fetch-user'] = '?1';
-    if (SettingsService.to.cookieManager.kuaishouCookie.v.isNotEmpty) {
-      mHeaders['cookie'] = SettingsService.to.cookieManager.kuaishouCookie.v;
+    if (SettingsService.to.cookieState.kuaishouCookie.isNotEmpty) {
+      mHeaders['cookie'] = SettingsService.to.cookieState.kuaishouCookie;
     }
 
     mHeaders['accept'] =
@@ -368,13 +367,11 @@ class KuaishowSite implements LiveSite {
       );
     } catch (e) {
       LiveRoom liveRoom =
-          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+          SettingsService.to.favState.favoriteRooms.firstWhereOrNull(
             (r) => r.roomId == roomId && r.platform == platform,
           ) ??
           LiveRoom(roomId: roomId, platform: platform);
-
-      liveRoom.liveStatus = LiveStatus.offline;
-      liveRoom.status = false;
+      liveRoom = liveRoom.copyWith(liveStatus: LiveStatus.offline, status: false);
       return liveRoom;
     }
   }

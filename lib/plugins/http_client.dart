@@ -41,11 +41,11 @@ class HttpClient {
         createHttpClient: () {
           final client = io.HttpClient();
           client.findProxy = (uri) {
-            final proxyCtrl = SettingsService.to.proxy;
-            if (proxyCtrl.enableAppProxy.value && proxyCtrl.appProxyHost.value.trim().isNotEmpty) {
+            final proxyCtrl = SettingsService.to.proxyState;
+            if (proxyCtrl.enableAppProxy && proxyCtrl.appProxyHost.trim().isNotEmpty) {
               return 'PROXY '
-                  '${proxyCtrl.appProxyHost.value.trim()}:'
-                  '${proxyCtrl.appProxyPort.value}';
+                  '${proxyCtrl.appProxyHost.trim()}:'
+                  '${proxyCtrl.appProxyPort}';
             }
             return 'DIRECT';
           };

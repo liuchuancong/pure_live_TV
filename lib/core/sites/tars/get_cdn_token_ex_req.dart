@@ -1,5 +1,5 @@
-import 'package:pure_live/core/tars/huya_user_id.dart';
 import 'package:pure_live/pkg/tars/codec/tars_struct.dart';
+import 'package:pure_live/core/sites/tars/huya_user_id.dart';
 import 'package:pure_live/pkg/tars/codec/tars_displayer.dart';
 import 'package:pure_live/pkg/tars/codec/tars_input_stream.dart';
 import 'package:pure_live/pkg/tars/codec/tars_output_stream.dart';

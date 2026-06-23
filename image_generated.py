@@ -15,13 +15,13 @@ def generate_dart_export(target_dir: str, output_name: str = "index.dart", recur
             break
 
     out_path = os.path.join(target_dir, output_name)
-    content = "// Auto generate export file\n" + "\n".join(exports)
+    content = "\n".join(exports)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(content)
     print(f"✅ 生成完成：{out_path}，共 {len(exports)} 条导出")
 
 if __name__ == "__main__":
     # ========== 这里改你的目录 ==========
-    target_folder = "./models"
+    target_folder = r"C:\Users\XA-158\projects\flutter\pure_live_TV\lib\utils"
     # ===================================
     generate_dart_export(target_dir=target_folder, recursive=True)

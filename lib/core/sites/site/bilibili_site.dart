@@ -1,13 +1,14 @@
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'package:collection/collection.dart';
+import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/utils/type_utils.dart';
+import 'package:pure_live/core/models/index.dart';
 import 'package:pure_live/plugins/http_client.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites/interface/live_site.dart';
-import 'package:pure_live/core/models/live_area/live_area.dart';
 import 'package:pure_live/core/sites/interface/live_danmaku.dart';
 import 'package:pure_live/core/sites/danmaku/bilibili_danmaku.dart';
-import 'package:pure_live/core/models/live_category/live_category.dart';
-import 'package:pure_live/core/models/live_message/live_message_model.dart';
-import 'package:pure_live/core/models/live_anchor_item/live_anchor_item.dart';
 
 class BiliBiliSite implements LiveSite {
   @override
@@ -15,8 +16,8 @@ class BiliBiliSite implements LiveSite {
 
   @override
   String name = "哔哩哔哩直播";
-  String get cookie => SettingsService.to.cookieManager.bilibiliCookie.v;
-  int get userId => SettingsService.to.cookieManager.bilibiliUid.v;
+  String get cookie => SettingsService.to.cookieState.bilibiliCookie;
+  int get userId => SettingsService.to.cookieState.bilibiliUid;
   @override
   LiveDanmaku getDanmaku() => BiliBiliDanmaku();
 
@@ -380,13 +381,11 @@ class BiliBiliSite implements LiveSite {
       );
     } catch (e) {
       LiveRoom liveRoom =
-          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+          SettingsService.to.favState.favoriteRooms.firstWhereOrNull(
             (r) => r.roomId == roomId && r.platform == platform,
           ) ??
           LiveRoom(roomId: roomId, platform: platform);
-
-      liveRoom.liveStatus = LiveStatus.offline;
-      liveRoom.status = false;
+      liveRoom = liveRoom.copyWith(liveStatus: LiveStatus.offline, status: false);
       return liveRoom;
     }
   }

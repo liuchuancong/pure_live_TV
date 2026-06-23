@@ -1,13 +1,13 @@
 import 'dart:convert';
-import 'package:pure_live/common/index.dart';
-import 'package:pure_live/model/live_category.dart';
-import 'package:pure_live/core/common/core_log.dart';
-import 'package:pure_live/model/live_anchor_item.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/model/live_play_quality.dart';
-import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/danmaku/empty_danmaku.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
+import 'package:collection/collection.dart';
+import 'package:pure_live/utils/core_log.dart';
+import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/sites/interface/live_site.dart';
+import 'package:pure_live/core/sites/danmaku/empty_danmaku.dart';
+import 'package:pure_live/core/sites/interface/live_danmaku.dart';
 
 class CCSite implements LiveSite {
   @override
@@ -122,7 +122,7 @@ class CCSite implements LiveSite {
       cdn.forEach((line, lineValue) {
         if (priority.contains(line)) {
           if (isLiveStream) {
-            lines.add('${detail.link!}&$lineValue');
+            lines.add('${detail.link}&$lineValue');
           } else {
             lines.add(lineValue.toString());
           }
@@ -203,13 +203,11 @@ class CCSite implements LiveSite {
       );
     } catch (e) {
       LiveRoom liveRoom =
-          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+          SettingsService.to.favState.favoriteRooms.firstWhereOrNull(
             (r) => r.roomId == roomId && r.platform == platform,
           ) ??
           LiveRoom(roomId: roomId, platform: platform);
-
-      liveRoom.liveStatus = LiveStatus.offline;
-      liveRoom.status = false;
+      liveRoom = liveRoom.copyWith(liveStatus: LiveStatus.offline, status: false);
       return liveRoom;
     }
   }

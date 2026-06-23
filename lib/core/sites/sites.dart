@@ -4,7 +4,6 @@ import 'site/douyin_site.dart';
 import 'interface/live_site.dart';
 import 'package:collection/collection.dart';
 import 'package:pure_live/core/sites/site/cc_site.dart';
-import 'package:pure_live/core/sites/site/iptv_site.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites/site/bilibili_site.dart';
 import 'package:pure_live/core/sites/site/kuaishou_site.dart';
@@ -25,7 +24,6 @@ class Sites {
     Site(id: "douyin", name: "抖音", logo: "assets/images/douyin.png", liveSite: DouyinSite()),
     Site(id: "kuaishou", name: "快手", logo: "assets/images/kuaishou.png", liveSite: KuaishowSite()),
     Site(id: "cc", name: "网易CC", logo: "assets/images/cc.png", liveSite: CCSite()),
-    Site(id: "iptv", name: "IPTV", logo: "assets/images/logo.png", liveSite: IptvSite()),
   ];
 
   static Site of(String id) {
@@ -33,7 +31,7 @@ class Sites {
   }
 
   List<Site> availableSites({bool containsAll = false}) {
-    final List<String> savedIds = SettingsService.to.fav.hotAreasList.v;
+    final List<String> savedIds = SettingsService.to.favState.hotAreasList;
 
     List<Site> result = [];
     for (String id in savedIds) {
@@ -43,7 +41,7 @@ class Sites {
       }
     }
     if (containsAll) {
-      result.insert(0, Site(id: "all", name: i18n("site_all"), logo: "assets/images/all.png", liveSite: LiveSite()));
+      result.insert(0, Site(id: "all", name: "全部", logo: "assets/images/all.png", liveSite: LiveSite()));
     }
     return result;
   }

@@ -12,7 +12,7 @@ class LogSettingsController extends _$LogSettingsController {
   static LogSettingsController get to => SettingsService.to.log;
   @override
   LogSettingsModel build() {
-    ref.listen(logSettingsControllerProvider.select((s) => s.storedEnableLog), (_, __) {
+    ref.listen(logSettingsControllerProvider.select((s) => s.storedEnableLog), (_, _) {
       Log.updateLogStatus();
     });
 

@@ -1,15 +1,15 @@
 import 'dart:math';
 import 'dart:convert';
-import 'package:pure_live/common/index.dart';
+import 'package:collection/collection.dart';
+import 'package:pure_live/core/sites/sites.dart';
 import 'package:html_unescape/html_unescape.dart';
-import 'package:pure_live/model/live_category.dart';
-import 'package:pure_live/model/live_anchor_item.dart';
-import 'package:pure_live/core/scripts/douyu_sign.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/model/live_play_quality.dart';
-import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/danmaku/douyu_danmaku.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/sites/scripts/douyu_sign.dart';
+import 'package:pure_live/core/sites/interface/live_site.dart';
+import 'package:pure_live/core/sites/danmaku/douyu_danmaku.dart';
+import 'package:pure_live/core/sites/interface/live_danmaku.dart';
 
 class DouyuSite implements LiveSite {
   @override
@@ -139,7 +139,7 @@ class DouyuSite implements LiveSite {
 
     List<String> urls = [];
     for (var item in data.cdns) {
-      var url = await getPlayUrl(detail.roomId!, args, data.rate, item);
+      var url = await getPlayUrl(detail.roomId, args, data.rate, item);
       if (url.isNotEmpty) {
         urls.add(url);
       }
@@ -247,13 +247,11 @@ class DouyuSite implements LiveSite {
       );
     } catch (e) {
       LiveRoom liveRoom =
-          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+          SettingsService.to.favState.favoriteRooms.firstWhereOrNull(
             (r) => r.roomId == roomId && r.platform == platform,
           ) ??
           LiveRoom(roomId: roomId, platform: platform);
-
-      liveRoom.liveStatus = LiveStatus.offline;
-      liveRoom.status = false;
+      liveRoom = liveRoom.copyWith(liveStatus: LiveStatus.offline, status: false);
       return liveRoom;
     }
   }
@@ -340,7 +338,7 @@ class DouyuSite implements LiveSite {
   @override
   Future<bool> getLiveStatus({required String platform, required String roomId}) async {
     var detail = await getRoomDetail(roomId: roomId, platform: platform);
-    return detail.status!;
+    return detail.status;
   }
 
   Future<String> getPlayArgs(String html, String rid) async {

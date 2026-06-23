@@ -25,7 +25,6 @@ class BackupController extends _$BackupController {
       'favorite': s.fav.toJson(),
       'history': s.history.toJson(),
       'webdav': s.webDav.toJson(),
-      'iptv': s.iptv.toJson(),
       'cookie': s.cookieManager.toJson(),
       'proxy': s.proxy.toJson(),
       'exit': s.exit.toJson(),
@@ -48,7 +47,6 @@ class BackupController extends _$BackupController {
     if (data.containsKey('favorite')) s.fav.importFromJson(Map<String, dynamic>.from(data['favorite']));
     if (data.containsKey('history')) s.history.importFromJson(Map<String, dynamic>.from(data['history']));
     if (data.containsKey('webdav')) s.webDav.importFromJson(Map<String, dynamic>.from(data['webdav']));
-    if (data.containsKey('iptv')) s.iptv.importFromJson(Map<String, dynamic>.from(data['iptv']));
     if (data.containsKey('cookie')) s.cookieManager.importFromJson(Map<String, dynamic>.from(data['cookie']));
     if (data.containsKey('proxy')) s.proxy.importFromJson(Map<String, dynamic>.from(data['proxy']));
     if (data.containsKey('exit')) s.exit.importFromJson(Map<String, dynamic>.from(data['exit']));

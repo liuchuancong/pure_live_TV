@@ -1,14 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/cache/cache_model.dart';
 import 'package:pure_live/services/webdav/webdav_model.dart';
-import 'package:pure_live/services/db_service/db_service.dart';
 import 'package:pure_live/services/cache/cache_controller.dart';
-import 'package:pure_live/services/db_service/db_controller.dart';
-import 'package:pure_live/services/iptv/iptv_settings_model.dart';
 import 'package:pure_live/services/webdav/webdav_controller.dart';
 import 'package:pure_live/services/startUp/startup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_model.dart';
-import 'package:pure_live/services/iptv/iptv_settings_controller.dart';
 import 'package:pure_live/services/history_settings/history_model.dart';
 import 'package:pure_live/services/log_settings/log_settings_model.dart';
 import 'package:pure_live/services/app_settings/app_settings_model.dart';
@@ -62,8 +58,6 @@ class SettingsService {
   AppSettingsModel get appState => _container.read(appSettingsControllerProvider);
   AppSettingsController get app => _container.read(appSettingsControllerProvider.notifier);
 
-  // dbService
-  DbService get dbService => _container.read(dbServiceProvider);
   // exit
   ExitSettingsModel get exitState => _container.read(exitSettingsControllerProvider);
   ExitSettingsController get exit => _container.read(exitSettingsControllerProvider.notifier);
@@ -88,9 +82,6 @@ class SettingsService {
   // webDav
   WebDavModel get webDavState => _container.read(webDavControllerProvider);
   WebDavController get webDav => _container.read(webDavControllerProvider.notifier);
-
-  IptvSettingsModel get iptvState => _container.read(iptvSettingsControllerProvider);
-  IptvSettingsController get iptv => _container.read(iptvSettingsControllerProvider.notifier);
   // iptv
   VolumeSettingsModel get volumeState => _container.read(volumeSettingsControllerProvider);
   VolumeSettingsController get volume => _container.read(volumeSettingsControllerProvider.notifier);

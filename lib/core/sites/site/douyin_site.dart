@@ -1,5 +1,16 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'package:pure_live/utils/core_log.dart';
+import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/utils/type_utils.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/sites/scripts/douyin_sign.dart';
+import 'package:pure_live/core/sites/interface/live_site.dart';
+import 'package:pure_live/core/sites/danmaku/douyin_danmaku.dart';
+import 'package:pure_live/core/sites/interface/live_danmaku.dart';
+import 'package:pure_live/core/sites/danmaku/douyin_request_params.dart';
 
 class DouyinSite implements LiveSite {
   @override
@@ -36,8 +47,8 @@ class DouyinSite implements LiveSite {
       if (cookie.isNotEmpty) {
         headers["cookie"] = cookie;
         return headers;
-      } else if (SettingsService.to.cookieManager.douyinCookie.v.isNotEmpty) {
-        cookie = SettingsService.to.cookieManager.douyinCookie.v;
+      } else if (SettingsService.to.cookieState.douyinCookie.isNotEmpty) {
+        cookie = SettingsService.to.cookieState.douyinCookie;
         headers["cookie"] = cookie;
         return headers;
       }
@@ -146,9 +157,9 @@ class DouyinSite implements LiveSite {
 
   @override
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
-    var ids = category.areaId?.split(',');
-    var partitionId = ids?[0];
-    var partitionType = ids?[1];
+    var ids = category.areaId.split(',');
+    var partitionId = ids[0];
+    var partitionType = ids[1];
 
     String serverUrl = "https://live.douyin.com/webcast/web/partition/detail/room/v2/";
     var uri = Uri.parse(serverUrl).replace(
@@ -660,7 +671,7 @@ class DouyinSite implements LiveSite {
   @override
   Future<bool> getLiveStatus({required String platform, required String roomId}) async {
     var result = await getRoomDetail(roomId: roomId, platform: platform);
-    return result.status!;
+    return result.status;
   }
 
   @override

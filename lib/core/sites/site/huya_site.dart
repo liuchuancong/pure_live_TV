@@ -1,26 +1,25 @@
 import 'dart:math';
-import 'dart:async';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
-import 'package:pure_live/common/index.dart';
+import 'package:pure_live/utils/log.dart';
+import 'package:collection/collection.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:pure_live/core/common/log.dart';
+import 'package:pure_live/utils/core_log.dart';
+import 'package:pure_live/core/sites/sites.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:pure_live/plugins/race_http.dart';
-import 'package:pure_live/model/live_category.dart';
-import 'package:pure_live/core/common/core_log.dart';
-import 'package:pure_live/core/tars/huya_user_id.dart';
-import 'package:pure_live/model/live_anchor_item.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/model/live_play_quality.dart';
-import 'package:pure_live/core/interface/live_site.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:pure_live/core/danmaku/huya_danmaku.dart';
-import 'package:pure_live/common/utils/githup_mirror.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/plugins/http_client.dart';
+import 'package:pure_live/utils/githup_mirror.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/pkg/tars/net/base_tars_http.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/core/tars/get_cdn_token_ex_req.dart';
-import 'package:pure_live/core/tars/get_cdn_token_ex_resp.dart';
+import 'package:pure_live/core/sites/tars/huya_user_id.dart';
+import 'package:pure_live/core/sites/interface/live_site.dart';
+import 'package:pure_live/core/sites/danmaku/huya_danmaku.dart';
+import 'package:pure_live/core/sites/interface/live_danmaku.dart';
+import 'package:pure_live/core/sites/tars/get_cdn_token_ex_req.dart';
+import 'package:pure_live/core/sites/tars/get_cdn_token_ex_resp.dart';
 
 class HuyaSite implements LiveSite {
   @override
@@ -90,7 +89,7 @@ class HuyaSite implements LiveSite {
         "gameId": category.areaId,
         "page": page,
       },
-      header: {"user-agent": kUserAgent, "Cookie": SettingsService.to.cookieManager.huyaCookie.v},
+      header: {"user-agent": kUserAgent, "Cookie": SettingsService.to.cookieState.huyaCookie},
     );
     var result = json.decode(resultText);
     var items = <LiveRoom>[];
@@ -189,7 +188,7 @@ class HuyaSite implements LiveSite {
         queryParameters: {"m": "LiveList", "do": "getLiveListByPage", "tagAll": 0, "page": page},
         header: {
           "user-agent": kUserAgent,
-          "Cookie": SettingsService.to.cookieManager.huyaCookie.v,
+          "Cookie": SettingsService.to.cookieState.huyaCookie,
           "Origin": "https://www.huya.com",
           "Referer": "https://www.huya.com/",
         },
@@ -238,7 +237,7 @@ class HuyaSite implements LiveSite {
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-site',
         "user-agent": kUserAgent,
-        "Cookie": SettingsService.to.cookieManager.huyaCookie.v,
+        "Cookie": SettingsService.to.cookieState.huyaCookie,
       },
     );
     var result = json.decode(resultText);
@@ -343,13 +342,11 @@ class HuyaSite implements LiveSite {
       );
     } else {
       LiveRoom liveRoom =
-          SettingsService.to.fav.favoriteRooms.v.firstWhereOrNull(
+          SettingsService.to.favState.favoriteRooms.firstWhereOrNull(
             (r) => r.roomId == roomId && r.platform == platform,
           ) ??
           LiveRoom(roomId: roomId, platform: platform);
-
-      liveRoom.liveStatus = LiveStatus.offline;
-      liveRoom.status = false;
+      liveRoom = liveRoom.copyWith(liveStatus: LiveStatus.offline, status: false);
       return liveRoom;
     }
   }
@@ -506,8 +503,7 @@ class HuyaSite implements LiveSite {
         }
       }
     } catch (e) {
-      // 在这里可以选择打印错误信息或采取其他措施
-      debugPrint('An error occurred: $e');
+      Log.d('An error occurred: $e');
     }
     // 如果没有找到有效的UID，则生成一个随机数
     final random = Random();
@@ -516,7 +512,7 @@ class HuyaSite implements LiveSite {
 
   String processAnticode(String anticode, String streamName) {
     var query = Uri.splitQueryString(anticode);
-    final uid = int.parse(getUUid(SettingsService.to.cookieManager.huyaCookie.v, streamName));
+    final uid = int.parse(getUUid(SettingsService.to.cookieState.huyaCookie, streamName));
     query["ctype"] = "huya_live";
     query["t"] = "100";
 

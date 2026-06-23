@@ -11,9 +11,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   dpad: ^3.0.0
   dio: ^5.9.2
+  html_unescape: ^2.0.0
+  cookie_jar: ^4.0.8 # Cookie持久化存储
   pretty_dio_logger: ^1.4.0
+  dio_cookie_manager: ^3.4.0
   infinite_scroll_pagination: ^5.1.1
+  random_user_agents: ^1.0.25
   easy_refresh: ^3.5.1
+  timezone: ^0.11.0
   cached_network_image: ^3.4.1
   go_router: ^17.3.0
   go_transitions: ^0.8.3
@@ -64,10 +69,21 @@ dependencies:
   path_provider: ^2.1.6
   flutter_animate: ^4.5.2
   rxdart: ^0.28.0
+  open_filex: ^4.7.0
+  file_picker: ^11.0.2
   flutter_cache_manager: ^3.4.1
   hexcolor: ^3.1.3
   flutter_screenutil_plus: ^1.5.0
+  url_launcher: ^6.1.12
+  file: ^7.0.0
   intl: ^0.20.2
+  qr_flutter: ^4.1.0 
+  flutter_markdown_plus: ^1.0.7
+  permission_handler: ^12.0.1
+  dart_quickjs:
+    git: https://github.com/liuchuancong/dart_quickjs.git # QuickJS引擎
+dependency_overrides:
+  win32: ^5.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
