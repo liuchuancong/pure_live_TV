@@ -112,9 +112,6 @@ dev_dependencies:
   # 代码生成核心
   build_runner: ^2.15.0 # Dart代码生成执行器
 
-  # 数据库生成
-  drift_dev: ^2.33.0 # Drift SQL数据库代码生成
-
   # Hive数据库模型生成
   hive_ce_generator: ^1.11.2
 
