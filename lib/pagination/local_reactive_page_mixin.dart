@@ -5,6 +5,9 @@ mixin LocalReactivePageMixin<T> on BaseControllerMixin {
   BasePagedState<T> get state;
   set state(BasePagedState<T> value);
 
+  int get firstPageKey => 1;
+  int get defaultPageSize => 20;
+
   void Function()? onExternalRefresh;
 
   void updateLocalReactivePool(List<T> freshData) {
@@ -20,11 +23,7 @@ mixin LocalReactivePageMixin<T> on BaseControllerMixin {
       currentPage: targetPage,
       canLoadMore: freshData.length > endIndex,
       totalCount: freshData.length,
-      controllerState: state.controllerState.copyWith(
-        pageEmpty: chunkItems.isEmpty,
-        pageError: false,
-        errorMsg: "",
-      ),
+      controllerState: state.controllerState.copyWith(pageEmpty: chunkItems.isEmpty, pageError: false, errorMsg: ""),
     );
   }
 

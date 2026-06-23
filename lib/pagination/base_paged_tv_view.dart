@@ -35,6 +35,7 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
 
 class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with SingleTickerProviderStateMixin {
   late final AnimationController _rotationController;
+  final ScrollController _internalScrollController = ScrollController();
   bool _isRefreshing = false;
 
   @override
@@ -52,6 +53,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
 
     try {
       await widget.notifier.refreshData();
+    } catch (_) {
     } finally {
       if (mounted) {
         _rotationController.stop();
@@ -66,6 +68,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
   @override
   void dispose() {
     _rotationController.dispose();
+    _internalScrollController.dispose();
     super.dispose();
   }
 
@@ -99,7 +102,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
         Expanded(
           child: DpadRegion(
             child: PagedGridView<int, T>(
-              scrollController: widget.notifier.scrollController,
+              scrollController: _internalScrollController,
               state: mappedIspState,
               fetchNextPage: () {
                 widget.notifier.loadNextPage();

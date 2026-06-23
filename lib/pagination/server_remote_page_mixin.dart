@@ -5,6 +5,9 @@ mixin ServerRemotePageMixin<T> on BaseControllerMixin {
   BasePagedState<T> get state;
   set state(BasePagedState<T> value);
 
+  int get firstPageKey => 1;
+  int get defaultPageSize => 20;
+
   Future<List<T>> fetchServerRemoteData(int pageKey, int pageSize);
 
   Future<void> refreshRemoteData() async {

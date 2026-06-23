@@ -5,6 +5,9 @@ mixin ServerFixedPageMixin<T> on BaseControllerMixin {
   BasePagedState<T> get state;
   set state(BasePagedState<T> value);
 
+  int get firstPageKey => 1;
+  int get defaultPageSize => 20;
+
   int get fixedServerPageSize;
 
   final Map<int, List<T>> _bigPageCache = {};
