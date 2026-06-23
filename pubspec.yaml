@@ -74,7 +74,6 @@ dependencies:
   flame_barrage: ^0.0.3               # 直播间弹幕渲染
 
   # 文件选择、打开、权限
-  file_picker: ^11.0.2                # 系统文件选择器
   open_filex: ^4.7.0                  # 调用第三方APP打开本地文件
   permission_handler: ^12.0.1         # 各平台权限申请管理
 
@@ -104,8 +103,6 @@ dependencies:
   dart_quickjs:
     git: https://github.com/liuchuancong/dart_quickjs.git # QuickJS JS脚本引擎
 
-dependency_overrides:
-  win32: ^5.9.0 # Windows平台底层API版本锁定
 
 dev_dependencies:
   flutter_test:
@@ -176,4 +173,4 @@ flutter:
         - asset: assets/icons/CustomIcons.ttf
     - family: PingFang
       fonts:
-        - asset: assets/PingFangSC.ttf
+        - asset: assets/MiSans-Regular.ttf

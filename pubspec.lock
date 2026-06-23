@@ -257,14 +257,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.15.1"
-  cross_file:
-    dependency: transitive
-    description:
-      name: cross_file
-      sha256: "28bb3ae56f117b5aec029d702a90f57d285cd975c3c5c281eaca38dbc47c5937"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.3.5+2"
   crypto:
     dependency: "direct main"
     description:
@@ -426,14 +418,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "7.0.1"
-  file_picker:
-    dependency: "direct main"
-    description:
-      name: file_picker
-      sha256: f13a03000d942e476bc1ff0a736d2e9de711d2f89a95cd4c1d88f861c3348387
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "11.0.2"
   fixnum:
     dependency: "direct main"
     description:
@@ -500,14 +484,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.7"
-  flutter_plugin_android_lifecycle:
-    dependency: transitive
-    description:
-      name: flutter_plugin_android_lifecycle
-      sha256: "3854fe5e3bff0b113c658f260b90c95dea17c92db0f2addeac2e343dd9969785"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.0.35"
   flutter_riverpod:
     dependency: "direct main"
     description:
@@ -1757,13 +1733,13 @@ packages:
     source: hosted
     version: "1.2.1"
   win32:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: win32
-      sha256: d7cb55e04cd34096cd3a79b3330245f54cb96a370a1c27adb3c84b917de8b08e
+      sha256: ba6f4bba816c8d7e3c1580e170f3786d216951cc6b94babc3b814c08d2cb2738
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "5.15.0"
+    version: "6.3.0"
   win32_registry:
     dependency: transitive
     description:
