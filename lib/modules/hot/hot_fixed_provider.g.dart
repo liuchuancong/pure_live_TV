@@ -58,7 +58,7 @@ final class HotFixedProvider
   }
 }
 
-String _$hotFixedHash() => r'c993be357c75067a633c3b2e340dabe96e7d51cc';
+String _$hotFixedHash() => r'35a20d18b077aa20813107308d5fcb8835bb606d';
 
 final class HotFixedFamily extends $Family
     with

@@ -58,7 +58,7 @@ final class HotRemoteProvider
   }
 }
 
-String _$hotRemoteHash() => r'401ad73a824656fb7fef12adf09b6b4a7ed72a23';
+String _$hotRemoteHash() => r'91768d0232b1dbaeeb2031352e94ba0faa7ba765';
 
 final class HotRemoteFamily extends $Family
     with

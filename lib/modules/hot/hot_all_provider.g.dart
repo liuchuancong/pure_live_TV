@@ -58,7 +58,7 @@ final class HotAllProvider
   }
 }
 
-String _$hotAllHash() => r'd8190e94f4707fa6a6cc1c497178f36f85622d1a';
+String _$hotAllHash() => r'45beac1a282103a1b2b2964d2a76d0033a1bf638';
 
 final class HotAllFamily extends $Family
     with

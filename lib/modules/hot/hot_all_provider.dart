@@ -10,7 +10,7 @@ part 'hot_all_provider.g.dart';
 
 @riverpod
 class HotAll extends _$HotAll with BaseControllerMixin, ServerAllPageMixin<LiveRoom> {
-  late final Site site;
+  Site? site;
 
   @override
   BasePagedState<LiveRoom> build(String siteId) {
@@ -24,12 +24,16 @@ class HotAll extends _$HotAll with BaseControllerMixin, ServerAllPageMixin<LiveR
 
   @override
   Future<List<LiveRoom>> fetchAllServerData() async {
-    return await site.liveSite.getRecommendRooms(page: state.currentPage, pageSize: state.pageSize);
+    return await site!.liveSite.getRecommendRooms(page: state.currentPage, pageSize: state.pageSize);
   }
 
   Future<void> loadFirstTime() async {
     if (state.items.isEmpty) {
       await loadServerAllData(firstPageKey);
     }
+  }
+
+  Future<void> loadNextPage() async {
+    await loadNextServerAllPage();
   }
 }

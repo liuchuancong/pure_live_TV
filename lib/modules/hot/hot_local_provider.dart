@@ -10,7 +10,7 @@ part 'hot_local_provider.g.dart';
 
 @riverpod
 class HotLocal extends _$HotLocal with BaseControllerMixin, LocalReactivePageMixin<LiveRoom> {
-  late final Site site;
+  Site? site;
 
   @override
   BasePagedState<LiveRoom> build(String siteId) {
@@ -25,7 +25,7 @@ class HotLocal extends _$HotLocal with BaseControllerMixin, LocalReactivePageMix
 
   Future<void> loadData() async {
     try {
-      final rooms = await site.liveSite.getRecommendRooms(page: 1, pageSize: state.pageSize);
+      final rooms = await site!.liveSite.getRecommendRooms(page: 1, pageSize: state.pageSize);
       updateLocalReactivePool(rooms);
     } catch (_) {
       state = state.copyWith(items: const [], controllerState: state.controllerState.copyWith(pageEmpty: true));
@@ -36,5 +36,9 @@ class HotLocal extends _$HotLocal with BaseControllerMixin, LocalReactivePageMix
     if (state.items.isEmpty) {
       await loadData();
     }
+  }
+
+  Future<void> loadNextPage() async {
+    await loadNextLocalPage();
   }
 }

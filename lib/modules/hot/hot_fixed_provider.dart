@@ -10,13 +10,13 @@ part 'hot_fixed_provider.g.dart';
 
 @riverpod
 class HotFixed extends _$HotFixed with BaseControllerMixin, ServerFixedPageMixin<LiveRoom> {
-  late final Site site;
-  late final int fixedSize;
+  Site? site;
+  int? fixedSize;
 
   @override
   BasePagedState<LiveRoom> build(String siteId) {
     site = Sites.of(siteId);
-    fixedSize = siteId == "douyu" ? 40 : (siteId == "huya" ? 120 : 20);
+    fixedSize = siteId == Sites.douyuSite ? 40 : (siteId == Sites.huyaSite ? 120 : 20);
     return BasePagedState<LiveRoom>(
       controllerState: const BaseControllerState(),
       currentPage: firstPageKey,
@@ -25,16 +25,20 @@ class HotFixed extends _$HotFixed with BaseControllerMixin, ServerFixedPageMixin
   }
 
   @override
-  int get fixedServerPageSize => fixedSize;
+  int get fixedServerPageSize => fixedSize!;
 
   @override
   Future<List<LiveRoom>> fetchFixedNetworkData(int bigPage, int fixedSize) async {
-    return await site.liveSite.getRecommendRooms(page: bigPage, pageSize: fixedSize);
+    return await site!.liveSite.getRecommendRooms(page: bigPage, pageSize: fixedSize);
   }
 
   Future<void> loadFirstTime() async {
     if (state.items.isEmpty) {
       await loadFixedData(firstPageKey);
     }
+  }
+
+  Future<void> loadNextPage() async {
+    await loadNextFixedPage();
   }
 }

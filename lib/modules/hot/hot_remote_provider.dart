@@ -10,7 +10,7 @@ part 'hot_remote_provider.g.dart';
 
 @riverpod
 class HotRemote extends _$HotRemote with BaseControllerMixin, ServerRemotePageMixin<LiveRoom> {
-  late final Site site;
+  Site? site;
 
   @override
   BasePagedState<LiveRoom> build(String siteId) {
@@ -24,12 +24,16 @@ class HotRemote extends _$HotRemote with BaseControllerMixin, ServerRemotePageMi
 
   @override
   Future<List<LiveRoom>> fetchServerRemoteData(int pageKey, int pageSize) async {
-    return await site.liveSite.getRecommendRooms(page: pageKey, pageSize: pageSize);
+    return await site!.liveSite.getRecommendRooms(page: pageKey, pageSize: pageSize);
   }
 
   Future<void> loadFirstTime() async {
     if (state.items.isEmpty) {
       await loadRemoteData(firstPageKey);
     }
+  }
+
+  Future<void> loadNextPage() async {
+    await loadNextRemotePage();
   }
 }
