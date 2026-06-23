@@ -17,8 +17,6 @@ class TvTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: DpadRegion(memoryKey: memoryKey, verticalEdge: verticalEdge, horizontalEdge: horizontalEdge, child: child),
-    );
+    return DpadRegion(memoryKey: memoryKey, verticalEdge: verticalEdge, horizontalEdge: horizontalEdge, child: child);
   }
 }

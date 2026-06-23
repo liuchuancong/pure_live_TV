@@ -6,7 +6,7 @@ export 'tv_scaffold.dart';
 export 'tv_focusable.dart';
 export 'tv_button.dart';
 export 'tv_card.dart';
-
+export 'tv_icon_button.dart';
 // 通用状态占位/加载组件
 export 'tv_empty.dart';
 export 'tv_loading.dart';

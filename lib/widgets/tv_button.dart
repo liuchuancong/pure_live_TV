@@ -47,7 +47,12 @@ class TvButton extends StatelessWidget {
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeOutCubic,
         ),
-        DpadGlowEffect(color: activeTheme.focusColor.withValues(alpha: 0.35), blurRadius: 24.w, spreadRadius: 2.0.w),
+        DpadGlowEffect(
+          color: activeTheme.focusColor.withValues(alpha: 0.35),
+          blurRadius: 2.w,
+          spreadRadius: 2.0.w,
+          borderRadius: borderRadius,
+        ),
         DpadCustomEffect((context, state, child) {
           final isFocused = state.focused;
 
@@ -68,19 +73,7 @@ class TvButton extends StatelessWidget {
             curve: Curves.easeInOut,
             height: height,
             padding: padding,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: borderRadius,
-              boxShadow: isFocused
-                  ? [
-                      BoxShadow(
-                        color: activeTheme.focusColor.withValues(alpha: 0.35),
-                        blurRadius: 24.w,
-                        spreadRadius: 2.0.w,
-                      ),
-                    ]
-                  : null,
-            ),
+            decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
             child: IconTheme(
               data: IconThemeData(size: iconSize, color: foregroundColor),
               child: DefaultTextStyle(
@@ -110,7 +103,9 @@ class TvButton extends StatelessWidget {
     if (icon == null) {
       return Center(child: textWidget);
     }
-
+    if (title.isEmpty && icon != null) {
+      return Center(child: icon!);
+    }
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,

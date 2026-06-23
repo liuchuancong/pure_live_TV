@@ -7,12 +7,12 @@ class TvThemeExtension extends ThemeExtension<TvThemeExtension> {
   const TvThemeExtension({required this.theme});
 
   @override
-  TvThemeExtension copyWith({TvThemeData? theme}) {
+  ThemeExtension<TvThemeExtension> copyWith({TvThemeData? theme}) {
     return TvThemeExtension(theme: theme ?? this.theme);
   }
 
   @override
-  TvThemeExtension lerp(ThemeExtension<TvThemeExtension>? other, double t) {
+  ThemeExtension<TvThemeExtension> lerp(ThemeExtension<TvThemeExtension>? other, double t) {
     if (other is! TvThemeExtension) return this;
     return this;
   }

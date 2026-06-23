@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'backup_controller.dart';
+part of 'hot_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,51 +9,50 @@ part of 'backup_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(BackupController)
-final backupControllerProvider = BackupControllerProvider._();
+@ProviderFor(HotTabs)
+final hotTabsProvider = HotTabsProvider._();
 
-final class BackupControllerProvider
-    extends $NotifierProvider<BackupController, void> {
-  BackupControllerProvider._()
+final class HotTabsProvider extends $NotifierProvider<HotTabs, HotTabsState> {
+  HotTabsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'backupControllerProvider',
+        name: r'hotTabsProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$backupControllerHash();
+  String debugGetCreateSourceHash() => _$hotTabsHash();
 
   @$internal
   @override
-  BackupController create() => BackupController();
+  HotTabs create() => HotTabs();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(void value) {
+  Override overrideWithValue(HotTabsState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<void>(value),
+      providerOverride: $SyncValueProvider<HotTabsState>(value),
     );
   }
 }
 
-String _$backupControllerHash() => r'bda24b15a817227662c10abc74b9e0b6fb8ae6c3';
+String _$hotTabsHash() => r'63bc6e7cadef045d44eebbee74d1ec257271fea2';
 
-abstract class _$BackupController extends $Notifier<void> {
-  void build();
+abstract class _$HotTabs extends $Notifier<HotTabsState> {
+  HotTabsState build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<void, void>;
+    final ref = this.ref as $Ref<HotTabsState, HotTabsState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<void, void>,
-              void,
+              AnyNotifier<HotTabsState, HotTabsState>,
+              HotTabsState,
               Object?,
               Object?
             >;
