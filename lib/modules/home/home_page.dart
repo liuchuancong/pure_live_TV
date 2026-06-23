@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _navigationMenus.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, _) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final menu = _navigationMenus[index];
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/consts/back_ground_source.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/models/background/back_ground_config.dart';
+import 'package:pure_live/services/background_config/background_config_model.dart';
 
 class TvScaffold extends StatelessWidget {
   final Widget child;

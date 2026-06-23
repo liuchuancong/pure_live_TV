@@ -1,10 +1,12 @@
 import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'startup_controller.g.dart';
 
 @riverpod
 class StartupController extends _$StartupController {
+  static StartupController get to => SettingsService.to.startup;
   @override
   bool build() {
     return HivePrefUtil.getBool('isFirstInApp') ?? true;

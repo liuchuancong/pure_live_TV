@@ -8,6 +8,7 @@ class AppPathManager {
   AppPathManager._internal();
 
   static const String dirIptvCache = 'IPTV_CACHE';
+  static const String iptvTable = 'pure_live_tv';
   static const String dirDownload = 'DOWNLOADS';
   static const String dirLogs = 'LOGS';
   static const String dirHiveDB = 'HIVE_DB';

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:hive_ce/hive.dart';
 
 class HivePrefUtil {
@@ -13,6 +14,40 @@ class HivePrefUtil {
 
   static dynamic getAnyPref(String key) {
     return _box.get(key);
+  }
+
+  static void setObject(String key, dynamic value) {
+    _box.put(key, jsonEncode(value));
+  }
+
+  static T? getObject<T>(String key, T Function(dynamic) fromJson) {
+    final String? jsonString = _box.get(key);
+    if (jsonString == null) return null;
+    try {
+      return fromJson(jsonDecode(jsonString));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static List<T> getObjectList<T>(String key, T Function(Map<String, dynamic>) factory) {
+    final rawList = _box.get(key);
+    if (rawList is! List) return [];
+
+    return rawList.map<T>((item) {
+      if (item is String) {
+        return factory(Map<String, dynamic>.from(jsonDecode(item)));
+      }
+      if (item is Map) {
+        return factory(Map<String, dynamic>.from(item));
+      }
+      return factory({});
+    }).toList();
+  }
+
+  static Future<void> setObjectList<T>(String key, List<T> list, Map<String, dynamic> Function(T) toJson) async {
+    final serializedList = list.map((item) => jsonEncode(toJson(item))).toList();
+    await _box.put(key, serializedList);
   }
 
   static Future<bool> setAnyPref(String key, dynamic value) {

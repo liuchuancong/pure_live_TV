@@ -1,67 +1,27 @@
 import os
-from PIL import Image
 
-INPUT_FILE = r"D:\flutter\pure_live\assets\icons\icon.png"
+def generate_dart_export(target_dir: str, output_name: str = "index.dart", recursive: bool = True):
+    exports = []
+    # 遍历目录
+    for root, _, files in os.walk(target_dir):
+        for file in files:
+            if file.endswith(".dart") and file != output_name:
+                # 相对路径，适配dart export语法
+                rel_path = os.path.relpath(os.path.join(root, file), target_dir)
+                rel_path = rel_path.replace(os.sep, "/")
+                exports.append(f"export '{rel_path}';")
+        # 不递归就跳出第一层
+        if not recursive:
+            break
 
-TV_SIZES = {
-    "drawable-mdpi": (160, 90),
-    "drawable-hdpi": (240, 135),
-    "drawable-xhdpi": (320, 180),
-    "drawable-xxhdpi": (480, 270),
-    "drawable-xxxhdpi": (640, 360),
-}
-
-
-# 🎨 背景颜色（可以改成品牌色）
-BACKGROUND_COLOR = (20, 20, 20)  # 深灰
-
-# 📦 logo 占画面比例（核心）
-LOGO_SCALE = 0.5   # 不要超过 60%，否则会像贴图
-
-
-def save(img, path):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.save(path, "PNG")
-
-
-def create_banner(img, size):
-    w, h = size
-
-    # 1️⃣ 创建背景（不会变形的关键）
-    canvas = Image.new("RGB", (w, h), BACKGROUND_COLOR)
-
-    # 2️⃣ 计算 logo 最大尺寸（关键：不拉伸）
-    max_logo_w = int(w * LOGO_SCALE)
-    max_logo_h = int(h * LOGO_SCALE)
-
-    logo = img.convert("RGBA").copy()
-    logo.thumbnail((max_logo_w, max_logo_h), Image.LANCZOS)
-
-    # 3️⃣ 居中
-    x = (w - logo.width) // 2
-    y = (h - logo.height) // 2
-
-    # 4️⃣ 正确 alpha 粘贴（防毛边）
-    canvas.paste(logo, (x, y), logo)
-
-    return canvas
-
-
-def main():
-    img = Image.open(INPUT_FILE)
-
-    print("\n📺 生成 TV Banner（背景模式）...")
-
-    for folder, size in TV_SIZES.items():
-        banner = create_banner(img, size)
-
-        path = f"{folder}/ic_launcher_foreground.png"
-        save(banner, path)
-
-        print(f"✔ {path} ({size[0]}x{size[1]})")
-
-    print("\n🎉 完成（无拉伸版本）")
-
+    out_path = os.path.join(target_dir, output_name)
+    content = "// Auto generate export file\n" + "\n".join(exports)
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"✅ 生成完成：{out_path}，共 {len(exports)} 条导出")
 
 if __name__ == "__main__":
-    main()
+    # ========== 这里改你的目录 ==========
+    target_folder = "./models"
+    # ===================================
+    generate_dart_export(target_dir=target_folder, recursive=True)
