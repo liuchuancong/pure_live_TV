@@ -1,0 +1,95 @@
+import 'package:dpad/dpad.dart';
+import 'package:flutter/material.dart';
+import 'package:pure_live/widgets/index.dart';
+import 'package:pure_live/pagination/pagination.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/models/live_area/live_area.dart';
+import 'package:pure_live/modules/areas/category_provider.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+
+class AreaGridView extends ConsumerStatefulWidget {
+  final List<String> labels;
+  final List<List<LiveArea>> areas;
+
+  const AreaGridView({super.key, required this.labels, required this.areas});
+
+  @override
+  ConsumerState<AreaGridView> createState() => _AreaGridViewState();
+}
+
+class _AreaGridViewState extends ConsumerState<AreaGridView> {
+  final Map<int, bool> _activatedSubTabs = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final currentCategoryIndex = ref.watch(categoryTabProvider);
+
+    _activatedSubTabs[currentCategoryIndex] = true;
+
+    final List<TvTabItemData> secondTabItems = widget.labels.map((name) {
+      return TvTabItemData(title: name);
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.labels.isNotEmpty)
+          TvTabBar(
+            tabs: secondTabItems,
+            currentIndex: currentCategoryIndex,
+            onTabChange: (index) {
+              ref.read(categoryTabProvider.notifier).switchCategory(index);
+            },
+            onTabRefresh: (index) {
+              ref.read(categoryTabProvider.notifier).switchCategory(0);
+            },
+          ),
+        SizedBox(height: 20.sp),
+        Expanded(
+          child: TvTabView(
+            memoryKey: "areas_sub_category_indexed_view",
+            verticalEdge: DpadEdgeBehavior.leave,
+            horizontalEdge: DpadEdgeBehavior.stop,
+            child: IndexedStack(
+              index: currentCategoryIndex,
+              children: List.generate(widget.labels.length, (subIndex) {
+                final isSubActivated = _activatedSubTabs[subIndex] ?? false;
+
+                if (!isSubActivated) {
+                  return const SizedBox.shrink();
+                }
+
+                final currentSubAreas = widget.areas.isNotEmpty && subIndex < widget.areas.length
+                    ? widget.areas[subIndex]
+                    : <LiveArea>[];
+
+                final param = PagingParam<LiveArea>(
+                  mode: PagingMode.serverAll,
+                  pageSize: 12,
+                  keepAlive: true,
+                  fetchAll: () async => currentSubAreas,
+                );
+
+                return BasePagedTvView<LiveArea>(
+                  param: param,
+                  getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 32.sp,
+                    crossAxisSpacing: 32.sp,
+                    childAspectRatio: 1.3,
+                  ),
+                  itemBuilder: (context, area, index) => TvButton(
+                    title: area.areaName.isNotEmpty ? area.areaName : area.typeName,
+                    size: TvButtonSize.large,
+                    onTap: () {},
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
