@@ -25,7 +25,7 @@ class HotPage extends ConsumerStatefulWidget {
 
 class _HotPageState extends ConsumerState<HotPage> {
   final Map<int, bool> _activatedTabs = {};
-
+  final Map<int, GlobalKey<HotPlatformGridBridgeState>> _bridgeKeys = {};
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
@@ -59,6 +59,7 @@ class _HotPageState extends ConsumerState<HotPage> {
                     onTabChange: (index) {
                       ref.read(hotTabsProvider.notifier).changeTab(index);
                     },
+                    onTabRefresh: (index) => _bridgeKeys[index]?.currentState?.triggerRefreshFromOuter(),
                   ),
                   SizedBox(height: 16.sp),
                   Expanded(
@@ -70,10 +71,14 @@ class _HotPageState extends ConsumerState<HotPage> {
                         index: tabsState.currentIndex,
                         children: List.generate(tabsState.sites.length, (tabIndex) {
                           final isActivated = _activatedTabs[tabIndex] ?? false;
+                          final childKey = _bridgeKeys.putIfAbsent(
+                            tabIndex,
+                            () => GlobalKey<HotPlatformGridBridgeState>(),
+                          );
                           if (!isActivated) {
                             return const SizedBox.shrink();
                           }
-                          return HotPlatformGridBridge(site: tabsState.sites[tabIndex]);
+                          return HotPlatformGridBridge(key: childKey, site: tabsState.sites[tabIndex]);
                         }),
                       ),
                     ),
@@ -93,10 +98,10 @@ class HotPlatformGridBridge extends ConsumerStatefulWidget {
   const HotPlatformGridBridge({super.key, required this.site});
 
   @override
-  ConsumerState<HotPlatformGridBridge> createState() => _HotPlatformGridBridgeState();
+  ConsumerState<HotPlatformGridBridge> createState() => HotPlatformGridBridgeState();
 }
 
-class _HotPlatformGridBridgeState extends ConsumerState<HotPlatformGridBridge> {
+class HotPlatformGridBridgeState extends ConsumerState<HotPlatformGridBridge> {
   late final LiveSite site;
   late final PagingParam<LiveRoom> _param;
 
@@ -117,6 +122,10 @@ class _HotPlatformGridBridgeState extends ConsumerState<HotPlatformGridBridge> {
 
   Future<List<LiveRoom>> _fetchRemoteRooms(int page, int size) async {
     return await site.getRecommendRooms(page: page, pageSize: size);
+  }
+
+  void triggerRefreshFromOuter() {
+    ref.read(pagingCoreProvider(_param).notifier).refresh();
   }
 
   PagingParam<LiveRoom> _createParam() {

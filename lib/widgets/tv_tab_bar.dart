@@ -15,9 +15,17 @@ class TvTabBar extends StatefulWidget {
   final List<TvTabItemData> tabs;
   final int currentIndex;
   final void Function(int index) onTabChange;
+  final void Function(int index)? onTabRefresh;
   final List<DpadEffect>? effects;
 
-  const TvTabBar({super.key, required this.tabs, required this.currentIndex, required this.onTabChange, this.effects});
+  const TvTabBar({
+    super.key,
+    required this.tabs,
+    required this.currentIndex,
+    required this.onTabChange,
+    this.effects,
+    this.onTabRefresh,
+  });
 
   @override
   State<TvTabBar> createState() => _TvTabBarState();
@@ -96,7 +104,13 @@ class _TvTabBarState extends State<TvTabBar> {
               child: DpadFocusable(
                 effects: dynamicEffects,
                 onFocusChange: null,
-                onSelect: () => widget.onTabChange(index),
+                onSelect: () {
+                  if (index == widget.currentIndex) {
+                    widget.onTabRefresh?.call(index);
+                  } else {
+                    widget.onTabChange(index);
+                  }
+                },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
