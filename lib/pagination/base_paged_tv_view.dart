@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/widgets/tv_button.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:pure_live/widgets/tv_icon_button.dart';
 import 'package:pure_live/pagination/paging_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/pagination/models/paging_param.dart';
@@ -59,7 +58,9 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
   void _scrollListener() {
     final scroll = _core.scrollController;
     if (!scroll.hasClients) return;
-    if (scroll.position.pixels >= scroll.position.maxScrollExtent - 100.sp) {
+
+    final threshold = 400.sp;
+    if (scroll.position.pixels >= scroll.position.maxScrollExtent - threshold) {
       final currentState = ref.read(pagingCoreProvider(widget.param));
       if (currentState.canLoadMore && !currentState.controllerState.loading) {
         _core.loadNextPage();
@@ -165,34 +166,30 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
             );
     }
 
-    final refreshIcon = const Icon(Icons.refresh_rounded);
-
     return Column(
       children: [
-        DpadRegion(
-          child: Container(
-            alignment: Alignment.centerRight,
-            color: Colors.transparent,
-            padding: EdgeInsets.only(right: 16.sp, bottom: 20.sp),
-            child: TvIconButton(
-              icon: _isRefreshing
-                  ? refreshIcon.animate(onPlay: (controller) => controller.repeat()).rotate(duration: 1000.ms, end: 1.0)
-                  : refreshIcon,
-              size: TvIconButtonSize.medium,
-              isSecondary: true,
-              onTap: _triggerRefresh,
-            ),
-          ),
-        ),
         Expanded(
           child: DpadRegion(
             child: VirtualGridView(
               controller: _core.scrollController,
               gridDelegate: widget.gridDelegate,
-              cacheExtent: 1000.sp,
+              cacheExtent: 100.sp,
+              physics: const ClampingScrollPhysics(),
               itemCount: state.items.length,
               itemBuilder: (context, index) {
-                return widget.itemBuilder(context, state.items[index], index);
+                return DpadRegion(
+                  onFocusChange: (hasFocus) {
+                    if (hasFocus && index < widget.gridDelegate.crossAxisCount) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        final scroll = _core.scrollController;
+                        if (scroll.hasClients && scroll.position.pixels != 0) {
+                          scroll.animateTo(0, duration: const Duration(milliseconds: 50), curve: Curves.easeOutCubic);
+                        }
+                      });
+                    }
+                  },
+                  child: widget.itemBuilder(context, state.items[index], index),
+                );
               },
             ),
           ),

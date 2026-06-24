@@ -8,6 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/pagination/models/paging_model.dart';
 import 'package:pure_live/pagination/models/paging_param.dart';
 import 'package:pure_live/pagination/models/base_paged_state.dart';
+import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 import 'package:pure_live/pagination/models/base_controller_state.dart';
 
 part 'paging_core.g.dart';
@@ -24,7 +25,12 @@ class PagingCore<T> extends _$PagingCore<T> {
 
   static const int firstPageKey = 1;
 
-  final ScrollController scrollController = ScrollController();
+  final ScrollController scrollController = VirtualScrollController(
+    crossAxisCount: 4,
+    mainAxisSpacing: 16.0,
+    crossAxisSpacing: 16.0,
+    childAspectRatio: 1.3,
+  );
 
   final Map<int, List<T>> _bigPageCache = {};
 

@@ -11,7 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/theme/styles/app_styles.dart';
 import 'package:pure_live/modules/home/home_provider.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/home/widgets/tv_diaital_clock.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -97,18 +96,7 @@ class HomePage extends ConsumerWidget {
             ),
             Expanded(
               child: DpadRegion(
-                child: Padding(
-                  padding: EdgeInsets.all(8.sp),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppStyle.vGap32,
-                      _buildHeader(context),
-                      AppStyle.vGap32,
-                      Expanded(child: _buildContentByIndex(context, ref, currentIndex)),
-                    ],
-                  ),
-                ),
+                child: Padding(padding: EdgeInsets.all(8.sp), child: _buildContentByIndex(context, ref, currentIndex)),
               ),
             ),
           ],
@@ -140,18 +128,6 @@ class HomePage extends ConsumerWidget {
     }
 
     return TvIconButton(icon: Icon(item.icon), size: TvIconButtonSize.medium, isSecondary: !isSelected, onTap: onTap);
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final currentTvTheme = context.tvTheme;
-    return Row(
-      children: [
-        Text("纯粹直播", style: AppTextStyles.t32W600.copyWith(color: currentTvTheme.primaryTextColor)),
-        const Spacer(),
-        TvDigitalClock(style: AppTextStyles.t32W600.copyWith(color: currentTvTheme.primaryTextColor)),
-        AppStyle.hGap48,
-      ],
-    );
   }
 
   Widget _buildContentByIndex(BuildContext context, WidgetRef ref, int index) {
