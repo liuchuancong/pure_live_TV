@@ -42,7 +42,7 @@ final class LogSettingsControllerProvider
 }
 
 String _$logSettingsControllerHash() =>
-    r'c14011dcbb702fb9cb2c49ff03cb9af3f735e784';
+    r'3827fd205a5c778ca9f85ba904c04330177a2945';
 
 abstract class _$LogSettingsController extends $Notifier<LogSettingsModel> {
   LogSettingsModel build();

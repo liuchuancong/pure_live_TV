@@ -11,6 +11,7 @@ abstract class PagingParam<T> with _$PagingParam<T> {
     required PagingMode mode,
     @Default(20) int pageSize,
     @Default(20) int fixedServerSize,
+    @Default(false) bool keepAlive,
     FetchRemote<T>? fetchRemote,
     FetchAllData<T>? fetchAll,
     FetchFixedSize<T>? fetchFixed,

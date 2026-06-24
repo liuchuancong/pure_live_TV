@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/misc.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/widgets/tv_button.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,12 +7,10 @@ import 'package:pure_live/widgets/tv_icon_button.dart';
 import 'package:pure_live/pagination/paging_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/pagination/models/paging_param.dart';
-import 'package:pure_live/pagination/models/base_paged_state.dart';
 import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class BasePagedTvView<T> extends ConsumerStatefulWidget {
-  final NotifierProviderFamily<PagingCore<T>, BasePagedState<T>, PagingParam<T>> provider;
   final PagingParam<T> param;
   final PagingCore<T> Function() getNotifier;
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
@@ -24,7 +21,6 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
 
   const BasePagedTvView({
     super.key,
-    required this.provider,
     required this.param,
     required this.getNotifier,
     required this.itemBuilder,
@@ -46,6 +42,29 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
   void initState() {
     super.initState();
     _core = widget.getNotifier();
+    _core.scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void didUpdateWidget(covariant BasePagedTvView<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newCore = widget.getNotifier();
+    if (_core != newCore) {
+      _core.scrollController.removeListener(_scrollListener);
+      _core = newCore;
+      _core.scrollController.addListener(_scrollListener);
+    }
+  }
+
+  void _scrollListener() {
+    final scroll = _core.scrollController;
+    if (!scroll.hasClients) return;
+    if (scroll.position.pixels >= scroll.position.maxScrollExtent - 100.sp) {
+      final currentState = ref.read(pagingCoreProvider(widget.param));
+      if (currentState.canLoadMore && !currentState.controllerState.loading) {
+        _core.loadNextPage();
+      }
+    }
   }
 
   Future<void> _triggerRefresh() async {
@@ -63,9 +82,15 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
   }
 
   @override
+  void dispose() {
+    _core.scrollController.removeListener(_scrollListener);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
-    final state = ref.watch(widget.provider(widget.param));
+    final state = ref.watch(pagingCoreProvider(widget.param));
 
     if (state.items.isEmpty && (state.controllerState.pageLoading || _isRefreshing)) {
       return Center(
@@ -177,7 +202,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
               descendantsAreFocusable: false,
               child: Container(
                 width: double.infinity,
-                color: Colors.transparent,
+                decoration: const BoxDecoration(color: Colors.transparent),
                 clipBehavior: Clip.hardEdge,
                 child: Center(
                   child: SizedBox(

@@ -98,61 +98,55 @@ class HotPlatformGridBridge extends ConsumerStatefulWidget {
 
 class _HotPlatformGridBridgeState extends ConsumerState<HotPlatformGridBridge> {
   late final LiveSite site;
+  late final PagingParam<LiveRoom> _param;
 
   @override
   void initState() {
     super.initState();
     site = Sites.of(widget.site.id).liveSite;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final param = _createParam();
-      final family = pagingProvider<LiveRoom>();
-      ref.read(family(param).notifier).refresh();
-    });
+    _param = _createParam();
+  }
+
+  Future<List<LiveRoom>> _fetchAllRooms() async {
+    return await site.getRecommendRooms(page: 1, pageSize: 999);
+  }
+
+  Future<List<LiveRoom>> _fetchFixedRooms(int bigPage, int size) async {
+    return await site.getRecommendRooms(page: bigPage, pageSize: size);
+  }
+
+  Future<List<LiveRoom>> _fetchRemoteRooms(int page, int size) async {
+    return await site.getRecommendRooms(page: page, pageSize: size);
   }
 
   PagingParam<LiveRoom> _createParam() {
     final String siteId = widget.site.id;
     if (siteId == Sites.kuaishouSite) {
-      return PagingParam<LiveRoom>(
-        mode: PagingMode.serverAll,
-        pageSize: 12,
-        fetchAll: () async {
-          return await site.getRecommendRooms(page: 1, pageSize: 999);
-        },
-      );
+      return PagingParam<LiveRoom>(mode: PagingMode.serverAll, pageSize: 12, fetchAll: _fetchAllRooms);
     } else if (siteId == Sites.douyuSite || siteId == Sites.huyaSite || siteId == Sites.douyinSite) {
       int fixedSize = siteId == Sites.douyuSite ? 40 : (siteId == Sites.huyaSite ? 120 : 20);
       return PagingParam<LiveRoom>(
         mode: PagingMode.serverFixedSize,
         pageSize: 12,
         fixedServerSize: fixedSize,
-        fetchFixed: (bigPage, size) async {
-          return await site.getRecommendRooms(page: bigPage, pageSize: size);
-        },
+        fetchFixed: _fetchFixedRooms,
+        keepAlive: true,
       );
     } else {
       return PagingParam<LiveRoom>(
         mode: PagingMode.serverRemote,
         pageSize: 12,
-        fetchRemote: (page, size) async {
-          return await site.getRecommendRooms(page: page, pageSize: size);
-        },
+        fetchRemote: _fetchRemoteRooms,
+        keepAlive: true,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final param = _createParam();
-    return _buildRealPagedGrid(param);
-  }
-
-  Widget _buildRealPagedGrid(PagingParam<LiveRoom> param) {
-    final family = pagingProvider<LiveRoom>();
     return BasePagedTvView<LiveRoom>(
-      provider: family,
-      param: param,
-      getNotifier: () => ref.read(family(param).notifier),
+      param: _param,
+      getNotifier: () => ref.read(pagingCoreProvider(_param).notifier),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         mainAxisSpacing: 16.sp,

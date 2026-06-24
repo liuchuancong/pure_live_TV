@@ -1,10 +1,8 @@
 import 'dart:io' as io;
-import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
 import 'package:pure_live/utils/core_error.dart';
 import 'package:pure_live/utils/custom_interceptor.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:pure_live/services/settings/settings.dart';
 
 class HttpClient {
   static const Duration _connectTimeout = Duration(seconds: 20);
@@ -36,20 +34,6 @@ class HttpClient {
           compact: true,
           maxWidth: 90,
         ),
-      )
-      ..httpClientAdapter = IOHttpClientAdapter(
-        createHttpClient: () {
-          final client = io.HttpClient();
-          final proxyCtrl = SettingsService.to.proxyState;
-          if (proxyCtrl.enableAppProxy && proxyCtrl.appProxyHost.trim().isNotEmpty) {
-            client.findProxy = (uri) {
-              return 'PROXY ${proxyCtrl.appProxyHost.trim()}:${proxyCtrl.appProxyPort}';
-            };
-          } else {
-            client.findProxy = null;
-          }
-          return client;
-        },
       );
   }
 

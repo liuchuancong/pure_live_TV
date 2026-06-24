@@ -2,21 +2,21 @@ import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pure_live/utils/log.dart';
-import 'package:flutter_riverpod/misc.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/pagination/type_def/fun.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/pagination/models/paging_model.dart';
 import 'package:pure_live/pagination/models/paging_param.dart';
 import 'package:pure_live/pagination/models/base_paged_state.dart';
 import 'package:pure_live/pagination/models/base_controller_state.dart';
 
-class PagingCore<T> extends Notifier<BasePagedState<T>> {
-  final PagingParam<T> param;
+part 'paging_core.g.dart';
 
+@riverpod
+class PagingCore<T> extends _$PagingCore<T> {
+  late PagingParam<T> param;
   late final PagingMode mode;
   late final int fixedServerPageSize;
-
   FetchRemote<T>? fetchRemote;
   FetchAllData<T>? fetchAll;
   FetchFixedSize<T>? fetchFixed;
@@ -34,17 +34,19 @@ class PagingCore<T> extends Notifier<BasePagedState<T>> {
 
   int _requestToken = 0;
 
-  PagingCore(this.param) {
+  @override
+  BasePagedState<T> build(PagingParam<T> pParam) {
+    if (pParam.keepAlive) {
+      ref.keepAlive();
+    }
+    param = pParam;
     mode = param.mode;
     fixedServerPageSize = param.fixedServerSize;
     fetchRemote = param.fetchRemote;
     fetchAll = param.fetchAll;
     fetchFixed = param.fetchFixed;
     onLocalSourceUpdate = param.localRefresh;
-  }
 
-  @override
-  BasePagedState<T> build() {
     ref.onDispose(() {
       scrollController.dispose();
       _bigPageCache.clear();
@@ -77,7 +79,6 @@ class PagingCore<T> extends Notifier<BasePagedState<T>> {
   }
 
   void handleError(Object exception) {
-    Log.d(exception.toString());
     String msg;
     if (exception is SocketException || exception is TimeoutException) {
       msg = "网络连接失败，请检查网络";
@@ -90,8 +91,11 @@ class PagingCore<T> extends Notifier<BasePagedState<T>> {
     final exceptionStr = exception.toString().toLowerCase();
 
     final isLoginIssue =
-        exceptionStr.contains("loginrequired") || exceptionStr.contains("unauthorized") || exceptionStr.contains("未登录");
-
+        exceptionStr.contains("loginrequired") ||
+        exceptionStr.contains("unauthorized") ||
+        exceptionStr.contains("未登录") ||
+        exception.toString().contains("NoSuchMethodError") && exception.toString().contains("'[]'");
+    Log.d(isLoginIssue.toString());
     state = state.copyWith(
       controllerState: state.controllerState.copyWith(
         errorMsg: msg,
@@ -461,8 +465,4 @@ class PagingCore<T> extends Notifier<BasePagedState<T>> {
       handleError(e);
     }
   }
-}
-
-NotifierProviderFamily<PagingCore<T>, BasePagedState<T>, PagingParam<T>> pagingProvider<T>() {
-  return NotifierProvider.family<PagingCore<T>, BasePagedState<T>, PagingParam<T>>((param) => PagingCore(param));
 }

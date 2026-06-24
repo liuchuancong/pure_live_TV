@@ -34,9 +34,9 @@ class _TvTabBarState extends State<TvTabBar> {
       horizontalEdge: DpadEdgeBehavior.leave,
       child: Container(
         width: double.infinity,
-        height: 64.sp,
+        height: 50.sp,
         alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(horizontal: 16.sp),
+        padding: EdgeInsets.symmetric(horizontal: 8.sp),
         color: Colors.transparent,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
@@ -78,7 +78,7 @@ class _TvTabBarState extends State<TvTabBar> {
                       curve: Curves.easeInOut,
                       height: height,
                       alignment: Alignment.center,
-                      padding: EdgeInsets.symmetric(horizontal: 36.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 28.sp),
                       decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
                       child: IconTheme(
                         data: IconThemeData(size: 26.sp, color: foregroundColor),
@@ -102,7 +102,7 @@ class _TvTabBarState extends State<TvTabBar> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (tab.icon != null) ...[tab.icon!, SizedBox(width: 10.sp)],
-                    Center(widthFactor: 1.0, child: Text(tab.title)),
+                    Center(child: Text(tab.title)),
                   ],
                 ),
               ),
