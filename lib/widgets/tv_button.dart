@@ -16,6 +16,7 @@ class TvButton extends StatelessWidget {
   final VoidCallback? onTap;
   final bool autofocus;
   final bool isSecondary;
+  final bool excludeFocus;
 
   const TvButton({
     super.key,
@@ -26,6 +27,7 @@ class TvButton extends StatelessWidget {
     this.onTap,
     this.autofocus = false,
     this.isSecondary = false,
+    this.excludeFocus = false,
   });
 
   @override
@@ -37,32 +39,40 @@ class TvButton extends StatelessWidget {
         ? BorderRadius.circular(16.w)
         : BorderRadius.circular(height / 2);
 
-    return DpadFocusable(
-      autofocus: autofocus,
-      onSelect: onTap,
-      effects: [
-        DpadScaleEffect(
-          scale: 1.06,
-          pressedScale: 0.98,
-          duration: const Duration(milliseconds: 100),
-          curve: Curves.easeOutCubic,
-        ),
-        DpadGlowEffect(
-          color: activeTheme.focusColor.withValues(alpha: 0.35),
-          blurRadius: 2.w,
-          spreadRadius: 2.0.w,
-          borderRadius: borderRadius,
-        ),
-        DpadCustomEffect((context, state, child) {
+    List<DpadEffect> buildEffects() {
+      final list = <DpadEffect>[];
+      if (!excludeFocus) {
+        list.add(
+          DpadScaleEffect(
+            scale: 1.06,
+            pressedScale: 0.98,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOutCubic,
+          ),
+        );
+        list.add(
+          DpadGlowEffect(
+            color: activeTheme.focusColor.withValues(alpha: 0.35),
+            blurRadius: 2.w,
+            spreadRadius: 2.0.w,
+            borderRadius: borderRadius,
+          ),
+        );
+      }
+      list.add(
+        DpadCustomEffect((ctx, state, child) {
           final isFocused = state.focused;
-
-          final bgColor = isFocused
+          final bgColor = excludeFocus
+              ? activeTheme.cardColor
+              : isFocused
               ? activeTheme.focusColor
               : isSecondary
               ? activeTheme.cardColor.withValues(alpha: 0.5)
               : activeTheme.cardColor;
 
-          final foregroundColor = isFocused
+          final foregroundColor = excludeFocus
+              ? activeTheme.focusedCardColor
+              : isFocused
               ? activeTheme.focusedCardColor
               : isSecondary
               ? activeTheme.secondaryTextColor
@@ -83,9 +93,21 @@ class TvButton extends StatelessWidget {
             ),
           );
         }),
-      ],
+      );
+      return list;
+    }
+
+    Widget btn = DpadFocusable(
+      autofocus: autofocus && !excludeFocus,
+      onSelect: excludeFocus ? null : onTap,
+      effects: buildEffects(),
       child: _buildLayout(baseTextStyle, space),
     );
+
+    if (excludeFocus) {
+      return ExcludeFocus(child: btn);
+    }
+    return btn;
   }
 
   (double, EdgeInsets, TextStyle, double, double) _getSizeConfig() {
@@ -93,7 +115,7 @@ class TvButton extends StatelessWidget {
       TvButtonSize.large => (80.0.w, EdgeInsets.symmetric(horizontal: 40.w), AppTextStyles.t32W500, 32.0.w, 14.0.w),
       TvButtonSize.medium => (64.0.w, EdgeInsets.symmetric(horizontal: 32.w), AppTextStyles.t26W500, 24.0.w, 10.0.w),
       TvButtonSize.small => (50.0.w, EdgeInsets.symmetric(horizontal: 24.w), AppTextStyles.t20W500, 20.0.w, 8.0.w),
-      TvButtonSize.mini => (38.0.w, EdgeInsets.symmetric(horizontal: 16.w), AppTextStyles.t16W500, 16.0.w, 6.0.w),
+      TvButtonSize.mini => (44.0.w, EdgeInsets.symmetric(horizontal: 20.w), AppTextStyles.t18W500, 18.0.w, 7.0.w),
     };
   }
 

@@ -1,19 +1,16 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/utils/text_util.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/core/sites/sites.dart';
-import 'package:pure_live/widgets/tv_button.dart';
 import 'package:pure_live/widgets/tv_tab_bar.dart';
 import 'package:pure_live/widgets/tv_tab_view.dart';
 import 'package:pure_live/widgets/tv_scaffold.dart';
-import 'package:pure_live/theme/styles/styles.dart';
+import 'package:pure_live/widgets/tv_room_card.dart';
 import 'package:pure_live/pagination/pagination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/hot/hot_provider.dart';
 import 'package:pure_live/core/sites/interface/live_site.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class HotPage extends ConsumerStatefulWidget {
@@ -158,69 +155,11 @@ class HotPlatformGridBridgeState extends ConsumerState<HotPlatformGridBridge> {
       getNotifier: () => ref.read(pagingCoreProvider(_param).notifier),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        mainAxisSpacing: 16.sp,
-        crossAxisSpacing: 16.sp,
+        mainAxisSpacing: 32.sp,
+        crossAxisSpacing: 32.sp,
         childAspectRatio: 1.3,
       ),
-      itemBuilder: (context, room, index) => _buildLiveCard(room),
-    );
-  }
-
-  Widget _buildLiveCard(LiveRoom room) {
-    final currentTvTheme = context.tvTheme;
-    return TvButton(
-      title: "",
-      size: TvButtonSize.large,
-      onTap: () {},
-      icon: Container(
-        padding: EdgeInsets.all(8.sp),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  color: currentTvTheme.cardColor.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8.sp),
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: room.cover,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  placeholder: (context, url) => Center(
-                    child: Icon(Icons.play_circle_outline, size: 36.sp, color: currentTvTheme.secondaryTextColor),
-                  ),
-                  errorWidget: (context, url, error) => Center(
-                    child: Icon(Icons.broken_image_outlined, size: 36.sp, color: currentTvTheme.secondaryTextColor),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 8.sp),
-            Text(
-              room.title,
-              style: AppTextStyles.t16W500.copyWith(color: currentTvTheme.primaryTextColor),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    room.nick,
-                    style: AppTextStyles.t14.copyWith(color: currentTvTheme.secondaryTextColor),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(readableCount(room.watching), style: AppTextStyles.t14.copyWith(color: currentTvTheme.focusColor)),
-              ],
-            ),
-          ],
-        ),
-      ),
+      itemBuilder: (context, room, index) => TvRoomCard(room: room, onLongPress: () {}, onTap: () {}),
     );
   }
 }

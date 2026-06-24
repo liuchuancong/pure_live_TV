@@ -815,6 +815,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "7.3.1"
+  marquee_list:
+    dependency: "direct main"
+    description:
+      name: marquee_list
+      sha256: "786ee8764d9f9f8683519f0221eac6d09c7f2a6309d98df848b53135151192f3"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.0"
   matcher:
     dependency: transitive
     description:

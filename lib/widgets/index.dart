@@ -23,5 +23,8 @@ export 'tv_settings_tile.dart';
 export 'tv_tab_bar.dart';
 export 'tv_tab_view.dart';
 
+export 'tv_room_card.dart';
+export 'tv_common_avatar.dart';
+
 // Widget全局扩展方法
 export 'widget_extensions.dart';

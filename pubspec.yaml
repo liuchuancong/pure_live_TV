@@ -96,7 +96,7 @@ dependencies:
   flutter_animate: ^4.5.2             # 组件链式动画快捷封装
   rxdart: ^0.28.0
   flutter_virtual_scroll: ^0.1.1
-
+  marquee_list: ^1.0.0
   # Git私有仓库自定义库
   flv_lzc:
     git: https://github.com/liuchuancong/flv_lzc.git # FLV视频流解析
