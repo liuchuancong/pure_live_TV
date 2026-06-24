@@ -95,7 +95,7 @@ dependencies:
   # 动画效果
   flutter_animate: ^4.5.2             # 组件链式动画快捷封装
   rxdart: ^0.28.0
-  
+  flutter_virtual_scroll: ^0.1.1
 
   # Git私有仓库自定义库
   flv_lzc:

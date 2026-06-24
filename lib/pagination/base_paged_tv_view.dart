@@ -3,14 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/widgets/tv_button.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/widgets/tv_icon_button.dart';
+import 'package:pure_live/pagination/paging_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/pagination/models/paging_param.dart';
 import 'package:pure_live/pagination/models/base_paged_state.dart';
+import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class BasePagedTvView<T> extends ConsumerStatefulWidget {
-  final ProviderBase<BasePagedState<T>> provider;
-  final dynamic notifier;
+  final NotifierProviderFamily<PagingCore<T>, BasePagedState<T>, PagingParam<T>> provider;
+  final PagingParam<T> param;
+  final PagingCore<T> Function() getNotifier;
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
   final SliverGridDelegateWithFixedCrossAxisCount gridDelegate;
   final Widget Function(BuildContext context)? notLoginBuilder;
@@ -20,7 +25,8 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
   const BasePagedTvView({
     super.key,
     required this.provider,
-    required this.notifier,
+    required this.param,
+    required this.getNotifier,
     required this.itemBuilder,
     required this.gridDelegate,
     this.notLoginBuilder,
@@ -32,59 +38,36 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
   ConsumerState<BasePagedTvView<T>> createState() => _BasePagedTvViewState<T>();
 }
 
-class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with SingleTickerProviderStateMixin {
-  late final AnimationController _rotationController;
-  final ScrollController _scrollController = ScrollController();
+class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
+  late PagingCore<T> _core;
   bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
-    _rotationController = AnimationController(vsync: this, duration: const Duration(seconds: 1));
-    _scrollController.addListener(_scrollListener);
-  }
-
-  void _scrollListener() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100.sp) {
-      widget.notifier.loadNextPage();
-    }
+    _core = widget.getNotifier();
   }
 
   Future<void> _triggerRefresh() async {
     if (_isRefreshing) return;
-    setState(() {
-      _isRefreshing = true;
-    });
-    _rotationController.repeat();
-
+    if (!mounted) return;
+    setState(() => _isRefreshing = true);
     try {
-      await widget.notifier.refreshData();
+      await _core.refresh();
     } catch (_) {
     } finally {
       if (mounted) {
-        _rotationController.stop();
-        _rotationController.reset();
-        setState(() {
-          _isRefreshing = false;
-        });
+        setState(() => _isRefreshing = false);
       }
     }
   }
 
   @override
-  void dispose() {
-    _scrollController.removeListener(_scrollListener);
-    _scrollController.dispose();
-    _rotationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
-    final state = ref.watch(widget.provider);
+    final state = ref.watch(widget.provider(widget.param));
 
-    if (state.items.isEmpty && state.controllerState.pageLoading) {
+    if (state.items.isEmpty && (state.controllerState.pageLoading || _isRefreshing)) {
       return Center(
         child: SizedBox(
           width: 48.sp,
@@ -138,26 +121,26 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
               );
       }
 
-      if (state.controllerState.pageEmpty) {
-        return widget.emptyBuilder != null
-            ? widget.emptyBuilder!(context, _triggerRefresh)
-            : Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.inbox_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
-                    SizedBox(height: 16.sp),
-                    Text(
-                      "暂无直播间内容",
-                      style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
-                    ),
-                    SizedBox(height: 24.sp),
-                    TvButton(title: "刷新页面", size: TvButtonSize.medium, autofocus: true, onTap: _triggerRefresh),
-                  ],
-                ),
-              );
-      }
+      return widget.emptyBuilder != null
+          ? widget.emptyBuilder!(context, _triggerRefresh)
+          : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.inbox_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
+                  SizedBox(height: 16.sp),
+                  Text(
+                    "暂无直播间内容",
+                    style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
+                  ),
+                  SizedBox(height: 24.sp),
+                  TvButton(title: "刷新页面", size: TvButtonSize.medium, autofocus: true, onTap: _triggerRefresh),
+                ],
+              ),
+            );
     }
+
+    final refreshIcon = const Icon(Icons.refresh_rounded);
 
     return Column(
       children: [
@@ -167,42 +150,57 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> with Si
             color: Colors.transparent,
             padding: EdgeInsets.only(right: 16.sp, bottom: 20.sp),
             child: TvIconButton(
-              icon: RotationTransition(turns: _rotationController, child: const Icon(Icons.refresh_rounded)),
+              icon: _isRefreshing
+                  ? refreshIcon.animate(onPlay: (controller) => controller.repeat()).rotate(duration: 1000.ms, end: 1.0)
+                  : refreshIcon,
               size: TvIconButtonSize.medium,
               isSecondary: true,
               onTap: _triggerRefresh,
             ),
           ),
         ),
-
         Expanded(
           child: DpadRegion(
-            child: GridView.builder(
-              controller: _scrollController,
+            child: VirtualGridView(
+              controller: _core.scrollController,
               gridDelegate: widget.gridDelegate,
-              itemCount: state.items.length + (state.canLoadMore ? 1 : 0),
+              cacheExtent: 1000.sp,
+              itemCount: state.items.length,
               itemBuilder: (context, index) {
-                if (index == state.items.length) {
-                  return Focus(
-                    canRequestFocus: false,
-                    descendantsAreFocusable: false,
-                    child: Center(
-                      child: SizedBox(
-                        width: 36.sp,
-                        height: 36.sp,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3.5.sp,
-                          valueColor: AlwaysStoppedAnimation<Color>(currentTvTheme.focusColor),
-                        ),
-                      ),
-                    ),
-                  );
-                }
                 return widget.itemBuilder(context, state.items[index], index);
               },
             ),
           ),
         ),
+        Focus(
+              canRequestFocus: false,
+              descendantsAreFocusable: false,
+              child: Container(
+                width: double.infinity,
+                color: Colors.transparent,
+                clipBehavior: Clip.hardEdge,
+                child: Center(
+                  child: SizedBox(
+                    width: 32.sp,
+                    height: 32.sp,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3.sp,
+                      valueColor: AlwaysStoppedAnimation<Color>(currentTvTheme.focusColor),
+                    ),
+                  ),
+                ),
+              ),
+            )
+            .animate(target: state.controllerState.loading ? 1.0 : 0.0)
+            .custom(
+              duration: 350.ms,
+              curve: Curves.fastOutSlowIn,
+              builder: (context, value, child) {
+                return SizedBox(height: value * 64.sp, child: child);
+              },
+            )
+            .fade(begin: 0.0, end: 1.0, duration: 250.ms)
+            .move(begin: Offset(0, 15.sp), end: const Offset(0, 0), duration: 350.ms, curve: Curves.easeOutCubic),
       ],
     );
   }

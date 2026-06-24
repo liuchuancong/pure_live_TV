@@ -40,16 +40,14 @@ class HttpClient {
       ..httpClientAdapter = IOHttpClientAdapter(
         createHttpClient: () {
           final client = io.HttpClient();
-          client.findProxy = (uri) {
-            final proxyCtrl = SettingsService.to.proxyState;
-            if (proxyCtrl.enableAppProxy && proxyCtrl.appProxyHost.trim().isNotEmpty) {
-              return 'PROXY '
-                  '${proxyCtrl.appProxyHost.trim()}:'
-                  '${proxyCtrl.appProxyPort}';
-            }
-            return 'DIRECT';
-          };
-
+          final proxyCtrl = SettingsService.to.proxyState;
+          if (proxyCtrl.enableAppProxy && proxyCtrl.appProxyHost.trim().isNotEmpty) {
+            client.findProxy = (uri) {
+              return 'PROXY ${proxyCtrl.appProxyHost.trim()}:${proxyCtrl.appProxyPort}';
+            };
+          } else {
+            client.findProxy = null;
+          }
           return client;
         },
       );

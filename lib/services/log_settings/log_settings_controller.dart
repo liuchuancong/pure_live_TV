@@ -1,7 +1,6 @@
 import 'log_settings_model.dart';
 import 'package:pure_live/utils/log.dart';
 import 'package:pure_live/utils/hive_pref_util.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -10,12 +9,9 @@ part 'log_settings_controller.g.dart';
 @riverpod
 class LogSettingsController extends _$LogSettingsController {
   static LogSettingsController get to => SettingsService.to.log;
+
   @override
   LogSettingsModel build() {
-    ref.listen(logSettingsControllerProvider.select((s) => s.storedEnableLog), (_, _) {
-      Log.updateLogStatus();
-    });
-
     return LogSettingsModel(
       serverAddress: HivePrefUtil.getString('user_log_address') ?? '',
       serverPort: HivePrefUtil.getInt('user_log_port') ?? 0,
@@ -31,6 +27,7 @@ class LogSettingsController extends _$LogSettingsController {
   void setEnableLog(bool enabled) {
     state = state.copyWith(storedEnableLog: enabled);
     _persist();
+    Log.updateLogStatus();
   }
 
   void _persist() {
@@ -39,7 +36,6 @@ class LogSettingsController extends _$LogSettingsController {
     HivePrefUtil.setBool('storedEnableLog', state.storedEnableLog);
   }
 
-  // 资源清理
   void dispose() {
     Log.dispose();
   }

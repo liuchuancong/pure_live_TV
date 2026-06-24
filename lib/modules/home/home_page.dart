@@ -106,7 +106,6 @@ class HomePage extends ConsumerWidget {
                       _buildHeader(context),
                       AppStyle.vGap32,
                       Expanded(child: _buildContentByIndex(context, ref, currentIndex)),
-                      AppStyle.vGap32,
                     ],
                   ),
                 ),

@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/misc.dart';
 import 'package:pure_live/utils/text_util.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/core/sites/sites.dart';
@@ -9,16 +8,12 @@ import 'package:pure_live/widgets/tv_tab_bar.dart';
 import 'package:pure_live/widgets/tv_tab_view.dart';
 import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:pure_live/theme/styles/styles.dart';
+import 'package:pure_live/pagination/pagination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/hot/hot_provider.dart';
-import 'package:pure_live/modules/hot/hot_all_provider.dart';
-import 'package:pure_live/pagination/base_paged_tv_view.dart';
-import 'package:pure_live/modules/hot/hot_fixed_provider.dart';
-import 'package:pure_live/modules/hot/hot_local_provider.dart';
-import 'package:pure_live/modules/hot/hot_remote_provider.dart';
+import 'package:pure_live/core/sites/interface/live_site.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/pagination/models/base_paged_state.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class HotPage extends ConsumerStatefulWidget {
@@ -95,7 +90,6 @@ class _HotPageState extends ConsumerState<HotPage> {
 
 class HotPlatformGridBridge extends ConsumerStatefulWidget {
   final Site site;
-
   const HotPlatformGridBridge({super.key, required this.site});
 
   @override
@@ -103,64 +97,74 @@ class HotPlatformGridBridge extends ConsumerStatefulWidget {
 }
 
 class _HotPlatformGridBridgeState extends ConsumerState<HotPlatformGridBridge> {
+  late final LiveSite site;
+
   @override
   void initState() {
     super.initState();
+    site = Sites.of(widget.site.id).liveSite;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.site.id == Sites.iptvSite) {
-        ref.read(hotLocalProvider(widget.site.id).notifier).loadFirstTime();
-      } else if (widget.site.id == Sites.kuaishouSite) {
-        ref.read(hotAllProvider(widget.site.id).notifier).loadFirstTime();
-      } else if (widget.site.id == Sites.douyuSite ||
-          widget.site.id == Sites.huyaSite ||
-          widget.site.id == Sites.douyinSite) {
-        ref.read(hotFixedProvider(widget.site.id).notifier).loadFirstTime();
-      } else {
-        ref.read(hotRemoteProvider(widget.site.id).notifier).loadFirstTime();
-      }
+      final param = _createParam();
+      final family = pagingProvider<LiveRoom>();
+      ref.read(family(param).notifier).refresh();
     });
+  }
+
+  PagingParam<LiveRoom> _createParam() {
+    final String siteId = widget.site.id;
+    if (siteId == Sites.kuaishouSite) {
+      return PagingParam<LiveRoom>(
+        mode: PagingMode.serverAll,
+        pageSize: 12,
+        fetchAll: () async {
+          return await site.getRecommendRooms(page: 1, pageSize: 999);
+        },
+      );
+    } else if (siteId == Sites.douyuSite || siteId == Sites.huyaSite || siteId == Sites.douyinSite) {
+      int fixedSize = siteId == Sites.douyuSite ? 40 : (siteId == Sites.huyaSite ? 120 : 20);
+      return PagingParam<LiveRoom>(
+        mode: PagingMode.serverFixedSize,
+        pageSize: 12,
+        fixedServerSize: fixedSize,
+        fetchFixed: (bigPage, size) async {
+          return await site.getRecommendRooms(page: bigPage, pageSize: size);
+        },
+      );
+    } else {
+      return PagingParam<LiveRoom>(
+        mode: PagingMode.serverRemote,
+        pageSize: 12,
+        fetchRemote: (page, size) async {
+          return await site.getRecommendRooms(page: page, pageSize: size);
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.site.id == Sites.iptvSite) {
-      final provider = hotLocalProvider(widget.site.id);
-      return _buildRealPagedGrid(provider, ref.read(provider.notifier));
-    }
-
-    if (widget.site.id == Sites.kuaishouSite) {
-      final provider = hotAllProvider(widget.site.id);
-      return _buildRealPagedGrid(provider, ref.read(provider.notifier));
-    }
-
-    if (widget.site.id == Sites.douyuSite || widget.site.id == Sites.huyaSite || widget.site.id == Sites.douyinSite) {
-      final provider = hotFixedProvider(widget.site.id);
-      return _buildRealPagedGrid(provider, ref.read(provider.notifier));
-    }
-
-    final provider = hotRemoteProvider(widget.site.id);
-    return _buildRealPagedGrid(provider, ref.read(provider.notifier));
+    final param = _createParam();
+    return _buildRealPagedGrid(param);
   }
 
-  Widget _buildRealPagedGrid(ProviderBase<BasePagedState<LiveRoom>> provider, dynamic notifier) {
+  Widget _buildRealPagedGrid(PagingParam<LiveRoom> param) {
+    final family = pagingProvider<LiveRoom>();
     return BasePagedTvView<LiveRoom>(
-      provider: provider,
-      notifier: notifier,
+      provider: family,
+      param: param,
+      getNotifier: () => ref.read(family(param).notifier),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         mainAxisSpacing: 16.sp,
         crossAxisSpacing: 16.sp,
         childAspectRatio: 1.3,
       ),
-      itemBuilder: (context, room, index) {
-        return _buildLiveCard(room);
-      },
+      itemBuilder: (context, room, index) => _buildLiveCard(room),
     );
   }
 
   Widget _buildLiveCard(LiveRoom room) {
     final currentTvTheme = context.tvTheme;
-
     return TvButton(
       title: "",
       size: TvButtonSize.large,
