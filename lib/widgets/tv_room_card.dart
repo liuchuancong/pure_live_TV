@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/utils/text_util.dart';
@@ -10,12 +11,19 @@ import 'package:pure_live/widgets/tv_common_avatar.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-class TvRoomCard extends StatelessWidget {
+class TvRoomCard extends StatefulWidget {
   const TvRoomCard({super.key, required this.room, this.onLongPress, this.onTap});
 
   final LiveRoom room;
   final VoidCallback? onLongPress;
   final VoidCallback? onTap;
+
+  @override
+  State<TvRoomCard> createState() => _TvRoomCardState();
+}
+
+class _TvRoomCardState extends State<TvRoomCard> {
+  bool _blockSelectEvent = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +64,7 @@ class TvRoomCard extends StatelessWidget {
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(24.sp), color: tvTheme.cardColor),
                       child: Image.network(
-                        room.cover,
+                        widget.room.cover,
                         fit: BoxFit.cover,
                         gaplessPlayback: false,
                         loadingBuilder: (context, child, loadingProgress) {
@@ -72,7 +80,7 @@ class TvRoomCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (room.isRecord == true)
+                  if (widget.room.isRecord == true)
                     Positioned(
                       right: 12.sp,
                       top: 12.sp,
@@ -83,13 +91,13 @@ class TvRoomCard extends StatelessWidget {
                         icon: Icon(Icons.videocam_rounded, size: 20.sp),
                       ),
                     ),
-                  if (room.isRecord == false && room.liveStatus == LiveStatus.live)
+                  if (widget.room.isRecord == false && widget.room.liveStatus == LiveStatus.live)
                     Positioned(
                       right: 12.sp,
                       bottom: 12.sp,
                       child: TvButton(
                         excludeFocus: true,
-                        title: readableCount(room.watching),
+                        title: readableCount(widget.room.watching),
                         size: TvButtonSize.mini,
                         icon: Icon(Icons.whatshot_rounded, size: 20.sp),
                       ),
@@ -100,7 +108,7 @@ class TvRoomCard extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
                 child: Row(
                   children: [
-                    TvCommonAvatar(avatarUrl: room.avatar, fallbackName: room.nick),
+                    TvCommonAvatar(avatarUrl: widget.room.avatar, fallbackName: widget.room.nick),
                     SizedBox(width: 16.sp),
                     Expanded(
                       child: Column(
@@ -108,13 +116,13 @@ class TvRoomCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           TvMarqueerText(
-                            text: room.title,
+                            text: widget.room.title,
                             isFocused: isFocused,
                             style: AppTextStyles.t22W700.copyWith(color: titleColor),
                           ),
                           SizedBox(height: 4.sp),
                           Text(
-                            room.nick,
+                            widget.room.nick,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.t18W500.copyWith(color: subtitleColor),
@@ -123,7 +131,7 @@ class TvRoomCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 12.sp),
-                    TvButton(excludeFocus: true, title: room.platform.toUpperCase(), size: TvButtonSize.mini),
+                    TvButton(excludeFocus: true, title: widget.room.platform.toUpperCase(), size: TvButtonSize.mini),
                   ],
                 ),
               ),
@@ -133,21 +141,35 @@ class TvRoomCard extends StatelessWidget {
       }),
     ];
 
-    return DpadFocusable(
-      autofocus: false,
-      effects: effects,
-      onSelect: onTap,
-      onLongSelect: onLongPress,
-      onFocusChange: (focused) {
-        if (!focused) return;
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          alignment: 0.2,
-        );
-      },
-      child: const SizedBox(),
+    return DpadTheme(
+      data: DpadThemeData(longSelectDuration: const Duration(milliseconds: 500)),
+      child: DpadFocusable(
+        autofocus: false,
+        effects: effects,
+        onSelect: () {
+          if (_blockSelectEvent) return;
+          widget.onTap?.call();
+        },
+        onLongSelect: () {
+          _blockSelectEvent = true;
+          widget.onLongPress?.call();
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              _blockSelectEvent = false;
+            }
+          });
+        },
+        onFocusChange: (focused) {
+          if (!focused) return;
+          Scrollable.ensureVisible(
+            context,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            alignment: 0.2,
+          );
+        },
+        child: const SizedBox(),
+      ),
     );
   }
 }

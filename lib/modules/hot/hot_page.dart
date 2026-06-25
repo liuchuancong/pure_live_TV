@@ -115,23 +115,22 @@ class _HotPageState extends ConsumerState<HotPage> {
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
-                          onTap: () {
-                            // 延迟 100 毫秒，确保遥控器按键完全抬起后，再安全唤起新焦点弹窗
-                            Future.delayed(const Duration(milliseconds: 100), () {
-                              if (!context.mounted) return;
-                              TvDialogUtils.showConfirm(
-                                context: context,
-                                title: '关注提示',
-                                message: '确定要关注主播“${room.nick}”吗？',
-                                confirmText: '确定',
-                                cancelText: '取消',
-                                onConfirm: () {
-                                  // 在这里执行关注逻辑
-                                },
-                              );
-                            });
+                          onLongPress: () {
+                            debugPrint('LONG_PRESS');
+                            TvDialogUtils.showConfirm(
+                              context: context,
+                              title: '关注提示',
+                              message: '确定要关注主播“${room.nick}”吗？',
+                              confirmText: '确定',
+                              cancelText: '取消',
+                              onConfirm: () {
+                                // 在这里执行关注逻辑
+                              },
+                            );
                           },
-                          onLongPress: () {},
+                          onTap: () {
+                            debugPrint('TAP');
+                          },
                         ),
                       ),
                     ),
