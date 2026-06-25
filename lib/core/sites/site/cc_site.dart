@@ -35,18 +35,27 @@ class CCSite implements LiveSite {
       header: {"user-agent": kUserAgent},
     );
     var result = jsonDecode(res);
+    final List<dynamic> rawGameList = result["game_list"] as List? ?? [];
+
     try {
-      for (var item in categories) {
-        List games = result['game_list'];
-        if (item.id == "2") {
-          games = games.where((x) => x["game_tag"] == "pc_game").toList();
-        } else if (item.id == "4") {
-          games = games.where((x) => x["game_tag"] == "mobile_game").toList();
-        } else if (item.id == "5") {
-          games = games.where((x) => x["game_tag"] == "other").toList();
+      for (var i = 0; i < categories.length; i++) {
+        final category = categories[i];
+        List<dynamic> filterGames;
+        switch (category.id) {
+          case "2":
+            filterGames = rawGameList.where((x) => x["game_tag"] == "pc_game").toList();
+            break;
+          case "4":
+            filterGames = rawGameList.where((x) => x["game_tag"] == "mobile_game").toList();
+            break;
+          case "5":
+            filterGames = rawGameList.where((x) => x["game_tag"] == "other").toList();
+            break;
+          default:
+            filterGames = rawGameList;
         }
-        var items = await getSubCategores(item, games);
-        item.children.addAll(items);
+        final childAreas = await getSubCategores(category, filterGames);
+        categories[i] = category.copyWith(children: childAreas);
       }
     } catch (e) {
       CoreLog.error(e);
@@ -54,21 +63,18 @@ class CCSite implements LiveSite {
     return categories;
   }
 
-  Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory, List result) async {
-    List<LiveArea> subs = [];
-    for (var item in result) {
-      var gid = item["gametype"].toString();
-      var subCategory = LiveArea(
+  Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory, List<dynamic> result) async {
+    return result.map<LiveArea>((item) {
+      final String gid = item["gametype"]?.toString() ?? "";
+      return LiveArea(
         areaId: gid,
-        areaName: item["gamename"] ?? '',
+        areaName: item["gamename"]?.toString() ?? "",
         areaType: liveCategory.id,
         platform: Sites.ccSite,
-        areaPic: item["img"],
+        areaPic: item["img"]?.toString() ?? "",
         typeName: liveCategory.name,
       );
-      subs.add(subCategory);
-    }
-    return subs;
+    }).toList();
   }
 
   @override

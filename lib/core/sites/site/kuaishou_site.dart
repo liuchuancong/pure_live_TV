@@ -57,11 +57,12 @@ class KuaishowSite implements LiveSite {
       LiveCategory(id: "8", name: "文化", children: []),
     ];
 
-    for (var item in categories) {
-      var items = await getAllSubCategores(item, 1, 30, []);
-      item.children.addAll(items);
-    }
-    return categories;
+    return Future.wait(
+      categories.map((category) async {
+        final items = await getAllSubCategores(category, page, pageSize);
+        return category.copyWith(children: items);
+      }),
+    );
   }
 
   final Map<String, dynamic> headers = {
@@ -81,20 +82,22 @@ class KuaishowSite implements LiveSite {
   Future<List<LiveArea>> getAllSubCategores(
     LiveCategory liveCategory,
     int page,
-    int pageSize,
-    List<LiveArea> allSubCategores,
-  ) async {
+    int pageSize, [
+    List<LiveArea>? allSubCategores,
+  ]) async {
+    final resultList = allSubCategores ?? [];
     try {
-      var subsArea = await getSubCategores(liveCategory, page, pageSize);
-      allSubCategores.addAll(subsArea);
-      var hasMore = subsArea.length >= pageSize;
+      final subsArea = await getSubCategores(liveCategory, page, pageSize);
+      if (subsArea.isEmpty) return resultList;
+
+      resultList.addAll(subsArea);
+      final hasMore = subsArea.length >= pageSize;
       if (hasMore) {
-        page++;
-        await getAllSubCategores(liveCategory, page, pageSize, allSubCategores);
+        await getAllSubCategores(liveCategory, page + 1, pageSize, resultList);
       }
-      return allSubCategores;
+      return resultList;
     } catch (e) {
-      return allSubCategores;
+      return resultList;
     }
   }
 
@@ -105,20 +108,17 @@ class KuaishowSite implements LiveSite {
       header: headers,
     );
 
-    List<LiveArea> subs = [];
-    for (var item in result["data"]["list"] ?? []) {
-      var subCategory = LiveArea(
-        areaId: item["id"],
-        areaName: item["name"],
+    final list = result["data"]?["list"] as List? ?? [];
+    return list.map<LiveArea>((item) {
+      return LiveArea(
+        areaId: item["id"]?.toString() ?? "",
+        areaName: item["name"]?.toString() ?? "",
         areaType: liveCategory.id,
         platform: Sites.kuaishouSite,
-        areaPic: item["poster"],
+        areaPic: item["poster"]?.toString() ?? "",
         typeName: liveCategory.name,
       );
-      subs.add(subCategory);
-    }
-
-    return subs;
+    }).toList();
   }
 
   bool isImage(String url) {

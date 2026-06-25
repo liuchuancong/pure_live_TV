@@ -103,9 +103,12 @@ class AreasPlatformGridBridgeState extends ConsumerState<AreasPlatformGridBridge
 
     return categoriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 3)),
-      error: (err, stack) => Center(
-        child: Text("加载失败: $err", style: const TextStyle(color: Colors.redAccent)),
-      ),
+      error: (err, stack) {
+        throw Exception("加载失败: $err"); // 处理错误
+        // return Center(
+        //   child: Text("加载失败: $err", style: const TextStyle(color: Colors.redAccent)),
+        // );
+      },
       data: (categories) {
         if (categories.isEmpty) {
           return const Center(child: Text("该平台暂无分类数据"));

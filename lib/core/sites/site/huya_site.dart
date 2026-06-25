@@ -45,9 +45,9 @@ class HuyaSite implements LiveSite {
       LiveCategory(id: "3", name: "手游", children: []),
     ];
 
-    for (var item in categories) {
-      var items = await getSubCategores(item);
-      item.children.addAll(items);
+    for (var i = 0; i < categories.length; i++) {
+      final items = await getSubCategores(categories[i]);
+      categories[i] = categories[i].copyWith(children: items);
     }
     return categories;
   }
@@ -61,21 +61,18 @@ class HuyaSite implements LiveSite {
       queryParameters: {"bussType": liveCategory.id},
     );
 
-    List<LiveArea> subs = [];
-    for (var item in result["data"]) {
-      var gid = (item["gid"])?.toInt().toString();
-      var subCategory = LiveArea(
-        areaId: gid!,
-        areaName: item["gameFullName"].toString(),
+    final list = result["data"] as List? ?? [];
+    return list.map<LiveArea>((item) {
+      final gid = item["gid"]?.toInt()?.toString() ?? "";
+      return LiveArea(
+        areaId: gid,
+        areaName: item["gameFullName"]?.toString() ?? "",
         areaType: liveCategory.id,
         platform: Sites.huyaSite,
-        areaPic: "https://huyaimg.msstatic.com/cdnimage/game/$gid-MS.jpg",
+        areaPic: gid.isNotEmpty ? "https://huyaimg.msstatic.com/cdnimage/game/$gid-MS.jpg" : "",
         typeName: liveCategory.name,
       );
-      subs.add(subCategory);
-    }
-
-    return subs;
+    }).toList();
   }
 
   @override
