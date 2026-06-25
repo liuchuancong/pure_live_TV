@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/widgets/index.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/widgets/tv_button.dart';
 import 'package:pure_live/theme/styles/styles.dart';
@@ -10,7 +11,7 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
-enum AppStatusType { loading, empty, error }
+enum AppStatusType { loading, empty, error, notLogin }
 
 class AppStatusView extends StatefulWidget {
   final AppStatusType type;
@@ -254,7 +255,9 @@ class _AppStatusViewState extends State<AppStatusView> with SingleTickerProvider
     final String finalSubtitle =
         widget.subtitle ?? (widget.type == AppStatusType.error ? "请检查您的网络连接或稍后再试" : "这里空空如也，什么都没有发现");
     final String finalButtonText = widget.buttonText ?? "重新加载";
-    final Widget finalIcon = widget.buttonTextIcon ?? Icon(Icons.refresh_rounded, size: 24.sp);
+    final Widget finalIcon =
+        widget.buttonTextIcon ??
+        Icon(widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded, size: 24.sp);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
