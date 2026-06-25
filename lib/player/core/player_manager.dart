@@ -11,6 +11,7 @@ import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import '../interface/unified_player_interface.dart';
+import 'package:pure_live/widgets/app_status_view.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
@@ -426,10 +427,7 @@ class PlayerManager {
   }
 
   Widget _buildPlaceholder() {
-    return Container(
-      color: Colors.black,
-      child: const Center(child: CircularProgressIndicator(strokeWidth: 4, color: Colors.white70)),
-    );
+    return AppStatusView(type: AppStatusType.loading);
   }
 
   // =========================

@@ -88,16 +88,12 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
               param: currentParam,
               getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
+                crossAxisCount: 8,
                 mainAxisSpacing: 32.sp,
                 crossAxisSpacing: 32.sp,
                 childAspectRatio: 1.3,
               ),
-              itemBuilder: (context, area, index) => TvButton(
-                title: area.areaName.isNotEmpty ? area.areaName : area.typeName,
-                size: TvButtonSize.large,
-                onTap: () {},
-              ),
+              itemBuilder: (context, area, index) => TvAreaCard(area: area, onTap: () {}, onLongPress: () {}),
             ),
           ),
         ),

@@ -5,7 +5,7 @@ export 'tv_scaffold.dart';
 // TV 焦点可聚焦基础控件（遥控器导航核心）
 export 'tv_focusable.dart';
 export 'tv_button.dart';
-export 'tv_card.dart';
+export 'tv_area_card.dart';
 export 'tv_icon_button.dart';
 // 通用状态占位/加载组件
 export 'tv_empty.dart';
@@ -28,3 +28,7 @@ export 'tv_common_avatar.dart';
 
 // Widget全局扩展方法
 export 'widget_extensions.dart';
+export 'tv_marqueer.dart';
+export 'app_status_view.dart';
+
+export 'package:remixicon/remixicon.dart';

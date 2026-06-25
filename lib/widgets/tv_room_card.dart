@@ -5,6 +5,7 @@ import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/widgets/tv_button.dart';
 import 'package:pure_live/theme/styles/styles.dart';
 import 'package:pure_live/widgets/tv_marqueer.dart';
+import 'package:pure_live/widgets/app_status_view.dart';
 import 'package:pure_live/widgets/tv_common_avatar.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -38,7 +39,11 @@ class TvRoomCard extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: borderRadius,
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,10 +63,11 @@ class TvRoomCard extends StatelessWidget {
                           if (loadingProgress == null) return child;
                           return Container(
                             color: tvTheme.cardColor,
-                            child: const Center(
-                              child: SizedBox(width: 32, height: 32, child: CircularProgressIndicator(strokeWidth: 3)),
-                            ),
+                            child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
                           );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
                         },
                       ),
                     ),

@@ -1,7 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/widgets/tv_button.dart';
+import 'package:pure_live/widgets/index.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/pagination/paging_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,80 +89,37 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final currentTvTheme = context.tvTheme;
     final state = ref.watch(pagingCoreProvider(widget.param));
 
     if (state.items.isEmpty && (state.controllerState.pageLoading || _isRefreshing)) {
-      return Center(
-        child: SizedBox(
-          width: 48.sp,
-          height: 48.sp,
-          child: CircularProgressIndicator(
-            strokeWidth: 4.sp,
-            valueColor: AlwaysStoppedAnimation<Color>(currentTvTheme.focusColor),
-          ),
-        ),
-      );
+      return const AppStatusView(type: AppStatusType.loading);
     }
 
     if (state.items.isEmpty) {
       if (state.controllerState.notLogin) {
         return widget.notLoginBuilder != null
             ? widget.notLoginBuilder!(context)
-            : Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.account_circle_outlined, size: 72.sp, color: currentTvTheme.secondaryTextColor),
-                    SizedBox(height: 16.sp),
-                    Text(
-                      "需要登录后访问",
-                      style: TextStyle(fontSize: 24.sp, color: currentTvTheme.primaryTextColor),
-                    ),
-                    SizedBox(height: 24.sp),
-                    TvButton(title: "去登录", size: TvButtonSize.medium, autofocus: true, onTap: () {}),
-                  ],
-                ),
+            : AppStatusView(
+                type: AppStatusType.empty,
+                icon: Icons.account_circle_outlined,
+                title: "需要登录后访问",
+                buttonText: "去登录",
+                onTap: () {},
               );
       }
 
+      // 加载错误
       if (state.controllerState.pageError) {
+        final errMsg = state.controllerState.errorMsg.isNotEmpty ? state.controllerState.errorMsg : "网络加载失败，请重试";
         return widget.errorBuilder != null
-            ? widget.errorBuilder!(context, state.controllerState.errorMsg, _triggerRefresh)
-            : Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.wifi_off_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
-                    SizedBox(height: 16.sp),
-                    Text(
-                      state.controllerState.errorMsg.isEmpty ? "网络加载失败，请重试" : state.controllerState.errorMsg,
-                      style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
-                    ),
-                    SizedBox(height: 24.sp),
-                    TvButton(title: "重新加载", size: TvButtonSize.medium, autofocus: true, onTap: _triggerRefresh),
-                  ],
-                ),
-              );
+            ? widget.errorBuilder!(context, errMsg, _triggerRefresh)
+            : AppStatusView(type: AppStatusType.error, subtitle: errMsg, onTap: _triggerRefresh);
       }
 
+      // 空数据
       return widget.emptyBuilder != null
           ? widget.emptyBuilder!(context, _triggerRefresh)
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.inbox_rounded, size: 72.sp, color: currentTvTheme.secondaryTextColor),
-                  SizedBox(height: 16.sp),
-                  Text(
-                    "暂无直播间内容",
-                    style: TextStyle(fontSize: 22.sp, color: currentTvTheme.secondaryTextColor),
-                  ),
-                  SizedBox(height: 24.sp),
-                  TvButton(title: "刷新页面", size: TvButtonSize.medium, autofocus: true, onTap: _triggerRefresh),
-                ],
-              ),
-            );
+          : AppStatusView(type: AppStatusType.empty, title: "暂无直播间内容", onTap: _triggerRefresh);
     }
 
     return Column(
@@ -174,6 +130,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
               controller: _core.scrollController,
               gridDelegate: widget.gridDelegate,
               cacheExtent: 100.sp,
+              padding: EdgeInsets.symmetric(horizontal: 16.sp),
               physics: const ClampingScrollPhysics(),
               itemCount: state.items.length,
               itemBuilder: (context, index) {
@@ -194,25 +151,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
             ),
           ),
         ),
-        Focus(
-              canRequestFocus: false,
-              descendantsAreFocusable: false,
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(color: Colors.transparent),
-                clipBehavior: Clip.hardEdge,
-                child: Center(
-                  child: SizedBox(
-                    width: 32.sp,
-                    height: 32.sp,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 3.sp,
-                      valueColor: AlwaysStoppedAnimation<Color>(currentTvTheme.focusColor),
-                    ),
-                  ),
-                ),
-              ),
-            )
+        AppStatusView(type: AppStatusType.loading, isMini: true)
             .animate(target: state.controllerState.loading ? 1.0 : 0.0)
             .custom(
               duration: 350.ms,

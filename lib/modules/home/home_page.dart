@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/widgets/tv_button.dart';
 import 'package:pure_live/theme/styles/styles.dart';
@@ -7,6 +8,7 @@ import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:pure_live/modules/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/widgets/tv_icon_button.dart';
+import 'package:pure_live/widgets/app_status_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/theme/styles/app_styles.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
@@ -154,7 +156,16 @@ class HomePage extends ConsumerWidget {
       return const HotPage();
     } else if (index == 2) {
       return const AreasPage();
+    } else if (index == 3) {
+      return AppStatusView(
+        type: AppStatusType.error,
+        title: "加载失败:=",
+        subtitle: "",
+        icon: Remix.error_warning_line,
+        onTap: () {},
+      );
     }
+
     final menuList = ref.watch(sideMenuListProvider);
     final menuName = menuList.firstWhere((element) => element.index == index).title;
 

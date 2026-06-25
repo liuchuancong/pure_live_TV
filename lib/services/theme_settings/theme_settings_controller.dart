@@ -12,7 +12,6 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   static ThemeSettingsController get to => SettingsService.to.theme;
   @override
   ThemeSettingsModel build() {
-    // 从 Hive 读取存储的完整 JSON 对象
     final savedJson = HivePrefUtil.getObject('theme_settings', (json) => json as Map<String, dynamic>);
     return savedJson != null ? ThemeSettingsModel.fromJson(savedJson) : const ThemeSettingsModel();
   }

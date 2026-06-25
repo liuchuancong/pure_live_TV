@@ -1,9 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/widgets/index.dart';
 import 'package:pure_live/core/sites/sites.dart';
-import 'package:pure_live/widgets/tv_tab_bar.dart';
-import 'package:pure_live/widgets/tv_tab_view.dart';
-import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/areas/area_grid_view.dart';
 import 'package:pure_live/core/models/live_area/live_area.dart';
@@ -85,15 +83,20 @@ class AreasPlatformGridBridgeState extends ConsumerState<AreasPlatformGridBridge
     final categoriesAsync = ref.watch(getSiteCategoriesProvider(widget.site.id));
 
     return categoriesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 3)),
-      error: (err, stack) {
-        return Center(
-          child: Text("加载失败: $err", style: const TextStyle(color: Colors.redAccent)),
-        );
-      },
+      loading: () => const Center(child: AppStatusView(type: AppStatusType.loading)),
+      error: (err, stack) => Center(
+        child: AppStatusView(
+          type: AppStatusType.error,
+          title: "加载失败: $err",
+          subtitle: "",
+          icon: Remix.error_warning_line,
+        ),
+      ),
       data: (categories) {
         if (categories.isEmpty) {
-          return const Center(child: Text("该平台暂无分类数据"));
+          return Center(
+            child: AppStatusView(type: AppStatusType.empty, title: "该平台暂无分类数据", subtitle: "", icon: Remix.apps_2_line),
+          );
         }
 
         final List<String> labels = categories.map((e) => e.name).toList();
