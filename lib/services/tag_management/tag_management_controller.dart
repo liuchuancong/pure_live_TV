@@ -3,6 +3,7 @@ import 'tag_management_model.dart';
 import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
 
 part 'tag_management_controller.g.dart';
 
@@ -55,6 +56,11 @@ class TagManagementController extends _$TagManagementController {
     }
     state = state.copyWith(roomTagsMap: newMap);
     _persist();
+  }
+
+  List<String> getTagsForRoom(LiveRoom room) {
+    final String key = room.roomId.toString();
+    return state.roomTagsMap[key] ?? const <String>[];
   }
 
   List<LiveTag> _refreshOrders(List<LiveTag> list) {

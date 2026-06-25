@@ -1,7 +1,7 @@
 // TV 基础页面 & 脚手架布局
 export 'tv_page.dart';
 export 'tv_scaffold.dart';
-
+export 'tv_app_bar.dart';
 // TV 焦点可聚焦基础控件（遥控器导航核心）
 export 'tv_focusable.dart';
 export 'tv_button.dart';

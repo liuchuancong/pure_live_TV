@@ -290,6 +290,7 @@ class _AppStatusViewState extends State<AppStatusView> with SingleTickerProvider
             ),
           ],
           if (!widget.isMini && widget.onTap != null) ...[
+            SizedBox(height: 24.sp),
             TvButton(
               title: finalButtonText,
               icon: finalIcon,

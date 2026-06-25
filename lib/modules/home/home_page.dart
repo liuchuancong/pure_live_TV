@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/theme/styles/app_styles.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/home/home_provider.dart';
+import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class HomePage extends ConsumerWidget {
@@ -151,8 +152,9 @@ class HomePage extends ConsumerWidget {
         ),
       );
     }
-
-    if (index == 1) {
+    if (index == 0) {
+      return const FavoritePage();
+    } else if (index == 1) {
       return const HotPage();
     } else if (index == 2) {
       return const AreasPage();

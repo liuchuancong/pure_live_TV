@@ -14,3 +14,4 @@ export 'toast_util.dart';
 export 'type_utils.dart';
 export 'version_util.dart';
 export 'web_socket_util.dart';
+export 'event_bus.dart';

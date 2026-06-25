@@ -1,8 +1,10 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/routes/router.dart';
 import 'package:pure_live/widgets/index.dart';
 import 'package:pure_live/pagination/pagination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/areas/platform_provider.dart';
 import 'package:pure_live/core/models/live_area/live_area.dart';
 import 'package:pure_live/modules/areas/category_provider.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -52,7 +54,8 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
   @override
   Widget build(BuildContext context) {
     final currentCategoryIndex = ref.watch(categoryTabProvider);
-
+    final platformState = ref.watch(platformTabProvider);
+    final currentSite = platformState.siteList[platformState.currentPlatformIndex];
     if (widget.labels.isEmpty || currentCategoryIndex >= widget.labels.length) {
       return const SizedBox.shrink();
     }
@@ -93,7 +96,16 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
                 crossAxisSpacing: 32.sp,
                 childAspectRatio: 1.3,
               ),
-              itemBuilder: (context, area, index) => TvAreaCard(area: area, onTap: () {}, onLongPress: () {}),
+              itemBuilder: (context, area, index) => TvAreaCard(
+                area: area,
+                onTap: () {
+                  context.pushPage(
+                    AppRoutes.kAreaRooms,
+                    extra: AreaRoomsArgs(site: currentSite, subCategory: area),
+                  );
+                },
+                onLongPress: () {},
+              ),
             ),
           ),
         ),
