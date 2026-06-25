@@ -19,9 +19,6 @@ class AreasPage extends ConsumerStatefulWidget {
 }
 
 class _AreasPageState extends ConsumerState<AreasPage> {
-  final Map<int, bool> _activatedTabs = {};
-  final Map<int, GlobalKey<AreasPlatformGridBridgeState>> _bridgeKeys = {};
-
   @override
   Widget build(BuildContext context) {
     final platformState = ref.watch(platformTabProvider);
@@ -29,14 +26,14 @@ class _AreasPageState extends ConsumerState<AreasPage> {
       return const SizedBox.shrink();
     }
 
-    _activatedTabs[platformState.currentPlatformIndex] = true;
-
     final List<TvTabItemData> tabItems = platformState.siteList.map((site) {
       return TvTabItemData(
         title: site.name,
         icon: Image.asset(site.logo, width: 24.sp, height: 24.sp, fit: BoxFit.contain),
       );
     }).toList();
+
+    final currentSite = platformState.siteList[platformState.currentPlatformIndex];
 
     return TvScaffold(
       child: Row(
@@ -51,28 +48,14 @@ class _AreasPageState extends ConsumerState<AreasPage> {
                   onTabChange: (index) {
                     ref.read(platformTabProvider.notifier).switchPlatform(index);
                   },
-                  onTabRefresh: (index) => _bridgeKeys[index]?.currentState?.triggerRefreshFromOuter(),
                 ),
                 SizedBox(height: 16.sp),
                 Expanded(
                   child: TvTabView(
-                    memoryKey: "areas_tab_view_content",
+                    memoryKey: "areas_tab_view_content_${platformState.currentPlatformIndex}",
                     verticalEdge: DpadEdgeBehavior.leave,
                     horizontalEdge: DpadEdgeBehavior.stop,
-                    child: IndexedStack(
-                      index: platformState.currentPlatformIndex,
-                      children: List.generate(platformState.siteList.length, (tabIndex) {
-                        final isActivated = _activatedTabs[tabIndex] ?? false;
-                        final childKey = _bridgeKeys.putIfAbsent(
-                          tabIndex,
-                          () => GlobalKey<AreasPlatformGridBridgeState>(),
-                        );
-                        if (!isActivated) {
-                          return const SizedBox.shrink();
-                        }
-                        return AreasPlatformGridBridge(key: childKey, site: platformState.siteList[tabIndex]);
-                      }),
-                    ),
+                    child: AreasPlatformGridBridge(key: ValueKey('site_${currentSite.id}'), site: currentSite),
                   ),
                 ),
               ],
@@ -104,10 +87,9 @@ class AreasPlatformGridBridgeState extends ConsumerState<AreasPlatformGridBridge
     return categoriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 3)),
       error: (err, stack) {
-        throw Exception("加载失败: $err"); // 处理错误
-        // return Center(
-        //   child: Text("加载失败: $err", style: const TextStyle(color: Colors.redAccent)),
-        // );
+        return Center(
+          child: Text("加载失败: $err", style: const TextStyle(color: Colors.redAccent)),
+        );
       },
       data: (categories) {
         if (categories.isEmpty) {

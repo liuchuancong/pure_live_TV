@@ -18,17 +18,50 @@ class AreaGridView extends ConsumerStatefulWidget {
 }
 
 class _AreaGridViewState extends ConsumerState<AreaGridView> {
-  final Map<int, bool> _activatedSubTabs = {};
+  late List<PagingParam<LiveArea>> _pagingParams;
+
+  @override
+  void initState() {
+    super.initState();
+    _initPagingParams();
+  }
+
+  @override
+  void didUpdateWidget(covariant AreaGridView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.labels != oldWidget.labels || widget.areas != oldWidget.areas) {
+      _initPagingParams();
+    }
+  }
+
+  void _initPagingParams() {
+    _pagingParams = List.generate(widget.labels.length, (subIndex) {
+      final currentSubAreas = widget.areas.isNotEmpty && subIndex < widget.areas.length
+          ? widget.areas[subIndex]
+          : <LiveArea>[];
+
+      return PagingParam<LiveArea>(
+        mode: PagingMode.serverAll,
+        pageSize: 12,
+        keepAlive: true,
+        fetchAll: () async => currentSubAreas,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final currentCategoryIndex = ref.watch(categoryTabProvider);
 
-    _activatedSubTabs[currentCategoryIndex] = true;
+    if (widget.labels.isEmpty || currentCategoryIndex >= widget.labels.length) {
+      return const SizedBox.shrink();
+    }
 
     final List<TvTabItemData> secondTabItems = widget.labels.map((name) {
       return TvTabItemData(title: name);
     }).toList();
+
+    final currentParam = _pagingParams[currentCategoryIndex];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,51 +74,30 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
               ref.read(categoryTabProvider.notifier).switchCategory(index);
             },
             onTabRefresh: (index) {
-              ref.read(categoryTabProvider.notifier).switchCategory(0);
+              ref.read(pagingCoreProvider(currentParam).notifier).refresh();
             },
           ),
         SizedBox(height: 20.sp),
         Expanded(
           child: TvTabView(
-            memoryKey: "areas_sub_category_indexed_view",
+            memoryKey: "areas_sub_category_view_$currentCategoryIndex",
             verticalEdge: DpadEdgeBehavior.leave,
             horizontalEdge: DpadEdgeBehavior.stop,
-            child: IndexedStack(
-              index: currentCategoryIndex,
-              children: List.generate(widget.labels.length, (subIndex) {
-                final isSubActivated = _activatedSubTabs[subIndex] ?? false;
-
-                if (!isSubActivated) {
-                  return const SizedBox.shrink();
-                }
-
-                final currentSubAreas = widget.areas.isNotEmpty && subIndex < widget.areas.length
-                    ? widget.areas[subIndex]
-                    : <LiveArea>[];
-
-                final param = PagingParam<LiveArea>(
-                  mode: PagingMode.serverAll,
-                  pageSize: 12,
-                  keepAlive: true,
-                  fetchAll: () async => currentSubAreas,
-                );
-
-                return BasePagedTvView<LiveArea>(
-                  param: param,
-                  getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 32.sp,
-                    crossAxisSpacing: 32.sp,
-                    childAspectRatio: 1.3,
-                  ),
-                  itemBuilder: (context, area, index) => TvButton(
-                    title: area.areaName.isNotEmpty ? area.areaName : area.typeName,
-                    size: TvButtonSize.large,
-                    onTap: () {},
-                  ),
-                );
-              }),
+            child: BasePagedTvView<LiveArea>(
+              key: ValueKey('page_$currentCategoryIndex'),
+              param: currentParam,
+              getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 32.sp,
+                crossAxisSpacing: 32.sp,
+                childAspectRatio: 1.3,
+              ),
+              itemBuilder: (context, area, index) => TvButton(
+                title: area.areaName.isNotEmpty ? area.areaName : area.typeName,
+                size: TvButtonSize.large,
+                onTap: () {},
+              ),
             ),
           ),
         ),
