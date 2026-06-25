@@ -12,7 +12,7 @@ class TvCommonAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final double r = radius ?? 20.sp;
+    final double r = radius ?? 28.sp;
     final double size = r * 2;
     final hasAvatar = avatarUrl != null && avatarUrl!.isNotEmpty;
 

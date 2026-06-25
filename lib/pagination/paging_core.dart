@@ -22,7 +22,7 @@ class PagingCore<T> extends _$PagingCore<T> {
   FetchAllData<T>? fetchAll;
   FetchFixedSize<T>? fetchFixed;
   VoidCallback? onLocalSourceUpdate;
-
+  final Set<int> _loadedPageSet = {};
   static const int firstPageKey = 1;
 
   final ScrollController scrollController = VirtualScrollController(
@@ -56,6 +56,7 @@ class PagingCore<T> extends _$PagingCore<T> {
     ref.onDispose(() {
       scrollController.dispose();
       _bigPageCache.clear();
+      _loadedPageSet.clear();
     });
     Future.microtask(() => refresh());
     return BasePagedState<T>(controllerState: const BaseControllerState(pageLoading: true), pageSize: param.pageSize);
@@ -122,6 +123,7 @@ class PagingCore<T> extends _$PagingCore<T> {
 
   Future<void> refresh() async {
     _requestToken++;
+    _loadedPageSet.clear();
     state = state.copyWith(controllerState: state.controllerState.copyWith(pageLoading: true));
     switch (mode) {
       case PagingMode.serverRemote:
@@ -143,10 +145,11 @@ class PagingCore<T> extends _$PagingCore<T> {
 
   Future<void> loadNextPage() async {
     if (_loadingMore) return;
-
     if (state.controllerState.pageError) return;
-
     if (!state.canLoadMore) return;
+
+    final nextPage = state.currentPage + 1;
+    if (_loadedPageSet.contains(nextPage)) return;
 
     _loadingMore = true;
     state = state.copyWith(controllerState: state.controllerState.copyWith(loading: true));
@@ -232,10 +235,9 @@ class PagingCore<T> extends _$PagingCore<T> {
     state = state.copyWith(
       controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
     );
-
     onLocalSourceUpdate?.call();
-
-    _sliceLocalData(state.allLocalItems, firstPageKey);
+    final pool = await fetchAll?.call() ?? <T>[];
+    _sliceLocalData(pool, firstPageKey);
   }
 
   void _sliceLocalData(List<T> pool, int targetPage) {
@@ -312,7 +314,7 @@ class PagingCore<T> extends _$PagingCore<T> {
       }
 
       state = state.copyWith(allLocalItems: all);
-
+      _loadedPageSet.add(pageKey);
       _sliceLocalData(all, pageKey);
     } catch (e) {
       if (token != _requestToken) {
@@ -361,6 +363,7 @@ class PagingCore<T> extends _$PagingCore<T> {
           errorMsg: "",
         ),
       );
+      _loadedPageSet.add(pageKey);
     } catch (e) {
       if (token != _requestToken) {
         return;
@@ -460,6 +463,7 @@ class PagingCore<T> extends _$PagingCore<T> {
           errorMsg: "",
         ),
       );
+      _loadedPageSet.add(pageKey);
     } catch (e) {
       if (token != _requestToken) {
         return;

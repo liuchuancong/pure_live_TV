@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/utils/text_util.dart';
@@ -8,6 +7,8 @@ import 'package:pure_live/theme/styles/styles.dart';
 import 'package:pure_live/widgets/tv_marqueer.dart';
 import 'package:pure_live/widgets/app_status_view.dart';
 import 'package:pure_live/widgets/tv_common_avatar.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/dialog/tv_dialog_lock_provider.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -23,8 +24,6 @@ class TvRoomCard extends StatefulWidget {
 }
 
 class _TvRoomCardState extends State<TvRoomCard> {
-  bool _blockSelectEvent = false;
-
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
@@ -105,7 +104,7 @@ class _TvRoomCardState extends State<TvRoomCard> {
                 ],
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+                padding: EdgeInsets.only(left: 10.sp, top: 16.sp, right: 16.sp),
                 child: Row(
                   children: [
                     TvCommonAvatar(avatarUrl: widget.room.avatar, fallbackName: widget.room.nick),
@@ -141,35 +140,29 @@ class _TvRoomCardState extends State<TvRoomCard> {
       }),
     ];
 
-    return DpadTheme(
-      data: DpadThemeData(longSelectDuration: const Duration(milliseconds: 500)),
-      child: DpadFocusable(
-        autofocus: false,
-        effects: effects,
-        onSelect: () {
-          if (_blockSelectEvent) return;
-          widget.onTap?.call();
-        },
-        onLongSelect: () {
-          _blockSelectEvent = true;
-          widget.onLongPress?.call();
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted) {
-              _blockSelectEvent = false;
-            }
-          });
-        },
-        onFocusChange: (focused) {
-          if (!focused) return;
-          Scrollable.ensureVisible(
-            context,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            alignment: 0.2,
-          );
-        },
-        child: const SizedBox(),
-      ),
+    return DpadFocusable(
+      autofocus: false,
+      effects: effects,
+      onFocusChange: (focused) {
+        if (!focused) return;
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          alignment: 0.2,
+        );
+      },
+      onSelect: () {
+        final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
+        if (isLocked) return;
+        widget.onTap?.call();
+      },
+      onLongSelect: () {
+        final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
+        if (isLocked) return;
+        widget.onLongPress?.call();
+      },
+      child: const SizedBox(),
     );
   }
 }

@@ -292,7 +292,6 @@ class BiliBiliSite implements LiveSite {
     if (kImgKey.isNotEmpty && kSubKey.isNotEmpty) {
       return (kImgKey, kSubKey);
     }
-    // 获取最新的 img_key 和 sub_key
     var resp = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/web-interface/nav',
       header: await getHeader(),

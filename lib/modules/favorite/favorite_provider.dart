@@ -10,7 +10,7 @@ import 'package:pure_live/modules/favorite/model/favorite_state.dart';
 
 part 'favorite_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class FavoriteNotifier extends _$FavoriteNotifier {
   StreamSubscription? _eventSubscription;
   Timer? _autoRefreshTimer;
@@ -150,7 +150,6 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       2 => state.offlineRooms,
       _ => state.onlineRooms,
     };
-
     final currentAvailableSites = Sites().availableSites(containsAll: true);
     if (state.tabSiteIndex < 0 || state.tabSiteIndex >= currentAvailableSites.length) {
       return [];
@@ -225,6 +224,5 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     }
 
     state = _syncAndFilter(state.copyWith(isLoading: false));
-    EventBus.instance.emit('refresh_favorite_finish', true);
   }
 }

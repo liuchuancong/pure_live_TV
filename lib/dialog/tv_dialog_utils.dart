@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/dialog/index.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/dialog/tv_dialog_lock_provider.dart';
 
 class TvDialogUtils {
-  static Future<T?> show<T>({
-    required BuildContext context,
-    required WidgetBuilder builder,
-    bool barrierDismissible = true,
-  }) {
-    return showGeneralDialog<T>(
+  static Future<T?> show<T>({required BuildContext context, required WidgetBuilder builder}) async {
+    SettingsService.to.container?.read(tvDialogLockProvider.notifier).lock();
+
+    final result = await showGeneralDialog<T>(
       context: context,
-      barrierDismissible: barrierDismissible,
+      barrierDismissible: false,
       barrierLabel: 'TvDialogBarrier',
       barrierColor: Colors.black.withAlpha(150),
       transitionDuration: const Duration(milliseconds: 300),
@@ -25,6 +25,10 @@ class TvDialogUtils {
         );
       },
     );
+
+    SettingsService.to.container?.read(tvDialogLockProvider.notifier).unlock();
+
+    return result;
   }
 
   static Future<bool?> showConfirm({
@@ -35,11 +39,9 @@ class TvDialogUtils {
     String? cancelText,
     VoidCallback? onConfirm,
     VoidCallback? onCancel,
-    bool barrierDismissible = true,
   }) {
     return show<bool>(
       context: context,
-      barrierDismissible: barrierDismissible,
       builder: (context) => TvConfirmDialog(
         title: title,
         message: message,
@@ -58,11 +60,9 @@ class TvDialogUtils {
     String? initialValue,
     int? maxLength,
     ValueChanged<String>? onConfirm,
-    bool barrierDismissible = true,
   }) {
     return show<String>(
       context: context,
-      barrierDismissible: barrierDismissible,
       builder: (context) => TvInputDialog(
         title: title,
         hintText: hintText,
@@ -83,7 +83,6 @@ class TvDialogUtils {
   }) {
     return show<T>(
       context: context,
-      barrierDismissible: barrierDismissible,
       builder: (context) =>
           TvMenuDialog<T>(title: title, items: items, selectedValue: selectedValue, onSelected: onSelected),
     );
@@ -99,7 +98,6 @@ class TvDialogUtils {
   }) {
     return show<T>(
       context: context,
-      barrierDismissible: barrierDismissible,
       builder: (context) =>
           TvSelectDialog<T>(title: title, items: items, selectedValue: selectedValue, onSelected: onSelected),
     );

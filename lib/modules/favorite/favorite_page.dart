@@ -21,35 +21,19 @@ class FavoritePage extends ConsumerStatefulWidget {
 }
 
 class _FavoritePageState extends ConsumerState<FavoritePage> {
-  final Map<String, PagingParam<LiveRoom>> _favPagingCache = {};
-
-  PagingParam<LiveRoom> _getOrCreateParam(
-    int onlineIndex,
-    int siteIndex,
-    String tagId,
-    List<LiveRoom> currentFilteredRooms,
-  ) {
-    final cacheKey = '${onlineIndex}_${siteIndex}_$tagId';
-    if (_favPagingCache.containsKey(cacheKey)) {
-      return _favPagingCache[cacheKey]!;
-    }
-
-    final param = PagingParam<LiveRoom>(
-      mode: PagingMode.localReactive,
-      pageSize: 12,
-      keepAlive: true,
-      fetchAll: () async => currentFilteredRooms,
-      localRefresh: () async => ref.read(favoriteProvider.notifier).refreshData(),
-    );
-
-    _favPagingCache[cacheKey] = param;
-    return param;
-  }
-
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
     final favoriteState = ref.watch(favoriteProvider);
+    final currentParam = PagingParam<LiveRoom>(
+      mode: PagingMode.localReactive,
+      pageSize: 12,
+      keepAlive: false, // 放弃保持旧状态
+      fetchAll: () async {
+        return ref.read(favoriteProvider.notifier).getFilteredRooms();
+      },
+      localRefresh: () async {},
+    );
 
     final List<TvTabItemData> statusTabs = [
       const TvTabItemData(title: '正在直播'),
@@ -61,15 +45,6 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     final List<TvTabItemData> siteTabs = availableSitesList.map((site) {
       return TvTabItemData(title: site.name);
     }).toList();
-
-    final List<LiveRoom> currentRooms = ref.read(favoriteProvider.notifier).getFilteredRooms();
-
-    final currentParam = _getOrCreateParam(
-      favoriteState.tabOnlineIndex,
-      favoriteState.tabSiteIndex,
-      favoriteState.selectedTagId,
-      currentRooms,
-    );
 
     return TvScaffold(
       child: Container(
@@ -88,7 +63,6 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                     },
                     onTabRefresh: (index) {
                       ref.read(favoriteProvider.notifier).refreshData();
-                      ref.read(pagingCoreProvider(currentParam).notifier).refresh();
                     },
                   ),
                   SizedBox(height: 12.sp),

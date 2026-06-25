@@ -27,9 +27,10 @@ class HttpClient {
       ..interceptors.add(CustomLogInterceptor())
       ..interceptors.add(
         PrettyDioLogger(
+          request: true,
           requestHeader: true,
-          requestBody: true,
-          responseBody: true,
+          requestBody: false,
+          responseBody: false,
           error: true,
           compact: true,
           maxWidth: 90,

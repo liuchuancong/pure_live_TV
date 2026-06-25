@@ -10,6 +10,7 @@ import 'package:pure_live/pagination/pagination.dart';
 import 'package:pure_live/dialog/tv_dialog_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/hot/hot_provider.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -116,7 +117,6 @@ class _HotPageState extends ConsumerState<HotPage> {
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
                           onLongPress: () {
-                            debugPrint('LONG_PRESS');
                             TvDialogUtils.showConfirm(
                               context: context,
                               title: '关注提示',
@@ -124,13 +124,11 @@ class _HotPageState extends ConsumerState<HotPage> {
                               confirmText: '确定',
                               cancelText: '取消',
                               onConfirm: () {
-                                // 在这里执行关注逻辑
+                                SettingsService.to.fav.addRoom(room);
                               },
                             );
                           },
-                          onTap: () {
-                            debugPrint('TAP');
-                          },
+                          onTap: () {},
                         ),
                       ),
                     ),

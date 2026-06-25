@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'favorite_provider.dart';
+part of 'tv_dialog_lock_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,51 +9,50 @@ part of 'favorite_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(FavoriteNotifier)
-final favoriteProvider = FavoriteNotifierProvider._();
+@ProviderFor(TvDialogLock)
+final tvDialogLockProvider = TvDialogLockProvider._();
 
-final class FavoriteNotifierProvider
-    extends $NotifierProvider<FavoriteNotifier, FavoriteState> {
-  FavoriteNotifierProvider._()
+final class TvDialogLockProvider extends $NotifierProvider<TvDialogLock, bool> {
+  TvDialogLockProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'favoriteProvider',
+        name: r'tvDialogLockProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$favoriteNotifierHash();
+  String debugGetCreateSourceHash() => _$tvDialogLockHash();
 
   @$internal
   @override
-  FavoriteNotifier create() => FavoriteNotifier();
+  TvDialogLock create() => TvDialogLock();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FavoriteState value) {
+  Override overrideWithValue(bool value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<FavoriteState>(value),
+      providerOverride: $SyncValueProvider<bool>(value),
     );
   }
 }
 
-String _$favoriteNotifierHash() => r'673a22b0750091efc6ae5a7fb0653a180547b02c';
+String _$tvDialogLockHash() => r'3f8de0f4aa94eb9f802dcaf13d1dc8e0f9938561';
 
-abstract class _$FavoriteNotifier extends $Notifier<FavoriteState> {
-  FavoriteState build();
+abstract class _$TvDialogLock extends $Notifier<bool> {
+  bool build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<FavoriteState, FavoriteState>;
+    final ref = this.ref as $Ref<bool, bool>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<FavoriteState, FavoriteState>,
-              FavoriteState,
+              AnyNotifier<bool, bool>,
+              bool,
               Object?,
               Object?
             >;

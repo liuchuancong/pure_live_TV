@@ -34,7 +34,7 @@ class TvDialog extends StatelessWidget {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
       ),
-      DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75),
+      DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.8, blurRadius: 3.0, spreadRadius: 1.0),
       DpadCustomEffect((ctx, state, _) {
         return Container(
           width: 800.sp,
