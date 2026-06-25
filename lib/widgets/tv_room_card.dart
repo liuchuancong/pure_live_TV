@@ -11,11 +11,11 @@ import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvRoomCard extends StatelessWidget {
-  const TvRoomCard({super.key, required this.room, required this.onLongPress, required this.onTap});
+  const TvRoomCard({super.key, required this.room, this.onLongPress, this.onTap});
 
   final LiveRoom room;
-  final VoidCallback onLongPress;
-  final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

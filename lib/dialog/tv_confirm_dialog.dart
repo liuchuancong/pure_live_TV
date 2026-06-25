@@ -1,47 +1,49 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pure_live/dialog/tv_dialog.dart';
-import 'package:pure_live/routes/extensions.dart';
-import 'package:pure_live/widgets/tv_button.dart';
+import 'package:pure_live/theme/tv_theme_x.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvConfirmDialog extends StatelessWidget {
   final String title;
   final String? message;
+  final String? confirmText;
+  final String? cancelText;
   final VoidCallback? onConfirm;
+  final VoidCallback? onCancel;
 
-  const TvConfirmDialog({super.key, required this.title, this.message, this.onConfirm});
+  const TvConfirmDialog({
+    super.key,
+    required this.title,
+    this.message,
+    this.confirmText = "确定",
+    this.cancelText = "取消",
+    this.onConfirm,
+    this.onCancel,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+
     return TvDialog(
       title: title,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (message != null) Text(message!),
-          const SizedBox(height: 32),
-          DpadRegion(
-            horizontalEdge: DpadEdgeBehavior.stop,
-            verticalEdge: DpadEdgeBehavior.stop,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TvButton(title: "取消", onTap: context.back),
-                const SizedBox(width: 24),
-                TvButton(
-                  title: "确定",
-                  autofocus: true,
-                  onTap: () {
-                    context.pop();
-                    onConfirm?.call();
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      confirmText: confirmText,
+      cancelText: cancelText,
+      onConfirm: () {
+        Navigator.of(context).pop();
+        onConfirm?.call();
+      },
+      onCancel:
+          onCancel ??
+          () {
+            Navigator.of(context).pop();
+          },
+      child: message != null
+          ? Text(
+              message!,
+              style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: 24.sp),
+            )
+          : const SizedBox.shrink(),
     );
   }
 }

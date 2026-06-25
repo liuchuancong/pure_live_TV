@@ -7,6 +7,7 @@ import 'package:pure_live/widgets/tv_tab_view.dart';
 import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:pure_live/widgets/tv_room_card.dart';
 import 'package:pure_live/pagination/pagination.dart';
+import 'package:pure_live/dialog/tv_dialog_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/hot/hot_provider.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
@@ -112,7 +113,26 @@ class _HotPageState extends ConsumerState<HotPage> {
                           crossAxisSpacing: 32.sp,
                           childAspectRatio: 1.3,
                         ),
-                        itemBuilder: (context, room, index) => TvRoomCard(room: room, onLongPress: () {}, onTap: () {}),
+                        itemBuilder: (context, room, index) => TvRoomCard(
+                          room: room,
+                          onTap: () {
+                            // 延迟 100 毫秒，确保遥控器按键完全抬起后，再安全唤起新焦点弹窗
+                            Future.delayed(const Duration(milliseconds: 100), () {
+                              if (!context.mounted) return;
+                              TvDialogUtils.showConfirm(
+                                context: context,
+                                title: '关注提示',
+                                message: '确定要关注主播“${room.nick}”吗？',
+                                confirmText: '确定',
+                                cancelText: '取消',
+                                onConfirm: () {
+                                  // 在这里执行关注逻辑
+                                },
+                              );
+                            });
+                          },
+                          onLongPress: () {},
+                        ),
                       ),
                     ),
                   ),
