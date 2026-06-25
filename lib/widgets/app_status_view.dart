@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/widgets/index.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/widgets/tv_button.dart';
 import 'package:pure_live/theme/styles/styles.dart';
 import 'package:pure_live/theme/tv_theme_data.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';

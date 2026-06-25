@@ -12,6 +12,7 @@ import 'package:pure_live/theme/styles/app_styles.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/home/home_provider.dart';
 import 'package:pure_live/modules/history/history_page.dart';
+import 'package:pure_live/modules/search/tv_search_page.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/favorite_areas/favorite_areas_page.dart';
@@ -161,6 +162,8 @@ class HomePage extends ConsumerWidget {
     } else if (index == 3) {
       return const FavoriteAreasPage();
     } else if (index == 4) {
+      return const TvSearchPage();
+    } else if (index == 5) {
       return const HistoryPage();
     }
 

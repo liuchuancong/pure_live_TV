@@ -32,3 +32,4 @@ export 'tv_marqueer.dart';
 export 'app_status_view.dart';
 
 export 'package:remixicon/remixicon.dart';
+export 'tv_qwer_keyboard.dart';
