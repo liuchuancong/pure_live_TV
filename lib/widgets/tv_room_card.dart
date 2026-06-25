@@ -13,17 +13,28 @@ import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvRoomCard extends StatefulWidget {
-  const TvRoomCard({super.key, required this.room, this.onLongPress, this.onTap});
+  const TvRoomCard({super.key, required this.room, this.onLongPress, this.onTap, this.showFollowedMark = true});
 
   final LiveRoom room;
   final VoidCallback? onLongPress;
   final VoidCallback? onTap;
+
+  /// 是否展示已关注标识，默认true
+  final bool showFollowedMark;
 
   @override
   State<TvRoomCard> createState() => _TvRoomCardState();
 }
 
 class _TvRoomCardState extends State<TvRoomCard> {
+  late bool _followed;
+
+  @override
+  void initState() {
+    super.initState();
+    _followed = SettingsService.to.fav.isFavorite(widget.room);
+  }
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
@@ -79,6 +90,19 @@ class _TvRoomCardState extends State<TvRoomCard> {
                       ),
                     ),
                   ),
+
+                  if (widget.showFollowedMark && _followed)
+                    Positioned(
+                      left: 12.sp,
+                      top: 12.sp,
+                      child: TvButton(
+                        excludeFocus: true,
+                        title: '已关注',
+                        size: TvButtonSize.mini,
+                        icon: Icon(Icons.favorite, size: 18.sp),
+                      ),
+                    ),
+
                   if (widget.room.isRecord == true)
                     Positioned(
                       right: 12.sp,

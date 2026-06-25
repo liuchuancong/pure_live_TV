@@ -7,11 +7,10 @@ import 'package:pure_live/widgets/tv_tab_view.dart';
 import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:pure_live/widgets/tv_room_card.dart';
 import 'package:pure_live/pagination/pagination.dart';
-import 'package:pure_live/dialog/tv_dialog_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/hot/hot_provider.dart';
-import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/utils/favorite_operation_util.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class HotPage extends ConsumerStatefulWidget {
@@ -116,19 +115,7 @@ class _HotPageState extends ConsumerState<HotPage> {
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
-                          onLongPress: () {
-                            TvDialogUtils.showConfirm(
-                              context: context,
-                              title: '关注提示',
-                              message: '确定要关注主播“${room.nick}”吗？',
-                              confirmText: '确定',
-                              cancelText: '取消',
-                              onConfirm: () {
-                                SettingsService.to.fav.addRoom(room);
-                              },
-                            );
-                          },
-                          onTap: () {},
+                          onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
                         ),
                       ),
                     ),

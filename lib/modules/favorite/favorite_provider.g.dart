@@ -20,7 +20,7 @@ final class FavoriteNotifierProvider
         argument: null,
         retry: null,
         name: r'favoriteProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class FavoriteNotifierProvider
   }
 }
 
-String _$favoriteNotifierHash() => r'673a22b0750091efc6ae5a7fb0653a180547b02c';
+String _$favoriteNotifierHash() => r'5f3812c1b70b4ea7ab612b6c749c913d8ec8cc5d';
 
 abstract class _$FavoriteNotifier extends $Notifier<FavoriteState> {
   FavoriteState build();

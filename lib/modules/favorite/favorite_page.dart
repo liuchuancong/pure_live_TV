@@ -10,6 +10,7 @@ import 'package:pure_live/widgets/tv_room_card.dart';
 import 'package:pure_live/pagination/pagination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/utils/favorite_operation_util.dart';
 import 'package:pure_live/modules/favorite/favorite_provider.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -25,10 +26,13 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
     final favoriteState = ref.watch(favoriteProvider);
+
+    final currentRooms = ref.read(favoriteProvider.notifier).getFilteredRooms();
+
     final currentParam = PagingParam<LiveRoom>(
       mode: PagingMode.localReactive,
       pageSize: 12,
-      keepAlive: false, // 放弃保持旧状态
+      keepAlive: false,
       fetchAll: () async {
         return ref.read(favoriteProvider.notifier).getFilteredRooms();
       },
@@ -113,12 +117,12 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                   Expanded(
                     child: TvTabView(
                       memoryKey:
-                          "fav_tv_view_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}",
+                          "fav_tv_view_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}_${currentRooms.length}",
                       verticalEdge: DpadEdgeBehavior.leave,
                       horizontalEdge: DpadEdgeBehavior.stop,
                       child: BasePagedTvView<LiveRoom>(
                         key: ValueKey(
-                          'fav_grid_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}',
+                          'fav_grid_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}_${currentRooms.length}',
                         ),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
@@ -128,7 +132,14 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                           crossAxisSpacing: 32.sp,
                           childAspectRatio: 1.3,
                         ),
-                        itemBuilder: (context, room, index) => TvRoomCard(room: room, onLongPress: () {}, onTap: () {}),
+                        itemBuilder: (context, room, index) => TvRoomCard(
+                          room: room,
+                          onLongPress: () {
+                            FavOperateUtil.toggleRoomFollowDialog(context, room);
+                          },
+                          onTap: () {},
+                          showFollowedMark: false,
+                        ),
                       ),
                     ),
                   ),

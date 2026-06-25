@@ -130,7 +130,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
               controller: _core.scrollController,
               gridDelegate: widget.gridDelegate,
               cacheExtent: 100.sp,
-              padding: EdgeInsets.symmetric(horizontal: 16.sp),
+              padding: EdgeInsets.all(16.sp),
               physics: const ClampingScrollPhysics(),
               itemCount: state.items.length,
               itemBuilder: (context, index) {

@@ -7,10 +7,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:pure_live/services/tag_management/live_tag.dart';
 import 'package:pure_live/modules/favorite/model/favorite_state.dart';
+import 'package:pure_live/services/favorite_settings/favorite_settings_model.dart';
+import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
 
 part 'favorite_provider.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 class FavoriteNotifier extends _$FavoriteNotifier {
   StreamSubscription? _eventSubscription;
   Timer? _autoRefreshTimer;
@@ -25,7 +27,8 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     _listenEventBus();
     _setupRefreshStrategy();
 
-    return _syncAndFilter(const FavoriteState());
+    final favState = ref.watch(favoriteRoomControllerProvider);
+    return _syncAndFilter(const FavoriteState(), favState);
   }
 
   void _listenEventBus() {
@@ -48,19 +51,21 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   void changeOnlineTab(int index) {
-    state = _syncAndFilter(state.copyWith(tabOnlineIndex: index));
+    final favState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(tabOnlineIndex: index), favState);
   }
 
   void changeSiteTab(int index) {
-    state = _syncAndFilter(state.copyWith(tabSiteIndex: index));
+    final favState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(tabSiteIndex: index), favState);
   }
 
   void changeSelectedTag(String tagId) {
-    state = _syncAndFilter(state.copyWith(selectedTagId: tagId));
+    final favState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(selectedTagId: tagId), favState);
   }
 
-  FavoriteState _syncAndFilter(FavoriteState currentState) {
-    final favState = SettingsService.to.favState;
+  FavoriteState _syncAndFilter(FavoriteState currentState, FavoriteSettingsModel favState) {
     final List<LiveRoom> roomsBase = List<LiveRoom>.from(favState.favoriteRooms);
 
     final onlineSrc = roomsBase.where((r) => r.liveStatus == LiveStatus.live && r.isRecord == false).toList();
@@ -150,6 +155,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       2 => state.offlineRooms,
       _ => state.onlineRooms,
     };
+
     final currentAvailableSites = Sites().availableSites(containsAll: true);
     if (state.tabSiteIndex < 0 || state.tabSiteIndex >= currentAvailableSites.length) {
       return [];
@@ -175,7 +181,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true);
 
-    final favState = SettingsService.to.favState;
+    final favState = ref.read(favoriteRoomControllerProvider);
     final List<LiveRoom> source = List<LiveRoom>.from(favState.favoriteRooms);
     final currentAvailableSites = Sites().availableSites(containsAll: true);
     final refreshState = SettingsService.to.refreshState;
@@ -198,7 +204,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
     final validRooms = valid.where((r) => r.platform.isNotEmpty).toList();
     if (validRooms.isEmpty) {
-      state = _syncAndFilter(state.copyWith(isLoading: false));
+      state = _syncAndFilter(state.copyWith(isLoading: false), favState);
       EventBus.instance.emit('refresh_favorite_finish', true);
       return;
     }
@@ -216,13 +222,14 @@ class FavoriteNotifier extends _$FavoriteNotifier {
         final results = await Future.wait(futures);
 
         for (var updated in results) {
-          SettingsService.to.fav.updateRoom(updated);
+          ref.read(favoriteRoomControllerProvider.notifier).updateRoom(updated);
         }
       } catch (e) {
         developer.log('Error refreshing room details in riverpod: $e');
       }
     }
 
-    state = _syncAndFilter(state.copyWith(isLoading: false));
+    final finalFavState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(isLoading: false), finalFavState);
   }
 }

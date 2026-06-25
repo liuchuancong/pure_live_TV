@@ -8,6 +8,7 @@ import 'package:pure_live/pagination/pagination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/models/live_area/live_area.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/utils/favorite_operation_util.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class AreaRoomsPage extends ConsumerStatefulWidget {
@@ -92,7 +93,8 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
               crossAxisSpacing: 32.sp,
               childAspectRatio: 1.3,
             ),
-            itemBuilder: (context, room, index) => TvRoomCard(room: room, onLongPress: () {}, onTap: () {}),
+            itemBuilder: (context, room, index) =>
+                TvRoomCard(room: room, onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room)),
           ),
         ),
       ),
