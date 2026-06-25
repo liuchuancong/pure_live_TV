@@ -25,6 +25,12 @@ class HistoryController extends _$HistoryController {
     _persist();
   }
 
+  void removeHistory(LiveRoom room) {
+    final newList = state.historyRooms.where((e) => e.roomId != room.roomId || e.platform != room.platform).toList();
+    state = state.copyWith(historyRooms: newList);
+    _persist();
+  }
+
   void clearHistory() {
     state = state.copyWith(historyRooms: []);
     _persist();

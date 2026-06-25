@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:pure_live/widgets/tv_button.dart';
 import 'package:pure_live/theme/styles/styles.dart';
@@ -8,13 +7,14 @@ import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:pure_live/modules/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/widgets/tv_icon_button.dart';
-import 'package:pure_live/widgets/app_status_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/theme/styles/app_styles.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/home/home_provider.dart';
+import 'package:pure_live/modules/history/history_page.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/favorite_areas/favorite_areas_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -159,13 +159,9 @@ class HomePage extends ConsumerWidget {
     } else if (index == 2) {
       return const AreasPage();
     } else if (index == 3) {
-      return AppStatusView(
-        type: AppStatusType.error,
-        title: "加载失败:=",
-        subtitle: "",
-        icon: Remix.error_warning_line,
-        onTap: () {},
-      );
+      return const FavoriteAreasPage();
+    } else if (index == 4) {
+      return const HistoryPage();
     }
 
     final menuList = ref.watch(sideMenuListProvider);
