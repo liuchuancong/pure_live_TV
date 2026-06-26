@@ -14,7 +14,7 @@ class TvThemeController extends _$TvThemeController {
 
   @override
   TvThemeData build() {
-    final themeId = HivePrefUtil.getString('tvThemeId') ?? darkTvTheme.id;
+    final themeId = HivePrefUtil.getString('tvThemeId') ?? animeTvTheme.id;
     return themes.firstWhere((e) => e.id == themeId, orElse: () => darkTvTheme);
   }
 

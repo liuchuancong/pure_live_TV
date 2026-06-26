@@ -335,11 +335,6 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       await _server!.close(force: true);
       _server = null;
       _app = null;
-
-      final currentData = state.value;
-      if (currentData != null) {
-        state = AsyncValue.data(currentData.copyWith(isRunning: false, serverUrl: ''));
-      }
       _addLog('服务已停止');
     }
   }

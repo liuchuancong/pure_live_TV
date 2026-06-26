@@ -12,7 +12,7 @@ const cyberTvTheme = TvThemeData(
 
   backgroundColor: Colors.black,
 
-  focusColor: Color(0xff00FFAA),
+  focusColor: Color.fromARGB(255, 42, 211, 154),
 
   primaryTextColor: Colors.white,
 
