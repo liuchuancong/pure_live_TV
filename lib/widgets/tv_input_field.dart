@@ -147,7 +147,7 @@ class _TvInputFieldState extends State<TvInputField> {
           style: TextStyle(color: resolvedTextColor, fontSize: 28.sp, textBaseline: TextBaseline.alphabetic),
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintStyle: TextStyle(color: resolvedTextColor.withValues(alpha: 0.4), fontSize: 16.sp),
+            hintStyle: TextStyle(color: resolvedTextColor.withValues(alpha: 0.4), fontSize: 24.sp),
             isDense: true,
             contentPadding: EdgeInsets.symmetric(vertical: 2.sp),
             border: InputBorder.none,

@@ -185,7 +185,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                           height: 80.sp,
                           padding: EdgeInsets.symmetric(horizontal: 18.sp, vertical: 12.sp),
                           decoration: BoxDecoration(
-                            color: tvTheme.cardColor,
+                            color: tvTheme.backgroundColor,
                             borderRadius: BorderRadius.circular(32.sp),
                             border: Border.all(color: themeColor, width: _isInputFieldFocused ? 2.5.sp : 1.5.sp),
                             boxShadow: [

@@ -233,7 +233,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                         height: 80.sp,
                         padding: EdgeInsets.symmetric(horizontal: 18.sp, vertical: 12.sp),
                         decoration: BoxDecoration(
-                          color: currentTvTheme.cardColor,
+                          color: currentTvTheme.backgroundColor,
                           borderRadius: BorderRadius.circular(32.sp),
                           border: Border.all(color: themeColor, width: _isInputFieldFocused ? 2.5.sp : 1.5.sp),
                           boxShadow: [

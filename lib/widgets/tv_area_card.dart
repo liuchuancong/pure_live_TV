@@ -29,10 +29,10 @@ class TvAreaCard extends StatelessWidget {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
       ),
-      DpadGlowEffect(color: tvTheme.focusColor, opacity: 1),
+      DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 1.sp, blurRadius: 12.0.sp),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
-        final bgColor = tvTheme.cardColor;
+        final bgColor = tvTheme.backgroundColor;
         final titleColor = tvTheme.primaryTextColor;
         final iconColor = tvTheme.primaryTextColor;
 
