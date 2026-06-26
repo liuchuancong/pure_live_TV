@@ -98,11 +98,14 @@ dependencies:
   remixicon: ^4.9.3 # Remix图标库
   flutter_virtual_scroll: ^0.1.1
   marquee_list: ^1.0.0
+  network_info_plus: ^8.1.0
   # Git私有仓库自定义库
   flv_lzc:
     git: https://github.com/liuchuancong/flv_lzc.git # FLV视频流解析
   dart_quickjs:
     git: https://github.com/liuchuancong/dart_quickjs.git # QuickJS JS脚本引擎
+  native_textfield_tv:
+    git: https://github.com/liuchuancong/native_textfield_tv.git # TV虚拟键盘输入
 
 
 dev_dependencies:

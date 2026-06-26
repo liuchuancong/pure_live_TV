@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ios-bg: #f8f9fa;
+  --color-ios-text: #6b7280;
+  --color-ios-text-h: #111827;
+  --color-ios-border: #f3f4f6;
+  --color-ios-card: #ffffff;
+  --color-ios-blue: #007aff;
+  --color-ios-shadow: rgba(0, 0, 0, 0.05);
+}
+
+.dark {
+  --color-ios-bg: #090b11;
+  --color-ios-text: #9ca3af;
+  --color-ios-text-h: #f3f4f6;
+  --color-ios-border: #1f2937;
+  --color-ios-card: #131722;
+  --color-ios-blue: #3b82f6;
+  --color-ios-shadow: rgba(0, 0, 0, 0.4);
+}
+
+@utility bg-ios-bg {
+  background-color: var(--color-ios-bg);
+}
+@utility text-ios-text {
+  color: var(--color-ios-text);
+}
+@utility text-ios-text-h {
+  color: var(--color-ios-text-h);
+}
+@utility border-ios-border {
+  border-color: var(--color-ios-border);
+}
+@utility bg-ios-card {
+  background-color: var(--color-ios-card);
+}
+@utility text-ios-blue {
+  color: var(--color-ios-blue);
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-ios-bg);
+  color: var(--color-ios-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}

@@ -52,3 +52,9 @@ key.properties
 # /assets/pure_live_web/
 pubspec.lock
 /android/local.properties
+
+
+# 排除内置前端项目的依赖和本地开发产物
+**/web_remote/node_modules/
+**/web_remote/dist/
+**/web_remote/.local
