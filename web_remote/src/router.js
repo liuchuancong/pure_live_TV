@@ -5,6 +5,8 @@ const MovieRemoteView = () => import('./views/MovieRemote.vue')
 const SearchRemoteView = () => import('./views/SearchRemote.vue')
 const CookieRemoteView = () => import('./views/CookieRemote.vue')
 const WebDavSettingsRemoteView = () => import('./views/WebDavSettingsRemote.vue')
+
+const WebDavHelpView = () => import('./views/WebDavHelp.vue')
 const SyncRemoteView = () => import('./views/SyncRemote.vue')
 const LogRemoteView = () => import('./views/LogRemote.vue')
 const AboutRemoteView = () => import('./views/AboutRemote.vue')
@@ -28,6 +30,7 @@ const routes = [
     component: MovieRemoteView,
     meta: { title: '链接解析' }
   },
+
   {
     path: '/search',
     component: SearchRemoteView,
@@ -50,6 +53,11 @@ const routes = [
     path: '/webdav_settings',
     component: WebDavSettingsRemoteView,
     meta: { title: 'WebDav 设置' }
+  },
+  {
+    path: '/webdav-help',
+    name: 'WebDavHelp',
+    component: WebDavHelpView
   },
   {
     path: '/danmaku',

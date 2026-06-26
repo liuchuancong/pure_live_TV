@@ -49,7 +49,6 @@ key.properties
 **/*.jks
 
 /assets/keystore/
-# /assets/pure_live_web/
 pubspec.lock
 /android/local.properties
 

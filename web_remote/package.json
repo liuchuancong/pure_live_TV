@@ -16,6 +16,7 @@
     "lucide-vue-next": "^0.577.0",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.3.1",
+    "v-preview-image": "^3.1.0",
     "vue": "^3.5.38",
     "vue-router": "^4.6.4"
   },

@@ -1,7 +1,11 @@
 <template>
   <div class="p-3 sm:p-4 lg:p-6 text-left max-w-3xl mx-auto">
-    <div class="mb-3 px-1">
+    <div class="flex items-center justify-between mb-3 px-1 gap-3">
       <div class="text-[10px] sm:text-xs font-bold text-ios-text/80 uppercase tracking-wider">WebDAV 存储列表</div>
+      <!-- 查看教程按钮 -->
+      <button class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-ios-text-h dark:text-white font-bold rounded-xl text-[11px] sm:text-xs transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-ios-border/20 dark:border-white/10 whitespace-nowrap" @click="goHelpPage">
+        查看坚果云WebDAV教程
+      </button>
     </div>
     <div class="bg-ios-card dark:bg-ios-card rounded-2xl border border-ios-border/20 dark:border-ios-border/40 shadow-[0_8px_30px_var(--color-ios-shadow)] overflow-hidden mb-4">
       <div v-if="davList.length === 0" class="p-6 text-center text-[11px] sm:text-xs text-ios-gray dark:text-ios-gray">暂无 WebDAV 配置，点击下方按钮新增</div>
@@ -19,6 +23,7 @@
       </div>
     </div>
 
+    <!-- 原有新增配置按钮 -->
     <button class="w-full py-3 sm:py-3.5 bg-ios-blue text-white font-bold rounded-2xl text-sm sm:text-[15px] transition-all md:hover:scale-[1.01] active:scale-[0.98] cursor-pointer shadow-[0_8px_20px_rgba(0,122,255,0.25)] dark:shadow-[0_0_24px_4px_rgba(130,180,255,0.25)]" @click="openAdd">
       新增 WebDAV 配置
     </button>
@@ -98,6 +103,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { api } from '@/services/api.js'
 import { useToastStore } from '@/store/toast.js'
 import { X, Eye, EyeOff } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 const XIcon = X
 const EyeIcon = Eye
 const EyeOffIcon = EyeOff
@@ -112,7 +118,11 @@ const form = reactive({
   username: '',
   password: ''
 })
-
+const router = useRouter()
+const goHelpPage = () => {
+  // 如果你的路由path是 /webdav-help，替换为 router.push('/webdav-help')
+  router.push({ name: 'WebDavHelp' })
+}
 const loadList = async () => {
   const res = await api.getWebDAVList()
   if (res.isOk && Array.isArray(res.data)) {

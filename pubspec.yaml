@@ -91,7 +91,7 @@ dependencies:
   timezone: ^0.11.0                   # 多时区日期处理
   logger: ^2.7.0                      # 分级日志打印(INFO/WARN/ERROR)
   stop_watch_timer: ^3.2.2            # 高精度计时器、秒表
-
+  alfred: ^1.1.3
   # 动画效果
   flutter_animate: ^4.5.2             # 组件链式动画快捷封装
   rxdart: ^0.28.0
@@ -158,6 +158,8 @@ flutter:
     - assets/images/video/
     - assets/icons/
     - assets/webdav/
+    - assets/web_remote/
+    - assets/web_remote/**
     - assets/keystore/
     - assets/version.json
     - assets/releases.json

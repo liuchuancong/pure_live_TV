@@ -9,6 +9,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "99.0.0"
+  alfred:
+    dependency: "direct main"
+    description:
+      name: alfred
+      sha256: "7acfe84f0a73333308f580084b1d517e5210a4df2d632ebc204c50ffcb8f09e0"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.1.3"
   analyzer:
     dependency: transitive
     description:
@@ -915,10 +923,18 @@ packages:
     dependency: transitive
     description:
       name: mime
-      sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
+      sha256: "801fd0b26f14a4a58ccb09d5892c3fbdeff209594300a542492cf13fba9d247a"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.0"
+    version: "1.0.6"
+  mime_type:
+    dependency: transitive
+    description:
+      name: mime_type
+      sha256: d652b613e84dac1af28030a9fba82c0999be05b98163f9e18a0849c6e63838bb
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.1"
   mockito:
     dependency: transitive
     description:
@@ -1216,6 +1232,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.1.0"
+  queue:
+    dependency: transitive
+    description:
+      name: queue
+      sha256: "9bc29632072f4dac6cd0056acbb63361f654e2def9ceb4b08cfe0f9cf5618409"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.4.0"
   random_user_agents:
     dependency: "direct main"
     description:

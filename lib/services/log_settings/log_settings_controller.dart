@@ -15,7 +15,7 @@ class LogSettingsController extends _$LogSettingsController {
     return LogSettingsModel(
       serverAddress: HivePrefUtil.getString('user_log_address') ?? '',
       serverPort: HivePrefUtil.getInt('user_log_port') ?? 0,
-      storedEnableLog: HivePrefUtil.getBool('storedEnableLog') ?? false,
+      storedEnableLog: false,
     );
   }
 
@@ -24,16 +24,14 @@ class LogSettingsController extends _$LogSettingsController {
     _persist();
   }
 
-  void setEnableLog(bool enabled) {
+  void setEnableLog(bool enabled) async {
     state = state.copyWith(storedEnableLog: enabled);
-    _persist();
-    Log.updateLogStatus();
+    await Log.toggleLogEnable(enabled);
   }
 
   void _persist() {
     HivePrefUtil.setString('user_log_address', state.serverAddress);
     HivePrefUtil.setInt('user_log_port', state.serverPort);
-    HivePrefUtil.setBool('storedEnableLog', state.storedEnableLog);
   }
 
   void dispose() {
