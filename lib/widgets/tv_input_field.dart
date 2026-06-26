@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
 import 'package:native_textfield_tv/native_textfield_tv.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -48,6 +47,7 @@ class _TvInputFieldState extends State<TvInputField> {
   late bool _isObscure;
   late final FocusNode _flutterInputFocusNode;
   bool _isRegionFocused = false;
+  bool _isInputActive = false;
 
   @override
   void initState() {
@@ -64,29 +64,33 @@ class _TvInputFieldState extends State<TvInputField> {
 
   void _callNativeMethod(void Function(dynamic state) action) {
     final state = _nativeTextFieldKey.currentState;
-    if (state != null) {
-      action(state);
+    if (state != null) action(state);
+  }
+
+  void _deactivateInput() {
+    _isInputActive = false;
+    if (widget.useNativeTextField) {
+      _callNativeMethod((s) => s.clearFocus());
+    } else {
+      _flutterInputFocusNode.unfocus();
     }
+    setState(() {});
   }
 
   void _handleFocusChange(bool hasFocus) {
-    if (mounted) {
-      setState(() {
-        _isRegionFocused = hasFocus;
-        if (hasFocus) {
-          if (widget.useNativeTextField) {
-            _callNativeMethod((state) => state.requestFocus());
-          } else {
-            _flutterInputFocusNode.requestFocus();
-          }
-        } else {
-          if (widget.useNativeTextField) {
-            _callNativeMethod((state) => state.clearFocus());
-          } else {
-            _flutterInputFocusNode.unfocus();
-          }
-        }
-      });
+    if (!mounted) return;
+    setState(() {
+      _isRegionFocused = hasFocus;
+      if (!hasFocus) {
+        _deactivateInput();
+      }
+    });
+  }
+
+  void _onEdge(TraversalDirection dir) {
+    if (!_isInputActive) return;
+    if (dir == TraversalDirection.up || dir == TraversalDirection.down) {
+      _deactivateInput();
     }
   }
 
@@ -97,7 +101,7 @@ class _TvInputFieldState extends State<TvInputField> {
       setState(() {
         _isObscure = widget.obscureText;
         if (widget.useNativeTextField) {
-          _callNativeMethod((state) => state.setObscureText(_isObscure));
+          _callNativeMethod((s) => s.setObscureText(_isObscure));
         }
       });
     }
@@ -140,12 +144,12 @@ class _TvInputFieldState extends State<TvInputField> {
           obscureText: _isObscure,
           maxLines: widget.maxLines,
           cursorColor: resolvedFocusedBorder,
-          style: TextStyle(color: resolvedTextColor, fontSize: 16.sp, textBaseline: TextBaseline.alphabetic),
+          style: TextStyle(color: resolvedTextColor, fontSize: 28.sp, textBaseline: TextBaseline.alphabetic),
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: TextStyle(color: resolvedTextColor.withValues(alpha: 0.4), fontSize: 16.sp),
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 12.sp),
+            contentPadding: EdgeInsets.symmetric(vertical: 2.sp),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
@@ -182,7 +186,7 @@ class _TvInputFieldState extends State<TvInputField> {
                     setState(() {
                       _isObscure = !_isObscure;
                       if (widget.useNativeTextField) {
-                        _callNativeMethod((state) => state.setObscureText(_isObscure));
+                        _callNativeMethod((s) => s.setObscureText(_isObscure));
                       }
                     });
                   },
@@ -213,41 +217,27 @@ class _TvInputFieldState extends State<TvInputField> {
       );
     }
 
-    return KeyboardListener(
-      focusNode: FocusNode(skipTraversal: true),
-      onKeyEvent: (event) {
-        if (event is KeyUpEvent && _isRegionFocused) {
-          if (widget.useNativeTextField) {
-            if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-              _callNativeMethod((state) => state.moveCursorLeft());
-            } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-              _callNativeMethod((state) => state.moveCursorRight());
-            }
-          }
-        }
-      },
-      child: DpadRegion(
-        horizontalEdge: DpadEdgeBehavior.stop,
-        onFocusChange: _handleFocusChange,
-        child: widget.builder != null
-            ? innerWidget
-            : AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.sp),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: resolvedFocusedBorder.withAlpha(
-                        _isRegionFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0,
-                      ),
-                      blurRadius: 18.0.sp,
-                      spreadRadius: 2.0.sp,
-                    ),
-                  ],
-                ),
-                child: innerWidget,
+    return DpadRegion(
+      horizontalEdge: DpadEdgeBehavior.leave,
+      verticalEdge: DpadEdgeBehavior.leave,
+      onEdge: _onEdge,
+      onFocusChange: _handleFocusChange,
+      child: widget.builder != null
+          ? innerWidget
+          : AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.sp),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: resolvedFocusedBorder.withAlpha(_isRegionFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0),
+                    blurRadius: 18.0.sp,
+                    spreadRadius: 2.0.sp,
+                  ),
+                ],
               ),
-      ),
+              child: innerWidget,
+            ),
     );
   }
 }

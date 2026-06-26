@@ -15,6 +15,7 @@ import 'package:pure_live/modules/history/history_page.dart';
 import 'package:pure_live/modules/search/tv_search_page.dart';
 import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/modules/favorite_areas/favorite_areas_page.dart';
 
 class HomePage extends ConsumerWidget {
@@ -230,8 +231,8 @@ class HomePage extends ConsumerWidget {
         return const AreasPage();
       case TvMenuType.favoriteAreas:
         return const FavoriteAreasPage();
-      case TvMenuType.center:
-        return const Center();
+      case TvMenuType.poviePlaybackPage:
+        return const MoviePlaybackPage();
       case TvMenuType.search:
         return const TvSearchPage();
       case TvMenuType.history:

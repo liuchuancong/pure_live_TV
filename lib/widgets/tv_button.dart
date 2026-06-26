@@ -113,8 +113,8 @@ class TvButton extends StatelessWidget {
   (double, EdgeInsets, TextStyle, double, double) _getSizeConfig() {
     return switch (size) {
       TvButtonSize.large => (80.0.w, EdgeInsets.symmetric(horizontal: 40.w), AppTextStyles.t32W500, 32.0.w, 14.0.w),
-      TvButtonSize.medium => (64.0.w, EdgeInsets.symmetric(horizontal: 32.w), AppTextStyles.t26W500, 24.0.w, 10.0.w),
-      TvButtonSize.small => (50.0.w, EdgeInsets.symmetric(horizontal: 24.w), AppTextStyles.t20W500, 20.0.w, 8.0.w),
+      TvButtonSize.medium => (64.0.w, EdgeInsets.symmetric(horizontal: 28.w), AppTextStyles.t26W500, 24.0.w, 10.0.w),
+      TvButtonSize.small => (54.0.w, EdgeInsets.symmetric(horizontal: 24.w), AppTextStyles.t20W500, 20.0.w, 8.0.w),
       TvButtonSize.mini => (44.0.w, EdgeInsets.symmetric(horizontal: 20.w), AppTextStyles.t18W500, 18.0.w, 7.0.w),
     };
   }

@@ -9,7 +9,7 @@ enum TvMenuType {
   hot(1),
   areas(2),
   favoriteAreas(3),
-  center(4),
+  poviePlaybackPage(4),
   search(5),
   history(6),
   settings(99);
