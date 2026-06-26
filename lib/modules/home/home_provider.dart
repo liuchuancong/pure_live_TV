@@ -3,6 +3,30 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_provider.g.dart';
 
+enum TvMenuType {
+  profile(-1),
+  favorite(0),
+  hot(1),
+  areas(2),
+  favoriteAreas(3),
+  center(4),
+  search(5),
+  history(6),
+  settings(99);
+
+  final int value;
+  const TvMenuType(this.value);
+
+  static TvMenuType fromIndex(int idx) {
+    for (var type in TvMenuType.values) {
+      if (type.value == idx) {
+        return type;
+      }
+    }
+    return TvMenuType.favorite;
+  }
+}
+
 class AppMenuItem {
   final int index;
   final String title;

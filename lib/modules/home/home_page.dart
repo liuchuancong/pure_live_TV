@@ -7,6 +7,7 @@ import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:pure_live/modules/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/widgets/tv_icon_button.dart';
+import 'package:pure_live/widgets/tv_lazy_wrapper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/home/home_provider.dart';
@@ -32,8 +33,18 @@ class HomePage extends ConsumerWidget {
 
     final sidebarWidth = isExpanded ? 250.sp : 110.sp;
 
-    final allPages = [myProfileItem.index, ...menuList.map((e) => e.index), mySettingsItem.index];
-    final stackIndex = allPages.indexOf(currentIndex);
+    final cacheableTypes = [
+      TvMenuType.profile,
+      TvMenuType.favorite,
+      TvMenuType.hot,
+      TvMenuType.areas,
+      TvMenuType.favoriteAreas,
+      TvMenuType.settings,
+    ];
+
+    final currentMenuType = TvMenuType.fromIndex(currentIndex);
+    final isCurrentCacheable = cacheableTypes.contains(currentMenuType);
+    final stackIndex = cacheableTypes.indexOf(currentMenuType);
 
     return TvScaffold(
       child: Container(
@@ -106,24 +117,48 @@ class HomePage extends ConsumerWidget {
                 child: Padding(
                   padding: EdgeInsets.all(8.sp),
                   child: keepAlive
-                      ? IndexedStack(
-                          index: stackIndex != -1 ? stackIndex : 0,
-                          children: allPages.map((idx) {
-                            final isCurrent = currentIndex == idx;
-                            return _buildPageContent(context, ref, idx)
-                                .animate(target: isCurrent ? 1.0 : 0.0)
-                                .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
-                                .scale(
-                                  begin: const Offset(0.95, 0.95),
-                                  end: const Offset(1.0, 1.0),
-                                  duration: 250.ms,
-                                  curve: Curves.easeOutCubic,
-                                );
-                          }).toList(),
+                      ? Stack(
+                          children: [
+                            Visibility(
+                              visible: isCurrentCacheable,
+                              maintainState: true,
+                              child: IndexedStack(
+                                index: stackIndex != -1 ? stackIndex : 0,
+                                children: cacheableTypes.map((type) {
+                                  final isCurrent = currentMenuType == type;
+                                  return TvLazyWrapper(
+                                    isCurrent: isCurrent,
+                                    child: _buildPageContent(context, ref, type)
+                                        .animate(target: isCurrent ? 1.0 : 0.0)
+                                        .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                                        .scale(
+                                          begin: const Offset(0.95, 0.95),
+                                          end: const Offset(1.0, 1.0),
+                                          duration: 250.ms,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            if (!isCurrentCacheable)
+                              Container(
+                                key: ValueKey(currentIndex),
+                                child: _buildPageContent(context, ref, currentMenuType)
+                                    .animate()
+                                    .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                                    .scale(
+                                      begin: const Offset(0.95, 0.95),
+                                      end: const Offset(1.0, 1.0),
+                                      duration: 250.ms,
+                                      curve: Curves.easeOutCubic,
+                                    ),
+                              ),
+                          ],
                         )
                       : Container(
                           key: ValueKey(currentIndex),
-                          child: _buildPageContent(context, ref, currentIndex)
+                          child: _buildPageContent(context, ref, currentMenuType)
                               .animate()
                               .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
                               .scale(
@@ -167,41 +202,40 @@ class HomePage extends ConsumerWidget {
     return TvIconButton(icon: Icon(item.icon), size: TvIconButtonSize.medium, isSecondary: !isSelected, onTap: onTap);
   }
 
-  Widget _buildPageContent(BuildContext context, WidgetRef ref, int index) {
+  Widget _buildPageContent(BuildContext context, WidgetRef ref, TvMenuType type) {
     final currentTvTheme = context.tvTheme;
     final myProfileItem = ref.watch(myProfileMenuItemProvider);
     final mySettingsItem = ref.watch(mySettingsMenuItemProvider);
 
-    if (index == myProfileItem.index) {
-      return Center(
-        child: Text(myProfileItem.title, style: AppTextStyles.t28W600.copyWith(color: currentTvTheme.primaryTextColor)),
-      );
+    switch (type) {
+      case TvMenuType.profile:
+        return Center(
+          child: Text(
+            myProfileItem.title,
+            style: AppTextStyles.t28W600.copyWith(color: currentTvTheme.primaryTextColor),
+          ),
+        );
+      case TvMenuType.settings:
+        return Center(
+          child: Text(
+            mySettingsItem.title,
+            style: AppTextStyles.t28W600.copyWith(color: currentTvTheme.primaryTextColor),
+          ),
+        );
+      case TvMenuType.favorite:
+        return const FavoritePage();
+      case TvMenuType.hot:
+        return const HotPage();
+      case TvMenuType.areas:
+        return const AreasPage();
+      case TvMenuType.favoriteAreas:
+        return const FavoriteAreasPage();
+      case TvMenuType.center:
+        return const Center();
+      case TvMenuType.search:
+        return const TvSearchPage();
+      case TvMenuType.history:
+        return const HistoryPage();
     }
-    if (index == mySettingsItem.index) {
-      return Center(
-        child: Text(
-          mySettingsItem.title,
-          style: AppTextStyles.t28W600.copyWith(color: currentTvTheme.primaryTextColor),
-        ),
-      );
-    }
-
-    if (index == 0) {
-      return const FavoritePage();
-    } else if (index == 1) {
-      return const HotPage();
-    } else if (index == 2) {
-      return const AreasPage();
-    } else if (index == 3) {
-      return const FavoriteAreasPage();
-    } else if (index == 4) {
-      return const Center();
-    } else if (index == 5) {
-      return const TvSearchPage();
-    } else if (index == 6) {
-      return const HistoryPage();
-    }
-
-    return const SizedBox.shrink();
   }
 }
