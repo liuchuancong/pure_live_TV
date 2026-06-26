@@ -8,7 +8,6 @@ import 'package:pure_live/modules/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/widgets/tv_icon_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/theme/styles/app_styles.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
 import 'package:pure_live/modules/home/home_provider.dart';
 import 'package:pure_live/modules/history/history_page.dart';
@@ -18,7 +17,9 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/favorite_areas/favorite_areas_page.dart';
 
 class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
+  final bool keepAlive;
+
+  const HomePage({super.key, this.keepAlive = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,6 +31,9 @@ class HomePage extends ConsumerWidget {
     final currentTvTheme = context.tvTheme;
 
     final sidebarWidth = isExpanded ? 250.sp : 110.sp;
+
+    final allPages = [myProfileItem.index, ...menuList.map((e) => e.index), mySettingsItem.index];
+    final stackIndex = allPages.indexOf(currentIndex);
 
     return TvScaffold(
       child: Container(
@@ -52,7 +56,7 @@ class HomePage extends ConsumerWidget {
                         item: myProfileItem,
                         isExpanded: isExpanded,
                         isSelected: currentIndex == myProfileItem.index,
-                        onTap: () => ref.read(sideMenuIndexProvider.notifier).state = myProfileItem.index,
+                        onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(myProfileItem.index),
                       ),
                     ),
                     const Spacer(),
@@ -67,7 +71,7 @@ class HomePage extends ConsumerWidget {
                           item: item,
                           isExpanded: isExpanded,
                           isSelected: isSelected,
-                          onTap: () => ref.read(sideMenuIndexProvider.notifier).state = item.index,
+                          onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
                         ),
                       );
                     }),
@@ -83,9 +87,7 @@ class HomePage extends ConsumerWidget {
                         ),
                         size: TvIconButtonSize.medium,
                         isSecondary: true,
-                        onTap: () {
-                          ref.read(isMenuExpandedProvider.notifier).update((state) => !state);
-                        },
+                        onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
                       ),
                     ),
                     _buildAdaptiveItem(
@@ -93,7 +95,7 @@ class HomePage extends ConsumerWidget {
                       item: mySettingsItem,
                       isExpanded: isExpanded,
                       isSelected: currentIndex == mySettingsItem.index,
-                      onTap: () => ref.read(sideMenuIndexProvider.notifier).state = mySettingsItem.index,
+                      onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(mySettingsItem.index),
                     ),
                   ],
                 ),
@@ -101,7 +103,37 @@ class HomePage extends ConsumerWidget {
             ),
             Expanded(
               child: DpadRegion(
-                child: Padding(padding: EdgeInsets.all(8.sp), child: _buildContentByIndex(context, ref, currentIndex)),
+                child: Padding(
+                  padding: EdgeInsets.all(8.sp),
+                  child: keepAlive
+                      ? IndexedStack(
+                          index: stackIndex != -1 ? stackIndex : 0,
+                          children: allPages.map((idx) {
+                            final isCurrent = currentIndex == idx;
+                            return _buildPageContent(context, ref, idx)
+                                .animate(target: isCurrent ? 1.0 : 0.0)
+                                .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                                .scale(
+                                  begin: const Offset(0.95, 0.95),
+                                  end: const Offset(1.0, 1.0),
+                                  duration: 250.ms,
+                                  curve: Curves.easeOutCubic,
+                                );
+                          }).toList(),
+                        )
+                      : Container(
+                          key: ValueKey(currentIndex),
+                          child: _buildPageContent(context, ref, currentIndex)
+                              .animate()
+                              .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                              .scale(
+                                begin: const Offset(0.95, 0.95),
+                                end: const Offset(1.0, 1.0),
+                                duration: 250.ms,
+                                curve: Curves.easeOutCubic,
+                              ),
+                        ),
+                ),
               ),
             ),
           ],
@@ -129,13 +161,13 @@ class HomePage extends ConsumerWidget {
           isSecondary: !isSelected,
           onTap: onTap,
         ),
-      ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.1, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
+      ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.05, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
     }
 
     return TvIconButton(icon: Icon(item.icon), size: TvIconButtonSize.medium, isSecondary: !isSelected, onTap: onTap);
   }
 
-  Widget _buildContentByIndex(BuildContext context, WidgetRef ref, int index) {
+  Widget _buildPageContent(BuildContext context, WidgetRef ref, int index) {
     final currentTvTheme = context.tvTheme;
     final myProfileItem = ref.watch(myProfileMenuItemProvider);
     final mySettingsItem = ref.watch(mySettingsMenuItemProvider);
@@ -153,6 +185,7 @@ class HomePage extends ConsumerWidget {
         ),
       );
     }
+
     if (index == 0) {
       return const FavoritePage();
     } else if (index == 1) {
@@ -162,64 +195,13 @@ class HomePage extends ConsumerWidget {
     } else if (index == 3) {
       return const FavoriteAreasPage();
     } else if (index == 4) {
-      return const TvSearchPage();
+      return const Center();
     } else if (index == 5) {
+      return const TvSearchPage();
+    } else if (index == 6) {
       return const HistoryPage();
     }
 
-    final menuList = ref.watch(sideMenuListProvider);
-    final menuName = menuList.firstWhere((element) => element.index == index).title;
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(menuName, style: AppTextStyles.t28W600.copyWith(color: currentTvTheme.primaryTextColor)),
-          AppStyle.vGap24,
-          _buildBannerDemo(context),
-          AppStyle.vGap32,
-          _buildVideoSection(context, "推荐直播间"),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBannerDemo(BuildContext context) {
-    final currentTvTheme = context.tvTheme;
-    return SizedBox(
-      height: 300.sp,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        itemBuilder: (ctx, i) => Container(
-          width: 520.sp,
-          margin: EdgeInsets.only(right: 24.sp),
-          decoration: BoxDecoration(color: currentTvTheme.cardColor, borderRadius: BorderRadius.circular(12.sp)),
-          child: Center(
-            child: Text("Banner $i", style: AppTextStyles.t24W600.copyWith(color: currentTvTheme.primaryTextColor)),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVideoSection(BuildContext context, String title) {
-    final currentTvTheme = context.tvTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: AppTextStyles.t24W600.copyWith(color: currentTvTheme.primaryTextColor)),
-        AppStyle.vGap16,
-        SizedBox(
-          height: 180.sp,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: 6,
-            itemBuilder: (ctx, i) =>
-                TvIconButton(icon: const Icon(Icons.play_arrow), size: TvIconButtonSize.medium, onTap: () {}),
-          ),
-        ),
-      ],
-    );
+    return const SizedBox.shrink();
   }
 }
