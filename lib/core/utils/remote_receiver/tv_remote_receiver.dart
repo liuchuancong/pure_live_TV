@@ -26,7 +26,6 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   };
 
   Function(String videoUrl)? onMovieReceived;
-  Function(String searchText)? onSearchReceived;
   Function(String streamerName)? onStreamerSearch;
   Function(String roomId)? onRoomPush;
   Function(List<String> filters)? onDanmakuFilterUpdated;
@@ -146,16 +145,6 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       return _ok(res, msg: '推送成功');
     });
 
-    _app!.post('/api/search', (req, res) async {
-      final body = await req.body;
-      final text = body.toString().trim();
-      if (text.isEmpty) return _fail(res, msg: '搜索内容不能为空');
-      _addLog('收到搜索内容: $text');
-      onSearchReceived?.call(text);
-      _broadcastWs({'type': 'search_push', 'text': text});
-      return _ok(res, msg: '已同步到电视');
-    });
-
     _app!.post('/api/search/streamer', (req, res) async {
       final body = await req.body;
       final name = body.toString().trim();
@@ -166,9 +155,9 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
     _app!.post('/api/search/room', (req, res) async {
       final body = await req.body;
-      final roomId = body.toString().trim();
-      _addLog('收到房间号推送: $roomId');
-      onRoomPush?.call(roomId);
+      final roomInfo = body.toString().trim();
+      _addLog('收到房间号推送: $roomInfo');
+      onRoomPush?.call(roomInfo);
       return _ok(res);
     });
 
@@ -250,20 +239,30 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   }
 
   void _registerStaticRoutes() {
-    _app!.get('/', (req, res) async {
-      res.headers.contentType = ContentType('text', 'html', charset: 'utf-8');
-      return await _loadAsset('index.html');
-    });
+    _app!.get('*', (req, res) async {
+      final path = req.uri.path;
+      final assetSuffixes = {'.js', '.css', '.png', '.svg', '.json', '.ico', '.txt'};
+      final isStaticFile = assetSuffixes.any((suf) => path.endsWith(suf));
 
-    _app!.get('/*', (req, res) async {
-      final assetPath = req.uri.path.substring(1);
-      final data = await _loadAsset(assetPath);
-      if (data == null) {
-        res.statusCode = HttpStatus.notFound;
-        return 'Not Found';
+      if (isStaticFile) {
+        final assetPath = path.substring(1);
+        final data = await _loadAsset(assetPath);
+        if (data == null) {
+          res.statusCode = HttpStatus.notFound;
+          return 'Resource Not Found';
+        }
+        _setMimeType(assetPath, res);
+        return data;
+      } else {
+        _addLog('访问前端页面路由: $path');
+        final indexHtml = await _loadAsset('index.html');
+        if (indexHtml == null) {
+          res.statusCode = HttpStatus.notFound;
+          return 'Web Remote Frontend Missing';
+        }
+        res.headers.contentType = ContentType('text', 'html', charset: 'utf-8');
+        return indexHtml;
       }
-      _setMimeType(assetPath, res);
-      return data;
     });
   }
 

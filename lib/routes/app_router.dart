@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/agreement/agreement_page.dart';
 import 'package:pure_live/modules/area_rooms/area_rooms_page.dart';
 import 'package:pure_live/services/startUp/startup_controller.dart';
+import 'package:pure_live/modules/search/tv_search_result_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final isFirstInApp = ref.watch(startupControllerProvider);
@@ -32,6 +33,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final args = state.extra as AreaRoomsArgs;
           return AreaRoomsPage(site: args.site, subCategory: args.subCategory);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.kSearchResult,
+        builder: (context, state) {
+          final args = state.extra as SearchResultArgs;
+          return TvSearchResultPage(keyword: args.keyword, site: args.site, searchType: args.searchType);
         },
       ),
     ],

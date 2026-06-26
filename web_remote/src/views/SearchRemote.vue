@@ -123,11 +123,13 @@ async function triggerSearchRoom() {
 
 function clearStreamer() {
   streamerText.value = ''
+   api.sendStreamer('')
   if (streamerTimer) clearTimeout(streamerTimer)
 }
 
 function clearRoom() {
   roomText.value = ''
+  api.sendRoom('')
   if (roomTimer) clearTimeout(roomTimer)
 }
 </script>

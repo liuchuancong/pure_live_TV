@@ -23,6 +23,9 @@ abstract final class AppRoutes {
   /// 搜索页面
   static const kSearch = "/search";
 
+  // 搜索结果
+  static const kSearchResult = "/search_result";
+
   /// 全局设置
   static const kSettings = "/settings";
 
@@ -102,4 +105,12 @@ class AreaRoomsArgs {
   final LiveArea subCategory;
 
   const AreaRoomsArgs({required this.site, required this.subCategory});
+}
+
+class SearchResultArgs {
+  final String keyword;
+  final String site;
+  final String searchType;
+
+  const SearchResultArgs({required this.keyword, required this.site, required this.searchType});
 }

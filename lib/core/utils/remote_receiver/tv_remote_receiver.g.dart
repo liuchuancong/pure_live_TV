@@ -33,7 +33,7 @@ final class TvRemoteReceiverProvider
   TvRemoteReceiver create() => TvRemoteReceiver();
 }
 
-String _$tvRemoteReceiverHash() => r'eadc708fcb33affc62c164c4dd5921a22902af66';
+String _$tvRemoteReceiverHash() => r'31b01230bcc1d0fa646ecf1942b465d79285f130';
 
 abstract class _$TvRemoteReceiver extends $AsyncNotifier<ServerState> {
   FutureOr<ServerState> build();

@@ -41,7 +41,7 @@ final class TvSearchNotifierProvider
   }
 }
 
-String _$tvSearchNotifierHash() => r'6751f60e2133cf0a503dbace2d70f48e8906ca8d';
+String _$tvSearchNotifierHash() => r'47fd43df611f1906ae129f0e014017719ca01851';
 
 abstract class _$TvSearchNotifier extends $Notifier<TvSearchState> {
   TvSearchState build();
