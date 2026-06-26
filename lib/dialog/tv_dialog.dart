@@ -34,7 +34,6 @@ class TvDialog extends StatelessWidget {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
       ),
-      DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.8, blurRadius: 3.0, spreadRadius: 1.0),
       DpadCustomEffect((ctx, state, _) {
         return Container(
           width: 800.sp,
@@ -42,7 +41,10 @@ class TvDialog extends StatelessWidget {
           decoration: BoxDecoration(
             color: tvTheme.cardColor,
             borderRadius: borderRadius,
-            border: Border.all(color: tvTheme.secondaryTextColor.withAlpha(50), width: 2.sp),
+            boxShadow: [
+              BoxShadow(color: tvTheme.focusColor.withValues(alpha: .75), blurRadius: 12.sp, spreadRadius: 1.sp),
+            ],
+            border: Border.all(color: tvTheme.focusColor, width: 1.sp),
           ),
           child: DpadRegion(
             horizontalEdge: DpadEdgeBehavior.stop,

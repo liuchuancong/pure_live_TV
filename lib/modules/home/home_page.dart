@@ -195,12 +195,21 @@ class HomePage extends ConsumerWidget {
           iconPosition: TvIconPosition.left,
           size: TvButtonSize.medium,
           isSecondary: !isSelected,
+          selected: isSelected,
+          useFadedFocus: true,
           onTap: onTap,
         ),
       ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.05, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
     }
 
-    return TvIconButton(icon: Icon(item.icon), size: TvIconButtonSize.medium, isSecondary: !isSelected, onTap: onTap);
+    return TvIconButton(
+      icon: Icon(item.icon),
+      selected: isSelected,
+      size: TvIconButtonSize.medium,
+      useFadedFocus: true,
+      isSecondary: !isSelected,
+      onTap: onTap,
+    );
   }
 
   Widget _buildPageContent(BuildContext context, WidgetRef ref, TvMenuType type) {

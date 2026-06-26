@@ -17,6 +17,8 @@ class TvButton extends StatelessWidget {
   final bool autofocus;
   final bool isSecondary;
   final bool excludeFocus;
+  final bool selected;
+  final bool useFadedFocus;
 
   const TvButton({
     super.key,
@@ -28,6 +30,8 @@ class TvButton extends StatelessWidget {
     this.autofocus = false,
     this.isSecondary = false,
     this.excludeFocus = false,
+    this.selected = false,
+    this.useFadedFocus = false,
   });
 
   @override
@@ -62,21 +66,28 @@ class TvButton extends StatelessWidget {
       list.add(
         DpadCustomEffect((ctx, state, child) {
           final isFocused = state.focused;
-          final bgColor = excludeFocus
-              ? activeTheme.cardColor
-              : isFocused
-              ? activeTheme.focusColor
-              : isSecondary
-              ? activeTheme.cardColor.withValues(alpha: 0.5)
-              : activeTheme.cardColor;
 
-          final foregroundColor = excludeFocus
-              ? activeTheme.focusedCardColor
-              : isFocused
-              ? activeTheme.focusedCardColor
-              : isSecondary
-              ? activeTheme.secondaryTextColor
-              : activeTheme.primaryTextColor;
+          late Color bgColor;
+          late Color foregroundColor;
+
+          if (selected) {
+            bgColor = activeTheme.focusColor;
+            foregroundColor = activeTheme.focusedCardColor;
+          } else if (isFocused && useFadedFocus) {
+            bgColor = bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
+            foregroundColor = activeTheme.focusedCardColor;
+          } else if (isFocused) {
+            bgColor = activeTheme.focusColor;
+            foregroundColor = activeTheme.focusedCardColor;
+          } else {
+            bgColor = isSecondary ? activeTheme.cardColor.withValues(alpha: 0.5) : activeTheme.cardColor;
+            foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
+          }
+
+          if (excludeFocus) {
+            bgColor = activeTheme.cardColor;
+            foregroundColor = activeTheme.focusedCardColor;
+          }
 
           return AnimatedContainer(
             duration: const Duration(milliseconds: 100),

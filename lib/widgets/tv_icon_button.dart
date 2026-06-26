@@ -11,6 +11,8 @@ class TvIconButton extends StatelessWidget {
   final VoidCallback? onTap;
   final bool autofocus;
   final bool isSecondary;
+  final bool selected;
+  final bool useFadedFocus;
 
   const TvIconButton({
     super.key,
@@ -19,6 +21,8 @@ class TvIconButton extends StatelessWidget {
     this.onTap,
     this.autofocus = false,
     this.isSecondary = false,
+    this.selected = false,
+    this.useFadedFocus = false,
   });
 
   @override
@@ -28,17 +32,6 @@ class TvIconButton extends StatelessWidget {
     final borderRadius = BorderRadius.circular(boxSize / 2);
 
     Widget finalIcon = icon;
-    if (icon is Icon) {
-      finalIcon = Icon(
-        (icon as Icon).icon,
-        size: iconSize,
-        color: (icon as Icon).color,
-        key: icon.key,
-        semanticLabel: (icon as Icon).semanticLabel,
-        textDirection: (icon as Icon).textDirection,
-        shadows: (icon as Icon).shadows,
-      );
-    }
 
     return UnconstrainedBox(
       child: DpadFocusable(
@@ -60,17 +53,22 @@ class TvIconButton extends StatelessWidget {
           DpadCustomEffect((context, state, child) {
             final isFocused = state.focused;
 
-            final bgColor = isFocused
-                ? activeTheme.focusColor
-                : isSecondary
-                ? activeTheme.cardColor.withValues(alpha: 0.5)
-                : activeTheme.cardColor;
+            late Color bgColor;
+            late Color foregroundColor;
 
-            final foregroundColor = isFocused
-                ? activeTheme.focusedCardColor
-                : isSecondary
-                ? activeTheme.secondaryTextColor
-                : activeTheme.primaryTextColor;
+            if (selected) {
+              bgColor = activeTheme.focusColor;
+              foregroundColor = activeTheme.focusedCardColor;
+            } else if (isFocused && useFadedFocus) {
+              bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
+              foregroundColor = activeTheme.focusedCardColor;
+            } else if (isFocused) {
+              bgColor = activeTheme.focusColor;
+              foregroundColor = activeTheme.focusedCardColor;
+            } else {
+              bgColor = isSecondary ? activeTheme.cardColor.withValues(alpha: 0.5) : activeTheme.cardColor;
+              foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
+            }
 
             return AnimatedContainer(
               duration: const Duration(milliseconds: 100),

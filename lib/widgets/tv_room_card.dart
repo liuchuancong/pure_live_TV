@@ -47,7 +47,7 @@ class _TvRoomCardState extends State<TvRoomCard> {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
       ),
-      DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75),
+      DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
         final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
