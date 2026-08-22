@@ -243,6 +243,8 @@ class AreasPage extends GetView<AreasListController> {
                     imageUrl: displayImageUrl,
                     cacheManager: CustomCacheManager.instance,
                     fit: BoxFit.fill,
+                    memCacheWidth: 200,
+                    memCacheHeight: 200,
                     errorWidget: (context, error, stackTrace) => Center(
                       child: Icon(
                         Icons.live_tv_rounded,

@@ -167,6 +167,8 @@ class _RoomCardState extends State<RoomCard> {
     try {
       return CachedNetworkImageProvider(
         avatar,
+        maxWidth: 80,
+        maxHeight: 80,
         errorListener: (err) {
           log("CachedNetworkImageProvider: Image failed to load!");
         },
@@ -235,6 +237,8 @@ class _RoomCardState extends State<RoomCard> {
                                 imageUrl: widget.room.cover!,
                                 cacheManager: CustomCacheManager.instance,
                                 fit: BoxFit.fill,
+                                memCacheWidth: 360,
+                                memCacheHeight: 202,
                                 errorWidget: (context, error, stackTrace) => Center(
                                   child: Icon(
                                     color: widget.focusNode.isFoucsed.value ? Colors.black : Colors.white,

@@ -9,6 +9,8 @@ class CacheNetWorkUtils {
         ? CachedNetworkImage(
             imageUrl: imageUrl,
             cacheManager: CustomCacheManager.instance,
+            memCacheWidth: 200,
+            memCacheHeight: 200,
             placeholder: (context, url) => const CircularProgressIndicator(
                   color: Colors.white,
                 ),
