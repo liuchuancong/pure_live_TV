@@ -14,6 +14,12 @@ _FavoriteSettingsModel _$FavoriteSettingsModelFromJson(
           ?.map((e) => e as String)
           .toList() ??
       const [],
+  blockedDanmakuUsers:
+      (json['blockedDanmakuUsers'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
+  siteCatalogMigration: (json['siteCatalogMigration'] as num?)?.toInt() ?? 0,
   hotAreasList:
       (json['hotAreasList'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -36,6 +42,8 @@ Map<String, dynamic> _$FavoriteSettingsModelToJson(
   _FavoriteSettingsModel instance,
 ) => <String, dynamic>{
   'shieldList': instance.shieldList,
+  'blockedDanmakuUsers': instance.blockedDanmakuUsers,
+  'siteCatalogMigration': instance.siteCatalogMigration,
   'hotAreasList': instance.hotAreasList,
   'preferPlatform': instance.preferPlatform,
   'favoriteRooms': instance.favoriteRooms,

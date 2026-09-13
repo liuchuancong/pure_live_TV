@@ -45,6 +45,7 @@ class GlobalPlayerService {
       playerPool: playerPool,
       fallbackManager: EngineFallbackManager(
         defaultEngine: PlayerEngine.mediaKit,
+        maxRetryCount: 1,
         supportedEngines: PlayerEngine.values,
       ),
       preloadManager: PreloadPlayerManager(),

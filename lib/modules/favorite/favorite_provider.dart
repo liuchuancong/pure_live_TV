@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:pure_live/utils/event_bus.dart';
-import 'package:pure_live/core/sites/sites.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
+import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:pure_live/services/tag_management/live_tag.dart';
@@ -39,7 +40,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
   void _setupRefreshStrategy() {
     _autoRefreshTimer?.cancel();
-    final refreshState = SettingsService.to.refreshState;
+    final refreshState = ref.read(refreshConfigControllerProvider);
     final bool isEnabled = refreshState.autoRefreshFavorite;
     final int interval = refreshState.autoRefreshInterval;
 
@@ -80,8 +81,8 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       return room.copyWith(watching: int.tryParse(room.watching)?.toString() ?? '0');
     }).toList();
 
-    final tagState = SettingsService.to.tagState;
-    final tagController = SettingsService.to.tag;
+    final tagState = ref.read(tagManagementControllerProvider);
+    final tagController = ref.read(tagManagementControllerProvider.notifier);
 
     int getRoomTagScore(LiveRoom room) {
       final List<String> ids = tagController.getTagsForRoom(room);
@@ -170,7 +171,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       return source;
     }
 
-    final tagController = SettingsService.to.tag;
+    final tagController = ref.read(tagManagementControllerProvider.notifier);
     return source.where((room) {
       final List<String> ids = tagController.getTagsForRoom(room);
       return ids.contains(state.selectedTagId);
@@ -184,7 +185,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     final favState = ref.read(favoriteRoomControllerProvider);
     final List<LiveRoom> source = List<LiveRoom>.from(favState.favoriteRooms);
     final currentAvailableSites = Sites().availableSites(containsAll: true);
-    final refreshState = SettingsService.to.refreshState;
+    final refreshState = ref.read(refreshConfigControllerProvider);
 
     List<LiveRoom> valid = source;
     if (state.tabSiteIndex >= 0 && state.tabSiteIndex < currentAvailableSites.length) {
@@ -194,7 +195,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       }
     }
 
-    final tagController = SettingsService.to.tag;
+    final tagController = ref.read(tagManagementControllerProvider.notifier);
     if (state.selectedTagId != 'all') {
       valid = valid.where((room) {
         final List<String> ids = tagController.getTagsForRoom(room);

@@ -11,6 +11,9 @@ abstract class CookieModel with _$CookieModel {
     @Default('') String huyaCookie,
     @Default('') String douyinCookie,
     @Default('') String kuaishouCookie,
+    @Default('') String yyCookie,
+    @Default('') String soopCookie,
+    @Default('') String twitchCookie,
   }) = _CookieModel;
 
   factory CookieModel.fromJson(Map<String, dynamic> json) => _$CookieModelFromJson(json);

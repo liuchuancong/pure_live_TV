@@ -1,18 +1,42 @@
 import 'dart:async';
+
 import 'package:rxdart/rxdart.dart';
+
 import '../models/player_state.dart';
-import 'package:flutter/material.dart';
 import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
+import '../core/player_error_classifier.dart';
+
+import 'package:flutter/material.dart';
+
 import '../interface/unified_player_interface.dart';
+
+import 'package:pure_live/player/models/player_engine.dart';
 import 'package:better_player_plus/better_player_plus.dart';
+import 'package:pure_live/player/interface/video_player_accessor.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 
-class BetterPlayerAdapter implements UnifiedPlayer {
+class BetterPlayerAdapter
+    implements
+        UnifiedPlayer,
+        BetterPlayerAccessor,
+        VideoFitAwarePlayer,
+        SourceTransitionAwarePlayer,
+        AudioOutputSuppressionAwarePlayer {
   BetterPlayerController? _controller;
 
   bool _initialized = false;
   bool _disposed = false;
+  bool _isAudioOnly = false;
+  bool _sourceTransitionPrepared = false;
+  bool _acceptSourceEvents = false;
+  bool _sourceOpening = false;
+  bool _audioOutputSuppressed = false;
+  PlayerException? _deferredSourceError;
+  BoxFit _videoFit = BoxFit.contain;
+
+  @override
+  void setAudioOutputSuppressed(bool suppressed) => _audioOutputSuppressed = suppressed;
 
   void Function(BetterPlayerEvent)? _eventListener;
 
@@ -27,12 +51,15 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   final List<StreamSubscription> _subscriptions = [];
 
   @override
-  Future<void> init() async {
+  Future<void> init({bool audioOnly = false}) async {
     if (_initialized) return;
+    _isAudioOnly = audioOnly;
 
     BetterPlayerConfiguration betterPlayerConfiguration = BetterPlayerConfiguration(
-      autoPlay: true,
-      fit: BoxFit.contain,
+      // A suppressed automatic fallback starts only after its native volume is
+      // zero, avoiding a short audible burst during source initialization.
+      autoPlay: !_audioOutputSuppressed,
+      fit: _videoFit,
       handleLifecycle: false,
       fullScreenByDefault: false,
       autoDispose: false,
@@ -51,6 +78,7 @@ class BetterPlayerAdapter implements UnifiedPlayer {
     _removeEventListener();
 
     _eventListener = (BetterPlayerEvent event) {
+      if (!_acceptSourceEvents || _disposed) return;
       switch (event.betterPlayerEventType) {
         case BetterPlayerEventType.initialized:
         case BetterPlayerEventType.changedResolution:
@@ -84,11 +112,16 @@ class BetterPlayerAdapter implements UnifiedPlayer {
           _stateSubject.add(PlayerState.completed);
           break;
         case BetterPlayerEventType.exception:
-          final exception = PlayerException(
-            message: event.parameters?['exception']?.toString() ?? 'BetterPlayer Error',
-            type: PlayerErrorType.native,
-          );
-          _safeAddError(exception);
+          _playingSubject.add(false);
+          _loadingSubject.add(false);
+          final message = event.parameters?['exception']?.toString() ?? 'BetterPlayer Error';
+          final classification = PlayerErrorClassifier.classify(message);
+          final exception = PlayerException(message: message, type: classification.type, code: classification.code);
+          if (_sourceOpening) {
+            _deferredSourceError = exception;
+          } else {
+            _safeAddError(exception);
+          }
           break;
         default:
           break;
@@ -120,12 +153,49 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   }
 
   @override
-  Future<void> setDataSource(String url, List<String> playUrls, Map<String, String> headers, {LiveRoom? room}) async {
+  void beginSourceTransition() {
+    if (_disposed) return;
+    _acceptSourceEvents = false;
+    _sourceTransitionPrepared = true;
+    _sourceOpening = false;
+    _deferredSourceError = null;
+    _playingSubject.add(false);
+    _loadingSubject.add(true);
+    _completeSubject.add(false);
+    _widthSubject.add(null);
+    _heightSubject.add(null);
+  }
+
+  void _consumeSourceTransition() {
+    if (!_sourceTransitionPrepared) beginSourceTransition();
+    _sourceTransitionPrepared = false;
+  }
+
+  void _publishCurrentSourceState() {
+    if (!_acceptSourceEvents || _disposed) return;
+    final value = _controller?.videoPlayerController?.value;
+    final size = value?.size;
+    if (size != null && size.width > 0 && size.height > 0) {
+      _widthSubject.add(size.width.toInt());
+      _heightSubject.add(size.height.toInt());
+    }
+    if (value?.isPlaying == true) {
+      _playingSubject.add(true);
+      _loadingSubject.add(false);
+      _stateSubject.add(PlayerState.playing);
+    }
+  }
+
+  @override
+  Future<void> setDataSource(
+    String url,
+    List<String> playUrls,
+    Map<String, String> headers, {
+    LiveRoom? room,
+    bool audioOnly = false,
+  }) async {
+    _consumeSourceTransition();
     try {
-      _loadingSubject.add(true);
-      _widthSubject.add(null);
-      _heightSubject.add(null);
-      _completeSubject.add(false);
       BetterPlayerDataSource dataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
         url,
@@ -133,27 +203,54 @@ class BetterPlayerAdapter implements UnifiedPlayer {
         liveStream: true,
       );
 
+      // ExoPlayer can synchronously emit an exception while setupDataSource is
+      // still pending. Bind that error to the replacement source instead of
+      // dropping the only event before `_acceptSourceEvents` becomes true.
+      _sourceOpening = true;
+      _acceptSourceEvents = true;
       await _controller!.setupDataSource(dataSource);
+      _sourceOpening = false;
+      final deferredError = _deferredSourceError;
+      _deferredSourceError = null;
+      if (deferredError != null && _controller?.videoPlayerController?.value.hasError == true) {
+        throw deferredError;
+      }
+
+      _publishCurrentSourceState();
 
       _stateSubject.add(PlayerState.ready);
-      await setVolume(1.0);
+      await setVolume(_audioOutputSuppressed ? 0.0 : 1.0);
+      if (_audioOutputSuppressed) await play();
     } catch (e, s) {
-      final exception = PlayerException(
-        message: 'BetterPlayer setDataSource failed',
-        type: PlayerErrorType.source,
-        error: e,
-        stackTrace: s,
-      );
+      _sourceOpening = false;
+      _acceptSourceEvents = false;
+      final exception = e is PlayerException
+          ? e
+          : PlayerException(
+              message: 'BetterPlayer setDataSource failed',
+              type: PlayerErrorType.source,
+              error: e,
+              stackTrace: s,
+            );
       _safeAddError(exception);
       throw exception;
     } finally {
-      _loadingSubject.add(false);
+      if (_playingSubject.value) _loadingSubject.add(false);
     }
   }
 
   @override
-  Widget getVideoWidget() {
+  Widget getVideoWidget({BoxFit? fit}) {
+    if (_isAudioOnly) return const SizedBox.shrink();
+    if (fit != null) setVideoFit(fit);
     return BetterPlayer(controller: _controller!);
+  }
+
+  @override
+  void setVideoFit(BoxFit fit) {
+    if (_videoFit == fit) return;
+    _videoFit = fit;
+    _controller?.setOverriddenFit(fit);
   }
 
   @override
@@ -174,6 +271,12 @@ class BetterPlayerAdapter implements UnifiedPlayer {
     }
     await _controller?.pause();
     await _controller?.seekTo(Duration.zero);
+  }
+
+  @override
+  Future<void> setAudioOnly(bool audioOnly) async {
+    if (_disposed) return;
+    _isAudioOnly = audioOnly;
   }
 
   @override
@@ -230,4 +333,10 @@ class BetterPlayerAdapter implements UnifiedPlayer {
   Stream<int?> get width => _widthSubject.stream;
   @override
   Stream<int?> get height => _heightSubject.stream;
+
+  @override
+  BetterPlayerController get betterPlayerController => _controller!;
+
+  @override
+  PlayerEngine get engine => PlayerEngine.betterPlayer;
 }

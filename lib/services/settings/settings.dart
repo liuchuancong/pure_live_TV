@@ -6,6 +6,8 @@ import 'package:pure_live/services/webdav/webdav_controller.dart';
 import 'package:pure_live/services/startUp/startup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_model.dart';
 import 'package:pure_live/services/history_settings/history_model.dart';
+import 'package:pure_live/services/iptv_settings/iptv_settings_model.dart';
+import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 import 'package:pure_live/services/log_settings/log_settings_model.dart';
 import 'package:pure_live/services/app_settings/app_settings_model.dart';
 import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
@@ -83,6 +85,9 @@ class SettingsService {
   WebDavModel get webDavState => _container.read(webDavControllerProvider);
   WebDavController get webDav => _container.read(webDavControllerProvider.notifier);
   // iptv
+  IptvSettingsModel get iptvState => _container.read(iptvSettingsControllerProvider);
+  IptvSettingsController get iptv => _container.read(iptvSettingsControllerProvider.notifier);
+  // volume
   VolumeSettingsModel get volumeState => _container.read(volumeSettingsControllerProvider);
   VolumeSettingsController get volume => _container.read(volumeSettingsControllerProvider.notifier);
   // theme

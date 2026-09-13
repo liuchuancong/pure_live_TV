@@ -13,7 +13,11 @@ _HistoryModel _$HistoryModelFromJson(Map<String, dynamic> json) =>
               ?.map((e) => LiveRoom.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      historyLimit: (json['historyLimit'] as num?)?.toInt() ?? 50,
     );
 
 Map<String, dynamic> _$HistoryModelToJson(_HistoryModel instance) =>
-    <String, dynamic>{'historyRooms': instance.historyRooms};
+    <String, dynamic>{
+      'historyRooms': instance.historyRooms,
+      'historyLimit': instance.historyLimit,
+    };

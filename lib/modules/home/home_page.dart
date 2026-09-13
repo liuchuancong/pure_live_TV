@@ -17,6 +17,7 @@ import 'package:pure_live/modules/favorite/favorite_page.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/modules/favorite_areas/favorite_areas_page.dart';
+import 'package:pure_live/modules/settings/tv_settings_page.dart';
 
 class HomePage extends ConsumerWidget {
   final bool keepAlive;
@@ -215,7 +216,6 @@ class HomePage extends ConsumerWidget {
   Widget _buildPageContent(BuildContext context, WidgetRef ref, TvMenuType type) {
     final currentTvTheme = context.tvTheme;
     final myProfileItem = ref.watch(myProfileMenuItemProvider);
-    final mySettingsItem = ref.watch(mySettingsMenuItemProvider);
 
     switch (type) {
       case TvMenuType.profile:
@@ -226,12 +226,7 @@ class HomePage extends ConsumerWidget {
           ),
         );
       case TvMenuType.settings:
-        return Center(
-          child: Text(
-            mySettingsItem.title,
-            style: AppTextStyles.t28W600.copyWith(color: currentTvTheme.primaryTextColor),
-          ),
-        );
+        return const TvSettingsShell(child: SizedBox.shrink());
       case TvMenuType.favorite:
         return const FavoritePage();
       case TvMenuType.hot:

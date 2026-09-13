@@ -42,7 +42,7 @@ final class PlayerSettingsControllerProvider
 }
 
 String _$playerSettingsControllerHash() =>
-    r'07b8f661dbb6b032d4c270519669a753defcfa59';
+    r'0a18c481aa4ab4a70d0b9ff9a69bd40c6976297d';
 
 abstract class _$PlayerSettingsController
     extends $Notifier<PlayerSettingsModel> {

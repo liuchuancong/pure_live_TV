@@ -6,23 +6,45 @@ part of 'player_settings_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_PlayerSettingsModel _$PlayerSettingsModelFromJson(Map<String, dynamic> json) =>
-    _PlayerSettingsModel(
-      videoFitIndex: (json['videoFitIndex'] as num?)?.toInt() ?? 0,
-      videoPlayerKey: json['videoPlayerKey'] as String? ?? 'mpv',
-      preferResolution: json['preferResolution'] as String? ?? '',
-      preferResolutionCellular:
-          json['preferResolutionCellular'] as String? ?? '',
-      enableCodec: json['enableCodec'] as bool? ?? true,
-      playerCompatMode: json['playerCompatMode'] as bool? ?? false,
-      customPlayerOutput: json['customPlayerOutput'] as bool? ?? false,
-      videoOutputDriver: json['videoOutputDriver'] as String? ?? 'gpu',
-      audioOutputDriver: json['audioOutputDriver'] as String? ?? 'auto',
-      videoHardwareDecoder: json['videoHardwareDecoder'] as String? ?? 'auto',
-      floatPlay: json['floatPlay'] as bool? ?? false,
-      audioOnly: json['audioOnly'] as bool? ?? false,
-      useHardStopOnExit: json['useHardStopOnExit'] as bool? ?? false,
-    );
+_PlayerSettingsModel _$PlayerSettingsModelFromJson(
+  Map<String, dynamic> json,
+) => _PlayerSettingsModel(
+  videoFitIndex: (json['videoFitIndex'] as num?)?.toInt() ?? 0,
+  videoPlayerKey: json['videoPlayerKey'] as String? ?? 'mpv',
+  preferResolution: json['preferResolution'] as String? ?? '',
+  preferResolutionCellular: json['preferResolutionCellular'] as String? ?? '',
+  enableCodec: json['enableCodec'] as bool? ?? true,
+  playerCompatMode: json['playerCompatMode'] as bool? ?? false,
+  customPlayerOutput: json['customPlayerOutput'] as bool? ?? false,
+  videoOutputDriver: json['videoOutputDriver'] as String? ?? 'gpu',
+  audioOutputDriver: json['audioOutputDriver'] as String? ?? 'auto',
+  videoHardwareDecoder: json['videoHardwareDecoder'] as String? ?? 'auto',
+  floatPlay: json['floatPlay'] as bool? ?? false,
+  audioOnly: json['audioOnly'] as bool? ?? false,
+  useHardStopOnExit: json['useHardStopOnExit'] as bool? ?? false,
+  windowsPipAlwaysOnTop: json['windowsPipAlwaysOnTop'] as bool? ?? false,
+  enableRtxVsr: json['enableRtxVsr'] as bool? ?? false,
+  enablePortraitStreamAdaptation:
+      json['enablePortraitStreamAdaptation'] as bool? ?? true,
+  portraitAdaptiveHeight: json['portraitAdaptiveHeight'] as bool? ?? true,
+  portraitLayoutModeName:
+      json['portraitLayoutModeName'] as String? ?? 'balanced',
+  portraitFullscreenPolicyName:
+      json['portraitFullscreenPolicyName'] as String? ?? '',
+  portraitFullscreenDisplayModeName:
+      json['portraitFullscreenDisplayModeName'] as String? ?? '',
+  portraitPipFollowSource: json['portraitPipFollowSource'] as bool? ?? true,
+  portraitDanmakuModeName:
+      json['portraitDanmakuModeName'] as String? ?? 'followGlobal',
+  rememberPortraitRoomOverride:
+      json['rememberPortraitRoomOverride'] as bool? ?? true,
+  showPortraitDiagnostics: json['showPortraitDiagnostics'] as bool? ?? false,
+  portraitRoomOverrides:
+      (json['portraitRoomOverrides'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ) ??
+      const {},
+);
 
 Map<String, dynamic> _$PlayerSettingsModelToJson(
   _PlayerSettingsModel instance,
@@ -40,4 +62,17 @@ Map<String, dynamic> _$PlayerSettingsModelToJson(
   'floatPlay': instance.floatPlay,
   'audioOnly': instance.audioOnly,
   'useHardStopOnExit': instance.useHardStopOnExit,
+  'windowsPipAlwaysOnTop': instance.windowsPipAlwaysOnTop,
+  'enableRtxVsr': instance.enableRtxVsr,
+  'enablePortraitStreamAdaptation': instance.enablePortraitStreamAdaptation,
+  'portraitAdaptiveHeight': instance.portraitAdaptiveHeight,
+  'portraitLayoutModeName': instance.portraitLayoutModeName,
+  'portraitFullscreenPolicyName': instance.portraitFullscreenPolicyName,
+  'portraitFullscreenDisplayModeName':
+      instance.portraitFullscreenDisplayModeName,
+  'portraitPipFollowSource': instance.portraitPipFollowSource,
+  'portraitDanmakuModeName': instance.portraitDanmakuModeName,
+  'rememberPortraitRoomOverride': instance.rememberPortraitRoomOverride,
+  'showPortraitDiagnostics': instance.showPortraitDiagnostics,
+  'portraitRoomOverrides': instance.portraitRoomOverrides,
 };

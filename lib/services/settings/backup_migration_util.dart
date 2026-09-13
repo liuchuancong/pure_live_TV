@@ -1,0 +1,29 @@
+import 'dart:convert';
+
+/// 同步自 pure_live BackupMigrationUtil：兼容字符串/对象两种备份条目形态。
+class BackupMigrationUtil {
+  static List<T> parseObjectList<T>(
+    dynamic data,
+    T Function(Map<String, dynamic>) factory, {
+    bool strict = false,
+  }) {
+    if (strict && data != null && data is! List) {
+      throw const FormatException('Expected backup object list');
+    }
+    if (data == null || data is! List) {
+      return [];
+    }
+
+    return data.map<T>((item) {
+      if (item is String) {
+        return factory(Map<String, dynamic>.from(jsonDecode(item)));
+      }
+
+      if (item is Map) {
+        return factory(Map<String, dynamic>.from(item));
+      }
+
+      throw Exception('Unsupported backup item type: ${item.runtimeType}');
+    }).toList();
+  }
+}

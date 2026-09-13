@@ -6,15 +6,21 @@ import 'package:flv_lzc/fijkplayer.dart';
 class FijkHelper {
   /// setFijkOption
   /// [player]
-  static Future<void> setFijkOption(FijkPlayer player, {enableCodec = true, Map<String, String>? headers}) async {
+  static Future<void> setFijkOption(
+    FijkPlayer player, {
+    enableCodec = true,
+    bool disableAudioOutput = false,
+    Map<String, String>? headers,
+  }) async {
     await player.setOption(FijkOption.playerCategory, 'mediacodec', enableCodec ? 1 : 0);
     await player.setOption(FijkOption.playerCategory, 'mediacodec-hevc', enableCodec ? 1 : 0);
     await player.setOption(FijkOption.playerCategory, 'videotoolbox', enableCodec ? 1 : 0);
     await player.setOption(FijkOption.playerCategory, 'enable-accurate-seek', 1);
     await player.setOption(FijkOption.playerCategory, 'soundtouch', 1);
     await player.setOption(FijkOption.playerCategory, 'subtitle', 1);
+    await player.setOption(FijkOption.playerCategory, 'an', disableAudioOutput ? 1 : 0);
     await player.setOption(FijkOption.hostCategory, "request-screen-on", 1);
-    await player.setOption(FijkOption.hostCategory, "request-audio-focus", 1);
+    await player.setOption(FijkOption.hostCategory, "request-audio-focus", disableAudioOutput ? 0 : 1);
     // Set format
     await player.setOption(FijkOption.formatCategory, 'reconnect', 1);
     await player.setOption(FijkOption.formatCategory, 'timeout', 30 * 1000 * 1000);
@@ -22,12 +28,17 @@ class FijkHelper {
     await player.setOption(FijkOption.formatCategory, 'rtsp_transport', 'tcp');
     // Set request headers
     String requestHeaders = '';
-    headers?.forEach((key, value) {
-      key.toLowerCase() == 'user-agent'
-          ? player.setOption(FijkOption.formatCategory, 'user_agent', value)
-          : requestHeaders += '$key:$value\r\n';
-    });
-    player.setOption(FijkOption.formatCategory, 'headers', requestHeaders);
+    for (final entry in headers?.entries ?? const <MapEntry<String, String>>[]) {
+      final key = entry.key.trim();
+      final value = entry.value.replaceAll(RegExp(r'[\r\n\u0000]+'), ' ').trim();
+      if (key.isEmpty || value.isEmpty) continue;
+      if (key.toLowerCase() == 'user-agent') {
+        await player.setOption(FijkOption.formatCategory, 'user_agent', value);
+      } else {
+        requestHeaders += '$key:$value\r\n';
+      }
+    }
+    await player.setOption(FijkOption.formatCategory, 'headers', requestHeaders);
   }
 
   /// 播放器时间转字符串

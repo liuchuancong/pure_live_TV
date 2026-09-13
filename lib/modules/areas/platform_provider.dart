@@ -1,5 +1,5 @@
-import 'package:pure_live/core/sites/sites.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'platform_provider.g.dart';
@@ -16,7 +16,7 @@ class PlatformTab extends _$PlatformTab {
   PlatformTabState build() {
     final sites = Sites().availableSites();
     if (sites.isEmpty) return const PlatformTabState(siteList: [], currentPlatformIndex: 0);
-    final preferId = SettingsService.to.favState.preferPlatform;
+    final preferId = ref.watch(favoriteRoomControllerProvider).preferPlatform;
     final targetIndex = sites.indexWhere((s) => s.id == preferId);
     return PlatformTabState(siteList: sites, currentPlatformIndex: targetIndex == -1 ? 0 : targetIndex);
   }

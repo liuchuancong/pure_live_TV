@@ -8,12 +8,15 @@ part of 'bilibili_account_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// 同步自 pure_live：B 站账号状态控制器（业务逻辑在 BilibiliAccountService）。
 
 @ProviderFor(BilibiliAccountController)
 final bilibiliAccountControllerProvider = BilibiliAccountControllerProvider._();
 
+/// 同步自 pure_live：B 站账号状态控制器（业务逻辑在 BilibiliAccountService）。
 final class BilibiliAccountControllerProvider
     extends $NotifierProvider<BilibiliAccountController, BilibiliAccountModel> {
+  /// 同步自 pure_live：B 站账号状态控制器（业务逻辑在 BilibiliAccountService）。
   BilibiliAccountControllerProvider._()
     : super(
         from: null,
@@ -42,7 +45,9 @@ final class BilibiliAccountControllerProvider
 }
 
 String _$bilibiliAccountControllerHash() =>
-    r'47e394682458a2fa15eda9baf98e687e43a8f2b0';
+    r'31686e75018a903bbc34636bffd4ae746df4be89';
+
+/// 同步自 pure_live：B 站账号状态控制器（业务逻辑在 BilibiliAccountService）。
 
 abstract class _$BilibiliAccountController
     extends $Notifier<BilibiliAccountModel> {

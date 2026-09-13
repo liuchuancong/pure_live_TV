@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/routes/router.dart';
 import 'package:pure_live/widgets/index.dart';
 import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/routes/web_router.dart';
 import 'package:pure_live/widgets/tv_input_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,0 +1,179 @@
+import 'dart:io';
+import 'dart:math';
+
+import 'package:path/path.dart' as p;
+import 'package:open_filex/open_filex.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:android_intent_plus/android_intent.dart';
+
+class FileUtils {
+  static const String systemHotProviderId = "88888";
+
+  /// 获取文件路径中的纯文件名
+  static String getFileName(String fullPath) {
+    return fullPath.split(Platform.pathSeparator).last;
+  }
+
+  /// 获取不带后缀的文件名
+  static String getBaseName(String fullPath) {
+    return p.basenameWithoutExtension(fullPath);
+  }
+
+  /// 生成基于时间戳和随机数的唯一长整数 ID 字符串
+  static String generateUuid() {
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    final randomValue = Random().nextInt(4294967295);
+    final result = (currentTime % 10000000000 * 1000 + randomValue) % 4294967295;
+    return result.toString();
+  }
+
+  static Uri? parseHttpUrl(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty || RegExp(r'\s').hasMatch(trimmed)) return null;
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null) return null;
+    final scheme = uri.scheme.toLowerCase();
+    if ((scheme != 'http' && scheme != 'https') || uri.host.isEmpty) return null;
+
+    try {
+      if (uri.hasPort && (uri.port < 1 || uri.port > 65535)) return null;
+    } on FormatException {
+      return null;
+    }
+    return uri.scheme == scheme ? uri : uri.replace(scheme: scheme);
+  }
+
+  /// Only complete HTTP(S) URLs are accepted. Substrings and schemeless host
+  /// names must stay on the local-path branch instead of reaching a launcher.
+  static bool isValidUrl(String value) => parseHttpUrl(value) != null;
+
+  static bool isHostUrl(String value) => parseHttpUrl(value) != null;
+
+  /// 验证字符串是否为纯数字（端口号校验）
+  static bool isNumericPort(String value) {
+    return RegExp(r"^\d+$").hasMatch(value);
+  }
+
+  /// 请求外部存储管理权限
+  static Future<bool> requestStoragePermission() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      if (await Permission.manageExternalStorage.isDenied) {
+        final status = await Permission.manageExternalStorage.request();
+        return status.isGranted;
+      }
+    }
+    return true;
+  }
+
+  static Future<File> convertPhysicalFile(String shareContent) async {
+    if (shareContent.isEmpty) {
+      throw const FileSystemException("Shared data string content stream is fully empty");
+    }
+    if (shareContent.startsWith('file://')) {
+      return File(Uri.parse(shareContent).toFilePath());
+    }
+
+    final fileRef = File(shareContent);
+    if (await fileRef.exists()) {
+      return fileRef;
+    }
+    throw FileSystemException("Shared media target path cannot be verified on flash drive storage", shareContent);
+  }
+
+  static Future<bool> cleanupOwnedSharedMediaFile(File file, {Directory? temporaryDirectory}) async {
+    final resolvedTemporaryDirectory = temporaryDirectory ?? await getTemporaryDirectory();
+    final root = p.normalize(resolvedTemporaryDirectory.absolute.path);
+    final filePath = p.normalize(file.absolute.path);
+    if (!p.isWithin(root, filePath)) return false;
+
+    final relativeParts = p.split(p.relative(filePath, from: root));
+    if (relativeParts.length != 3 || relativeParts.first != 'share_handler') return false;
+
+    final attachmentDirectory = file.parent;
+    final stagingRoot = attachmentDirectory.parent;
+    try {
+      if (await file.exists()) await file.delete();
+      if (await attachmentDirectory.exists() && (await attachmentDirectory.list().isEmpty)) {
+        await attachmentDirectory.delete();
+      }
+      if (await stagingRoot.exists() && (await stagingRoot.list().isEmpty)) await stagingRoot.delete();
+      return true;
+    } catch (error) {
+      debugPrint('Shared media temporary cleanup failed: $error');
+      return false;
+    }
+  }
+
+  static Future<bool> openFileOrUrl(String pathOrUrl) async {
+    final trimmedPath = pathOrUrl.trim();
+    if (trimmedPath.isEmpty) return false;
+
+    final remoteUri = parseHttpUrl(trimmedPath);
+    if (remoteUri != null) {
+      try {
+        if (await canLaunchUrl(remoteUri)) {
+          return await launchUrl(remoteUri, mode: LaunchMode.externalApplication);
+        }
+      } catch (_) {
+        return false;
+      }
+      return false;
+    }
+
+    final file = File(trimmedPath);
+    final directory = Directory(trimmedPath);
+    final isDir = await directory.exists();
+    final isFile = await file.exists();
+
+    if (!isDir && !isFile) return false;
+
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      try {
+        if (Platform.isWindows) {
+          await Process.start('explorer.exe', [p.context.canonicalize(trimmedPath)], mode: ProcessStartMode.detached);
+        } else if (Platform.isMacOS) {
+          final result = await Process.run('open', [trimmedPath]);
+          if (result.exitCode != 0) return false;
+        } else if (Platform.isLinux) {
+          final result = await Process.run('xdg-open', [trimmedPath]);
+          if (result.exitCode != 0) return false;
+        }
+        return true;
+      } catch (_) {}
+    }
+
+    if (Platform.isAndroid && isDir) {
+      try {
+        final String folderPath = trimmedPath.replaceFirst('/storage/emulated/0/', '');
+        final String docId = 'primary:${Uri.encodeComponent(folderPath)}';
+        final String contentUri = 'content://com.android.externalstorage.documents/document/$docId';
+        final AndroidIntent intent = AndroidIntent(
+          action: 'android.intent.action.VIEW',
+          data: contentUri,
+          type: 'vnd.android.document/directory',
+        );
+        await intent.launch();
+        return true;
+      } catch (_) {}
+    }
+
+    try {
+      final result = await OpenFilex.open(trimmedPath);
+      return result.type == ResultType.done;
+    } catch (_) {
+      if (!Platform.isAndroid) {
+        try {
+          final String cleanPath = trimmedPath.startsWith('file://') ? trimmedPath : 'file://$trimmedPath';
+          final Uri fileUri = Uri.parse(cleanPath);
+          if (await canLaunchUrl(fileUri)) {
+            return await launchUrl(fileUri);
+          }
+        } catch (_) {}
+      }
+    }
+
+    return false;
+  }
+}

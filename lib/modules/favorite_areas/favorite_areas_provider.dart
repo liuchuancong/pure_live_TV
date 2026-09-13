@@ -1,8 +1,7 @@
-import 'package:pure_live/core/sites/sites.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/core/models/live_area/live_area.dart';
-import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
 
 part 'favorite_areas_provider.g.dart';
 
@@ -36,7 +35,7 @@ class FavoriteAreasNotifier extends _$FavoriteAreasNotifier {
     }
 
     final activeSite = currentAvailableSites[currentState.tabSiteIndex];
-    final favState = SettingsService.to.favState;
+    final favState = ref.read(favoriteRoomControllerProvider);
     List<LiveArea> sourceAreas = List<LiveArea>.from(favState.favoriteAreas);
 
     if (activeSite.id != Sites.allSite) {

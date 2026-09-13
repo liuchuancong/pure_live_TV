@@ -1,4 +1,4 @@
-import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/live_area/live_area.dart';
 
 abstract final class AppRoutes {

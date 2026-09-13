@@ -9,6 +9,8 @@ part 'favorite_settings_model.g.dart';
 abstract class FavoriteSettingsModel with _$FavoriteSettingsModel {
   const factory FavoriteSettingsModel({
     @Default([]) List<String> shieldList,
+    @Default([]) List<String> blockedDanmakuUsers,
+    @Default(0) int siteCatalogMigration,
     @Default([]) List<String> hotAreasList,
     @Default('') String preferPlatform,
     @Default([]) List<LiveRoom> favoriteRooms,

@@ -31,22 +31,48 @@ class RaceHttp {
     Duration timeout = const Duration(seconds: 60),
     Map<String, String>? headers,
   }) async {
+    if (urls.isEmpty) return null;
+
     final completer = Completer<String?>();
+    var remaining = urls.length;
+    final clients = <http.Client>[];
+    // 整体超时兜底：任一镜像成功提前完成，全部失败或超时返回 null
+    final timer = Timer(timeout, () {
+      if (!completer.isCompleted) completer.complete(null);
+    });
 
     for (final url in urls) {
       unawaited(
         Future(() async {
+          final client = http.Client();
+          clients.add(client);
           try {
-            final client = http.Client();
-            final res = await client.head(Uri.parse(url), headers: headers).timeout(timeout);
-            if (res.statusCode == 200 && !completer.isCompleted) {
+            // 部分 GitHub 镜像拒绝 HEAD。单字节 GET 走同样的路由，
+            // 又不会真正下载调用方要用的资源
+            final request = http.Request('GET', Uri.parse(url));
+            if (headers != null) request.headers.addAll(headers);
+            request.headers.putIfAbsent('Range', () => 'bytes=0-0');
+            final res = await client.send(request).timeout(timeout);
+            if ((res.statusCode == 200 || res.statusCode == 206) && !completer.isCompleted) {
               completer.complete(url);
             }
-          } catch (_) {}
+          } catch (_) {
+            // 其他镜像可能赢得竞速
+          } finally {
+            client.close();
+            remaining--;
+            if (remaining == 0 && !completer.isCompleted) completer.complete(null);
+          }
         }),
       );
     }
-    return completer.future;
+
+    final result = await completer.future;
+    timer.cancel();
+    for (final client in clients) {
+      client.close();
+    }
+    return result;
   }
 
   static Future<String?> fetchText(

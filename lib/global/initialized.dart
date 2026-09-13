@@ -4,7 +4,12 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
+import 'dart:async';
+import 'package:pure_live/services/settings/legacy_settings_migration.dart';
 import 'package:pure_live/utils/cache_manager.dart';
+import 'package:pure_live/utils/version_util.dart';
+import 'package:pure_live/utils/web_socket_util.dart';
+import 'package:pure_live/player/core/playback_proxy_policy.dart';
 import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/global/app_path_manager.dart';
@@ -49,6 +54,20 @@ class AppInitializer {
     );
 
     _isInitialized = true;
+
+    // 旧版遗留设置迁移（pure_live GetX 版键值 → v2）
+    await LegacySettingsMigration.migrateIfNeeded();
+
+    // 弹幕 WebSocket 与 API/图片共用同一代理设置（同步自 pure_live）
+    configureWebSocketProxyRouting((uri) => PlaybackProxyPolicy.currentDirective());
+
+    // 版本信息 + 启动时检查更新
+    unawaited(() async {
+      await VersionUtil.initPackageInfo();
+      if (SettingsService.to.appState.enableAutoCheckUpdate) {
+        await VersionUtil().checkUpdate();
+      }
+    }());
   }
 
   bool get isInitialized => _isInitialized;

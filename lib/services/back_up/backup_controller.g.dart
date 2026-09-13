@@ -8,12 +8,15 @@ part of 'backup_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// 同步自 pure_live BackupController：全量设置导出/校验/导入/恢复。
 
 @ProviderFor(BackupController)
 final backupControllerProvider = BackupControllerProvider._();
 
+/// 同步自 pure_live BackupController：全量设置导出/校验/导入/恢复。
 final class BackupControllerProvider
     extends $NotifierProvider<BackupController, void> {
+  /// 同步自 pure_live BackupController：全量设置导出/校验/导入/恢复。
   BackupControllerProvider._()
     : super(
         from: null,
@@ -41,7 +44,9 @@ final class BackupControllerProvider
   }
 }
 
-String _$backupControllerHash() => r'bda24b15a817227662c10abc74b9e0b6fb8ae6c3';
+String _$backupControllerHash() => r'5a416a315366729c16ada0df9a141b0c1b762d83';
+
+/// 同步自 pure_live BackupController：全量设置导出/校验/导入/恢复。
 
 abstract class _$BackupController extends $Notifier<void> {
   void build();

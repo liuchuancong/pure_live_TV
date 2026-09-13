@@ -25,6 +25,18 @@ class PlayerSettingsController extends _$PlayerSettingsController {
       floatPlay: HivePrefUtil.getBool('floatPlay') ?? false,
       audioOnly: HivePrefUtil.getBool('audioOnly') ?? false,
       useHardStopOnExit: HivePrefUtil.getBool('useHardStopOnExit') ?? false,
+      windowsPipAlwaysOnTop: HivePrefUtil.getBool('windowsPipAlwaysOnTop') ?? false,
+      enableRtxVsr: HivePrefUtil.getBool('enableRtxVsr') ?? false,
+      enablePortraitStreamAdaptation: HivePrefUtil.getBool('enablePortraitStreamAdaptation') ?? true,
+      portraitAdaptiveHeight: HivePrefUtil.getBool('portraitAdaptiveHeight') ?? true,
+      portraitLayoutModeName: HivePrefUtil.getString('portraitLayoutMode') ?? 'balanced',
+      portraitFullscreenPolicyName: HivePrefUtil.getString('portraitFullscreenPolicy') ?? '',
+      portraitFullscreenDisplayModeName: HivePrefUtil.getString('portraitFullscreenDisplayMode') ?? '',
+      portraitPipFollowSource: HivePrefUtil.getBool('portraitPipFollowSource') ?? true,
+      portraitDanmakuModeName: HivePrefUtil.getString('portraitDanmakuMode') ?? 'followGlobal',
+      rememberPortraitRoomOverride: HivePrefUtil.getBool('rememberPortraitRoomOverride') ?? true,
+      showPortraitDiagnostics: HivePrefUtil.getBool('showPortraitDiagnostics') ?? false,
+      portraitRoomOverrides: HivePrefUtil.getObject('portraitRoomOverrides', (json) => (json as Map).map((k, v) => MapEntry(k.toString(), v.toString()))) ?? {},
     );
   }
 
@@ -43,6 +55,18 @@ class PlayerSettingsController extends _$PlayerSettingsController {
     HivePrefUtil.setBool('floatPlay', newModel.floatPlay);
     HivePrefUtil.setBool('audioOnly', newModel.audioOnly);
     HivePrefUtil.setBool('useHardStopOnExit', newModel.useHardStopOnExit);
+    HivePrefUtil.setBool('windowsPipAlwaysOnTop', newModel.windowsPipAlwaysOnTop);
+    HivePrefUtil.setBool('enableRtxVsr', newModel.enableRtxVsr);
+    HivePrefUtil.setBool('enablePortraitStreamAdaptation', newModel.enablePortraitStreamAdaptation);
+    HivePrefUtil.setBool('portraitAdaptiveHeight', newModel.portraitAdaptiveHeight);
+    HivePrefUtil.setString('portraitLayoutMode', newModel.portraitLayoutModeName);
+    HivePrefUtil.setString('portraitFullscreenPolicy', newModel.portraitFullscreenPolicyName);
+    HivePrefUtil.setString('portraitFullscreenDisplayMode', newModel.portraitFullscreenDisplayModeName);
+    HivePrefUtil.setBool('portraitPipFollowSource', newModel.portraitPipFollowSource);
+    HivePrefUtil.setString('portraitDanmakuMode', newModel.portraitDanmakuModeName);
+    HivePrefUtil.setBool('rememberPortraitRoomOverride', newModel.rememberPortraitRoomOverride);
+    HivePrefUtil.setBool('showPortraitDiagnostics', newModel.showPortraitDiagnostics);
+    HivePrefUtil.setObject('portraitRoomOverrides', newModel.portraitRoomOverrides);
   }
 
   void changePreferResolution(String resolution) {

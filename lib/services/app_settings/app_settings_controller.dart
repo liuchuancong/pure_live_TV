@@ -19,6 +19,15 @@ class AppSettingsController extends _$AppSettingsController {
       enableAutoCheckUpdate: HivePrefUtil.getBool('enableAutoCheckUpdate') ?? true,
       enableFullScreenDefault: HivePrefUtil.getBool('enableFullScreenDefault') ?? false,
       showSplashPage: HivePrefUtil.getBool('showSplashPage') ?? true,
+      enableAsmrSleepMode: HivePrefUtil.getBool('enableAsmrSleepMode') ?? false,
+      asmrSleepMinutes: HivePrefUtil.getInt('asmrSleepMinutes') ?? 60,
+      useGitHubOriginForUpdates: HivePrefUtil.getBool('useGitHubOriginForUpdates') ?? false,
+      refreshRateMode: HivePrefUtil.getString('refreshRateMode') ?? '',
+      preferRealOnlineCounts: HivePrefUtil.getBool('preferRealOnlineCounts') ?? false,
+      realOnlinePlatforms: HivePrefUtil.getStringList('realOnlinePlatforms') ?? [],
+      audienceMetricMigration: HivePrefUtil.getInt('audienceMetricMigration') ?? 0,
+      enableMultiView: HivePrefUtil.getBool('enableMultiView') ?? true,
+      enableNewWindowPlay: HivePrefUtil.getBool('enableNewWindowPlay') ?? true,
       savedMenuIds: HivePrefUtil.getStringList('savedMenuIds') ?? [],
     );
   }
@@ -48,6 +57,15 @@ class AppSettingsController extends _$AppSettingsController {
     HivePrefUtil.setBool('enableFullScreenDefault', state.enableFullScreenDefault);
     HivePrefUtil.setBool('showSplashPage', state.showSplashPage);
     HivePrefUtil.setStringList('savedMenuIds', state.savedMenuIds);
+    HivePrefUtil.setBool('enableAsmrSleepMode', state.enableAsmrSleepMode);
+    HivePrefUtil.setInt('asmrSleepMinutes', state.asmrSleepMinutes);
+    HivePrefUtil.setBool('useGitHubOriginForUpdates', state.useGitHubOriginForUpdates);
+    HivePrefUtil.setString('refreshRateMode', state.refreshRateMode);
+    HivePrefUtil.setBool('preferRealOnlineCounts', state.preferRealOnlineCounts);
+    HivePrefUtil.setStringList('realOnlinePlatforms', state.realOnlinePlatforms);
+    HivePrefUtil.setInt('audienceMetricMigration', state.audienceMetricMigration);
+    HivePrefUtil.setBool('enableMultiView', state.enableMultiView);
+    HivePrefUtil.setBool('enableNewWindowPlay', state.enableNewWindowPlay);
   }
 
   Map<String, dynamic> toJson() => state.toJson();

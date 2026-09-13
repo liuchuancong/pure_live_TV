@@ -1,5 +1,5 @@
-import 'package:pure_live/core/sites/sites.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'hot_provider.g.dart';
@@ -20,7 +20,7 @@ class HotTabs extends _$HotTabs {
       return const HotTabsState(sites: [], currentIndex: 0);
     }
 
-    final preferPlatform = SettingsService.to.favState.preferPlatform;
+    final preferPlatform = ref.watch(favoriteRoomControllerProvider).preferPlatform;
     final pIndex = availableSites.indexWhere((e) => e.id == preferPlatform);
     final initialIndex = pIndex == -1 ? 0 : pIndex;
 

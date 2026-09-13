@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CacheModel {
 
- double get cacheSizeMB; double get refreshTurns;
+ double get cacheSizeMB; double get refreshTurns; int get imageCacheEpoch; bool get isScanning; bool get isClearing; bool get isRefreshingImages;
 /// Create a copy of CacheModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CacheModelCopyWith<CacheModel> get copyWith => _$CacheModelCopyWithImpl<CacheMo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CacheModel&&(identical(other.cacheSizeMB, cacheSizeMB) || other.cacheSizeMB == cacheSizeMB)&&(identical(other.refreshTurns, refreshTurns) || other.refreshTurns == refreshTurns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CacheModel&&(identical(other.cacheSizeMB, cacheSizeMB) || other.cacheSizeMB == cacheSizeMB)&&(identical(other.refreshTurns, refreshTurns) || other.refreshTurns == refreshTurns)&&(identical(other.imageCacheEpoch, imageCacheEpoch) || other.imageCacheEpoch == imageCacheEpoch)&&(identical(other.isScanning, isScanning) || other.isScanning == isScanning)&&(identical(other.isClearing, isClearing) || other.isClearing == isClearing)&&(identical(other.isRefreshingImages, isRefreshingImages) || other.isRefreshingImages == isRefreshingImages));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cacheSizeMB,refreshTurns);
+int get hashCode => Object.hash(runtimeType,cacheSizeMB,refreshTurns,imageCacheEpoch,isScanning,isClearing,isRefreshingImages);
 
 @override
 String toString() {
-  return 'CacheModel(cacheSizeMB: $cacheSizeMB, refreshTurns: $refreshTurns)';
+  return 'CacheModel(cacheSizeMB: $cacheSizeMB, refreshTurns: $refreshTurns, imageCacheEpoch: $imageCacheEpoch, isScanning: $isScanning, isClearing: $isClearing, isRefreshingImages: $isRefreshingImages)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CacheModelCopyWith<$Res>  {
   factory $CacheModelCopyWith(CacheModel value, $Res Function(CacheModel) _then) = _$CacheModelCopyWithImpl;
 @useResult
 $Res call({
- double cacheSizeMB, double refreshTurns
+ double cacheSizeMB, double refreshTurns, int imageCacheEpoch, bool isScanning, bool isClearing, bool isRefreshingImages
 });
 
 
@@ -65,11 +65,15 @@ class _$CacheModelCopyWithImpl<$Res>
 
 /// Create a copy of CacheModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? cacheSizeMB = null,Object? refreshTurns = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? cacheSizeMB = null,Object? refreshTurns = null,Object? imageCacheEpoch = null,Object? isScanning = null,Object? isClearing = null,Object? isRefreshingImages = null,}) {
   return _then(_self.copyWith(
 cacheSizeMB: null == cacheSizeMB ? _self.cacheSizeMB : cacheSizeMB // ignore: cast_nullable_to_non_nullable
 as double,refreshTurns: null == refreshTurns ? _self.refreshTurns : refreshTurns // ignore: cast_nullable_to_non_nullable
-as double,
+as double,imageCacheEpoch: null == imageCacheEpoch ? _self.imageCacheEpoch : imageCacheEpoch // ignore: cast_nullable_to_non_nullable
+as int,isScanning: null == isScanning ? _self.isScanning : isScanning // ignore: cast_nullable_to_non_nullable
+as bool,isClearing: null == isClearing ? _self.isClearing : isClearing // ignore: cast_nullable_to_non_nullable
+as bool,isRefreshingImages: null == isRefreshingImages ? _self.isRefreshingImages : isRefreshingImages // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -154,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double cacheSizeMB,  double refreshTurns)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double cacheSizeMB,  double refreshTurns,  int imageCacheEpoch,  bool isScanning,  bool isClearing,  bool isRefreshingImages)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CacheModel() when $default != null:
-return $default(_that.cacheSizeMB,_that.refreshTurns);case _:
+return $default(_that.cacheSizeMB,_that.refreshTurns,_that.imageCacheEpoch,_that.isScanning,_that.isClearing,_that.isRefreshingImages);case _:
   return orElse();
 
 }
@@ -175,10 +179,10 @@ return $default(_that.cacheSizeMB,_that.refreshTurns);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double cacheSizeMB,  double refreshTurns)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double cacheSizeMB,  double refreshTurns,  int imageCacheEpoch,  bool isScanning,  bool isClearing,  bool isRefreshingImages)  $default,) {final _that = this;
 switch (_that) {
 case _CacheModel():
-return $default(_that.cacheSizeMB,_that.refreshTurns);case _:
+return $default(_that.cacheSizeMB,_that.refreshTurns,_that.imageCacheEpoch,_that.isScanning,_that.isClearing,_that.isRefreshingImages);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +199,10 @@ return $default(_that.cacheSizeMB,_that.refreshTurns);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double cacheSizeMB,  double refreshTurns)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double cacheSizeMB,  double refreshTurns,  int imageCacheEpoch,  bool isScanning,  bool isClearing,  bool isRefreshingImages)?  $default,) {final _that = this;
 switch (_that) {
 case _CacheModel() when $default != null:
-return $default(_that.cacheSizeMB,_that.refreshTurns);case _:
+return $default(_that.cacheSizeMB,_that.refreshTurns,_that.imageCacheEpoch,_that.isScanning,_that.isClearing,_that.isRefreshingImages);case _:
   return null;
 
 }
@@ -210,11 +214,15 @@ return $default(_that.cacheSizeMB,_that.refreshTurns);case _:
 @JsonSerializable()
 
 class _CacheModel implements CacheModel {
-  const _CacheModel({this.cacheSizeMB = 0.0, this.refreshTurns = 0.0});
+  const _CacheModel({this.cacheSizeMB = 0.0, this.refreshTurns = 0.0, this.imageCacheEpoch = 0, this.isScanning = false, this.isClearing = false, this.isRefreshingImages = false});
   factory _CacheModel.fromJson(Map<String, dynamic> json) => _$CacheModelFromJson(json);
 
 @override@JsonKey() final  double cacheSizeMB;
 @override@JsonKey() final  double refreshTurns;
+@override@JsonKey() final  int imageCacheEpoch;
+@override@JsonKey() final  bool isScanning;
+@override@JsonKey() final  bool isClearing;
+@override@JsonKey() final  bool isRefreshingImages;
 
 /// Create a copy of CacheModel
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CacheModel&&(identical(other.cacheSizeMB, cacheSizeMB) || other.cacheSizeMB == cacheSizeMB)&&(identical(other.refreshTurns, refreshTurns) || other.refreshTurns == refreshTurns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CacheModel&&(identical(other.cacheSizeMB, cacheSizeMB) || other.cacheSizeMB == cacheSizeMB)&&(identical(other.refreshTurns, refreshTurns) || other.refreshTurns == refreshTurns)&&(identical(other.imageCacheEpoch, imageCacheEpoch) || other.imageCacheEpoch == imageCacheEpoch)&&(identical(other.isScanning, isScanning) || other.isScanning == isScanning)&&(identical(other.isClearing, isClearing) || other.isClearing == isClearing)&&(identical(other.isRefreshingImages, isRefreshingImages) || other.isRefreshingImages == isRefreshingImages));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cacheSizeMB,refreshTurns);
+int get hashCode => Object.hash(runtimeType,cacheSizeMB,refreshTurns,imageCacheEpoch,isScanning,isClearing,isRefreshingImages);
 
 @override
 String toString() {
-  return 'CacheModel(cacheSizeMB: $cacheSizeMB, refreshTurns: $refreshTurns)';
+  return 'CacheModel(cacheSizeMB: $cacheSizeMB, refreshTurns: $refreshTurns, imageCacheEpoch: $imageCacheEpoch, isScanning: $isScanning, isClearing: $isClearing, isRefreshingImages: $isRefreshingImages)';
 }
 
 
@@ -249,7 +257,7 @@ abstract mixin class _$CacheModelCopyWith<$Res> implements $CacheModelCopyWith<$
   factory _$CacheModelCopyWith(_CacheModel value, $Res Function(_CacheModel) _then) = __$CacheModelCopyWithImpl;
 @override @useResult
 $Res call({
- double cacheSizeMB, double refreshTurns
+ double cacheSizeMB, double refreshTurns, int imageCacheEpoch, bool isScanning, bool isClearing, bool isRefreshingImages
 });
 
 
@@ -266,11 +274,15 @@ class __$CacheModelCopyWithImpl<$Res>
 
 /// Create a copy of CacheModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? cacheSizeMB = null,Object? refreshTurns = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? cacheSizeMB = null,Object? refreshTurns = null,Object? imageCacheEpoch = null,Object? isScanning = null,Object? isClearing = null,Object? isRefreshingImages = null,}) {
   return _then(_CacheModel(
 cacheSizeMB: null == cacheSizeMB ? _self.cacheSizeMB : cacheSizeMB // ignore: cast_nullable_to_non_nullable
 as double,refreshTurns: null == refreshTurns ? _self.refreshTurns : refreshTurns // ignore: cast_nullable_to_non_nullable
-as double,
+as double,imageCacheEpoch: null == imageCacheEpoch ? _self.imageCacheEpoch : imageCacheEpoch // ignore: cast_nullable_to_non_nullable
+as int,isScanning: null == isScanning ? _self.isScanning : isScanning // ignore: cast_nullable_to_non_nullable
+as bool,isClearing: null == isClearing ? _self.isClearing : isClearing // ignore: cast_nullable_to_non_nullable
+as bool,isRefreshingImages: null == isRefreshingImages ? _self.isRefreshingImages : isRefreshingImages // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

@@ -8,12 +8,15 @@ part of 'cookie_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
 
 @ProviderFor(CookieController)
 final cookieControllerProvider = CookieControllerProvider._();
 
+/// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
 final class CookieControllerProvider
     extends $NotifierProvider<CookieController, CookieModel> {
+  /// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
   CookieControllerProvider._()
     : super(
         from: null,
@@ -41,7 +44,9 @@ final class CookieControllerProvider
   }
 }
 
-String _$cookieControllerHash() => r'69afd8178228a2f94921b56cd036e65a4a8fe579';
+String _$cookieControllerHash() => r'34025bbda8d9f008066a652febd411264cc7ae06';
+
+/// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
 
 abstract class _$CookieController extends $Notifier<CookieModel> {
   CookieModel build();

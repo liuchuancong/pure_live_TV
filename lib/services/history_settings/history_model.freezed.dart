@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HistoryModel {
 
- List<LiveRoom> get historyRooms;
+ List<LiveRoom> get historyRooms; int get historyLimit;
 /// Create a copy of HistoryModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $HistoryModelCopyWith<HistoryModel> get copyWith => _$HistoryModelCopyWithImpl<H
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryModel&&const DeepCollectionEquality().equals(other.historyRooms, historyRooms));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryModel&&const DeepCollectionEquality().equals(other.historyRooms, historyRooms)&&(identical(other.historyLimit, historyLimit) || other.historyLimit == historyLimit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(historyRooms));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(historyRooms),historyLimit);
 
 @override
 String toString() {
-  return 'HistoryModel(historyRooms: $historyRooms)';
+  return 'HistoryModel(historyRooms: $historyRooms, historyLimit: $historyLimit)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $HistoryModelCopyWith<$Res>  {
   factory $HistoryModelCopyWith(HistoryModel value, $Res Function(HistoryModel) _then) = _$HistoryModelCopyWithImpl;
 @useResult
 $Res call({
- List<LiveRoom> historyRooms
+ List<LiveRoom> historyRooms, int historyLimit
 });
 
 
@@ -65,10 +65,11 @@ class _$HistoryModelCopyWithImpl<$Res>
 
 /// Create a copy of HistoryModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? historyRooms = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? historyRooms = null,Object? historyLimit = null,}) {
   return _then(_self.copyWith(
 historyRooms: null == historyRooms ? _self.historyRooms : historyRooms // ignore: cast_nullable_to_non_nullable
-as List<LiveRoom>,
+as List<LiveRoom>,historyLimit: null == historyLimit ? _self.historyLimit : historyLimit // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -153,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LiveRoom> historyRooms)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LiveRoom> historyRooms,  int historyLimit)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HistoryModel() when $default != null:
-return $default(_that.historyRooms);case _:
+return $default(_that.historyRooms,_that.historyLimit);case _:
   return orElse();
 
 }
@@ -174,10 +175,10 @@ return $default(_that.historyRooms);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LiveRoom> historyRooms)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LiveRoom> historyRooms,  int historyLimit)  $default,) {final _that = this;
 switch (_that) {
 case _HistoryModel():
-return $default(_that.historyRooms);case _:
+return $default(_that.historyRooms,_that.historyLimit);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +195,10 @@ return $default(_that.historyRooms);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LiveRoom> historyRooms)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LiveRoom> historyRooms,  int historyLimit)?  $default,) {final _that = this;
 switch (_that) {
 case _HistoryModel() when $default != null:
-return $default(_that.historyRooms);case _:
+return $default(_that.historyRooms,_that.historyLimit);case _:
   return null;
 
 }
@@ -209,7 +210,7 @@ return $default(_that.historyRooms);case _:
 @JsonSerializable()
 
 class _HistoryModel implements HistoryModel {
-  const _HistoryModel({final  List<LiveRoom> historyRooms = const []}): _historyRooms = historyRooms;
+  const _HistoryModel({final  List<LiveRoom> historyRooms = const [], this.historyLimit = 50}): _historyRooms = historyRooms;
   factory _HistoryModel.fromJson(Map<String, dynamic> json) => _$HistoryModelFromJson(json);
 
  final  List<LiveRoom> _historyRooms;
@@ -219,6 +220,7 @@ class _HistoryModel implements HistoryModel {
   return EqualUnmodifiableListView(_historyRooms);
 }
 
+@override@JsonKey() final  int historyLimit;
 
 /// Create a copy of HistoryModel
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +235,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryModel&&const DeepCollectionEquality().equals(other._historyRooms, _historyRooms));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryModel&&const DeepCollectionEquality().equals(other._historyRooms, _historyRooms)&&(identical(other.historyLimit, historyLimit) || other.historyLimit == historyLimit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_historyRooms));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_historyRooms),historyLimit);
 
 @override
 String toString() {
-  return 'HistoryModel(historyRooms: $historyRooms)';
+  return 'HistoryModel(historyRooms: $historyRooms, historyLimit: $historyLimit)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$HistoryModelCopyWith<$Res> implements $HistoryModelCopyWi
   factory _$HistoryModelCopyWith(_HistoryModel value, $Res Function(_HistoryModel) _then) = __$HistoryModelCopyWithImpl;
 @override @useResult
 $Res call({
- List<LiveRoom> historyRooms
+ List<LiveRoom> historyRooms, int historyLimit
 });
 
 
@@ -270,10 +272,11 @@ class __$HistoryModelCopyWithImpl<$Res>
 
 /// Create a copy of HistoryModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? historyRooms = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? historyRooms = null,Object? historyLimit = null,}) {
   return _then(_HistoryModel(
 historyRooms: null == historyRooms ? _self._historyRooms : historyRooms // ignore: cast_nullable_to_non_nullable
-as List<LiveRoom>,
+as List<LiveRoom>,historyLimit: null == historyLimit ? _self.historyLimit : historyLimit // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

@@ -1,6 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/widgets/tv_tab_view.dart';
 import 'package:pure_live/widgets/tv_scaffold.dart';
 import 'package:pure_live/widgets/tv_room_card.dart';

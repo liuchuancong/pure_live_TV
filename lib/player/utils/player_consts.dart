@@ -17,6 +17,15 @@ class PlayerConsts {
   }
 
   static const List<String> resolutions = ['原画', '蓝光8M', '蓝光4M', '超清', '流畅'];
+  static const Map<String, String> resolutionLabelKeys = {
+    '原画': 'prefer_resolution_option_original',
+    '蓝光8M': 'prefer_resolution_option_blu_ray_8m',
+    '蓝光4M': 'prefer_resolution_option_blu_ray_4m',
+    '超清': 'prefer_resolution_option_super_hd',
+    '流畅': 'prefer_resolution_option_smooth',
+  };
+
+  static String? resolutionLabelKey(String value) => resolutionLabelKeys[value];
   static Map<String, Color> themeColors = {
     "Crimson": const Color.fromARGB(255, 220, 20, 60),
     "Orange": Colors.orange,
@@ -67,7 +76,7 @@ class PlayerConsts {
     "sdl": "sdl (Cross-platform, via SDL library)",
     "openal": "openal (Cross-platform, OpenAL backend)",
     "libao": "libao (Cross-platform, uses libao library)",
-    "auto": "auto (Not available)",
+    "auto": "auto (Automatic fallback)",
   };
 
   static const hardwareDecoder = {

@@ -42,7 +42,7 @@ final class FavoriteAreasNotifierProvider
 }
 
 String _$favoriteAreasNotifierHash() =>
-    r'bb48ece4c8dfc84af3177c13f54dca197db8c84c';
+    r'78b624bcc59337694cefec227667dcc03067b003';
 
 abstract class _$FavoriteAreasNotifier extends $Notifier<FavoriteAreasState> {
   FavoriteAreasState build();

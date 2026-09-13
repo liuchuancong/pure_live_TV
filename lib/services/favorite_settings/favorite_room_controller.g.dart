@@ -8,12 +8,18 @@ part of 'favorite_room_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// 同步自 pure_live FavoriteRoomController：
+/// 收藏/屏蔽词/弹幕屏蔽用户/站点目录迁移与身份去重逻辑。
 
 @ProviderFor(FavoriteRoomController)
 final favoriteRoomControllerProvider = FavoriteRoomControllerProvider._();
 
+/// 同步自 pure_live FavoriteRoomController：
+/// 收藏/屏蔽词/弹幕屏蔽用户/站点目录迁移与身份去重逻辑。
 final class FavoriteRoomControllerProvider
     extends $NotifierProvider<FavoriteRoomController, FavoriteSettingsModel> {
+  /// 同步自 pure_live FavoriteRoomController：
+  /// 收藏/屏蔽词/弹幕屏蔽用户/站点目录迁移与身份去重逻辑。
   FavoriteRoomControllerProvider._()
     : super(
         from: null,
@@ -42,7 +48,10 @@ final class FavoriteRoomControllerProvider
 }
 
 String _$favoriteRoomControllerHash() =>
-    r'a19fb373fc95a292a4a69b134dcfd34002187008';
+    r'c210fee23e89ba521a42e3840a47db159829f531';
+
+/// 同步自 pure_live FavoriteRoomController：
+/// 收藏/屏蔽词/弹幕屏蔽用户/站点目录迁移与身份去重逻辑。
 
 abstract class _$FavoriteRoomController
     extends $Notifier<FavoriteSettingsModel> {

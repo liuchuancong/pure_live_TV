@@ -1,7 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/widgets/index.dart';
-import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/core/sites.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/areas/area_grid_view.dart';
 import 'package:pure_live/core/models/live_area/live_area.dart';

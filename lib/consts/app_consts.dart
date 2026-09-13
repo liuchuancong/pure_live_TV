@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
-import 'package:pure_live/core/sites/sites.dart';
+import 'package:pure_live/core/sites.dart';
 
 enum HomeMenu {
   favorites('favorites'),

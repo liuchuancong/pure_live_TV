@@ -1,11 +1,12 @@
 import '../cookie_controller.dart';
-import 'package:pure_live/core/network/http_client.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/core/models/bilibili_user_info/bilibili_user_info.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_model.dart';
+import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_service.dart';
 
 part 'bilibili_account_controller.g.dart';
 
+/// 同步自 pure_live：B 站账号状态控制器（业务逻辑在 BilibiliAccountService）。
 @riverpod
 class BilibiliAccountController extends _$BilibiliAccountController {
   @override
@@ -15,41 +16,35 @@ class BilibiliAccountController extends _$BilibiliAccountController {
         if (next.bilibiliCookie.isEmpty) {
           state = const BilibiliAccountModel();
         } else {
-          loadUserInfo();
+          BilibiliAccountService.instance.loadUserInfo();
         }
       }
     });
 
     final cookie = ref.read(cookieControllerProvider).bilibiliCookie;
-    if (cookie.isNotEmpty) loadUserInfo();
+    if (cookie.isNotEmpty) {
+      BilibiliAccountService.instance.loadUserInfo();
+    }
 
     return BilibiliAccountModel(isLogined: cookie.isNotEmpty);
   }
 
-  Future<void> loadUserInfo() async {
-    final cookie = ref.read(cookieControllerProvider).bilibiliCookie;
-    if (cookie.isEmpty) return;
-
-    try {
-      final result = await HttpClient.instance.getJson(
-        "https://api.bilibili.com/x/member/web/account",
-        header: {"Cookie": cookie},
-      );
-
-      if (result == null || result["code"] != 0) {
-        logout();
-        return;
-      }
-
-      final info = BilibiliUserInfo.fromJson(result["data"]);
-      state = state.copyWith(isLogined: true, name: info.uname ?? '未登录', uid: info.mid ?? 0);
-    } catch (_) {
-      // 处理错误
-    }
+  /// 由 BilibiliAccountService 提交最新的账号状态。
+  void applyState(BilibiliAccountModel model) {
+    if (state == model) return;
+    state = model;
   }
 
-  void logout() async {
-    ref.read(cookieControllerProvider.notifier).clearAllCookies();
+  Future<bool> loadUserInfo() => BilibiliAccountService.instance.loadUserInfo();
+
+  Future<void> logout() async {
+    await BilibiliAccountService.instance.logout();
     state = const BilibiliAccountModel();
+  }
+
+  @visibleForTesting
+  Map<String, dynamic>? parseAccountPayload(dynamic result) {
+    if (result is! Map) return null;
+    return Map<String, dynamic>.from(result);
   }
 }

@@ -41,7 +41,7 @@ final class PlatformTabProvider
   }
 }
 
-String _$platformTabHash() => r'646bc7f6f0a2ac7b0406960ec292da509a2a1515';
+String _$platformTabHash() => r'cb71e081bd20f1ad30796352071ee43853ea56d4';
 
 abstract class _$PlatformTab extends $Notifier<PlatformTabState> {
   PlatformTabState build();
