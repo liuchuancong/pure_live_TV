@@ -1,12 +1,15 @@
-import 'site/huya_site.dart';
-import 'site/douyu_site.dart';
-import 'site/douyin_site.dart';
+import 'huya/huya_site.dart';
+import 'douyu/douyu_site.dart';
+import 'douyin/douyin_site.dart';
 import 'interface/live_site.dart';
 import 'package:collection/collection.dart';
-import 'package:pure_live/core/sites/site/cc_site.dart';
+import 'package:pure_live/core/sites/cc/cc_site.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/sites/site/bilibili_site.dart';
-import 'package:pure_live/core/sites/site/kuaishou_site.dart';
+import 'package:pure_live/core/sites/bilibili/bilibili_site.dart';
+import 'package:pure_live/core/sites/kuaishou/kuaishou_site.dart';
+import 'package:pure_live/core/sites/yy/yy_site.dart';
+import 'package:pure_live/core/sites/soop/soop_site.dart';
+import 'package:pure_live/core/sites/twitch/twitch_site.dart';
 
 class Sites {
   static const String allSite = "all";
@@ -17,6 +20,9 @@ class Sites {
   static const String kuaishouSite = "kuaishou";
   static const String ccSite = "cc";
   static const String iptvSite = "iptv";
+  static const String yySite = "yy";
+  static const String soopSite = "soop";
+  static const String twitchSite = "twitch";
   static List<Site> get supportSites => [
     Site(id: "bilibili", name: "哔哩哔哩", logo: "assets/images/bilibili_2.png", liveSite: BiliBiliSite()),
     Site(id: "douyu", name: "斗鱼", logo: "assets/images/douyu.png", liveSite: DouyuSite()),
@@ -24,6 +30,9 @@ class Sites {
     Site(id: "douyin", name: "抖音", logo: "assets/images/douyin.png", liveSite: DouyinSite()),
     Site(id: "kuaishou", name: "快手", logo: "assets/images/kuaishou.png", liveSite: KuaishowSite()),
     Site(id: "cc", name: "网易CC", logo: "assets/images/cc.png", liveSite: CCSite()),
+    Site(id: yySite, name: "YY", logo: "assets/images/yy.png", liveSite: YYSite()),
+    Site(id: soopSite, name: "Soop", logo: "assets/images/soop.png", liveSite: SoopSite()),
+    Site(id: twitchSite, name: "Twitch", logo: "assets/images/twitch.png", liveSite: TwitchSite()),
   ];
 
   static Site of(String id) {
