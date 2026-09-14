@@ -14,6 +14,8 @@ import 'package:pure_live/core/iptv/parsers/json_epg_parser.dart';
 import 'package:pure_live/core/iptv/local/database.dart' as database;
 import 'package:pure_live/core/iptv/local/epg_channel_identity.dart';
 
+import 'iptv_confirm_dialog.dart';
+
 import 'package:pure_live/global/app_path_manager.dart';
 import 'package:pure_live/plugins/db_service.dart';
 import 'package:pure_live/utils/toast_util.dart';
@@ -198,22 +200,11 @@ class EpgImportManager {
       }
 
       if (!forceUpdate && matchedList.isNotEmpty) {
-        final confirmed = await Get.dialog<bool>(
-          Builder(
-            builder: (context) => AlertDialog(
-              scrollable: true,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Text(i18n("provider_name_exists_tip")),
-              content: Text('"$sourceName"\n\n${i18n("replace_confirm_message").replaceAll("{}", typeName)}'),
-              actions: [
-                TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(i18n("cancel"))),
-                TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(i18n("confirm"))),
-              ],
-            ),
-          ),
-          barrierDismissible: false,
+        final confirmed = await confirmReplaceIptvSource(
+          title: i18n("provider_name_exists_tip"),
+          message: '"$sourceName"\n\n${i18n("replace_confirm_message").replaceAll("{}", typeName)}',
         );
-        if (confirmed != true) return false;
+        if (!confirmed) return false;
       }
 
       // The transaction owns deletion, every programme batch and final pruning.

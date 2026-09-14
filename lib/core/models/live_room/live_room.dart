@@ -54,6 +54,12 @@ abstract class LiveRoom with _$LiveRoom {
     @Default(false) bool isCatchUp,
     int? catchUpStart,
     int? catchUpEnd,
+    // ---------- IPTV 时移/回看元数据（来自 M3U catchup-* 标签） ----------
+    String? catchUpMode,
+    String? catchUpSource,
+    double? catchUpDays,
+    double? catchUpCorrectionHours,
+    @Default(<String, String>{}) Map<String, String> httpHeaders,
     @JsonKey(includeFromJson: false, includeToJson: false) dynamic data,
     @JsonKey(includeFromJson: false, includeToJson: false) dynamic danmakuData,
   }) = _LiveRoom;

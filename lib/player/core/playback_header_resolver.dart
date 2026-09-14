@@ -34,10 +34,9 @@ class PlaybackHeaderResolver {
     switch (normalizedPlatform) {
       case Sites.bilibiliSite:
         final cookie = _configuredCookie((settings) => settings.cookieState.bilibiliCookie);
-        final bilibili = Sites.of(Sites.bilibiliSite).liveSite as BiliBiliSite;
         final anonymousCookie = <String>[
-          if (bilibili.buvid3.isNotEmpty) 'buvid3=${bilibili.buvid3}',
-          if (bilibili.buvid4.isNotEmpty) 'buvid4=${bilibili.buvid4}',
+          if (BiliBiliSite.buvid3.isNotEmpty) 'buvid3=${BiliBiliSite.buvid3}',
+          if (BiliBiliSite.buvid4.isNotEmpty) 'buvid4=${BiliBiliSite.buvid4}',
         ].join(';');
         headers = <String, String>{
           'user-agent': BiliBiliSite.kDefaultUserAgent,

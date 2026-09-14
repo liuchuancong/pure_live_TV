@@ -197,11 +197,11 @@ class AcfunSearchClient {
           link: '${AcfunApi.origin}/live/$id',
           nick: anchor.text.trim(),
           avatar: AcfunApi.imageUrl(card.querySelector('img.up__avatar')?.attributes['src']),
-          introduction: card.querySelector('.up__main__intro')?.text.trim(),
+          introduction: card.querySelector('.up__main__intro')?.text.trim() ?? '',
           watching: '',
           followers: follower,
           audienceMetricType: AudienceMetricType.unknown,
-          status: live,
+          status: live ?? false,
           liveStatus: live == null ? LiveStatus.unknown : (live ? LiveStatus.live : LiveStatus.offline),
         ),
       );

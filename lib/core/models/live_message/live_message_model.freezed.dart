@@ -276,7 +276,7 @@ as int,
 /// @nodoc
 mixin _$LiveMessage {
 
- LiveMessageType get type; String get userName; String get message; LiveMessageColor get color; dynamic get data; String? get messageId; String? get userId; DateTime? get sentAt; bool get isLocal; LiveMessageStyle? get style;
+ LiveMessageType get type; String get userName; String get message; LiveMessageColor get color; dynamic get data; String? get messageId; String? get userId; DateTime? get sentAt; bool get isLocal;@JsonKey(includeFromJson: false, includeToJson: false) LiveMessageStyle? get style;
 /// Create a copy of LiveMessage
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -309,7 +309,7 @@ abstract mixin class $LiveMessageCopyWith<$Res>  {
   factory $LiveMessageCopyWith(LiveMessage value, $Res Function(LiveMessage) _then) = _$LiveMessageCopyWithImpl;
 @useResult
 $Res call({
- LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data, String? messageId, String? userId, DateTime? sentAt, bool isLocal, LiveMessageStyle? style
+ LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data, String? messageId, String? userId, DateTime? sentAt, bool isLocal,@JsonKey(includeFromJson: false, includeToJson: false) LiveMessageStyle? style
 });
 
 
@@ -432,7 +432,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal,  LiveMessageStyle? style)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal, @JsonKey(includeFromJson: false, includeToJson: false)  LiveMessageStyle? style)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LiveMessage() when $default != null:
 return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_that.messageId,_that.userId,_that.sentAt,_that.isLocal,_that.style);case _:
@@ -453,7 +453,7 @@ return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal,  LiveMessageStyle? style)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal, @JsonKey(includeFromJson: false, includeToJson: false)  LiveMessageStyle? style)  $default,) {final _that = this;
 switch (_that) {
 case _LiveMessage():
 return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_that.messageId,_that.userId,_that.sentAt,_that.isLocal,_that.style);case _:
@@ -473,7 +473,7 @@ return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal,  LiveMessageStyle? style)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal, @JsonKey(includeFromJson: false, includeToJson: false)  LiveMessageStyle? style)?  $default,) {final _that = this;
 switch (_that) {
 case _LiveMessage() when $default != null:
 return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_that.messageId,_that.userId,_that.sentAt,_that.isLocal,_that.style);case _:
@@ -488,7 +488,7 @@ return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_
 @JsonSerializable()
 
 class _LiveMessage implements LiveMessage {
-  const _LiveMessage({required this.type, required this.userName, required this.message, required this.color, this.data, this.messageId, this.userId, this.sentAt, this.isLocal = false, this.style});
+  const _LiveMessage({required this.type, required this.userName, required this.message, required this.color, this.data, this.messageId, this.userId, this.sentAt, this.isLocal = false, @JsonKey(includeFromJson: false, includeToJson: false) this.style});
   factory _LiveMessage.fromJson(Map<String, dynamic> json) => _$LiveMessageFromJson(json);
 
 @override final  LiveMessageType type;
@@ -500,7 +500,7 @@ class _LiveMessage implements LiveMessage {
 @override final  String? userId;
 @override final  DateTime? sentAt;
 @override@JsonKey() final  bool isLocal;
-@override final  LiveMessageStyle? style;
+@override@JsonKey(includeFromJson: false, includeToJson: false) final  LiveMessageStyle? style;
 
 /// Create a copy of LiveMessage
 /// with the given fields replaced by the non-null parameter values.
@@ -535,7 +535,7 @@ abstract mixin class _$LiveMessageCopyWith<$Res> implements $LiveMessageCopyWith
   factory _$LiveMessageCopyWith(_LiveMessage value, $Res Function(_LiveMessage) _then) = __$LiveMessageCopyWithImpl;
 @override @useResult
 $Res call({
- LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data, String? messageId, String? userId, DateTime? sentAt, bool isLocal, LiveMessageStyle? style
+ LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data, String? messageId, String? userId, DateTime? sentAt, bool isLocal,@JsonKey(includeFromJson: false, includeToJson: false) LiveMessageStyle? style
 });
 
 
@@ -584,7 +584,7 @@ $LiveMessageColorCopyWith<$Res> get color {
 /// @nodoc
 mixin _$LiveSuperChatMessage {
 
- String get userName; String get face; String get message; int get price; DateTime get startTime; DateTime get endTime; String get backgroundColor; String get backgroundBottomColor;
+ String get messageId; String get userName; String get face; String get message; int get price; DateTime get startTime; DateTime get endTime; String get backgroundColor; String get backgroundBottomColor;
 /// Create a copy of LiveSuperChatMessage
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -597,16 +597,16 @@ $LiveSuperChatMessageCopyWith<LiveSuperChatMessage> get copyWith => _$LiveSuperC
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSuperChatMessage&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.face, face) || other.face == face)&&(identical(other.message, message) || other.message == message)&&(identical(other.price, price) || other.price == price)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.backgroundBottomColor, backgroundBottomColor) || other.backgroundBottomColor == backgroundBottomColor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSuperChatMessage&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.face, face) || other.face == face)&&(identical(other.message, message) || other.message == message)&&(identical(other.price, price) || other.price == price)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.backgroundBottomColor, backgroundBottomColor) || other.backgroundBottomColor == backgroundBottomColor));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userName,face,message,price,startTime,endTime,backgroundColor,backgroundBottomColor);
+int get hashCode => Object.hash(runtimeType,messageId,userName,face,message,price,startTime,endTime,backgroundColor,backgroundBottomColor);
 
 @override
 String toString() {
-  return 'LiveSuperChatMessage(userName: $userName, face: $face, message: $message, price: $price, startTime: $startTime, endTime: $endTime, backgroundColor: $backgroundColor, backgroundBottomColor: $backgroundBottomColor)';
+  return 'LiveSuperChatMessage(messageId: $messageId, userName: $userName, face: $face, message: $message, price: $price, startTime: $startTime, endTime: $endTime, backgroundColor: $backgroundColor, backgroundBottomColor: $backgroundBottomColor)';
 }
 
 
@@ -617,7 +617,7 @@ abstract mixin class $LiveSuperChatMessageCopyWith<$Res>  {
   factory $LiveSuperChatMessageCopyWith(LiveSuperChatMessage value, $Res Function(LiveSuperChatMessage) _then) = _$LiveSuperChatMessageCopyWithImpl;
 @useResult
 $Res call({
- String userName, String face, String message, int price, DateTime startTime, DateTime endTime, String backgroundColor, String backgroundBottomColor
+ String messageId, String userName, String face, String message, int price, DateTime startTime, DateTime endTime, String backgroundColor, String backgroundBottomColor
 });
 
 
@@ -634,9 +634,10 @@ class _$LiveSuperChatMessageCopyWithImpl<$Res>
 
 /// Create a copy of LiveSuperChatMessage
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userName = null,Object? face = null,Object? message = null,Object? price = null,Object? startTime = null,Object? endTime = null,Object? backgroundColor = null,Object? backgroundBottomColor = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? messageId = null,Object? userName = null,Object? face = null,Object? message = null,Object? price = null,Object? startTime = null,Object? endTime = null,Object? backgroundColor = null,Object? backgroundBottomColor = null,}) {
   return _then(_self.copyWith(
-userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
+messageId: null == messageId ? _self.messageId : messageId // ignore: cast_nullable_to_non_nullable
+as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,face: null == face ? _self.face : face // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
@@ -729,10 +730,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userName,  String face,  String message,  int price,  DateTime startTime,  DateTime endTime,  String backgroundColor,  String backgroundBottomColor)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String messageId,  String userName,  String face,  String message,  int price,  DateTime startTime,  DateTime endTime,  String backgroundColor,  String backgroundBottomColor)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LiveSuperChatMessage() when $default != null:
-return $default(_that.userName,_that.face,_that.message,_that.price,_that.startTime,_that.endTime,_that.backgroundColor,_that.backgroundBottomColor);case _:
+return $default(_that.messageId,_that.userName,_that.face,_that.message,_that.price,_that.startTime,_that.endTime,_that.backgroundColor,_that.backgroundBottomColor);case _:
   return orElse();
 
 }
@@ -750,10 +751,10 @@ return $default(_that.userName,_that.face,_that.message,_that.price,_that.startT
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userName,  String face,  String message,  int price,  DateTime startTime,  DateTime endTime,  String backgroundColor,  String backgroundBottomColor)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String messageId,  String userName,  String face,  String message,  int price,  DateTime startTime,  DateTime endTime,  String backgroundColor,  String backgroundBottomColor)  $default,) {final _that = this;
 switch (_that) {
 case _LiveSuperChatMessage():
-return $default(_that.userName,_that.face,_that.message,_that.price,_that.startTime,_that.endTime,_that.backgroundColor,_that.backgroundBottomColor);case _:
+return $default(_that.messageId,_that.userName,_that.face,_that.message,_that.price,_that.startTime,_that.endTime,_that.backgroundColor,_that.backgroundBottomColor);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -770,10 +771,10 @@ return $default(_that.userName,_that.face,_that.message,_that.price,_that.startT
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userName,  String face,  String message,  int price,  DateTime startTime,  DateTime endTime,  String backgroundColor,  String backgroundBottomColor)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String messageId,  String userName,  String face,  String message,  int price,  DateTime startTime,  DateTime endTime,  String backgroundColor,  String backgroundBottomColor)?  $default,) {final _that = this;
 switch (_that) {
 case _LiveSuperChatMessage() when $default != null:
-return $default(_that.userName,_that.face,_that.message,_that.price,_that.startTime,_that.endTime,_that.backgroundColor,_that.backgroundBottomColor);case _:
+return $default(_that.messageId,_that.userName,_that.face,_that.message,_that.price,_that.startTime,_that.endTime,_that.backgroundColor,_that.backgroundBottomColor);case _:
   return null;
 
 }
@@ -785,9 +786,10 @@ return $default(_that.userName,_that.face,_that.message,_that.price,_that.startT
 @JsonSerializable()
 
 class _LiveSuperChatMessage implements LiveSuperChatMessage {
-  const _LiveSuperChatMessage({required this.userName, required this.face, required this.message, required this.price, required this.startTime, required this.endTime, required this.backgroundColor, required this.backgroundBottomColor});
+  const _LiveSuperChatMessage({this.messageId = '', required this.userName, required this.face, required this.message, required this.price, required this.startTime, required this.endTime, required this.backgroundColor, required this.backgroundBottomColor});
   factory _LiveSuperChatMessage.fromJson(Map<String, dynamic> json) => _$LiveSuperChatMessageFromJson(json);
 
+@override@JsonKey() final  String messageId;
 @override final  String userName;
 @override final  String face;
 @override final  String message;
@@ -810,16 +812,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSuperChatMessage&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.face, face) || other.face == face)&&(identical(other.message, message) || other.message == message)&&(identical(other.price, price) || other.price == price)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.backgroundBottomColor, backgroundBottomColor) || other.backgroundBottomColor == backgroundBottomColor));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSuperChatMessage&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.face, face) || other.face == face)&&(identical(other.message, message) || other.message == message)&&(identical(other.price, price) || other.price == price)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.backgroundBottomColor, backgroundBottomColor) || other.backgroundBottomColor == backgroundBottomColor));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userName,face,message,price,startTime,endTime,backgroundColor,backgroundBottomColor);
+int get hashCode => Object.hash(runtimeType,messageId,userName,face,message,price,startTime,endTime,backgroundColor,backgroundBottomColor);
 
 @override
 String toString() {
-  return 'LiveSuperChatMessage(userName: $userName, face: $face, message: $message, price: $price, startTime: $startTime, endTime: $endTime, backgroundColor: $backgroundColor, backgroundBottomColor: $backgroundBottomColor)';
+  return 'LiveSuperChatMessage(messageId: $messageId, userName: $userName, face: $face, message: $message, price: $price, startTime: $startTime, endTime: $endTime, backgroundColor: $backgroundColor, backgroundBottomColor: $backgroundBottomColor)';
 }
 
 
@@ -830,7 +832,7 @@ abstract mixin class _$LiveSuperChatMessageCopyWith<$Res> implements $LiveSuperC
   factory _$LiveSuperChatMessageCopyWith(_LiveSuperChatMessage value, $Res Function(_LiveSuperChatMessage) _then) = __$LiveSuperChatMessageCopyWithImpl;
 @override @useResult
 $Res call({
- String userName, String face, String message, int price, DateTime startTime, DateTime endTime, String backgroundColor, String backgroundBottomColor
+ String messageId, String userName, String face, String message, int price, DateTime startTime, DateTime endTime, String backgroundColor, String backgroundBottomColor
 });
 
 
@@ -847,9 +849,10 @@ class __$LiveSuperChatMessageCopyWithImpl<$Res>
 
 /// Create a copy of LiveSuperChatMessage
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userName = null,Object? face = null,Object? message = null,Object? price = null,Object? startTime = null,Object? endTime = null,Object? backgroundColor = null,Object? backgroundBottomColor = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? messageId = null,Object? userName = null,Object? face = null,Object? message = null,Object? price = null,Object? startTime = null,Object? endTime = null,Object? backgroundColor = null,Object? backgroundBottomColor = null,}) {
   return _then(_LiveSuperChatMessage(
-userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
+messageId: null == messageId ? _self.messageId : messageId // ignore: cast_nullable_to_non_nullable
+as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,face: null == face ? _self.face : face // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable

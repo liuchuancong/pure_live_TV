@@ -481,7 +481,11 @@ class PlayerManager {
       // headers 为空时按平台解析播放头（TV 移植：PlaybackHeaderResolver）。
       final effectiveHeaders =
           (headers.isEmpty && room != null && room.platform.isNotEmpty)
-          ? await PlaybackHeaderResolver.resolve(platform: room.platform, roomId: room.roomId)
+          ? await PlaybackHeaderResolver.resolve(
+              platform: room.platform,
+              roomId: room.roomId,
+              roomHeaders: room.httpHeaders,
+            )
           : headers;
       _currentHeaders = Map<String, String>.from(effectiveHeaders);
       await _openPlayerSource(player, source, _currentPlayUrls, effectiveHeaders, room: room);

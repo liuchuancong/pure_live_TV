@@ -25,6 +25,12 @@ class IptvSettingsController extends _$IptvSettingsController {
   SettingsValue<String> get selectedSourceName => SettingsValue(() => state.selectedSourceName, selectSourceName);
   SettingsValue<bool> get isAutoSyncEnabled => SettingsValue(() => state.isAutoSyncEnabled, setAutoSyncEnabled);
 
+  int _sourceRevision = 0;
+
+  /// 源选择变更版本号。长任务（EPG 映射重建等）用它检测会话期间的源切换，
+  /// 包括 A→B→A 这种仅靠比较当前值看不出来的情况。
+  int get sourceRevision => _sourceRevision;
+
   void selectSourceId(String id) => selectSource(state.selectedSourceName, id);
 
   void selectSourceName(String name) => selectSource(name, state.selectedSourceId);
@@ -51,6 +57,7 @@ class IptvSettingsController extends _$IptvSettingsController {
   }
 
   void selectSource(String sourceName, String sourceId) {
+    _sourceRevision++;
     updateSettings(state.copyWith(selectedSourceName: sourceName, selectedSourceId: sourceId));
   }
 

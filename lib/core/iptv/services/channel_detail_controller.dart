@@ -1,6 +1,8 @@
 import 'dart:collection';
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
+
 import '../models/channel.dart';
 import '../models/epg.dart' as epg;
 
@@ -118,7 +120,9 @@ class ChannelDetailController {
     }).toList();
 
     final validProgs = allProgrammes.where((p) => p.stop.isAfter(now)).toList();
-    upcomingProgs.clear(); upcomingProgs.addAll validProgs;
+    upcomingProgs
+      ..clear()
+      ..addAll(validProgs);
 
     try {
       nowPlayingProg = validProgs.firstWhere((p) => p.start.isBefore(now) && p.stop.isAfter(now));

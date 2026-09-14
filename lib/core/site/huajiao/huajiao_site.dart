@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:pure_live/common/index.dart' show i18n;
 import 'package:pure_live/core/models/live_area/live_area.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:pure_live/core/danmaku/empty_danmaku.dart';
@@ -46,7 +45,7 @@ class HuajiaoSite extends LiveSite
     cover: feed.cover,
     link: HuajiaoLink.ownerUrl(feed.userId),
     liveStatus: LiveStatus.live,
-    popularity: feed.heat?.toString(),
+    popularity: feed.heat?.toString() ?? '',
     audienceMetricType: AudienceMetricType.popularity,
   );
 

@@ -23,6 +23,7 @@ class LiveMessageStyle {
   const LiveMessageStyle({
     this.placement,
     this.fontSize,
+    this.baseSpeed,
     this.fontWeight = 400,
     this.fontFamily,
     this.showStroke,
@@ -32,6 +33,9 @@ class LiveMessageStyle {
 
   final LiveMessagePlacement? placement;
   final double? fontSize;
+
+  /// 弹幕滚动基础速度（像素/秒），由本地合成弹幕的紧凑布局计算填充。
+  final double? baseSpeed;
   final int fontWeight;
   final String? fontFamily;
   final bool? showStroke;
@@ -87,7 +91,7 @@ abstract class LiveMessage with _$LiveMessage {
     String? userId,
     DateTime? sentAt,
     @Default(false) bool isLocal,
-    LiveMessageStyle? style,
+    @JsonKey(includeFromJson: false, includeToJson: false) LiveMessageStyle? style,
   }) = _LiveMessage;
 
   factory LiveMessage.fromJson(Map<String, dynamic> json) => _$LiveMessageFromJson(json);
@@ -96,6 +100,7 @@ abstract class LiveMessage with _$LiveMessage {
 @freezed
 abstract class LiveSuperChatMessage with _$LiveSuperChatMessage {
   const factory LiveSuperChatMessage({
+    @Default('') String messageId,
     required String userName,
     required String face,
     required String message,

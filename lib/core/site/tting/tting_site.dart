@@ -51,7 +51,7 @@ class TtingSite extends LiveSite
     cover: channel.avatar,
     link: TtingLink.url(channel.id),
     liveStatus: channel.isLive ? LiveStatus.live : LiveStatus.offline,
-    notice: channel.restricted ? i18n('tting_restricted') : null,
+    notice: channel.restricted ? i18n('tting_restricted') : '',
   );
 
   @override
@@ -77,7 +77,7 @@ class TtingSite extends LiveSite
             avatar: card.avatar,
             link: TtingLink.url(card.id),
             liveStatus: LiveStatus.live,
-            onlineViewers: card.viewers?.toString(),
+            onlineViewers: card.viewers?.toString() ?? '',
             audienceMetricType: AudienceMetricType.onlineViewers,
           ),
       ],

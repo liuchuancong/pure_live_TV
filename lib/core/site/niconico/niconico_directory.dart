@@ -111,7 +111,7 @@ class NiconicoDirectory {
           '',
       link: '${NiconicoApi.origin}/watch/$id',
       liveStatus: LiveStatus.live,
-      totalViewers: count?.toString(),
+      totalViewers: count?.toString() ?? '',
       audienceMetricType: AudienceMetricType.totalViewers,
     );
   }

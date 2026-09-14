@@ -1,6 +1,9 @@
-/// 同步自 pure_live 的 i18n 能力。
-/// TV 端未引入 easy_localization，这里以静态键值表提供站点适配层用到的
-/// 平台提示文案；i18nOr 在缺少键时返回 fallback，保持调用点兼容。
+// 同步自 pure_live 的 i18n 能力。
+// 运行时优先使用 assets/translations（easy_localization，可跟随语言设置切换）；
+// 本文件的静态键值表保留 UI 文案与站点适配层的离线兜底，
+// i18nOr 在缺少键时返回 fallback，保持调用点兼容。
+import 'package:easy_localization/easy_localization.dart' as ez;
+
 Map<String, String> _labels = {
   'cc_live_categories': '直播分类',
   'cc_official_entries': '官方房间/专题',
@@ -86,7 +89,7 @@ Map<String, String> _labels = {
 };
 
 String i18n(String key, {Map<String, String>? args}) {
-  var text = _labels[key] ?? key;
+  var text = _translate(key);
   args?.forEach((name, value) {
     text = text.replaceAll('{$name}', value);
   });
@@ -94,8 +97,24 @@ String i18n(String key, {Map<String, String>? args}) {
 }
 
 String i18nOr(String key, String fallback, {Map<String, String>? args}) {
-  if (!_labels.containsKey(key)) return fallback;
+  if (!i18nExists(key)) return fallback;
   return i18n(key, args: args);
 }
 
-bool i18nExists(String key) => _labels.containsKey(key);
+bool i18nExists(String key) => _hasTranslation(key) || _labels.containsKey(key);
+
+/// 语言解析顺序：easy_localization（assets/translations，可随语言切换）
+/// → 本文件的静态中文键值表（离线/单测/后台 isolate 兜底）→ 键名本身。
+String _translate(String key) {
+  if (_hasTranslation(key)) return ez.tr(key);
+  return _labels[key] ?? key;
+}
+
+bool _hasTranslation(String key) {
+  try {
+    return ez.trExists(key);
+  } catch (_) {
+    // EasyLocalization 尚未初始化时只依赖静态表。
+    return false;
+  }
+}

@@ -56,10 +56,10 @@ class XiaohongshuSite extends LiveSite
     platform: id,
     roomId: share.requestedRoomId,
     // No persistent broadcaster ID contract yet: do not copy the room ID here.
-    title: share.title,
-    nick: share.nickname,
-    avatar: share.avatar,
-    cover: share.cover,
+    title: share.title ?? '',
+    nick: share.nickname ?? '',
+    avatar: share.avatar ?? '',
+    cover: share.cover ?? '',
     link: XiaohongshuLink.url(share.requestedRoomId),
     liveStatus: switch (share.reportedLive) {
       true => LiveStatus.live,

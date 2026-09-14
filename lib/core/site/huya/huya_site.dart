@@ -20,6 +20,7 @@ import 'package:pure_live/core/tars/get_cdn_token_ex_resp.dart';
 import 'package:pure_live/core/site/huya/huya_request_params.dart';
 import 'package:pure_live/core/site/huya/huya_transport_policy.dart';
 import 'package:pure_live/core/site/huya/huya_utils.dart' as huya_utils;
+import 'package:pure_live/utils/githup_mirror.dart';
 import 'package:pure_live/core/utils/live_quality_label.dart';
 
 import 'package:pure_live/core/common/core_log.dart';

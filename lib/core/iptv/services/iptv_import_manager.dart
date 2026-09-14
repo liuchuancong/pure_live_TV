@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:pure_live/core/iptv/models/channel.dart' as model;
 
 import 'playlist_channel_reconciler.dart';
+import 'iptv_confirm_dialog.dart';
 
 import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart';
@@ -244,24 +245,12 @@ class IptvImportManager {
           }
         }
         if (existing != null && !hot && !forceUpdate) {
-          final confirmed = await Get.dialog<bool>(
-            Builder(
-              builder: (context) => AlertDialog(
-                scrollable: true,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                title: Text(i18n('provider_name_exists_tip')),
-                content: Text(
-                  '"$cleanName"\n\n${i18n("replace_confirm_message").replaceAll("{}", ext == '.txt' ? 'TXT' : 'M3U')}',
-                ),
-                actions: [
-                  TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(i18n('cancel'))),
-                  TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(i18n('confirm'))),
-                ],
-              ),
-            ),
-            barrierDismissible: false,
+          final confirmed = await confirmReplaceIptvSource(
+            title: i18n('provider_name_exists_tip'),
+            message:
+                '"$cleanName"\n\n${i18n("replace_confirm_message").replaceAll("{}", ext == '.txt' ? 'TXT' : 'M3U')}',
           );
-          if (confirmed != true) {
+          if (!confirmed) {
             cancelled = true;
             return false;
           }
@@ -422,11 +411,11 @@ class IptvImportManager {
     final selected = SettingsService.to.iptv.selectedSourceId;
     final sourceId = selected.value;
     if (sourceId.isEmpty) return;
-    bool sourceChanged = false;
-    // A synchronous listener also catches A -> B -> A during a database await.
-    final detach = selected.addListener(() => sourceChanged = true);
+    // TV 的 SettingsValue 是拉取式视图，没有 GetX 的 addListener；用控制器暴露的
+    // 源变更版本号代替，它在 A -> B -> A 的往返中同样会变化。
+    final sourceRevision = SettingsService.to.iptv.sourceRevision;
     void checkSource() {
-      if (sourceChanged || selected.isDisposed || selected.value != sourceId) {
+      if (SettingsService.to.iptv.sourceRevision != sourceRevision || selected.value != sourceId) {
         throw const _MappingSourceChanged();
       }
     }
@@ -474,8 +463,6 @@ class IptvImportManager {
       }, requireNew: true);
     } on _MappingSourceChanged {
       // Transaction rollback retains the last committed mapping snapshot.
-    } finally {
-      detach();
     }
   }
 }

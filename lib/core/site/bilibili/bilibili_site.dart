@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
+import 'package:pure_live/utils/network_image_url.dart';
 import 'package:pure_live/core/models/live_category/live_category.dart';
 import 'package:pure_live/core/models/live_anchor_item/live_anchor_item.dart';
 import 'package:pure_live/core/common/http_client.dart';

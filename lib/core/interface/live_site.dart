@@ -228,7 +228,8 @@ class LiveSite {
         // The base implementation has no platform evidence. Treat it as
         // pending/unknown instead of fabricating an authoritative offline
         // response; concrete adapters must explicitly report offline/banned.
-        status: null,
+        // TV 的 LiveRoom.status 不可为空，pending 语义由 liveStatus 承担。
+        status: false,
         platform: platform,
         liveStatus: LiveStatus.unknown,
         title: '',

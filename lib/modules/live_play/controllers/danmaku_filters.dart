@@ -34,11 +34,11 @@ class DanmakuMessageGate {
       if (age < const Duration(minutes: -10)) return false;
     }
 
-    final stableId = message.messageId.trim();
+    final stableId = message.messageId?.trim() ?? '';
     final hasStableId = stableId.isNotEmpty;
     final key = hasStableId
         ? 'id:$stableId'
-        : 'text:${message.type.index}:${message.userId.trim().toLowerCase()}:'
+        : 'text:${message.type.index}:${message.userId?.trim().toLowerCase() ?? ''}:'
               '${message.userName.trim().toLowerCase()}:${message.message.trim()}';
     final duplicateWindow = hasStableId ? stableIdWindow : fallbackDuplicateWindow;
 

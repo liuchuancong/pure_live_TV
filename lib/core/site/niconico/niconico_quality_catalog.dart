@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:pure_live/core/common/hls_master_selection.dart';
 import 'package:pure_live/core/common/request_scope.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
-import 'package:pure_live/recorder/services/niconico_hls_input.dart'
+import 'package:pure_live/core/site/niconico/niconico_master_reader.dart'
     show NiconicoSeatFactory, NiconicoMasterReader, readNiconicoMaster;
 
 import 'niconico_api.dart';
@@ -100,7 +100,7 @@ class NiconicoQualityCatalog {
           // Own a late factory result before observing cancellation.
           seat = await _openSeat(watch, token, _findProxy);
           checkCancellation();
-          final owner = seat;
+          final owner = seat!;
           final source = owner.current.uri;
           changes = owner.changes.listen((grant) {
             if (grant.uri != source) cancelFor(NiconicoFailure.sessionClosed);

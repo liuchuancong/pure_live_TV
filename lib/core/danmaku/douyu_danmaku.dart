@@ -302,17 +302,17 @@ class DouyuDanmaku implements LiveDanmaku {
   LiveMessageColor getColor(int type) {
     switch (type) {
       case 1:
-        return LiveMessageColor(255, 0, 0);
+        return LiveMessageColor(r: 255, g: 0, b: 0);
       case 2:
-        return LiveMessageColor(30, 135, 240);
+        return LiveMessageColor(r: 30, g: 135, b: 240);
       case 3:
-        return LiveMessageColor(122, 200, 75);
+        return LiveMessageColor(r: 122, g: 200, b: 75);
       case 4:
-        return LiveMessageColor(255, 127, 0);
+        return LiveMessageColor(r: 255, g: 127, b: 0);
       case 5:
-        return LiveMessageColor(155, 57, 244);
+        return LiveMessageColor(r: 155, g: 57, b: 244);
       case 6:
-        return LiveMessageColor(255, 105, 180);
+        return LiveMessageColor(r: 255, g: 105, b: 180);
       default:
         return LiveMessageColor.white;
     }

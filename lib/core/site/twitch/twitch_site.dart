@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:pure_live/core/models/live_category/live_category.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/models/live_anchor_item/live_anchor_item.dart';
@@ -13,6 +14,7 @@ import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/utils/twitch/twitch_models.dart';
 import 'package:pure_live/core/utils/twitch/twitch_web_integrity.dart';
 import 'package:pure_live/core/utils/live_quality_label.dart';
+import 'package:pure_live/utils/string_to_boolean.dart';
 
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -748,7 +750,7 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
       watching: online ? user.stream!.viewersCount.toString() : "0",
       onlineViewers: online ? user.stream!.viewersCount.toString() : "0",
       audienceMetricType: AudienceMetricType.onlineViewers,
-      area: user.stream?.game?.name ?? user.stream?.game?.displayName,
+      area: user.stream?.game?.name ?? user.stream?.game?.displayName ?? '',
       status: online,
       liveStatus: online ? LiveStatus.live : LiveStatus.offline,
       platform: Sites.twitchSite,

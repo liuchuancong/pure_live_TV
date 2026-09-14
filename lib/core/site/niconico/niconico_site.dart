@@ -147,7 +147,7 @@ class NiconicoSite extends LiveSite
       avatar: watch.avatar ?? '',
       link: '${NiconicoApi.origin}/watch/$programId',
       liveStatus: watch.status == NiconicoStatus.onAir ? LiveStatus.live : LiveStatus.offline,
-      totalViewers: watch.reportedWatchCount?.toString(),
+      totalViewers: watch.reportedWatchCount?.toString() ?? '',
       audienceMetricType: AudienceMetricType.totalViewers,
       notice: [
         if (watch.status == NiconicoStatus.scheduled) i18n('niconico_scheduled'),

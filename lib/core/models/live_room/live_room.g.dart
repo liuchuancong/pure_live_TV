@@ -45,6 +45,15 @@ _LiveRoom _$LiveRoomFromJson(Map<String, dynamic> json) => _LiveRoom(
   isCatchUp: json['isCatchUp'] as bool? ?? false,
   catchUpStart: (json['catchUpStart'] as num?)?.toInt(),
   catchUpEnd: (json['catchUpEnd'] as num?)?.toInt(),
+  catchUpMode: json['catchUpMode'] as String?,
+  catchUpSource: json['catchUpSource'] as String?,
+  catchUpDays: (json['catchUpDays'] as num?)?.toDouble(),
+  catchUpCorrectionHours: (json['catchUpCorrectionHours'] as num?)?.toDouble(),
+  httpHeaders:
+      (json['httpHeaders'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ) ??
+      const <String, String>{},
 );
 
 Map<String, dynamic> _$LiveRoomToJson(_LiveRoom instance) => <String, dynamic>{
@@ -77,6 +86,11 @@ Map<String, dynamic> _$LiveRoomToJson(_LiveRoom instance) => <String, dynamic>{
   'isCatchUp': instance.isCatchUp,
   'catchUpStart': instance.catchUpStart,
   'catchUpEnd': instance.catchUpEnd,
+  'catchUpMode': instance.catchUpMode,
+  'catchUpSource': instance.catchUpSource,
+  'catchUpDays': instance.catchUpDays,
+  'catchUpCorrectionHours': instance.catchUpCorrectionHours,
+  'httpHeaders': instance.httpHeaders,
 };
 
 const _$LiveStatusEnumMap = {

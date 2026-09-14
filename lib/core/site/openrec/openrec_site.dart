@@ -53,9 +53,9 @@ class OpenrecSite extends LiveSite
       cover: movie.cover,
       link: key.url,
       liveStatus: movie.isLive ? LiveStatus.live : LiveStatus.unknown,
-      onlineViewers: movie.viewers?.toString(),
+      onlineViewers: movie.viewers?.toString() ?? '',
       audienceMetricType: AudienceMetricType.onlineViewers,
-      notice: movie.publicMediaAllowed ? null : i18n('openrec_restricted'),
+      notice: movie.publicMediaAllowed ? '' : i18n('openrec_restricted'),
     );
   }
 
@@ -71,7 +71,7 @@ class OpenrecSite extends LiveSite
       cover: owner.avatar,
       link: key.url,
       liveStatus: owner.isLive ? LiveStatus.live : LiveStatus.offline,
-      notice: owner.movieIds.length > 1 ? i18n('openrec_multiple_broadcasts') : null,
+      notice: owner.movieIds.length > 1 ? i18n('openrec_multiple_broadcasts') : '',
     );
   }
 

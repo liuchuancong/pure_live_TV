@@ -15,6 +15,7 @@ import 'site/kilakila/kilakila_site.dart';
 import 'site/missevan/missevan_site.dart';
 import 'site/niconico/niconico_site.dart';
 import 'package:pure_live/core/interface/live_site.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'site/twitcasting/twitcasting_site.dart';
 import 'site/xiaohongshu/xiaohongshu_site.dart';

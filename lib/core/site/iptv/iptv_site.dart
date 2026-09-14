@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:pure_live/plugins/db_service.dart';
 import 'package:pure_live/plugins/file_utils.dart';
 import 'package:pure_live/core/models/live_category/live_category.dart';
@@ -94,9 +95,9 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
         platform: Sites.iptvSite,
         link: ch.streamUrl,
         data: ch.streamUrl,
-        epgId: epgId,
-        currentProgramme: nowProg?.title,
-        currentProgrammeDescription: nowProg?.description,
+        epgId: epgId ?? '',
+        currentProgramme: nowProg?.title ?? '',
+        currentProgrammeDescription: nowProg?.description ?? '',
         catchUpMode: ch.catchupMode,
         catchUpSource: ch.catchupSource,
         catchUpDays: ch.catchupDays,
@@ -250,9 +251,9 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
       platform: Sites.iptvSite,
       link: channel.streamUrl,
       data: channel.streamUrl,
-      epgId: epgId,
-      currentProgramme: prog?.title,
-      currentProgrammeDescription: prog?.description,
+      epgId: epgId ?? '',
+      currentProgramme: prog?.title ?? '',
+      currentProgrammeDescription: prog?.description ?? '',
       catchUpMode: channel.catchupMode,
       catchUpSource: channel.catchupSource,
       catchUpDays: channel.catchupDays,
