@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:alfred/alfred.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/shared/utils/log.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -188,6 +189,38 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       _addLog('弹幕过滤规则已更新，共 ${filters.length} 条');
       onDanmakuFilterUpdated?.call(filters);
       return _ok(res, msg: i18n('ui_saved'));
+    });
+
+    // LAN settings sync: a phone on the same network can read this device's
+    // settings or push its own, using the same packet shape as the desktop app.
+    _app!.get('/api/remote-sync/status', (req, res) {
+      return _ok(
+        res,
+        data: {
+          'type': 'pure_live_sync',
+          'version': 1,
+          'platform': Platform.operatingSystem,
+          'appVersion': _appVersion,
+        },
+      );
+    });
+
+    _app!.get('/api/remote-sync/settings', (req, res) {
+      return _ok(res, data: ref.read(backupControllerProvider.notifier).exportAllSettings());
+    });
+
+    _app!.post('/api/remote-sync/settings', (req, res) async {
+      final body = await req.body;
+      final settings = body is Map && body['settings'] is Map ? body['settings'] : body;
+      if (settings is! Map) return _fail(res, msg: i18n('ui_parameter_error'));
+      try {
+        await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings.cast<String, dynamic>());
+      } catch (error) {
+        _addLog('同步设置失败: $error', color: Colors.red);
+        return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
+      }
+      _addLog('已从局域网接收设置同步');
+      return _ok(res, msg: i18n('webdav_sync_success'));
     });
 
     _app!.get('/api/webdav/list', (req, res) {
