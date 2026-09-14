@@ -83,15 +83,20 @@ class AreasPlatformGridBridgeState extends ConsumerState<AreasPlatformGridBridge
       error: (err, stack) => Center(
         child: AppStatusView(
           type: AppStatusType.error,
-          title: "加载失败: $err",
-          subtitle: "",
+          title: i18n('load_failed'),
+          subtitle: '$err',
           icon: Remix.error_warning_line,
         ),
       ),
       data: (categories) {
         if (categories.isEmpty) {
           return Center(
-            child: AppStatusView(type: AppStatusType.empty, title: "该平台暂无分类数据", subtitle: "", icon: Remix.apps_2_line),
+            child: AppStatusView(
+              type: AppStatusType.empty,
+              title: i18n('area_no_category_data'),
+              subtitle: "",
+              icon: Remix.apps_2_line,
+            ),
           );
         }
 

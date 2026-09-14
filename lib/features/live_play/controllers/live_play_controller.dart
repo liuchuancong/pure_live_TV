@@ -229,14 +229,14 @@ class LivePlayController extends _$LivePlayController {
       urls = await _repository.fetchPlayUrls(detail, quality);
     } catch (e) {
       if (!_isCurrent(generation)) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: '获取播放地址失败: $e');
+      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_fetch_url_failed'));
       return;
     }
     if (!_isCurrent(generation)) return;
 
     urls = urls.where((u) => u.trim().isNotEmpty).toList(growable: false);
     if (urls.isEmpty) {
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: '该清晰度下没有可用的播放线路');
+      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_no_available_line'));
       return;
     }
 
@@ -245,10 +245,10 @@ class LivePlayController extends _$LivePlayController {
       await manager.play(urls.first, urls, const <String, String>{}, room: detail);
     } on ArgumentError catch (e) {
       if (!_isCurrent(generation)) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: e.message ?? '起播参数错误');
+      state = state.copyWith(status: LivePlayStatus.error, errorMessage: e.message ?? i18n('stream_start_invalid_params'));
     } catch (e) {
       if (!_isCurrent(generation)) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: '起播失败: $e');
+      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_start_failed'));
     }
   }
 
@@ -273,7 +273,7 @@ class LivePlayController extends _$LivePlayController {
       await manager.play(urls[index], urls, const <String, String>{}, room: state.room);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: '切换线路失败: $e');
+      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_switch_line_failed'));
     }
   }
 
@@ -415,7 +415,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     _repeatedFilter.clear();
     _similarityFilter.clear();
     controller.clear();
-    state = state.copyWith(messages: const <LiveMessage>[], connected: false, statusText: '连接弹幕服务器...');
+    state = state.copyWith(messages: const <LiveMessage>[], connected: false, statusText: i18n('connecting_danmaku_server'));
 
     LiveDanmaku engine;
     try {

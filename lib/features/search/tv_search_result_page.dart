@@ -119,7 +119,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
   @override
   Widget build(BuildContext context) {
     return TvScaffold(
-      title: '搜索: $_currentKeyword (${widget.site})',
+      title: '${i18n('search')}: $_currentKeyword (${widget.site})',
       child: TvTabView(
         memoryKey: "tv_search_rooms_view_${widget.site}",
         verticalEdge: DpadEdgeBehavior.leave,

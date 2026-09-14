@@ -3,6 +3,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class AgreementPage extends StatelessWidget {
   const AgreementPage({super.key});
@@ -17,7 +18,7 @@ class AgreementPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text("使用须知", textAlign: TextAlign.center, style: AppTextStyles.t40W700),
+              Text(i18n('agreement_title'), textAlign: TextAlign.center, style: AppTextStyles.t40W700),
               AppStyle.vGap40,
               Flexible(
                 child: SingleChildScrollView(
@@ -25,7 +26,7 @@ class AgreementPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text("欢迎使用纯粹直播 TV，请在使用前仔细阅读以下内容：", style: AppTextStyles.t28W700),
+                      Text(i18n('agreement_welcome'), style: AppTextStyles.t28W700),
                       AppStyle.vGap24,
 
                       Padding(
@@ -34,32 +35,33 @@ class AgreementPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text("1. 本软件为开源软件，仅供学习交流使用，禁止用于任何商业用途。", style: AppTextStyles.t32),
+                            Text(i18n('agreement_item_1'), style: AppTextStyles.t32),
                             AppStyle.vGap16,
-                            Text("2. 本软件不提供任何直播内容，所有直播内容均来自网络。", style: AppTextStyles.t32),
+                            Text(i18n('agreement_item_2'), style: AppTextStyles.t32),
                             AppStyle.vGap16,
-                            Text("3. 本软件完全基于您个人意愿使用，您应该对自己的使用行为和所有结果承担全部责任。", style: AppTextStyles.t32),
+                            Text(i18n('agreement_item_3'), style: AppTextStyles.t32),
                             AppStyle.vGap16,
-                            Text("4. 如果本软件存在侵犯您的合法权益的情况，请及时与作者联系，作者将会及时删除有关内容。", style: AppTextStyles.t32),
+                            Text(i18n('agreement_item_4'), style: AppTextStyles.t32),
                           ],
                         ),
                       ),
                       AppStyle.vGap32,
 
-                      Text("如您继续使用本软件即代表您已完全理解并同意上述内容。", style: AppTextStyles.t28W700),
+                      Text(i18n('agreement_footer'), style: AppTextStyles.t28W700),
                     ],
                   ),
                 ),
               ),
               AppStyle.vGap48,
 
-              // 3. 底部按钮操作区：保持常驻显示，方便遥控器快速选定焦点
+              // The action row stays visible so a remote can always reach both
+              // buttons without scrolling the terms.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TvButton(
                     autofocus: true,
-                    title: "已阅读并同意",
+                    title: i18n('agreement_accept'),
                     size: TvButtonSize.medium,
                     onTap: () {
                       SettingsService.to.startup.setIsFirstInApp(false);
@@ -67,7 +69,12 @@ class AgreementPage extends StatelessWidget {
                     },
                   ),
                   AppStyle.hGap32,
-                  TvButton(title: "退出应用", size: TvButtonSize.medium, isSecondary: true, onTap: () => exit(0)),
+                  TvButton(
+                    title: i18n('exit_app'),
+                    size: TvButtonSize.medium,
+                    isSecondary: true,
+                    onTap: () => exit(0),
+                  ),
                 ],
               ),
             ],

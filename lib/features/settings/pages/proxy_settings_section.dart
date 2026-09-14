@@ -55,7 +55,13 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
         ),
         TvSettingsOptionTile(
           title: i18n('ui_save_proxy_settings'),
-          subtitle: '主机：${_hostController.text.isEmpty ? '未填写' : _hostController.text}  端口：${_portController.text}',
+          subtitle: i18n(
+            'proxy_current_endpoint',
+            args: {
+              'host': _hostController.text.isEmpty ? i18n('not_set') : _hostController.text,
+              'port': _portController.text,
+            },
+          ),
           icon: Icons.save_rounded,
           options: [i18n('save')],
           index: 0,

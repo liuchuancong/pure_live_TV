@@ -65,7 +65,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('解析失败，请检查链接格式')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(i18n('movie_parse_failed'))));
       }
     } finally {
       if (mounted) {
@@ -244,7 +244,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                   SizedBox(
                     width: 200.sp,
                     child: TvButton(
-                      title: _isParsing ? "解析中..." : "开始解析",
+                      title: _isParsing ? i18n('parsing') : i18n('start_parse'),
                       icon: Icon(Icons.rocket_launch_rounded, size: 28.sp),
                       iconPosition: TvIconPosition.left,
                       size: TvButtonSize.medium,
@@ -255,7 +255,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                   SizedBox(
                     width: 150.sp,
                     child: TvButton(
-                      title: "清空",
+                      title: i18n('clear'),
                       icon: Icon(Icons.cleaning_services_rounded, size: 28.sp),
                       iconPosition: TvIconPosition.left,
                       size: TvButtonSize.medium,

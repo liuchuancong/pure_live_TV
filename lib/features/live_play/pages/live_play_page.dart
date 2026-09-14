@@ -161,7 +161,7 @@ class _SidePanel extends ConsumerWidget {
         SizedBox(height: 8.sp),
         _SectionLabel(text: i18n('multiview_line_selector')),
         _ChipRow(
-          labels: [for (var i = 0; i < state.playUrls.length; i++) '线路${i + 1}'],
+          labels: [for (var i = 0; i < state.playUrls.length; i++) i18n('multiview_line', args: {'index': '${i + 1}'})],
           selectedIndex: state.lineIndex,
           onSelect: controller.changeLine,
         ),

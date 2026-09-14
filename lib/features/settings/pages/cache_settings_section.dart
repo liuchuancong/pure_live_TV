@@ -30,7 +30,7 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
       children: [
         TvSettingsOptionTile(
           title: i18n('ui_image_and_data_cache'),
-          subtitle: '当前占用 ${cacheState.cacheSizeMB.toStringAsFixed(1)} MB',
+          subtitle: i18n('cache_size_used', args: {'size': cacheState.cacheSizeMB.toStringAsFixed(1)}),
           icon: Icons.cleaning_services_rounded,
           options: [i18n('clear')],
           index: 0,
