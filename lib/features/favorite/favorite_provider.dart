@@ -123,6 +123,10 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     final currentAvailableSites = Sites().availableSites(containsAll: true);
     final List<LiveTag> visibleTagsList = [];
 
+    // Legacy builds stored tags by room number alone; move them onto
+    // platform-scoped identities now that the followed rooms are known.
+    tagController.migrateLegacyRoomTagKeys([...online, ...replay, ...offline]);
+
     if (currentState.tabSiteIndex >= 0 && currentState.tabSiteIndex < currentAvailableSites.length) {
       final activeSite = currentAvailableSites[currentState.tabSiteIndex];
       List<LiveRoom> target = switch (currentState.tabOnlineIndex) {

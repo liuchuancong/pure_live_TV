@@ -101,4 +101,23 @@ class TvDialogUtils {
           TvSelectDialog<T>(title: title, items: items, selectedValue: selectedValue, onSelected: onSelected),
     );
   }
+
+  /// Returns the confirmed selection, or null when the dialog was cancelled.
+  static Future<Set<T>?> showMultiSelect<T>({
+    required BuildContext context,
+    required String title,
+    required List<TvMultiSelectItem<T>> items,
+    required Set<T> initialSelection,
+    String? emptyHint,
+  }) {
+    return show<Set<T>>(
+      context: context,
+      builder: (context) => TvMultiSelectDialog<T>(
+        title: title,
+        items: items,
+        initialSelection: initialSelection,
+        emptyHint: emptyHint,
+      ),
+    );
+  }
 }

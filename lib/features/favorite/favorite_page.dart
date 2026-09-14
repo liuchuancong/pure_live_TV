@@ -124,7 +124,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
                           onLongPress: () {
-                            FavOperateUtil.toggleRoomFollowDialog(context, room);
+                            FavOperateUtil.showRoomActionDialog(context, room);
                           },
                           onTap: () {},
                           showFollowedMark: false,
