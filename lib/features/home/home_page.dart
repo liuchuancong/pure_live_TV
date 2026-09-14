@@ -220,7 +220,9 @@ class HomePage extends ConsumerWidget {
           ),
         );
       case TvMenuType.settings:
-        return TvSettingsShell(child: SizedBox.shrink());
+        // 侧边栏跳转的是 /settings/<section>，路由由 app_router 从
+        // TvSettingsShell.modules 派生；这里默认展示第一个分区，避免内容区空白。
+        return TvSettingsShell(child: TvSettingsShell.modules.first.page);
       case TvMenuType.favorite:
         return const FavoritePage();
       case TvMenuType.hot:

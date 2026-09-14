@@ -13,6 +13,9 @@ import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/proxy_settings_section.dart';
 import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/features/settings/pages/theme_settings_section.dart';
+import 'package:pure_live/features/settings/pages/tv_settings_section.dart';
+import 'package:pure_live/features/settings/pages/wallpaper_settings_section.dart';
+import 'package:pure_live/features/sync/lan_sync_section.dart';
 import 'package:pure_live/features/settings/pages/video_settings_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
 import 'package:pure_live/features/settings/pages/backup_settings_section.dart';
@@ -39,7 +42,10 @@ class TvSettingsShell extends StatelessWidget {
 
   static final modules = <({String path, String title, IconData icon, Widget page})>[
     (path: '/settings/general', title: i18n('general_settings'), icon: Icons.tune_rounded, page: GeneralSettingsSectionPage()),
+    (path: '/settings/tv', title: i18nOr('ui_tv_settings', '电视设置'), icon: Icons.tv_rounded, page: TvSettingsSectionPage()),
     (path: '/settings/theme', title: i18n('ui_theme'), icon: Icons.palette_outlined, page: ThemeSettingsSectionPage()),
+    (path: '/settings/wallpaper', title: i18nOr('ui_background_settings', '背景设置'), icon: Icons.wallpaper_rounded, page: WallpaperSettingsSectionPage()),
+    (path: '/settings/sync', title: i18nOr('ui_lan_sync', '局域网同步'), icon: Icons.lan_outlined, page: LanSyncSectionPage()),
     (path: '/settings/player_kernel', title: i18n('ui_player_kernel'), icon: Icons.play_circle_outline_rounded, page: PlayerKernelSettingsSectionPage()),
     (path: '/settings/video', title: i18n('video_settings'), icon: Icons.video_settings_outlined, page: VideoSettingsSectionPage()),
     (path: '/settings/decoder', title: i18n('ui_decoder_settings'), icon: Icons.memory_rounded, page: DecoderSettingsSectionPage()),

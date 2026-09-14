@@ -5,16 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
-import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
-import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
-import 'package:pure_live/features/settings/pages/account_settings_section.dart';
-import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
-import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
-import 'package:pure_live/features/settings/pages/tag_management_section.dart';
-import 'package:pure_live/features/settings/pages/navigation_section.dart';
-import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
-
+import 'package:pure_live/features/wallpaper/wallpaper_page.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_preview_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final isFirstInApp = ref.watch(startupControllerProvider);
@@ -38,36 +30,25 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: AppRoutes.kInitial, builder: (context, state) => const HomePage()),
       GoRoute(path: AppRoutes.kAgreementPage, builder: (context, state) => const AgreementPage()),
-      ShellRoute(
-      builder: (context, state, child) => TvSettingsShell(child: child),
-      routes: [
-        GoRoute(path: 'general', builder: (context, state) => GeneralSettingsSectionPage()),
-        GoRoute(path: 'theme', builder: (context, state) => ThemeSettingsSectionPage()),
-        GoRoute(path: 'player_kernel', builder: (context, state) => PlayerKernelSettingsSectionPage()),
-        GoRoute(path: 'video', builder: (context, state) => VideoSettingsSectionPage()),
-        GoRoute(path: 'decoder', builder: (context, state) => DecoderSettingsSectionPage()),
-        GoRoute(path: 'renderer', builder: (context, state) => RendererSettingsSectionPage()),
-        GoRoute(path: 'audio_output', builder: (context, state) => AudioOutputSettingsSectionPage()),
-        GoRoute(path: 'danmaku', builder: (context, state) => DanmakuSettingsSectionPage()),
-        GoRoute(path: 'platform', builder: (context, state) => PlatformSettingsSectionPage()),
-        GoRoute(path: 'page', builder: (context, state) => PageSettingsSectionPage()),
-        GoRoute(path: 'refresh', builder: (context, state) => RefreshSettingsSectionPage()),
-        GoRoute(path: 'font', builder: (context, state) => FontSettingsSectionPage()),
-        GoRoute(path: 'cache', builder: (context, state) => CacheSettingsSectionPage()),
-        GoRoute(path: 'proxy', builder: (context, state) => ProxySettingsSectionPage()),
-        GoRoute(path: 'backup', builder: (context, state) => BackupSettingsSectionPage()),
-        GoRoute(path: 'webdav', builder: (context, state) => WebDavSettingsSectionPage()),
-        GoRoute(path: 'backups', builder: (context, state) => BackupManageSectionPage()),
-        GoRoute(path: 'account', builder: (context, state) => AccountSettingsSectionPage()),
-        GoRoute(path: 'shield', builder: (context, state) => DanmakuShieldSectionPage()),
-        GoRoute(path: 'audience', builder: (context, state) => AudienceMetricSectionPage()),
-        GoRoute(path: 'tags', builder: (context, state) => TagManagementSectionPage()),
-        GoRoute(path: 'navigation', builder: (context, state) => NavigationSectionPage()),
-        GoRoute(path: 'fonts', builder: (context, state) => FontFamilyManagerSectionPage()),
-        GoRoute(path: 'iptv', builder: (context, state) => IptvManageSectionPage()),
-        GoRoute(path: 'about', builder: (context, state) => AboutSettingsSectionPage()),
-      ],
-    ),
+
+      // 设置模块。
+      //
+      // 侧边栏（TvSettingsShell.modules）跳转的是 /settings/<section>，所以每个
+      // 分区必须注册成同名路由；这里直接从 modules 派生，新增分区无需再改路由表。
+      // 之前用的是「无 path 的 ShellRoute」+ 相对路径，实际注册成了 /general，
+      // 与侧边栏的 /settings/general 对不上，点任何一项都会 no routes。
+      GoRoute(
+        path: AppRoutes.kSettings,
+        redirect: (context, state) =>
+            state.uri.path == AppRoutes.kSettings ? '${AppRoutes.kSettings}/general' : null,
+      ),
+      for (final module in TvSettingsShell.modules)
+        GoRoute(path: module.path, builder: (context, state) => TvSettingsShell(child: module.page)),
+
+      // 壁纸 / 背景：播放页「背景设置」入口，以及全屏预览。
+      GoRoute(path: AppRoutes.kWallpaperPage, builder: (context, state) => const WallpaperPage()),
+      GoRoute(path: AppRoutes.kWallpaperPreview, builder: (context, state) => const WallpaperPreviewPage()),
+
       GoRoute(
         path: AppRoutes.kAreaRooms,
         builder: (context, state) {
@@ -95,4 +76,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-

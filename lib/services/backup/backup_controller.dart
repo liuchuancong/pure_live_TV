@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'backup_controller.g.dart';
@@ -16,6 +17,8 @@ class BackupController extends _$BackupController {
   static const List<String> knownSections = <String>[
     'app',
     'theme',
+    'tvTheme',
+    'background',
     'font',
     'player',
     'danmaku',
@@ -50,6 +53,8 @@ class BackupController extends _$BackupController {
       'sensitiveDataIncluded': includeSensitiveData,
       'app': s.app.toJson(),
       'theme': s.theme.toJson(),
+      'tvTheme': ref.read(tvThemeControllerProvider.notifier).toJson(),
+      'background': s.bg.toJson(),
       'font': s.font.toJson(),
       'player': s.player.toJson(),
       'danmaku': s.danmaku.toJson(),
@@ -127,6 +132,8 @@ class BackupController extends _$BackupController {
     final sectionParsers = <String, void Function(Map<String, dynamic>)>{
       'app': s.app.importFromJson,
       'theme': s.theme.importFromJson,
+      'tvTheme': ref.read(tvThemeControllerProvider.notifier).importFromJson,
+      'background': s.bg.importFromJson,
       'font': s.font.importFromJson,
       'player': s.player.importFromJson,
       'danmaku': s.danmaku.importFromJson,

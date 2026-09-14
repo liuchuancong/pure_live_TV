@@ -96,6 +96,9 @@ abstract final class AppRoutes {
 
   /// 壁纸/背景设置页面
   static const kWallpaperPage = "/wallpaper_page";
+
+  /// 壁纸全屏预览
+  static const kWallpaperPreview = "/wallpaper_preview";
 }
 
 class AreaRoomsArgs {

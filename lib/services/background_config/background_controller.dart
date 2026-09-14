@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math' as math;
+import 'package:dio/dio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -8,6 +10,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
+import 'package:pure_live/services/background_config/background_image_sources.dart';
 part 'background_controller.g.dart';
 
 @riverpod
@@ -117,6 +120,87 @@ class BackgroundController extends _$BackgroundController {
     state.copyWith(source: BackgroundSource.networkImage, networkImageUrl: url, assetImagePath: "", localImagePath: ""),
   );
   void setCurrentBoxImage(String base64Str) => _updateState(state.copyWith(currentBoxImageBase64: base64Str));
+
+  // ------------------------------------------------------------------
+  // 随机壁纸
+  // ------------------------------------------------------------------
+
+  /// 随机壁纸图源下标。
+  ///
+  /// 单独存 pref 而不是加进 [BackgroundConfigModel]：那是个 freezed 模型，
+  /// 加字段要跑 build_runner，而这里并不需要它进入备份/同步载荷。
+  static const String _boxImageSourceKey = 'bgBoxImageSourceIndex';
+
+  int get boxImageSourceIndex => BackgroundImageSources.clampIndex(HivePrefUtil.getInt(_boxImageSourceKey) ?? 0);
+
+  Future<void> setBoxImageSourceIndex(int index) async {
+    await HivePrefUtil.setInt(_boxImageSourceKey, BackgroundImageSources.clampIndex(index));
+  }
+
+  /// 拉取一张随机壁纸并写入背景，返回 false 表示这次没取到图。
+  ///
+  /// 移植自老项目 `SettingsService.getImage()`：
+  /// - 无铭系接口要带 `type=json&apiKey=`，先拿 JSON 里的直链再下载图片；
+  /// - 栗次元要随机拼一个分类路径；
+  /// - 其余接口本身就是图片地址。
+  ///
+  /// 最后统一转 base64 存进 [BackgroundConfigModel.currentBoxImageBase64]，
+  /// 因为 `TvScaffold` 的图片背景只消费这一个字段（asset/local/network 三个
+  /// source 都走它）。
+  Future<bool> getRandomImage({int? sourceIndex}) async {
+    final index = BackgroundImageSources.clampIndex(sourceIndex ?? boxImageSourceIndex);
+    if (sourceIndex != null) await setBoxImageSourceIndex(index);
+
+    final source = BackgroundImageSources.at(index);
+    if (source.url == BackgroundImageSources.noneUrl) {
+      setCurrentBoxImage('');
+      return true;
+    }
+
+    final dio = Dio();
+    try {
+      String? imageUrl;
+      if (source.url.contains('://jkapi.com')) {
+        final apiKey = BackgroundImageSources.wumingApiKeys[source.name];
+        if (apiKey == null) return false;
+        final separator = source.url.contains('?') ? '&' : '?';
+        final response = await dio.get<dynamic>('${source.url}${separator}type=json&apiKey=$apiKey');
+        final data = response.data;
+        if (data is Map) imageUrl = (data['image_url'] ?? data['content'])?.toString();
+      } else if (source.url == 'https://alcy.cc') {
+        const categories = <String>[
+          'ycy', 'moez', 'ai', 'ysz', 'ys', 'mp', 'moemp', 'ysmp', 'aimp', 'tx', 'lai', 'xhl', 'bd',
+        ];
+        imageUrl = '${source.url}${categories[math.Random().nextInt(categories.length)]}';
+      } else {
+        imageUrl = source.url;
+      }
+
+      if (imageUrl == null || imageUrl.isEmpty) return false;
+
+      final imageResponse = await dio.get<List<int>>(
+        imageUrl,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: <String, String>{'User-Agent': _wallpaperUserAgent},
+        ),
+      );
+      final bytes = imageResponse.data;
+      if (bytes == null || bytes.length < 30) return false;
+
+      // 先切到图片背景，再写入 base64，避免中途出现空白背景。
+      setNetworkImage(imageUrl);
+      setCurrentBoxImage(base64Encode(bytes));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static const String _wallpaperUserAgent =
+      'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+      'Chrome/116.0.5845.97 Safari/537.36';
+
   void setAssetVideo(String path) => _updateState(
     state.copyWith(source: BackgroundSource.assetVideo, assetVideoPath: path, localVideoPath: "", networkVideoUrl: ""),
   );
