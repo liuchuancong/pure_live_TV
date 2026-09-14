@@ -12,6 +12,7 @@ import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
 import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_section.dart';
+import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -61,6 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(path: 'audience', builder: (context, state) => AudienceMetricSectionPage()),
         GoRoute(path: 'tags', builder: (context, state) => TagManagementSectionPage()),
         GoRoute(path: 'navigation', builder: (context, state) => NavigationSectionPage()),
+        GoRoute(path: 'fonts', builder: (context, state) => FontFamilyManagerSectionPage()),
         GoRoute(path: 'about', builder: (context, state) => AboutSettingsSectionPage()),
       ],
     ),
