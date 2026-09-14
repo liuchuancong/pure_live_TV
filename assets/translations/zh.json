@@ -1827,7 +1827,7 @@
     "ui_default_items_per_page":  "默认每页条数",
     "ui_default_page_size":  "列表默认分页大小",
     "ui_dense_favorites_layout":  "密集收藏布局",
-    "ui_derive_the_theme_color_from_the_cover_image":  "根据封面自动取色",
+    "ui_derive_the_theme_color_from_the_cover_image":  "跟随系统主题色（Android 12 及以上）",
     "ui_directsound_windows_only":  "DirectSound（仅 Windows）",
     "ui_directx_11_no_passthrough":  "DirectX 11（非直通）",
     "ui_dolby":  "杜比",

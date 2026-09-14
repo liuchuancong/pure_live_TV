@@ -1,3 +1,4 @@
+export 'dynamic_color_adapter.dart';
 export 'styles/app_styles.dart';
 export 'styles/styles.dart';
 export 'themes/anime_theme.dart';

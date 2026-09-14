@@ -13,6 +13,8 @@ dependencies:
   collection: ^1.19.1        # Dart集合工具扩展方法
   intl: ^0.20.2              # 国际化、日期数字格式化
   easy_localization: ^3.0.8   # 运行时多语言（assets/translations）
+  dynamic_color: ^2.1.0       # 系统动态主题色（Android 12+）
+  material_ui: ^1.1.1         # dynamic_color 2.x 的 Material ColorScheme 桥接
   meta: ^1.18.0              # Dart元注解(Deprecated/required等)
   path: ^1.9.1               # 跨平台文件路径处理
   file: ^7.0.0               # 文件读写增强封装
