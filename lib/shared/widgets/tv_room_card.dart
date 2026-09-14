@@ -31,14 +31,16 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   }
 
   /// Audience text for the card: the concurrent online count when the user
-  /// prefers it and this platform reports it, otherwise the platform value.
+  /// prefers it and this platform really publishes it, otherwise the platform's
+  /// native heat, cumulative or legacy value.
   String get _audienceText {
     final settings = ref.watch(appSettingsControllerProvider);
-    final prefersOnline = settings.preferRealOnlineCounts && settings.realOnlinePlatforms.contains(widget.room.platform);
-    if (prefersOnline && widget.room.onlineViewers.trim().isNotEmpty) {
-      return readableCount(widget.room.onlineViewers);
-    }
-    return readableCount(widget.room.watching);
+    final app = ref.read(appSettingsControllerProvider.notifier);
+    final value = widget.room.audienceValue(
+      preferRealOnline: settings.preferRealOnlineCounts,
+      platformEnabled: app.isRealOnlineEnabledFor(widget.room.platform),
+    );
+    return readableCount(value);
   }
 
   @override

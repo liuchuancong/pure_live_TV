@@ -2,7 +2,6 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/download_status/download_status.dart';
 import 'package:pure_live/shared/models/font_model/font_model.dart';
 import 'package:pure_live/shared/platform/font_download_manager.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';

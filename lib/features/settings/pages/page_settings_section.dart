@@ -41,7 +41,7 @@ class PageSettingsSectionPage extends ConsumerWidget {
           title: i18n('ui_default_items_per_page'),
           subtitle: i18n('ui_default_page_size'),
           icon: Icons.numbers_rounded,
-          options: pageState.pageSizeOptions.map((e) => '$e 条').toList(),
+          options: pageState.pageSizeOptions.map((e) => '$e ${i18n('items_per_page')}').toList(),
           index: pageState.pageSizeOptions
               .indexOf(pageState.defaultPageSize)
               .clamp(0, pageState.pageSizeOptions.length - 1),

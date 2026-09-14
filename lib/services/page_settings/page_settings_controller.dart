@@ -9,26 +9,50 @@ part 'page_settings_controller.g.dart';
 @riverpod
 class PageSettingsController extends _$PageSettingsController {
   static PageSettingsController get to => SettingsService.to.page;
+
+  /// Page sizes outside this range cannot be rendered or stored: a stored 0 or
+  /// negative value would empty every grid, and a huge value would ask the
+  /// backend for a page the lists never use.
+  static const int minPageSize = 1;
+  static const int maxPageSize = 100;
+
   @override
   PageSettingsModel build() {
+    final options = normalizePageSizeOptions(
+      HivePrefUtil.getObject('page_size_options_raw', (json) => (json as List).cast<int>()) ??
+          _getInitPageSizeOptions(),
+    );
     return PageSettingsModel(
       showPageSizeSelector: HivePrefUtil.getBool('page_show_size_selector') ?? true,
       showGotoButton: HivePrefUtil.getBool('page_show_goto_button') ?? true,
       showScrollToTopBtn: HivePrefUtil.getBool('page_show_scroll_top') ?? true,
-      defaultPageSize: HivePrefUtil.getInt('page_default_size') ?? _getInitPageSize(),
-      pageSizeOptions:
-          HivePrefUtil.getObject('page_size_options_raw', (json) => (json as List).cast<int>()) ??
-          _getInitPageSizeOptions(),
+      defaultPageSize: normalizeDefaultPageSize(HivePrefUtil.getInt('page_default_size') ?? _getInitPageSize(), options),
+      pageSizeOptions: options,
     );
   }
 
-  void updateSettings(PageSettingsModel newModel) {
-    var validDefault = newModel.defaultPageSize;
-    if (!newModel.pageSizeOptions.contains(validDefault)) {
-      validDefault = newModel.pageSizeOptions.isNotEmpty ? newModel.pageSizeOptions.first : 12;
-    }
+  static bool isValidPageSize(int value) => value >= minPageSize && value <= maxPageSize;
 
-    state = newModel.copyWith(defaultPageSize: validDefault);
+  /// Keeps only usable, de-duplicated sizes in ascending order; an empty or
+  /// fully invalid list falls back to the platform defaults.
+  static List<int> normalizePageSizeOptions(Iterable<int> values) {
+    final normalized = values.where(isValidPageSize).toSet().toList()..sort();
+    if (normalized.isNotEmpty) return normalized;
+    return _getInitPageSizeOptions().where(isValidPageSize).toSet().toList()..sort();
+  }
+
+  /// Repairs a default size that is no longer part of the selectable options.
+  static int normalizeDefaultPageSize(int value, Iterable<int> options) {
+    final normalizedOptions = normalizePageSizeOptions(options);
+    return normalizedOptions.contains(value) ? value : normalizedOptions.first;
+  }
+
+  void updateSettings(PageSettingsModel newModel) {
+    final options = normalizePageSizeOptions(newModel.pageSizeOptions);
+    state = newModel.copyWith(
+      pageSizeOptions: options,
+      defaultPageSize: normalizeDefaultPageSize(newModel.defaultPageSize, options),
+    );
     _persist();
   }
 
@@ -55,7 +79,6 @@ class PageSettingsController extends _$PageSettingsController {
   Map<String, dynamic> toJson() => state.toJson();
 
   void importFromJson(Map<String, dynamic> json) {
-    state = PageSettingsModel.fromJson(json);
-    _persist();
+    updateSettings(PageSettingsModel.fromJson(json));
   }
 }

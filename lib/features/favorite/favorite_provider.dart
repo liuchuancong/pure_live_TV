@@ -101,7 +101,10 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       a,
       b,
       preferRealOnline: appState.preferRealOnlineCounts,
-      platformEnabled: (platform) => appState.realOnlinePlatforms.contains(platform),
+      // Capability-aware: a platform that only publishes heat must keep ranking
+      // by that value even when concurrent mode is on.
+      platformEnabled: (platform) => LiveRoom.audienceCapabilityFor(platform).supportsConcurrentOnline &&
+          appState.realOnlinePlatforms.contains(platform),
     );
 
     int sortRooms(LiveRoom a, LiveRoom b) {

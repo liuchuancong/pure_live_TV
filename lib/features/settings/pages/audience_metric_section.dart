@@ -3,6 +3,7 @@ import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
 /// Chooses which audience number the cards and rankings use: the platform heat
@@ -35,25 +36,55 @@ class AudienceMetricSectionPage extends ConsumerWidget {
           TvSettingsCard(
             children: [
               for (final site in Sites.supportSites)
-                TvSettingsSwitchTile(
-                  title: site.name,
-                  subtitle: i18nOr('audience_${site.id}_detail', i18n('audience_metric_support_summary')),
-                  icon: Icons.bar_chart_rounded,
-                  value: appState.realOnlinePlatforms.contains(site.id),
-                  onChanged: (enabled) {
-                    final platforms = List<String>.from(appState.realOnlinePlatforms);
-                    if (enabled) {
-                      if (!platforms.contains(site.id)) platforms.add(site.id);
-                    } else {
-                      platforms.remove(site.id);
-                    }
-                    app.update(appState.copyWith(realOnlinePlatforms: platforms));
-                  },
+                _AudiencePlatformTile(
+                  id: site.id,
+                  label: site.name,
+                  detailKey: 'audience_${site.id}_detail',
+                  enabled: app.isRealOnlineEnabledFor(site.id),
+                  onChanged: (value) => app.setRealOnlineEnabledFor(site.id, value),
                 ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+/// One platform row of the audience settings.
+///
+/// A platform that never publishes a concurrent head count stays visible but
+/// read-only, so the row explains why it cannot be selected instead of letting
+/// the user switch on a number the platform does not expose.
+class _AudiencePlatformTile extends StatelessWidget {
+  const _AudiencePlatformTile({
+    required this.id,
+    required this.label,
+    required this.detailKey,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final String id;
+  final String label;
+  final String detailKey;
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final capability = LiveRoom.audienceCapabilityFor(id);
+    final supported = capability.supportsConcurrentOnline;
+    final sourceLabel = supported
+        ? i18n(capability.onlineAvailableInRoomLists ? 'audience_source_room_list' : 'audience_source_room_realtime')
+        : i18n('audience_source_not_exposed');
+
+    return TvSettingsSwitchTile(
+      title: label,
+      subtitle: '$sourceLabel · ${i18nOr(detailKey, i18n('audience_metric_support_summary'))}',
+      icon: supported ? Icons.people_alt_rounded : Icons.whatshot_rounded,
+      value: supported && enabled,
+      onChanged: supported ? onChanged : null,
     );
   }
 }

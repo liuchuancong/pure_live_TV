@@ -7,11 +7,12 @@ part 'live_room.g.dart';
 
 enum LiveStatus { live, offline, replay, unknown, banned }
 
-/// 观众数值的来源类型，用于排序时决定可比性。
+/// Source of the audience number, used to decide whether two values are
+/// comparable at all.
 enum AudienceMetricType { unknown, watching, popularity, onlineViewers, totalViewers, followers }
 
 extension AudienceMetricTypeRank on AudienceMetricType {
-  /// 排序权重：真实在线人数 > 总观看 > 热度 > 关注数。
+  /// Ranking weight: concurrent viewers > cumulative viewers > heat > followers.
   int get rankingRank => switch (this) {
     AudienceMetricType.onlineViewers => 4,
     AudienceMetricType.watching => 3,
@@ -22,9 +23,183 @@ extension AudienceMetricTypeRank on AudienceMetricType {
   };
 }
 
+/// Where a platform publishes an explicit concurrent audience number.
+enum AudienceOnlineAvailability {
+  /// The public API exposes no concurrent head count at all.
+  unsupported,
+
+  /// The count only arrives while a room is open (realtime messages).
+  roomRealtime,
+
+  /// Room lists and details already carry the count, so lists can rank by it.
+  roomList,
+}
+
+/// Audience fields a platform really exposes.
+///
+/// A platform may publish heat and cumulative viewers without ever publishing
+/// a concurrent head count; the room card must not present heat as an audience.
+class AudiencePlatformCapability {
+  const AudiencePlatformCapability({
+    required this.hasPopularity,
+    required this.hasTotalViewers,
+    required this.onlineAvailability,
+  });
+
+  final bool hasPopularity;
+  final bool hasTotalViewers;
+  final AudienceOnlineAvailability onlineAvailability;
+
+  bool get supportsConcurrentOnline => onlineAvailability != AudienceOnlineAvailability.unsupported;
+
+  bool get onlineAvailableInRoomLists => onlineAvailability == AudienceOnlineAvailability.roomList;
+}
+
+/// Comparable audience key used when rooms from different metric scales share
+/// one list.
+///
+/// In concurrent-viewer mode an explicit concurrent value must rank ahead of a
+/// pending value, and a pending supported room must stay ahead of a heat or
+/// cumulative fallback. This stops a multi-million heat score from outranking a
+/// real audience of a few thousand people.
+class AudienceRankKey {
+  const AudienceRankKey({required this.metricPriority, required this.value});
+
+  final int metricPriority;
+  final int value;
+}
+
 @freezed
 abstract class LiveRoom with _$LiveRoom {
   const LiveRoom._();
+
+  /// Audience fields each platform actually publishes.
+  ///
+  /// Only [AudienceOnlineAvailability.roomList] and
+  /// [AudienceOnlineAvailability.roomRealtime] platforms may show a concurrent
+  /// viewer badge; everything else keeps ranking by heat or cumulative views.
+  static const Map<String, AudiencePlatformCapability> audienceCapabilities = {
+    // Bilibili's room `online` field and operation-3 heartbeat are heat;
+    // WATCHED_CHANGE is cumulative. Neither is a concurrent head count.
+    'bilibili': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    'douyu': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    // Huya's website URI 8006 calls the field iAttendeeCount, but live captures
+    // stay in the same multi-million heat range as totalCount.
+    'huya': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    'douyin': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    'kuaishou': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    'cc': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // Twitch GraphQL exposes viewersCount as the concurrent count in directory,
+    // search and room metadata responses.
+    'twitch': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // SOOP lists expose total_view_cnt/view_cnt (PC + mobile concurrent);
+    // current_view_cnt alone is PC-only and must not be shown as the audience.
+    'soop': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // YY's public `users` value follows the platform heat scale and the web API
+    // exposes no separate concurrent audience field.
+    'yy': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    // Picarto's viewers and total_views have distinct concurrent/cumulative
+    // meanings.
+    'picarto': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    'twitcasting': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    'openrec': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    'ttinglive': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    'huajiao': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    'missevan': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    // AcFun's onlineCount is independent of likes/followers; author search
+    // omits it.
+    'acfun': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // Niconico publishes cumulative view counts only.
+    'niconico': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+  };
+
+  static const AudiencePlatformCapability _unknownAudienceCapability = AudiencePlatformCapability(
+    hasPopularity: false,
+    hasTotalViewers: false,
+    onlineAvailability: AudienceOnlineAvailability.unsupported,
+  );
+
+  /// Capability for a platform id; unknown platforms expose nothing.
+  static AudiencePlatformCapability audienceCapabilityFor(String? platform) =>
+      audienceCapabilities[platform?.trim().toLowerCase()] ?? _unknownAudienceCapability;
+
+  static bool _hasAudienceValue(String? value) {
+    final text = value?.trim() ?? '';
+    return text.isNotEmpty && text != 'null' && parseAudienceNumber(text) > 0;
+  }
+
+  static bool _hasExplicitAudienceValue(String? value) {
+    final text = value?.trim() ?? '';
+    return text.isNotEmpty && text != 'null' && RegExp(r'[0-9]').hasMatch(text);
+  }
 
   const factory LiveRoom({
     @Default('') String roomId,
@@ -102,9 +277,9 @@ abstract class LiveRoom with _$LiveRoom {
       ? (status ? LiveStatus.live : LiveStatus.offline)
       : liveStatus;
 
-  // ---------- 观众数值 ----------
+  // ---------- Audience values ----------
 
-  /// 解析 "1.2万"、"3,456"、"12亿" 之类的观众数文本。
+  /// Parses audience text such as "1.2万", "3,456" or "12亿".
   static int parseAudienceNumber(String? text) {
     if (text == null) return 0;
     var cleaned = text.trim().replaceAll(',', '');
@@ -125,7 +300,101 @@ abstract class LiveRoom with _$LiveRoom {
     return (value * multiplier).round();
   }
 
-  /// 当前排序使用的观众数值。
+  /// Audience fields this platform publishes, independent of whether this room
+  /// already received its first list value or realtime heartbeat.
+  AudiencePlatformCapability get audienceCapability => audienceCapabilityFor(platform);
+
+  /// Whether this platform can ever report a concurrent audience number.
+  bool get supportsRealOnlineCount => audienceCapability.supportsConcurrentOnline;
+
+  /// Whether an explicit concurrent count has already arrived for this room.
+  bool get hasRealOnlineCount => _hasExplicitAudienceValue(effectiveOnlineViewers);
+
+  /// Concurrent viewers, falling back to the legacy single audience field when
+  /// the site marks that field as the concurrent metric.
+  String get effectiveOnlineViewers {
+    if (_hasExplicitAudienceValue(onlineViewers)) return onlineViewers.trim();
+    // `watching` keeps the legacy "0" sentinel; only a positive legacy value is
+    // treated as a concurrent count, while a platform that genuinely reports
+    // zero writes it to [onlineViewers] and stays valid.
+    return effectiveAudienceMetricType == AudienceMetricType.onlineViewers && _hasAudienceValue(watching) ? watching.trim() : '';
+  }
+
+  /// Platform heat, falling back to the legacy audience field when the site
+  /// marks that field as heat.
+  String get effectivePopularity {
+    if (_hasAudienceValue(popularity)) return popularity.trim();
+    return effectiveAudienceMetricType == AudienceMetricType.popularity ? watching.trim() : '';
+  }
+
+  /// Cumulative viewers, falling back to the legacy audience field when the
+  /// site marks that field as cumulative.
+  String get effectiveTotalViewers {
+    if (_hasAudienceValue(totalViewers)) return totalViewers.trim();
+    return effectiveAudienceMetricType == AudienceMetricType.totalViewers ? watching.trim() : '';
+  }
+
+  /// Metric this room ranks by when the site did not tag the value itself.
+  AudienceMetricType get effectiveAudienceMetricType {
+    if (audienceMetricType != AudienceMetricType.unknown) return audienceMetricType;
+    return switch (normalizedPlatformId) {
+      'bilibili' || 'douyu' || 'huya' || 'cc' || 'yy' || 'missevan' => AudienceMetricType.popularity,
+      'kuaishou' || 'twitch' || 'soop' => AudienceMetricType.onlineViewers,
+      'douyin' => AudienceMetricType.totalViewers,
+      _ => AudienceMetricType.unknown,
+    };
+  }
+
+  /// i18n key describing [effectiveAudienceMetricType].
+  String get audienceMetricI18nKey => switch (effectiveAudienceMetricType) {
+    AudienceMetricType.popularity => 'audience_popularity',
+    AudienceMetricType.onlineViewers => 'audience_online',
+    AudienceMetricType.totalViewers => 'audience_total',
+    AudienceMetricType.followers => 'audience_followers',
+    AudienceMetricType.watching => 'audience_count',
+    AudienceMetricType.unknown => 'audience_count',
+  };
+
+  /// Audience text to display under the current display policy.
+  ///
+  /// Concurrent mode only wins for a platform that really publishes the count
+  /// and that the user enabled; otherwise the platform's native metric is used.
+  String audienceValue({required bool preferRealOnline, required bool platformEnabled}) {
+    if (preferRealOnline && platformEnabled && supportsRealOnlineCount) {
+      return hasRealOnlineCount ? effectiveOnlineViewers : '';
+    }
+    if (_hasAudienceValue(effectivePopularity)) return effectivePopularity;
+    if (_hasAudienceValue(effectiveTotalViewers)) return effectiveTotalViewers;
+    if (hasRealOnlineCount) return effectiveOnlineViewers;
+    return watching.trim();
+  }
+
+  /// Metric type behind [audienceValue], used to label the displayed number.
+  AudienceMetricType audienceType({required bool preferRealOnline, required bool platformEnabled}) {
+    if (preferRealOnline && platformEnabled && supportsRealOnlineCount) return AudienceMetricType.onlineViewers;
+    if (_hasAudienceValue(effectivePopularity)) return AudienceMetricType.popularity;
+    if (_hasAudienceValue(effectiveTotalViewers)) return AudienceMetricType.totalViewers;
+    if (hasRealOnlineCount) return AudienceMetricType.onlineViewers;
+    return effectiveAudienceMetricType;
+  }
+
+  /// Ranking tier and value for the current display policy.
+  AudienceRankKey audienceRankKey({required bool preferRealOnline, required bool platformEnabled}) {
+    if (preferRealOnline && platformEnabled && supportsRealOnlineCount) {
+      return AudienceRankKey(
+        metricPriority: hasRealOnlineCount ? 3 : 2,
+        value: hasRealOnlineCount ? parseAudienceNumber(effectiveOnlineViewers) : 0,
+      );
+    }
+
+    final nativeValue = audienceValue(preferRealOnline: false, platformEnabled: false);
+    return AudienceRankKey(
+      metricPriority: _hasExplicitAudienceValue(nativeValue) ? 1 : 0,
+      value: parseAudienceNumber(nativeValue),
+    );
+  }
+
+  /// Ranking value with the platform's own metric, ignoring display policy.
   int get audienceRankingValue {
     final candidate = switch (audienceMetricType) {
       AudienceMetricType.onlineViewers => onlineViewers,
@@ -140,7 +409,8 @@ abstract class LiveRoom with _$LiveRoom {
     return parseAudienceNumber(watching) + parseAudienceNumber(onlineViewers) + parseAudienceNumber(popularity);
   }
 
-  /// 观众字段为空时，用旧房间的数据兜底（详情接口偶尔缺人数时保持展示稳定）。
+  /// Fills audience fields that a room-detail response omitted, so the header
+  /// does not flicker back to zero after a list value was already shown.
   LiveRoom withAudienceFallbackFrom(LiveRoom other) {
     if (identical(this, other)) return this;
     var result = this;
@@ -163,26 +433,25 @@ abstract class LiveRoom with _$LiveRoom {
     return result;
   }
 
-  /// 按观众数值降序比较；优先真实在线人数，其次按指标权重。
+  /// Sorts two rooms by the selected metric policy and then by stable room
+  /// identity, so equal or still-pending values keep a fixed order.
   static int compareAudienceRanking(
     LiveRoom a,
     LiveRoom b, {
     bool preferRealOnline = true,
     bool Function(String platform)? platformEnabled,
   }) {
-    int valueOf(LiveRoom room) {
-      if (platformEnabled != null && !platformEnabled(room.normalizedPlatformId)) return 0;
-      if (preferRealOnline) {
-        final online = parseAudienceNumber(room.onlineViewers) > 0
-            ? parseAudienceNumber(room.onlineViewers)
-            : parseAudienceNumber(room.watching);
-        if (online > 0) return online;
-      }
-      return room.audienceRankingValue;
-    }
+    AudienceRankKey keyOf(LiveRoom room) => room.audienceRankKey(
+      preferRealOnline: preferRealOnline,
+      platformEnabled: platformEnabled?.call(room.normalizedPlatformId) ?? true,
+    );
 
-    final diff = valueOf(b) - valueOf(a);
-    if (diff != 0) return diff;
+    final left = keyOf(a);
+    final right = keyOf(b);
+    final metricOrder = right.metricPriority.compareTo(left.metricPriority);
+    if (metricOrder != 0) return metricOrder;
+    final valueOrder = right.value.compareTo(left.value);
+    if (valueOrder != 0) return valueOrder;
     return a.identityKey.compareTo(b.identityKey);
   }
 

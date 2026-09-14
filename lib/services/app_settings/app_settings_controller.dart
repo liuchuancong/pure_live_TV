@@ -1,5 +1,7 @@
 import 'app_settings_model.dart';
+import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -9,6 +11,22 @@ part 'app_settings_controller.g.dart';
 @riverpod
 class AppSettingsController extends _$AppSettingsController {
   static AppSettingsController get to => SettingsService.to.app;
+
+  /// Platforms whose public API exposes a concurrent audience count, so
+  /// concurrent mode has a real number to show out of the box.
+  static const List<String> defaultRealOnlinePlatforms = [
+    Sites.douyinSite,
+    Sites.kuaishouSite,
+    Sites.ccSite,
+    Sites.twitchSite,
+    Sites.soopSite,
+    Sites.acfunSite,
+    Sites.picartoSite,
+    Sites.twitcastingSite,
+    Sites.openrecSite,
+    Sites.ttingSite,
+  ];
+
   @override
   AppSettingsModel build() {
     return AppSettingsModel(
@@ -25,7 +43,9 @@ class AppSettingsController extends _$AppSettingsController {
       useGitHubOriginForUpdates: HivePrefUtil.getBool('useGitHubOriginForUpdates') ?? false,
       refreshRateMode: HivePrefUtil.getString('refreshRateMode') ?? '',
       preferRealOnlineCounts: HivePrefUtil.getBool('preferRealOnlineCounts') ?? false,
-      realOnlinePlatforms: HivePrefUtil.getStringList('realOnlinePlatforms') ?? [],
+      realOnlinePlatforms: normalizeRealOnlinePlatforms(
+        HivePrefUtil.getStringList('realOnlinePlatforms') ?? defaultRealOnlinePlatforms,
+      ),
       audienceMetricMigration: HivePrefUtil.getInt('audienceMetricMigration') ?? 0,
       enableMultiView: HivePrefUtil.getBool('enableMultiView') ?? true,
       enableNewWindowPlay: HivePrefUtil.getBool('enableNewWindowPlay') ?? true,
@@ -34,7 +54,9 @@ class AppSettingsController extends _$AppSettingsController {
   }
 
   void update(AppSettingsModel newModel) {
-    state = newModel;
+    // Only concurrent-capable platforms may stay selected, so a stored or
+    // imported entry can never present a heat value as a real audience.
+    state = newModel.copyWith(realOnlinePlatforms: normalizeRealOnlinePlatforms(newModel.realOnlinePlatforms));
     _persist();
   }
 
@@ -47,6 +69,34 @@ class AppSettingsController extends _$AppSettingsController {
       if (!result.contains(id)) result.add(id);
     }
     return result;
+  }
+
+  /// Repairs a stored or imported platform list: trimmed, lower-cased and
+  /// limited to platforms that publish a concurrent audience count.
+  static List<String> normalizeRealOnlinePlatforms(Iterable<String> platforms) {
+    return platforms
+        .map((platform) => platform.trim().toLowerCase())
+        .where((platform) => LiveRoom.audienceCapabilityFor(platform).supportsConcurrentOnline)
+        .toSet()
+        .toList();
+  }
+
+  /// Selected platforms after dropping entries this build no longer supports.
+  List<String> get resolvedRealOnlinePlatforms => normalizeRealOnlinePlatforms(state.realOnlinePlatforms);
+
+  bool isRealOnlineEnabledFor(String? platform) =>
+      resolvedRealOnlinePlatforms.contains(platform?.trim().toLowerCase());
+
+  void setRealOnlineEnabledFor(String platform, bool enabled) {
+    final normalized = platform.trim().toLowerCase();
+    if (!LiveRoom.audienceCapabilityFor(normalized).supportsConcurrentOnline) return;
+    final next = resolvedRealOnlinePlatforms;
+    if (enabled) {
+      if (!next.contains(normalized)) next.add(normalized);
+    } else {
+      next.remove(normalized);
+    }
+    update(state.copyWith(realOnlinePlatforms: next));
   }
 
   /// Moves [menuId] by [delta] positions inside the visible list.
@@ -85,7 +135,7 @@ class AppSettingsController extends _$AppSettingsController {
     HivePrefUtil.setBool('useGitHubOriginForUpdates', state.useGitHubOriginForUpdates);
     HivePrefUtil.setString('refreshRateMode', state.refreshRateMode);
     HivePrefUtil.setBool('preferRealOnlineCounts', state.preferRealOnlineCounts);
-    HivePrefUtil.setStringList('realOnlinePlatforms', state.realOnlinePlatforms);
+    HivePrefUtil.setStringList('realOnlinePlatforms', resolvedRealOnlinePlatforms);
     HivePrefUtil.setInt('audienceMetricMigration', state.audienceMetricMigration);
     HivePrefUtil.setBool('enableMultiView', state.enableMultiView);
     HivePrefUtil.setBool('enableNewWindowPlay', state.enableNewWindowPlay);
@@ -94,7 +144,6 @@ class AppSettingsController extends _$AppSettingsController {
   Map<String, dynamic> toJson() => state.toJson();
 
   void importFromJson(Map<String, dynamic> json) {
-    state = AppSettingsModel.fromJson(json);
-    _persist();
+    update(AppSettingsModel.fromJson(json));
   }
 }

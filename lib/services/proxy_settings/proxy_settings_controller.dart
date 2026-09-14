@@ -13,7 +13,7 @@ part 'proxy_settings_controller.g.dart';
 class ProxySettingsController extends _$ProxySettingsController {
   static ProxySettingsController get to => SettingsService.to.proxy;
 
-  // 供播放器核心等非 widget 代码反应式读取。
+  // Read reactively by the player core and other non-widget code.
   SettingsValue<bool> get enableProxy => SettingsValue(() => state.enableProxy);
   SettingsValue<String> get proxyHost => SettingsValue(() => state.proxyHost);
   SettingsValue<int> get proxyPort => SettingsValue(() => state.proxyPort);
@@ -30,15 +30,29 @@ class ProxySettingsController extends _$ProxySettingsController {
       _refreshDioConnections();
     });
 
-    return ProxySettingsModel(
-      enableProxy: HivePrefUtil.getBool('enableProxy') ?? false,
-      proxyHost: HivePrefUtil.getString('proxyHost') ?? '',
-      proxyPort: HivePrefUtil.getInt('proxyPort') ?? 7897,
-      enableAppProxy: HivePrefUtil.getBool('enableAppProxy') ?? false,
-      appProxyHost: HivePrefUtil.getString('appProxyHost') ?? '',
-      appProxyPort: HivePrefUtil.getInt('appProxyPort') ?? 7897,
+    return _normalize(
+      ProxySettingsModel(
+        enableProxy: HivePrefUtil.getBool('enableProxy') ?? false,
+        proxyHost: HivePrefUtil.getString('proxyHost') ?? '',
+        proxyPort: HivePrefUtil.getInt('proxyPort') ?? defaultProxyPort,
+        enableAppProxy: HivePrefUtil.getBool('enableAppProxy') ?? false,
+        appProxyHost: HivePrefUtil.getString('appProxyHost') ?? '',
+        appProxyPort: HivePrefUtil.getInt('appProxyPort') ?? defaultProxyPort,
+      ),
     );
   }
+
+  /// Repairs a stored or imported endpoint before it reaches any consumer.
+  ///
+  /// A keyboard can leave a full-width dot in the host and an older build could
+  /// persist port 0, which would hand every application, player and recorder
+  /// request an unusable proxy socket.
+  static ProxySettingsModel _normalize(ProxySettingsModel model) => model.copyWith(
+    proxyHost: normalizeProxyHost(model.proxyHost),
+    proxyPort: normalizeStoredProxyPort(model.proxyPort),
+    appProxyHost: normalizeProxyHost(model.appProxyHost),
+    appProxyPort: normalizeStoredProxyPort(model.appProxyPort),
+  );
 
   void _refreshDioConnections() {
     try {
@@ -47,7 +61,7 @@ class ProxySettingsController extends _$ProxySettingsController {
   }
 
   void updateSettings(ProxySettingsModel newModel) {
-    state = newModel;
+    state = _normalize(newModel);
     _persist();
   }
 
@@ -63,7 +77,6 @@ class ProxySettingsController extends _$ProxySettingsController {
   Map<String, dynamic> toJson() => state.toJson();
 
   void importFromJson(Map<String, dynamic> json) {
-    state = ProxySettingsModel.fromJson(json);
-    _persist();
+    updateSettings(ProxySettingsModel.fromJson(json));
   }
 }
