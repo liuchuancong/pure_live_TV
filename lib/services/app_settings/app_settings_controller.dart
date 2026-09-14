@@ -1,4 +1,5 @@
 import 'app_settings_model.dart';
+import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -35,6 +36,28 @@ class AppSettingsController extends _$AppSettingsController {
   void update(AppSettingsModel newModel) {
     state = newModel;
     _persist();
+  }
+
+  /// Visible menu ids in display order; an empty stored list means "all menus
+  /// in the default order".
+  static List<String> normalizeMenuIds(List<String> ids) {
+    final known = HomeMenu.defaultOrder;
+    final result = <String>[for (final id in ids) if (known.contains(id)) id];
+    for (final id in known) {
+      if (!result.contains(id)) result.add(id);
+    }
+    return result;
+  }
+
+  /// Moves [menuId] by [delta] positions inside the visible list.
+  void moveMenu(String menuId, int delta) {
+    final current = state.savedMenuIds.isEmpty ? HomeMenu.defaultOrder : normalizeMenuIds(state.savedMenuIds);
+    final index = current.indexOf(menuId);
+    final target = index + delta;
+    if (index < 0 || target < 0 || target >= current.length) return;
+    current.removeAt(index);
+    current.insert(target, menuId);
+    update(state.copyWith(savedMenuIds: current));
   }
 
   void toggleMenuVisibility(String menuId, bool visible) {

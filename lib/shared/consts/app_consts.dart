@@ -3,18 +3,24 @@ import 'package:collection/collection.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
+/// Home side-menu entries. The persisted `savedMenuIds` list holds the visible
+/// entries in display order; an empty list means "show everything in default
+/// order".
 enum HomeMenu {
-  favorites('favorites'),
-  popular('popular'),
+  favorite('favorite'),
+  hot('hot'),
   areas('areas'),
-  record('record');
+  favoriteAreas('favoriteAreas'),
+  moviePlayback('moviePlayback'),
+  search('search'),
+  history('history');
 
   final String id;
   const HomeMenu(this.id);
 
-  static HomeMenu? fromId(String id) {
-    return HomeMenu.values.firstWhereOrNull((e) => e.id == id);
-  }
+  static List<String> get defaultOrder => HomeMenu.values.map((e) => e.id).toList(growable: false);
+
+  static HomeMenu? fromId(String id) => HomeMenu.values.firstWhereOrNull((e) => e.id == id);
 }
 
 class AppConsts {
