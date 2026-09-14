@@ -8,6 +8,7 @@ import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
 import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
+import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -53,6 +54,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(path: 'webdav', builder: (context, state) => WebDavSettingsSectionPage()),
         GoRoute(path: 'backups', builder: (context, state) => BackupManageSectionPage()),
         GoRoute(path: 'account', builder: (context, state) => AccountSettingsSectionPage()),
+        GoRoute(path: 'shield', builder: (context, state) => DanmakuShieldSectionPage()),
         GoRoute(path: 'about', builder: (context, state) => AboutSettingsSectionPage()),
       ],
     ),

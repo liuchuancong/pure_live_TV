@@ -8,6 +8,7 @@ import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
 import 'package:pure_live/features/settings/pages/backup_settings_section.dart';
 import 'package:pure_live/features/settings/pages/cache_settings_section.dart';
 import 'package:pure_live/features/settings/pages/danmaku_settings_section.dart';
+import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/decoder_settings_section.dart';
 import 'package:pure_live/features/settings/pages/font_settings_section.dart';
 import 'package:pure_live/features/settings/pages/general_settings_section.dart';
@@ -40,6 +41,7 @@ class TvSettingsShell extends StatelessWidget {
     (path: '/settings/renderer', title: i18n('ui_renderer_settings'), icon: Icons.graphic_eq_rounded, page: RendererSettingsSectionPage()),
     (path: '/settings/audio_output', title: i18n('ui_audio_output'), icon: Icons.surround_sound_rounded, page: AudioOutputSettingsSectionPage()),
     (path: '/settings/danmaku', title: i18n('danmaku_settings'), icon: Icons.subtitles_rounded, page: DanmakuSettingsSectionPage()),
+    (path: '/settings/shield', title: i18n('block_list'), icon: Icons.block_rounded, page: DanmakuShieldSectionPage()),
     (path: '/settings/platform', title: i18n('ui_platform_settings'), icon: Icons.devices_rounded, page: PlatformSettingsSectionPage()),
     (path: '/settings/page', title: i18n('page_settings'), icon: Icons.list_alt_rounded, page: PageSettingsSectionPage()),
     (path: '/settings/refresh', title: i18n('refresh_settings'), icon: Icons.refresh_rounded, page: RefreshSettingsSectionPage()),
