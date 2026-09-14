@@ -1896,7 +1896,7 @@
     "ui_imported":  "导入成功",
     "ui_initializing_remote_control_connection":  "正在初始化遥控连接...",
     "ui_jack_linux_macos_low_latency":  "JACK（Linux / macOS，低延迟）",
-    "ui_keep_playing_audio_after_leaving_the_room":  "退出直播间后继续播放声音",
+    "ui_keep_playing_audio_after_leaving_the_room":  "切到后台后继续播放音频，不随应用隐藏暂停",
     "ui_keep_the_screen_awake_while_watching":  "观看时屏幕不会自动熄灭",
     "ui_link_playback":  "链接放映",
     "ui_live":  "实况",

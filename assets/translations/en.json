@@ -1895,7 +1895,7 @@
     "ui_imported":  "Imported",
     "ui_initializing_remote_control_connection":  "Initializing remote control connection...",
     "ui_jack_linux_macos_low_latency":  "JACK (Linux/macOS, low latency)",
-    "ui_keep_playing_audio_after_leaving_the_room":  "Keep playing audio after leaving the room",
+    "ui_keep_playing_audio_after_leaving_the_room":  "Keep the audio running while the app is hidden",
     "ui_keep_the_screen_awake_while_watching":  "Keep the screen awake while watching",
     "ui_link_playback":  "Link playback",
     "ui_live":  "Live",

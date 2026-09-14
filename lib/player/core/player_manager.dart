@@ -256,6 +256,10 @@ class PlayerManager {
   /// intent. The token lets a later resume prove that neither the source nor
   /// the user's intent changed while the application was hidden.
   Future<PlaybackLifecyclePauseToken?> pauseForLifecycle() async {
+    // Background playback keeps the stream running while the application is
+    // hidden. Returning null leaves the player untouched, and the coordinator
+    // then has no token to resume, so playback is never restarted twice.
+    if (SettingsService.to.appState.enableBackgroundPlay) return null;
     return _pauseForSuspension(_PlaybackSuspensionReason.lifecycle);
   }
 
