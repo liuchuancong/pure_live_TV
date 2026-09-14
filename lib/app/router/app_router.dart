@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
+import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -47,6 +48,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(path: 'cache', builder: (context, state) => CacheSettingsSectionPage()),
         GoRoute(path: 'proxy', builder: (context, state) => ProxySettingsSectionPage()),
         GoRoute(path: 'backup', builder: (context, state) => BackupSettingsSectionPage()),
+        GoRoute(path: 'webdav', builder: (context, state) => WebDavSettingsSectionPage()),
         GoRoute(path: 'about', builder: (context, state) => AboutSettingsSectionPage()),
       ],
     ),
@@ -77,3 +79,4 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+

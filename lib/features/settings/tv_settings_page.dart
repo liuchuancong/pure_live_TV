@@ -17,6 +17,7 @@ import 'package:pure_live/features/settings/pages/refresh_settings_section.dart'
 import 'package:pure_live/features/settings/pages/renderer_settings_section.dart';
 import 'package:pure_live/features/settings/pages/theme_settings_section.dart';
 import 'package:pure_live/features/settings/pages/video_settings_section.dart';
+import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Settings shell: module menu on the left, routed section on the right.
@@ -44,6 +45,7 @@ class TvSettingsShell extends StatelessWidget {
     (path: '/settings/cache', title: i18n('cache_management'), icon: Icons.cleaning_services_rounded, page: CacheSettingsSectionPage()),
     (path: '/settings/proxy', title: i18n('ui_network_proxy'), icon: Icons.vpn_key_rounded, page: ProxySettingsSectionPage()),
     (path: '/settings/backup', title: i18n('backup_recover'), icon: Icons.backup_outlined, page: BackupSettingsSectionPage()),
+    (path: '/settings/webdav', title: i18n('webdav'), icon: Icons.cloud_outlined, page: WebDavSettingsSectionPage()),
     (path: '/settings/about', title: i18n('about'), icon: Icons.info_outline_rounded, page: AboutSettingsSectionPage()),
   ];
 
