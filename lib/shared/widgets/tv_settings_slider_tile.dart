@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class TvSettingsSliderTile extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final IconData icon;
   final double value;
   final double min;
@@ -14,6 +15,7 @@ class TvSettingsSliderTile extends StatelessWidget {
   const TvSettingsSliderTile({
     super.key,
     required this.title,
+    this.subtitle,
     required this.icon,
     required this.value,
     required this.min,
@@ -92,6 +94,18 @@ class TvSettingsSliderTile extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: state.focused
+                              ? theme.colorScheme.primary.withValues(alpha: 0.8)
+                              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
