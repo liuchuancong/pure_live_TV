@@ -1,4 +1,5 @@
 import 'package:pure_live/shared/consts/app_consts.dart';
+import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -55,6 +56,17 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             index: loadingStyles.indexWhere((e) => e['key'] == themeState.loadingStyle).clamp(0, loadingStyles.length - 1),
             onChanged: (index) => theme.updateSettings(themeState.copyWith(loadingStyle: loadingStyles[index]['key'] ?? 'default')),
           ),
+          TvSettingsOptionTile(
+            title: i18n('loading_style_color'),
+            subtitle: i18n('loading_style_color_desc'),
+            icon: Icons.color_lens_outlined,
+            options: [i18n('follow_theme_color'), ...colorNames],
+            index: _loadingColorIndex(themeState.loadingStyleColor),
+            onChanged: (index) {
+              final color = index == 0 ? null : _loadingColors[index - 1];
+              theme.updateSettings(themeState.copyWith(loadingStyleColor: color));
+            },
+          ),
           TvSettingsSwitchTile(
             title: i18n('ui_dynamic_theme_color'),
             subtitle: i18n('ui_derive_the_theme_color_from_the_cover_image'),
@@ -92,5 +104,16 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     final english = style['nameEn'] ?? '';
     if (localized.isEmpty) return english;
     return i18nExists(localized) ? i18n(localized) : (english.isNotEmpty ? english : localized);
+  }
+
+  /// Named accents offered for the loading animation; index 0 keeps the
+  /// animation on the colour of the active theme.
+  static final List<String> colorNames = PlayerConsts.themeColors.keys.toList(growable: false);
+  static final List<Color> _loadingColors = PlayerConsts.themeColors.values.toList(growable: false);
+
+  static int _loadingColorIndex(Color? current) {
+    if (current == null) return 0;
+    final index = _loadingColors.indexWhere((color) => color.toARGB32() == current.toARGB32());
+    return index < 0 ? 0 : index + 1;
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:pure_live/platforms/sites.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Home side-menu entries. The persisted `savedMenuIds` list holds the visible
 /// entries in display order; an empty list means "show everything in default
@@ -62,7 +61,7 @@ class AppConsts {
     {'attr': BoxFit.scaleDown, 'desc': 'video_fit_scale_down'},
   ];
   static final List<Map<String, String>> allStyles = [
-    {'key': 'default', 'nameEn': 'Default Ring', 'nameZh': i18n('loading_style_default')},
+    {'key': 'default', 'nameEn': 'Default Ring', 'nameZh': 'loading_style_default'},
     {'key': 'rotatingPlain', 'nameEn': 'Rotating Plain', 'nameZh': '旋转方块'},
     {'key': 'doubleBounce', 'nameEn': 'Double Bounce', 'nameZh': '双重大圆'},
     {'key': 'wave', 'nameEn': 'Wave', 'nameZh': '波浪跳跃'},
