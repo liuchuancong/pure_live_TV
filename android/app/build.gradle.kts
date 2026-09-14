@@ -27,7 +27,7 @@ val keystoreProperties = Properties().apply { // 同样添加了导入
 }
 
 android {
-    namespace = "com.mystyle.purelive"
+    namespace = "com.mystyle.pure_live_tv"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.mystyle.purelive"
+        applicationId = "com.mystyle.pure_live_tv"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
