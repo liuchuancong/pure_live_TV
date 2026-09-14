@@ -436,7 +436,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
       engine = _repository.createDanmaku(room);
     } catch (e) {
       if (token == _sessionToken && ref.mounted) {
-        state = state.copyWith(statusText: '弹幕不可用');
+        state = state.copyWith(statusText: i18n('danmaku_unavailable'));
       }
       return;
     }
@@ -445,7 +445,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     engine.onMessage = (msg) => _acceptMessage(msg, token);
     engine.onClose = (msg) {
       if (token == _sessionToken && ref.mounted) {
-        state = state.copyWith(connected: false, statusText: '弹幕连接已断开');
+        state = state.copyWith(connected: false, statusText: i18n('danmaku_disconnected'));
       }
     };
 
@@ -453,12 +453,12 @@ class DanmakuSessionController extends _$DanmakuSessionController {
       await engine.start(room.danmakuData).timeout(const Duration(seconds: 20));
     } on TimeoutException {
       if (token == _sessionToken && ref.mounted) {
-        state = state.copyWith(connected: false, statusText: '弹幕连接超时');
+        state = state.copyWith(connected: false, statusText: i18n('danmaku_connect_timeout'));
       }
       return;
     } catch (e) {
       if (token == _sessionToken && ref.mounted) {
-        state = state.copyWith(connected: false, statusText: '弹幕连接失败');
+        state = state.copyWith(connected: false, statusText: i18n('danmaku_connect_failed'));
       }
       return;
     }
@@ -552,7 +552,7 @@ class DanmakuSessionState {
     required this.barrageController,
     this.messages = const <LiveMessage>[],
     this.connected = false,
-    this.statusText = '弹幕未连接',
+    this.statusText,
   });
 
   final BarrageController barrageController;

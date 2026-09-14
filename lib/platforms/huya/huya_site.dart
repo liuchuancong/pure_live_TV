@@ -839,7 +839,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
     try {
       final matchingObject = list.firstWhere(
         (item) => item['uid'] == targetUid && item['yyid'] == targetYyid,
-        orElse: () => throw StateError("No matching object found"), // 当找不到匹配项时抛出错误
+        orElse: () => throw StateError('No matching object found'),
       );
       return matchingObject["room_id"].toString();
     } catch (e) {

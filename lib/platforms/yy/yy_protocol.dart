@@ -441,7 +441,7 @@ class YyProtocolSession {
     final message = reader.readUcs2String32().trim();
     reader.readUint32(); // screen mode
     if (reader.offset > chatEnd) {
-      throw const FormatException('YY 聊天正文长度越界');
+      throw const FormatException('YY chat body length is out of range');
     }
     reader.offset = chatEnd;
 

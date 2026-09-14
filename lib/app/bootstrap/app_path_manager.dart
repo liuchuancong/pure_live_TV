@@ -50,6 +50,6 @@ class AppPathManager {
   Future<Directory> get imageCacheDir => getDir(dirImageCache);
   Future<Directory> get recordsDir => getDir(dirRecords);
 
-  String get secureBasePath => _secureBasePath ?? (throw StateError("AppPathManager 尚未初始化"));
-  String get cacheBasePath => _cacheBasePath ?? (throw StateError("AppPathManager 尚未初始化"));
+  String get secureBasePath => _secureBasePath ?? (throw StateError('AppPathManager is not initialized'));
+  String get cacheBasePath => _cacheBasePath ?? (throw StateError('AppPathManager is not initialized'));
 }

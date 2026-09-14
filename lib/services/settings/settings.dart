@@ -96,8 +96,6 @@ class SettingsService {
   // proxy
   ProxySettingsModel get proxyState => _container.read(proxySettingsControllerProvider);
   ProxySettingsController get proxy => _container.read(proxySettingsControllerProvider.notifier);
-  //
-  // dynamic get backup => throw UnimplementedError('等待重构为Riverpod');
 
   RefreshConfigModel get refreshState => _container.read(refreshConfigControllerProvider);
   RefreshConfigController get refresh => _container.read(refreshConfigControllerProvider.notifier);

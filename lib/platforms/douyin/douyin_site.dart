@@ -840,7 +840,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
 
   @override
   Future<List<LiveAnchorItem>> searchAnchors(String keyword, {int page = 1, int pageSize = 30}) async {
-    throw Exception("抖音暂不支持搜索主播，请直接搜索直播间");
+    throw Exception(i18n('douyin_anchor_search_unsupported'));
   }
 
   @override

@@ -468,7 +468,7 @@ abstract class LiveRoom with _$LiveRoom {
   LiveRoom getLiveRoomWithError({Object? error}) {
     return copyWith(
       liveStatus: isExplicitlyOfflineNow ? liveStatus : LiveStatus.offline,
-      data: error ?? data ?? Exception('房间信息加载失败'),
+      data: error ?? data ?? Exception(i18n('room_info_load_failed')),
     );
   }
 }
