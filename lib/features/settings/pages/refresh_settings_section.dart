@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class RefreshSettingsSectionPage extends ConsumerWidget {
-  RefreshSettingsSectionPage({super.key});
+  const RefreshSettingsSectionPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

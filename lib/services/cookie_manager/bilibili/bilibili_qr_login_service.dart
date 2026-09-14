@@ -54,7 +54,7 @@ class BiliBiliQrLoginService {
   /// Joins `name=value` pairs of every `set-cookie` header.
   static String _cookieFrom(Headers headers) {
     final Object? raw = headers['set-cookie'] ?? headers['Set-Cookie'];
-    final List<Object?> values = raw is List ? List<Object?>.from(raw) : <Object?>[if (raw != null) raw];
+    final List<Object?> values = raw is List ? List<Object?>.from(raw) : <Object?>[?raw];
     final pairs = <String>[];
     for (final value in values) {
       final pair = '$value'.split(';').first.trim();

@@ -11,14 +11,19 @@ import 'package:pure_live/features/live_play/controllers/danmaku_filters.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/services/live_play_repository.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
+import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 part 'live_play_controller.g.dart';
 
 /// 画面比例选项（与 PlayerManager.changeVideoFit 的索引语义对齐）。
-const List<BoxFit> kLivePlayFitList = [BoxFit.contain, BoxFit.cover, BoxFit.fill, BoxFit.fitHeight, BoxFit.fitWidth];
+///
+/// Derived from the same list the settings page stores an index into, so the
+/// playback surface and the settings page can never disagree on the option set.
+List<BoxFit> get kLivePlayFitList => AppConsts().videoFitList;
 
-const List<String> kLivePlayFitLabels = ['包含', '裁剪', '拉伸', '适配高', '适配宽'];
+/// Localized labels of [kLivePlayFitList] in the same order as the stored index.
+List<String> get kLivePlayFitLabels => AppConsts().videoFitType.map((e) => i18n(e['desc'] as String)).toList();
 
 /// Drives one live room: room detail, quality list and stream URLs feed
 /// [PlayerManager], while player streams are projected into UI state.
@@ -67,6 +72,7 @@ class LivePlayController extends _$LivePlayController {
 
     _playerManager = GlobalPlayerService.instance.playerManager;
     _bindPlayerStreams();
+    _applyStoredVideoFit();
 
     // 房间详情：入口携带的 LiveRoom 仅作为平台/房间号提示，结果以站点详情为准。
     LiveRoom detail;
@@ -76,8 +82,8 @@ class LivePlayController extends _$LivePlayController {
       if (!_isCurrent(generation)) return;
       state = state.copyWith(
         status: LivePlayStatus.error,
-        detailError: '获取房间信息失败: $e',
-        errorMessage: '获取房间信息失败',
+        detailError: i18n('get_room_info_failed_retry'),
+        errorMessage: i18n('get_room_info_failed_retry'),
       );
       return;
     }
@@ -179,7 +185,7 @@ class LivePlayController extends _$LivePlayController {
         qualities: const <LivePlayQuality>[],
         qualityIndex: 0,
         status: LivePlayStatus.error,
-        errorMessage: '该房间暂无可用清晰度',
+        errorMessage: i18n('stream_no_available_quality'),
       );
       return;
     }
@@ -190,11 +196,20 @@ class LivePlayController extends _$LivePlayController {
   }
 
   int _resolvePreferredQualityIndex(List<LivePlayQuality> qualities) {
-    // Prefer the preferred resolution label; otherwise fall back to the highest bitrate.
+    // Pick the quality that best matches the preferred resolution; otherwise
+    // fall back to the highest bitrate.
     final prefer = SettingsService.to.playerState.preferResolution;
     if (prefer.isNotEmpty) {
-      final index = qualities.indexWhere((q) => q.quality.contains(prefer));
-      if (index != -1) return index;
+      var bestScore = 0;
+      var bestIndex = -1;
+      for (var i = 0; i < qualities.length; i++) {
+        final score = PlayerConsts.resolutionMatchScore(prefer, qualities[i].quality);
+        if (score > bestScore) {
+          bestScore = score;
+          bestIndex = i;
+        }
+      }
+      if (bestIndex != -1) return bestIndex;
     }
     var best = 0;
     for (var i = 1; i < qualities.length; i++) {
@@ -279,7 +294,7 @@ class LivePlayController extends _$LivePlayController {
       await manager.retry();
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: '重试失败: $e');
+      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('play_video_failed'));
     }
   }
 
@@ -291,9 +306,26 @@ class LivePlayController extends _$LivePlayController {
   }
 
   void cycleFit() {
-    final next = (state.fitIndex + 1) % kLivePlayFitList.length;
+    final options = kLivePlayFitList;
+    if (options.isEmpty) return;
+    final next = ref.read(playerSettingsControllerProvider.notifier).advanceVideoFitIndex();
+    if (next == null) return;
     state = state.copyWith(fitIndex: next);
     _playerManager?.changeVideoFit(next);
+  }
+
+  /// Applies the fit mode saved in settings to the current playback session.
+  ///
+  /// Without this the room always started with the first option even though the
+  /// settings page showed the user's choice.
+  void _applyStoredVideoFit() {
+    final manager = _playerManager;
+    if (manager == null) return;
+    final stored = PlayerSettingsController.normalizeVideoFitIndex(
+      ref.read(playerSettingsControllerProvider).videoFitIndex,
+    );
+    state = state.copyWith(fitIndex: stored);
+    manager.changeVideoFit(stored);
   }
 
   Future<void> setVolume(double volume) async {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class VideoSettingsSectionPage extends ConsumerWidget {
-  VideoSettingsSectionPage({super.key});
+  const VideoSettingsSectionPage({super.key});
 
   static final _fitNames = [i18n('ui_default_fit'), i18n('ui_crop_to_center'), i18n('ui_stretch_to_fill'), i18n('ui_fit_height'), i18n('ui_fit_width'), i18n('ui_scale_down_to_fit')];
 

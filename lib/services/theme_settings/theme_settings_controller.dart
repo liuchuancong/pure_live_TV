@@ -9,30 +9,93 @@ part 'theme_settings_controller.g.dart';
 @riverpod
 class ThemeSettingsController extends _$ThemeSettingsController {
   static ThemeSettingsController get to => SettingsService.to.theme;
+
+  static const String defaultThemeModeName = 'System';
+  static const String defaultLanguageName = '简体中文';
+  static const double defaultSpacing = 6;
+  static const double minSpacing = 0;
+  static const double maxSpacing = 64;
+
+  static final Set<String> _loadingStyleKeys = AppConsts.allStyles
+      .map((item) => item['key'] ?? '')
+      .where((key) => key.isNotEmpty)
+      .toSet();
+
   @override
   ThemeSettingsModel build() {
     final savedJson = HivePrefUtil.getObject('theme_settings', (json) => json as Map<String, dynamic>);
-    return savedJson != null ? ThemeSettingsModel.fromJson(savedJson) : const ThemeSettingsModel();
+    final model = savedJson != null ? ThemeSettingsModel.fromJson(savedJson) : const ThemeSettingsModel();
+    return _normalize(model);
+  }
+
+  /// Repairs stored visual settings that another build or an imported backup
+  /// can leave outside the supported range.
+  ///
+  /// An unknown theme mode or loading style would render nothing at all, and an
+  /// unbounded grid spacing makes the room grids unreadable.
+  static ThemeSettingsModel _normalize(ThemeSettingsModel model) {
+    return model.copyWith(
+      themeModeName: normalizeThemeMode(model.themeModeName),
+      languageName: normalizeLanguage(model.languageName),
+      loadingStyle: normalizeLoadingStyle(model.loadingStyle),
+      crossAxisSpacing: normalizeSpacing(model.crossAxisSpacing),
+      mainAxisSpacing: normalizeSpacing(model.mainAxisSpacing),
+    );
+  }
+
+  /// Matches a stored mode against [AppConsts.themeModes] ignoring case.
+  static String normalizeThemeMode(String value) {
+    final normalized = value.trim().toLowerCase();
+    return AppConsts.themeModes.keys.firstWhere(
+      (candidate) => candidate.toLowerCase() == normalized,
+      orElse: () => defaultThemeModeName,
+    );
+  }
+
+  /// Matches a stored language against [AppConsts.languages] ignoring case.
+  static String normalizeLanguage(String value) {
+    final normalized = value.trim().toLowerCase();
+    return AppConsts.languages.keys.firstWhere(
+      (candidate) => candidate.toLowerCase() == normalized,
+      orElse: () => defaultLanguageName,
+    );
+  }
+
+  static String normalizeLoadingStyle(String value) {
+    final normalized = value.trim();
+    return _loadingStyleKeys.contains(normalized) ? normalized : AppConsts.defaultLoadingStyleKey;
+  }
+
+  static double normalizeSpacing(num value) {
+    final converted = value.toDouble();
+    if (!converted.isFinite) return defaultSpacing;
+    return converted.clamp(minSpacing, maxSpacing).toDouble();
   }
 
   void updateSettings(ThemeSettingsModel newModel) {
-    state = newModel;
+    state = _normalize(newModel);
     _persist();
   }
 
   void changeThemeMode(String mode) {
-    state = state.copyWith(themeModeName: mode);
-    _persist();
+    updateSettings(state.copyWith(themeModeName: mode));
   }
 
   void changeThemeColor(Color color) {
-    state = state.copyWith(themeColor: color);
-    _persist();
+    updateSettings(state.copyWith(themeColor: color));
   }
 
   void changeLanguage(String lang) {
-    state = state.copyWith(languageName: lang);
-    _persist();
+    updateSettings(state.copyWith(languageName: lang));
+  }
+
+  void changeSpacing({double? crossAxis, double? mainAxis}) {
+    updateSettings(
+      state.copyWith(
+        crossAxisSpacing: crossAxis ?? state.crossAxisSpacing,
+        mainAxisSpacing: mainAxis ?? state.mainAxisSpacing,
+      ),
+    );
   }
 
   void _persist() {
@@ -47,7 +110,6 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   Map<String, dynamic> toJson() => state.toJson();
 
   void importFromJson(Map<String, dynamic> json) {
-    state = ThemeSettingsModel.fromJson(json);
-    _persist();
+    updateSettings(ThemeSettingsModel.fromJson(json));
   }
 }

@@ -32,20 +32,20 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
           subtitle: i18n('ui_preferred_quality_when_entering_a_room'),
           icon: Icons.hd_rounded,
           options: PlayerConsts.resolutions,
-          index: PlayerConsts.resolutions
-              .indexOf(playerState.preferResolution)
-              .clamp(0, PlayerConsts.resolutions.length - 1),
-          onChanged: (i) => player.changePreferResolution(PlayerConsts.resolutions[i]),
+          index: PlayerConsts.resolutionKeys
+              .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolution))
+              .clamp(0, PlayerConsts.resolutionKeys.length - 1),
+          onChanged: (i) => player.changePreferResolution(PlayerConsts.resolutionKeys[i]),
         ),
         TvSettingsOptionTile(
           title: i18n('ui_fallback_quality'),
           subtitle: i18n('ui_preferred_quality_on_cellular_networks'),
           icon: Icons.signal_cellular_alt_rounded,
           options: PlayerConsts.resolutions,
-          index: PlayerConsts.resolutions
-              .indexOf(playerState.preferResolutionCellular)
-              .clamp(0, PlayerConsts.resolutions.length - 1),
-          onChanged: (i) => player.changePreferResolutionCellular(PlayerConsts.resolutions[i]),
+          index: PlayerConsts.resolutionKeys
+              .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolutionCellular))
+              .clamp(0, PlayerConsts.resolutionKeys.length - 1),
+          onChanged: (i) => player.changePreferResolutionCellular(PlayerConsts.resolutionKeys[i]),
         ),
         TvSettingsSwitchTile(
           title: i18n('ui_audio_only'),

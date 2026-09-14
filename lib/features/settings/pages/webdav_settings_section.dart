@@ -1,12 +1,10 @@
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/services/webdav/webdav_config.dart';
-import 'package:pure_live/services/webdav/webdav_sync_service.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;
+import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 
 /// WebDAV settings: pick or edit a server configuration, then upload, list,
 /// restore or delete remote settings backups.
@@ -269,7 +267,7 @@ class WebDavSettingsSectionPageState extends ConsumerState<WebDavSettingsSection
 
   static String _formatSize(int? bytes) {
     if (bytes == null || bytes <= 0) return '';
-    if (bytes < 1024) return '${bytes} B';
+    if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }

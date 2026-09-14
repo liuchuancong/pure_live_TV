@@ -1,39 +1,39 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/pages/about_settings_section.dart';
-import 'package:pure_live/features/settings/pages/account_settings_section.dart';
-import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
-import 'package:pure_live/features/settings/pages/audio_output_settings_section.dart';
-import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
-import 'package:pure_live/features/settings/pages/backup_settings_section.dart';
-import 'package:pure_live/features/settings/pages/cache_settings_section.dart';
-import 'package:pure_live/features/settings/pages/danmaku_settings_section.dart';
-import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
-import 'package:pure_live/features/settings/pages/decoder_settings_section.dart';
-import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
-import 'package:pure_live/features/settings/pages/font_settings_section.dart';
-import 'package:pure_live/features/settings/pages/general_settings_section.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_section.dart';
+import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
+import 'package:pure_live/features/settings/pages/font_settings_section.dart';
 import 'package:pure_live/features/settings/pages/page_settings_section.dart';
-import 'package:pure_live/features/settings/pages/platform_settings_section.dart';
-import 'package:pure_live/features/settings/pages/player_kernel_settings_section.dart';
+import 'package:pure_live/features/settings/pages/about_settings_section.dart';
+import 'package:pure_live/features/settings/pages/cache_settings_section.dart';
+import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/proxy_settings_section.dart';
-import 'package:pure_live/features/settings/pages/refresh_settings_section.dart';
-import 'package:pure_live/features/settings/pages/renderer_settings_section.dart';
 import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/features/settings/pages/theme_settings_section.dart';
 import 'package:pure_live/features/settings/pages/video_settings_section.dart';
+import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
+import 'package:pure_live/features/settings/pages/backup_settings_section.dart';
 import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/features/settings/pages/account_settings_section.dart';
+import 'package:pure_live/features/settings/pages/danmaku_settings_section.dart';
+import 'package:pure_live/features/settings/pages/decoder_settings_section.dart';
+import 'package:pure_live/features/settings/pages/general_settings_section.dart';
+import 'package:pure_live/features/settings/pages/refresh_settings_section.dart';
+import 'package:pure_live/features/settings/pages/platform_settings_section.dart';
+import 'package:pure_live/features/settings/pages/renderer_settings_section.dart';
+import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
+import 'package:pure_live/features/settings/pages/audio_output_settings_section.dart';
+import 'package:pure_live/features/settings/pages/player_kernel_settings_section.dart';
 
 /// Settings shell: module menu on the left, routed section on the right.
 ///
 /// Every section is its own page and is registered as a go_router sub-route
 /// (/settings/general, /settings/theme, ...).
 class TvSettingsShell extends StatelessWidget {
-  TvSettingsShell({super.key, required this.child});
+  const TvSettingsShell({super.key, required this.child});
 
   final Widget child;
 

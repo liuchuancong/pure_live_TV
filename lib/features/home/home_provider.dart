@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 part 'home_provider.g.dart';
 
@@ -51,7 +51,7 @@ List<AppMenuItem> sideMenuList(Ref ref) {
   final ids = saved.isEmpty ? HomeMenu.defaultOrder : AppSettingsController.normalizeMenuIds(saved);
   return [
     for (final id in ids)
-      if (_sideMenuItem(id) case final item?) item,
+      ?_sideMenuItem(id),
   ];
 }
 

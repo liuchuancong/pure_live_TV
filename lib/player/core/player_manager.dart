@@ -19,6 +19,7 @@ import '../interface/unified_player_interface.dart';
 import 'package:pure_live/shared/widgets/app_status_view.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 
 /// 单条待处理的原生错误：与来源 session 绑定，过期的错误直接丢弃。
@@ -814,9 +815,9 @@ class PlayerManager {
     (player as VideoFitAwarePlayer).setVideoFit(fitList[fitIndex]);
   }
 
-  static const List<BoxFit> _defaultFitList = [BoxFit.contain, BoxFit.cover, BoxFit.fill, BoxFit.fitHeight, BoxFit.fitWidth];
-
-  List<BoxFit> _videoFitList() => _defaultFitList;
+  /// Fit options the stored `videoFitIndex` indexes into; the settings page
+  /// renders the same list, so every index it can save is applicable here.
+  List<BoxFit> _videoFitList() => AppConsts().videoFitList;
 
   Widget getVideoWidget(int fitIndex, {Widget? controls, required List<BoxFit> fitList}) {
     return Container(

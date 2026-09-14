@@ -17,16 +17,67 @@ class PlayerConsts {
     return names.entries.firstWhere((e) => e.value == i18nKey, orElse: () => names.entries.first).key;
   }
 
-  static final List<String> resolutions = [i18n('prefer_resolution_option_original'), i18n('prefer_resolution_option_blu_ray_8m'), i18n('prefer_resolution_option_blu_ray_4m'), i18n('prefer_resolution_option_super_hd'), i18n('prefer_resolution_option_smooth')];
-  static final Map<String, String> resolutionLabelKeys = {
-    i18n('prefer_resolution_option_original'): 'prefer_resolution_option_original',
-    i18n('prefer_resolution_option_blu_ray_8m'): 'prefer_resolution_option_blu_ray_8m',
-    i18n('prefer_resolution_option_blu_ray_4m'): 'prefer_resolution_option_blu_ray_4m',
-    i18n('prefer_resolution_option_super_hd'): 'prefer_resolution_option_super_hd',
-    i18n('prefer_resolution_option_smooth'): 'prefer_resolution_option_smooth',
+  /// Stable identifiers of the resolution preference, in display order.
+  ///
+  /// The preference is stored as one of these keys instead of a display label,
+  /// so switching the interface language no longer changes the stored value.
+  static const List<String> resolutionKeys = [
+    'prefer_resolution_option_original',
+    'prefer_resolution_option_blu_ray_8m',
+    'prefer_resolution_option_blu_ray_4m',
+    'prefer_resolution_option_super_hd',
+    'prefer_resolution_option_smooth',
+  ];
+
+  /// Labels live platforms use for each preference, including the Chinese
+  /// labels the site APIs keep returning in every interface language.
+  static const Map<String, List<String>> resolutionAliases = {
+    'prefer_resolution_option_original': ['原画', 'original', 'source'],
+    'prefer_resolution_option_blu_ray_8m': ['蓝光8m', 'blu-ray 8m'],
+    'prefer_resolution_option_blu_ray_4m': ['蓝光4m', '蓝光', 'blu-ray 4m'],
+    'prefer_resolution_option_super_hd': ['超清', 'high definition', 'super hd'],
+    'prefer_resolution_option_smooth': ['流畅', 'smooth'],
   };
 
+  static final List<String> resolutions = [for (final key in resolutionKeys) i18n(key)];
+  static final Map<String, String> resolutionLabelKeys = {for (final key in resolutionKeys) i18n(key): key};
+
   static String? resolutionLabelKey(String value) => resolutionLabelKeys[value];
+
+  /// Canonical key for a stored preference that may be a key, a localized label
+  /// or a label written by an older build.
+  static String normalizeResolutionKey(String value) {
+    final trimmed = value.trim();
+    if (resolutionKeys.contains(trimmed)) return trimmed;
+    final byLabel = resolutionLabelKeys[trimmed];
+    if (byLabel != null) return byLabel;
+    final lower = trimmed.toLowerCase();
+    for (final key in resolutionKeys) {
+      if (resolutionAliases[key]!.any((alias) => alias.toLowerCase() == lower)) return key;
+    }
+    return resolutionKeys.first;
+  }
+
+  /// How well a platform quality label satisfies the preferred resolution.
+  ///
+  /// 3 means an exact alias, 2 a label that merely contains one and 0 no match.
+  /// Scoring instead of a plain `contains` keeps `蓝光8M` from being picked when
+  /// the user asked for `蓝光4M`, which shares the shorter `蓝光` alias.
+  static int resolutionMatchScore(String preferenceKey, String qualityLabel) {
+    final key = normalizeResolutionKey(preferenceKey);
+    final label = qualityLabel.trim().toLowerCase();
+    if (label.isEmpty) return 0;
+    var score = 0;
+    for (final alias in resolutionAliases[key]!) {
+      final normalizedAlias = alias.toLowerCase();
+      if (label == normalizedAlias) return 3;
+      if (label.contains(normalizedAlias)) score = 2;
+    }
+    return score;
+  }
+
+  static String resolutionLabel(String key) => i18n(normalizeResolutionKey(key));
+
   static Map<String, Color> themeColors = {
     "Crimson": const Color.fromARGB(255, 220, 20, 60),
     "Orange": Colors.orange,
