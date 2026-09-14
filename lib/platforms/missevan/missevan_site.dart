@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:pure_live/shared/models/index.dart';
 import 'package:pure_live/shared/contracts/index.dart';
 import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 
 /// Anonymous directory, room, playback and recording adapter. Search and
@@ -25,7 +26,7 @@ class MissevanSite extends LiveSite
   @override
   String get id => 'missevan';
   @override
-  String get name => '猫耳 FM';
+  String get name => i18n('site_missevan');
   @override
   LiveDanmaku getDanmaku() => EmptyDanmaku();
   @override

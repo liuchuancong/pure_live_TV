@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class RefreshSettingsSectionPage extends ConsumerWidget {
-  const RefreshSettingsSectionPage({super.key});
+  RefreshSettingsSectionPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,23 +17,23 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsSwitchTile(
-          title: '自动刷新关注',
-          subtitle: '定时刷新关注列表的在线状态',
+          title: i18n('ui_auto_refresh_favorites_2'),
+          subtitle: i18n('ui_refresh_the_online_status_of_favorites_periodica'),
           icon: Icons.refresh_rounded,
           value: refreshState.autoRefreshFavorite,
           onChanged: (v) => refresh.updateSettings(refreshState.copyWith(autoRefreshFavorite: v)),
         ),
         TvSettingsOptionTile(
-          title: '刷新间隔',
-          subtitle: '自动刷新的时间间隔',
+          title: i18n('ui_refresh_interval'),
+          subtitle: i18n('ui_auto_refresh_interval'),
           icon: Icons.timer_outlined,
-          options: const ['1 分钟', '2 分钟', '5 分钟', '10 分钟', '30 分钟'],
+          options: [i18n('ui_1_minute'), i18n('ui_2_minutes'), i18n('ui_5_minutes'), i18n('ui_10_minutes'), i18n('ui_30_minutes')],
           index: _intervalIndex(refreshState.autoRefreshInterval),
           onChanged: (i) => refresh.updateSettings(refreshState.copyWith(autoRefreshInterval: _intervalMinutes(i))),
         ),
         TvSettingsOptionTile(
-          title: '最大并发刷新数',
-          subtitle: '同时刷新的请求数量，过大可能触发风控',
+          title: i18n('ui_max_concurrent_refreshes'),
+          subtitle: i18n('ui_concurrent_refresh_requests_too_many_may_trigger'),
           icon: Icons.layers_rounded,
           options: const ['1', '2', '3', '4', '6', '8'],
           index: _concurrencyIndex(refreshState.maxConcurrentRefresh),

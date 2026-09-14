@@ -3,26 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class AudioOutputSettingsSectionPage extends ConsumerWidget {
-  const AudioOutputSettingsSectionPage({super.key});
+  AudioOutputSettingsSectionPage({super.key});
 
   /// Common audio output drivers offered by the settings UI.
-  static const Map<String, String> _drivers = {
-    'auto': '自动选择',
-    'null': 'Null（不输出音频）',
+  static final Map<String, String> _drivers = {
+    'auto': i18n('ui_auto'),
+    'null': i18n('ui_null_no_audio_output'),
     'pulse': 'PulseAudio（Linux）',
-    'alsa': 'ALSA（仅 Linux）',
-    'jack': 'JACK（Linux / macOS，低延迟）',
-    'directsound': 'DirectSound（仅 Windows）',
-    'wasapi': 'WASAPI（仅 Windows）',
-    'coreaudio': 'CoreAudio（仅 macOS）',
-    'opensles': 'OpenSL ES（仅 Android）',
-    'audiotrack': 'AudioTrack（仅 Android）',
-    'aaudio': 'AAudio（仅 Android）',
-    'sdl': 'SDL（跨平台）',
-    'openal': 'OpenAL（跨平台）',
-    'pcm': 'PCM（跨平台）',
+    'alsa': i18n('ui_alsa_linux_only'),
+    'jack': i18n('ui_jack_linux_macos_low_latency'),
+    'directsound': i18n('ui_directsound_windows_only'),
+    'wasapi': i18n('ui_wasapi_windows_only'),
+    'coreaudio': i18n('ui_coreaudio_macos_only'),
+    'opensles': i18n('ui_opensl_es_android_only'),
+    'audiotrack': i18n('ui_audiotrack_android_only'),
+    'aaudio': i18n('ui_aaudio_android_only'),
+    'sdl': i18n('ui_sdl_cross_platform'),
+    'openal': i18n('ui_openal_cross_platform'),
+    'pcm': i18n('ui_pcm_cross_platform'),
   };
 
   @override
@@ -35,8 +36,8 @@ class AudioOutputSettingsSectionPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: '音频输出驱动',
-          subtitle: 'MPV 音频输出方式',
+          title: i18n('ui_audio_output_driver'),
+          subtitle: i18n('ui_mpv_audio_output'),
           icon: Icons.surround_sound_rounded,
           options: keys.map((k) => _drivers[k]!).toList(),
           index: keys.indexOf(playerState.audioOutputDriver).clamp(0, keys.length - 1),

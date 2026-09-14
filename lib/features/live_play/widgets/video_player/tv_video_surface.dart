@@ -8,6 +8,7 @@ import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
 /// overlay, loading/error overlays and an auto-hiding D-pad control panel.
@@ -68,7 +69,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                     const CircularProgressIndicator(strokeWidth: 2),
                     SizedBox(height: 12.sp),
                     Text(
-                      state.status == LivePlayStatus.loadingDetail ? '正在加载房间信息...' : '正在缓冲...',
+                      state.status == LivePlayStatus.loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
                       style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
                     ),
                   ],
@@ -104,7 +105,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
       children.add(
         Positioned.fill(
           child: PlaybackFailureOverlay(
-            message: state.errorMessage ?? '播放失败',
+            message: state.errorMessage ?? i18n('multiview_play_failed'),
             onRetry: controller.retry,
             onRefreshRoom: controller.refreshRoom,
           ),

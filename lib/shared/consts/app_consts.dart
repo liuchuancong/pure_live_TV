@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:pure_live/platforms/sites.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 enum HomeMenu {
   favorites('favorites'),
@@ -54,8 +55,8 @@ class AppConsts {
     {'attr': BoxFit.fitWidth, 'desc': 'video_fit_fit_width'},
     {'attr': BoxFit.scaleDown, 'desc': 'video_fit_scale_down'},
   ];
-  static const List<Map<String, String>> allStyles = [
-    {'key': 'default', 'nameEn': 'Default Ring', 'nameZh': '默认圆环'},
+  static final List<Map<String, String>> allStyles = [
+    {'key': 'default', 'nameEn': 'Default Ring', 'nameZh': i18n('loading_style_default')},
     {'key': 'rotatingPlain', 'nameEn': 'Rotating Plain', 'nameZh': '旋转方块'},
     {'key': 'doubleBounce', 'nameEn': 'Double Bounce', 'nameZh': '双重大圆'},
     {'key': 'wave', 'nameEn': 'Wave', 'nameZh': '波浪跳跃'},

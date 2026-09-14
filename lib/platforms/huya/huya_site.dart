@@ -230,7 +230,7 @@ class HuyaSite
   @visibleForTesting
   static List<LivePlayQuality> parsePlayQualities(HuyaUrlDataModel data) {
     final playbackLines = List<HuyaLineModel>.unmodifiable(data.lines);
-    final rates = data.bitRates.isEmpty ? <HuyaBitRateModel>[HuyaBitRateModel(name: '原画', bitRate: 0)] : data.bitRates;
+    final rates = data.bitRates.isEmpty ? <HuyaBitRateModel>[HuyaBitRateModel(name: i18n('prefer_resolution_option_original'), bitRate: 0)] : data.bitRates;
     final unique = <int, HuyaBitRateModel>{};
     for (final rate in rates) {
       if (rate.bitRate < 0 || rate.name.trim().isEmpty) continue;

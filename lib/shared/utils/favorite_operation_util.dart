@@ -5,16 +5,16 @@ class FavOperateUtil {
     final ctrl = FavoriteRoomController.to;
     final bool followed = ctrl.isFavorite(room);
 
-    final title = followed ? '取消关注' : '关注提示';
+    final title = followed ? i18n('unfollow') : i18n('ui_follow_confirmation');
     final message = followed ? '确定要取消关注主播“${room.nick}”吗？' : '确定要关注主播“${room.nick}”吗？';
-    final confirmText = followed ? '取消关注' : '确定关注';
+    final confirmText = followed ? i18n('unfollow') : i18n('ui_confirm_follow');
 
     TvDialogUtils.showConfirm(
       context: context,
       title: title,
       message: message,
       confirmText: confirmText,
-      cancelText: '取消',
+      cancelText: i18n('cancel'),
       onConfirm: () {
         if (followed) {
           FavoriteRoomController.to.removeRoom(room);
@@ -29,16 +29,16 @@ class FavOperateUtil {
     final ctrl = FavoriteRoomController.to;
     final bool followed = ctrl.isFavoriteArea(area);
 
-    final title = followed ? '取消关注' : '关注提示';
+    final title = followed ? i18n('unfollow') : i18n('ui_follow_confirmation');
     final message = followed ? '确定要取消关注“${area.areaName}”分区吗？' : '确定要关注“${area.areaName}”分区吗？';
-    final confirmText = followed ? '取消关注' : '确定关注';
+    final confirmText = followed ? i18n('unfollow') : i18n('ui_confirm_follow');
 
     TvDialogUtils.showConfirm(
       context: context,
       title: title,
       message: message,
       confirmText: confirmText,
-      cancelText: '取消',
+      cancelText: i18n('cancel'),
       onConfirm: () {
         if (followed) {
           FavoriteRoomController.to.removeArea(area);
@@ -55,7 +55,7 @@ class FavOperateUtil {
 
     final List<TvSelectItem<String>> menuItems = [
       TvSelectItem(
-        title: followed ? '取消关注' : '关注',
+        title: followed ? i18n('unfollow') : i18n('favorites_title'),
         value: 'follow',
         leading: Icon(followed ? Icons.favorite_border_rounded : Icons.favorite_rounded),
       ),

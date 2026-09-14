@@ -3,6 +3,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/tv_button.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/extensions.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class TvAppBar extends StatelessWidget {
   final String? title;
@@ -35,7 +36,7 @@ class TvAppBar extends StatelessWidget {
         children: [
           if (hasBackButton) ...[
             TvButton(
-              title: '返回',
+              title: i18n('ui_back'),
               size: TvButtonSize.mini,
               autofocus: true,
               icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.sp),

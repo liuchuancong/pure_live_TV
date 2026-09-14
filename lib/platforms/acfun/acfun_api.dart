@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 typedef AcfunRequest = Future<Object?> Function(
   String method,
@@ -309,9 +310,9 @@ class AcfunApi {
         final label = name.isNotEmpty
             ? name
             : switch (type) {
-                'STANDARD' => '高清',
-                'HIGH' => '超清',
-                'SUPER' => '蓝光',
+                'STANDARD' => i18n('ui_hd'),
+                'HIGH' => i18n('prefer_resolution_option_super_hd'),
+                'SUPER' => i18n('ui_blu_ray'),
                 'BLUE_RAY' => '高码率',
                 _ => '画质 $id',
               };

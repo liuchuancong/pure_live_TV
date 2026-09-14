@@ -1,9 +1,10 @@
 import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// The public game registry supplies artwork/names, not live categories.
 /// Only entries selected by the official live configuration are navigable.
 class CCCatalog {
-  static const configurationId = '67b32cdd1801fc391a6c2657';
+  static final configurationId = '67b32cdd1801fc391a6c2657';
   static final _numericId = RegExp(r'^[1-9][0-9]{0,15}$');
 
   static bool isOfficialEntry(LiveArea area) =>
@@ -21,9 +22,11 @@ class CCCatalog {
   static List<LiveCategory> parse(
     Object? gamePayload,
     Object? configPayload, {
-    String categoryLabel = '直播分类',
-    String officialLabel = '官方房间/专题',
+    String? categoryLabel,
+    String? officialLabel,
   }) {
+    categoryLabel ??= i18n('cc_live_categories');
+    officialLabel ??= i18n('cc_official_entries');
     final gameRows = _list(_envelope(gamePayload)['result'], 2000);
     final metadata = <String, Map>{};
     for (final raw in gameRows) {

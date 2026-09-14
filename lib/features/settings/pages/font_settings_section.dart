@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/widgets/tv_settings_slider_tile.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class FontSettingsSectionPage extends ConsumerWidget {
   const FontSettingsSectionPage({super.key});
@@ -16,7 +17,7 @@ class FontSettingsSectionPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsSliderTile(
-          title: '全局文字缩放',
+          title: i18n('ui_global_text_scale'),
           icon: Icons.format_size_rounded,
           value: fontState.textScaleFactor,
           min: 0.8,
@@ -26,7 +27,7 @@ class FontSettingsSectionPage extends ConsumerWidget {
           onChanged: (v) => font.updateSettings(fontState.copyWith(textScaleFactor: v)),
         ),
         TvSettingsSliderTile(
-          title: '正文文字大小',
+          title: i18n('ui_body_text_size'),
           icon: Icons.notes_rounded,
           value: fontState.fontSizeBodyMedium,
           min: 10,
@@ -35,7 +36,7 @@ class FontSettingsSectionPage extends ConsumerWidget {
           onChanged: (v) => font.updateSettings(fontState.copyWith(fontSizeBodyMedium: v)),
         ),
         TvSettingsSliderTile(
-          title: '标题文字大小',
+          title: i18n('ui_title_text_size'),
           icon: Icons.title_rounded,
           value: fontState.fontSizeTitleMedium,
           min: 12,

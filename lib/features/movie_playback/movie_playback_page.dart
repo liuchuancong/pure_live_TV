@@ -80,8 +80,8 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
     final themeColor = currentTvTheme.focusColor;
     final remoteState = ref.watch(tvRemoteReceiverProvider);
 
-    String qrCodeAddress = '正在启动服务...';
-    String hintText = '正在初始化遥控连接...';
+    String qrCodeAddress = i18n('ui_starting_service');
+    String hintText = i18n('ui_initializing_remote_control_connection');
     bool isServerRunning = false;
 
     if (remoteState is AsyncData) {

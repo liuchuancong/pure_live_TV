@@ -5,6 +5,7 @@ import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class AboutSettingsSectionPage extends ConsumerStatefulWidget {
   const AboutSettingsSectionPage({super.key});
@@ -33,16 +34,16 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: '纯粹直播 TV',
+          title: i18n('ui_pure_live_tv'),
           subtitle: '当前版本 $_version',
           icon: Icons.info_outline_rounded,
-          options: const ['检查更新'],
+          options: [i18n('check_update')],
           index: 0,
           onChanged: (_) {},
         ),
         TvSettingsSwitchTile(
-          title: '使用 GitHub 直连更新',
-          subtitle: '不经过镜像加速，直连 GitHub 检查更新',
+          title: i18n('ui_use_direct_github_updates'),
+          subtitle: i18n('ui_check_updates_directly_on_github_without_a_mirro'),
           icon: Icons.cloud_outlined,
           value: appState.useGitHubOriginForUpdates,
           onChanged: (v) => app.update(appState.copyWith(useGitHubOriginForUpdates: v)),

@@ -1,3 +1,5 @@
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+
 /// Converts platform SDK quality codes into stable user-facing Chinese labels
 /// without changing the opaque identifier used to request that stream.
 class LiveQualityLabel {
@@ -21,7 +23,7 @@ class LiveQualityLabel {
       'douyu' || 'huya' || 'kuaishou' || 'cc' || 'yy' => _generic(token),
       'soop' => _soop(token),
       'twitch' => _twitch(raw, token),
-      'iptv' => token == 'default' ? '默认' : null,
+      'iptv' => token == 'default' ? i18n('default_option') : null,
       _ => _generic(token),
     };
     if (mapped != null) return mapped;
@@ -31,54 +33,54 @@ class LiveQualityLabel {
     if (raw.isNotEmpty) return raw;
     if (bitrate != null && bitrate > 0) return _bitrateLabel(bitrate);
     final idText = id?.toString().trim() ?? '';
-    return idText.isEmpty ? '默认' : '清晰度 $idText';
+    return idText.isEmpty ? i18n('default_option') : '清晰度 $idText';
   }
 
   static String? _bilibili(String token, Object? id) {
     final qn = int.tryParse(id?.toString() ?? token);
     return switch (qn) {
-      30000 => '杜比',
+      30000 => i18n('ui_dolby'),
       20000 => '4K',
-      10000 => '原画',
-      400 => '蓝光',
-      250 => '超清',
-      150 => '高清',
-      80 => '流畅',
+      10000 => i18n('prefer_resolution_option_original'),
+      400 => i18n('ui_blu_ray'),
+      250 => i18n('prefer_resolution_option_super_hd'),
+      150 => i18n('ui_hd'),
+      80 => i18n('prefer_resolution_option_smooth'),
       _ => _generic(token),
     };
   }
 
   static String? _douyin(String token) => switch (token) {
-    'origin' || 'origion' || 'original' || 'source' => '原画',
-    'fullhd' || 'fullhd1' || 'uhd' || 'uhd1' || 'blue' || 'bluray' || 'blueray' => '蓝光',
-    'fhd' || 'hd' || 'hd1' => '超清',
-    'sd' || 'sd2' => '高清',
-    'ld' || 'sd1' => '标清',
-    'md' => '流畅',
-    'auto' => '自动',
+    'origin' || 'origion' || 'original' || 'source' => i18n('prefer_resolution_option_original'),
+    'fullhd' || 'fullhd1' || 'uhd' || 'uhd1' || 'blue' || 'bluray' || 'blueray' => i18n('ui_blu_ray'),
+    'fhd' || 'hd' || 'hd1' => i18n('prefer_resolution_option_super_hd'),
+    'sd' || 'sd2' => i18n('ui_hd'),
+    'ld' || 'sd1' => i18n('ui_sd'),
+    'md' => i18n('prefer_resolution_option_smooth'),
+    'auto' => i18n('recorder_auto'),
     _ => _generic(token),
   };
 
   static String? _soop(String token) => switch (token) {
-    'original' || 'origin' || 'source' => '原画',
-    'master' || 'uhd' => '蓝光',
-    'fullhd' || 'fhd' => '超清',
-    'hd' => '高清',
-    'sd' || 'normal' => '标清',
-    'low' || 'ld' => '流畅',
-    'auto' => '自动',
+    'original' || 'origin' || 'source' => i18n('prefer_resolution_option_original'),
+    'master' || 'uhd' => i18n('ui_blu_ray'),
+    'fullhd' || 'fhd' => i18n('prefer_resolution_option_super_hd'),
+    'hd' => i18n('ui_hd'),
+    'sd' || 'normal' => i18n('ui_sd'),
+    'low' || 'ld' => i18n('prefer_resolution_option_smooth'),
+    'auto' => i18n('recorder_auto'),
     _ => _generic(token),
   };
 
   static String? _generic(String token) => switch (token) {
-    'original' || 'origin' || 'origion' || 'source' => '原画',
-    'blue' || 'bluray' || 'blueray' => '蓝光',
-    'uhd' || 'super' || 'superhd' || 'fullhd' || 'fhd' => '超清',
-    'hd' || 'high' => '高清',
-    'sd' || 'standard' || 'medium' => '标清',
-    'low' || 'ld' || 'smooth' || 'fluent' => '流畅',
-    'auto' => '自动',
-    'default' => '默认',
+    'original' || 'origin' || 'origion' || 'source' => i18n('prefer_resolution_option_original'),
+    'blue' || 'bluray' || 'blueray' => i18n('ui_blu_ray'),
+    'uhd' || 'super' || 'superhd' || 'fullhd' || 'fhd' => i18n('prefer_resolution_option_super_hd'),
+    'hd' || 'high' => i18n('ui_hd'),
+    'sd' || 'standard' || 'medium' => i18n('ui_sd'),
+    'low' || 'ld' || 'smooth' || 'fluent' => i18n('prefer_resolution_option_smooth'),
+    'auto' => i18n('recorder_auto'),
+    'default' => i18n('default_option'),
     _ => null,
   };
 
@@ -87,9 +89,9 @@ class LiveQualityLabel {
     final match = RegExp(r'(\d{3,4})p(?:\s*(\d{2,3}))?', caseSensitive: false).firstMatch(raw);
     if (match != null) {
       final fps = match.group(2) ?? '';
-      return '${match.group(1)}P$fps${source ? '（原画）' : ''}';
+      return '${match.group(1)}P$fps${source ? i18n('ui_original') : ''}';
     }
-    return source ? '原画' : _generic(token);
+    return source ? i18n('prefer_resolution_option_original') : _generic(token);
   }
 
   static String _token(String value) => value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
@@ -103,11 +105,11 @@ class LiveQualityLabel {
     final height = int.tryParse(match.group(2) ?? '') ?? 0;
     final shortSide = width < height ? width : height;
     if (shortSide >= 2160) return '4K';
-    if (shortSide >= 1440) return '2K 超清';
-    if (shortSide >= 1080) return '1080P 高清';
-    if (shortSide >= 720) return '720P 清晰';
-    if (shortSide >= 480) return '480P 流畅';
-    if (shortSide >= 360) return '360P 极速';
+    if (shortSide >= 1440) return i18n('ui_2k_ultra_hd');
+    if (shortSide >= 1080) return i18n('ui_1080p_hd');
+    if (shortSide >= 720) return i18n('ui_720p_clear');
+    if (shortSide >= 480) return i18n('ui_480p_smooth');
+    if (shortSide >= 360) return i18n('ui_360p_fast');
     return '${shortSide}P';
   }
 

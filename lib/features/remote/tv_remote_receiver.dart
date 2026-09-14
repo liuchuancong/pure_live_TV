@@ -6,6 +6,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/utils/log.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 part 'tv_remote_receiver.g.dart';
 
@@ -136,7 +137,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     _app!.post('/api/movie', (req, res) async {
       final body = await req.body;
       final url = body.toString().trim();
-      if (url.isEmpty) return _fail(res, msg: '链接不能为空');
+      if (url.isEmpty) return _fail(res, msg: i18n('toolbox_empty_link'));
       _addLog('收到视频推送: $url');
       onMovieReceived?.call(url);
       _broadcastWs({'type': 'movie_push', 'url': url});
@@ -168,7 +169,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       if (body == null) return _fail(res, msg: '参数错误');
       _configCache['douyin_cookie'] = {'ttwid': body['ttwid'] ?? '', 'cookie': body['cookie'] ?? ''};
       _addLog('抖音Cookie已更新');
-      return _ok(res, msg: '保存成功');
+      return _ok(res, msg: i18n('ui_saved'));
     });
 
     _app!.get('/api/danmaku_filter', (req, res) {
@@ -186,7 +187,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       _configCache['danmaku_filter'] = filters;
       _addLog('弹幕过滤规则已更新，共 ${filters.length} 条');
       onDanmakuFilterUpdated?.call(filters);
-      return _ok(res, msg: '保存成功');
+      return _ok(res, msg: i18n('ui_saved'));
     });
 
     _app!.get('/api/webdav/list', (req, res) {
@@ -197,7 +198,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       final body = await req.body;
       _configCache['webdav_list'] = body;
       _addLog('WebDAV配置已更新');
-      return _ok(res, msg: '保存成功');
+      return _ok(res, msg: i18n('ui_saved'));
     });
 
     _app!.get('/api/backup/export', (req, res) {
@@ -214,7 +215,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       if (body == null || body['config'] == null) return _fail(res, msg: '备份文件格式错误');
       _configCache.addAll(body['config']);
       _addLog('导入配置备份成功');
-      return _ok(res, msg: '导入成功');
+      return _ok(res, msg: i18n('ui_imported'));
     });
 
     _app!.get('/api/log/stream', (req, res) {
@@ -300,7 +301,8 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     return {'code': 200, 'msg': msg, 'data': data};
   }
 
-  Map<String, dynamic> _fail(HttpResponse res, {String msg = '失败', int code = 400}) {
+  Map<String, dynamic> _fail(HttpResponse res, {String? msg, int code = 400}) {
+    msg ??= i18n('record_failed');
     res.statusCode = HttpStatus.badRequest;
     return {'code': code, 'msg': msg, 'data': null};
   }

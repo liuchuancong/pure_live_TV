@@ -29,9 +29,9 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     );
 
     final List<TvTabItemData> statusTabs = [
-      const TvTabItemData(title: '正在直播'),
-      const TvTabItemData(title: '正在重播'),
-      const TvTabItemData(title: '未开播'),
+      TvTabItemData(title: i18n('live')),
+      TvTabItemData(title: i18n('ui_replaying')),
+      TvTabItemData(title: i18n('offline_room_title')),
     ];
 
     final availableSitesList = Sites().availableSites(containsAll: true);
@@ -85,7 +85,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                             padding: EdgeInsets.symmetric(horizontal: 6.sp),
                             key: ValueKey(isAllTag ? 'tag_all' : 'tag_${favoriteState.visibleTags[index - 1].id}'),
                             child: TvButton(
-                              title: isAllTag ? '全部' : favoriteState.visibleTags[index - 1].name,
+                              title: isAllTag ? i18n('recorder_tab_all') : favoriteState.visibleTags[index - 1].name,
                               size: TvButtonSize.mini,
                               isSecondary: !isSelected,
                               onTap: () {

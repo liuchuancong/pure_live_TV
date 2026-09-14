@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:pure_live/shared/common/index.dart';
 import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 
 enum MissevanFailure { transport, access, rateLimited, service, notFound, schema, cancelled, qualityUnavailable }
@@ -172,7 +173,7 @@ class MissevanApi {
         areaType: type,
         areaId: '$id',
         areaName: name,
-        typeName: '猫耳 FM',
+        typeName: i18n('site_missevan'),
         areaPic: _picture(tab['icon_url']),
       );
     }

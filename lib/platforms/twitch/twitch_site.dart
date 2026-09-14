@@ -655,12 +655,12 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
         resolution: '${height * 16 ~/ 9}x$height',
       );
     }
-    if (source) return '原画';
+    if (source) return i18n('prefer_resolution_option_original');
     if (bandwidth > 5000000) return '1080P';
     if (bandwidth > 2500000) return '720P';
     if (bandwidth > 1000000) return '480P';
     if (bandwidth > 500000) return '360P';
-    return '自动';
+    return i18n('recorder_auto');
   }
 
   @override

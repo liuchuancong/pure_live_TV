@@ -1,5 +1,6 @@
 import 'package:pure_live/features/iptv/models/channel.dart';
 import 'package:pure_live/features/iptv/parsers/playlist_parse_result.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Parses TXT playlists in genre format.
 class TxtParser {
@@ -18,7 +19,7 @@ class TxtParser {
 
       if (_genreRegex.hasMatch(line)) {
         final group = line.split(',').first.trim();
-        if (group.isNotEmpty && !group.contains('更新时间') && !group.contains('提示')) {
+        if (group.isNotEmpty && !group.contains('更新时间') && !group.contains(i18n('tip'))) {
           currentGroup = group;
         }
         continue;

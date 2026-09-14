@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/cache/cache_controller.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class CacheSettingsSectionPage extends ConsumerStatefulWidget {
   const CacheSettingsSectionPage({super.key});
@@ -28,10 +29,10 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: '图片与数据缓存',
+          title: i18n('ui_image_and_data_cache'),
           subtitle: '当前占用 ${cacheState.cacheSizeMB.toStringAsFixed(1)} MB',
           icon: Icons.cleaning_services_rounded,
-          options: const ['清除'],
+          options: [i18n('clear')],
           index: 0,
           onChanged: (_) => cache.clearCache(),
         ),

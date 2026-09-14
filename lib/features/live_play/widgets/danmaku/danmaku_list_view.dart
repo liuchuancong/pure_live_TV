@@ -3,6 +3,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/shared/models/live_message/live_message_model.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Scrolling danmaku history shown in the right-hand panel.
 ///
@@ -43,7 +44,7 @@ class _DanmakuListViewState extends ConsumerState<DanmakuListView> {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
         child: Text(
-          session.statusText ?? '暂无弹幕',
+          session.statusText ?? i18n('ui_no_danmaku_yet'),
           style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
         ),
       );

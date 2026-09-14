@@ -1,10 +1,11 @@
 import '../tv_theme_data.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-const animeTvTheme = TvThemeData(
+final animeTvTheme = TvThemeData(
   id: 'anime',
 
-  name: '二次元',
+  name: i18n('ui_anime'),
 
   backgroundType: TvBackgroundType.image,
 

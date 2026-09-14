@@ -5,6 +5,7 @@ import 'package:pure_live/features/live_play/controllers/live_play_controller.da
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Bottom control bar of the video area, driven entirely by D-pad focus.
 class VideoControllerPanel extends ConsumerStatefulWidget {
@@ -40,7 +41,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         children: [
           _PanelButton(
             icon: playing ? Icons.pause : Icons.play_arrow,
-            label: playing ? '暂停' : '播放',
+            label: playing ? i18n('multiview_pause') : i18n('multiview_play'),
             autofocus: true,
             onFocusChange: (_) => controller.keepControlsAlive(),
             onSelect: () {
@@ -51,7 +52,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           SizedBox(width: 16.sp),
           _PanelButton(
             icon: Icons.volume_down,
-            label: '音量-',
+            label: i18n('ui_volume_down'),
             onFocusChange: (_) => controller.keepControlsAlive(),
             onSelect: () {
               controller.keepControlsAlive();
@@ -61,7 +62,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           SizedBox(width: 16.sp),
           _PanelButton(
             icon: Icons.volume_up,
-            label: '音量+',
+            label: i18n('ui_volume_up'),
             onFocusChange: (_) => controller.keepControlsAlive(),
             onSelect: () {
               controller.keepControlsAlive();
@@ -81,7 +82,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           SizedBox(width: 16.sp),
           _PanelButton(
             icon: Icons.subtitles,
-            label: danmakuSettings.hideDanmaku || !danmakuSettings.enableDanmakuDisplay ? '弹幕关' : '弹幕开',
+            label: danmakuSettings.hideDanmaku || !danmakuSettings.enableDanmakuDisplay ? i18n('ui_danmaku_off') : i18n('ui_danmaku_on'),
             onFocusChange: (_) => controller.keepControlsAlive(),
             onSelect: () {
               controller.keepControlsAlive();
@@ -95,7 +96,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           SizedBox(width: 16.sp),
           _PanelButton(
             icon: Icons.refresh,
-            label: '重试',
+            label: i18n('retry'),
             onFocusChange: (_) => controller.keepControlsAlive(),
             onSelect: () {
               controller.keepControlsAlive();

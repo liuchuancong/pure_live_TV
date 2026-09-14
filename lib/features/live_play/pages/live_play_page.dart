@@ -8,6 +8,7 @@ import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_list_view.d
 import 'package:pure_live/features/live_play/widgets/video_player/tv_video_surface.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/widgets/tv_common_avatar.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Landscape live playback page.
 ///
@@ -57,7 +58,7 @@ class LivePlayPage extends ConsumerWidget {
                               border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.3)),
                             ),
                             child: Text(
-                              '展开面板',
+                              i18n('ui_expand_panel'),
                               style: AppTextStyles.t14W500.copyWith(color: Colors.white),
                             ),
                           ),
@@ -121,7 +122,7 @@ class _SidePanel extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      room?.nick ?? (state.detailError ?? '加载中...'),
+                      room?.nick ?? (state.detailError ?? i18n('refresh_loading')),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
@@ -151,14 +152,14 @@ class _SidePanel extends ConsumerWidget {
         SizedBox(height: 12.sp),
         Divider(height: 1, color: tvTheme.secondaryTextColor.withValues(alpha: 0.2)),
         SizedBox(height: 8.sp),
-        _SectionLabel(text: '清晰度'),
+        _SectionLabel(text: i18n('recorder_stage_quality')),
         _ChipRow(
           labels: state.qualities.map((q) => q.quality).toList(growable: false),
           selectedIndex: state.qualityIndex,
           onSelect: controller.changeQuality,
         ),
         SizedBox(height: 8.sp),
-        _SectionLabel(text: '线路'),
+        _SectionLabel(text: i18n('multiview_line_selector')),
         _ChipRow(
           labels: [for (var i = 0; i < state.playUrls.length; i++) '线路${i + 1}'],
           selectedIndex: state.lineIndex,
@@ -187,7 +188,7 @@ class _SidePanel extends ConsumerWidget {
                 color: tvTheme.cardColor,
                 borderRadius: BorderRadius.circular(8.sp),
               ),
-              child: Text('收起面板', style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
+              child: Text(i18n('ui_collapse_panel'), style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
             ),
           ),
         ),
@@ -235,7 +236,7 @@ class _ChipRow extends StatelessWidget {
     if (labels.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
-        child: Text('暂无', style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
+        child: Text(i18n('ui_none'), style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
       );
     }
     return SizedBox(

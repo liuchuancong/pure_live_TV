@@ -1,3 +1,5 @@
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+
 class HttpError extends Error {
   final int statusCode;
   final String message;
@@ -15,7 +17,7 @@ class HttpError extends Error {
   String statusCodeToString(int statusCode) {
     switch (statusCode) {
       case 400:
-        return '错误的请求(400)';
+        return i18n('http_error_400');
       case 401:
         return "无权限访问资源(401)";
       case 403:

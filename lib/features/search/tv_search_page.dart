@@ -25,7 +25,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
     super.initState();
     final sites = Sites().availableSites(containsAll: false);
     _siteTabs = sites.map((site) => TvTabItemData(title: site.name)).toList();
-    _typeTabs = [TvTabItemData(title: '主播'), TvTabItemData(title: '直播间')];
+    _typeTabs = [TvTabItemData(title: i18n('ui_streamer')), TvTabItemData(title: i18n('ui_live_room'))];
     _searchController = NativeTextFieldController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -77,8 +77,8 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
     final remoteState = ref.watch(tvRemoteReceiverProvider);
     final themeColor = tvTheme.focusColor;
 
-    String qrCodeAddress = '正在启动服务...';
-    String hintText = '正在初始化遥控连接...';
+    String qrCodeAddress = i18n('ui_starting_service');
+    String hintText = i18n('ui_initializing_remote_control_connection');
 
     if (remoteState is AsyncData) {
       final serverState = remoteState.value!;

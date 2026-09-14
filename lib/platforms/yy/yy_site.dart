@@ -400,7 +400,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       final streamKey = payload['video']?.toString().trim();
       final identity = streamKey?.isNotEmpty == true ? streamKey! : '${width}x$height';
       final rate = int.tryParse(response.rate) ?? 0;
-      final tier = response.rate == _mobileHlsRates.first ? '流畅' : '高清';
+      final tier = response.rate == _mobileHlsRates.first ? i18n('prefer_resolution_option_smooth') : i18n('ui_hd');
       final resolution = shortEdge > 0 ? ' · ${shortEdge}p' : '';
       // The endpoint may map several requested rates to the same actual
       // source. Keep only the highest request for that source so the picker

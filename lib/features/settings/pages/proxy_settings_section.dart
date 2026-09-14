@@ -2,6 +2,7 @@ import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class ProxySettingsSectionPage extends ConsumerStatefulWidget {
   const ProxySettingsSectionPage({super.key});
@@ -38,25 +39,25 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsSwitchTile(
-          title: '启用网络代理',
-          subtitle: '为 API、图片与弹幕连接启用统一代理',
+          title: i18n('ui_enable_network_proxy'),
+          subtitle: i18n('ui_route_api_image_and_danmaku_traffic_through_one'),
           icon: Icons.vpn_key_rounded,
           value: proxyState.enableProxy,
           onChanged: (v) => proxy.updateSettings(proxyState.copyWith(enableProxy: v)),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
-          child: TvInputField(controller: _hostController, hint: '代理主机，如 127.0.0.1', maxLines: 1),
+          child: TvInputField(controller: _hostController, hint: i18n('ui_proxy_host_e_g_127_0_0_1'), maxLines: 1),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
-          child: TvInputField(controller: _portController, hint: '代理端口，如 7890', maxLines: 1),
+          child: TvInputField(controller: _portController, hint: i18n('ui_proxy_port_e_g_7890'), maxLines: 1),
         ),
         TvSettingsOptionTile(
-          title: '保存代理设置',
+          title: i18n('ui_save_proxy_settings'),
           subtitle: '主机：${_hostController.text.isEmpty ? '未填写' : _hostController.text}  端口：${_portController.text}',
           icon: Icons.save_rounded,
-          options: const ['保存'],
+          options: [i18n('save')],
           index: 0,
           onChanged: (_) => proxy.updateSettings(
             proxyState.copyWith(

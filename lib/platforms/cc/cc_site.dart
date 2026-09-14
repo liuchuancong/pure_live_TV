@@ -118,13 +118,13 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     if (rawData is! Map) return Future.value(const <LivePlayQuality>[]);
     final qualities = <LivePlayQuality>[];
     var reflect = {
-      'blueray': '原画',
-      'original': '原画',
-      'high': '高清',
+      'blueray': i18n('prefer_resolution_option_original'),
+      'original': i18n('prefer_resolution_option_original'),
+      'high': i18n('ui_hd'),
       'medium': '标准',
       'standard': '标准',
       'low': '低清',
-      'ultra': '蓝光',
+      'ultra': i18n('ui_blu_ray'),
     };
 
     const priority = ['hs', 'ks', 'ali', 'fws', 'wy'];

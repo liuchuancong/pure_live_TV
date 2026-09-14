@@ -2,6 +2,7 @@ import 'tv_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class TvInputDialog extends StatefulWidget {
   final String title;
@@ -56,8 +57,8 @@ class _TvInputDialogState extends State<TvInputDialog> {
 
     return TvDialog(
       title: widget.title,
-      confirmText: '确定',
-      cancelText: '取消',
+      confirmText: i18n('exit_yes'),
+      cancelText: i18n('cancel'),
       onConfirm: _submit,
       onCancel: () => Navigator.of(context).pop(),
       child: TextField(

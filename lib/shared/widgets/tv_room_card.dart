@@ -89,7 +89,7 @@ class _TvRoomCardState extends State<TvRoomCard> {
                       top: 12.sp,
                       child: TvButton(
                         excludeFocus: true,
-                        title: '已关注',
+                        title: i18n('followed'),
                         size: TvButtonSize.mini,
                         icon: Icon(Icons.favorite, size: 18.sp),
                       ),
@@ -100,7 +100,7 @@ class _TvRoomCardState extends State<TvRoomCard> {
                       right: 12.sp,
                       top: 12.sp,
                       child: TvButton(
-                        title: '重播',
+                        title: i18n('ui_replay'),
                         excludeFocus: true,
                         size: TvButtonSize.mini,
                         icon: Icon(Icons.videocam_rounded, size: 20.sp),

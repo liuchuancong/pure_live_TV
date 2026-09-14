@@ -129,7 +129,7 @@ class LivePlayController extends _$LivePlayController {
         break;
       case PlayerState.error:
         // 终态错误由 onError 带出，这里仅兜底。
-        state = state.copyWith(status: LivePlayStatus.error, errorMessage: '播放失败');
+        state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('multiview_play_failed'));
         break;
       case PlayerState.idle:
       case PlayerState.initialized:

@@ -1,10 +1,11 @@
 import '../tv_theme_data.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-const darkTvTheme = TvThemeData(
+final darkTvTheme = TvThemeData(
   id: 'dark',
 
-  name: '默认深色',
+  name: i18n('ui_dark_by_default'),
 
   backgroundType: TvBackgroundType.color,
 

@@ -220,7 +220,7 @@ class HomePage extends ConsumerWidget {
           ),
         );
       case TvMenuType.settings:
-        return const TvSettingsShell(child: SizedBox.shrink());
+        return TvSettingsShell(child: SizedBox.shrink());
       case TvMenuType.favorite:
         return const FavoritePage();
       case TvMenuType.hot:

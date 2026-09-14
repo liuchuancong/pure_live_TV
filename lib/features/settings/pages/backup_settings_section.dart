@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 
 
@@ -29,28 +30,28 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: '导出配置到本机',
-          subtitle: '将全部设置导出到应用文档目录 pure_live_backup.json',
+          title: i18n('ui_export_configuration_to_this_device'),
+          subtitle: i18n('ui_export_all_settings_to_pure_live_backup_json_in'),
           icon: Icons.upload_file_rounded,
-          options: const ['导出'],
+          options: [i18n('ui_export')],
           index: 0,
           onChanged: (_) async {
             final backup = ref.read(backupControllerProvider.notifier);
             final ok = backup.backup(await _backupFile('pure_live_backup.json'));
-            setState(() => _lastResult = ok ? '导出成功' : '导出失败');
+            setState(() => _lastResult = ok ? i18n('ui_exported') : i18n('ui_export_failed'));
           },
         ),
         TvSettingsOptionTile(
-          title: '从本机导入配置',
-          subtitle: '读取应用文档目录 pure_live_backup.json 并恢复',
+          title: i18n('ui_import_configuration_from_this_device'),
+          subtitle: i18n('ui_read_pure_live_backup_json_from_the_app_document'),
           icon: Icons.download_rounded,
-          options: const ['导入'],
+          options: [i18n('import_action')],
           index: 0,
           onChanged: (_) async {
             final backup = ref.read(backupControllerProvider.notifier);
             final file = await _backupFile('pure_live_backup.json');
             final ok = file.existsSync() && await backup.recover(file);
-            setState(() => _lastResult = ok ? '导入成功' : '导入失败或文件不存在');
+            setState(() => _lastResult = ok ? i18n('ui_imported') : i18n('ui_import_failed_or_file_not_found'));
           },
         ),
         if (_lastResult.isNotEmpty)

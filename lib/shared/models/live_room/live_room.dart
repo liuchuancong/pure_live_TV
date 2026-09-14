@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pure_live/player/core/live_room_volume_manager.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 part 'live_room.freezed.dart';
 part 'live_room.g.dart';
@@ -109,7 +110,7 @@ abstract class LiveRoom with _$LiveRoom {
     var cleaned = text.trim().replaceAll(',', '');
     if (cleaned.isEmpty) return 0;
     double multiplier = 1;
-    if (cleaned.endsWith('万')) {
+    if (cleaned.endsWith(i18n('count_wan'))) {
       multiplier = 10000;
       cleaned = cleaned.substring(0, cleaned.length - 1);
     } else if (cleaned.endsWith('亿')) {

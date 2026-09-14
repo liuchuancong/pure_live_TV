@@ -7,7 +7,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   String id = Sites.iptvSite;
 
   @override
-  String name = '网络';
+  String name = i18n('network');
 
   String defaultAvatar =
       "https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast";
@@ -295,7 +295,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
     final url = detail.data?.toString().trim() ?? '';
     if (url.isEmpty) return const <LivePlayQuality>[];
     return [
-      LivePlayQuality(quality: '默认', id: 'default', sort: 1, data: <String>[url]),
+      LivePlayQuality(quality: i18n('default_option'), id: 'default', sort: 1, data: <String>[url]),
     ];
   }
 

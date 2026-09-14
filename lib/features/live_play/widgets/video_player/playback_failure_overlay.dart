@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Playback failure overlay with two D-pad focusable actions: retry and refresh room.
 class PlaybackFailureOverlay extends StatelessWidget {
@@ -48,7 +49,7 @@ class PlaybackFailureOverlay extends StatelessWidget {
                   DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.5)),
                 ],
                 onSelect: onRetry,
-                child: _pill(tvTheme.focusColor, '重试播放', Icons.refresh),
+                child: _pill(tvTheme.focusColor, i18n('ui_retry_playback'), Icons.refresh),
               ),
               SizedBox(width: 16.sp),
               DpadFocusable(
@@ -57,7 +58,7 @@ class PlaybackFailureOverlay extends StatelessWidget {
                   DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.5)),
                 ],
                 onSelect: onRefreshRoom,
-                child: _pill(Colors.white.withValues(alpha: 0.12), '刷新房间', Icons.travel_explore),
+                child: _pill(Colors.white.withValues(alpha: 0.12), i18n('ui_refresh_room'), Icons.travel_explore),
               ),
             ],
           ),

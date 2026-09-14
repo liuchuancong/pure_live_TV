@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/player/models/player_engine.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class PlayerConsts {
-  static const String defaultKey = 'mpv';
+  static final String defaultKey = 'mpv';
 
-  static const Map<String, PlayerEngine> engines = {
+  static final Map<String, PlayerEngine> engines = {
     'mpv': PlayerEngine.mediaKit,
     'ijk': PlayerEngine.fijk,
     'exo': PlayerEngine.betterPlayer,
   };
 
-  static const Map<String, String> names = {'mpv': 'player_mpv', 'ijk': 'player_ijk', 'exo': 'player_exo'};
+  static final Map<String, String> names = {'mpv': 'player_mpv', 'ijk': 'player_ijk', 'exo': 'player_exo'};
 
   static String getKeyByI18nKey(String i18nKey) {
     return names.entries.firstWhere((e) => e.value == i18nKey, orElse: () => names.entries.first).key;
   }
 
-  static const List<String> resolutions = ['原画', '蓝光8M', '蓝光4M', '超清', '流畅'];
-  static const Map<String, String> resolutionLabelKeys = {
-    '原画': 'prefer_resolution_option_original',
-    '蓝光8M': 'prefer_resolution_option_blu_ray_8m',
-    '蓝光4M': 'prefer_resolution_option_blu_ray_4m',
-    '超清': 'prefer_resolution_option_super_hd',
-    '流畅': 'prefer_resolution_option_smooth',
+  static final List<String> resolutions = [i18n('prefer_resolution_option_original'), i18n('prefer_resolution_option_blu_ray_8m'), i18n('prefer_resolution_option_blu_ray_4m'), i18n('prefer_resolution_option_super_hd'), i18n('prefer_resolution_option_smooth')];
+  static final Map<String, String> resolutionLabelKeys = {
+    i18n('prefer_resolution_option_original'): 'prefer_resolution_option_original',
+    i18n('prefer_resolution_option_blu_ray_8m'): 'prefer_resolution_option_blu_ray_8m',
+    i18n('prefer_resolution_option_blu_ray_4m'): 'prefer_resolution_option_blu_ray_4m',
+    i18n('prefer_resolution_option_super_hd'): 'prefer_resolution_option_super_hd',
+    i18n('prefer_resolution_option_smooth'): 'prefer_resolution_option_smooth',
   };
 
   static String? resolutionLabelKey(String value) => resolutionLabelKeys[value];

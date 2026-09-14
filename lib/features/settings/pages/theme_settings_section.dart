@@ -3,6 +3,7 @@ import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class ThemeSettingsSectionPage extends ConsumerWidget {
   const ThemeSettingsSectionPage({super.key});
@@ -27,23 +28,23 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
         ...tvThemeController.themes.map(
           (t) => TvSettingsOptionTile(
             title: t.name,
-            subtitle: currentTheme.id == t.id ? '当前主题' : null,
+            subtitle: currentTheme.id == t.id ? i18n('ui_current_theme') : null,
             icon: Icons.palette_outlined,
-            options: const ['使用'],
+            options: [i18n('ui_use')],
             index: 0,
             onChanged: (_) => tvThemeController.switchTheme(t),
           ),
         ),
         SizedBox(height: 8.sp),
         TvSettingsSwitchTile(
-          title: '动态主题色',
-          subtitle: '根据封面自动取色',
+          title: i18n('ui_dynamic_theme_color'),
+          subtitle: i18n('ui_derive_the_theme_color_from_the_cover_image'),
           icon: Icons.colorize_rounded,
           value: themeState.enableDynamicTheme,
           onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
         ),
         TvSettingsSliderTile(
-          title: '横向卡片间距',
+          title: i18n('ui_horizontal_card_spacing'),
           icon: Icons.swap_horiz_rounded,
           value: themeState.crossAxisSpacing,
           min: 0,
@@ -52,7 +53,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           onChanged: (v) => theme.updateSettings(themeState.copyWith(crossAxisSpacing: v)),
         ),
         TvSettingsSliderTile(
-          title: '纵向卡片间距',
+          title: i18n('ui_vertical_card_spacing'),
           icon: Icons.swap_vert_rounded,
           value: themeState.mainAxisSpacing,
           min: 0,

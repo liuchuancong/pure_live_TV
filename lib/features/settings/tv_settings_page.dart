@@ -17,33 +17,34 @@ import 'package:pure_live/features/settings/pages/refresh_settings_section.dart'
 import 'package:pure_live/features/settings/pages/renderer_settings_section.dart';
 import 'package:pure_live/features/settings/pages/theme_settings_section.dart';
 import 'package:pure_live/features/settings/pages/video_settings_section.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Settings shell: module menu on the left, routed section on the right.
 ///
 /// Every section is its own page and is registered as a go_router sub-route
 /// (/settings/general, /settings/theme, ...).
 class TvSettingsShell extends StatelessWidget {
-  const TvSettingsShell({super.key, required this.child});
+  TvSettingsShell({super.key, required this.child});
 
   final Widget child;
 
-  static const modules = <({String path, String title, IconData icon, Widget page})>[
-    (path: '/settings/general', title: '通用设置', icon: Icons.tune_rounded, page: GeneralSettingsSectionPage()),
-    (path: '/settings/theme', title: '主题外观', icon: Icons.palette_outlined, page: ThemeSettingsSectionPage()),
-    (path: '/settings/player_kernel', title: '播放内核', icon: Icons.play_circle_outline_rounded, page: PlayerKernelSettingsSectionPage()),
-    (path: '/settings/video', title: '视频设置', icon: Icons.video_settings_outlined, page: VideoSettingsSectionPage()),
-    (path: '/settings/decoder', title: '解码设置', icon: Icons.memory_rounded, page: DecoderSettingsSectionPage()),
-    (path: '/settings/renderer', title: '渲染设置', icon: Icons.graphic_eq_rounded, page: RendererSettingsSectionPage()),
-    (path: '/settings/audio_output', title: '音频输出', icon: Icons.surround_sound_rounded, page: AudioOutputSettingsSectionPage()),
-    (path: '/settings/danmaku', title: '弹幕设置', icon: Icons.subtitles_rounded, page: DanmakuSettingsSectionPage()),
-    (path: '/settings/platform', title: '平台设置', icon: Icons.devices_rounded, page: PlatformSettingsSectionPage()),
-    (path: '/settings/page', title: '分页设置', icon: Icons.list_alt_rounded, page: PageSettingsSectionPage()),
-    (path: '/settings/refresh', title: '刷新设置', icon: Icons.refresh_rounded, page: RefreshSettingsSectionPage()),
-    (path: '/settings/font', title: '字体设置', icon: Icons.text_fields_rounded, page: FontSettingsSectionPage()),
-    (path: '/settings/cache', title: '缓存管理', icon: Icons.cleaning_services_rounded, page: CacheSettingsSectionPage()),
-    (path: '/settings/proxy', title: '网络代理', icon: Icons.vpn_key_rounded, page: ProxySettingsSectionPage()),
-    (path: '/settings/backup', title: '备份与恢复', icon: Icons.backup_outlined, page: BackupSettingsSectionPage()),
-    (path: '/settings/about', title: '关于', icon: Icons.info_outline_rounded, page: AboutSettingsSectionPage()),
+  static final modules = <({String path, String title, IconData icon, Widget page})>[
+    (path: '/settings/general', title: i18n('general_settings'), icon: Icons.tune_rounded, page: GeneralSettingsSectionPage()),
+    (path: '/settings/theme', title: i18n('ui_theme'), icon: Icons.palette_outlined, page: ThemeSettingsSectionPage()),
+    (path: '/settings/player_kernel', title: i18n('ui_player_kernel'), icon: Icons.play_circle_outline_rounded, page: PlayerKernelSettingsSectionPage()),
+    (path: '/settings/video', title: i18n('video_settings'), icon: Icons.video_settings_outlined, page: VideoSettingsSectionPage()),
+    (path: '/settings/decoder', title: i18n('ui_decoder_settings'), icon: Icons.memory_rounded, page: DecoderSettingsSectionPage()),
+    (path: '/settings/renderer', title: i18n('ui_renderer_settings'), icon: Icons.graphic_eq_rounded, page: RendererSettingsSectionPage()),
+    (path: '/settings/audio_output', title: i18n('ui_audio_output'), icon: Icons.surround_sound_rounded, page: AudioOutputSettingsSectionPage()),
+    (path: '/settings/danmaku', title: i18n('danmaku_settings'), icon: Icons.subtitles_rounded, page: DanmakuSettingsSectionPage()),
+    (path: '/settings/platform', title: i18n('ui_platform_settings'), icon: Icons.devices_rounded, page: PlatformSettingsSectionPage()),
+    (path: '/settings/page', title: i18n('page_settings'), icon: Icons.list_alt_rounded, page: PageSettingsSectionPage()),
+    (path: '/settings/refresh', title: i18n('refresh_settings'), icon: Icons.refresh_rounded, page: RefreshSettingsSectionPage()),
+    (path: '/settings/font', title: i18n('ui_font_settings'), icon: Icons.text_fields_rounded, page: FontSettingsSectionPage()),
+    (path: '/settings/cache', title: i18n('cache_management'), icon: Icons.cleaning_services_rounded, page: CacheSettingsSectionPage()),
+    (path: '/settings/proxy', title: i18n('ui_network_proxy'), icon: Icons.vpn_key_rounded, page: ProxySettingsSectionPage()),
+    (path: '/settings/backup', title: i18n('backup_recover'), icon: Icons.backup_outlined, page: BackupSettingsSectionPage()),
+    (path: '/settings/about', title: i18n('about'), icon: Icons.info_outline_rounded, page: AboutSettingsSectionPage()),
   ];
 
   @override
@@ -66,7 +67,7 @@ class TvSettingsShell extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(left: 12.sp, bottom: 16.sp),
                   child: Text(
-                    '系统设置',
+                    i18n('ui_settings'),
                     style: AppTextStyles.t24W600.copyWith(color: currentTvTheme.primaryTextColor),
                   ),
                 ),
