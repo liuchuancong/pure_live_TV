@@ -14,6 +14,7 @@ import 'package:pure_live/features/settings/pages/decoder_settings_section.dart'
 import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
 import 'package:pure_live/features/settings/pages/font_settings_section.dart';
 import 'package:pure_live/features/settings/pages/general_settings_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_section.dart';
 import 'package:pure_live/features/settings/pages/page_settings_section.dart';
 import 'package:pure_live/features/settings/pages/platform_settings_section.dart';
@@ -54,6 +55,7 @@ class TvSettingsShell extends StatelessWidget {
     (path: '/settings/refresh', title: i18n('refresh_settings'), icon: Icons.refresh_rounded, page: RefreshSettingsSectionPage()),
     (path: '/settings/font', title: i18n('ui_font_settings'), icon: Icons.text_fields_rounded, page: FontSettingsSectionPage()),
     (path: '/settings/fonts', title: i18n('font_family'), icon: Icons.font_download_outlined, page: FontFamilyManagerSectionPage()),
+    (path: '/settings/iptv', title: i18n('iptv_manage'), icon: Icons.live_tv_outlined, page: IptvManageSectionPage()),
     (path: '/settings/cache', title: i18n('cache_management'), icon: Icons.cleaning_services_rounded, page: CacheSettingsSectionPage()),
     (path: '/settings/proxy', title: i18n('ui_network_proxy'), icon: Icons.vpn_key_rounded, page: ProxySettingsSectionPage()),
     (path: '/settings/backup', title: i18n('backup_recover'), icon: Icons.backup_outlined, page: BackupSettingsSectionPage()),
