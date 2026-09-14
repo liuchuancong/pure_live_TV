@@ -68,6 +68,11 @@ class _TvRoomCardState extends State<TvRoomCard> {
                       child: Image.network(
                         widget.room.cover,
                         fit: BoxFit.cover,
+                        // Decode covers at grid size instead of full resolution: TV
+                        // covers are often 1080p and decoding them per card dominates
+                        // scroll cost.
+                        cacheWidth: 640,
+                        cacheHeight: 360,
                         gaplessPlayback: false,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;

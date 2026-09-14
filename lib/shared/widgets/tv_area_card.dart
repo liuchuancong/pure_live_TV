@@ -52,6 +52,10 @@ class TvAreaCard extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: displayImageUrl,
                         cacheManager: CustomImageCacheManager.instance,
+                        // Area artwork renders inside a small card: decode at that
+                        // size and keep the cached copy bounded.
+                        memCacheWidth: 320,
+                        maxWidthDiskCache: 640,
                         fit: BoxFit.fill,
                         placeholder: (context, url) =>
                             AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
