@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'font_settings_model.dart';
 import 'package:flutter/services.dart';
-import 'package:pure_live/core/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

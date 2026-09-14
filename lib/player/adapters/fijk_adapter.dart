@@ -15,7 +15,7 @@ import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/player/interface/fijk_player_accessor.dart';
 import 'package:pure_live/player/core/playback_proxy_policy.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:flv_lzc/fijkplayer.dart';
 
 class FijkAdapter

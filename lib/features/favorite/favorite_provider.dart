@@ -1,0 +1,230 @@
+import 'dart:async';
+import 'dart:developer' as developer;
+import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/features/favorite/model/favorite_state.dart';
+
+part 'favorite_provider.g.dart';
+
+@riverpod
+class FavoriteNotifier extends _$FavoriteNotifier {
+  StreamSubscription? _eventSubscription;
+  Timer? _autoRefreshTimer;
+
+  @override
+  FavoriteState build() {
+    ref.onDispose(() {
+      _eventSubscription?.cancel();
+      _autoRefreshTimer?.cancel();
+    });
+
+    _listenEventBus();
+    _setupRefreshStrategy();
+
+    final favState = ref.watch(favoriteRoomControllerProvider);
+    return _syncAndFilter(const FavoriteState(), favState);
+  }
+
+  void _listenEventBus() {
+    _eventSubscription = EventBus.instance.listen('refresh_favorite_rooms', (data) {
+      refreshData();
+    });
+  }
+
+  void _setupRefreshStrategy() {
+    _autoRefreshTimer?.cancel();
+    final refreshState = ref.read(refreshConfigControllerProvider);
+    final bool isEnabled = refreshState.autoRefreshFavorite;
+    final int interval = refreshState.autoRefreshInterval;
+
+    if (isEnabled && interval > 0) {
+      _autoRefreshTimer = Timer.periodic(Duration(minutes: interval), (timer) {
+        refreshData();
+      });
+    }
+  }
+
+  void changeOnlineTab(int index) {
+    final favState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(tabOnlineIndex: index), favState);
+  }
+
+  void changeSiteTab(int index) {
+    final favState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(tabSiteIndex: index), favState);
+  }
+
+  void changeSelectedTag(String tagId) {
+    final favState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(selectedTagId: tagId), favState);
+  }
+
+  FavoriteState _syncAndFilter(FavoriteState currentState, FavoriteSettingsModel favState) {
+    final List<LiveRoom> roomsBase = List<LiveRoom>.from(favState.favoriteRooms);
+
+    final onlineSrc = roomsBase.where((r) => r.liveStatus == LiveStatus.live && r.isRecord == false).toList();
+    final offline = roomsBase.where((r) => r.liveStatus != LiveStatus.live).toList();
+    final replaySrc = roomsBase.where((r) => r.liveStatus == LiveStatus.live && r.isRecord == true).toList();
+
+    final List<LiveRoom> online = onlineSrc.map((room) {
+      return room.copyWith(watching: int.tryParse(room.watching)?.toString() ?? '0');
+    }).toList();
+
+    final List<LiveRoom> replay = replaySrc.map((room) {
+      return room.copyWith(watching: int.tryParse(room.watching)?.toString() ?? '0');
+    }).toList();
+
+    final tagState = ref.read(tagManagementControllerProvider);
+    final tagController = ref.read(tagManagementControllerProvider.notifier);
+
+    int getRoomTagScore(LiveRoom room) {
+      final List<String> ids = tagController.getTagsForRoom(room);
+      if (ids.isEmpty) return 0;
+      int highest = 0;
+      const maxScore = 1000000;
+      for (var id in ids) {
+        final idx = tagState.tags.indexWhere((t) => id == t.id);
+        if (idx != -1) {
+          final tag = tagState.tags[idx];
+          final score = maxScore - tag.order * 100;
+          if (score > highest) highest = score;
+        }
+      }
+      return highest;
+    }
+
+    int sortRooms(LiveRoom a, LiveRoom b) {
+      final int watchA = int.tryParse(a.watching) ?? 0;
+      final int watchB = int.tryParse(b.watching) ?? 0;
+
+      if (currentState.selectedTagId == 'all') {
+        return watchB.compareTo(watchA);
+      }
+      int sa = getRoomTagScore(a);
+      int sb = getRoomTagScore(b);
+      if (sa != sb) return sb.compareTo(sa);
+      return watchB.compareTo(watchA);
+    }
+
+    online.sort(sortRooms);
+    replay.sort(sortRooms);
+
+    final currentAvailableSites = Sites().availableSites(containsAll: true);
+    final List<LiveTag> visibleTagsList = [];
+
+    if (currentState.tabSiteIndex >= 0 && currentState.tabSiteIndex < currentAvailableSites.length) {
+      final activeSite = currentAvailableSites[currentState.tabSiteIndex];
+      List<LiveRoom> target = switch (currentState.tabOnlineIndex) {
+        0 => online,
+        1 => replay,
+        2 => offline,
+        _ => online,
+      };
+
+      final Set<String> tagIds = {};
+      for (var room in target) {
+        if (activeSite.id == Sites.allSite || room.platform.toUpperCase() == activeSite.id.toUpperCase()) {
+          final ids = tagController.getTagsForRoom(room);
+          tagIds.addAll(ids);
+        }
+      }
+
+      final tags = tagState.tags.where((t) => tagIds.contains(t.id)).toList();
+      tags.sort((a, b) => a.order.compareTo(b.order));
+      visibleTagsList.addAll(tags);
+    }
+
+    return currentState.copyWith(
+      onlineRooms: online,
+      offlineRooms: offline,
+      replayRooms: replay,
+      visibleTags: visibleTagsList,
+    );
+  }
+
+  List<LiveRoom> getFilteredRooms() {
+    List<LiveRoom> source = switch (state.tabOnlineIndex) {
+      0 => state.onlineRooms,
+      1 => state.replayRooms,
+      2 => state.offlineRooms,
+      _ => state.onlineRooms,
+    };
+
+    final currentAvailableSites = Sites().availableSites(containsAll: true);
+    if (state.tabSiteIndex < 0 || state.tabSiteIndex >= currentAvailableSites.length) {
+      return [];
+    }
+
+    final activeSite = currentAvailableSites[state.tabSiteIndex];
+    if (activeSite.id != Sites.allSite) {
+      source = source.where((room) => room.platform.toUpperCase() == activeSite.id.toUpperCase()).toList();
+    }
+
+    if (state.selectedTagId == 'all') {
+      return source;
+    }
+
+    final tagController = ref.read(tagManagementControllerProvider.notifier);
+    return source.where((room) {
+      final List<String> ids = tagController.getTagsForRoom(room);
+      return ids.contains(state.selectedTagId);
+    }).toList();
+  }
+
+  Future<void> refreshData() async {
+    if (state.isLoading) return;
+    state = state.copyWith(isLoading: true);
+
+    final favState = ref.read(favoriteRoomControllerProvider);
+    final List<LiveRoom> source = List<LiveRoom>.from(favState.favoriteRooms);
+    final currentAvailableSites = Sites().availableSites(containsAll: true);
+    final refreshState = ref.read(refreshConfigControllerProvider);
+
+    List<LiveRoom> valid = source;
+    if (state.tabSiteIndex >= 0 && state.tabSiteIndex < currentAvailableSites.length) {
+      final activeSite = currentAvailableSites[state.tabSiteIndex];
+      if (activeSite.id != Sites.allSite) {
+        valid = source.where((r) => r.platform.toUpperCase() == activeSite.id.toUpperCase()).toList();
+      }
+    }
+
+    final tagController = ref.read(tagManagementControllerProvider.notifier);
+    if (state.selectedTagId != 'all') {
+      valid = valid.where((room) {
+        final List<String> ids = tagController.getTagsForRoom(room);
+        return ids.contains(state.selectedTagId);
+      }).toList();
+    }
+
+    final validRooms = valid.where((r) => r.platform.isNotEmpty).toList();
+    if (validRooms.isEmpty) {
+      state = _syncAndFilter(state.copyWith(isLoading: false), favState);
+      EventBus.instance.emit('refresh_favorite_finish', true);
+      return;
+    }
+
+    final int batch = refreshState.maxConcurrentRefresh > 0 ? refreshState.maxConcurrentRefresh : 5;
+
+    for (int i = 0; i < validRooms.length; i += batch) {
+      final end = i + batch > validRooms.length ? validRooms.length : i + batch;
+      final batchRooms = validRooms.sublist(i, end);
+
+      try {
+        final futures = batchRooms
+            .map((room) => Sites.of(room.platform).liveSite.getRoomDetail(roomId: room.roomId, platform: room.platform))
+            .toList();
+        final results = await Future.wait(futures);
+
+        for (var updated in results) {
+          ref.read(favoriteRoomControllerProvider.notifier).updateRoom(updated);
+        }
+      } catch (e) {
+        developer.log('Error refreshing room details in riverpod: $e');
+      }
+    }
+
+    final finalFavState = ref.read(favoriteRoomControllerProvider);
+    state = _syncAndFilter(state.copyWith(isLoading: false), finalFavState);
+  }
+}

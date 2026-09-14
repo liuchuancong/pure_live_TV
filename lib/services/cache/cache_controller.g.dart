@@ -8,15 +8,15 @@ part of 'cache_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// 同步自 pure_live CacheController：缓存分区扫描/清理/缩略图刷新。
+/// Cache maintenance: scan partitions, purge entries, refresh thumbnails.
 
 @ProviderFor(CacheController)
 final cacheControllerProvider = CacheControllerProvider._();
 
-/// 同步自 pure_live CacheController：缓存分区扫描/清理/缩略图刷新。
+/// Cache maintenance: scan partitions, purge entries, refresh thumbnails.
 final class CacheControllerProvider
     extends $NotifierProvider<CacheController, CacheModel> {
-  /// 同步自 pure_live CacheController：缓存分区扫描/清理/缩略图刷新。
+  /// Cache maintenance: scan partitions, purge entries, refresh thumbnails.
   CacheControllerProvider._()
     : super(
         from: null,
@@ -46,7 +46,7 @@ final class CacheControllerProvider
 
 String _$cacheControllerHash() => r'f34e6802c77db5a37616bd1e4957933a111dbb9c';
 
-/// 同步自 pure_live CacheController：缓存分区扫描/清理/缩略图刷新。
+/// Cache maintenance: scan partitions, purge entries, refresh thumbnails.
 
 abstract class _$CacheController extends $Notifier<CacheModel> {
   CacheModel build();

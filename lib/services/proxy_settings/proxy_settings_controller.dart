@@ -1,5 +1,5 @@
 import 'proxy_settings_model.dart';
-import 'package:pure_live/core/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/settings/settings_value.dart';

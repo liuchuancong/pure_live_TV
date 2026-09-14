@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'cache_model.dart';
-import 'package:pure_live/core/exports/package_export.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/global/app_path_manager.dart';
+import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'cache_controller.g.dart';
@@ -44,7 +44,7 @@ class CacheClearResult {
   bool get succeeded => failedOperations == 0;
 }
 
-/// 同步自 pure_live CacheController：缓存分区扫描/清理/缩略图刷新。
+/// Cache maintenance: scan partitions, purge entries, refresh thumbnails.
 @riverpod
 class CacheController extends _$CacheController {
   static CacheController get to => SettingsService.to.cache;

@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 
-/// TV 移植版：pure_live 的 PlaybackSourceTransport。
-/// TV 项目没有 FFmpeg HLS relay / HlsSourceQueryPolicy 基础设施，
-/// 因此这里去掉了 relay 分支与 policy 参数，保留输入租约（lease）、
-/// 世代（generation）事务与取消语义，供 URL 源与 app 自有输入源使用。
+/// Owns one input lease per source load: generation bookkeeping, cancellation
+/// and hand-off to a native player. Covers plain URL sources and app-owned
+/// inputs; no relay/proxy-rewrite branch is involved.
 // ignore_for_file: prefer_initializing_formals
 
 typedef PlaybackInputFactory = Future<PlaybackInputLease> Function(String url, Map<String, String> headers);

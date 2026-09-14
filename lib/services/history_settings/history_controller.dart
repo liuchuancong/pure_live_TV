@@ -1,11 +1,11 @@
 import 'history_model.dart';
-import 'package:pure_live/core/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'history_controller.g.dart';
 
-/// 同步自 pure_live HistoryController 的历史记录上限常量与工具函数。
+/// History limits and helpers.
 const int defaultHistoryLimit = 50;
 const int unlimitedHistoryLimit = 0;
 
@@ -94,7 +94,8 @@ class HistoryController extends _$HistoryController {
     _update(state.copyWith(historyRooms: <LiveRoom>[]));
   }
 
-  /// 同步自 pure_live：用刷新快照替换历史中对应条目（仅替换仍属于本次刷新的项）。
+  /// Replaces history entries with the refreshed snapshot, touching only the
+  /// entries that belong to this refresh.
   void applyRefreshedRooms(List<LiveRoom> snapshot, List<LiveRoom?> refreshed) {
     if (snapshot.length != refreshed.length) return;
     LiveRoom? replacementFor(LiveRoom room) {
@@ -126,7 +127,7 @@ class HistoryController extends _$HistoryController {
     _update(HistoryModel.fromJson(json));
   }
 
-  /// 同步自 pure_live：解析历史分区（归一化上限并裁剪列表），不触发持久化。
+  /// Parses the history section, normalizes the limit and trims the list.
   static Map<String, dynamic> parseConfig(Map<String, dynamic> json) {
     final limit = normalizeHistoryLimit(json[historyLimitKey]);
     final rooms = (json['historyRooms'] as List<dynamic>? ?? const [])
@@ -136,7 +137,7 @@ class HistoryController extends _$HistoryController {
     return {'historyRooms': applyHistoryLimit(rooms, limit), historyLimitKey: limit};
   }
 
-  /// 同步自 pure_live：从备份根配置中提取 history 分区。
+  /// Extracts the history section from a backup root document.
   static Map<String, dynamic> extractConfig(Map<String, dynamic>? rootConfig) {
     final history = rootConfig?['history'] as Map<String, dynamic>? ?? {};
     return parseConfig(history);

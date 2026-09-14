@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/player_exception.dart';
 
-import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/player/models/player_engine.dart';
 
 abstract class UnifiedPlayer {

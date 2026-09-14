@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
-/// 旧版（pure_live GetX 版）遗留 Hive 键值迁移到 v2 设置体系。
-/// 同步自 pure_live 的 LegacySettingsMigration，控制器定位改走
-/// TV 的 SettingsService 外观（Riverpod ProviderContainer）。
+/// Migrates legacy Hive keys into the v2 settings store.
+///
+/// Controllers are resolved through the SettingsService facade.
 class LegacySettingsMigration {
   static const _migratedKey = 'legacy_settings_migrated_to_v2';
 

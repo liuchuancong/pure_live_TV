@@ -1,12 +1,11 @@
-import 'package:pure_live/core/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_controller.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_model.dart';
 import 'package:pure_live/services/cookie_manager/cookie_value.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
-/// 同步自 pure_live BiliBiliAccountService：
-/// 账号信息加载（带版本号防串扰）、登录态切换与退出清理。
-/// 浏览器 WebView Cookie 清理依赖 flutter_inappwebview，TV 端未引入，暂缓。
+/// Loads account info (versioned to avoid crosstalk), switches login state
+/// and clears data on logout.
 class BilibiliAccountService {
   BilibiliAccountService._();
 
@@ -102,7 +101,7 @@ class BilibiliAccountService {
     _clearLocalAccountState();
   }
 
-  /// 同步自 pure_live：请求 B 站账号信息接口。
+  /// Requests the Bilibili account info endpoint.
   static Future<Map<String, dynamic>?> fetchAccountInfo(String cookie) async {
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/member/web/account',

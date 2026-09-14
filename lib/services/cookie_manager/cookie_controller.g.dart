@@ -8,15 +8,15 @@ part of 'cookie_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
+/// Normalizes and validates per-platform cookie values.
 
 @ProviderFor(CookieController)
 final cookieControllerProvider = CookieControllerProvider._();
 
-/// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
+/// Normalizes and validates per-platform cookie values.
 final class CookieControllerProvider
     extends $NotifierProvider<CookieController, CookieModel> {
-  /// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
+  /// Normalizes and validates per-platform cookie values.
   CookieControllerProvider._()
     : super(
         from: null,
@@ -46,7 +46,7 @@ final class CookieControllerProvider
 
 String _$cookieControllerHash() => r'041b2f4f470b6540cd4bc3668135f66801708963';
 
-/// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
+/// Normalizes and validates per-platform cookie values.
 
 abstract class _$CookieController extends $Notifier<CookieModel> {
   CookieModel build();

@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:pure_live/services/settings/settings.dart';
 
-/// 直播间音量记忆：按房间保存/恢复音量，全局静音优先。
-/// 同步自 pure_live 的 LiveRoomVolumeManager；
-/// 播放器核心是非 widget 代码，走 SettingsService 外观读取 Riverpod 状态。
+/// Per-room volume memory with global mute taking precedence.
+///
+/// The player core is non-widget code, so it reads Riverpod state through the
+/// SettingsService facade.
 class LiveRoomVolumeManager {
   static double getRoomVolume(String platform, String roomId) {
     final volState = SettingsService.to.volumeState;

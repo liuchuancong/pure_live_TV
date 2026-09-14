@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/services/back_up/backup_controller.dart';
+import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
-/// 同步自 pure_live BackupRecoveryService（插件层）：
-/// 本地备份文件写入与局域网推送。文件选择器 UI 由 TV 端页面自行实现，
-/// 这里仅保留纯业务能力。
+/// Writes local backup files and pushes them to a LAN peer.
+///
+/// Pickers and other UI stay in the pages; this service keeps the business logic only.
 class BackupRecoveryService {
   BackupRecoveryService();
 
@@ -39,7 +39,7 @@ class BackupRecoveryService {
     return selectedDirectory;
   }
 
-  /// 同步自 pure_live：把扁平 TV 设置推送到局域网 HTTP 服务。
+  /// Pushes the flat settings document to a LAN HTTP endpoint.
   Future<bool> pushSettingsToRemoteServer(String httpAddress) async {
     try {
       final response = await HttpClient.instance.postJson(

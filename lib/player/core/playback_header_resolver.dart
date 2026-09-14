@@ -1,10 +1,10 @@
-import 'package:pure_live/core/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// Resolves the HTTP headers used to read a platform's media stream.
 ///
-/// TV 移植版：只保留 TV 支持的平台（bilibili/douyu/huya/douyin/kuaishou/cc/iptv），
-/// 其余 pure_live 平台（twitch/soop/yy/picarto/...）已删除。
+/// Covers bilibili, douyu, huya, douyin, kuaishou, cc and iptv; platforms
+/// without a specific policy get an empty header set.
 class PlaybackHeaderResolver {
   const PlaybackHeaderResolver._();
 

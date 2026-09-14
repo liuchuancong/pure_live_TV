@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
-/// 同步自 pure_live DisplayModeInfo：Android TV 刷新率信息快照。
+/// Snapshot of the display refresh-rate capabilities of an Android TV device.
 @immutable
 class DisplayModeInfo {
   const DisplayModeInfo({
@@ -81,10 +81,9 @@ class DisplayModeInfo {
   );
 }
 
-/// 同步自 pure_live DisplayModeService：
-/// 通过原生 MethodChannel（pure_live/display_mode）切换 Android TV 刷新率。
-/// TV 端未引入 flutter_displaymode 包，因此保留 MethodChannel 方案，
-/// MissingPluginException 时安全降级为无操作。
+/// Switches the Android TV refresh rate over a native MethodChannel.
+///
+/// When the platform side is unavailable the call degrades to a no-op.
 class DisplayModeService {
   DisplayModeService._();
 

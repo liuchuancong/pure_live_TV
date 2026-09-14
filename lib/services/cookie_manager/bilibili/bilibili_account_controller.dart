@@ -7,7 +7,7 @@ import 'package:meta/meta.dart';
 
 part 'bilibili_account_controller.g.dart';
 
-/// 同步自 pure_live：B 站账号状态控制器（业务逻辑在 BilibiliAccountService）。
+/// Bilibili account state; the business logic lives in BilibiliAccountService.
 @riverpod
 class BilibiliAccountController extends _$BilibiliAccountController {
   @override

@@ -3,9 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'app_settings_model.freezed.dart';
 part 'app_settings_model.g.dart';
 
-/// 与 pure_live 的应用设置字段全量对齐：
-/// enableMultiView / enableNewWindowPlay 为 Windows 独占功能，
-/// TV 无 UI 也不消费，仅保留在模型中使备份导出/导入双向兼容。
+/// Application settings model.
+///
+/// enableMultiView and enableNewWindowPlay have no UI here and are kept only so
+/// backup export/import stays compatible with older backups.
 @freezed
 abstract class AppSettingsModel with _$AppSettingsModel {
   const factory AppSettingsModel({

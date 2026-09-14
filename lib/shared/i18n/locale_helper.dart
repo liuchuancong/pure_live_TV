@@ -1,0 +1,121 @@
+// Translation helpers.
+//
+// Runtime lookups use assets/translations through easy_localization, so strings
+// follow the language setting. The static table below stays as an offline
+// fallback, and i18nOr returns the caller fallback when a key is unknown.
+import 'package:easy_localization/easy_localization.dart' as ez;
+
+Map<String, String> _labels = {
+  'cc_live_categories': '直播分类',
+  'cc_official_entries': '官方房间/专题',
+  'huajiao_hot': '公开推荐',
+  'huajiao_original_stream': '原始流',
+  'inke_media_unavailable': '该房间仍在直播，但当前官网精选未提供已验证的公开播放地址，请稍后刷新。',
+  'niconico_access_restricted': '此节目的当前观看权限受限。',
+  'niconico_login_required': '此节目要求登录官方站点。',
+  'niconico_program_scope': '收藏对应本次节目，主播的新节目需重新添加；弹幕暂未接入。',
+  'niconico_region_restricted': '此节目设有地区访问限制。',
+  'niconico_scheduled': '节目尚未开始。',
+  'openrec_hls_auto': 'HLS 自动',
+  'openrec_low_latency': '低延迟流',
+  'openrec_multiple_broadcasts': '此频道有多个当前直播，请在原站确认；当前不自动选择其中一个。',
+  'openrec_partial_sources': '部分源暂时不可用，当前仅列出已成功解析的画质。',
+  'openrec_public_directory': '公开直播',
+  'openrec_public_source': '公开流',
+  'openrec_restricted': '此直播有访问限制，尚未接入相应观看方式。',
+  'picarto_public_directory': '公开直播（不含成人内容）',
+  'site_huajiao': '花椒',
+  'site_inke': '映客',
+  'site_kilakila': '克拉克拉',
+  'site_weibo': '微博直播',
+  'site_xiaohongshu': '小红书',
+  'tting_auto': '自动',
+  'tting_public_directory': '首页公开直播',
+  'tting_restricted': '此频道标记为受限，公开播放尚不可用',
+  'weibo_original_stream': '原始流',
+  'weibo_public_directory': '公开推荐',
+  'weibo_restricted': '当前场次存在访问限制或播放已关闭；公开直播源不可用。',
+  'weibo_room_scope': '收藏跟踪当前直播场次，不是主播账号；新场次需重新导入直播链接。',
+  'xiaohongshu_display_viewers': '平台展示观看值：{value}（非已验证的实时在线人数）',
+  'xiaohongshu_restricted': '该房间存在访问条件或访问状态待确认，当前没有可用的公开完整直播源。',
+  'xiaohongshu_room_scope': '当前以直播房间号跟踪；主播重新开播使用新房间号时，请重新导入分享链接。',
+  // —— 通用 ——
+  'cancel': '取消',
+  'confirm': '确定',
+  'download_failed': '下载失败',
+  'epg_import_failed': '节目单导入失败',
+  'epg_source_updated': '节目单源已更新',
+  'unsupported_file_format': '不支持的文件格式',
+  'provider_name_exists_tip': '该名称已存在，是否覆盖？',
+  'subscription_download_or_parse_failed': '订阅下载或解析失败',
+
+  // —— 站点名称 ——
+  'site_all': '全部',
+  'site_bilibili': '哔哩哔哩',
+  'site_douyu': '斗鱼',
+  'site_huya': '虎牙',
+  'site_douyin': '抖音',
+  'site_kuaishou': '快手',
+  'site_cc': '网易CC',
+  'site_twitch': 'Twitch',
+  'site_soop': 'AfreecaTV(SOOP)',
+  'site_yy': 'YY',
+  'site_acfun': 'AcFun',
+  'site_picarto': 'Picarto',
+  'site_twitcasting': 'TwitCasting',
+  'site_missevan': '猫耳FM',
+  'site_openrec': 'OPENREC',
+  'site_niconico': 'Niconico',
+  'site_tting': 'TtingLive',
+  'site_iptv': 'IPTV',
+
+  // —— Niconico 目录 ——
+  'niconico_category_common': '一般',
+  'niconico_category_try': '尝试',
+  'niconico_category_live': '实况',
+  'niconico_category_req': '募集',
+  'niconico_category_face': '表情',
+  'niconico_category_totu': '凸待',
+  'niconico_category_vtuber': 'VTuber',
+
+  // —— HTTP 错误 ——
+  'http_error_400': '请求错误(400)',
+  'http_error_401': '未授权(401)',
+  'http_error_403': '禁止访问(403)',
+  'http_error_404': '未找到资源(404)',
+  'http_error_500': '服务器错误(500)',
+  'http_error_502': '网关错误(502)',
+  'http_error_503': '服务不可用(503)',
+  'http_error_default': '网络错误({statusCode})',
+};
+
+String i18n(String key, {Map<String, String>? args}) {
+  var text = _translate(key);
+  args?.forEach((name, value) {
+    text = text.replaceAll('{$name}', value);
+  });
+  return text;
+}
+
+String i18nOr(String key, String fallback, {Map<String, String>? args}) {
+  if (!i18nExists(key)) return fallback;
+  return i18n(key, args: args);
+}
+
+bool i18nExists(String key) => _hasTranslation(key) || _labels.containsKey(key);
+
+/// Lookup order: easy_localization assets first, then the built-in table.
+/// The static table keeps offline and test callers working; a missing key is
+String _translate(String key) {
+  if (_hasTranslation(key)) return ez.tr(key);
+  return _labels[key] ?? key;
+}
+
+bool _hasTranslation(String key) {
+  try {
+    return ez.trExists(key);
+  } catch (_) {
+    // EasyLocalization 尚未初始化时只依赖静态表。
+    return false;
+  }
+}

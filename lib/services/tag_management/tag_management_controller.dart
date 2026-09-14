@@ -1,6 +1,6 @@
 import 'live_tag.dart';
 import 'tag_management_model.dart';
-import 'package:pure_live/core/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

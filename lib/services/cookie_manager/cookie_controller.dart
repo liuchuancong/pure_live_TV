@@ -1,14 +1,14 @@
 import 'cookie_model.dart';
 import 'cookie_value.dart';
 import 'bilibili/bilibili_account_service.dart';
-import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'cookie_controller.g.dart';
 
-/// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
+/// Normalizes and validates per-platform cookie values.
 @riverpod
 class CookieController extends _$CookieController {
   static CookieController get to => SettingsService.to.cookieManager;
@@ -58,7 +58,7 @@ class CookieController extends _$CookieController {
   }
 
   // ------------------------------------------------------------------
-  // per-platform setters（同步自 pure_live 的逐平台 Cookie 校验）
+  // Per-platform setters.
   // ------------------------------------------------------------------
 
   void setBilibiliCookie(String cookie) {
@@ -119,7 +119,7 @@ class CookieController extends _$CookieController {
     BilibiliAccountService.instance.loadUserInfo();
   }
 
-  /// 同步自 pure_live：解析 cookie 分区但不通知观察者/不持久化。
+  /// Parses the cookie section without notifying observers or persisting.
   static Map<String, dynamic> parseConfig(Map<String, dynamic> json) {
     return {
       'bilibiliCookie': normalizeAccountCookie((json['bilibiliCookie'] ?? '') as String),
@@ -133,7 +133,7 @@ class CookieController extends _$CookieController {
     };
   }
 
-  /// 同步自 pure_live：从备份根配置中提取 cookie 分区。
+  /// Extracts the cookie section from a backup root document.
   static Map<String, dynamic> extractConfig(Map<String, dynamic>? rootConfig) {
     final cookie = rootConfig?['cookie'] as Map<String, dynamic>? ?? {};
     return parseConfig(cookie);

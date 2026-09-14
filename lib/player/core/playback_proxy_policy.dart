@@ -1,8 +1,9 @@
-import 'package:pure_live/core/common/proxy_routing.dart';
+import 'package:pure_live/shared/common/proxy_routing.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
-/// 媒体传输代理策略，独立于应用/API 层代理。
-/// 同步自 pure_live 的 PlaybackProxyPolicy，读取改走 TV 的 SettingsService 外观。
+/// Proxy policy for media transport, independent from the API layer.
+///
+/// Configured values are read through the SettingsService facade.
 class PlaybackProxyPolicy {
   const PlaybackProxyPolicy._();
 

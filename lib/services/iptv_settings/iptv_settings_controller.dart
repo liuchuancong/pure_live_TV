@@ -1,19 +1,19 @@
 import 'iptv_settings_model.dart';
-import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'iptv_settings_controller.g.dart';
 
-/// 同步自 pure_live IptvSettingsController 的常量。
+/// IPTV auto-sync interval bounds and normalization.
 const int iptvDefaultAutoSyncHours = 24;
 const int iptvMinAutoSyncHours = 2;
 const int iptvMaxAutoSyncHours = 72;
 
 int normalizeIptvAutoSyncHours(int hours) => hours.clamp(iptvMinAutoSyncHours, iptvMaxAutoSyncHours);
 
-/// 同步自 pure_live IptvSettingsController：IPTV 源选择与自动同步配置。
+/// IPTV source selection and auto-sync configuration.
 @riverpod
 class IptvSettingsController extends _$IptvSettingsController {
   static IptvSettingsController get to => SettingsService.to.iptv;
@@ -99,7 +99,7 @@ class IptvSettingsController extends _$IptvSettingsController {
     _persist();
   }
 
-  /// 同步自 pure_live：解析 iptv 分区但不通知观察者/不持久化。
+  /// Parses the iptv section without notifying observers or persisting.
   static Map<String, dynamic> parseConfig(Map<String, dynamic> json) {
     final rawHours = json['autoSyncHoursInterval'];
     return {
@@ -114,7 +114,7 @@ class IptvSettingsController extends _$IptvSettingsController {
     };
   }
 
-  /// 同步自 pure_live：从备份根配置中提取 iptv 分区。
+  /// Extracts the iptv section from a backup root document.
   static Map<String, dynamic> extractConfig(Map<String, dynamic>? rootConfig) {
     final iptv = rootConfig?['iptv'] as Map<String, dynamic>? ?? {};
     return parseConfig(iptv);

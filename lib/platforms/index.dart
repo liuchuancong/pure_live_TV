@@ -1,0 +1,27 @@
+/// Platform barrels; each platform keeps its api, site, danmaku and tools.
+library;
+
+export 'sites.dart';
+export 'acfun/index.dart';
+export 'bigo/index.dart';
+export 'bilibili/index.dart';
+export 'cc/index.dart';
+export 'douyin/index.dart';
+export 'douyu/index.dart';
+export 'huajiao/index.dart';
+export 'huya/index.dart';
+export 'inke/index.dart';
+export 'kilakila/index.dart';
+export 'kuaishou/index.dart';
+export 'missevan/index.dart';
+export 'niconico/index.dart';
+export 'openrec/index.dart';
+export 'picarto/index.dart';
+export 'soop/index.dart';
+export 'tting/index.dart';
+export 'twitcasting/index.dart';
+export 'twitch/index.dart' hide Stream, Channel;
+export 'weibo/index.dart';
+export 'xiaohongshu/index.dart';
+export 'yy/index.dart';
+export 'zhanqi/index.dart';

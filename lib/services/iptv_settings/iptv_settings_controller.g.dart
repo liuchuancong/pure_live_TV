@@ -8,15 +8,15 @@ part of 'iptv_settings_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// 同步自 pure_live IptvSettingsController：IPTV 源选择与自动同步配置。
+/// IPTV source selection and auto-sync configuration.
 
 @ProviderFor(IptvSettingsController)
 final iptvSettingsControllerProvider = IptvSettingsControllerProvider._();
 
-/// 同步自 pure_live IptvSettingsController：IPTV 源选择与自动同步配置。
+/// IPTV source selection and auto-sync configuration.
 final class IptvSettingsControllerProvider
     extends $NotifierProvider<IptvSettingsController, IptvSettingsModel> {
-  /// 同步自 pure_live IptvSettingsController：IPTV 源选择与自动同步配置。
+  /// IPTV source selection and auto-sync configuration.
   IptvSettingsControllerProvider._()
     : super(
         from: null,
@@ -45,9 +45,9 @@ final class IptvSettingsControllerProvider
 }
 
 String _$iptvSettingsControllerHash() =>
-    r'b9e743b83d759f6f565c9a20a0ce52587ed5df10';
+    r'44447c4e62b219d9ecfade9583030c05c5e23985';
 
-/// 同步自 pure_live IptvSettingsController：IPTV 源选择与自动同步配置。
+/// IPTV source selection and auto-sync configuration.
 
 abstract class _$IptvSettingsController extends $Notifier<IptvSettingsModel> {
   IptvSettingsModel build();

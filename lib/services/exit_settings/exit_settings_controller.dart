@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'exit_settings_model.dart';
-import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

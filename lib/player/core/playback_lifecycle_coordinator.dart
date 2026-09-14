@@ -23,8 +23,8 @@ typedef LifecycleResumeCallback = Future<bool> Function(PlaybackLifecyclePauseTo
 /// Serializing lifecycle transitions here also avoids a late pause completing
 /// after a fast foreground resume.
 ///
-/// TV 移植版：去掉 pure_live 的 audio-only 省电与后台继续播放策略回调，
-/// 只保留「隐藏即暂停 / 恢复时按 token 续播」的核心生命周期状态机。
+/// Keeps only the core lifecycle state machine: pause when hidden, resume the
+/// exact playback intent token when visible again.
 class PlaybackLifecycleCoordinator with WidgetsBindingObserver {
   PlaybackLifecycleCoordinator({
     required LifecyclePauseCallback pauseForLifecycle,

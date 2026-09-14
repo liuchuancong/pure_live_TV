@@ -14,9 +14,9 @@ import '../interface/unified_player_interface.dart';
 import 'package:pure_live/player/models/player_engine.dart';
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:pure_live/player/interface/video_player_accessor.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 
-class BetterPlayerAdapter
+class VideoPlayerAdapter
     implements
         UnifiedPlayer,
         BetterPlayerAccessor,

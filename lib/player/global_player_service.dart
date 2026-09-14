@@ -35,7 +35,7 @@ class GlobalPlayerService {
           case PlayerEngine.fijk:
             return FijkAdapter();
           case PlayerEngine.betterPlayer:
-            return BetterPlayerAdapter();
+            return VideoPlayerAdapter();
         }
       },
     );

@@ -3,9 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'danmaku_settings_model.freezed.dart';
 part 'danmaku_settings_model.g.dart';
 
-/// 与 pure_live 的弹幕设置字段全量对齐：
-/// 画中画弹幕/交互/相似度过滤等字段在 TV 上无 UI 也不消费，
-/// 但保留在模型中，使备份导出/导入与 pure_live 双向兼容。
+/// Danmaku settings model.
+///
+/// Picture-in-picture, interaction and similarity fields have no UI here and
+/// are kept only to keep backup export/import compatible with older backups.
 @freezed
 abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
   const factory DanmakuSettingsModel({

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-/// 同步自 pure_live BackupMigrationUtil：兼容字符串/对象两种备份条目形态。
+/// Reads backup entries that may be either plain strings or objects.
 class BackupMigrationUtil {
   static List<T> parseObjectList<T>(
     dynamic data,

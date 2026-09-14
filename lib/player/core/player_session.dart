@@ -1,4 +1,4 @@
-import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/player/models/player_engine.dart';
 
 class PlayerSession {

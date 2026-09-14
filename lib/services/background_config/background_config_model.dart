@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:pure_live/core/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'background_config_model.freezed.dart';

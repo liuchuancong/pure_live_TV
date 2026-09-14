@@ -16,10 +16,10 @@ import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import '../interface/unified_player_interface.dart';
-import 'package:pure_live/widgets/app_status_view.dart';
+import 'package:pure_live/shared/widgets/app_status_view.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 
 /// 单条待处理的原生错误：与来源 session 绑定，过期的错误直接丢弃。
 class _PendingPlayerError {
@@ -29,20 +29,15 @@ class _PendingPlayerError {
   final int sessionId;
 }
 
-/// PlayerManager：从 pure_live 完整移植的播放编排核心。
+/// Playback orchestration core for the single global player.
 ///
-/// 相比 TV 旧版（666 行）补齐的真实架构：
-/// - 串行化的 player lifecycle 队列 + sessionId/intentRevision 双世代守卫
-/// - PlaybackSource / PlaybackSourceTransport（每个 UnifiedPlayer 一个输入事务）
-/// - 错误分类（PlayerErrorClassifier 产生的 code）驱动的恢复管线：
-///   换线路 -> 软解恢复 -> 引擎降级 -> 同引擎重建 -> 有限退避重试 -> 终态发布
-/// - 源打开就绪 deadline、缓冲停滞、意外暂停连续性、视频帧停滞四个 watchdog
-/// - 生命周期暂停/恢复 token（PlaybackLifecycleCoordinator）
-/// - 房间记忆音量恢复（LiveRoomVolumeManager）
-/// - 按平台解析播放头（PlaybackHeaderResolver，headers 为空时）
-///
-/// 有意省略（TV 无此能力/场景）：PiP/悬浮窗/多画面、纯音频模式与前台服务、
-/// 录制相关输入 relay、Windows 预热备胎、竖屏探测与 source refresh resolver。
+/// - serialized player lifecycle queue with sessionId/intentRevision guards
+/// - PlaybackSource + PlaybackSourceTransport (one input lease per player)
+/// - error-code driven recovery pipeline: line switch, software decoding,
+///   engine fallback, same-engine rebuild, bounded backoff, terminal state
+/// - watchdogs: open deadline, buffer stall, unexpected pause, frame stall
+/// - lifecycle pause/resume tokens and per-room volume restore
+/// - platform header resolution when the caller passes no headers
 class PlayerManager {
   final PlayerPool playerPool;
 
@@ -478,7 +473,7 @@ class PlayerManager {
 
     try {
       _stateSubject.add(PlayerState.preparing);
-      // headers 为空时按平台解析播放头（TV 移植：PlaybackHeaderResolver）。
+      // With no explicit headers, resolve them per platform.
       final effectiveHeaders =
           (headers.isEmpty && room != null && room.platform.isNotEmpty)
           ? await PlaybackHeaderResolver.resolve(
@@ -493,8 +488,8 @@ class PlayerManager {
       _sourceOpened = true;
       _armSourceReadyDeadline(player, mySessionId);
 
-      // 恢复该房间的记忆音量（同步自 pure_live 的 LiveRoomVolumeManager）。
-      // 损坏的音量偏好不应成为播放失败；回退到适配器当前音量即可。
+      // Restore the remembered volume for this room. A corrupt preference must
+      // never fail playback; fall back to the adapter volume.
       if (room != null) {
         try {
           await player.setVolume(

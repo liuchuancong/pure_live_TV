@@ -4,11 +4,11 @@ import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;
 
-import 'package:pure_live/services/back_up/backup_controller.dart';
+import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/webdav/webdav_config.dart';
 
-/// 同步自 pure_live WebDAVService：WebDAV 客户端薄封装。
+/// Thin WebDAV client used for settings backup and restore.
 class WebDavSyncService {
   WebDavSyncService({required String url, required String username, required String password})
     : _client = webdav.newClient(url.trim(), user: username, password: password, debug: false);
@@ -38,7 +38,7 @@ class WebDavSyncService {
 
   void close() => _client.c.close(force: true);
 
-  /// 校验目录型 base URL（同步自 pure_live WebDAVConfig.isValidAddress）。
+  /// Validates a directory-style base URL.
   static bool isValidAddress(String address) {
     final value = address.trim();
     if (value.isEmpty || RegExp(r'[\x00-\x1f\x7f\\]').hasMatch(value)) return false;
@@ -63,8 +63,8 @@ class WebDavSyncService {
   }
 }
 
-/// 同步自 pure_live WebDavPageController 的备份上传/下载/删除业务流：
-/// 去掉 GetX 页面状态，保留纯服务能力（文件名规则、编码、恢复流程）。
+/// Upload, download and delete flows for WebDAV backups, including file
+/// naming rules, encoding and the restore sequence.
 class WebDavBackupService {
   WebDavBackupService({this.now});
 

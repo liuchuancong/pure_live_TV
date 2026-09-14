@@ -1,7 +1,7 @@
-import 'package:pure_live/theme/index.dart';
-import 'package:pure_live/core/exports/package_export.dart';
-import 'package:pure_live/core/consts/app_consts.dart';
-import 'package:pure_live/routes/app_router.dart';
+import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/consts/app_consts.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class App extends ConsumerWidget {
