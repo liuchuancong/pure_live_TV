@@ -93,6 +93,12 @@ class LivePlayController extends _$LivePlayController {
     state = state.copyWith(room: detail, clearDetailError: true);
     // 展示层音量与房间记忆音量对齐（PlayerManager 起播时会恢复同一值）。
     state = state.copyWith(volume: detail.getSavedVolume().clamp(0.0, 1.0).toDouble());
+
+    // Fullscreen by default hides the controls on entry; disabling it keeps the
+    // control bar visible so quality and line switching are one press away.
+    if (!SettingsService.to.appState.enableFullScreenDefault) {
+      showControls();
+    }
     unawaited(ref.read(danmakuSessionControllerProvider(args).notifier).connectRoom(detail));
 
     await loadQualitiesAndPlay(detail, generation);
