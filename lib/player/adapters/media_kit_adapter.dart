@@ -1039,14 +1039,13 @@ class MediaKitAdapter
 
     try {
       if (PlatformUtils.isAndroid) {
-        // Android's patched video controller serializes `vid` with WID/Surface
-        // updates. Disabling decode here saves battery during long ASMR sessions
-        // while retaining the same player, demuxer and network connection.
-        // 官方版 media_kit_video 无 setVideoOutputEnabled 补丁，
-        // 用 mpv 的 vid 属性实现等效的“仅音频解码”开关
-        final platform = _player.platform;
-        if (platform != null) {
-          await (platform as dynamic).setProperty('vid', audioOnly ? 'no' : 'auto');
+        // The patched Android video controller owns `vid` together with the
+        // WID/Surface lifecycle, so audio-only mode keeps the same player,
+        // demuxer and network connection without racing a rotation or resize.
+        if (audioOnly) {
+          await _controller.setVideoOutputEnabled(false);
+        } else {
+          await _restoreAndroidVideoOutput();
         }
       } else {
         // Desktop video outputs do not rewrite `vid` while their surface is
@@ -1064,6 +1063,53 @@ class MediaKitAdapter
         error: error,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  /// Re-enables Android video and waits for mpv to publish fresh decoded-video
+  /// parameters before the caller reveals the video layer.
+  ///
+  /// This is an adaptive keyframe fence rather than a fixed delay: a fast stream
+  /// reveals immediately, while a slow GOP stays covered by the caller's
+  /// placeholder instead of showing a black texture.
+  Future<void> _restoreAndroidVideoOutput() async {
+    final frameReady = Completer<void>();
+    var armed = false;
+    final stopwatch = Stopwatch()..start();
+    final subscription = _player.stream.videoParams.listen((params) {
+      final width = params.dw ?? params.w ?? 0;
+      final height = params.dh ?? params.h ?? 0;
+      if (armed && width > 0 && height > 0 && !frameReady.isCompleted) {
+        frameReady.complete();
+      }
+    });
+
+    try {
+      // The stream is broadcast, but arm after attaching the listener so a
+      // stale cached state can never be mistaken for the next decoded frame.
+      armed = true;
+      await _controller.setVideoOutputEnabled(true);
+
+      var observedFreshFrame = true;
+      await frameReady.future.timeout(
+        const Duration(milliseconds: 2800),
+        onTimeout: () {
+          observedFreshFrame = false;
+        },
+      );
+      if (observedFreshFrame) {
+        // video-params precedes texture composition by a very small interval.
+        // Two display frames give the GPU texture a chance to present.
+        await Future<void>.delayed(const Duration(milliseconds: 34));
+      } else {
+        debugPrint(
+          'MediaKitAdapter: video restore readiness timed out after '
+          '${stopwatch.elapsedMilliseconds} ms; revealing the live texture',
+        );
+      }
+    } finally {
+      stopwatch.stop();
+      await subscription.cancel();
     }
   }
 

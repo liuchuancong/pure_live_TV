@@ -4,6 +4,14 @@ import java.io.File
 
 allprojects {
     repositories {
+        // The vendored flv_lzc ships its 16 KB page-size compatible AAR in the
+        // plugin, so the artifact must resolve from that directory instead of a
+        // remote repository.
+        maven(rootProject.file("../plugins/flv_lzc/android/libs")) {
+            content {
+                includeModule("io.github.flutterplayer", "fplayer-core")
+            }
+        }
         google()
         mavenCentral()
     }

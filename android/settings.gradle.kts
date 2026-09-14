@@ -20,7 +20,8 @@ pluginManagement {
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "9.0.1" apply false
-    id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+    // AGP 9 compiles Kotlin itself; declaring the standalone Kotlin Gradle
+    // Plugin as well duplicates the compiler used by the vendored plugins.
 }
 
 include(":app")
