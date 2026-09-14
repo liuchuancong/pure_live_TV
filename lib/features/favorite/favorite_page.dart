@@ -116,7 +116,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
+                          crossAxisCount: favoriteState.denseLayout ? 5 : 4,
                           mainAxisSpacing: 32.sp,
                           crossAxisSpacing: 32.sp,
                           childAspectRatio: 1.3,

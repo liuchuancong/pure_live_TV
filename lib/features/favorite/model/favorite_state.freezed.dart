@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$FavoriteState {
 
- int get tabSiteIndex; int get tabOnlineIndex; String get selectedTagId; List<LiveRoom> get onlineRooms; List<LiveRoom> get offlineRooms; List<LiveRoom> get replayRooms; List<LiveTag> get visibleTags; bool get isLoading;
+ int get tabSiteIndex; int get tabOnlineIndex; String get selectedTagId; List<LiveRoom> get onlineRooms; List<LiveRoom> get offlineRooms; List<LiveRoom> get replayRooms; List<LiveTag> get visibleTags; bool get isLoading;/// Denser card grid, chosen on the general settings page.
+ bool get denseLayout;
 /// Create a copy of FavoriteState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $FavoriteStateCopyWith<FavoriteState> get copyWith => _$FavoriteStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteState&&(identical(other.tabSiteIndex, tabSiteIndex) || other.tabSiteIndex == tabSiteIndex)&&(identical(other.tabOnlineIndex, tabOnlineIndex) || other.tabOnlineIndex == tabOnlineIndex)&&(identical(other.selectedTagId, selectedTagId) || other.selectedTagId == selectedTagId)&&const DeepCollectionEquality().equals(other.onlineRooms, onlineRooms)&&const DeepCollectionEquality().equals(other.offlineRooms, offlineRooms)&&const DeepCollectionEquality().equals(other.replayRooms, replayRooms)&&const DeepCollectionEquality().equals(other.visibleTags, visibleTags)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteState&&(identical(other.tabSiteIndex, tabSiteIndex) || other.tabSiteIndex == tabSiteIndex)&&(identical(other.tabOnlineIndex, tabOnlineIndex) || other.tabOnlineIndex == tabOnlineIndex)&&(identical(other.selectedTagId, selectedTagId) || other.selectedTagId == selectedTagId)&&const DeepCollectionEquality().equals(other.onlineRooms, onlineRooms)&&const DeepCollectionEquality().equals(other.offlineRooms, offlineRooms)&&const DeepCollectionEquality().equals(other.replayRooms, replayRooms)&&const DeepCollectionEquality().equals(other.visibleTags, visibleTags)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.denseLayout, denseLayout) || other.denseLayout == denseLayout));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,tabSiteIndex,tabOnlineIndex,selectedTagId,const DeepCollectionEquality().hash(onlineRooms),const DeepCollectionEquality().hash(offlineRooms),const DeepCollectionEquality().hash(replayRooms),const DeepCollectionEquality().hash(visibleTags),isLoading);
+int get hashCode => Object.hash(runtimeType,tabSiteIndex,tabOnlineIndex,selectedTagId,const DeepCollectionEquality().hash(onlineRooms),const DeepCollectionEquality().hash(offlineRooms),const DeepCollectionEquality().hash(replayRooms),const DeepCollectionEquality().hash(visibleTags),isLoading,denseLayout);
 
 @override
 String toString() {
-  return 'FavoriteState(tabSiteIndex: $tabSiteIndex, tabOnlineIndex: $tabOnlineIndex, selectedTagId: $selectedTagId, onlineRooms: $onlineRooms, offlineRooms: $offlineRooms, replayRooms: $replayRooms, visibleTags: $visibleTags, isLoading: $isLoading)';
+  return 'FavoriteState(tabSiteIndex: $tabSiteIndex, tabOnlineIndex: $tabOnlineIndex, selectedTagId: $selectedTagId, onlineRooms: $onlineRooms, offlineRooms: $offlineRooms, replayRooms: $replayRooms, visibleTags: $visibleTags, isLoading: $isLoading, denseLayout: $denseLayout)';
 }
 
 
@@ -45,7 +46,7 @@ abstract mixin class $FavoriteStateCopyWith<$Res>  {
   factory $FavoriteStateCopyWith(FavoriteState value, $Res Function(FavoriteState) _then) = _$FavoriteStateCopyWithImpl;
 @useResult
 $Res call({
- int tabSiteIndex, int tabOnlineIndex, String selectedTagId, List<LiveRoom> onlineRooms, List<LiveRoom> offlineRooms, List<LiveRoom> replayRooms, List<LiveTag> visibleTags, bool isLoading
+ int tabSiteIndex, int tabOnlineIndex, String selectedTagId, List<LiveRoom> onlineRooms, List<LiveRoom> offlineRooms, List<LiveRoom> replayRooms, List<LiveTag> visibleTags, bool isLoading, bool denseLayout
 });
 
 
@@ -62,7 +63,7 @@ class _$FavoriteStateCopyWithImpl<$Res>
 
 /// Create a copy of FavoriteState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? tabSiteIndex = null,Object? tabOnlineIndex = null,Object? selectedTagId = null,Object? onlineRooms = null,Object? offlineRooms = null,Object? replayRooms = null,Object? visibleTags = null,Object? isLoading = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? tabSiteIndex = null,Object? tabOnlineIndex = null,Object? selectedTagId = null,Object? onlineRooms = null,Object? offlineRooms = null,Object? replayRooms = null,Object? visibleTags = null,Object? isLoading = null,Object? denseLayout = null,}) {
   return _then(_self.copyWith(
 tabSiteIndex: null == tabSiteIndex ? _self.tabSiteIndex : tabSiteIndex // ignore: cast_nullable_to_non_nullable
 as int,tabOnlineIndex: null == tabOnlineIndex ? _self.tabOnlineIndex : tabOnlineIndex // ignore: cast_nullable_to_non_nullable
@@ -72,6 +73,7 @@ as List<LiveRoom>,offlineRooms: null == offlineRooms ? _self.offlineRooms : offl
 as List<LiveRoom>,replayRooms: null == replayRooms ? _self.replayRooms : replayRooms // ignore: cast_nullable_to_non_nullable
 as List<LiveRoom>,visibleTags: null == visibleTags ? _self.visibleTags : visibleTags // ignore: cast_nullable_to_non_nullable
 as List<LiveTag>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,denseLayout: null == denseLayout ? _self.denseLayout : denseLayout // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -157,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int tabSiteIndex,  int tabOnlineIndex,  String selectedTagId,  List<LiveRoom> onlineRooms,  List<LiveRoom> offlineRooms,  List<LiveRoom> replayRooms,  List<LiveTag> visibleTags,  bool isLoading)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int tabSiteIndex,  int tabOnlineIndex,  String selectedTagId,  List<LiveRoom> onlineRooms,  List<LiveRoom> offlineRooms,  List<LiveRoom> replayRooms,  List<LiveTag> visibleTags,  bool isLoading,  bool denseLayout)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FavoriteState() when $default != null:
-return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_that.onlineRooms,_that.offlineRooms,_that.replayRooms,_that.visibleTags,_that.isLoading);case _:
+return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_that.onlineRooms,_that.offlineRooms,_that.replayRooms,_that.visibleTags,_that.isLoading,_that.denseLayout);case _:
   return orElse();
 
 }
@@ -178,10 +180,10 @@ return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int tabSiteIndex,  int tabOnlineIndex,  String selectedTagId,  List<LiveRoom> onlineRooms,  List<LiveRoom> offlineRooms,  List<LiveRoom> replayRooms,  List<LiveTag> visibleTags,  bool isLoading)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int tabSiteIndex,  int tabOnlineIndex,  String selectedTagId,  List<LiveRoom> onlineRooms,  List<LiveRoom> offlineRooms,  List<LiveRoom> replayRooms,  List<LiveTag> visibleTags,  bool isLoading,  bool denseLayout)  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteState():
-return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_that.onlineRooms,_that.offlineRooms,_that.replayRooms,_that.visibleTags,_that.isLoading);case _:
+return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_that.onlineRooms,_that.offlineRooms,_that.replayRooms,_that.visibleTags,_that.isLoading,_that.denseLayout);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +200,10 @@ return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int tabSiteIndex,  int tabOnlineIndex,  String selectedTagId,  List<LiveRoom> onlineRooms,  List<LiveRoom> offlineRooms,  List<LiveRoom> replayRooms,  List<LiveTag> visibleTags,  bool isLoading)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int tabSiteIndex,  int tabOnlineIndex,  String selectedTagId,  List<LiveRoom> onlineRooms,  List<LiveRoom> offlineRooms,  List<LiveRoom> replayRooms,  List<LiveTag> visibleTags,  bool isLoading,  bool denseLayout)?  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteState() when $default != null:
-return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_that.onlineRooms,_that.offlineRooms,_that.replayRooms,_that.visibleTags,_that.isLoading);case _:
+return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_that.onlineRooms,_that.offlineRooms,_that.replayRooms,_that.visibleTags,_that.isLoading,_that.denseLayout);case _:
   return null;
 
 }
@@ -213,7 +215,7 @@ return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_tha
 
 
 class _FavoriteState implements FavoriteState {
-  const _FavoriteState({this.tabSiteIndex = 0, this.tabOnlineIndex = 0, this.selectedTagId = 'all', final  List<LiveRoom> onlineRooms = const [], final  List<LiveRoom> offlineRooms = const [], final  List<LiveRoom> replayRooms = const [], final  List<LiveTag> visibleTags = const [], this.isLoading = false}): _onlineRooms = onlineRooms,_offlineRooms = offlineRooms,_replayRooms = replayRooms,_visibleTags = visibleTags;
+  const _FavoriteState({this.tabSiteIndex = 0, this.tabOnlineIndex = 0, this.selectedTagId = 'all', final  List<LiveRoom> onlineRooms = const [], final  List<LiveRoom> offlineRooms = const [], final  List<LiveRoom> replayRooms = const [], final  List<LiveTag> visibleTags = const [], this.isLoading = false, this.denseLayout = true}): _onlineRooms = onlineRooms,_offlineRooms = offlineRooms,_replayRooms = replayRooms,_visibleTags = visibleTags;
   
 
 @override@JsonKey() final  int tabSiteIndex;
@@ -248,6 +250,8 @@ class _FavoriteState implements FavoriteState {
 }
 
 @override@JsonKey() final  bool isLoading;
+/// Denser card grid, chosen on the general settings page.
+@override@JsonKey() final  bool denseLayout;
 
 /// Create a copy of FavoriteState
 /// with the given fields replaced by the non-null parameter values.
@@ -259,16 +263,16 @@ _$FavoriteStateCopyWith<_FavoriteState> get copyWith => __$FavoriteStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteState&&(identical(other.tabSiteIndex, tabSiteIndex) || other.tabSiteIndex == tabSiteIndex)&&(identical(other.tabOnlineIndex, tabOnlineIndex) || other.tabOnlineIndex == tabOnlineIndex)&&(identical(other.selectedTagId, selectedTagId) || other.selectedTagId == selectedTagId)&&const DeepCollectionEquality().equals(other._onlineRooms, _onlineRooms)&&const DeepCollectionEquality().equals(other._offlineRooms, _offlineRooms)&&const DeepCollectionEquality().equals(other._replayRooms, _replayRooms)&&const DeepCollectionEquality().equals(other._visibleTags, _visibleTags)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteState&&(identical(other.tabSiteIndex, tabSiteIndex) || other.tabSiteIndex == tabSiteIndex)&&(identical(other.tabOnlineIndex, tabOnlineIndex) || other.tabOnlineIndex == tabOnlineIndex)&&(identical(other.selectedTagId, selectedTagId) || other.selectedTagId == selectedTagId)&&const DeepCollectionEquality().equals(other._onlineRooms, _onlineRooms)&&const DeepCollectionEquality().equals(other._offlineRooms, _offlineRooms)&&const DeepCollectionEquality().equals(other._replayRooms, _replayRooms)&&const DeepCollectionEquality().equals(other._visibleTags, _visibleTags)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.denseLayout, denseLayout) || other.denseLayout == denseLayout));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,tabSiteIndex,tabOnlineIndex,selectedTagId,const DeepCollectionEquality().hash(_onlineRooms),const DeepCollectionEquality().hash(_offlineRooms),const DeepCollectionEquality().hash(_replayRooms),const DeepCollectionEquality().hash(_visibleTags),isLoading);
+int get hashCode => Object.hash(runtimeType,tabSiteIndex,tabOnlineIndex,selectedTagId,const DeepCollectionEquality().hash(_onlineRooms),const DeepCollectionEquality().hash(_offlineRooms),const DeepCollectionEquality().hash(_replayRooms),const DeepCollectionEquality().hash(_visibleTags),isLoading,denseLayout);
 
 @override
 String toString() {
-  return 'FavoriteState(tabSiteIndex: $tabSiteIndex, tabOnlineIndex: $tabOnlineIndex, selectedTagId: $selectedTagId, onlineRooms: $onlineRooms, offlineRooms: $offlineRooms, replayRooms: $replayRooms, visibleTags: $visibleTags, isLoading: $isLoading)';
+  return 'FavoriteState(tabSiteIndex: $tabSiteIndex, tabOnlineIndex: $tabOnlineIndex, selectedTagId: $selectedTagId, onlineRooms: $onlineRooms, offlineRooms: $offlineRooms, replayRooms: $replayRooms, visibleTags: $visibleTags, isLoading: $isLoading, denseLayout: $denseLayout)';
 }
 
 
@@ -279,7 +283,7 @@ abstract mixin class _$FavoriteStateCopyWith<$Res> implements $FavoriteStateCopy
   factory _$FavoriteStateCopyWith(_FavoriteState value, $Res Function(_FavoriteState) _then) = __$FavoriteStateCopyWithImpl;
 @override @useResult
 $Res call({
- int tabSiteIndex, int tabOnlineIndex, String selectedTagId, List<LiveRoom> onlineRooms, List<LiveRoom> offlineRooms, List<LiveRoom> replayRooms, List<LiveTag> visibleTags, bool isLoading
+ int tabSiteIndex, int tabOnlineIndex, String selectedTagId, List<LiveRoom> onlineRooms, List<LiveRoom> offlineRooms, List<LiveRoom> replayRooms, List<LiveTag> visibleTags, bool isLoading, bool denseLayout
 });
 
 
@@ -296,7 +300,7 @@ class __$FavoriteStateCopyWithImpl<$Res>
 
 /// Create a copy of FavoriteState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? tabSiteIndex = null,Object? tabOnlineIndex = null,Object? selectedTagId = null,Object? onlineRooms = null,Object? offlineRooms = null,Object? replayRooms = null,Object? visibleTags = null,Object? isLoading = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? tabSiteIndex = null,Object? tabOnlineIndex = null,Object? selectedTagId = null,Object? onlineRooms = null,Object? offlineRooms = null,Object? replayRooms = null,Object? visibleTags = null,Object? isLoading = null,Object? denseLayout = null,}) {
   return _then(_FavoriteState(
 tabSiteIndex: null == tabSiteIndex ? _self.tabSiteIndex : tabSiteIndex // ignore: cast_nullable_to_non_nullable
 as int,tabOnlineIndex: null == tabOnlineIndex ? _self.tabOnlineIndex : tabOnlineIndex // ignore: cast_nullable_to_non_nullable
@@ -306,6 +310,7 @@ as List<LiveRoom>,offlineRooms: null == offlineRooms ? _self._offlineRooms : off
 as List<LiveRoom>,replayRooms: null == replayRooms ? _self._replayRooms : replayRooms // ignore: cast_nullable_to_non_nullable
 as List<LiveRoom>,visibleTags: null == visibleTags ? _self._visibleTags : visibleTags // ignore: cast_nullable_to_non_nullable
 as List<LiveTag>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,denseLayout: null == denseLayout ? _self.denseLayout : denseLayout // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

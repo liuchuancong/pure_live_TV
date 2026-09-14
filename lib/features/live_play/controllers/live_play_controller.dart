@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flame_barrage/flame_barrage.dart';
 import 'package:flutter/painting.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/player/index.dart';
@@ -144,6 +145,17 @@ class LivePlayController extends _$LivePlayController {
       case PlayerState.disposed:
         break;
     }
+    _updateScreenKeepOn();
+  }
+
+  /// Keeps the screen awake while a room is playing.
+  ///
+  /// A TV otherwise dims and starts its screen saver in the middle of a stream,
+  /// so the wake lock follows the user setting and the playback state.
+  void _updateScreenKeepOn() {
+    final enabled = SettingsService.to.appState.enableScreenKeepOn;
+    final playing = state.status == LivePlayStatus.playing || state.status == LivePlayStatus.buffering;
+    unawaited((enabled && playing ? WakelockPlus.enable() : WakelockPlus.disable()).catchError((Object _) {}));
   }
 
   void _onPlayerError(PlayerException error) {
@@ -154,6 +166,8 @@ class LivePlayController extends _$LivePlayController {
   void _teardown() {
     _generation++;
     _cancelSubscriptions();
+    // Leaving the room releases the wake lock even when a new room follows.
+    unawaited(WakelockPlus.disable().catchError((Object _) {}));
     final manager = _playerManager;
     _playerManager = null;
     if (manager != null) {

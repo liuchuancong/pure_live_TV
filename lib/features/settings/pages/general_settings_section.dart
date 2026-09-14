@@ -35,14 +35,6 @@ class GeneralSettingsSectionPage extends ConsumerWidget {
             if (locale != null) context.setLocale(Locale(locale.languageCode));
           },
         ),
-        TvSettingsOptionTile(
-          title: i18n('ui_auto_refresh_favorites'),
-          subtitle: i18n('ui_favorites_auto_refresh_interval'),
-          icon: Icons.refresh_rounded,
-          options: _refreshLabels,
-          index: _refreshIndex(appState.autoRefreshTime),
-          onChanged: (i) => app.update(appState.copyWith(autoRefreshTime: _refreshMinutes(i))),
-        ),
         TvSettingsSwitchTile(
           title: i18n('ui_dense_favorites_layout'),
           subtitle: i18n('ui_use_a_denser_card_layout_on_the_favorites_page'),
@@ -97,36 +89,10 @@ class GeneralSettingsSectionPage extends ConsumerWidget {
     );
   }
 
-  static final _refreshLabels = [i18n('close'), i18n('ui_1_minute'), i18n('ui_3_minutes'), i18n('ui_5_minutes'), i18n('ui_10_minutes'), i18n('ui_30_minutes')];
-
   /// Index of the persisted language inside [AppConsts.languages].
   static int _languageIndex(String languageName) {
     final index = AppConsts.languages.keys.toList(growable: false).indexOf(languageName);
     return index < 0 ? 1 : index;
-  }
-
-  static int _refreshIndex(int minutes) {
-    return switch (minutes) {
-      0 => 0,
-      1 => 1,
-      3 => 2,
-      5 => 3,
-      10 => 4,
-      30 => 5,
-      _ => 2,
-    };
-  }
-
-  static int _refreshMinutes(int index) {
-    return switch (index) {
-      0 => 0,
-      1 => 1,
-      2 => 3,
-      3 => 5,
-      4 => 10,
-      5 => 30,
-      _ => 3,
-    };
   }
 
   static int _shutDownIndex(ExitSettingsModel exitState) {

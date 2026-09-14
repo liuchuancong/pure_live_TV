@@ -15,5 +15,7 @@ abstract class FavoriteState with _$FavoriteState {
     @Default([]) List<LiveRoom> replayRooms,
     @Default([]) List<LiveTag> visibleTags,
     @Default(false) bool isLoading,
+    /// Denser card grid, chosen on the general settings page.
+    @Default(true) bool denseLayout,
   }) = _FavoriteState;
 }

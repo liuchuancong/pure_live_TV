@@ -23,9 +23,11 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     _setupRefreshStrategy();
 
     final favState = ref.watch(favoriteRoomControllerProvider);
-    // Rebuild when the audience display preference changes.
-    ref.watch(appSettingsControllerProvider);
-    return _syncAndFilter(const FavoriteState(), favState);
+    // Rebuild when the audience display preference or the grid density change.
+    final appState = ref.watch(appSettingsControllerProvider);
+    return _syncAndFilter(const FavoriteState(), favState).copyWith(
+      denseLayout: appState.enableDenseFavorites,
+    );
   }
 
   void _listenEventBus() {
