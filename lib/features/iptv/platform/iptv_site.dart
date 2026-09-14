@@ -17,30 +17,37 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
     final db = DbService.to.db;
     final providers = await db.getAllProviders();
 
-    final categoryTypes = <LiveCategory>[];
+    // One query for every visible channel, then group in memory: issuing a query
+    // per provider scales badly once several playlists are installed.
+    final channelsByProvider = <String, List<Channel>>{};
+    for (final channel in await db.getAllVisibleChannels()) {
+      (channelsByProvider[channel.providerId] ??= []).add(channel);
+    }
 
+    final categoryTypes = <LiveCategory>[];
     for (final provider in providers) {
       if (provider.id == FileUtils.systemHotProviderId || provider.name == 'hot') {
         continue;
-      } else {
-        final channels = await db.getChannelsForProvider(provider.id);
-
-        final subs = <LiveArea>[];
-        for (final ch in channels) {
-          subs.add(
-            LiveArea(
-              areaId: ch.id,
-              areaName: ch.name,
-              areaPic: ch.tvgLogo ?? '',
-              typeName: provider.name,
-              areaType: provider.id,
-              platform: Sites.iptvSite,
-            ),
-          );
-        }
-
-        categoryTypes.add(LiveCategory(id: provider.id, name: provider.name, children: subs));
       }
+      final channels = channelsByProvider[provider.id];
+      if (channels == null || channels.isEmpty) continue;
+      categoryTypes.add(
+        LiveCategory(
+          id: provider.id,
+          name: provider.name,
+          children: [
+            for (final ch in channels)
+              LiveArea(
+                areaId: ch.id,
+                areaName: ch.name,
+                areaPic: ch.tvgLogo ?? '',
+                typeName: provider.name,
+                areaType: provider.id,
+                platform: Sites.iptvSite,
+              ),
+          ],
+        ),
+      );
     }
     return categoryTypes;
   }

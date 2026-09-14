@@ -252,6 +252,18 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Channel>> getFavoriteChannels() => (select(channels)..where((t) => t.favorite.equals(true))).get();
 
+  /// Loads every visible channel once, ordered by provider and playlist order.
+  ///
+  /// Category screens group the result in memory instead of issuing one query
+  /// per provider, which matters when many providers are installed.
+  Future<List<Channel>> getAllVisibleChannels() => (select(channels)
+        ..where((t) => t.hidden.equals(false))
+        ..orderBy([
+          (t) => OrderingTerm(expression: t.providerId),
+          (t) => OrderingTerm(expression: t.sortOrder),
+        ]))
+      .get();
+
   Future<void> upsertChannels(List<ChannelsCompanion> entries) async {
     await batch((b) {
       b.insertAllOnConflictUpdate(channels, entries);
