@@ -34,6 +34,8 @@
     "delete_history":  "Delete from history",
     "cookie_state_set":  "Set ({count} characters)",
     "loading_style_color":  "Loading indicator color",
+    "clear_history_confirm_named":  "This deletes all {count} history entries. Continue?",
+    "history_limit_custom_hint":  "Enter how many entries to keep",
     "loading_style_color_desc":  "Give the loading animation its own color; the active theme is used by default",
     "follow_theme_color":  "Follow theme",
     "clear_all_cookies":  "Clear All Cookies",
