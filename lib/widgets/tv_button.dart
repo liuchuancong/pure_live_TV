@@ -1,7 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/theme/styles/styles.dart';
+import 'package:pure_live/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 enum TvButtonSize { large, medium, small, mini }

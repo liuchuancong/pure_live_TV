@@ -1,20 +1,14 @@
 import 'dart:io';
-import 'package:flutter/widgets.dart';
+import 'package:pure_live/core/index.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:hive_ce/hive_ce.dart';
-import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
-import 'package:pure_live/services/settings/legacy_settings_migration.dart';
-import 'package:pure_live/utils/cache_manager.dart';
-import 'package:pure_live/utils/version_util.dart';
-import 'package:pure_live/utils/web_socket_util.dart';
-import 'package:pure_live/player/core/playback_proxy_policy.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/global/app_path_manager.dart';
-import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:pure_live/player/core/playback_proxy_policy.dart';
 
 class AppInitializer {
   static final AppInitializer _instance = AppInitializer._internal();

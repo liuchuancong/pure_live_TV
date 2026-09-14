@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// 旧版（pure_live GetX 版）遗留 Hive 键值迁移到 v2 设置体系。

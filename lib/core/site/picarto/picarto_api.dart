@@ -3,9 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:pure_live/core/common/index.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/core/common/request_scope.dart';
 
 enum PicartoFailure { transport, access, rateLimited, service, notFound, schema, cancelled, qualityUnavailable }
 

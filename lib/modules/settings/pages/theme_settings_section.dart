@@ -1,10 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/theme/tv_theme_controller.dart';
-import 'package:pure_live/widgets/tv_settings_slider_tile.dart';
-import 'package:pure_live/widgets/tv_settings_switch_tile.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/theme/index.dart';
+import 'package:pure_live/widgets/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 

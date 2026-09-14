@@ -2,12 +2,10 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:alfred/alfred.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-import 'package:pure_live/utils/log.dart';
+import 'package:pure_live/core/exports/package_export.dart';
+import 'package:pure_live/core/utils/log.dart';
+import 'package:pure_live/core/utils/remote_receiver/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/core/utils/remote_receiver/model.dart/server_state.dart';
 
 part 'tv_remote_receiver.g.dart';
 
@@ -339,3 +337,4 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     }
   }
 }
+

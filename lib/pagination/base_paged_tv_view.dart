@@ -1,12 +1,10 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/widgets/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/pagination/paging_core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/pagination/models/paging_param.dart';
 import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/widgets/index.dart';
 
 class BasePagedTvView<T> extends ConsumerStatefulWidget {
   final PagingParam<T> param;

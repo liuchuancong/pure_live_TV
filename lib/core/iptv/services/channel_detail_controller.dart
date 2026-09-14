@@ -6,11 +6,10 @@ import 'package:collection/collection.dart';
 import '../models/channel.dart';
 import '../models/epg.dart' as epg;
 
-import 'package:pure_live/plugins/db_service.dart';
+import 'package:pure_live/core/plugins/index.dart';
 import 'package:pure_live/core/iptv/core/fuzzy_match.dart';
 import 'package:pure_live/core/iptv/local/database.dart' as database;
 
-import 'package:pure_live/plugins/db_service.dart';
 class EpgChannelMatchCache {
   EpgChannelMatchCache({this.maxEntries = 1024}) : assert(maxEntries > 0);
 

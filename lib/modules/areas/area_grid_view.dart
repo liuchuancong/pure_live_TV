@@ -1,14 +1,11 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
+import 'package:pure_live/core/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
+import 'package:pure_live/modules/areas/platform_provider.dart';
+import 'package:pure_live/modules/areas/category_provider.dart';
 import 'package:pure_live/routes/router.dart';
 import 'package:pure_live/widgets/index.dart';
 import 'package:pure_live/pagination/pagination.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/areas/platform_provider.dart';
-import 'package:pure_live/core/models/live_area/live_area.dart';
-import 'package:pure_live/modules/areas/category_provider.dart';
-import 'package:pure_live/core/utils/favorite_operation_util.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class AreaGridView extends ConsumerStatefulWidget {
   final List<String> labels;

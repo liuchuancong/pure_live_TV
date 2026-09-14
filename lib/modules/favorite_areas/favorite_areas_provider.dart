@@ -1,7 +1,6 @@
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/core/models/live_area/live_area.dart';
+import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
 
 part 'favorite_areas_provider.g.dart';
 

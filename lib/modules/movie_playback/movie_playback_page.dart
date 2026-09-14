@@ -1,17 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/routes/router.dart';
-import 'package:pure_live/widgets/index.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/routes/web_router.dart';
-import 'package:pure_live/theme/styles/styles.dart';
-import 'package:pure_live/theme/tv_theme_data.dart';
-import 'package:pure_live/widgets/tv_input_field.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/core/utils/url_parse/url_parse_engine.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/core/utils/remote_receiver/tv_remote_receiver.dart';
+import 'package:pure_live/core/exports/exports.dart';
 
 class MoviePlaybackPage extends ConsumerStatefulWidget {
   const MoviePlaybackPage({super.key});

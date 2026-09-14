@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/routes/extensions.dart';
+import 'package:pure_live/theme/index.dart';
 import 'package:pure_live/widgets/tv_button.dart';
-import 'package:pure_live/theme/styles/styles.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/routes/extensions.dart';
 
 class TvAppBar extends StatelessWidget {
   final String? title;

@@ -1,7 +1,4 @@
-import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/core/index.dart';
 
 /// 直播播放页对 Sites 的唯一访问入口。
 ///

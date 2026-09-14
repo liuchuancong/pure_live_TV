@@ -1,8 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/app/app.dart';
-import 'package:pure_live/consts/app_consts.dart';
+import 'package:pure_live/core/consts/app_consts.dart';
 import 'package:pure_live/global/initialized.dart';
 import 'package:pure_live/services/settings/settings.dart';
 

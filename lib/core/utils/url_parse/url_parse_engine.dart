@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'package:dio/dio.dart' as dio;
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/network/http_client.dart';
+import 'package:pure_live/core/common/http_client.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'url_parse_engine.g.dart';

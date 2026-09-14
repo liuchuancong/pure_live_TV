@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:typed_data'; // 补充遗漏的导入
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pure_live/consts/back_ground_source.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';

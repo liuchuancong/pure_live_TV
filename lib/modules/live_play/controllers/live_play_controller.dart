@@ -5,19 +5,12 @@ import 'package:flame_barrage/flame_barrage.dart';
 import 'package:flutter/painting.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:pure_live/core/models/live_message/live_message_model.dart';
-import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
+import 'package:pure_live/core/index.dart';
+import 'package:pure_live/player/index.dart';
 import 'package:pure_live/modules/live_play/controllers/danmaku_filters.dart';
 import 'package:pure_live/modules/live_play/models/live_play_args.dart';
-import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/modules/live_play/services/live_play_repository.dart';
 import 'package:pure_live/modules/live_play/states/live_play_state.dart';
-import 'package:pure_live/player/core/player_manager.dart';
-import 'package:pure_live/player/global_player_service.dart';
-import 'package:pure_live/player/models/player_exception.dart';
-import 'package:pure_live/player/models/player_state.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 part 'live_play_controller.g.dart';

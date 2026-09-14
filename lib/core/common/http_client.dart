@@ -2,8 +2,8 @@ import 'dart:io' as io;
 
 import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
-import 'package:pure_live/core/common/core_error.dart';
-import 'package:pure_live/core/common/custom_interceptor.dart';
+import 'package:pure_live/core/utils/core_error.dart';
+import 'package:pure_live/core/utils/custom_interceptor.dart';
 import 'package:pure_live/core/common/proxy_routing.dart';
 import 'package:pure_live/services/settings/settings.dart';
 

@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/core/common/request_scope.dart';
+import 'package:pure_live/core/common/index.dart';
 import 'package:pure_live/core/site/xiaohongshu/xiaohongshu_share.dart';
 
 typedef XiaohongshuRequest = Future<({int status, String body})> Function(Uri uri, CancelToken cancel);

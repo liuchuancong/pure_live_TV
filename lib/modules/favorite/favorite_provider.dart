@@ -1,15 +1,9 @@
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'package:pure_live/utils/event_bus.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
-import 'package:pure_live/services/tag_management/tag_management_controller.dart';
+import 'package:pure_live/core/index.dart';
+import 'package:pure_live/services/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/services/tag_management/live_tag.dart';
 import 'package:pure_live/modules/favorite/model/favorite_state.dart';
-import 'package:pure_live/services/favorite_settings/favorite_settings_model.dart';
-import 'package:pure_live/services/favorite_settings/favorite_room_controller.dart';
 
 part 'favorite_provider.g.dart';
 

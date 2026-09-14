@@ -1,4 +1,4 @@
-import 'package:pure_live/core/network/proxy_routing.dart';
+import 'package:pure_live/core/common/proxy_routing.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// 媒体传输代理策略，独立于应用/API 层代理。

@@ -3,20 +3,16 @@ import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:pure_live/core/models/live_category/live_category.dart';
-import 'package:pure_live/core/models/live_anchor_item/live_anchor_item.dart';
-import 'package:pure_live/plugins/fake_useragent.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
-import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/danmaku/kuaishou_danmaku.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/core/utils/live_quality_label.dart';
-
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/core/interface/index.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+
+import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/core/plugins/fake_useragent.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/danmaku/kuaishou_danmaku.dart';
+import 'package:pure_live/core/utils/live_quality_label.dart';
+import 'package:pure_live/services/settings/settings.dart';
 class KuaishowSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver {
   @override
   String id = Sites.kuaishouSite;

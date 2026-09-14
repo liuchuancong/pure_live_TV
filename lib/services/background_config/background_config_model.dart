@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:pure_live/utils/color_converter.dart';
-import 'package:pure_live/consts/back_ground_source.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'background_config_model.freezed.dart';

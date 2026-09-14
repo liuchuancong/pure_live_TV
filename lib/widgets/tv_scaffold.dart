@@ -2,9 +2,8 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/widgets/tv_app_bar.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pure_live/consts/back_ground_source.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/background_config/background_config_model.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:pure_live/core/consts/back_ground_source.dart';
 
 class TvScaffold extends StatelessWidget {
   final Widget child;

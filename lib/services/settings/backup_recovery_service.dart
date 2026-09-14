@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:pure_live/core/network/http_client.dart';
+import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/services/back_up/backup_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 

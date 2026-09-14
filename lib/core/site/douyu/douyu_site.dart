@@ -1,20 +1,16 @@
 import 'dart:convert';
 
 import 'package:html_unescape/html_unescape.dart';
-import 'package:pure_live/core/models/live_category/live_category.dart';
-import 'package:pure_live/core/models/live_anchor_item/live_anchor_item.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
-import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/danmaku/douyu_danmaku.dart';
-import 'package:pure_live/core/site/douyu/douyu_utils.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/core/utils/live_quality_label.dart';
-
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/sites.dart';
+import 'package:pure_live/core/interface/index.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/site/douyu/douyu_utils.dart';
+
+import 'package:pure_live/core/sites.dart';
 import 'package:meta/meta.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/danmaku/douyu_danmaku.dart';
+import 'package:pure_live/core/utils/live_quality_label.dart';
+import 'package:pure_live/services/settings/settings.dart';
 class DouyuSite
     implements
         LiveSite,

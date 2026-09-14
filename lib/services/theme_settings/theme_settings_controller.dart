@@ -1,7 +1,6 @@
 import 'theme_settings_model.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/consts/app_consts.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

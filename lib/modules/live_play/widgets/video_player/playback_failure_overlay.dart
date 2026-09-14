@@ -1,8 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/theme/styles/styles.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
+import 'package:pure_live/theme/index.dart';
 
 /// 播放失败覆盖层（移植自 pure_live playback_failure_overlay.dart 的 TV 收敛版）。
 /// 提供重试与刷新房间两个 D-pad 可聚焦操作。

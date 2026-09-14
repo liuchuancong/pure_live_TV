@@ -1,6 +1,5 @@
 import 'log_settings_model.dart';
-import 'package:pure_live/utils/log.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

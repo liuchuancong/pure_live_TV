@@ -1,30 +1,8 @@
-import 'site/yy/yy_site.dart';
 import 'interface/live_site.dart';
-import 'site/huya/huya_site.dart';
-import 'site/inke/inke_site.dart';
-import 'site/soop/soop_site.dart';
-import 'site/acfun/acfun_site.dart';
-import 'site/douyu/douyu_site.dart';
-import 'site/tting/tting_site.dart';
-import 'site/weibo/weibo_site.dart';
-import 'site/douyin/douyin_site.dart';
-import 'site/huajiao/huajiao_site.dart';
-import 'site/openrec/openrec_site.dart';
-import 'site/picarto/picarto_site.dart';
-import 'site/kilakila/kilakila_site.dart';
-import 'site/missevan/missevan_site.dart';
-import 'site/niconico/niconico_site.dart';
-import 'package:pure_live/core/interface/live_site.dart';
+import 'package:pure_live/core/site/index.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'site/twitcasting/twitcasting_site.dart';
-import 'site/xiaohongshu/xiaohongshu_site.dart';
-import 'package:pure_live/core/site/cc/cc_site.dart';
-import 'package:pure_live/core/site/iptv/iptv_site.dart';
-import 'package:pure_live/core/site/twitch/twitch_site.dart';
-import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
-import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
-import 'package:pure_live/plugins/locale_helper.dart';
+import 'package:pure_live/core/plugins/locale_helper.dart';
 
 
 

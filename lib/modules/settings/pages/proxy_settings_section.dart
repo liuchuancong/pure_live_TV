@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/widgets/tv_input_field.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/widgets/tv_settings_switch_tile.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/widgets/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
 

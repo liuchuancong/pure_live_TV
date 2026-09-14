@@ -8,24 +8,21 @@ import '../models/player_state.dart';
 import '../models/player_exception.dart';
 import '../models/player_error_type.dart';
 
-import 'package:pure_live/core/models/index.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/index.dart';
 
 import '../interface/unified_player_interface.dart';
 
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:media_kit/media_kit.dart' hide PlayerState;
 import 'package:pure_live/player/models/player_engine.dart';
-import 'package:pure_live/utils/platform_utils.dart';
 import 'package:pure_live/player/utils/live_buffer_policy.dart';
 import 'package:pure_live/player/utils/mpv_platform_profile.dart';
-import 'package:pure_live/utils/latest_async_value_queue.dart';
 import 'package:pure_live/player/interface/media_kit_player_accessor.dart';
 import 'package:pure_live/player/core/player_error_classifier.dart';
 import 'package:pure_live/player/core/source_event_fence.dart';
 import 'package:pure_live/player/core/playback_proxy_policy.dart';
 import 'package:pure_live/player/core/live_room_volume_manager.dart';
-import 'package:meta/meta.dart';
+import 'package:pure_live/services/settings/settings.dart';
 
 @visibleForTesting
 ({int width, int height})? resolveMediaKitDisplaySize(VideoParams params) {

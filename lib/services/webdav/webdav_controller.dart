@@ -1,5 +1,5 @@
 import 'webdav_model.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/webdav/webdav_config.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

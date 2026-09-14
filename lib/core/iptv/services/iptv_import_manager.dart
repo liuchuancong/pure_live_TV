@@ -12,22 +12,17 @@ import 'iptv_confirm_dialog.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:pure_live/plugins/file_utils.dart';
-import 'package:pure_live/plugins/db_service.dart';
-import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/plugins/index.dart';
+import 'package:pure_live/global/index.dart';
 import 'package:charset_converter/charset_converter.dart';
 import 'package:pure_live/core/iptv/parsers/m3u_parser.dart';
 import 'package:pure_live/core/iptv/parsers/txt_parser.dart';
-import 'package:pure_live/global/app_path_manager.dart';
 import 'package:pure_live/core/iptv/local/database.dart' as database;
 
-import 'package:pure_live/global/app_path_manager.dart';
-import 'package:pure_live/plugins/db_service.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/utils/toast_util.dart';
-import 'package:pure_live/plugins/locale_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/plugins/locale_helper.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
 class IptvImportManager {
   IptvImportManager({Future<Directory> Function()? cacheDirectory})
     : _cacheDirectory = cacheDirectory ?? _defaultCacheDirectory;

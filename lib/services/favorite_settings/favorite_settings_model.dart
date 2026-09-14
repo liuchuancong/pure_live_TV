@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/core/models/live_area/live_area.dart';
+import 'package:pure_live/core/index.dart';
 
 part 'favorite_settings_model.freezed.dart';
 part 'favorite_settings_model.g.dart';

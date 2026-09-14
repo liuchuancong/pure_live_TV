@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/widgets/tv_settings_switch_tile.dart';
+import 'package:pure_live/services/index.dart';
 import 'package:pure_live/modules/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/services/exit_settings/exit_settings_model.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
-import 'package:pure_live/services/exit_settings/exit_settings_controller.dart';
+import 'package:pure_live/widgets/tv_settings_switch_tile.dart';
 
 class GeneralSettingsSectionPage extends ConsumerWidget {
   const GeneralSettingsSectionPage({super.key});

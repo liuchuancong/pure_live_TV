@@ -1,7 +1,6 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:go_router/go_router.dart';
+import 'package:pure_live/theme/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/settings/pages/about_settings_section.dart';
 import 'package:pure_live/modules/settings/pages/audio_output_settings_section.dart';
 import 'package:pure_live/modules/settings/pages/backup_settings_section.dart';
@@ -18,8 +17,6 @@ import 'package:pure_live/modules/settings/pages/refresh_settings_section.dart';
 import 'package:pure_live/modules/settings/pages/renderer_settings_section.dart';
 import 'package:pure_live/modules/settings/pages/theme_settings_section.dart';
 import 'package:pure_live/modules/settings/pages/video_settings_section.dart';
-import 'package:pure_live/theme/styles/styles.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
 
 /// TV 设置壳：左侧模块菜单 + 右侧当前路由页面。
 /// 模块划分与 pure_live 的设置页一一对应，每个模块是独立页面文件，

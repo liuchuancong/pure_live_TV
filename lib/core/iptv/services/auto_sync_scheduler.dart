@@ -1,17 +1,15 @@
 import 'dart:developer';
 
-import 'package:pure_live/plugins/db_service.dart';
+import 'package:pure_live/core/plugins/index.dart';
+import 'package:pure_live/global/index.dart';
 import 'package:pure_live/core/iptv/local/database.dart';
-import 'package:pure_live/global/app_path_manager.dart';
 import 'package:pure_live/core/iptv/services/epg_sync_engine.dart';
 import 'package:pure_live/core/iptv/services/iptv_sync_engine.dart';
 import 'package:pure_live/core/iptv/services/epg_import_manager.dart';
 import 'package:pure_live/core/iptv/services/iptv_import_manager.dart';
 
-import 'package:pure_live/global/app_path_manager.dart';
-import 'package:pure_live/plugins/db_service.dart';
-import 'package:pure_live/services/settings/settings.dart';
 import 'package:meta/meta.dart';
+import 'package:pure_live/services/settings/settings.dart';
 class AutoSyncScheduler {
   static final AutoSyncScheduler instance = AutoSyncScheduler._internal();
   AutoSyncScheduler._internal();

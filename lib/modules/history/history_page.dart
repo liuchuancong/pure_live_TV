@@ -1,17 +1,10 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/widgets/tv_tab_bar.dart';
-import 'package:pure_live/widgets/tv_tab_view.dart';
-import 'package:pure_live/widgets/tv_scaffold.dart';
-import 'package:pure_live/widgets/tv_room_card.dart';
-import 'package:pure_live/pagination/pagination.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/core/utils/favorite_operation_util.dart';
+import 'package:pure_live/core/index.dart';
+import 'package:pure_live/widgets/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/history/history_page_provider.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/theme/tv_theme_x.dart';
+import 'package:pure_live/pagination/pagination.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});

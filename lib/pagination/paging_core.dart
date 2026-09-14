@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pure_live/utils/log.dart';
+import 'package:pure_live/core/utils/log.dart';
 import 'package:pure_live/pagination/type_def/fun.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

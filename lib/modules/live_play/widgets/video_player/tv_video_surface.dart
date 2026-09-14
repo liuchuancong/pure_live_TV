@@ -1,17 +1,13 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/player/index.dart';
+import 'package:pure_live/theme/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live_play/models/live_play_args.dart';
 import 'package:pure_live/modules/live_play/states/live_play_state.dart';
 import 'package:pure_live/modules/live_play/widgets/danmaku/danmaku_overlay.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/playback_failure_overlay.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller_panel.dart';
-import 'package:pure_live/player/global_player_service.dart';
-import 'package:pure_live/player/core/player_manager.dart';
-import 'package:pure_live/theme/styles/styles.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
 
 /// TV 视频渲染区（移植自 pure_live video_player.dart / video_controller.dart）。
 ///

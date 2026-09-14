@@ -5,23 +5,18 @@ import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:file_picker/file_picker.dart';
-import 'package:pure_live/plugins/db_service.dart';
-import 'package:pure_live/plugins/file_utils.dart';
-import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/plugins/index.dart';
+import 'package:pure_live/global/index.dart';
 import 'package:pure_live/core/iptv/parsers/xmltv_parser.dart';
-import 'package:pure_live/global/app_path_manager.dart';
 import 'package:pure_live/core/iptv/parsers/json_epg_parser.dart';
 import 'package:pure_live/core/iptv/local/database.dart' as database;
 import 'package:pure_live/core/iptv/local/epg_channel_identity.dart';
 
 import 'iptv_confirm_dialog.dart';
 
-import 'package:pure_live/global/app_path_manager.dart';
-import 'package:pure_live/plugins/db_service.dart';
-import 'package:pure_live/utils/toast_util.dart';
-import 'package:pure_live/plugins/locale_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/plugins/locale_helper.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
 class EpgImportManager {
   EpgImportManager({Future<Directory> Function()? cacheDirectory})
     : _cacheDirectory = cacheDirectory ?? _defaultCacheDirectory;

@@ -1,15 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/routes/router.dart';
-import 'package:pure_live/widgets/index.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/routes/web_router.dart';
-import 'package:pure_live/widgets/tv_input_field.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/exports/exports.dart';
 import 'package:native_textfield_tv/native_textfield_tv.dart';
-import 'package:pure_live/modules/search/tv_search_provider.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/core/utils/remote_receiver/tv_remote_receiver.dart';
 
 class TvSearchPage extends ConsumerStatefulWidget {
   const TvSearchPage({super.key});

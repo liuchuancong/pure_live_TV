@@ -1,12 +1,8 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/consts/app_consts.dart';
+import 'package:pure_live/theme/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
+import 'package:pure_live/core/consts/app_consts.dart';
 import 'package:pure_live/routes/app_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
-import 'package:pure_live/theme/tv_theme_extension.dart';
-import 'package:pure_live/theme/tv_theme_controller.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});

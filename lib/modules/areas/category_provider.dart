@@ -1,6 +1,5 @@
 import 'platform_provider.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'category_provider.g.dart';

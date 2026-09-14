@@ -1,7 +1,6 @@
 import 'proxy_settings_model.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/core/network/http_client.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

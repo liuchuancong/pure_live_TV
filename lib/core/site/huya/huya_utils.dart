@@ -2,11 +2,8 @@ import 'dart:math';
 
 import 'huya_request_params.dart';
 
-import 'package:pure_live/core/tars/types.dart';
+import 'package:pure_live/core/tars/index.dart';
 import 'package:pure_live/core/models/live_message/live_message_model.dart';
-import 'package:pure_live/pkg/tars/net/base_tars_http.dart';
-import 'package:pure_live/core/tars/get_game_event_message_board_rsp.dart';
-import 'package:pure_live/core/tars/get_game_event_message_board_req.dart';
 
 int rotl64(int t) {
   final low = t & 0xFFFFFFFF;

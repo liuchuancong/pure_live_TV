@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/theme/styles/styles.dart';
+import 'package:pure_live/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvQrCodeCard extends StatelessWidget {

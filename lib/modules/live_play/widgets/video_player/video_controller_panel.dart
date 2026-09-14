@@ -1,13 +1,10 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/theme/styles/styles.dart';
+import 'package:pure_live/theme/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live_play/models/live_play_args.dart';
 import 'package:pure_live/modules/live_play/states/live_play_state.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// TV 视频区底部控制面板（移植自 pure_live video_controller_panel.dart，
 /// 收敛为遥控器 D-pad 焦点条：无鼠标悬浮/亮度/投屏/截图/EPG）。

@@ -1,13 +1,10 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/widgets/index.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/areas/area_grid_view.dart';
-import 'package:pure_live/core/models/live_area/live_area.dart';
 import 'package:pure_live/modules/areas/category_provider.dart';
 import 'package:pure_live/modules/areas/platform_provider.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/widgets/index.dart';
 
 class AreasPage extends ConsumerStatefulWidget {
   const AreasPage({super.key});

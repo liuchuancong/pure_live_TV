@@ -1,12 +1,8 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pure_live/widgets/tv_page.dart';
-import 'package:pure_live/widgets/tv_button.dart';
-import 'package:pure_live/theme/styles/styles.dart';
-import 'package:pure_live/theme/styles/app_styles.dart';
+import 'package:pure_live/theme/index.dart';
+import 'package:pure_live/widgets/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class AgreementPage extends StatelessWidget {
   const AgreementPage({super.key});

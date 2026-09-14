@@ -1,13 +1,9 @@
 import 'favorite_settings_model.dart';
 import 'package:collection/collection.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/consts/app_consts.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/core/models/live_area/live_area.dart';
 
 part 'favorite_room_controller.g.dart';
 

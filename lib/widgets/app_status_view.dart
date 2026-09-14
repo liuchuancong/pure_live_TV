@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/widgets/index.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
-import 'package:pure_live/theme/styles/styles.dart';
-import 'package:pure_live/theme/tv_theme_data.dart';
+import 'package:pure_live/theme/index.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:loading_indicator/loading_indicator.dart';
-import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:pure_live/services/settings/settings.dart';
 
 enum AppStatusType { loading, empty, error, notLogin }
 

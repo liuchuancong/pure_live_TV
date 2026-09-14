@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/dialog/index.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/dialog/tv_dialog_lock_provider.dart';
 
 class TvDialogUtils {
   static Future<T?> show<T>({required BuildContext context, required WidgetBuilder builder}) async {

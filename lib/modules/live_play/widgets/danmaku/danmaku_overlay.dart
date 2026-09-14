@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live_play/models/live_play_args.dart';
-import 'package:pure_live/plugins/emoji_manager.dart';
-import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
-import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:pure_live/core/plugins/emoji_manager.dart';
 
 /// flame_barrage 弹幕画面层（移植自 pure_live DanmakuManager 的画面部分）。
 ///

@@ -1,24 +1,8 @@
 import 'dart:developer';
 
-import 'package:collection/collection.dart';
-import 'package:pure_live/plugins/db_service.dart';
-import 'package:pure_live/plugins/file_utils.dart';
-import 'package:pure_live/core/models/live_category/live_category.dart';
-import 'package:pure_live/core/models/live_anchor_item/live_anchor_item.dart';
-import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
+import 'package:pure_live/core/exports/exports.dart';
 import 'package:pure_live/core/iptv/local/database.dart';
-import 'package:pure_live/core/interface/live_site.dart';
-import 'package:pure_live/core/iptv/iptv_repository.dart';
-import 'package:pure_live/core/iptv/core/fuzzy_match.dart';
-import 'package:pure_live/core/danmaku/empty_danmaku.dart';
-import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/core/iptv/services/auto_sync_scheduler.dart';
-import 'package:pure_live/core/common/http_header_policy.dart';
 
-import 'package:pure_live/plugins/db_service.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/core/models/index.dart';
 class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   @override
   String id = Sites.iptvSite;

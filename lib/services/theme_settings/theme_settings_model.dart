@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/utils/color_converter.dart';
+import 'package:pure_live/core/utils/color_converter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'theme_settings_model.freezed.dart';

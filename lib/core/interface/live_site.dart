@@ -1,13 +1,8 @@
-import 'package:pure_live/core/models/live_category/live_category.dart';
-import 'package:pure_live/core/models/live_anchor_item/live_anchor_item.dart';
-import 'package:pure_live/core/models/live_area/live_area.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
-import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
-import 'package:pure_live/core/models/live_message/live_message_model.dart';
+import 'package:pure_live/core/models/index.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
-import 'package:pure_live/core/common/hls_source_query_policy.dart';
 
 import 'live_input_recipe.dart';
+import 'package:pure_live/core/common/hls_source_query_policy.dart';
 
 /// The stream URLs returned for one requested quality together with the
 /// quality that the platform actually applied.

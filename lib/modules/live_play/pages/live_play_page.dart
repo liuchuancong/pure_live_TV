@@ -1,15 +1,12 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/theme/index.dart';
+import 'package:pure_live/core/exports/package_export.dart';
 import 'package:pure_live/modules/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/modules/live_play/models/live_play_args.dart';
 import 'package:pure_live/modules/live_play/states/live_play_state.dart';
 import 'package:pure_live/modules/live_play/widgets/danmaku/danmaku_list_view.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/tv_video_surface.dart';
-import 'package:pure_live/theme/styles/styles.dart';
-import 'package:pure_live/theme/tv_theme_x.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:pure_live/widgets/tv_common_avatar.dart';
 
 /// 直播播放页（TV 横屏布局，移植自 pure_live live_play_page.dart / live_play_content.dart）。

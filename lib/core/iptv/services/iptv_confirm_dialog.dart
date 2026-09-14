@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/global/app_navigator.dart';
-import 'package:pure_live/plugins/locale_helper.dart';
+import 'package:pure_live/core/plugins/locale_helper.dart';
 
 /// 服务层的“同名覆盖”确认框（替代已移除的 GetX `Get.dialog`）。
 ///

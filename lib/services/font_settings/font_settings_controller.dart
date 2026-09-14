@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'font_settings_model.dart';
 import 'package:flutter/services.dart';
-import 'package:pure_live/utils/hive_pref_util.dart';
+import 'package:pure_live/core/index.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/plugins/font_download_manager.dart';
-import 'package:pure_live/core/models/font_model/font_model.dart';
 
 part 'font_settings_controller.g.dart';
 
