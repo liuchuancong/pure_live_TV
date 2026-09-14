@@ -47,7 +47,7 @@ class KilakilaSite extends LiveSite
     if (category.platform != id || category.areaType != 'timeline' || !{'0', '107'}.contains(category.areaId)) {
       throw const KilakilaException(KilakilaFailure.schema);
     }
-    return int.parse(category.areaId!);
+    return int.parse(category.areaId);
   }
 
   Future<LiveDirectoryPage> _directory({
@@ -151,7 +151,7 @@ class KilakilaSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId ?? '', platform: detail.platform ?? '');
+    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

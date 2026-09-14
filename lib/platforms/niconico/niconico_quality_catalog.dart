@@ -98,7 +98,7 @@ class NiconicoQualityCatalog {
           // Own a late factory result before observing cancellation.
           seat = await _openSeat(watch, token, _findProxy);
           checkCancellation();
-          final owner = seat!;
+          final owner = seat;
           final source = owner.current.uri;
           changes = owner.changes.listen((grant) {
             if (grant.uri != source) cancelFor(NiconicoFailure.sessionClosed);

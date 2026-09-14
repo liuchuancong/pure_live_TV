@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:pure_live/exports/exports.dart';
+
 
 
 class _Playback {
@@ -210,7 +210,7 @@ class OpenrecSite extends LiveSite
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     if (detail.platform != id) throw const OpenrecException(OpenrecFailure.identity);
-    OpenrecRoomKey.parse(detail.roomId ?? '');
+    OpenrecRoomKey.parse(detail.roomId);
     if (detail.isExplicitlyOfflineNow) return [];
     final data = detail.data;
     if (!detail.isLiveNow || data is! _Playback || data.roomKey != detail.roomId || data.qualities.isEmpty) {
@@ -232,7 +232,7 @@ class OpenrecSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId ?? '', platform: detail.platform ?? '');
+    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

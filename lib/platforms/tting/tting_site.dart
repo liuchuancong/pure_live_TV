@@ -131,7 +131,7 @@ class TtingSite extends LiveSite
   }
 
   TtingBroadcast _broadcast(LiveRoom detail) {
-    final channel = _channelId(detail.roomId ?? '', detail.platform ?? '');
+    final channel = _channelId(detail.roomId, detail.platform);
     final data = detail.data;
     if (data is! TtingBroadcast || !detail.isLiveNow) throw const TtingException(TtingFailure.mediaUnavailable);
     if (data.channel.id != channel || detail.userId != '${data.channel.ownerId}') {
@@ -148,7 +148,7 @@ class TtingSite extends LiveSite
   );
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    _channelId(detail.roomId ?? '', detail.platform ?? '');
+    _channelId(detail.roomId, detail.platform);
     if (detail.isExplicitlyOfflineNow) return [];
     return List.unmodifiable(_broadcast(detail).sources.map(_quality));
   }
@@ -156,7 +156,7 @@ class TtingSite extends LiveSite
   Future<LivePlayUrlResolution> _resolve(LiveRoom detail, LivePlayQuality quality, {required bool refresh}) async {
     var data = _broadcast(detail);
     if (refresh || data.sources.any((s) => !s.expiresAt.isAfter(_now().toUtc()))) {
-      final fresh = await getRoomDetail(roomId: detail.roomId!, platform: id);
+      final fresh = await getRoomDetail(roomId: detail.roomId, platform: id);
       if (!fresh.isLiveNow) throw const TtingException(TtingFailure.notLive);
       data = _broadcast(fresh);
       if ('${data.channel.ownerId}' != detail.userId) throw const TtingException(TtingFailure.identity);

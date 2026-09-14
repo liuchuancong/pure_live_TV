@@ -1,10 +1,10 @@
-import 'package:pure_live/shared/contracts/index.dart';
-import 'package:pure_live/shared/models/index.dart';
-
 import 'acfun_api.dart';
-import 'acfun_directory.dart';
 import 'acfun_search.dart';
+import 'acfun_directory.dart';
+import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/contracts/index.dart';
 import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
+
 
 /// Anonymous AcFun live directory, author search, playback and recording.
 /// Remote chat is not integrated; the session UI reports this separately.
@@ -92,7 +92,7 @@ class AcfunSite extends LiveSite
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
     final type = AcfunApi.integer(category.areaType);
     final categoryId = AcfunApi.integer(category.areaId);
-    if (type == null || categoryId == null || (category.platform != null && category.platform != id)) {
+    if (type == null || categoryId == null || (category.platform != id)) {
       throw const AcfunApiException(AcfunFailureKind.schema);
     }
     return _rooms(
@@ -108,9 +108,9 @@ class AcfunSite extends LiveSite
   Future<List<LiveAnchorItem>> searchAnchors(String keyword, {int page = 1, int pageSize = 30}) async => [
     for (final room in await searchRooms(keyword, page: page, pageSize: pageSize))
       LiveAnchorItem(
-        roomId: room.roomId!,
-        avatar: room.avatar ?? '',
-        userName: room.nick ?? '',
+        roomId: room.roomId,
+        avatar: room.avatar,
+        userName: room.nick,
         liveStatus: room.liveStatus == LiveStatus.live,
       ),
   ];
@@ -125,7 +125,7 @@ class AcfunSite extends LiveSite
   Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
     if (room.liveStatus == LiveStatus.live) {
-      return room.copyWith(data: await _api.playback(room.roomId!));
+      return room.copyWith(data: await _api.playback(room.roomId));
     }
     return room;
   }
@@ -164,7 +164,7 @@ class AcfunSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId!, platform: id);
+    final fresh = await getRoomDetail(roomId: detail.roomId, platform: id);
     final urls = await getPlayUrls(detail: fresh, quality: quality);
     return LivePlayUrlResolution(urls: urls, appliedQualityData: quality.selectionId);
   }

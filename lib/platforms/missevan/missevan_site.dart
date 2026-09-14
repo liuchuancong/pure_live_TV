@@ -1,9 +1,9 @@
-import 'package:pure_live/shared/contracts/index.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:dio/dio.dart';
-
 import 'missevan_api.dart';
+import 'package:dio/dio.dart';
+import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/contracts/index.dart';
 import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
+
 
 /// Anonymous directory, room, playback and recording adapter. Search and
 /// danmaku remain absent until their public contracts are verified.
@@ -75,7 +75,7 @@ class MissevanSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId ?? '', platform: detail.platform ?? '');
+    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

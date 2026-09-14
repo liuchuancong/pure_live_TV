@@ -1,16 +1,16 @@
 import 'dart:convert';
-
-import 'package:html_unescape/html_unescape.dart';
-import 'package:pure_live/shared/contracts/index.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/platforms/douyu/douyu_utils.dart';
-
-import 'package:pure_live/platforms/sites.dart';
 import 'package:meta/meta.dart';
+import 'package:pure_live/platforms/sites.dart';
+import 'package:html_unescape/html_unescape.dart';
+import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/contracts/index.dart';
 import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/platforms/douyu/douyu_danmaku.dart';
 import 'package:pure_live/shared/utils/live_quality_label.dart';
-import 'package:pure_live/services/settings/settings.dart';
+
+
 class DouyuSite
     implements
         LiveSite,
@@ -114,7 +114,7 @@ class DouyuSite
 
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    final roomId = detail.roomId ?? '';
+    final roomId = detail.roomId;
     final playData = await _requestPlayData(roomId);
     final cdns = parseCdnCodes(playData);
     cdns.sort((a, b) {
@@ -208,7 +208,7 @@ class DouyuSite
   @override
   Future<LivePlayUrlResolution> resolvePlayUrlsRaw({required LiveRoom detail, required LivePlayQuality quality}) async {
     final rawData = quality.data;
-    final roomId = detail.roomId?.trim() ?? '';
+    final roomId = detail.roomId.trim();
     if (rawData is! DouyuPlayData || roomId.isEmpty) return const LivePlayUrlResolution(urls: []);
     final data = rawData;
     // Each CDN may acknowledge a different rate. A single UI quality label
@@ -252,7 +252,7 @@ class DouyuSite
     if (data is! DouyuPlayData || lineIndex < 0 || lineIndex >= data.cdns.length) {
       return const LivePlayUrlResolution(urls: <String>[]);
     }
-    final roomId = detail.roomId?.trim() ?? '';
+    final roomId = detail.roomId.trim();
     if (roomId.isEmpty) {
       return const LivePlayUrlResolution(urls: <String>[]);
     }

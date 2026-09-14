@@ -161,9 +161,9 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
 
   @override
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
-    var ids = category.areaId?.split(',');
-    var partitionId = ids?[0];
-    var partitionType = ids?[1];
+    var ids = category.areaId.split(',');
+    var partitionId = ids[0];
+    var partitionType = ids[1];
 
     var queryParameters = {
       "aid": '6383',
@@ -846,7 +846,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
   @override
   Future<bool> getLiveStatus({required String platform, required String roomId}) async {
     var result = await getRoomDetail(roomId: roomId, platform: platform);
-    return result.status!;
+    return result.status;
   }
 
   @override

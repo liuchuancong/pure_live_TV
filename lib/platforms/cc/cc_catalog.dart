@@ -7,13 +7,13 @@ class CCCatalog {
   static final _numericId = RegExp(r'^[1-9][0-9]{0,15}$');
 
   static bool isOfficialEntry(LiveArea area) =>
-      area.platform?.trim().toLowerCase() == 'cc' && (area.areaId?.startsWith('official:') ?? false);
+      area.platform.trim().toLowerCase() == 'cc' && (area.areaId.startsWith('official:'));
 
   /// Reconstruct an official destination from a bounded identity. Saved
   /// categories never contain a URL that could point to another host/scheme.
   static Uri? officialEntryUri(LiveArea area) {
     if (!isOfficialEntry(area)) return null;
-    final id = area.areaId!.substring('official:'.length);
+    final id = area.areaId.substring('official:'.length);
     if (!_numericId.hasMatch(id)) return null;
     return Uri.https('cc.163.com', '/$id/', {'open': 'blizzardtv', 'from': '8382', 'platform': 'ds'});
   }

@@ -14,8 +14,8 @@ class InkeSite extends LiveSite
   /// Official room pages need both the durable UID and a broadcast ID. Older
   /// favorites/offline metadata can lack the latter; do not invent a room URL.
   static String externalRoomUrl(LiveRoom room) {
-    final uri = Uri.tryParse(room.link?.trim() ?? '');
-    if (uri != null && room.platform == 'inke' && room.roomId != null && InkeApi.roomFromUri(uri) == room.roomId) {
+    final uri = Uri.tryParse(room.link.trim());
+    if (uri != null && room.platform == 'inke' && InkeApi.roomFromUri(uri) == room.roomId) {
       try {
         final ids = uri.queryParametersAll['id'];
         if (ids?.length == 1 && RegExp(r'^[0-9]{1,32}$').hasMatch(ids!.single)) return uri.toString();
@@ -105,7 +105,7 @@ class InkeSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId ?? '', platform: detail.platform ?? '');
+    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

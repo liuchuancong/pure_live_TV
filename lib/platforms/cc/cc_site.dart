@@ -1,5 +1,5 @@
-
 import 'package:pure_live/exports/exports.dart';
+
 
 class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver, LiveSiteCategoryDirectoryProvider {
   @override
@@ -47,8 +47,8 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     int pageSize = 30,
     CancelToken? cancel,
   }) async {
-    final game = category.areaId?.trim() ?? '';
-    final platform = category.platform?.trim().toLowerCase() ?? '';
+    final game = category.areaId.trim();
+    final platform = category.platform.trim().toLowerCase();
     if (!RegExp(r'^[1-9][0-9]{0,15}$').hasMatch(game) ||
         (platform.isNotEmpty && platform != Sites.ccSite) ||
         page < 1 ||
@@ -139,7 +139,7 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       final preferredLines = <String>[];
       final otherLines = <String>[];
       cdn.forEach((line, lineValue) {
-        final baseUrl = detail.link?.trim() ?? '';
+        final baseUrl = detail.link.trim();
         final url = isLiveStream && baseUrl.isNotEmpty
             ? _resolveLiveCdnUrl(baseUrl, lineValue)
             : _normalizeDirectUrl(lineValue);
@@ -372,9 +372,9 @@ final currentRoom = Sites.currentRoom(platform, roomId);
     return rooms
         .map(
           (room) => LiveAnchorItem(
-            roomId: room.roomId ?? '',
-            avatar: room.avatar ?? '',
-            userName: room.nick ?? '',
+            roomId: room.roomId,
+            avatar: room.avatar,
+            userName: room.nick,
             liveStatus: room.isLiveNow,
           ),
         )

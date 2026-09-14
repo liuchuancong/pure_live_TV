@@ -1,8 +1,8 @@
 import 'favorite_settings_model.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 
 part 'favorite_room_controller.g.dart';
 
@@ -62,7 +62,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     return true;
   }
 
-  static bool _isValidFavoriteRoomStatic(LiveRoom room) => _isValidFavoriteRoom(room);
+  static bool isValidFavoriteRoomStatic(LiveRoom room) => _isValidFavoriteRoom(room);
 
   static String _areaKey(LiveArea area) => '${area.platform.trim().toLowerCase()}:${area.areaId.trim()}';
 
@@ -209,16 +209,18 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     if (index < 0) return false;
     final updated = List<LiveRoom>.from(state.favoriteRooms);
     // 以身份键定位后用刷新快照覆盖（保留收藏项刷新元数据的语义由调用方处理）。
-    updated[index] = updated[index].withAudienceFallbackFrom(normalized).copyWith(
-      title: normalized.title,
-      nick: normalized.nick,
-      avatar: normalized.avatar,
-      cover: normalized.cover,
-      area: normalized.area,
-      introduction: normalized.introduction,
-      status: normalized.status,
-      liveStatus: normalized.liveStatus,
-    );
+    updated[index] = updated[index]
+        .withAudienceFallbackFrom(normalized)
+        .copyWith(
+          title: normalized.title,
+          nick: normalized.nick,
+          avatar: normalized.avatar,
+          cover: normalized.cover,
+          area: normalized.area,
+          introduction: normalized.introduction,
+          status: normalized.status,
+          liveStatus: normalized.liveStatus,
+        );
     _update(state.copyWith(favoriteRooms: updated));
     return true;
   }

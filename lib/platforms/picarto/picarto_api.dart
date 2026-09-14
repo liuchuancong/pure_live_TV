@@ -191,7 +191,7 @@ class PicartoApi {
       // Explicit filtering is not a fabricated offline status. Do not fetch
       // more pages to fill a short page or follow the API's arbitrary next URL.
       if (row['adult'] != false || !room.isPlayableNow) continue;
-      rooms.putIfAbsent(room.roomId!.toLowerCase(), () => room);
+      rooms.putIfAbsent(room.roomId.toLowerCase(), () => room);
     }
     return List.unmodifiable(rooms.values);
   }

@@ -66,7 +66,7 @@ class NiconicoDirectory {
       final rooms = <LiveRoom>[];
       for (final row in rows) {
         final room = _room(_object(row), search: search);
-        if (!identities.add(room.roomId!)) throw const NiconicoException(NiconicoFailure.identity);
+        if (!identities.add(room.roomId)) throw const NiconicoException(NiconicoFailure.identity);
         rooms.add(room);
       }
       // Use totalCount rather than a short row count. No shared mutable cursor,

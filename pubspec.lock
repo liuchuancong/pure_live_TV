@@ -42,7 +42,7 @@ packages:
     source: hosted
     version: "1.1.1"
   android_intent_plus:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: android_intent_plus
       sha256: "4d4bbd619d698cbee3c400ba89246ecb0f525146b0ae05389f62ede47abd5bec"
@@ -592,7 +592,7 @@ packages:
     source: hosted
     version: "3.4.2"
   flutter_inappwebview:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       path: flutter_inappwebview
       ref: "3e6c4c4a25340cd363af9d38891d88498b90be26"

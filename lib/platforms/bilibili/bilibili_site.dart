@@ -366,7 +366,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
             platform: Sites.bilibiliSite,
           );
         })
-        .where((room) => room.roomId?.isNotEmpty == true)
+        .where((room) => room.roomId.isNotEmpty == true)
         .toList(growable: false);
     return sortRoomsByPopularity(rooms);
   }

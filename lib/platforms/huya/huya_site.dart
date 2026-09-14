@@ -1,10 +1,10 @@
 import 'dart:math';
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/platforms/huya/huya_utils.dart' as huya_utils;
+
 
 class HuyaSite
     implements
@@ -291,8 +291,8 @@ class HuyaSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final roomId = detail.roomId?.trim() ?? '';
-    final platform = detail.platform?.trim().isNotEmpty == true ? detail.platform! : Sites.huyaSite;
+    final roomId = detail.roomId.trim();
+    final platform = detail.platform.trim().isNotEmpty == true ? detail.platform : Sites.huyaSite;
     if (roomId.isEmpty) return LivePlayUrlResolution(urls: const <String>[], appliedQualityData: quality.selectionId);
 
     // Reacquire the room snapshot and build a fresh signature. HLS uses its

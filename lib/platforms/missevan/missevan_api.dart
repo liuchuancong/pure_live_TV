@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:dio/dio.dart';
 import 'package:pure_live/shared/common/index.dart';
 import 'package:pure_live/shared/models/index.dart';
+
 
 enum MissevanFailure { transport, access, rateLimited, service, notFound, schema, cancelled, qualityUnavailable }
 
@@ -194,7 +194,7 @@ class MissevanApi {
       if (category.platform != 'missevan' || !{'catalog', 'tag'}.contains(category.areaType)) {
         throw const MissevanException(MissevanFailure.schema);
       }
-      query['${category.areaType}_id'] = roomId(category.areaId ?? '');
+      query['${category.areaType}_id'] = roomId(category.areaId);
     }
     final info = await _get('chatroom/open/list', query: query, cancel: cancel);
     final pagination = _object(info['pagination']);
@@ -218,7 +218,7 @@ class MissevanApi {
     // Preserve that contract; do not classify/filter recommendations by trace.
     for (final raw in rows) {
       final room = _room(_object(raw));
-      if (room.isLiveNow) result.putIfAbsent(room.roomId!, () => room);
+      if (room.isLiveNow) result.putIfAbsent(room.roomId, () => room);
     }
     return MissevanDirectoryPage(rooms: List.unmodifiable(result.values), page: page, maxPage: maxPage, count: count);
   }

@@ -246,7 +246,7 @@ class InkeApi {
     final rooms = <String, LiveRoom>{};
     for (final row in rows) {
       final card = _card(row);
-      rooms.putIfAbsent(card.roomId!, () => card);
+      rooms.putIfAbsent(card.roomId, () => card);
     }
     return LiveDirectoryPage(rooms: rooms.values, page: page, hasMore: false);
   }

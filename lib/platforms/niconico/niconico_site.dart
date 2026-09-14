@@ -158,7 +158,7 @@ class NiconicoSite extends LiveSite
   @override
   Future<List<LivePlayQuality>> discoverPlayQualitiesRaw({required LiveRoom detail, CancelToken? cancel}) async {
     if (cancel?.isCancelled == true) throw cancel!.cancelError!;
-    final programId = _identity(detail.roomId ?? '', detail.platform ?? '');
+    final programId = _identity(detail.roomId, detail.platform);
     if (detail.isExplicitlyOfflineNow) return const [];
     final choices = await _catalog.load(programId, cancel: cancel);
     return List.unmodifiable([
@@ -169,7 +169,7 @@ class NiconicoSite extends LiveSite
 
   @override
   Future<LivePlayUrlResolution> resolvePlayUrlsRaw({required LiveRoom detail, required LivePlayQuality quality}) async {
-    final programId = _identity(detail.roomId ?? '', detail.platform ?? '');
+    final programId = _identity(detail.roomId, detail.platform);
     if (detail.isExplicitlyOfflineNow) throw const NiconicoException(NiconicoFailure.notLive);
     final choice = quality.data;
     if (choice is! _Choice || choice.programId != programId || quality.selectionId != choice.quality.id) {

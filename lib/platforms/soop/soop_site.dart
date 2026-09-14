@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:pure_live/exports/exports.dart';
+
 
 class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecordRoomResolver {
   @override
@@ -287,7 +287,7 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
     try {
       final qualityId = quality.selectionId.toString();
       final cdnUrl = await getCdnUrl(rmd: rmd, cdn: cdn, bno: bno, quality: qualityId);
-      final aid = await getStreamAid(roomId: detail.roomId ?? "", bno: bno, quality: qualityId);
+      final aid = await getStreamAid(roomId: detail.roomId, bno: bno, quality: qualityId);
 
       if (cdnUrl.isEmpty || aid.isEmpty) return const [];
       return ['$cdnUrl?aid=$aid'];

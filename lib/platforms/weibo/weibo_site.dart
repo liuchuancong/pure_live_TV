@@ -160,7 +160,7 @@ class WeiboSite extends LiveSite
   }
 
   WeiboLiveDetail _detail(LiveRoom room) {
-    _id(room.roomId ?? '', room.platform ?? '');
+    _id(room.roomId, room.platform);
     final detail = room.data;
     if (detail is! WeiboLiveDetail || detail.liveId != room.roomId || '${detail.ownerId}' != room.userId) {
       throw const WeiboException(WeiboFailure.identity);

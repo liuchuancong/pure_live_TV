@@ -112,6 +112,12 @@ dependencies:
   marquee_list: ^1.0.0
   network_info_plus: ^8.1.0
   bonsoir: ^7.1.5 # 局域网同步
+  android_intent_plus: ^6.0.0
+  flutter_inappwebview:
+    git:
+      url: https://github.com/guide-inc-org/guide-flutter_inappwebview.git
+      path: flutter_inappwebview
+      ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
   # Git私有仓库自定义库
   flv_lzc:
     git: https://github.com/liuchuancong/flv_lzc.git # FLV视频流解析
@@ -119,8 +125,6 @@ dependencies:
     git: https://github.com/liuchuancong/dart_quickjs.git # QuickJS JS脚本引擎
   native_textfield_tv:
     git: https://github.com/liuchuancong/native_textfield_tv.git # TV虚拟键盘输入
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter # Flutter单元测试框架
@@ -143,13 +147,7 @@ dev_dependencies:
 
   # Riverpod状态代码生成
   riverpod_generator: ^4.0.4
-  android_intent_plus: ^6.0.0
 
-  flutter_inappwebview:
-    git:
-      url: https://github.com/guide-inc-org/guide-flutter_inappwebview.git
-      path: flutter_inappwebview
-      ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
 
 # 应用图标生成配置
 flutter_icons:

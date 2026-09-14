@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:pure_live/exports/exports.dart';
+
 
 
 class HuajiaoSite extends LiveSite
@@ -182,7 +182,7 @@ class HuajiaoSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId ?? '', platform: detail.platform ?? '');
+    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

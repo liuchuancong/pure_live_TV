@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/features/iptv/data/database.dart';
 
@@ -55,7 +54,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
     final db = DbService.to.db;
     final items = <LiveRoom>[];
 
-    final ch = await db.getChannelById(category.areaId!);
+    final ch = await db.getChannelById(category.areaId);
     if (ch == null) return [];
 
     final epgId = await _resolveEpgChannelId(ch, SettingsService.to.iptv.selectedSourceId.v);

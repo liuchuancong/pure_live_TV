@@ -194,7 +194,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       if (pageInfo != null) {
         subCategory = subCategory.copyWith(shortName: json.encode(pageInfo));
         final biz = pageInfo['biz']?.toString() ?? '';
-        if (biz.isNotEmpty) bizAreaNameMap.putIfAbsent(biz, () => subCategory.areaName ?? biz);
+        if (biz.isNotEmpty) bizAreaNameMap.putIfAbsent(biz, () => subCategory.areaName);
       }
 
       subs.add(subCategory);
@@ -213,7 +213,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
 
     final requestPageSize = pageSize;
 
-    final shortName = category.shortName ?? '{}';
+    final shortName = category.shortName;
 
     final decodeShortName = decode(shortName) as Map;
 
@@ -269,7 +269,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     if (danmakuArgs is YyDanmakuArgs && danmakuArgs.topSid > 0) {
       return (cid: danmakuArgs.topSid.toString(), sid: danmakuArgs.subSid.toString());
     }
-    final roomId = detail.roomId?.trim() ?? '';
+    final roomId = detail.roomId.trim();
     return (cid: roomId, sid: roomId);
   }
 
@@ -592,8 +592,8 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     final List<LiveCategory> data = await getCategores(1, 100);
     for (final liveCategory in data) {
       for (final liveArea in liveCategory.children) {
-        final shortName = liveArea.shortName ?? '{}';
-        final areaName = liveArea.areaName ?? '';
+        final shortName = liveArea.shortName;
+        final areaName = liveArea.areaName;
         try {
           final shortNameDecode = decode(shortName);
           final biz = shortNameDecode['biz']?.toString() ?? '';

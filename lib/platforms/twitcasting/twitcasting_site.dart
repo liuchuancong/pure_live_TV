@@ -24,11 +24,10 @@ class TwitcastingSite extends LiveSite
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) {
     if (category.platform != id ||
         category.areaType != 'directory' ||
-        category.areaId == null ||
-        category.areaId!.isEmpty) {
+        category.areaId.isEmpty) {
       throw const TwitcastingException(TwitcastingFailure.schema);
     }
-    return _api.directory(page: page, pageSize: pageSize, category: category.areaId!);
+    return _api.directory(page: page, pageSize: pageSize, category: category.areaId);
   }
 
   @override
@@ -67,7 +66,7 @@ class TwitcastingSite extends LiveSite
     required LiveRoom detail,
     required LivePlayQuality quality,
   }) async {
-    final fresh = await getRoomDetail(roomId: detail.roomId!, platform: detail.platform!);
+    final fresh = await getRoomDetail(roomId: detail.roomId, platform: detail.platform);
     return LivePlayUrlResolution(
       urls: await getPlayUrls(detail: fresh, quality: quality),
       appliedQualityData: quality.selectionId,

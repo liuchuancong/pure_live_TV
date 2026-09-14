@@ -308,7 +308,7 @@ class DouyinSearch {
         continue;
       }
 
-      seen.add(room.roomId!);
+      seen.add(room.roomId);
       result.add(room);
     }
 
@@ -424,9 +424,9 @@ class DouyinSearch {
             continue;
           }
 
-          seen.add(room.roomId!);
+          seen.add(room.roomId);
 
-          if (room.area == null || room.area!.isEmpty) {
+          if (room.area.isEmpty) {
             merged.add(room.copyWith(area: partition['title']?.toString() ?? keyword));
           } else {
             merged.add(room);

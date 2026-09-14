@@ -772,7 +772,7 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) async {
     try {
       var cursorType = "getCategoryRooms";
-      var cursorId = category.shortName!;
+      var cursorId = category.shortName;
       String cursor = getCursor(cursorType, cursorId, page);
       if (cursor.isEmpty && page > 1) {
         return <LiveRoom>[];
@@ -960,10 +960,10 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
     for (var room in list) {
       allPersistedRequestList.addAll([
         buildPersistedRequest("ChannelShell", "fea4573a7bf2644f5b3f2cbbdcbee0d17312e48d2e55f080589d053aad353f11", {
-          "login": room.roomId!,
+          "login": room.roomId,
         }),
         buildPersistedRequest("StreamMetadata", "b57f9b910f8cd1a4659d894fe7550ccc81ec9052c01e438b290fd66a040b9b93", {
-          "channelLogin": room.roomId!,
+          "channelLogin": room.roomId,
           "includeIsDJ": true,
         }),
       ]);

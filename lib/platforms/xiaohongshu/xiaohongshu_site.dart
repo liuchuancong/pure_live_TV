@@ -107,7 +107,7 @@ class XiaohongshuSite extends LiveSite
   }
 
   XiaohongshuShare _snapshot(LiveRoom detail) {
-    final roomId = _roomId(detail.roomId ?? '', detail.platform ?? '');
+    final roomId = _roomId(detail.roomId, detail.platform);
     final data = detail.data;
     if (data is! XiaohongshuShare || data.requestedRoomId != roomId) {
       throw const XiaohongshuException(XiaohongshuFailure.identity);
@@ -127,7 +127,7 @@ class XiaohongshuSite extends LiveSite
   static String _qualityId(XiaohongshuStream stream) => '${stream.codec}:${stream.quality}';
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
-    _roomId(detail.roomId ?? '', detail.platform ?? '');
+    _roomId(detail.roomId, detail.platform);
     if (detail.isExplicitlyOfflineNow) return [];
     final data = _snapshot(detail);
     final qualities = <String, LivePlayQuality>{};
