@@ -14,6 +14,7 @@ import 'package:pure_live/core/interface/live_directory.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/plugins/locale_helper.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver, LiveSiteCategoryDirectoryProvider {
   @override
   late final LiveSiteDirectoryPager categoryDirectory = _CCCategoryDirectory(this);
@@ -265,7 +266,7 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       return await _loadRoomDetail(roomId);
     } catch (e) {
       {
-final currentRoom = Sites.currentRoom(platform, roomId);
+final currentRoom = Sites.currentRoom(platform, roomId);
         if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$LivePlayQuality {
 
- String get quality; dynamic get data; int get sort;
+ String get quality; dynamic get data; int get sort; dynamic get id; bool get playbackUnconfirmed;
 /// Create a copy of LivePlayQuality
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $LivePlayQualityCopyWith<LivePlayQuality> get copyWith => _$LivePlayQualityCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LivePlayQuality&&(identical(other.quality, quality) || other.quality == quality)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.sort, sort) || other.sort == sort));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LivePlayQuality&&(identical(other.quality, quality) || other.quality == quality)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.sort, sort) || other.sort == sort)&&const DeepCollectionEquality().equals(other.id, id)&&(identical(other.playbackUnconfirmed, playbackUnconfirmed) || other.playbackUnconfirmed == playbackUnconfirmed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,quality,const DeepCollectionEquality().hash(data),sort);
+int get hashCode => Object.hash(runtimeType,quality,const DeepCollectionEquality().hash(data),sort,const DeepCollectionEquality().hash(id),playbackUnconfirmed);
 
 @override
 String toString() {
-  return 'LivePlayQuality(quality: $quality, data: $data, sort: $sort)';
+  return 'LivePlayQuality(quality: $quality, data: $data, sort: $sort, id: $id, playbackUnconfirmed: $playbackUnconfirmed)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $LivePlayQualityCopyWith<$Res>  {
   factory $LivePlayQualityCopyWith(LivePlayQuality value, $Res Function(LivePlayQuality) _then) = _$LivePlayQualityCopyWithImpl;
 @useResult
 $Res call({
- String quality, dynamic data, int sort
+ String quality, dynamic data, int sort, dynamic id, bool playbackUnconfirmed
 });
 
 
@@ -65,12 +65,14 @@ class _$LivePlayQualityCopyWithImpl<$Res>
 
 /// Create a copy of LivePlayQuality
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? quality = null,Object? data = freezed,Object? sort = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? quality = null,Object? data = freezed,Object? sort = null,Object? id = freezed,Object? playbackUnconfirmed = null,}) {
   return _then(_self.copyWith(
 quality: null == quality ? _self.quality : quality // ignore: cast_nullable_to_non_nullable
 as String,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as dynamic,sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
-as int,
+as int,id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as dynamic,playbackUnconfirmed: null == playbackUnconfirmed ? _self.playbackUnconfirmed : playbackUnconfirmed // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -155,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String quality,  dynamic data,  int sort)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String quality,  dynamic data,  int sort,  dynamic id,  bool playbackUnconfirmed)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LivePlayQuality() when $default != null:
-return $default(_that.quality,_that.data,_that.sort);case _:
+return $default(_that.quality,_that.data,_that.sort,_that.id,_that.playbackUnconfirmed);case _:
   return orElse();
 
 }
@@ -176,10 +178,10 @@ return $default(_that.quality,_that.data,_that.sort);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String quality,  dynamic data,  int sort)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String quality,  dynamic data,  int sort,  dynamic id,  bool playbackUnconfirmed)  $default,) {final _that = this;
 switch (_that) {
 case _LivePlayQuality():
-return $default(_that.quality,_that.data,_that.sort);case _:
+return $default(_that.quality,_that.data,_that.sort,_that.id,_that.playbackUnconfirmed);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +198,10 @@ return $default(_that.quality,_that.data,_that.sort);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String quality,  dynamic data,  int sort)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String quality,  dynamic data,  int sort,  dynamic id,  bool playbackUnconfirmed)?  $default,) {final _that = this;
 switch (_that) {
 case _LivePlayQuality() when $default != null:
-return $default(_that.quality,_that.data,_that.sort);case _:
+return $default(_that.quality,_that.data,_that.sort,_that.id,_that.playbackUnconfirmed);case _:
   return null;
 
 }
@@ -210,13 +212,15 @@ return $default(_that.quality,_that.data,_that.sort);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _LivePlayQuality implements LivePlayQuality {
-  const _LivePlayQuality({required this.quality, this.data, this.sort = 0});
+class _LivePlayQuality extends LivePlayQuality {
+  const _LivePlayQuality({required this.quality, this.data, this.sort = 0, this.id, this.playbackUnconfirmed = false}): super._();
   factory _LivePlayQuality.fromJson(Map<String, dynamic> json) => _$LivePlayQualityFromJson(json);
 
 @override final  String quality;
 @override final  dynamic data;
 @override@JsonKey() final  int sort;
+@override final  dynamic id;
+@override@JsonKey() final  bool playbackUnconfirmed;
 
 /// Create a copy of LivePlayQuality
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +235,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LivePlayQuality&&(identical(other.quality, quality) || other.quality == quality)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.sort, sort) || other.sort == sort));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LivePlayQuality&&(identical(other.quality, quality) || other.quality == quality)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.sort, sort) || other.sort == sort)&&const DeepCollectionEquality().equals(other.id, id)&&(identical(other.playbackUnconfirmed, playbackUnconfirmed) || other.playbackUnconfirmed == playbackUnconfirmed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,quality,const DeepCollectionEquality().hash(data),sort);
+int get hashCode => Object.hash(runtimeType,quality,const DeepCollectionEquality().hash(data),sort,const DeepCollectionEquality().hash(id),playbackUnconfirmed);
 
 @override
 String toString() {
-  return 'LivePlayQuality(quality: $quality, data: $data, sort: $sort)';
+  return 'LivePlayQuality(quality: $quality, data: $data, sort: $sort, id: $id, playbackUnconfirmed: $playbackUnconfirmed)';
 }
 
 
@@ -251,7 +255,7 @@ abstract mixin class _$LivePlayQualityCopyWith<$Res> implements $LivePlayQuality
   factory _$LivePlayQualityCopyWith(_LivePlayQuality value, $Res Function(_LivePlayQuality) _then) = __$LivePlayQualityCopyWithImpl;
 @override @useResult
 $Res call({
- String quality, dynamic data, int sort
+ String quality, dynamic data, int sort, dynamic id, bool playbackUnconfirmed
 });
 
 
@@ -268,12 +272,14 @@ class __$LivePlayQualityCopyWithImpl<$Res>
 
 /// Create a copy of LivePlayQuality
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? quality = null,Object? data = freezed,Object? sort = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? quality = null,Object? data = freezed,Object? sort = null,Object? id = freezed,Object? playbackUnconfirmed = null,}) {
   return _then(_LivePlayQuality(
 quality: null == quality ? _self.quality : quality // ignore: cast_nullable_to_non_nullable
 as String,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as dynamic,sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
-as int,
+as int,id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as dynamic,playbackUnconfirmed: null == playbackUnconfirmed ? _self.playbackUnconfirmed : playbackUnconfirmed // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

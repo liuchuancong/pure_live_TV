@@ -11,6 +11,7 @@ import 'package:pure_live/plugins/locale_helper.dart';
 
 import 'tting_api.dart';
 import 'tting_link.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 
 class TtingSite extends LiveSite
     implements
@@ -114,9 +115,7 @@ class TtingSite extends LiveSite
     final room = _owner(result.channel);
     final broadcast = result.broadcast;
     if (broadcast != null) {
-      room.title = broadcast.title;
-      room.cover = broadcast.cover;
-      room.data = broadcast;
+      return room.copyWith(title: broadcast.title, cover: broadcast.cover, data: broadcast);
     }
     return room;
   }

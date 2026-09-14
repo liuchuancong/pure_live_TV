@@ -12,6 +12,7 @@ import 'package:pure_live/plugins/locale_helper.dart';
 import 'xiaohongshu_api.dart';
 import 'xiaohongshu_link.dart';
 import 'xiaohongshu_share.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 
 class XiaohongshuSite extends LiveSite
     implements

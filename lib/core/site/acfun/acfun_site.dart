@@ -129,7 +129,9 @@ class AcfunSite extends LiveSite
   @override
   Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     final room = await getRoomDetailForRefresh(roomId: roomId, platform: platform);
-    if (room.liveStatus == LiveStatus.live) room.data = await _api.playback(room.roomId!);
+    if (room.liveStatus == LiveStatus.live) {
+      return room.copyWith(data: await _api.playback(room.roomId!));
+    }
     return room;
   }
 

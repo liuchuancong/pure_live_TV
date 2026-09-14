@@ -276,7 +276,7 @@ as int,
 /// @nodoc
 mixin _$LiveMessage {
 
- LiveMessageType get type; String get userName; String get message; LiveMessageColor get color; dynamic get data;
+ LiveMessageType get type; String get userName; String get message; LiveMessageColor get color; dynamic get data; String? get messageId; String? get userId; DateTime? get sentAt; bool get isLocal; LiveMessageStyle? get style;
 /// Create a copy of LiveMessage
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -289,16 +289,16 @@ $LiveMessageCopyWith<LiveMessage> get copyWith => _$LiveMessageCopyWithImpl<Live
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveMessage&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.message, message) || other.message == message)&&(identical(other.color, color) || other.color == color)&&const DeepCollectionEquality().equals(other.data, data));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveMessage&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.message, message) || other.message == message)&&(identical(other.color, color) || other.color == color)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.isLocal, isLocal) || other.isLocal == isLocal)&&(identical(other.style, style) || other.style == style));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,userName,message,color,const DeepCollectionEquality().hash(data));
+int get hashCode => Object.hash(runtimeType,type,userName,message,color,const DeepCollectionEquality().hash(data),messageId,userId,sentAt,isLocal,style);
 
 @override
 String toString() {
-  return 'LiveMessage(type: $type, userName: $userName, message: $message, color: $color, data: $data)';
+  return 'LiveMessage(type: $type, userName: $userName, message: $message, color: $color, data: $data, messageId: $messageId, userId: $userId, sentAt: $sentAt, isLocal: $isLocal, style: $style)';
 }
 
 
@@ -309,7 +309,7 @@ abstract mixin class $LiveMessageCopyWith<$Res>  {
   factory $LiveMessageCopyWith(LiveMessage value, $Res Function(LiveMessage) _then) = _$LiveMessageCopyWithImpl;
 @useResult
 $Res call({
- LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data
+ LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data, String? messageId, String? userId, DateTime? sentAt, bool isLocal, LiveMessageStyle? style
 });
 
 
@@ -326,14 +326,19 @@ class _$LiveMessageCopyWithImpl<$Res>
 
 /// Create a copy of LiveMessage
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? type = null,Object? userName = null,Object? message = null,Object? color = null,Object? data = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? type = null,Object? userName = null,Object? message = null,Object? color = null,Object? data = freezed,Object? messageId = freezed,Object? userId = freezed,Object? sentAt = freezed,Object? isLocal = null,Object? style = freezed,}) {
   return _then(_self.copyWith(
 type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as LiveMessageType,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as LiveMessageColor,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
-as dynamic,
+as dynamic,messageId: freezed == messageId ? _self.messageId : messageId // ignore: cast_nullable_to_non_nullable
+as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,sentAt: freezed == sentAt ? _self.sentAt : sentAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,isLocal: null == isLocal ? _self.isLocal : isLocal // ignore: cast_nullable_to_non_nullable
+as bool,style: freezed == style ? _self.style : style // ignore: cast_nullable_to_non_nullable
+as LiveMessageStyle?,
   ));
 }
 /// Create a copy of LiveMessage
@@ -427,10 +432,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal,  LiveMessageStyle? style)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LiveMessage() when $default != null:
-return $default(_that.type,_that.userName,_that.message,_that.color,_that.data);case _:
+return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_that.messageId,_that.userId,_that.sentAt,_that.isLocal,_that.style);case _:
   return orElse();
 
 }
@@ -448,10 +453,10 @@ return $default(_that.type,_that.userName,_that.message,_that.color,_that.data);
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal,  LiveMessageStyle? style)  $default,) {final _that = this;
 switch (_that) {
 case _LiveMessage():
-return $default(_that.type,_that.userName,_that.message,_that.color,_that.data);case _:
+return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_that.messageId,_that.userId,_that.sentAt,_that.isLocal,_that.style);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -468,10 +473,10 @@ return $default(_that.type,_that.userName,_that.message,_that.color,_that.data);
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( LiveMessageType type,  String userName,  String message,  LiveMessageColor color,  dynamic data,  String? messageId,  String? userId,  DateTime? sentAt,  bool isLocal,  LiveMessageStyle? style)?  $default,) {final _that = this;
 switch (_that) {
 case _LiveMessage() when $default != null:
-return $default(_that.type,_that.userName,_that.message,_that.color,_that.data);case _:
+return $default(_that.type,_that.userName,_that.message,_that.color,_that.data,_that.messageId,_that.userId,_that.sentAt,_that.isLocal,_that.style);case _:
   return null;
 
 }
@@ -483,7 +488,7 @@ return $default(_that.type,_that.userName,_that.message,_that.color,_that.data);
 @JsonSerializable()
 
 class _LiveMessage implements LiveMessage {
-  const _LiveMessage({required this.type, required this.userName, required this.message, required this.color, this.data});
+  const _LiveMessage({required this.type, required this.userName, required this.message, required this.color, this.data, this.messageId, this.userId, this.sentAt, this.isLocal = false, this.style});
   factory _LiveMessage.fromJson(Map<String, dynamic> json) => _$LiveMessageFromJson(json);
 
 @override final  LiveMessageType type;
@@ -491,6 +496,11 @@ class _LiveMessage implements LiveMessage {
 @override final  String message;
 @override final  LiveMessageColor color;
 @override final  dynamic data;
+@override final  String? messageId;
+@override final  String? userId;
+@override final  DateTime? sentAt;
+@override@JsonKey() final  bool isLocal;
+@override final  LiveMessageStyle? style;
 
 /// Create a copy of LiveMessage
 /// with the given fields replaced by the non-null parameter values.
@@ -505,16 +515,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveMessage&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.message, message) || other.message == message)&&(identical(other.color, color) || other.color == color)&&const DeepCollectionEquality().equals(other.data, data));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveMessage&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.message, message) || other.message == message)&&(identical(other.color, color) || other.color == color)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.isLocal, isLocal) || other.isLocal == isLocal)&&(identical(other.style, style) || other.style == style));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,userName,message,color,const DeepCollectionEquality().hash(data));
+int get hashCode => Object.hash(runtimeType,type,userName,message,color,const DeepCollectionEquality().hash(data),messageId,userId,sentAt,isLocal,style);
 
 @override
 String toString() {
-  return 'LiveMessage(type: $type, userName: $userName, message: $message, color: $color, data: $data)';
+  return 'LiveMessage(type: $type, userName: $userName, message: $message, color: $color, data: $data, messageId: $messageId, userId: $userId, sentAt: $sentAt, isLocal: $isLocal, style: $style)';
 }
 
 
@@ -525,7 +535,7 @@ abstract mixin class _$LiveMessageCopyWith<$Res> implements $LiveMessageCopyWith
   factory _$LiveMessageCopyWith(_LiveMessage value, $Res Function(_LiveMessage) _then) = __$LiveMessageCopyWithImpl;
 @override @useResult
 $Res call({
- LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data
+ LiveMessageType type, String userName, String message, LiveMessageColor color, dynamic data, String? messageId, String? userId, DateTime? sentAt, bool isLocal, LiveMessageStyle? style
 });
 
 
@@ -542,14 +552,19 @@ class __$LiveMessageCopyWithImpl<$Res>
 
 /// Create a copy of LiveMessage
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? type = null,Object? userName = null,Object? message = null,Object? color = null,Object? data = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? type = null,Object? userName = null,Object? message = null,Object? color = null,Object? data = freezed,Object? messageId = freezed,Object? userId = freezed,Object? sentAt = freezed,Object? isLocal = null,Object? style = freezed,}) {
   return _then(_LiveMessage(
 type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as LiveMessageType,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as LiveMessageColor,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
-as dynamic,
+as dynamic,messageId: freezed == messageId ? _self.messageId : messageId // ignore: cast_nullable_to_non_nullable
+as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,sentAt: freezed == sentAt ? _self.sentAt : sentAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,isLocal: null == isLocal ? _self.isLocal : isLocal // ignore: cast_nullable_to_non_nullable
+as bool,style: freezed == style ? _self.style : style // ignore: cast_nullable_to_non_nullable
+as LiveMessageStyle?,
   ));
 }
 

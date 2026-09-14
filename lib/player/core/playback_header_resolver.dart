@@ -1,7 +1,7 @@
 import 'package:pure_live/core/network/http_header_policy.dart';
-import 'package:pure_live/core/sites/bilibili/bilibili_site.dart';
-import 'package:pure_live/core/sites/douyin/douyin_site.dart';
-import 'package:pure_live/core/sites/huya/huya_site.dart';
+import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
+import 'package:pure_live/core/site/douyin/douyin_site.dart';
+import 'package:pure_live/core/site/huya/huya_site.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/services/settings/settings.dart';
 

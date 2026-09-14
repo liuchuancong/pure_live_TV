@@ -45,7 +45,7 @@ final class IptvSettingsControllerProvider
 }
 
 String _$iptvSettingsControllerHash() =>
-    r'5d1f62681d1fc9b8bbd2c9348992b0835c977575';
+    r'b9e743b83d759f6f565c9a20a0ce52587ed5df10';
 
 /// 同步自 pure_live IptvSettingsController：IPTV 源选择与自动同步配置。
 

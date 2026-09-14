@@ -17,6 +17,7 @@ import 'huajiao_link.dart';
 
 import 'package:pure_live/plugins/locale_helper.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 class HuajiaoSite extends LiveSite
     implements
         LiveSiteCursorDirectoryPager,
@@ -149,15 +150,16 @@ class HuajiaoSite extends LiveSite
     for (final stream in broadcast.media) {
       media.putIfAbsent(stream.format, () => []).add(stream.url);
     }
-    result.data = [
-      for (final group in media.entries)
-        LivePlayQuality(
-          id: group.key,
-          quality: group.key == 'unknown' ? i18n('huajiao_original_stream') : group.key.toUpperCase(),
-          data: List<String>.unmodifiable(group.value),
-        ),
-    ];
-    return result;
+    return result.copyWith(
+      data: [
+        for (final group in media.entries)
+          LivePlayQuality(
+            id: group.key,
+            quality: group.key == 'unknown' ? i18n('huajiao_original_stream') : group.key.toUpperCase(),
+            data: List<String>.unmodifiable(group.value),
+          ),
+      ],
+    );
   }
 
   @override

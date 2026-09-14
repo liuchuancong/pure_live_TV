@@ -8,6 +8,7 @@ import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:meta/meta.dart';
 class DouyinSearch {
   static const String host = 'https://live.douyin.com';
   static const String userAgent =

@@ -295,8 +295,7 @@ class TwitcastingApi {
     // Observed offline responses contain stale HLS URLs for a DIFFERENT movie.
     // Only movie.live is authoritative; ignore every URL when it is false.
     if (!live) {
-      room.data = const <LivePlayQuality>[];
-      return room;
+      return room.copyWith(data: const <LivePlayQuality>[]);
     }
     final movieId = integer(movie['id']);
     if (movieId == null || movieId <= 0) throw const TwitcastingException(TwitcastingFailure.schema);
@@ -325,7 +324,6 @@ class TwitcastingApi {
       );
     }
     if (qualities.isEmpty) throw const TwitcastingException(TwitcastingFailure.schema);
-    room.data = List<LivePlayQuality>.unmodifiable(qualities);
-    return room;
+    return room.copyWith(data: List<LivePlayQuality>.unmodifiable(qualities));
   }
 }

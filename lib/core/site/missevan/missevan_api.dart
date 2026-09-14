@@ -261,17 +261,16 @@ class MissevanApi {
     final row = _object(info['room']);
     final room = _room(row);
     if (room.roomId != id) throw const MissevanException(MissevanFailure.schema);
+    var room2 = room;
     if (info['creator'] != null) {
       final creator = _object(info['creator']);
       if (roomId('${creator['user_id']}') != room.userId) throw const MissevanException(MissevanFailure.schema);
-      room.avatar = _picture(creator['iconurl']);
-      room.introduction = _text(creator['introduction']);
+      room2 = room2.copyWith(avatar: _picture(creator['iconurl']), introduction: _text(creator['introduction']));
     }
     final followers = _integer(_object(row['statistics'])['attention_count']);
-    if (followers != null && followers >= 0) room.followers = '$followers';
-    if (!room.isLiveNow) {
-      room.data = const <LivePlayQuality>[];
-      return room; // Ignore stale/offline channel URLs entirely.
+    if (followers != null && followers >= 0) room2 = room2.copyWith(followers: '$followers');
+    if (!room2.isLiveNow) {
+      return room2.copyWith(data: const <LivePlayQuality>[]); // Ignore stale/offline channel URLs entirely.
     }
     final channel = _object(row['channel']);
     final qualities = <LivePlayQuality>[];
@@ -291,8 +290,7 @@ class MissevanApi {
     if (qualities.isEmpty) throw const MissevanException(MissevanFailure.schema);
     // Do not infer audio-only from the platform: sampled broadcasts contain
     // AAC plus 16x16 H.264. Let actual media track evidence drive the player.
-    room.data = List<LivePlayQuality>.unmodifiable(qualities);
-    return room;
+    return room2.copyWith(data: List<LivePlayQuality>.unmodifiable(qualities));
   }
 
   static String mediaUrl(String input, {required String kind}) {

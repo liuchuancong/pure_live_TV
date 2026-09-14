@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
 
 /// Small Android-system HTTP transport for endpoints that terminate a
 /// `dart:io` TLS connection after an HTTP CONNECT proxy tunnel is established.

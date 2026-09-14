@@ -1,6 +1,7 @@
 import 'danmaku_settings_model.dart';
 import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'danmaku_settings_controller.g.dart';
@@ -8,6 +9,10 @@ part 'danmaku_settings_controller.g.dart';
 @riverpod
 class DanmakuSettingsController extends _$DanmakuSettingsController {
   static DanmakuSettingsController get to => SettingsService.to.danmaku;
+
+  // 供播放器核心等非 widget 代码反应式读取。
+  SettingsValue<bool> get filterDouyuSuspectedAutomatedMessages =>
+      SettingsValue(() => state.filterDouyuSuspectedAutomatedMessages);
 
   @override
   DanmakuSettingsModel build() {

@@ -15,6 +15,7 @@ import 'package:pure_live/plugins/locale_helper.dart';
 import 'openrec_api.dart';
 import 'openrec_hls.dart';
 import 'openrec_link.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 
 class _Playback {
   _Playback(this.roomKey, Iterable<LivePlayQuality> qualities) : qualities = List.unmodifiable(qualities);
@@ -92,11 +93,12 @@ class OpenrecSite extends LiveSite
         }
         // A channel card does not select the first of simultaneous broadcasts
         // or add overlapping audiences. Playback still requires one broadcast.
-        previous
-          ..title = previous.nick
-          ..cover = previous.avatar
-          ..onlineViewers = null
-          ..notice = i18n('openrec_multiple_broadcasts');
+        rooms[movie.channelId] = previous.copyWith(
+          title: previous.nick,
+          cover: previous.avatar,
+          onlineViewers: '',
+          notice: i18n('openrec_multiple_broadcasts'),
+        );
       }
     }
     return LiveDirectoryPage(page: page, hasMore: result.hasMore, rooms: rooms.values);
@@ -200,9 +202,11 @@ class OpenrecSite extends LiveSite
       return rank != 0 ? rank : a.selectionId.toString().compareTo(b.selectionId.toString());
     });
     final room = _card(broadcast.movie);
-    room.data = _Playback(key.value, qualities);
-    if (loaded.any((entry) => entry.failure != null)) room.notice = i18n('openrec_partial_sources');
-    return room;
+    var detailed = room.copyWith(data: _Playback(key.value, qualities));
+    if (loaded.any((entry) => entry.failure != null)) {
+      detailed = detailed.copyWith(notice: i18n('openrec_partial_sources'));
+    }
+    return detailed;
   }
 
   @override

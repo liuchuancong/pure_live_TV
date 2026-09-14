@@ -249,7 +249,9 @@ class PicartoApi {
     final stream = matches.single;
     final streamName = text(stream['stream_name']);
     if (!RegExp(r'^[a-zA-Z0-9_+-]{1,150}$').hasMatch(streamName)) throw const PicartoException(PicartoFailure.schema);
-    room.cover = imageUrl(stream['thumbnail_image']);
-    return (room: room, master: Uri.parse('https://$origin.picarto.tv/stream/hls/$streamName/index.m3u8'));
+    return (
+      room: room.copyWith(cover: imageUrl(stream['thumbnail_image'])),
+      master: Uri.parse('https://$origin.picarto.tv/stream/hls/$streamName/index.m3u8'),
+    );
   }
 }

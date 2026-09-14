@@ -1,4 +1,5 @@
 import 'package:pure_live/plugins/locale_helper.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 
 class HttpError extends Error {
   final int statusCode;

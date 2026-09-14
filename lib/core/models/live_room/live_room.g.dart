@@ -16,7 +16,10 @@ _LiveRoom _$LiveRoomFromJson(Map<String, dynamic> json) => _LiveRoom(
   cover: json['cover'] as String? ?? '',
   area: json['area'] as String? ?? '',
   watching: json['watching'] as String? ?? '0',
-  followers: json['followers'] as String? ?? '0',
+  popularity: json['popularity'] as String? ?? '',
+  onlineViewers: json['onlineViewers'] as String? ?? '',
+  totalViewers: json['totalViewers'] as String? ?? '',
+  followers: json['followers'] as String? ?? '',
   platform: json['platform'] as String? ?? 'UNKNOWN',
   tagIds:
       (json['tagIds'] as List<dynamic>?)?.map((e) => e as String).toList() ??
@@ -28,6 +31,12 @@ _LiveRoom _$LiveRoomFromJson(Map<String, dynamic> json) => _LiveRoom(
   liveStatus:
       $enumDecodeNullable(_$LiveStatusEnumMap, json['liveStatus']) ??
       LiveStatus.offline,
+  audienceMetricType:
+      $enumDecodeNullable(
+        _$AudienceMetricTypeEnumMap,
+        json['audienceMetricType'],
+      ) ??
+      AudienceMetricType.unknown,
   epgId: json['epgId'] as String? ?? '',
   currentProgramme: json['currentProgramme'] as String? ?? '',
   currentProgrammeDescription:
@@ -48,6 +57,9 @@ Map<String, dynamic> _$LiveRoomToJson(_LiveRoom instance) => <String, dynamic>{
   'cover': instance.cover,
   'area': instance.area,
   'watching': instance.watching,
+  'popularity': instance.popularity,
+  'onlineViewers': instance.onlineViewers,
+  'totalViewers': instance.totalViewers,
   'followers': instance.followers,
   'platform': instance.platform,
   'tagIds': instance.tagIds,
@@ -56,6 +68,8 @@ Map<String, dynamic> _$LiveRoomToJson(_LiveRoom instance) => <String, dynamic>{
   'status': instance.status,
   'isRecord': instance.isRecord,
   'liveStatus': _$LiveStatusEnumMap[instance.liveStatus]!,
+  'audienceMetricType':
+      _$AudienceMetricTypeEnumMap[instance.audienceMetricType]!,
   'epgId': instance.epgId,
   'currentProgramme': instance.currentProgramme,
   'currentProgrammeDescription': instance.currentProgrammeDescription,
@@ -71,4 +85,13 @@ const _$LiveStatusEnumMap = {
   LiveStatus.replay: 'replay',
   LiveStatus.unknown: 'unknown',
   LiveStatus.banned: 'banned',
+};
+
+const _$AudienceMetricTypeEnumMap = {
+  AudienceMetricType.unknown: 'unknown',
+  AudienceMetricType.watching: 'watching',
+  AudienceMetricType.popularity: 'popularity',
+  AudienceMetricType.onlineViewers: 'onlineViewers',
+  AudienceMetricType.totalViewers: 'totalViewers',
+  AudienceMetricType.followers: 'followers',
 };

@@ -16,6 +16,7 @@ import 'niconico_directory.dart';
 import 'niconico_input_recipe.dart';
 import 'niconico_quality_catalog.dart';
 import 'niconico_watch.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 
 class _Choice {
   const _Choice(this.programId, this.quality);

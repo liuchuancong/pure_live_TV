@@ -14,6 +14,7 @@ import 'package:pure_live/core/utils/live_quality_label.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:meta/meta.dart';
 class DouyuSite
     implements
         LiveSite,
@@ -429,7 +430,7 @@ class DouyuSite
       return _buildRoom(roomInfo, roomId: roomId);
     } catch (e) {
       {
-final currentRoom = Sites.currentRoom(platform, roomId);
+final currentRoom = Sites.currentRoom(platform, roomId);
         if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }

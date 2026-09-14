@@ -3,6 +3,7 @@ import 'cookie_value.dart';
 import 'bilibili/bilibili_account_service.dart';
 import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'cookie_controller.g.dart';
@@ -11,6 +12,17 @@ part 'cookie_controller.g.dart';
 @riverpod
 class CookieController extends _$CookieController {
   static CookieController get to => SettingsService.to.cookieManager;
+
+  // 供播放器核心等非 widget 代码反应式读取。
+  SettingsValue<String> get bilibiliCookie => SettingsValue(() => state.bilibiliCookie);
+  SettingsValue<int> get bilibiliUid => SettingsValue(() => state.bilibiliUid);
+  SettingsValue<String> get huyaCookie => SettingsValue(() => state.huyaCookie);
+  SettingsValue<String> get douyinCookie => SettingsValue(() => state.douyinCookie);
+  SettingsValue<String> get kuaishouCookie => SettingsValue(() => state.kuaishouCookie);
+  SettingsValue<String> get yyCookie => SettingsValue(() => state.yyCookie);
+  SettingsValue<String> get soopCookie => SettingsValue(() => state.soopCookie);
+  SettingsValue<String> get twitchCookie => SettingsValue(() => state.twitchCookie);
+
   @override
   CookieModel build() {
     final model = CookieModel(

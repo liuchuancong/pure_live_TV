@@ -20,6 +20,7 @@ import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:meta/meta.dart';
 class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
   @override
   String id = Sites.douyinSite;

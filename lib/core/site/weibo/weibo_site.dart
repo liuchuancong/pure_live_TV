@@ -12,6 +12,7 @@ import 'package:pure_live/plugins/locale_helper.dart';
 
 import 'weibo_api.dart';
 import 'weibo_link.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 
 class _WeiboChoice {
   const _WeiboChoice(this.liveId, this.ownerId);

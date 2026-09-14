@@ -4,6 +4,7 @@ import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/consts/app_consts.dart';
 import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:pure_live/core/models/live_area/live_area.dart';
@@ -16,6 +17,10 @@ part 'favorite_room_controller.g.dart';
 class FavoriteRoomController extends _$FavoriteRoomController {
   static FavoriteRoomController get to => SettingsService.to.fav;
   static const int maxShieldKeywordLength = 40;
+
+  // 供播放器核心等非 widget 代码反应式读取。
+  SettingsValue<List<LiveRoom>> get favoriteRooms => SettingsValue(() => state.favoriteRooms);
+  SettingsValue<List<String>> get hotAreasList => SettingsValue(() => state.hotAreasList);
 
   @override
   FavoriteSettingsModel build() {

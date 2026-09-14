@@ -1,6 +1,7 @@
 import 'iptv_settings_model.dart';
 import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'iptv_settings_controller.g.dart';
@@ -18,6 +19,15 @@ class IptvSettingsController extends _$IptvSettingsController {
   static IptvSettingsController get to => SettingsService.to.iptv;
 
   static const String autoSyncHoursIntervalKey = 'autoSyncHoursInterval';
+
+  // 供播放器核心等非 widget 代码反应式读写。
+  SettingsValue<String> get selectedSourceId => SettingsValue(() => state.selectedSourceId, selectSourceId);
+  SettingsValue<String> get selectedSourceName => SettingsValue(() => state.selectedSourceName, selectSourceName);
+  SettingsValue<bool> get isAutoSyncEnabled => SettingsValue(() => state.isAutoSyncEnabled, setAutoSyncEnabled);
+
+  void selectSourceId(String id) => selectSource(state.selectedSourceName, id);
+
+  void selectSourceName(String name) => selectSource(name, state.selectedSourceId);
 
   @override
   IptvSettingsModel build() {

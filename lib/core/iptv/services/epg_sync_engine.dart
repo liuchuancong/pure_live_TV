@@ -16,6 +16,7 @@ import 'package:pure_live/global/app_path_manager.dart';
 import 'package:pure_live/plugins/db_service.dart';
 import 'package:pure_live/utils/toast_util.dart';
 import 'package:pure_live/plugins/locale_helper.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 class EpgSyncEngine {
   static final EpgSyncEngine instance = EpgSyncEngine._internal();
   EpgSyncEngine._internal();

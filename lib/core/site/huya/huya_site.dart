@@ -26,6 +26,7 @@ import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:meta/meta.dart';
 class HuyaSite
     implements
         LiveSite,
@@ -733,7 +734,7 @@ class HuyaSite
         throw const FormatException('Huya room playback metadata is unavailable');
       }
       {
-final currentRoom = Sites.currentRoom(platform, roomId);
+final currentRoom = Sites.currentRoom(platform, roomId);
         if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }

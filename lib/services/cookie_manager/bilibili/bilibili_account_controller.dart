@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_model.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_service.dart';
+import 'package:meta/meta.dart';
 
 part 'bilibili_account_controller.g.dart';
 

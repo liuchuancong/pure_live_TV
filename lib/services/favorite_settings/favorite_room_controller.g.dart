@@ -48,7 +48,7 @@ final class FavoriteRoomControllerProvider
 }
 
 String _$favoriteRoomControllerHash() =>
-    r'c210fee23e89ba521a42e3840a47db159829f531';
+    r'9cc80919892d136e4807d523567f6b18255dd884';
 
 /// 同步自 pure_live FavoriteRoomController：
 /// 收藏/屏蔽词/弹幕屏蔽用户/站点目录迁移与身份去重逻辑。

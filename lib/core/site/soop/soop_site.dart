@@ -13,6 +13,7 @@ import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:meta/meta.dart';
 class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecordRoomResolver {
   @override
   String get id => Sites.soopSite;
@@ -362,7 +363,7 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
     } catch (e) {
       CoreLog.error(e);
       {
-final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
+final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
         if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }
@@ -435,7 +436,7 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
     if (resultCode != 1) {
       CoreLog.w("soop channel result code=$resultCode");
       {
-final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
+final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
         if (currentRoom?.hasIdentity(platform: Sites.soopSite, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }

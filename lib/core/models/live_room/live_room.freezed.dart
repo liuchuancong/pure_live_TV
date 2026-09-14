@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$LiveRoom {
 
- String get roomId; String get userId; String get link; String get title; String get nick; String get avatar; String get cover; String get area; String get watching; String get followers; String get platform; List<String> get tagIds; String get introduction; String get notice; bool get status; bool get isRecord; LiveStatus get liveStatus; String get epgId; String get currentProgramme; String get currentProgrammeDescription; String? get catchUpUrl; bool get isCatchUp; int? get catchUpStart; int? get catchUpEnd;@JsonKey(includeFromJson: false, includeToJson: false) dynamic get data;@JsonKey(includeFromJson: false, includeToJson: false) dynamic get danmakuData;
+ String get roomId; String get userId; String get link; String get title; String get nick; String get avatar; String get cover; String get area; String get watching; String get popularity; String get onlineViewers; String get totalViewers; String get followers; String get platform; List<String> get tagIds; String get introduction; String get notice; bool get status; bool get isRecord; LiveStatus get liveStatus; AudienceMetricType get audienceMetricType; String get epgId; String get currentProgramme; String get currentProgrammeDescription; String? get catchUpUrl; bool get isCatchUp; int? get catchUpStart; int? get catchUpEnd;@JsonKey(includeFromJson: false, includeToJson: false) dynamic get data;@JsonKey(includeFromJson: false, includeToJson: false) dynamic get danmakuData;
 /// Create a copy of LiveRoom
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,7 +30,7 @@ $LiveRoomCopyWith<LiveRoom> get copyWith => _$LiveRoomCopyWithImpl<LiveRoom>(thi
 
 @override
 String toString() {
-  return 'LiveRoom(roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, isRecord: $isRecord, liveStatus: $liveStatus, epgId: $epgId, currentProgramme: $currentProgramme, currentProgrammeDescription: $currentProgrammeDescription, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, catchUpStart: $catchUpStart, catchUpEnd: $catchUpEnd, data: $data, danmakuData: $danmakuData)';
+  return 'LiveRoom(roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, popularity: $popularity, onlineViewers: $onlineViewers, totalViewers: $totalViewers, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, isRecord: $isRecord, liveStatus: $liveStatus, audienceMetricType: $audienceMetricType, epgId: $epgId, currentProgramme: $currentProgramme, currentProgrammeDescription: $currentProgrammeDescription, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, catchUpStart: $catchUpStart, catchUpEnd: $catchUpEnd, data: $data, danmakuData: $danmakuData)';
 }
 
 
@@ -41,7 +41,7 @@ abstract mixin class $LiveRoomCopyWith<$Res>  {
   factory $LiveRoomCopyWith(LiveRoom value, $Res Function(LiveRoom) _then) = _$LiveRoomCopyWithImpl;
 @useResult
 $Res call({
- String roomId, String userId, String link, String title, String nick, String avatar, String cover, String area, String watching, String followers, String platform, List<String> tagIds, String introduction, String notice, bool status, bool isRecord, LiveStatus liveStatus, String epgId, String currentProgramme, String currentProgrammeDescription, String? catchUpUrl, bool isCatchUp, int? catchUpStart, int? catchUpEnd,@JsonKey(includeFromJson: false, includeToJson: false) dynamic data,@JsonKey(includeFromJson: false, includeToJson: false) dynamic danmakuData
+ String roomId, String userId, String link, String title, String nick, String avatar, String cover, String area, String watching, String popularity, String onlineViewers, String totalViewers, String followers, String platform, List<String> tagIds, String introduction, String notice, bool status, bool isRecord, LiveStatus liveStatus, AudienceMetricType audienceMetricType, String epgId, String currentProgramme, String currentProgrammeDescription, String? catchUpUrl, bool isCatchUp, int? catchUpStart, int? catchUpEnd,@JsonKey(includeFromJson: false, includeToJson: false) dynamic data,@JsonKey(includeFromJson: false, includeToJson: false) dynamic danmakuData
 });
 
 
@@ -58,7 +58,7 @@ class _$LiveRoomCopyWithImpl<$Res>
 
 /// Create a copy of LiveRoom
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? roomId = null,Object? userId = null,Object? link = null,Object? title = null,Object? nick = null,Object? avatar = null,Object? cover = null,Object? area = null,Object? watching = null,Object? followers = null,Object? platform = null,Object? tagIds = null,Object? introduction = null,Object? notice = null,Object? status = null,Object? isRecord = null,Object? liveStatus = null,Object? epgId = null,Object? currentProgramme = null,Object? currentProgrammeDescription = null,Object? catchUpUrl = freezed,Object? isCatchUp = null,Object? catchUpStart = freezed,Object? catchUpEnd = freezed,Object? data = freezed,Object? danmakuData = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? roomId = null,Object? userId = null,Object? link = null,Object? title = null,Object? nick = null,Object? avatar = null,Object? cover = null,Object? area = null,Object? watching = null,Object? popularity = null,Object? onlineViewers = null,Object? totalViewers = null,Object? followers = null,Object? platform = null,Object? tagIds = null,Object? introduction = null,Object? notice = null,Object? status = null,Object? isRecord = null,Object? liveStatus = null,Object? audienceMetricType = null,Object? epgId = null,Object? currentProgramme = null,Object? currentProgrammeDescription = null,Object? catchUpUrl = freezed,Object? isCatchUp = null,Object? catchUpStart = freezed,Object? catchUpEnd = freezed,Object? data = freezed,Object? danmakuData = freezed,}) {
   return _then(_self.copyWith(
 roomId: null == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -69,6 +69,9 @@ as String,avatar: null == avatar ? _self.avatar : avatar // ignore: cast_nullabl
 as String,cover: null == cover ? _self.cover : cover // ignore: cast_nullable_to_non_nullable
 as String,area: null == area ? _self.area : area // ignore: cast_nullable_to_non_nullable
 as String,watching: null == watching ? _self.watching : watching // ignore: cast_nullable_to_non_nullable
+as String,popularity: null == popularity ? _self.popularity : popularity // ignore: cast_nullable_to_non_nullable
+as String,onlineViewers: null == onlineViewers ? _self.onlineViewers : onlineViewers // ignore: cast_nullable_to_non_nullable
+as String,totalViewers: null == totalViewers ? _self.totalViewers : totalViewers // ignore: cast_nullable_to_non_nullable
 as String,followers: null == followers ? _self.followers : followers // ignore: cast_nullable_to_non_nullable
 as String,platform: null == platform ? _self.platform : platform // ignore: cast_nullable_to_non_nullable
 as String,tagIds: null == tagIds ? _self.tagIds : tagIds // ignore: cast_nullable_to_non_nullable
@@ -77,7 +80,8 @@ as String,notice: null == notice ? _self.notice : notice // ignore: cast_nullabl
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as bool,isRecord: null == isRecord ? _self.isRecord : isRecord // ignore: cast_nullable_to_non_nullable
 as bool,liveStatus: null == liveStatus ? _self.liveStatus : liveStatus // ignore: cast_nullable_to_non_nullable
-as LiveStatus,epgId: null == epgId ? _self.epgId : epgId // ignore: cast_nullable_to_non_nullable
+as LiveStatus,audienceMetricType: null == audienceMetricType ? _self.audienceMetricType : audienceMetricType // ignore: cast_nullable_to_non_nullable
+as AudienceMetricType,epgId: null == epgId ? _self.epgId : epgId // ignore: cast_nullable_to_non_nullable
 as String,currentProgramme: null == currentProgramme ? _self.currentProgramme : currentProgramme // ignore: cast_nullable_to_non_nullable
 as String,currentProgrammeDescription: null == currentProgrammeDescription ? _self.currentProgrammeDescription : currentProgrammeDescription // ignore: cast_nullable_to_non_nullable
 as String,catchUpUrl: freezed == catchUpUrl ? _self.catchUpUrl : catchUpUrl // ignore: cast_nullable_to_non_nullable
@@ -171,10 +175,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String roomId,  String userId,  String link,  String title,  String nick,  String avatar,  String cover,  String area,  String watching,  String followers,  String platform,  List<String> tagIds,  String introduction,  String notice,  bool status,  bool isRecord,  LiveStatus liveStatus,  String epgId,  String currentProgramme,  String currentProgrammeDescription,  String? catchUpUrl,  bool isCatchUp,  int? catchUpStart,  int? catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic data, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic danmakuData)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String roomId,  String userId,  String link,  String title,  String nick,  String avatar,  String cover,  String area,  String watching,  String popularity,  String onlineViewers,  String totalViewers,  String followers,  String platform,  List<String> tagIds,  String introduction,  String notice,  bool status,  bool isRecord,  LiveStatus liveStatus,  AudienceMetricType audienceMetricType,  String epgId,  String currentProgramme,  String currentProgrammeDescription,  String? catchUpUrl,  bool isCatchUp,  int? catchUpStart,  int? catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic data, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic danmakuData)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LiveRoom() when $default != null:
-return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_that.avatar,_that.cover,_that.area,_that.watching,_that.followers,_that.platform,_that.tagIds,_that.introduction,_that.notice,_that.status,_that.isRecord,_that.liveStatus,_that.epgId,_that.currentProgramme,_that.currentProgrammeDescription,_that.catchUpUrl,_that.isCatchUp,_that.catchUpStart,_that.catchUpEnd,_that.data,_that.danmakuData);case _:
+return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_that.avatar,_that.cover,_that.area,_that.watching,_that.popularity,_that.onlineViewers,_that.totalViewers,_that.followers,_that.platform,_that.tagIds,_that.introduction,_that.notice,_that.status,_that.isRecord,_that.liveStatus,_that.audienceMetricType,_that.epgId,_that.currentProgramme,_that.currentProgrammeDescription,_that.catchUpUrl,_that.isCatchUp,_that.catchUpStart,_that.catchUpEnd,_that.data,_that.danmakuData);case _:
   return orElse();
 
 }
@@ -192,10 +196,10 @@ return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String roomId,  String userId,  String link,  String title,  String nick,  String avatar,  String cover,  String area,  String watching,  String followers,  String platform,  List<String> tagIds,  String introduction,  String notice,  bool status,  bool isRecord,  LiveStatus liveStatus,  String epgId,  String currentProgramme,  String currentProgrammeDescription,  String? catchUpUrl,  bool isCatchUp,  int? catchUpStart,  int? catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic data, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic danmakuData)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String roomId,  String userId,  String link,  String title,  String nick,  String avatar,  String cover,  String area,  String watching,  String popularity,  String onlineViewers,  String totalViewers,  String followers,  String platform,  List<String> tagIds,  String introduction,  String notice,  bool status,  bool isRecord,  LiveStatus liveStatus,  AudienceMetricType audienceMetricType,  String epgId,  String currentProgramme,  String currentProgrammeDescription,  String? catchUpUrl,  bool isCatchUp,  int? catchUpStart,  int? catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic data, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic danmakuData)  $default,) {final _that = this;
 switch (_that) {
 case _LiveRoom():
-return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_that.avatar,_that.cover,_that.area,_that.watching,_that.followers,_that.platform,_that.tagIds,_that.introduction,_that.notice,_that.status,_that.isRecord,_that.liveStatus,_that.epgId,_that.currentProgramme,_that.currentProgrammeDescription,_that.catchUpUrl,_that.isCatchUp,_that.catchUpStart,_that.catchUpEnd,_that.data,_that.danmakuData);case _:
+return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_that.avatar,_that.cover,_that.area,_that.watching,_that.popularity,_that.onlineViewers,_that.totalViewers,_that.followers,_that.platform,_that.tagIds,_that.introduction,_that.notice,_that.status,_that.isRecord,_that.liveStatus,_that.audienceMetricType,_that.epgId,_that.currentProgramme,_that.currentProgrammeDescription,_that.catchUpUrl,_that.isCatchUp,_that.catchUpStart,_that.catchUpEnd,_that.data,_that.danmakuData);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -212,10 +216,10 @@ return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String roomId,  String userId,  String link,  String title,  String nick,  String avatar,  String cover,  String area,  String watching,  String followers,  String platform,  List<String> tagIds,  String introduction,  String notice,  bool status,  bool isRecord,  LiveStatus liveStatus,  String epgId,  String currentProgramme,  String currentProgrammeDescription,  String? catchUpUrl,  bool isCatchUp,  int? catchUpStart,  int? catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic data, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic danmakuData)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String roomId,  String userId,  String link,  String title,  String nick,  String avatar,  String cover,  String area,  String watching,  String popularity,  String onlineViewers,  String totalViewers,  String followers,  String platform,  List<String> tagIds,  String introduction,  String notice,  bool status,  bool isRecord,  LiveStatus liveStatus,  AudienceMetricType audienceMetricType,  String epgId,  String currentProgramme,  String currentProgrammeDescription,  String? catchUpUrl,  bool isCatchUp,  int? catchUpStart,  int? catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic data, @JsonKey(includeFromJson: false, includeToJson: false)  dynamic danmakuData)?  $default,) {final _that = this;
 switch (_that) {
 case _LiveRoom() when $default != null:
-return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_that.avatar,_that.cover,_that.area,_that.watching,_that.followers,_that.platform,_that.tagIds,_that.introduction,_that.notice,_that.status,_that.isRecord,_that.liveStatus,_that.epgId,_that.currentProgramme,_that.currentProgrammeDescription,_that.catchUpUrl,_that.isCatchUp,_that.catchUpStart,_that.catchUpEnd,_that.data,_that.danmakuData);case _:
+return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_that.avatar,_that.cover,_that.area,_that.watching,_that.popularity,_that.onlineViewers,_that.totalViewers,_that.followers,_that.platform,_that.tagIds,_that.introduction,_that.notice,_that.status,_that.isRecord,_that.liveStatus,_that.audienceMetricType,_that.epgId,_that.currentProgramme,_that.currentProgrammeDescription,_that.catchUpUrl,_that.isCatchUp,_that.catchUpStart,_that.catchUpEnd,_that.data,_that.danmakuData);case _:
   return null;
 
 }
@@ -227,7 +231,7 @@ return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_tha
 @JsonSerializable()
 
 class _LiveRoom extends LiveRoom {
-  const _LiveRoom({this.roomId = '', this.userId = '', this.link = '', this.title = '', this.nick = '', this.avatar = '', this.cover = '', this.area = '', this.watching = '0', this.followers = '0', this.platform = 'UNKNOWN', final  List<String> tagIds = const [], this.introduction = '', this.notice = '', this.status = false, this.isRecord = false, this.liveStatus = LiveStatus.offline, this.epgId = '', this.currentProgramme = '', this.currentProgrammeDescription = '', this.catchUpUrl, this.isCatchUp = false, this.catchUpStart, this.catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false) this.data, @JsonKey(includeFromJson: false, includeToJson: false) this.danmakuData}): _tagIds = tagIds,super._();
+  const _LiveRoom({this.roomId = '', this.userId = '', this.link = '', this.title = '', this.nick = '', this.avatar = '', this.cover = '', this.area = '', this.watching = '0', this.popularity = '', this.onlineViewers = '', this.totalViewers = '', this.followers = '', this.platform = 'UNKNOWN', final  List<String> tagIds = const [], this.introduction = '', this.notice = '', this.status = false, this.isRecord = false, this.liveStatus = LiveStatus.offline, this.audienceMetricType = AudienceMetricType.unknown, this.epgId = '', this.currentProgramme = '', this.currentProgrammeDescription = '', this.catchUpUrl, this.isCatchUp = false, this.catchUpStart, this.catchUpEnd, @JsonKey(includeFromJson: false, includeToJson: false) this.data, @JsonKey(includeFromJson: false, includeToJson: false) this.danmakuData}): _tagIds = tagIds,super._();
   factory _LiveRoom.fromJson(Map<String, dynamic> json) => _$LiveRoomFromJson(json);
 
 @override@JsonKey() final  String roomId;
@@ -239,6 +243,9 @@ class _LiveRoom extends LiveRoom {
 @override@JsonKey() final  String cover;
 @override@JsonKey() final  String area;
 @override@JsonKey() final  String watching;
+@override@JsonKey() final  String popularity;
+@override@JsonKey() final  String onlineViewers;
+@override@JsonKey() final  String totalViewers;
 @override@JsonKey() final  String followers;
 @override@JsonKey() final  String platform;
  final  List<String> _tagIds;
@@ -253,6 +260,7 @@ class _LiveRoom extends LiveRoom {
 @override@JsonKey() final  bool status;
 @override@JsonKey() final  bool isRecord;
 @override@JsonKey() final  LiveStatus liveStatus;
+@override@JsonKey() final  AudienceMetricType audienceMetricType;
 @override@JsonKey() final  String epgId;
 @override@JsonKey() final  String currentProgramme;
 @override@JsonKey() final  String currentProgrammeDescription;
@@ -278,7 +286,7 @@ Map<String, dynamic> toJson() {
 
 @override
 String toString() {
-  return 'LiveRoom(roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, isRecord: $isRecord, liveStatus: $liveStatus, epgId: $epgId, currentProgramme: $currentProgramme, currentProgrammeDescription: $currentProgrammeDescription, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, catchUpStart: $catchUpStart, catchUpEnd: $catchUpEnd, data: $data, danmakuData: $danmakuData)';
+  return 'LiveRoom(roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, popularity: $popularity, onlineViewers: $onlineViewers, totalViewers: $totalViewers, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, isRecord: $isRecord, liveStatus: $liveStatus, audienceMetricType: $audienceMetricType, epgId: $epgId, currentProgramme: $currentProgramme, currentProgrammeDescription: $currentProgrammeDescription, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, catchUpStart: $catchUpStart, catchUpEnd: $catchUpEnd, data: $data, danmakuData: $danmakuData)';
 }
 
 
@@ -289,7 +297,7 @@ abstract mixin class _$LiveRoomCopyWith<$Res> implements $LiveRoomCopyWith<$Res>
   factory _$LiveRoomCopyWith(_LiveRoom value, $Res Function(_LiveRoom) _then) = __$LiveRoomCopyWithImpl;
 @override @useResult
 $Res call({
- String roomId, String userId, String link, String title, String nick, String avatar, String cover, String area, String watching, String followers, String platform, List<String> tagIds, String introduction, String notice, bool status, bool isRecord, LiveStatus liveStatus, String epgId, String currentProgramme, String currentProgrammeDescription, String? catchUpUrl, bool isCatchUp, int? catchUpStart, int? catchUpEnd,@JsonKey(includeFromJson: false, includeToJson: false) dynamic data,@JsonKey(includeFromJson: false, includeToJson: false) dynamic danmakuData
+ String roomId, String userId, String link, String title, String nick, String avatar, String cover, String area, String watching, String popularity, String onlineViewers, String totalViewers, String followers, String platform, List<String> tagIds, String introduction, String notice, bool status, bool isRecord, LiveStatus liveStatus, AudienceMetricType audienceMetricType, String epgId, String currentProgramme, String currentProgrammeDescription, String? catchUpUrl, bool isCatchUp, int? catchUpStart, int? catchUpEnd,@JsonKey(includeFromJson: false, includeToJson: false) dynamic data,@JsonKey(includeFromJson: false, includeToJson: false) dynamic danmakuData
 });
 
 
@@ -306,7 +314,7 @@ class __$LiveRoomCopyWithImpl<$Res>
 
 /// Create a copy of LiveRoom
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? roomId = null,Object? userId = null,Object? link = null,Object? title = null,Object? nick = null,Object? avatar = null,Object? cover = null,Object? area = null,Object? watching = null,Object? followers = null,Object? platform = null,Object? tagIds = null,Object? introduction = null,Object? notice = null,Object? status = null,Object? isRecord = null,Object? liveStatus = null,Object? epgId = null,Object? currentProgramme = null,Object? currentProgrammeDescription = null,Object? catchUpUrl = freezed,Object? isCatchUp = null,Object? catchUpStart = freezed,Object? catchUpEnd = freezed,Object? data = freezed,Object? danmakuData = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? roomId = null,Object? userId = null,Object? link = null,Object? title = null,Object? nick = null,Object? avatar = null,Object? cover = null,Object? area = null,Object? watching = null,Object? popularity = null,Object? onlineViewers = null,Object? totalViewers = null,Object? followers = null,Object? platform = null,Object? tagIds = null,Object? introduction = null,Object? notice = null,Object? status = null,Object? isRecord = null,Object? liveStatus = null,Object? audienceMetricType = null,Object? epgId = null,Object? currentProgramme = null,Object? currentProgrammeDescription = null,Object? catchUpUrl = freezed,Object? isCatchUp = null,Object? catchUpStart = freezed,Object? catchUpEnd = freezed,Object? data = freezed,Object? danmakuData = freezed,}) {
   return _then(_LiveRoom(
 roomId: null == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -317,6 +325,9 @@ as String,avatar: null == avatar ? _self.avatar : avatar // ignore: cast_nullabl
 as String,cover: null == cover ? _self.cover : cover // ignore: cast_nullable_to_non_nullable
 as String,area: null == area ? _self.area : area // ignore: cast_nullable_to_non_nullable
 as String,watching: null == watching ? _self.watching : watching // ignore: cast_nullable_to_non_nullable
+as String,popularity: null == popularity ? _self.popularity : popularity // ignore: cast_nullable_to_non_nullable
+as String,onlineViewers: null == onlineViewers ? _self.onlineViewers : onlineViewers // ignore: cast_nullable_to_non_nullable
+as String,totalViewers: null == totalViewers ? _self.totalViewers : totalViewers // ignore: cast_nullable_to_non_nullable
 as String,followers: null == followers ? _self.followers : followers // ignore: cast_nullable_to_non_nullable
 as String,platform: null == platform ? _self.platform : platform // ignore: cast_nullable_to_non_nullable
 as String,tagIds: null == tagIds ? _self._tagIds : tagIds // ignore: cast_nullable_to_non_nullable
@@ -325,7 +336,8 @@ as String,notice: null == notice ? _self.notice : notice // ignore: cast_nullabl
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as bool,isRecord: null == isRecord ? _self.isRecord : isRecord // ignore: cast_nullable_to_non_nullable
 as bool,liveStatus: null == liveStatus ? _self.liveStatus : liveStatus // ignore: cast_nullable_to_non_nullable
-as LiveStatus,epgId: null == epgId ? _self.epgId : epgId // ignore: cast_nullable_to_non_nullable
+as LiveStatus,audienceMetricType: null == audienceMetricType ? _self.audienceMetricType : audienceMetricType // ignore: cast_nullable_to_non_nullable
+as AudienceMetricType,epgId: null == epgId ? _self.epgId : epgId // ignore: cast_nullable_to_non_nullable
 as String,currentProgramme: null == currentProgramme ? _self.currentProgramme : currentProgramme // ignore: cast_nullable_to_non_nullable
 as String,currentProgrammeDescription: null == currentProgrammeDescription ? _self.currentProgrammeDescription : currentProgrammeDescription // ignore: cast_nullable_to_non_nullable
 as String,catchUpUrl: freezed == catchUpUrl ? _self.catchUpUrl : catchUpUrl // ignore: cast_nullable_to_non_nullable

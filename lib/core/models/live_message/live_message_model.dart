@@ -5,6 +5,40 @@ part 'live_message_model.g.dart';
 
 enum LiveMessageType { chat, gift, online, superChat }
 
+/// 弹幕显示位置。
+enum LiveMessagePlacement { top, bottom, scroll }
+
+/// 观众人数更新的指标类型（弹幕在线人数推送）。
+enum LiveAudienceMetricKind { onlineViewers, popularity, totalViewers }
+
+/// 弹幕人数更新负载，挂在 LiveMessage.online 消息的 data 上。
+class LiveAudienceUpdate {
+  const LiveAudienceUpdate({required this.kind, required this.value});
+  final LiveAudienceMetricKind kind;
+  final int value;
+}
+
+/// 弹幕渲染样式（字号/描边/位置），由站点适配器按平台礼物或会员消息填充。
+class LiveMessageStyle {
+  const LiveMessageStyle({
+    this.placement,
+    this.fontSize,
+    this.fontWeight = 400,
+    this.fontFamily,
+    this.showStroke,
+    this.strokeColor = 0xFF000000,
+    this.strokeWidth,
+  });
+
+  final LiveMessagePlacement? placement;
+  final double? fontSize;
+  final int fontWeight;
+  final String? fontFamily;
+  final bool? showStroke;
+  final int strokeColor;
+  final double? strokeWidth;
+}
+
 @freezed
 abstract class LiveMessageColor with _$LiveMessageColor {
   const LiveMessageColor._();
@@ -49,6 +83,11 @@ abstract class LiveMessage with _$LiveMessage {
     required String message,
     required LiveMessageColor color,
     dynamic data,
+    String? messageId,
+    String? userId,
+    DateTime? sentAt,
+    @Default(false) bool isLocal,
+    LiveMessageStyle? style,
   }) = _LiveMessage;
 
   factory LiveMessage.fromJson(Map<String, dynamic> json) => _$LiveMessageFromJson(json);

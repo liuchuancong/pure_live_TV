@@ -3,6 +3,7 @@ import 'package:pure_live/utils/hive_pref_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/network/http_client.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 // proxy_settings_controller.dart
@@ -12,6 +13,15 @@ part 'proxy_settings_controller.g.dart';
 @riverpod
 class ProxySettingsController extends _$ProxySettingsController {
   static ProxySettingsController get to => SettingsService.to.proxy;
+
+  // 供播放器核心等非 widget 代码反应式读取。
+  SettingsValue<bool> get enableProxy => SettingsValue(() => state.enableProxy);
+  SettingsValue<String> get proxyHost => SettingsValue(() => state.proxyHost);
+  SettingsValue<int> get proxyPort => SettingsValue(() => state.proxyPort);
+  SettingsValue<bool> get enableAppProxy => SettingsValue(() => state.enableAppProxy);
+  SettingsValue<String> get appProxyHost => SettingsValue(() => state.appProxyHost);
+  SettingsValue<int> get appProxyPort => SettingsValue(() => state.appProxyPort);
+
   @override
   ProxySettingsModel build() {
     ref.listen(proxySettingsControllerProvider.select((s) => [s.enableAppProxy, s.appProxyHost, s.appProxyPort]), (

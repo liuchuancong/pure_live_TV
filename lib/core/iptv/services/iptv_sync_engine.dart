@@ -12,6 +12,7 @@ import 'package:pure_live/global/app_path_manager.dart';
 import 'package:pure_live/plugins/db_service.dart';
 import 'package:pure_live/utils/toast_util.dart';
 import 'package:pure_live/plugins/locale_helper.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 class IptvSyncEngine {
   static final IptvSyncEngine instance = IptvSyncEngine();
   IptvSyncEngine({IptvImportManager? importManager, Future<Directory> Function()? temporaryDirectory})

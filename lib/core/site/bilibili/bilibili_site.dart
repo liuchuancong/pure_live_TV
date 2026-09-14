@@ -15,6 +15,7 @@ import 'package:pure_live/core/utils/live_quality_label.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:meta/meta.dart';
 class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver, LivePlayUrlResolver {
   @override
   String id = Sites.bilibiliSite;
@@ -661,7 +662,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
       return _buildRoom(roomInfo, roomId: roomId, danmakuData: danmakuArgs);
     } catch (e) {
       {
-final currentRoom = Sites.currentRoom(platform, roomId);
+final currentRoom = Sites.currentRoom(platform, roomId);
         if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }

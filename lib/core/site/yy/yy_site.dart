@@ -14,6 +14,7 @@ import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/core/models/index.dart';
+import 'package:meta/meta.dart';
 class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver {
   static const String _streamSdkVersion = '5.23.0-beta.2';
   static const String _mobileHlsPrefix = 'mobile-hls:';
@@ -188,7 +189,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     final result = decode(resultText);
     final List<LiveArea> subs = [];
     for (final item in result['data'] ?? []) {
-      final subCategory = LiveArea(
+      var subCategory = LiveArea(
         areaId: item['id'].toString(),
         areaName: item['title']?.toString() ?? '',
         areaType: liveCategory.id,
@@ -204,7 +205,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       final resultText = await HttpClient.instance.getText(url, queryParameters: {}, header: getHeaders());
       final pageInfo = parseCategoryPageInfo(resultText);
       if (pageInfo != null) {
-        subCategory.shortName = json.encode(pageInfo);
+        subCategory = subCategory.copyWith(shortName: json.encode(pageInfo));
         final biz = pageInfo['biz']?.toString() ?? '';
         if (biz.isNotEmpty) bizAreaNameMap.putIfAbsent(biz, () => subCategory.areaName ?? biz);
       }
@@ -638,7 +639,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     } catch (e) {
       CoreLog.error(e);
       {
-final currentRoom = Sites.currentRoom(platform, roomId);
+final currentRoom = Sites.currentRoom(platform, roomId);
         if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:meta/meta.dart';
 
 class TwitchWebIntegrityToken {
   const TwitchWebIntegrityToken({required this.token, required this.expiration});

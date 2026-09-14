@@ -9,6 +9,7 @@ import 'package:pure_live/plugins/locale_helper.dart';
 
 import 'picarto_api.dart';
 import 'picarto_hls.dart';
+import 'package:pure_live/plugins/locale_helper.dart';
 
 class PicartoSite extends LiveSite
     implements LiveSiteRoomRefresher, LiveSiteRecordRoomResolver, LivePlayRecoveryResolver {
@@ -58,7 +59,9 @@ class PicartoSite extends LiveSite
   @override
   Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) async {
     final detail = await _api.detail(roomId);
-    if (detail.master != null) detail.room.data = parsePicartoHls(await _api.read(detail.master!), detail.master!);
+    if (detail.master != null) {
+      return detail.room.copyWith(data: parsePicartoHls(await _api.read(detail.master!), detail.master!));
+    }
     return detail.room;
   }
 

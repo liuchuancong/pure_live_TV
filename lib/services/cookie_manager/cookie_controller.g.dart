@@ -44,7 +44,7 @@ final class CookieControllerProvider
   }
 }
 
-String _$cookieControllerHash() => r'34025bbda8d9f008066a652febd411264cc7ae06';
+String _$cookieControllerHash() => r'041b2f4f470b6540cd4bc3668135f66801708963';
 
 /// 同步自 pure_live CookieSettingsController：各平台 Cookie 的归一化/校验。
 

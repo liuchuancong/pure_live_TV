@@ -35,6 +35,54 @@ Map<String, String> _labels = {
   'xiaohongshu_display_viewers': '平台展示观看值：{value}（非已验证的实时在线人数）',
   'xiaohongshu_restricted': '该房间存在访问条件或访问状态待确认，当前没有可用的公开完整直播源。',
   'xiaohongshu_room_scope': '当前以直播房间号跟踪；主播重新开播使用新房间号时，请重新导入分享链接。',
+  // —— 通用 ——
+  'cancel': '取消',
+  'confirm': '确定',
+  'download_failed': '下载失败',
+  'epg_import_failed': '节目单导入失败',
+  'epg_source_updated': '节目单源已更新',
+  'unsupported_file_format': '不支持的文件格式',
+  'provider_name_exists_tip': '该名称已存在，是否覆盖？',
+  'subscription_download_or_parse_failed': '订阅下载或解析失败',
+
+  // —— 站点名称 ——
+  'site_all': '全部',
+  'site_bilibili': '哔哩哔哩',
+  'site_douyu': '斗鱼',
+  'site_huya': '虎牙',
+  'site_douyin': '抖音',
+  'site_kuaishou': '快手',
+  'site_cc': '网易CC',
+  'site_twitch': 'Twitch',
+  'site_soop': 'AfreecaTV(SOOP)',
+  'site_yy': 'YY',
+  'site_acfun': 'AcFun',
+  'site_picarto': 'Picarto',
+  'site_twitcasting': 'TwitCasting',
+  'site_missevan': '猫耳FM',
+  'site_openrec': 'OPENREC',
+  'site_niconico': 'Niconico',
+  'site_tting': 'TtingLive',
+  'site_iptv': 'IPTV',
+
+  // —— Niconico 目录 ——
+  'niconico_category_common': '一般',
+  'niconico_category_try': '尝试',
+  'niconico_category_live': '实况',
+  'niconico_category_req': '募集',
+  'niconico_category_face': '表情',
+  'niconico_category_totu': '凸待',
+  'niconico_category_vtuber': 'VTuber',
+
+  // —— HTTP 错误 ——
+  'http_error_400': '请求错误(400)',
+  'http_error_401': '未授权(401)',
+  'http_error_403': '禁止访问(403)',
+  'http_error_404': '未找到资源(404)',
+  'http_error_500': '服务器错误(500)',
+  'http_error_502': '网关错误(502)',
+  'http_error_503': '服务不可用(503)',
+  'http_error_default': '网络错误({statusCode})',
 };
 
 String i18n(String key, {Map<String, String>? args}) {
