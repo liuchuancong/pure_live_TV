@@ -38,6 +38,8 @@
     "history_limit_custom_hint":  "输入要保留的记录数量",
     "loading_style_color_desc":  "为加载动画单独指定颜色，默认跟随当前主题",
     "follow_theme_color":  "跟随主题",
+    "no_followed_room_live":  "当前没有已开播的关注房间",
+    "history_empty":  "暂无观看记录",
     "clear_all_cookies":  "清空全部 Cookie",
     "clear_all_cookies_desc":  "移除本机保存的所有平台 Cookie，需要时重新设置",
     "area_no_category_data":  "该平台暂无分类数据",

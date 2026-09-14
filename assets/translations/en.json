@@ -38,6 +38,8 @@
     "history_limit_custom_hint":  "Enter how many entries to keep",
     "loading_style_color_desc":  "Give the loading animation its own color; the active theme is used by default",
     "follow_theme_color":  "Follow theme",
+    "no_followed_room_live":  "None of your followed rooms is live",
+    "history_empty":  "No watch history yet",
     "clear_all_cookies":  "Clear All Cookies",
     "clear_all_cookies_desc":  "Remove every platform cookie stored on this device",
     "area_no_category_data":  "This platform has no category data yet",

@@ -1,7 +1,9 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
+import 'package:pure_live/features/live_play/dialogs/room_switch_dialog.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
@@ -91,6 +93,22 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
                 hideDanmaku: false,
               );
               danmakuNotifier.updateSettings(next);
+            },
+          ),
+          SizedBox(width: 16.sp),
+          _PanelButton(
+            icon: Icons.swap_horiz_rounded,
+            label: i18n('switch_live_room'),
+            onFocusChange: (_) => controller.keepControlsAlive(),
+            onSelect: () async {
+              controller.keepControlsAlive();
+              final room = state.room;
+              if (room == null) return;
+              final selected = await showRoomSwitchDialog(context, current: room);
+              if (selected == null || !context.mounted) return;
+              // Replacing the route disposes this room's controller and starts
+              // the selected room through the same page.
+              context.replace(AppRoutes.kLivePlay, extra: selected);
             },
           ),
           SizedBox(width: 16.sp),
