@@ -479,6 +479,8 @@
     "enable_load_more_subtitle":  "Automatically appends next page data when scrolling to bottom",
     "enable_local_log":  "Enable Local Log",
     "enable_local_log_desc":  "Write logs to local files when enabled",
+    "local_log_applying":  "Updating the local log state…",
+    "local_log_apply_failed":  "Local logging could not start; check the device storage",
     "enable_play_proxy":  "Enable Proxy",
     "enable_player_proxy":  "Enable Player Proxy",
     "enable_player_proxy_desc":  "Controls network settings when media_kit / mpv kernel fetches live stream video feeds",

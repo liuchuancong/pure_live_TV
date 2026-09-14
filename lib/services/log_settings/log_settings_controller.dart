@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'log_settings_model.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -11,36 +13,30 @@ class LogSettingsController extends _$LogSettingsController {
 
   @override
   LogSettingsModel build() {
-    return LogSettingsModel(
-      serverAddress: HivePrefUtil.getString('user_log_address') ?? '',
-      serverPort: HivePrefUtil.getInt('user_log_port') ?? 0,
-      storedEnableLog: false,
-    );
+    // The log file lives for the whole process: this provider is auto-disposed
+    // with the settings page, so it must not close the sink on dispose.
+    return LogSettingsModel(storedEnableLog: HivePrefUtil.getBool('enableLog') ?? false);
   }
 
-  void updateServerInfo(String address, int port) {
-    state = state.copyWith(serverAddress: address, serverPort: port);
-    _persist();
-  }
+  bool get enableLog => state.storedEnableLog;
 
-  void setEnableLog(bool enabled) async {
+  /// Applies the requested state to the log file and keeps the switch in sync
+  /// with what actually happened, so an unusable directory never looks enabled.
+  Future<bool> setLoggingEnabled(bool enabled) async {
+    final applied = await Log.setEnabled(enabled);
+    if (!applied) return false;
     state = state.copyWith(storedEnableLog: enabled);
-    await Log.toggleLogEnable(enabled);
+    HivePrefUtil.setBool('enableLog', enabled);
+    return true;
   }
 
-  void _persist() {
-    HivePrefUtil.setString('user_log_address', state.serverAddress);
-    HivePrefUtil.setInt('user_log_port', state.serverPort);
-  }
-
-  void dispose() {
-    Log.dispose();
-  }
+  void setEnableLog(bool enabled) => unawaited(setLoggingEnabled(enabled));
 
   Map<String, dynamic> toJson() => state.toJson();
 
   void importFromJson(Map<String, dynamic> json) {
     state = LogSettingsModel.fromJson(json);
-    _persist();
+    HivePrefUtil.setBool('enableLog', state.storedEnableLog);
+    unawaited(Log.setEnabled(state.storedEnableLog));
   }
 }

@@ -55,6 +55,10 @@ class AppInitializer {
     // Migrate legacy Hive keys into the v2 settings store.
     await LegacySettingsMigration.migrateIfNeeded();
 
+    // Restore the optional local log file before playback starts, so a release
+    // build can be diagnosed from the device.
+    unawaited(Log.init());
+
     // Danmaku sockets reuse the proxy policy configured for API and image traffic.
     configureWebSocketProxyRouting((uri) => PlaybackProxyPolicy.currentDirective());
 

@@ -5,7 +5,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
+import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 
 
 
@@ -59,6 +61,58 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
             padding: EdgeInsets.only(left: 16.sp, top: 8.sp),
             child: Text(_lastResult, style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor)),
           ),
+        SizedBox(height: 12.h),
+        const _LocalLogCard(),
+      ],
+    );
+  }
+}
+
+/// Local log file switch.
+///
+/// The file is the only way to inspect a release build on a TV; the LAN remote
+/// reads the same in-memory buffer while logging is enabled.
+class _LocalLogCard extends ConsumerStatefulWidget {
+  const _LocalLogCard();
+
+  @override
+  ConsumerState<_LocalLogCard> createState() => _LocalLogCardState();
+}
+
+class _LocalLogCardState extends ConsumerState<_LocalLogCard> {
+  bool _applying = false;
+  bool _failed = false;
+
+  Future<void> _toggle(bool enabled) async {
+    setState(() {
+      _applying = true;
+      _failed = false;
+    });
+    final ok = await ref.read(logSettingsControllerProvider.notifier).setLoggingEnabled(enabled);
+    if (!mounted) return;
+    setState(() {
+      _applying = false;
+      _failed = !ok;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final logState = ref.watch(logSettingsControllerProvider);
+
+    return TvSettingsCard(
+      children: [
+        TvSettingsSwitchTile(
+          title: i18n('enable_local_log'),
+          subtitle: _failed
+              ? i18n('local_log_apply_failed')
+              : _applying
+              ? i18n('local_log_applying')
+              : i18n('enable_local_log_desc'),
+          icon: Icons.description_outlined,
+          value: logState.storedEnableLog,
+          onChanged: _applying ? null : _toggle,
+        ),
       ],
     );
   }
