@@ -3,6 +3,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/pages/about_settings_section.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
+import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
 import 'package:pure_live/features/settings/pages/audio_output_settings_section.dart';
 import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
 import 'package:pure_live/features/settings/pages/backup_settings_section.dart';
@@ -43,6 +44,7 @@ class TvSettingsShell extends StatelessWidget {
     (path: '/settings/danmaku', title: i18n('danmaku_settings'), icon: Icons.subtitles_rounded, page: DanmakuSettingsSectionPage()),
     (path: '/settings/shield', title: i18n('block_list'), icon: Icons.block_rounded, page: DanmakuShieldSectionPage()),
     (path: '/settings/platform', title: i18n('ui_platform_settings'), icon: Icons.devices_rounded, page: PlatformSettingsSectionPage()),
+    (path: '/settings/audience', title: i18n('audience_metric_settings'), icon: Icons.insights_rounded, page: AudienceMetricSectionPage()),
     (path: '/settings/page', title: i18n('page_settings'), icon: Icons.list_alt_rounded, page: PageSettingsSectionPage()),
     (path: '/settings/refresh', title: i18n('refresh_settings'), icon: Icons.refresh_rounded, page: RefreshSettingsSectionPage()),
     (path: '/settings/font', title: i18n('ui_font_settings'), icon: Icons.text_fields_rounded, page: FontSettingsSectionPage()),

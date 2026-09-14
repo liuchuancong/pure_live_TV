@@ -23,6 +23,8 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     _setupRefreshStrategy();
 
     final favState = ref.watch(favoriteRoomControllerProvider);
+    // Rebuild when the audience display preference changes.
+    ref.watch(appSettingsControllerProvider);
     return _syncAndFilter(const FavoriteState(), favState);
   }
 
@@ -61,6 +63,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   FavoriteState _syncAndFilter(FavoriteState currentState, FavoriteSettingsModel favState) {
+    final appState = ref.read(appSettingsControllerProvider);
     final List<LiveRoom> roomsBase = List<LiveRoom>.from(favState.favoriteRooms);
 
     final onlineSrc = roomsBase.where((r) => r.liveStatus == LiveStatus.live && r.isRecord == false).toList();
@@ -94,17 +97,21 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       return highest;
     }
 
-    int sortRooms(LiveRoom a, LiveRoom b) {
-      final int watchA = int.tryParse(a.watching) ?? 0;
-      final int watchB = int.tryParse(b.watching) ?? 0;
+    int byAudience(LiveRoom a, LiveRoom b) => LiveRoom.compareAudienceRanking(
+      a,
+      b,
+      preferRealOnline: appState.preferRealOnlineCounts,
+      platformEnabled: (platform) => appState.realOnlinePlatforms.contains(platform),
+    );
 
+    int sortRooms(LiveRoom a, LiveRoom b) {
       if (currentState.selectedTagId == 'all') {
-        return watchB.compareTo(watchA);
+        return byAudience(a, b);
       }
-      int sa = getRoomTagScore(a);
-      int sb = getRoomTagScore(b);
+      final int sa = getRoomTagScore(a);
+      final int sb = getRoomTagScore(b);
       if (sa != sb) return sb.compareTo(sa);
-      return watchB.compareTo(watchA);
+      return byAudience(a, b);
     }
 
     online.sort(sortRooms);

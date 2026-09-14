@@ -1,12 +1,12 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+
 
 class AudioOutputSettingsSectionPage extends ConsumerWidget {
-  AudioOutputSettingsSectionPage({super.key});
+  const AudioOutputSettingsSectionPage({super.key});
 
   /// Common audio output drivers offered by the settings UI.
   static final Map<String, String> _drivers = {

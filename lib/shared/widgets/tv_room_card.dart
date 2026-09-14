@@ -2,29 +2,42 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
-class TvRoomCard extends StatefulWidget {
+class TvRoomCard extends ConsumerStatefulWidget {
   const TvRoomCard({super.key, required this.room, this.onLongPress, this.onTap, this.showFollowedMark = true});
 
   final LiveRoom room;
   final VoidCallback? onLongPress;
   final VoidCallback? onTap;
 
-  /// 是否展示已关注标识，默认true
+  /// Whether the followed badge is shown.
   final bool showFollowedMark;
 
   @override
-  State<TvRoomCard> createState() => _TvRoomCardState();
+  ConsumerState<TvRoomCard> createState() => _TvRoomCardState();
 }
 
-class _TvRoomCardState extends State<TvRoomCard> {
+class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   late bool _followed;
 
   @override
   void initState() {
     super.initState();
     _followed = SettingsService.to.fav.isFavorite(widget.room);
+  }
+
+  /// Audience text for the card: the concurrent online count when the user
+  /// prefers it and this platform reports it, otherwise the platform value.
+  String get _audienceText {
+    final settings = ref.watch(appSettingsControllerProvider);
+    final prefersOnline = settings.preferRealOnlineCounts && settings.realOnlinePlatforms.contains(widget.room.platform);
+    if (prefersOnline && widget.room.onlineViewers.trim().isNotEmpty) {
+      return readableCount(widget.room.onlineViewers);
+    }
+    return readableCount(widget.room.watching);
   }
 
   @override
@@ -117,7 +130,7 @@ class _TvRoomCardState extends State<TvRoomCard> {
                       bottom: 12.sp,
                       child: TvButton(
                         excludeFocus: true,
-                        title: readableCount(widget.room.watching),
+                        title: _audienceText,
                         size: TvButtonSize.mini,
                         icon: Icon(Icons.whatshot_rounded, size: 20.sp),
                       ),
