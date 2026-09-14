@@ -42,7 +42,7 @@ final class BackgroundControllerProvider
 }
 
 String _$backgroundControllerHash() =>
-    r'cbb4621dfbdbd8314335a6518316dae8450f1e57';
+    r'7d9f6d4e49176a59da26261949a5bd2f21dc6142';
 
 abstract class _$BackgroundController extends $Notifier<BackgroundConfigModel> {
   BackgroundConfigModel build();

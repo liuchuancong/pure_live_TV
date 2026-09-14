@@ -5,28 +5,34 @@ import 'package:flutter/widgets.dart';
 /// 基础图源表移植自老项目 `pure_live` 的 `AppConsts.currentBoxImageSources` /
 /// `wumingApiKeys`；`url == noneUrl` 表示不换壁纸。
 ///
-/// ⚠️ 「官方壁纸」「Wallhaven」「Deepin」目前写的是**占位示例地址**，拿到真实接口后
-/// 只改这张表即可 —— 解析逻辑是通用的（见 [pickImageUrlFromJson]）：
+/// 图源分两类，解析逻辑在 `BackgroundController._resolveImageUrl`：
 /// - 直链图源：URL 本身就是图片，直接下载；
-/// - JSON 图源：先请求拿到 JSON，再从里面挑直链；
-/// - 无铭系：还要额外带 `type=json&apiKey=`，见 `BackgroundController.getRandomImage`。
+/// - JSON 图源：先请求拿到 JSON，再从里面挑直链（见 [pickImageUrlFromJson]）；
+/// - 无铭系：额外带 `type=json&apiKey=`，返回的 JSON 里才是直链。
+///
+/// 「必应每日」走的是微软官方接口，和其他 JSON 图源一样在
+/// [bingApiUrl] 里取当日图，不需要第三方中转。
 class BackgroundImageSources {
   BackgroundImageSources._();
 
   /// 不使用随机壁纸时 url 的取值。
   static const String noneUrl = 'default';
 
+  /// 必应每日壁纸官方接口（返回 JSON，`images[0].url` 是 1920x1080 直链）。
+  static const String bingApiUrl = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN';
+
+  /// 必应图片直链的前缀（接口返回的是 `/th?id=...` 相对路径）。
+  static const String bingImageHost = 'https://www.bing.com';
+
   static const List<({String name, String url})> sources = <({String name, String url})>[
     (name: '不使用', url: noneUrl),
 
-    // —— 以下三条是占位示例地址，等真实接口就位后替换 ——
-    (name: '官方壁纸', url: 'https://example.com/purelive/wallpaper/random'),
+    // —— 官方 / 公开图源 ——
+    (name: '必应每日', url: bingApiUrl),
     (name: 'Wallhaven', url: 'https://wallhaven.cc/api/v1/search?sorting=random&atleast=1920x1080'),
-    (name: 'Deepin', url: 'https://example.com/deepin/wallpapers/list.json'),
+    (name: '小晓API', url: 'https://v2.xxapi.cn/api/wallpaper'),
 
     // —— 现成可用的公开图源 ——
-    (name: '必应每日', url: 'https://bing.img.run/rand.php'),
-    (name: '小晓API', url: 'https://v2.xxapi.cn/api/wallpaper'),
     (name: '无铭必应每日壁纸', url: 'https://jkapi.com/api/bing_img'),
     (name: '无铭随机美囡图片', url: 'https://jkapi.com/api/meinv_img'),
     (name: '无铭随机黑絲图片', url: 'https://jkapi.com/api/heisi_img'),
@@ -37,7 +43,7 @@ class BackgroundImageSources {
     (name: '无铭随机唯美女生图片', url: 'https://jkapi.com/api/wm_girl'),
     (name: 'mtyqx', url: 'https://api.mtyqx.cn/tapi/random.php'),
     (name: '栗次元', url: 'https://t.alcy.cc/'),
-    (name: 'picsum', url: 'https://picsum.photos/1280/720/?blur=10'),
+    (name: 'picsum', url: 'https://picsum.photos/1920/1080'),
     (name: 'dmoe', url: 'https://www.dmoe.cc/random.php'),
     (name: 'loliApi', url: 'https://www.loliapi.com/bg/'),
     (name: '搏天动漫', url: 'https://api.btstu.cn/sjbz/?lx=dongman'),
@@ -58,8 +64,8 @@ class BackgroundImageSources {
     '无铭随机唯美女生图片': '0a7c2239bc57624cac60967937da8a1b',
   };
 
-  /// 需要先请求 JSON 再取直链的图源。
-  static const Set<String> jsonApiNames = <String>{'官方壁纸', 'Wallhaven', 'Deepin'};
+  /// 需要先请求 JSON 再取直链的图源（其余图源 URL 本身就是图片）。
+  static const Set<String> jsonApiNames = <String>{'必应每日', 'Wallhaven'};
 
   /// 从 JSON 里挑直链时优先看这些字段名，再退化成全量递归扫描。
   static const List<String> _urlKeys = <String>[
@@ -87,7 +93,7 @@ class BackgroundImageSources {
   /// 从任意形态的 JSON 里挑出图片直链。
   ///
   /// 覆盖三种常见返回：`{"url": "..."}`、`{"data": {"path": "..."}}`、
-  /// `{"data": [{"path": "..."}, ...]}`（Wallhaven / Deepin 这类）。
+  /// `{"data": [{"path": "..."}, ...]}`（Wallhaven / 必应这类）。
   /// 挑不到返回 null。
   static String? pickImageUrlFromJson(dynamic data) {
     if (data == null) return null;
@@ -110,6 +116,17 @@ class BackgroundImageSources {
       }
     }
     return null;
+  }
+
+  /// 把图源返回的直链补成可下载的绝对地址。
+  ///
+  /// 必应接口给的是 `/th?id=OHR.xxx_1920x1080.jpg&rf=...`，缺少协议和域名；
+  /// 其他图源原样返回。
+  static String normalizeImageUrl(String url) {
+    if (url.isEmpty) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('/')) return '$bingImageHost$url';
+    return url;
   }
 }
 

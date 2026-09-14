@@ -28,6 +28,8 @@ import 'package:pure_live/services/exit_settings/exit_settings_controller.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 import 'package:pure_live/services/volume_settings/volume_settings_controller.dart';
+import 'package:pure_live/services/background_task/background_task_controller.dart';
+import 'package:pure_live/services/background_task/background_task_settings_model.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
@@ -53,6 +55,9 @@ class SettingsService {
   // background
   BackgroundConfigModel get bgState => _container.read(backgroundControllerProvider);
   BackgroundController get bg => _container.read(backgroundControllerProvider.notifier);
+  // background task scheduler
+  BackgroundTaskSettings get backgroundTaskState => _container.read(backgroundTaskControllerProvider);
+  BackgroundTaskController get backgroundTask => _container.read(backgroundTaskControllerProvider.notifier);
   // startup
   bool get isFirstInApp => _container.read(startupControllerProvider);
   StartupController get startup => _container.read(startupControllerProvider.notifier);

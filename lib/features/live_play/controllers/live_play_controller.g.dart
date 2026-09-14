@@ -83,7 +83,7 @@ final class LivePlayControllerProvider
 }
 
 String _$livePlayControllerHash() =>
-    r'a5535e82bd3bddb29e3a1f7a76ee8c0a01064f27';
+    r'79b9f9e8fd14b3be6fdbb5601ccec38a659522e6';
 
 /// Drives one live room: room detail, quality list and stream URLs feed
 /// [PlayerManager], while player streams are projected into UI state.
@@ -219,7 +219,7 @@ final class DanmakuSessionControllerProvider
 }
 
 String _$danmakuSessionControllerHash() =>
-    r'd504ff183c861a50fde5068df00e7e09496293ad';
+    r'6d9a5c64eab6d4ac4540f7bc2bc2c84f5ed52584';
 
 /// Danmaku session for one room: owns the transport connection, message
 /// gating and duplicate filtering, and fans messages out to the overlay and

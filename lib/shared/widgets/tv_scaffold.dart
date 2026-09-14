@@ -78,7 +78,7 @@ class _BackgroundLayer extends StatelessWidget {
           BackgroundSource.networkImage => _ImageBackground(config: config),
           BackgroundSource.assetVideo ||
           BackgroundSource.localVideo ||
-          BackgroundSource.networkVideo => const _VideoBackground(),
+          BackgroundSource.networkVideo => _VideoBackground(config: config),
         };
 
         // 模糊度为 0 时完全不套滤镜：TV 上全屏离屏模糊不便宜，能省一次是一次。
@@ -166,14 +166,30 @@ class _ImageBackground extends StatelessWidget {
 }
 
 class _VideoBackground extends StatelessWidget {
-  const _VideoBackground();
+  final BackgroundConfigModel config;
+
+  const _VideoBackground({required this.config});
 
   @override
   Widget build(BuildContext context) {
     final controller = SettingsService.to.bg.videoController;
+    // 在线动态壁纸要等首帧解码，这期间垫一张封面（接口返回的 cover），
+    // 否则深色底 + 黑帧会闪一下纯黑。
+    final cover = config.networkVideoCover;
 
     return SizedBox.expand(
-      child: Video(fit: BoxFit.cover, controller: controller),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (cover != null && cover.isNotEmpty && config.source == BackgroundSource.networkVideo)
+            Image.network(
+              cover,
+              fit: config.boxFit,
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            ),
+          Video(fit: BoxFit.cover, controller: controller),
+        ],
+      ),
     );
   }
 }

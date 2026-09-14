@@ -33,6 +33,21 @@ _BackgroundConfigModel _$BackgroundConfigModelFromJson(
   assetVideoPath: json['assetVideoPath'] as String?,
   localVideoPath: json['localVideoPath'] as String?,
   networkVideoUrl: json['networkVideoUrl'] as String?,
+  currentImageUrl: json['currentImageUrl'] as String? ?? '',
+  lastSwitchAt: json['lastSwitchAt'] == null
+      ? null
+      : DateTime.parse(json['lastSwitchAt'] as String),
+  recentImageUrls:
+      (json['recentImageUrls'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
+  customImageUrl: json['customImageUrl'] as String? ?? '',
+  customVideoUrl: json['customVideoUrl'] as String? ?? '',
+  networkVideoCover: json['networkVideoCover'] as String?,
+  videoSourceIndex: (json['videoSourceIndex'] as num?)?.toInt() ?? 0,
+  videoTagIndex: (json['videoTagIndex'] as num?)?.toInt() ?? 0,
+  customVideoApiUrl: json['customVideoApiUrl'] as String? ?? '',
 );
 
 Map<String, dynamic> _$BackgroundConfigModelToJson(
@@ -55,6 +70,15 @@ Map<String, dynamic> _$BackgroundConfigModelToJson(
   'assetVideoPath': instance.assetVideoPath,
   'localVideoPath': instance.localVideoPath,
   'networkVideoUrl': instance.networkVideoUrl,
+  'currentImageUrl': instance.currentImageUrl,
+  'lastSwitchAt': instance.lastSwitchAt?.toIso8601String(),
+  'recentImageUrls': instance.recentImageUrls,
+  'customImageUrl': instance.customImageUrl,
+  'customVideoUrl': instance.customVideoUrl,
+  'networkVideoCover': instance.networkVideoCover,
+  'videoSourceIndex': instance.videoSourceIndex,
+  'videoTagIndex': instance.videoTagIndex,
+  'customVideoApiUrl': instance.customVideoApiUrl,
 };
 
 const _$BackgroundSourceEnumMap = {

@@ -15,6 +15,7 @@ import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/features/settings/pages/theme_settings_section.dart';
 import 'package:pure_live/features/settings/pages/tv_settings_section.dart';
 import 'package:pure_live/features/settings/pages/wallpaper_settings_section.dart';
+import 'package:pure_live/features/settings/pages/background_task_settings_section.dart';
 import 'package:pure_live/features/sync/lan_sync_section.dart';
 import 'package:pure_live/features/settings/pages/video_settings_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
@@ -45,6 +46,7 @@ class TvSettingsShell extends StatelessWidget {
     (path: '/settings/tv', title: i18nOr('ui_tv_settings', '电视设置'), icon: Icons.tv_rounded, page: TvSettingsSectionPage()),
     (path: '/settings/theme', title: i18n('ui_theme'), icon: Icons.palette_outlined, page: ThemeSettingsSectionPage()),
     (path: '/settings/wallpaper', title: i18nOr('ui_background_settings', '背景设置'), icon: Icons.wallpaper_rounded, page: WallpaperSettingsSectionPage()),
+    (path: '/settings/background_tasks', title: i18nOr('ui_background_tasks', '后台任务'), icon: Icons.schedule_rounded, page: BackgroundTaskSectionPage()),
     (path: '/settings/sync', title: i18nOr('ui_lan_sync', '局域网同步'), icon: Icons.lan_outlined, page: LanSyncSectionPage()),
     (path: '/settings/player_kernel', title: i18n('ui_player_kernel'), icon: Icons.play_circle_outline_rounded, page: PlayerKernelSettingsSectionPage()),
     (path: '/settings/video', title: i18n('video_settings'), icon: Icons.video_settings_outlined, page: VideoSettingsSectionPage()),

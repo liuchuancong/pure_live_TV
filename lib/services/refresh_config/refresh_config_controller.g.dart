@@ -42,7 +42,7 @@ final class RefreshConfigControllerProvider
 }
 
 String _$refreshConfigControllerHash() =>
-    r'79692a23c17206a1fba751677914cd17c0f114b3';
+    r'7c13616735a1dfcdf7d298d05e0715c178051e85';
 
 abstract class _$RefreshConfigController extends $Notifier<RefreshConfigModel> {
   RefreshConfigModel build();

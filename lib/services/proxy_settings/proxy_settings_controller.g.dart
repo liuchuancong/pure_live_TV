@@ -42,7 +42,7 @@ final class ProxySettingsControllerProvider
 }
 
 String _$proxySettingsControllerHash() =>
-    r'857c4173eb36abd007ce5515dbdf84f6e1195a5d';
+    r'c1a060c5d8862005dc91cff142383fd84ec0f6d2';
 
 abstract class _$ProxySettingsController extends $Notifier<ProxySettingsModel> {
   ProxySettingsModel build();

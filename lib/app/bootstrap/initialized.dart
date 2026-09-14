@@ -69,6 +69,12 @@ class AppInitializer {
         await VersionUtil().checkUpdate();
       }
     }());
+
+    // 后台任务调度：注册内置任务并启动心跳。
+    // 放在最后 —— 调度器第一次 tick 就会补跑过期任务（IPTV 同步、EPG 下载、
+    // 换壁纸），必须等数据库、日志、代理路由都就绪之后再开。
+    BackgroundTaskRegistry.registerDefaults();
+    unawaited(BackgroundTaskService.instance.start());
   }
 
   bool get isInitialized => _isInitialized;
