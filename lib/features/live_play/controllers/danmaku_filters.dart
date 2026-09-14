@@ -179,6 +179,7 @@ class DanmakuSimilarityFilter {
 
     // Compare only the newest bounded window. Iteration stays allocation
     // free; old retained entries are skipped before fuzzy matching begins.
+    final int incomingLength = normalizedText.length;
     var skipped = (_cache.length - _maxComparisons).clamp(0, _cache.length);
     for (final entry in _cache.entries) {
       if (skipped > 0) {
@@ -186,6 +187,12 @@ class DanmakuSimilarityFilter {
         continue;
       }
       final cached = entry.value;
+      // Partial ratio can never exceed 200 * shorter / (shorter + longer), so a
+      // length gate rejects impossible candidates before the O(n*m) comparison.
+      final int cachedLength = cached.text.length;
+      final int shorter = incomingLength < cachedLength ? incomingLength : cachedLength;
+      final int longer = incomingLength < cachedLength ? cachedLength : incomingLength;
+      if (shorter == 0 || 200 * shorter < _similarityThreshold * (shorter + longer)) continue;
       if (_partialRatio(cached.text, normalizedText) >= _similarityThreshold) {
         cached.count++;
         cached.lastSeenAt = now;

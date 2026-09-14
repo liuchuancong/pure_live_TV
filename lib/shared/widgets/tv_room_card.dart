@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -78,25 +79,20 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                     child: Container(
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(24.sp), color: tvTheme.cardColor),
-                      child: Image.network(
-                        widget.room.cover,
+                      child: CachedNetworkImage(
+                        imageUrl: widget.room.cover,
+                        cacheManager: CustomImageCacheManager.instance,
                         fit: BoxFit.cover,
-                        // Decode covers at grid size instead of full resolution: TV
-                        // covers are often 1080p and decoding them per card dominates
-                        // scroll cost.
-                        cacheWidth: 640,
-                        cacheHeight: 360,
-                        gaplessPlayback: false,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: tvTheme.cardColor,
-                            child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
-                        },
+                        // Decode covers at grid size and reuse the shared disk
+                        // cache so scrolling back does not download again.
+                        memCacheWidth: 640,
+                        maxWidthDiskCache: 1280,
+                        placeholder: (context, url) => Container(
+                          color: tvTheme.cardColor,
+                          child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true),
                       ),
                     ),
                   ),
