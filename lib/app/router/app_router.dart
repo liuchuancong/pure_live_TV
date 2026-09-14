@@ -10,6 +10,7 @@ import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
 import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
+import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -57,6 +58,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(path: 'account', builder: (context, state) => AccountSettingsSectionPage()),
         GoRoute(path: 'shield', builder: (context, state) => DanmakuShieldSectionPage()),
         GoRoute(path: 'audience', builder: (context, state) => AudienceMetricSectionPage()),
+        GoRoute(path: 'tags', builder: (context, state) => TagManagementSectionPage()),
         GoRoute(path: 'about', builder: (context, state) => AboutSettingsSectionPage()),
       ],
     ),
