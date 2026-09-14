@@ -1,14 +1,24 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 class TvRoomCard extends ConsumerStatefulWidget {
-  const TvRoomCard({super.key, required this.room, this.onLongPress, this.onTap, this.showFollowedMark = true});
+  const TvRoomCard({
+    super.key,
+    required this.room,
+    this.onLongPress,
+    this.onTap,
+    this.showFollowedMark = true,
+    this.playlist = const <LiveRoom>[],
+  });
 
   final LiveRoom room;
   final VoidCallback? onLongPress;
@@ -16,6 +26,9 @@ class TvRoomCard extends ConsumerStatefulWidget {
 
   /// Whether the followed badge is shown.
   final bool showFollowedMark;
+
+  /// 所在房间列表：未提供 [onTap] 时随播放页一起带过去，作为换台列表。
+  final List<LiveRoom> playlist;
 
   @override
   ConsumerState<TvRoomCard> createState() => _TvRoomCardState();
@@ -41,6 +54,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       platformEnabled: app.isRealOnlineEnabledFor(widget.room.platform),
     );
     return readableCount(value);
+  }
+
+  /// 未提供 [onTap] 时默认进入直播播放页，并把所在列表带过去作为换台列表。
+  void _openLivePlay() {
+    if (!mounted) return;
+    context.push(AppRoutes.kLivePlay, extra: LivePlayArgs.fromRoom(widget.room, playlist: widget.playlist));
   }
 
   @override
@@ -187,7 +206,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       onSelect: () {
         final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
         if (isLocked) return;
-        widget.onTap?.call();
+        final onTap = widget.onTap;
+        if (onTap != null) {
+          onTap();
+          return;
+        }
+        _openLivePlay();
       },
       onLongSelect: () {
         final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;

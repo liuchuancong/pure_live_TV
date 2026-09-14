@@ -93,6 +93,16 @@ class LivePlayController extends _$LivePlayController {
     state = state.copyWith(room: detail, clearDetailError: true);
     // 展示层音量与房间记忆音量对齐（PlayerManager 起播时会恢复同一值）。
     state = state.copyWith(volume: detail.getSavedVolume().clamp(0.0, 1.0).toDouble());
+    // 进入房间即写入观看历史：入口未带 playlist 时，历史就是换台列表。
+    try {
+      SettingsService.to.history.addRoomToHistory(detail);
+    } catch (e) {
+      log('addRoomToHistory failed: $e', name: 'LivePlayController');
+    }
+    // 由上下键切台进来时，先给用户一条频道名提示。
+    if (args.showChannelBanner) {
+      showChannelBanner(detail.nick.isNotEmpty ? detail.nick : detail.title);
+    }
 
     // Fullscreen by default hides the controls on entry; disabling it keeps the
     // control bar visible so quality and line switching are one press away.
@@ -172,6 +182,8 @@ class LivePlayController extends _$LivePlayController {
   void _teardown() {
     _generation++;
     _cancelSubscriptions();
+    _channelBannerTimer?.cancel();
+    _channelBannerTimer = null;
     // Leaving the room releases the wake lock even when a new room follows.
     unawaited(WakelockPlus.disable().catchError((Object _) {}));
     final manager = _playerManager;
@@ -363,6 +375,84 @@ class LivePlayController extends _$LivePlayController {
   Future<void> volumeDown() => setVolume(state.volume - 0.1);
 
   // =========================
+  // 换台 / 播放列表
+  // =========================
+
+  /// 换台列表：优先用入口带来的列表（收藏/热门/分区/搜索当页的房间），
+  /// 否则回退到「观看历史」里仍在直播的房间。
+  List<LiveRoom> get channelRooms {
+    if (args.playlist.length > 1) return args.playlist;
+    final history = SettingsService.to.historyState.historyRooms
+        .where((room) => room.platform != Sites.iptvSite && room.liveStatus == LiveStatus.live)
+        .toList(growable: false);
+    return history.length > 1 ? history : args.playlist;
+  }
+
+  /// 当前房间在换台列表中的下标；找不到时返回 0。
+  int get channelIndex {
+    final rooms = channelRooms;
+    final current = state.room;
+    if (current == null || rooms.isEmpty) return 0;
+    final index = rooms.indexWhere((room) => room.hasSameIdentity(current));
+    return index < 0 ? 0 : index;
+  }
+
+  /// 按 [delta]（-1 上一个 / 1 下一个）取目标频道，循环切换。
+  ///
+  /// 返回 null 表示当前没有可切换的频道，调用方应提示用户。
+  LiveRoom? relativeChannel(int delta) {
+    final rooms = channelRooms;
+    if (rooms.length < 2) return null;
+    final current = channelIndex;
+    final raw = current + delta;
+    final next = raw < 0
+        ? rooms.length - 1
+        : (raw >= rooms.length ? 0 : raw);
+    final target = rooms[next];
+    // 只有一个可播房间时切换没有意义。
+    return state.room != null && target.hasSameIdentity(state.room!) ? null : target;
+  }
+
+  // =========================
+  // 右侧面板（同一时刻只展示一个）
+  // =========================
+
+  /// 切换右侧面板内容；已经在该面板时再按一次则收起。
+  void togglePanel(LivePlayPanel panel) {
+    if (state.showSidePanel && state.panel == panel) {
+      state = state.copyWith(showSidePanel: false);
+    } else {
+      state = state.copyWith(panel: panel, showSidePanel: true);
+    }
+  }
+
+  /// 直接打开某个面板（不做「再按一次收起」判断）。
+  void openPanel(LivePlayPanel panel) {
+    state = state.copyWith(panel: panel, showSidePanel: true);
+  }
+
+  // =========================
+  // 换台提示条
+  // =========================
+
+  Timer? _channelBannerTimer;
+
+  /// 显示频道名提示条 2 秒（上下键切台时使用）。
+  void showChannelBanner(String text) {
+    _channelBannerTimer?.cancel();
+    state = state.copyWith(channelBanner: text);
+    _channelBannerTimer = Timer(const Duration(seconds: 2), () {
+      if (ref.mounted) state = state.copyWith(clearChannelBanner: true);
+    });
+  }
+
+  void dismissChannelBanner() {
+    _channelBannerTimer?.cancel();
+    _channelBannerTimer = null;
+    if (state.showChannelBanner) state = state.copyWith(clearChannelBanner: true);
+  }
+
+  // =========================
   // controls visibility (TV auto-hide)
   // =========================
 
@@ -481,6 +571,8 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     // 弹幕层只关心聊天消息；礼物/进场等消息仅进列表视图。
     if (message.type != LiveMessageType.chat) return;
     if (!_messageGate.accepts(message)) return;
+    // 弹幕过滤面板配置的屏蔽词 / 屏蔽用户：命中即丢弃。
+    if (!_passesShield(message)) return;
 
     final danmakuSettings = SettingsService.to.danmakuState;
     if (!_repeatedFilter.accepts(
@@ -508,6 +600,27 @@ class DanmakuSessionController extends _$DanmakuSessionController {
           ]
         : <LiveMessage>[...state.messages, message];
     state = state.copyWith(messages: messages);
+  }
+
+  /// 屏蔽词 / 屏蔽用户过滤。
+  ///
+  /// 数据与「弹幕过滤」面板、手机端扫码页面共用同一份 [FavoriteRoomController]
+  /// 状态，所以三处增删是实时一致的。
+  bool _passesShield(LiveMessage message) {
+    final fav = SettingsService.to.favState;
+    final blockedUsers = fav.blockedDanmakuUsers;
+    final userName = message.userName.trim();
+    if (blockedUsers.isNotEmpty && userName.isNotEmpty) {
+      final lower = userName.toLowerCase();
+      if (blockedUsers.any((user) => user.trim().toLowerCase() == lower)) return false;
+    }
+    final shieldList = fav.shieldList;
+    if (shieldList.isEmpty) return true;
+    final text = message.message;
+    for (final word in shieldList) {
+      if (word.isNotEmpty && text.contains(word)) return false;
+    }
+    return true;
   }
 
   BarrageItem _toBarrageItem(LiveMessage msg) {

@@ -41,6 +41,14 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     await _startServerWithRetry(port: port);
   }
 
+  /// 播种弹幕过滤缓存。
+  ///
+  /// 手机扫码页面通过 `GET /api/danmaku_filter` 读取这份缓存，电视端打开
+  /// 「弹幕过滤」面板时先把当前屏蔽词写进来，手机一进去就能看到已有词。
+  void seedDanmakuFilters(List<String> filters) {
+    _configCache['danmaku_filter'] = List<String>.from(filters);
+  }
+
   Future<void> _startServerWithRetry({required int port, int retry = 0}) async {
     try {
       final ip = await _getLocalIp();

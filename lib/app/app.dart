@@ -1,4 +1,5 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:dpad/dpad.dart';
 import 'package:material_ui/material_ui.dart' as material;
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -30,6 +31,9 @@ class App extends ConsumerWidget {
           child: MaterialApp.router(
             routerConfig: router,
             debugShowCheckedModeBanner: false,
+            // 安装 D-pad 根节点：方向键导航、区域焦点记忆、焦点丢失兜底
+            // 都由它提供。没有这一层，电视遥控器的方向键不会移动焦点。
+            builder: Dpad.wrap(),
             // EasyLocalization 提供语言与本地化代理；应用自有语言设置在
             // LocalizationsLocaleSync 中同步到渲染层。
             locale: context.locale,

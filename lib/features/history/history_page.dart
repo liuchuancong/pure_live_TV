@@ -72,10 +72,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
+                          playlist: currentRooms,
                           onLongPress: () {
                             FavOperateUtil.toggleHistoryDeleteDialog(context, room);
                           },
-                          onTap: () {},
                         ),
                       ),
                     ),

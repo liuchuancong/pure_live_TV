@@ -1,4 +1,5 @@
 export 'controllers/danmaku_filters.dart';
+export 'controllers/danmaku_option_steps.dart';
 export 'controllers/live_play_controller.dart';
 export 'models/live_play_args.dart';
 export 'pages/live_play_page.dart';
@@ -6,6 +7,10 @@ export 'services/live_play_repository.dart';
 export 'states/live_play_state.dart';
 export 'widgets/danmaku/danmaku_list_view.dart';
 export 'widgets/danmaku/danmaku_overlay.dart';
+export 'widgets/panels/danmaku_settings_panel.dart';
+export 'widgets/panels/live_panel_shell.dart';
+export 'widgets/panels/playlist_panel.dart';
+export 'widgets/panels/shield_panel.dart';
 export 'widgets/video_player/playback_failure_overlay.dart';
 export 'widgets/video_player/tv_video_surface.dart';
 export 'widgets/video_player/video_controller_panel.dart';
