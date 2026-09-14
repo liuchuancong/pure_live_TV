@@ -1,9 +1,15 @@
 import 'package:flutter/widgets.dart';
 
-/// 随机壁纸图源与填充模式候选值。
+/// 在线壁纸图源与填充模式候选值。
 ///
-/// 图源表移植自老项目 `pure_live` 的 `AppConsts.currentBoxImageSources` /
-/// `wumingApiKeys`。`url == 'default'` 表示不使用随机壁纸。
+/// 基础图源表移植自老项目 `pure_live` 的 `AppConsts.currentBoxImageSources` /
+/// `wumingApiKeys`；`url == noneUrl` 表示不换壁纸。
+///
+/// ⚠️ 「官方壁纸」「Wallhaven」「Deepin」目前写的是**占位示例地址**，拿到真实接口后
+/// 只改这张表即可 —— 解析逻辑是通用的（见 [pickImageUrlFromJson]）：
+/// - 直链图源：URL 本身就是图片，直接下载；
+/// - JSON 图源：先请求拿到 JSON，再从里面挑直链；
+/// - 无铭系：还要额外带 `type=json&apiKey=`，见 `BackgroundController.getRandomImage`。
 class BackgroundImageSources {
   BackgroundImageSources._();
 
@@ -12,7 +18,14 @@ class BackgroundImageSources {
 
   static const List<({String name, String url})> sources = <({String name, String url})>[
     (name: '不使用', url: noneUrl),
-    (name: '必应随机', url: 'https://bing.img.run/rand.php'),
+
+    // —— 以下三条是占位示例地址，等真实接口就位后替换 ——
+    (name: '官方壁纸', url: 'https://example.com/purelive/wallpaper/random'),
+    (name: 'Wallhaven', url: 'https://wallhaven.cc/api/v1/search?sorting=random&atleast=1920x1080'),
+    (name: 'Deepin', url: 'https://example.com/deepin/wallpapers/list.json'),
+
+    // —— 现成可用的公开图源 ——
+    (name: '必应每日', url: 'https://bing.img.run/rand.php'),
     (name: '小晓API', url: 'https://v2.xxapi.cn/api/wallpaper'),
     (name: '无铭必应每日壁纸', url: 'https://jkapi.com/api/bing_img'),
     (name: '无铭随机美囡图片', url: 'https://jkapi.com/api/meinv_img'),
@@ -45,6 +58,21 @@ class BackgroundImageSources {
     '无铭随机唯美女生图片': '0a7c2239bc57624cac60967937da8a1b',
   };
 
+  /// 需要先请求 JSON 再取直链的图源。
+  static const Set<String> jsonApiNames = <String>{'官方壁纸', 'Wallhaven', 'Deepin'};
+
+  /// 从 JSON 里挑直链时优先看这些字段名，再退化成全量递归扫描。
+  static const List<String> _urlKeys = <String>[
+    'url',
+    'image_url',
+    'imageUrl',
+    'content',
+    'path',
+    'src',
+    'link',
+    'full',
+  ];
+
   static List<String> get names => sources.map((e) => e.name).toList(growable: false);
 
   static int clampIndex(int index) => index.clamp(0, sources.length - 1);
@@ -55,6 +83,34 @@ class BackgroundImageSources {
   }
 
   static ({String name, String url}) at(int index) => sources[clampIndex(index)];
+
+  /// 从任意形态的 JSON 里挑出图片直链。
+  ///
+  /// 覆盖三种常见返回：`{"url": "..."}`、`{"data": {"path": "..."}}`、
+  /// `{"data": [{"path": "..."}, ...]}`（Wallhaven / Deepin 这类）。
+  /// 挑不到返回 null。
+  static String? pickImageUrlFromJson(dynamic data) {
+    if (data == null) return null;
+    if (data is String) return data.startsWith('http') ? data : null;
+    if (data is List) {
+      for (final item in data) {
+        final found = pickImageUrlFromJson(item);
+        if (found != null) return found;
+      }
+      return null;
+    }
+    if (data is Map) {
+      for (final key in _urlKeys) {
+        final found = pickImageUrlFromJson(data[key]);
+        if (found != null) return found;
+      }
+      for (final value in data.values) {
+        final found = pickImageUrlFromJson(value);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
 }
 
 /// 背景图的填充模式（对应 `BackgroundConfigModel.boxFit`）。

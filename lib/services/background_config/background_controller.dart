@@ -1,6 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path_util;
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -32,6 +37,8 @@ class BackgroundController extends _$BackgroundController {
     _videoPlayer.setPlaylistMode(PlaylistMode.loop);
 
     ref.onDispose(() {
+      _autoSwitchTimer?.cancel();
+      _autoSwitchTimer = null;
       _videoPlayer.dispose();
       _configStream.close();
     });
@@ -43,6 +50,9 @@ class BackgroundController extends _$BackgroundController {
         orElse: () => BoxFit.cover,
       ),
       maskOpacity: HivePrefUtil.getDouble('bgMaskOpacity') ?? 0.35,
+      blur: HivePrefUtil.getDouble('bgBlur') ?? 0.0,
+      autoSwitch: HivePrefUtil.getBool('bgAutoSwitch') ?? false,
+      autoSwitchIntervalHours: HivePrefUtil.getInt('bgAutoSwitchIntervalHours') ?? 6,
       solidColor: HexColor(HivePrefUtil.getString('bgSolidColorHex') ?? '141e30'),
       gradientColors: (HivePrefUtil.getString('bgGradientColors') ?? "141e30,243b55,141e30")
           .split(",")
@@ -58,6 +68,7 @@ class BackgroundController extends _$BackgroundController {
     );
 
     _configStream.add(model);
+    _armAutoSwitch(model);
     return model;
   }
 
@@ -68,6 +79,9 @@ class BackgroundController extends _$BackgroundController {
     HivePrefUtil.setString('bgSource', bgSourceToString(newModel.source));
     HivePrefUtil.setString('bgBoxFit', newModel.boxFit.name);
     HivePrefUtil.setDouble('bgMaskOpacity', newModel.maskOpacity);
+    HivePrefUtil.setDouble('bgBlur', newModel.blur);
+    HivePrefUtil.setBool('bgAutoSwitch', newModel.autoSwitch);
+    HivePrefUtil.setInt('bgAutoSwitchIntervalHours', newModel.autoSwitchIntervalHours);
     HivePrefUtil.setString('bgSolidColorHex', newModel.solidColor.toHex());
     HivePrefUtil.setString('bgGradientColors', newModel.gradientColors.map((c) => c.toHex()).join(","));
     HivePrefUtil.setString('bgAssetImagePath', newModel.assetImagePath ?? "");
@@ -77,6 +91,7 @@ class BackgroundController extends _$BackgroundController {
     HivePrefUtil.setString('bgAssetVideoPath', newModel.assetVideoPath ?? "");
     HivePrefUtil.setString('bgLocalVideoPath', newModel.localVideoPath ?? "");
     HivePrefUtil.setString('bgNetworkVideoUrl', newModel.networkVideoUrl ?? "");
+    _armAutoSwitch(newModel);
   }
 
   MemoryImage? get cachedBackgroundImage {
@@ -159,23 +174,7 @@ class BackgroundController extends _$BackgroundController {
 
     final dio = Dio();
     try {
-      String? imageUrl;
-      if (source.url.contains('://jkapi.com')) {
-        final apiKey = BackgroundImageSources.wumingApiKeys[source.name];
-        if (apiKey == null) return false;
-        final separator = source.url.contains('?') ? '&' : '?';
-        final response = await dio.get<dynamic>('${source.url}${separator}type=json&apiKey=$apiKey');
-        final data = response.data;
-        if (data is Map) imageUrl = (data['image_url'] ?? data['content'])?.toString();
-      } else if (source.url == 'https://alcy.cc') {
-        const categories = <String>[
-          'ycy', 'moez', 'ai', 'ysz', 'ys', 'mp', 'moemp', 'ysmp', 'aimp', 'tx', 'lai', 'xhl', 'bd',
-        ];
-        imageUrl = '${source.url}${categories[math.Random().nextInt(categories.length)]}';
-      } else {
-        imageUrl = source.url;
-      }
-
+      final imageUrl = await _resolveImageUrl(dio, source);
       if (imageUrl == null || imageUrl.isEmpty) return false;
 
       final imageResponse = await dio.get<List<int>>(
@@ -197,9 +196,136 @@ class BackgroundController extends _$BackgroundController {
     }
   }
 
+  /// 把图源解析成图片直链。
+  ///
+  /// - 栗次元：随机拼一个分类路径；
+  /// - 无铭系：要带 `type=json&apiKey=`，JSON 里才是直链；
+  /// - 官方壁纸 / Wallhaven / Deepin：JSON 接口，从响应里挑直链；
+  /// - 其余：URL 本身就是图片地址。
+  Future<String?> _resolveImageUrl(Dio dio, ({String name, String url}) source) async {
+    if (source.url.contains(_alcyHost)) {
+      final category = _alcyCategories[math.Random().nextInt(_alcyCategories.length)];
+      return '${source.url}$category';
+    }
+
+    final isWuming = source.url.contains('://jkapi.com');
+    if (!isWuming && !BackgroundImageSources.jsonApiNames.contains(source.name)) {
+      return source.url;
+    }
+
+    var requestUrl = source.url;
+    if (isWuming) {
+      final apiKey = BackgroundImageSources.wumingApiKeys[source.name];
+      if (apiKey == null) return null;
+      final separator = source.url.contains('?') ? '&' : '?';
+      requestUrl = '${source.url}${separator}type=json&apiKey=$apiKey';
+    }
+
+    final response = await dio.get<dynamic>(requestUrl);
+    return BackgroundImageSources.pickImageUrlFromJson(response.data);
+  }
+
+  static const String _alcyHost = 'alcy.cc';
+  static const List<String> _alcyCategories = <String>[
+    'ycy', 'moez', 'ai', 'ysz', 'ys', 'mp', 'moemp', 'ysmp', 'aimp', 'tx', 'lai', 'xhl', 'bd',
+  ];
+
   static const String _wallpaperUserAgent =
       'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
       'Chrome/116.0.5845.97 Safari/537.36';
+
+  // ------------------------------------------------------------------
+  // 模糊度 / 自动换壁纸
+  // ------------------------------------------------------------------
+
+  Timer? _autoSwitchTimer;
+
+  void setBlur(double value) => _updateState(state.copyWith(blur: value.clamp(0.0, 30.0)));
+
+  void setAutoSwitch(bool value) => _updateState(state.copyWith(autoSwitch: value));
+
+  void setAutoSwitchIntervalHours(int hours) =>
+      _updateState(state.copyWith(autoSwitchIntervalHours: hours.clamp(1, 24)));
+
+  /// 按「自动换壁纸」设置装/卸定时器。
+  ///
+  /// 只对「在线壁纸」生效：本机图片和视频是单份文件，没有可轮换的对象，
+  /// 定时器空转没有意义，所以直接不装。
+  void _armAutoSwitch(BackgroundConfigModel model) {
+    _autoSwitchTimer?.cancel();
+    _autoSwitchTimer = null;
+    if (!model.autoSwitch) return;
+    if (model.source != BackgroundSource.networkImage) return;
+
+    final hours = model.autoSwitchIntervalHours.clamp(1, 24);
+    _autoSwitchTimer = Timer.periodic(Duration(hours: hours), (_) {
+      unawaited(getRandomImage());
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // 本机图片 / 视频（自定义壁纸）
+  // ------------------------------------------------------------------
+
+  /// 选一张本机图片作为壁纸。
+  ///
+  /// 会同时写两份：文件复制进应用私有目录（用户删掉原图也不失效），以及
+  /// base64 —— 因为 `TvScaffold` 的图片背景只消费
+  /// [BackgroundConfigModel.currentBoxImageBase64]。
+  Future<bool> pickLocalImage() async {
+    final picked = await FilePicker.pickFile(
+      dialogTitle: '选择壁纸图片',
+      type: FileType.custom,
+      allowedExtensions: const <String>['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'],
+    );
+    final sourcePath = picked?.path;
+    if (sourcePath == null || sourcePath.isEmpty) return false;
+
+    try {
+      final bytes = await File(sourcePath).readAsBytes();
+      if (bytes.isEmpty) return false;
+      final stored = await _importFile(sourcePath, 'bg_image');
+      setLocalImage(stored ?? sourcePath);
+      setCurrentBoxImage(base64Encode(bytes));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 选一个本机视频作为动态壁纸。
+  Future<bool> pickLocalVideo() async {
+    final picked = await FilePicker.pickFile(
+      dialogTitle: '选择动态壁纸视频',
+      type: FileType.custom,
+      allowedExtensions: const <String>['mp4', 'mkv', 'webm', 'mov', 'm4v', 'ts'],
+    );
+    final sourcePath = picked?.path;
+    if (sourcePath == null || sourcePath.isEmpty) return false;
+
+    try {
+      final stored = await _importFile(sourcePath, 'bg_video');
+      setLocalVideo(stored ?? sourcePath);
+      await reloadBackgroundVideo();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 复制进应用私有目录，避免用户之后删掉原文件导致背景失效。
+  Future<String?> _importFile(String sourcePath, String baseName) async {
+    try {
+      final dir = await getApplicationSupportDirectory();
+      final target = Directory('${dir.path}/background');
+      if (!target.existsSync()) await target.create(recursive: true);
+      final file = File('${target.path}/$baseName${path_util.extension(sourcePath)}');
+      await File(sourcePath).copy(file.path);
+      return file.path;
+    } catch (_) {
+      return null;
+    }
+  }
 
   void setAssetVideo(String path) => _updateState(
     state.copyWith(source: BackgroundSource.assetVideo, assetVideoPath: path, localVideoPath: "", networkVideoUrl: ""),

@@ -1,9 +1,12 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/widgets/tv_app_bar.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/consts/back_ground_source.dart';
+import 'package:pure_live/shared/theme/index.dart';
 
 class TvScaffold extends StatelessWidget {
   final Widget child;
@@ -67,7 +70,7 @@ class _BackgroundLayer extends StatelessWidget {
       builder: (context, snapshot) {
         final config = snapshot.data!;
 
-        return switch (config.source) {
+        final Widget layer = switch (config.source) {
           BackgroundSource.none || BackgroundSource.color => _SolidBackground(config: config),
           BackgroundSource.gradient => _GradientBackground(config: config),
           BackgroundSource.localImage ||
@@ -77,6 +80,15 @@ class _BackgroundLayer extends StatelessWidget {
           BackgroundSource.localVideo ||
           BackgroundSource.networkVideo => const _VideoBackground(),
         };
+
+        // 模糊度为 0 时完全不套滤镜：TV 上全屏离屏模糊不便宜，能省一次是一次。
+        if (config.blur <= 0) return layer;
+
+        return ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: config.blur, sigmaY: config.blur),
+          // 模糊会把边缘糊成半透明，放大一点把溢出的边盖掉。
+          child: Transform.scale(scale: 1.06, child: layer),
+        );
       },
     );
   }
@@ -106,7 +118,11 @@ class _SolidBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(color: config.solidColor);
+    // none 表示「跟随主题色」，换主题时实时跟着变；color 才是用户自选的纯色。
+    final color = config.source == BackgroundSource.none
+        ? context.tvTheme.backgroundColor
+        : config.solidColor;
+    return ColoredBox(color: color);
   }
 }
 
