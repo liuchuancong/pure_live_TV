@@ -3,6 +3,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/pages/about_settings_section.dart';
 import 'package:pure_live/features/settings/pages/audio_output_settings_section.dart';
+import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
 import 'package:pure_live/features/settings/pages/backup_settings_section.dart';
 import 'package:pure_live/features/settings/pages/cache_settings_section.dart';
 import 'package:pure_live/features/settings/pages/danmaku_settings_section.dart';
@@ -46,6 +47,7 @@ class TvSettingsShell extends StatelessWidget {
     (path: '/settings/proxy', title: i18n('ui_network_proxy'), icon: Icons.vpn_key_rounded, page: ProxySettingsSectionPage()),
     (path: '/settings/backup', title: i18n('backup_recover'), icon: Icons.backup_outlined, page: BackupSettingsSectionPage()),
     (path: '/settings/webdav', title: i18n('webdav'), icon: Icons.cloud_outlined, page: WebDavSettingsSectionPage()),
+    (path: '/settings/backups', title: i18n('local_backup'), icon: Icons.folder_copy_outlined, page: BackupManageSectionPage()),
     (path: '/settings/about', title: i18n('about'), icon: Icons.info_outline_rounded, page: AboutSettingsSectionPage()),
   ];
 

@@ -1791,6 +1791,7 @@
     "ui_export_configuration_to_this_device":  "导出配置到本机",
     "ui_export_failed":  "导出失败",
     "ui_exported":  "导出成功",
+    "ui_exporting":  "正在创建备份",
     "ui_fallback_quality":  "备用清晰度",
     "ui_favorites":  "收藏",
     "ui_favorites_auto_refresh_interval":  "关注页自动刷新间隔",

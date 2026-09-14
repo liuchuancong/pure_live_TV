@@ -5,12 +5,10 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 class CustomImageCacheManager {
   static const _cacheKey = 'customImageCacheKey';
   static CacheManager? _instance;
-  static CacheManager get instance {
-    if (_instance == null) {
-      throw StateError("CustomImageCacheManager 尚未初始化，请先在 main 中调用 initialize()");
-    }
-    return _instance!;
-  }
+
+  /// Falls back to the default cache manager until [initialize] completes, so a
+  /// widget built before the cache directory is ready cannot crash.
+  static CacheManager get instance => _instance ?? DefaultCacheManager();
 
   static Future<void> initialize() async {
     if (_instance != null) return;

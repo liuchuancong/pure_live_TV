@@ -1793,6 +1793,7 @@
     "ui_export_configuration_to_this_device":  "Export configuration to this device",
     "ui_export_failed":  "Export failed",
     "ui_exported":  "Exported",
+    "ui_exporting":  "Creating backup",
     "ui_fallback_quality":  "Fallback quality",
     "ui_favorites":  "Favorites",
     "ui_favorites_auto_refresh_interval":  "Favorites auto-refresh interval",

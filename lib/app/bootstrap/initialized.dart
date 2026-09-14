@@ -37,7 +37,10 @@ class AppInitializer {
     await HivePrefUtil.init();
     MediaKit.ensureInitialized();
     await AppPathManager().initialize();
-    await CustomImageCacheManager.initialize();
+    // Image cache setup is not needed for the first frame: run it in the
+    // background so startup is not blocked (the getter falls back to the
+    // default cache until it is ready).
+    unawaited(CustomImageCacheManager.initialize());
 
     container = ProviderContainer();
     SettingsService.to.init(container);

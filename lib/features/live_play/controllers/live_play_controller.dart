@@ -447,11 +447,14 @@ class DanmakuSessionController extends _$DanmakuSessionController {
       state.barrageController.send(_toBarrageItem(message));
     }
 
-    // 列表视图保存最近 200 条。
-    final messages = List<LiveMessage>.of(state.messages)..add(message);
-    if (messages.length > 200) {
-      messages.removeRange(0, messages.length - 200);
-    }
+    // Keep the list view bounded in a single pass (no copy-then-trim).
+    const maxListedMessages = 200;
+    final messages = state.messages.length >= maxListedMessages
+        ? <LiveMessage>[
+            ...state.messages.sublist(state.messages.length - maxListedMessages + 1),
+            message,
+          ]
+        : <LiveMessage>[...state.messages, message];
     state = state.copyWith(messages: messages);
   }
 
