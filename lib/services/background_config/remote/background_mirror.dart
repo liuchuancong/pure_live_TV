@@ -119,7 +119,11 @@ class BackgroundMirror {
         options: Options(headers: const {'Range': 'bytes=0-255'}),
       );
       final code = res.statusCode ?? 0;
-      return code == 200 || code == 206;
+      // 404 也要算“通”：说明镜像本身正常应答，只是上游没有这个文件。
+      // catalog.json 属于可选的预生成索引，仓库里没有是常态，
+      // 若把 404 判为失败，所有镜像都会落选、退化成固定选第一个，
+      // 就失去了测速的意义。
+      return code == 200 || code == 206 || code == 404;
     } catch (_) {
       return false;
     }
