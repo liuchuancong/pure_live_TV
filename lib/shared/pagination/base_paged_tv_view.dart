@@ -5,6 +5,7 @@ import 'package:pure_live/shared/pagination/paging_core.dart';
 import 'package:pure_live/shared/pagination/models/paging_param.dart';
 import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class BasePagedTvView<T> extends ConsumerStatefulWidget {
   final PagingParam<T> param;
@@ -100,24 +101,26 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
             : AppStatusView(
                 type: AppStatusType.empty,
                 icon: Icons.account_circle_outlined,
-                title: "需要登录后访问",
-                buttonText: "去登录",
+                title: i18n('login_required_title'),
+                buttonText: i18n('go_to_login'),
                 onTap: () {},
               );
       }
 
-      // 加载错误
+      // Load failure
       if (state.controllerState.pageError) {
-        final errMsg = state.controllerState.errorMsg.isNotEmpty ? state.controllerState.errorMsg : "网络加载失败，请重试";
+        final errMsg = state.controllerState.errorMsg.isNotEmpty
+            ? state.controllerState.errorMsg
+            : i18n('network_error_subtitle');
         return widget.errorBuilder != null
             ? widget.errorBuilder!(context, errMsg, _triggerRefresh)
             : AppStatusView(type: AppStatusType.error, subtitle: errMsg, onTap: _triggerRefresh);
       }
 
-      // 空数据
+      // No results
       return widget.emptyBuilder != null
           ? widget.emptyBuilder!(context, _triggerRefresh)
-          : AppStatusView(type: AppStatusType.empty, title: "暂无直播间内容", onTap: _triggerRefresh);
+          : AppStatusView(type: AppStatusType.empty, title: i18n('status_empty_title'), onTap: _triggerRefresh);
     }
 
     return Column(

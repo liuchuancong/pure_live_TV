@@ -10,6 +10,7 @@ import 'package:pure_live/shared/pagination/models/paging_param.dart';
 import 'package:pure_live/shared/pagination/models/base_paged_state.dart';
 import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 import 'package:pure_live/shared/pagination/models/base_controller_state.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 part 'paging_core.g.dart';
 
@@ -82,21 +83,23 @@ class PagingCore<T> extends _$PagingCore<T> {
 
     final msg = exception.toString().replaceAll("Exception:", "").trim();
 
-    return msg.isEmpty ? "未知错误，请重试" : msg;
+    return msg.isEmpty ? i18n('error_unknown_retry') : msg;
   }
 
   void handleError(Object exception) {
     String msg;
     if (exception is SocketException || exception is TimeoutException) {
-      msg = "网络连接失败，请检查网络";
+      msg = i18n('error_network');
     } else if (exception is HttpException) {
-      msg = "服务器异常";
+      msg = i18n('server_error_retry_later');
     } else {
       msg = exceptionToString(exception);
     }
 
     final exceptionStr = exception.toString().toLowerCase();
 
+    // Platforms report a missing session in their own wording, so the match is
+    // against the message text rather than anything localized here.
     final isLoginIssue =
         exceptionStr.contains("loginrequired") ||
         exceptionStr.contains("unauthorized") ||

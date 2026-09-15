@@ -158,7 +158,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               borderRadius: BorderRadius.circular(20.sp),
             ),
             child: Text(
-              isServerRunning ? "局域网服务已启动" : "服务未启动",
+              isServerRunning ? i18n('movie_lan_started') : i18n('movie_lan_stopped'),
               style: TextStyle(
                 color: isServerRunning ? currentTvTheme.focusColor : Colors.redAccent,
                 fontSize: 20.sp,
@@ -182,7 +182,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "在此粘贴或输入链接地址",
+                i18n('movie_paste_link'),
                 style: AppTextStyles.t18W500.copyWith(
                   fontSize: 28.sp,
                   color: currentTvTheme.secondaryTextColor,
@@ -193,7 +193,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               TvInputField(
                 useNativeTextField: false,
                 controller: _urlController,
-                hint: "等待手机扫码同步或点击输入...",
+                hint: i18n('movie_wait_phone_sync'),
                 height: 72.sp,
                 maxLines: 1,
                 onSubmitted: (url) => _handleParse,
