@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/shared/widgets/tv_app_bar.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/services/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/consts/back_ground_source.dart';
 
 class TvScaffold extends StatelessWidget {
@@ -130,7 +131,7 @@ class _ImageBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = SettingsService.to.bg.cachedBackgroundImage;
+    final image = _resolveImage();
 
     return Stack(
       fit: StackFit.expand,
@@ -146,6 +147,22 @@ class _ImageBackground extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  /// 网络背景直接交给 [CachedNetworkImageProvider] 落磁盘缓存。
+  ///
+  /// 原实现只读 `currentBoxImageBase64`，而设置网络图时写的是
+  /// `networkImageUrl`，两边对不上，所以选了远端图之后背景是空的。
+  /// 顺带避免把整张图转 base64 塞进 Hive 偏好设置。
+  ImageProvider? _resolveImage() {
+    if (config.source == BackgroundSource.networkImage) {
+      final url = config.networkImageUrl;
+      if (url != null && url.isNotEmpty) {
+        return CachedNetworkImageProvider(url);
+      }
+      return null;
+    }
+    return SettingsService.to.bg.cachedBackgroundImage;
   }
 }
 
