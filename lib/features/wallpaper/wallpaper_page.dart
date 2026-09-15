@@ -4,6 +4,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/background_config/remote/background_repository.dart';
@@ -498,6 +499,7 @@ class _WallpaperTileState extends State<_WallpaperTile> {
     }
     return CachedNetworkImage(
       imageUrl: BackgroundRepository.thumbnail(thumb),
+      cacheManager: CustomImageCacheManager.instance,
       fit: BoxFit.cover,
       memCacheWidth: 480,
       fadeInDuration: const Duration(milliseconds: 120),
@@ -506,6 +508,7 @@ class _WallpaperTileState extends State<_WallpaperTile> {
         // Thumbnail service unavailable, fall back to the full-size file.
         return CachedNetworkImage(
           imageUrl: thumb,
+          cacheManager: CustomImageCacheManager.instance,
           fit: BoxFit.cover,
           memCacheWidth: 480,
           errorWidget: (context, _, _) {

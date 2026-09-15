@@ -4,6 +4,7 @@ import 'package:pure_live/shared/widgets/tv_app_bar.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:pure_live/shared/consts/back_ground_source.dart';
 
 class TvScaffold extends StatelessWidget {
@@ -160,7 +161,10 @@ class _ImageBackground extends StatelessWidget {
     if (config.source == BackgroundSource.networkImage) {
       final url = config.networkImageUrl;
       if (url != null && url.isNotEmpty) {
-        return CachedNetworkImageProvider(url);
+        return CachedNetworkImageProvider(
+          url,
+          cacheManager: CustomImageCacheManager.instance,
+        );
       }
       return null;
     }
