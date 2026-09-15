@@ -5,6 +5,7 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/utils/cache_manager.dart';
+import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/background_config/remote/background_repository.dart';
@@ -211,7 +212,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
           final colors = <Color>[
             for (final stop
                 in item.gradient ?? const <BackgroundGradientStop>[])
-              if (_parseHex(stop.color) case final Color color) color,
+              ColorUtil.hexToColor(stop.color),
           ];
           if (colors.length < 2) {
             _toast(
@@ -247,18 +248,6 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
-  }
-
-  /// Parses `#RRGGBB`, `RRGGBB`, `#RGB` and `0xAARRGGBB` forms.
-  static Color? _parseHex(String raw) {
-    var value = raw.trim().replaceFirst('#', '').replaceFirst('0x', '');
-    if (value.length == 3) {
-      value = value.split('').map((c) => '$c$c').join();
-    }
-    if (value.length == 6) value = 'FF$value';
-    if (value.length != 8) return null;
-    final parsed = int.tryParse(value, radix: 16);
-    return parsed == null ? null : Color(parsed);
   }
 }
 
@@ -544,9 +533,7 @@ class _GradientPreview extends StatelessWidget {
     final colors = <Color>[];
     final positions = <double>[];
     for (final stop in stops) {
-      final color = _WallpaperPageState._parseHex(stop.color);
-      if (color == null) continue;
-      colors.add(color);
+      colors.add(ColorUtil.hexToColor(stop.color));
       positions.add((stop.pos / 100).clamp(0.0, 1.0));
     }
     if (colors.length < 2) {
