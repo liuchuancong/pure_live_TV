@@ -53,7 +53,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 分类下频道
+  // Channels inside a category.
   // =========================================================
 
   @override
@@ -100,7 +100,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 房间详情
+  // Room details.
   // =========================================================
 
   @override
@@ -166,6 +166,8 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
       }
       if (finalEpgChannelId == null) {
         final cleanRegex = RegExp(r'[^a-zA-Z0-9\u4e00-\u9fa5]');
+        // These are Chinese channel-name suffixes returned by IPTV providers, so the
+        // pattern must stay in Chinese.
         final suffixRegex = RegExp(r'(综合|高清|超清|中央|电视台|频道|hd)', caseSensitive: false);
 
         String targetClean = channel.name.trim().split(' ').first;
@@ -253,7 +255,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 推荐（热门）
+  // Recommendations (popular).
   // =========================================================
 
   @override
@@ -294,7 +296,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 播放质量
+  // Playback quality.
   // =========================================================
 
   @override
@@ -307,7 +309,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 播放地址
+  // Playback address.
   // =========================================================
 
   @override
@@ -318,14 +320,14 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 弹幕
+  // Danmaku.
   // =========================================================
 
   @override
   LiveDanmaku getDanmaku() => EmptyDanmaku();
 
   // =========================================================
-  // 直播状态
+  // Live status.
   // =========================================================
 
   @override
@@ -334,7 +336,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 超级留言
+  // Super chat.
   // =========================================================
 
   @override
@@ -343,7 +345,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 搜索主播
+  // Search anchors.
   // =========================================================
 
   @override
@@ -352,7 +354,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   // =========================================================
-  // 搜索频道
+  // Search channels.
   // =========================================================
 
   @override

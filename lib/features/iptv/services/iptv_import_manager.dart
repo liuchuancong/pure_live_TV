@@ -31,7 +31,7 @@ class IptvImportManager {
   static final _mappingLock = Lock();
   static final _importLock = Lock();
 
-  /// 1. 本地文件浏览器选择导入
+  /// 1. Import by picking a local file.
   Future<bool> importFromLocalPicker() async {
     final result = await FilePicker.pickFile(
       dialogTitle: i18n("select_recover_file"),
@@ -406,8 +406,9 @@ class IptvImportManager {
     final selected = SettingsService.to.iptv.selectedSourceId;
     final sourceId = selected.value;
     if (sourceId.isEmpty) return;
-    // TV 的 SettingsValue 是拉取式视图，没有 GetX 的 addListener；用控制器暴露的
-    // 源变更版本号代替，它在 A -> B -> A 的往返中同样会变化。
+    // The TV SettingsValue is a pull-based view without GetX addListener, so the
+    // source revision counter is used instead: it also changes across an A to B
+    // to A round trip.
     final sourceRevision = SettingsService.to.iptv.sourceRevision;
     void checkSource() {
       if (SettingsService.to.iptv.sourceRevision != sourceRevision || selected.value != sourceId) {

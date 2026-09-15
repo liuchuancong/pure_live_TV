@@ -1,8 +1,8 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 
-/// TV 设置页的“单选循环”条目：按确认键在选项列表中循环切换。
-/// 适用于清晰度、播放内核、画面比例等离散取值设置。
+/// TV settings row that cycles through its options on the OK key.
+/// Used for discrete settings such as quality, player kernel and aspect ratio.
 class TvSettingsOptionTile extends StatelessWidget {
   final String title;
   final String? subtitle;

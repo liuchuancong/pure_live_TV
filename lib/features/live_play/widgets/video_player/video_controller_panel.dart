@@ -12,9 +12,11 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Bottom control bar of the video area, driven entirely by D-pad focus.
 ///
-/// 按钮比老项目少不了一个：播放/暂停、音量、画面比例、弹幕开关、关注、
-/// 弹幕设置、弹幕过滤、播放列表、背景设置、切换直播间、重试。
-/// 一排放不下，所以横向滚动 + 边界循环（[DpadEdgeBehavior.wrap]）。
+/// No button from the legacy app is missing: play/pause, volume, aspect ratio,
+/// danmaku toggle, follow, danmaku settings, danmaku filter, playlist,
+/// background settings, switch room and retry.
+/// They do not fit in one row, so the bar scrolls horizontally and wraps at
+/// the edges ([DpadEdgeBehavior.wrap]).
 class VideoControllerPanel extends ConsumerStatefulWidget {
   final LivePlayArgs args;
 
@@ -122,7 +124,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       ),
       _PanelAction(
         icon: Icons.playlist_play_rounded,
-        label: i18nOr('ui_playlist', '播放列表'),
+        label: i18nOr('ui_playlist', 'Playlist'),
         highlighted: state.showSidePanel && state.panel == LivePlayPanel.playlist,
         onSelect: () {
           keepAlive();
@@ -131,7 +133,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       ),
       _PanelAction(
         icon: Icons.info_outline_rounded,
-        label: i18nOr('ui_room_info', '房间信息'),
+        label: i18nOr('ui_room_info', 'Room info'),
         highlighted: state.showSidePanel && state.panel == LivePlayPanel.info,
         onSelect: () {
           keepAlive();
@@ -140,7 +142,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       ),
       _PanelAction(
         icon: Icons.wallpaper_rounded,
-        label: i18nOr('ui_background_settings', '背景设置'),
+        label: i18nOr('ui_background_settings', 'Background'),
         onSelect: () {
           keepAlive();
           context.push(AppRoutes.kWallpaperPage);
@@ -232,7 +234,7 @@ class _PanelAction {
   final VoidCallback onSelect;
   final bool autofocus;
 
-  /// 面板类按钮：对应面板正在展示时保持高亮。
+  /// Panel buttons stay highlighted while their panel is open.
   final bool highlighted;
 }
 

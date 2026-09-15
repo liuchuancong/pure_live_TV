@@ -11,12 +11,13 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// 播放页内的「弹幕过滤」面板。
+/// Danmaku filter panel shown inside the player.
 ///
-/// 屏蔽词与手机端扫码页面共用 [FavoriteRoomController] 的 shieldList：
-/// - 电视上选中某行 = 删除该屏蔽词；
-/// - 手机扫码进入网页增删后，通过 [TvRemoteReceiver.onDanmakuFilterUpdated] 回灌；
-/// - 打开面板时会把当前列表播种到接收端缓存，手机页面一进去就能看到已有词。
+/// Blocked words share [FavoriteRoomController] shieldList with the phone scan
+/// page: selecting a row on TV deletes that word, and words added on the
+/// phone are pushed back through [TvRemoteReceiver.onDanmakuFilterUpdated].
+/// Opening the panel seeds the current list into the receiver cache so the
+/// phone page shows existing words immediately.
 class ShieldPanel extends ConsumerStatefulWidget {
   const ShieldPanel({super.key});
 
@@ -41,10 +42,11 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
     if (!running) unawaited(notifier.startServer());
   }
 
-  /// 手机端推送过来的整份列表覆盖本地（两端保持一致）。
+  /// A full list pushed from the phone replaces the local one, keeping both
+  /// sides identical.
   void _syncFromRemote(List<String> filters) {
     final fav = ref.read(favoriteRoomControllerProvider.notifier);
-    // 带计数上限，避免任何异常状态下死循环。
+    // Bounded by a counter so no abnormal state can loop forever.
     var guard = 0;
     while (SettingsService.to.favState.shieldList.isNotEmpty && guard < 1000) {
       fav.removeShieldList(SettingsService.to.favState.shieldList.length - 1);
@@ -78,7 +80,10 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
 
     return LivePanelShell(
       title: i18n('danmaku_filter'),
-      hint: i18nOr('ui_danmaku_filter_hint', '手机扫码增删屏蔽词；电视上选中某行可直接删除'),
+      hint: i18nOr(
+            'ui_danmaku_filter_hint',
+            'Scan the QR code on your phone to edit blocked words; on TV, select a row to remove it',
+          ),
       child: ListView(
         padding: EdgeInsets.symmetric(vertical: 8.sp),
         children: [
@@ -112,7 +117,8 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
     );
   }
 
-  /// 二维码区域本身可聚焦，保证屏蔽词为空时遥控器仍有落点。
+  /// The QR area is focusable so a remote still has a target when the list is
+  /// empty.
   Widget _buildQrEntry(BuildContext context, TvThemeData tvTheme, String qrData, bool autofocus) {
     return DpadFocusable(
       autofocus: autofocus,
@@ -143,7 +149,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                     SizedBox(width: 12.sp),
                     Expanded(
                       child: Text(
-                        i18nOr('ui_remote_starting', '正在启动手机遥控服务...'),
+                        i18nOr('ui_remote_starting', 'Starting the phone remote service...'),
                         style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
                       ),
                     ),

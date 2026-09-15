@@ -8,11 +8,12 @@ import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// 播放页内的播放列表（换台）面板。
+/// Playlist panel shown inside the player, used for channel switching.
 ///
-/// 列表来源见 [LivePlayController.channelRooms]：优先使用入口页带来的当页房间，
-/// 否则回退到观看历史。选中即切台，切换沿用路由 replace（与「切换直播间」一致），
-/// 所以上一路播放会话会被正确释放。
+/// See [LivePlayController.channelRooms] for the source: the rooms from the
+/// entry page win, otherwise watch history is used. Selecting switches channel
+/// through a route replace, the same path as the room switcher,
+/// so the previous playback session is released properly.
 class PlaylistPanel extends ConsumerWidget {
   const PlaylistPanel({super.key, required this.args});
 
@@ -27,8 +28,8 @@ class PlaylistPanel extends ConsumerWidget {
     final current = state.room;
 
     return LivePanelShell(
-      title: i18nOr('ui_playlist', '播放列表'),
-      hint: i18nOr('ui_playlist_hint', '上下键选择频道，确认键切台'),
+      title: i18nOr('ui_playlist', 'Playlist'),
+      hint: i18nOr('ui_playlist_hint', 'Up/Down to pick a channel, OK to switch'),
       child: rooms.isEmpty
           ? Center(
               child: Text(

@@ -1,13 +1,15 @@
 import 'package:pure_live/exports/common_export.dart';
 
-/// 直播播放页对 Sites 的唯一访问入口。
+/// Single access point to Sites for the live playback page.
 ///
-/// 收敛在单独文件里，避免页面/控制器散落对 core/sites 的直接依赖；
-/// 若站点接口缺方法，只需在此适配（defensive），不改 core/sites。
+/// It is funnelled through one file so pages and controllers never reach into
+/// core/sites directly. A missing site method is adapted here rather than
+/// added to core/sites.
 class LivePlayRepository {
   const LivePlayRepository();
 
-  /// 拉取房间详情。传入的 [hintRoom] 仅作平台/房间号来源，结果以站点返回为准。
+  /// Loads room details. [hintRoom] only supplies platform and room id; the site
+  /// response is authoritative.
   Future<LiveRoom> fetchRoomDetail({required LiveRoom hintRoom}) {
     return Sites.of(hintRoom.normalizedPlatformId).liveSite.getRoomDetail(
           roomId: hintRoom.normalizedRoomId,
@@ -27,7 +29,8 @@ class LivePlayRepository {
     return await Sites.of(detail.normalizedPlatformId).liveSite.getPlayUrls(detail: detail, quality: quality);
   }
 
-  /// 创建该平台的弹幕传输引擎；平台不支持时站点层会返回 EmptyDanmaku。
+  /// Creates the danmaku transport for this platform. Unsupported platforms get
+  /// EmptyDanmaku from the site layer.
   LiveDanmaku createDanmaku(LiveRoom detail) {
     return Sites.of(detail.normalizedPlatformId).liveSite.getDanmaku();
   }

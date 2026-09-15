@@ -86,7 +86,7 @@ class ChannelDetailController {
         await _loadProgrammes(matchedEpgChannelId);
       }
     } catch (e) {
-      log("根据频道名和 EPG 频道名进行模糊匹配时发生异常: $e");
+      log("Fuzzy matching between channel names and EPG channel names failed: $e");
     } finally {
       isLoadingEpg = false;
     }
@@ -99,7 +99,7 @@ class ChannelDetailController {
 
     final db = DbService.to.db;
 
-    // 直接调用你现有的 getProgrammes
+    // Reuse the existing getProgrammes.
     List<database.EpgProgramme> dbProgrammes = await db.getProgrammes(
       epgChannelId: epgChannelId,
       start: startTime,

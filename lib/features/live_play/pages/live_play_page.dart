@@ -43,7 +43,8 @@ class LivePlayPage extends ConsumerWidget {
                   fit: StackFit.expand,
                   children: [
                     TvVideoSurface(args: args),
-                    // 面板收起时提供一个触摸可达的展开入口（遥控器用右键/底部栏）。
+                    // While the panel is collapsed, keep a touch-reachable way to reopen it; a
+                    // remote uses the right key or the bottom bar.
                     if (!state.showSidePanel)
                       Positioned(
                         right: 16.sp,
@@ -77,7 +78,7 @@ class LivePlayPage extends ConsumerWidget {
                 width: 360.sp,
                 color: tvTheme.backgroundColor,
                 child: DpadRegion(
-                  // 每个面板独立记忆焦点，切回来时回到上次那一行。
+                  // Each panel remembers its own focus and returns to the previous row.
                   memoryKey: 'live_play/side-panel/${state.panel.name}',
                   child: _SidePanel(
                     state: state,
@@ -94,9 +95,10 @@ class LivePlayPage extends ConsumerWidget {
   }
 }
 
-/// 右侧面板容器：按 [LivePlayState.panel] 选择内容。
+/// Side panel container. The content is chosen by [LivePlayState.panel].
 ///
-/// 用 [Key] 强制换面板时重建子树，这样新面板里 `autofocus` 的行能拿到焦点。
+/// A [Key] forces the subtree to rebuild when the panel changes, so the new
+/// panel's `autofocus` row can take focus.
 class _SidePanel extends ConsumerWidget {
   final LivePlayState state;
   final LivePlayController controller;
@@ -109,7 +111,8 @@ class _SidePanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tvTheme = context.tvTheme;
 
-    // 面板左上角的收起按钮：让遥控器始终有一条回到视频区的路径。
+    // Collapse button in the panel corner: it keeps a remote path back to the
+    // video area.
     final collapse = Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
       child: DpadFocusable(
@@ -158,7 +161,7 @@ class _SidePanel extends ConsumerWidget {
   }
 }
 
-/// 房间信息 + 清晰度 / 线路 + 弹幕列表。
+/// Room info, quality and line pickers, and the danmaku list.
 class _InfoPanel extends ConsumerWidget {
   final LivePlayState state;
   final LivePlayController controller;
@@ -174,7 +177,7 @@ class _InfoPanel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 房间信息头部
+        // Room info header.
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
           child: Row(
@@ -245,8 +248,10 @@ class _InfoPanel extends ConsumerWidget {
     final watching = room.watching;
     final followers = room.followers;
     final parts = <String>[
-      if (watching.isNotEmpty) '人气 $watching',
-      if (followers.isNotEmpty) '粉丝 $followers',
+      if (watching.isNotEmpty)
+      i18n('audience_viewers_label', args: {'value': watching}),
+      if (followers.isNotEmpty)
+      '${i18n('audience_followers')} $followers',
     ];
     return parts.join(' · ');
   }

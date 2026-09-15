@@ -2,10 +2,10 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/index.dart';
 
-/// 右侧面板的统一外壳：标题栏 + 操作提示 + 内容区。
+/// Shared shell for the side panels: title bar, key hints and content.
 ///
-/// 播放页的四个面板（房间信息 / 播放列表 / 弹幕设置 / 弹幕过滤）共用它，
-/// 保证焦点进入面板后的视觉与导航手感一致。
+/// The four player panels (room info, playlist, danmaku settings, danmaku
+/// filter) share it so focus visuals and navigation feel identical.
 class LivePanelShell extends StatelessWidget {
   const LivePanelShell({super.key, required this.title, required this.child, this.hint, this.trailing});
 
@@ -52,10 +52,11 @@ class LivePanelShell extends StatelessWidget {
   }
 }
 
-/// 一行「左右键调值」的选项。
+/// A row whose value is changed with Left/Right.
 ///
-/// 上下键不拦截，交给 D-pad 焦点遍历在行之间移动；左右键被本行消费用于调值，
-/// 这样在电视上不需要进入子弹窗就能改参数（与老项目弹幕设置面板手感一致）。
+/// Up/Down is left to D-pad traversal so focus moves between rows, while
+/// Left/Right is consumed here to change the value, so parameters can be
+/// edited on TV without opening a sub-dialog.
 class LiveOptionRow extends StatelessWidget {
   const LiveOptionRow({
     super.key,
@@ -75,7 +76,8 @@ class LiveOptionRow extends StatelessWidget {
   final IconData? icon;
   final bool autofocus;
 
-  /// 确认键行为（例如切换开关）；为空时确认键不做任何事。
+  /// Action for the OK key, such as toggling a switch. Null means OK does
+  /// nothing.
   final VoidCallback? onSelect;
 
   @override
@@ -148,7 +150,8 @@ class LiveOptionRow extends StatelessWidget {
   }
 }
 
-/// 一行「确认键执行」的操作项（删除屏蔽词、切台等）。
+/// A row whose action runs on the OK key, such as deleting a blocked word or
+/// switching channel.
 class LiveActionRow extends StatelessWidget {
   const LiveActionRow({
     super.key,
@@ -168,7 +171,7 @@ class LiveActionRow extends StatelessWidget {
   final VoidCallback onSelect;
   final bool autofocus;
 
-  /// 是否是「当前项」（例如正在播放的频道）。
+  /// Whether this is the current entry, for example the channel being played.
   final bool highlighted;
 
   @override

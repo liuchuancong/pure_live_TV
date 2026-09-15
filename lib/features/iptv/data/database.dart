@@ -389,10 +389,11 @@ class AppDatabase extends _$AppDatabase {
   Future<void> updateEpgSourceUpdateStatus(String sourceId, bool status) async {
     await (update(
       epgSources,
-    )..where((t) => t.id.equals(sourceId))).write(EpgSourcesCompanion(isAutoUpdate: Value(status))); // 🔒 必须使用 Value 包装
+    )..where((t) => t.id.equals(sourceId))).write(EpgSourcesCompanion(isAutoUpdate: Value(status))); // must be wrapped in Value
   }
 
-  // 💡 精准获取：不仅要超时，而且必须是用户开启了自动更新开关（isAutoUpdate == true）的文件才会被查出来
+  // Precise lookup: only sources that are both overdue and have auto-update
+  // switched on (isAutoUpdate == true) are returned.
 
   Future<List<Provider>> getExpiredNetworkProviders(Duration checkInterval) {
     final threshold = DateTime.now().subtract(checkInterval);

@@ -5,10 +5,11 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-/// 播放页内的弹幕设置面板。
+/// Danmaku settings panel shown inside the player.
 ///
-/// 与设置页的「弹幕设置」共用同一份 [DanmakuSettingsModel]，改完立刻生效
-/// （弹幕层 watch 了同一个 provider），重启后也会持久化。
+/// Shares one [DanmakuSettingsModel] with the settings page, so edits apply
+/// immediately (the danmaku layer watches the same provider) and persist
+/// across restarts.
 class DanmakuSettingsPanel extends ConsumerWidget {
   const DanmakuSettingsPanel({super.key, this.autofocus = true});
 
@@ -23,7 +24,7 @@ class DanmakuSettingsPanel extends ConsumerWidget {
 
     final enabled = settings.enableDanmakuDisplay && !settings.hideDanmaku;
 
-    /// 弹幕总开关：左右键和确认键都做「取反」。
+    /// Master danmaku switch. Left, right and OK all toggle it.
     void toggleDanmaku() {
       final next = !enabled;
       update((s) => s.copyWith(enableDanmakuDisplay: next, hideDanmaku: !next));
@@ -31,7 +32,7 @@ class DanmakuSettingsPanel extends ConsumerWidget {
 
     return LivePanelShell(
       title: i18n('danmaku_settings'),
-      hint: i18nOr('ui_danmaku_setting_hint', '上下键切换设置项，左右键调整数值'),
+      hint: i18nOr('ui_danmaku_setting_hint', 'Up/Down to switch items, Left/Right to change the value'),
       child: ListView(
         padding: EdgeInsets.symmetric(vertical: 8.sp),
         children: [
@@ -144,7 +145,7 @@ class DanmakuSettingsPanel extends ConsumerWidget {
             ),
           ),
           LiveOptionRow(
-            label: i18nOr('danmaku_area_top', '画面顶部距离'),
+            label: i18nOr('danmaku_area_top', 'Top offset'),
             icon: Icons.vertical_align_center_rounded,
             value: DanmakuOptionSteps.number(settings.danmakuTopArea),
             onPrev: () => update(

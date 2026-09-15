@@ -19,6 +19,7 @@ class TxtParser {
 
       if (_genreRegex.hasMatch(line)) {
         final group = line.split(',').first.trim();
+        // '更新时间' is the Chinese marker txt playlists use for the update group.
         if (group.isNotEmpty && !group.contains('更新时间') && !group.contains(i18n('tip'))) {
           currentGroup = group;
         }
@@ -41,7 +42,9 @@ class TxtParser {
         for (final url in urlList) {
           final trimmedUrl = url.trim();
           if (trimmedUrl.isEmpty || !_isValidStreamUrl(trimmedUrl)) continue;
-          final finalName = urlList.length > 1 ? '$name (线路$sourceIndex)' : name;
+          final finalName = urlList.length > 1
+          ? i18n('playlist_line_suffix', args: {'name': name, 'index': '$sourceIndex'})
+          : name;
           final channel = _createChannel(name: finalName, url: trimmedUrl, group: currentGroup, providerId: providerId);
           channels.add(channel);
           sourceIndex++;

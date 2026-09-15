@@ -1,22 +1,26 @@
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 
-/// 进入直播播放页的参数。
+/// Arguments for entering the live playback page.
 ///
-/// 兼容两种入口：
-/// - 已持有 [LiveRoom]（收藏/热门/搜索卡片、链接解析）：直接带 detail 起播。
-/// - 仅持有 roomId + platform：进页后通过 Sites 拉取房间详情。
+/// Two entry shapes are supported:
+/// - A [LiveRoom] is already available (favourites, popular, search cards or a
+///   resolved link): playback starts from that detail.
+/// - Only roomId and platform are known: the room is fetched through Sites
+///   once the page opens.
 ///
-/// [playlist] 是进入播放页时所在的房间列表，用于遥控器上下键切台与播放列表面板；
-/// 为空时回退到「观看历史」作为换台列表。
+/// [playlist] is the room list the player was opened from. It backs remote
+/// up/down channel switching and the playlist panel;
+/// when empty, watch history is used as the channel list instead.
 class LivePlayArgs {
   final String platform;
   final String roomId;
   final LiveRoom? room;
 
-  /// 进入播放页时所在的房间列表（换台用）。
+  /// Room list the player was opened from, used for channel switching.
   final List<LiveRoom> playlist;
 
-  /// 本次进入是否由上下键切台触发（用于显示频道名提示条）。
+  /// Whether this entry came from an up/down channel switch, which shows the
+  /// channel name toast.
   final bool showChannelBanner;
 
   const LivePlayArgs({

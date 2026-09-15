@@ -32,7 +32,7 @@ class _DanmakuOverlayState extends ConsumerState<DanmakuOverlay> {
     final platform = widget.args.platform;
     if (_preloadedPlatform == platform) return;
     _preloadedPlatform = platform;
-    // 资产缺失时 preload 内部会安全返回，不阻塞播放。
+    // A missing asset makes preload return safely instead of blocking playback.
     EmojiManager().preload(platform);
   }
 

@@ -18,13 +18,15 @@ import 'package:pure_live/shared/utils/toast_util.dart';
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
 /// overlay, loading/error overlays and an auto-hiding D-pad control panel.
 ///
-/// 遥控器分工（移植自老项目 live_play 的 `handleKeyNoPanel`）：
-/// - 上 / 下：上一个 / 下一个频道（循环，走播放列表 / 观看历史）
-/// - 左：双击关注 / 取消关注
-/// - 右：打开播放列表面板
-/// - 确认：呼出底部控制栏
+/// Remote key layout, ported from handleKeyNoPanel in the legacy app:
+/// - Up / Down: previous / next channel, wrapping through the playlist or
+///   watch history
+/// - Left: double press to follow or unfollow
+/// - Right: open the playlist panel
+/// - OK: show the bottom control bar
 ///
-/// 方向键在这里全部被消费，焦点不会跑出播放器，避免电视上「遥控器失灵」。
+/// Every direction key is consumed here so focus cannot escape the player and
+/// leave the remote apparently dead.
 class TvVideoSurface extends ConsumerStatefulWidget {
   final LivePlayArgs args;
 
@@ -37,7 +39,7 @@ class TvVideoSurface extends ConsumerStatefulWidget {
 class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
   PlayerManager get _playerManager => GlobalPlayerService.instance.playerManager;
 
-  /// 左键双击判定（老项目用 VideoConstants.doubleClickDuration = 500ms）。
+  /// Double-press window for the left key, 500 ms in the legacy app.
   static const Duration _doubleClickWindow = Duration(milliseconds: 500);
   int _lastLeftTapAt = 0;
   Timer? _leftTapTimer;
@@ -51,23 +53,23 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
   LivePlayController get _controller =>
       ref.read(livePlayControllerProvider(widget.args).notifier);
 
-  /// 按 [delta]（-1 上一个 / 1 下一个）切台。
+  /// Switches channel by [delta] (-1 previous, 1 next).
   void _switchChannel(int delta) {
     final controller = _controller;
     final rooms = controller.channelRooms;
     final target = controller.relativeChannel(delta);
     if (target == null) {
-      ToastUtil.show(i18nOr('ui_no_switchable_channel', '没有可切换的频道'));
+      ToastUtil.show(i18nOr('ui_no_switchable_channel', 'No channel available to switch to'));
       return;
     }
-    // 换台沿用路由 replace，上一路播放会话会被正常释放。
+    // Channel switching uses a route replace, so the previous session is released.
     context.replace(
       AppRoutes.kLivePlay,
       extra: LivePlayArgs.fromRoom(target, playlist: rooms, showChannelBanner: true),
     );
   }
 
-  /// 左键双击 = 关注 / 取消关注。
+  /// Double press on Left follows or unfollows.
   void _handleLeftKey() {
     final room = ref.read(livePlayControllerProvider(widget.args)).room;
     if (room == null) return;
@@ -78,7 +80,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     final isDoubleClick = _lastLeftTapAt != 0 && now - _lastLeftTapAt < _doubleClickWindow.inMilliseconds;
     if (!isDoubleClick) {
       _lastLeftTapAt = now;
-      ToastUtil.show(isFavorite ? i18nOr('ui_double_click_unfollow', '双击取消关注') : i18nOr('ui_double_click_follow', '双击关注'));
+      ToastUtil.show(isFavorite ? i18nOr('ui_double_click_unfollow', 'Double click to unfollow') : i18nOr('ui_double_click_follow', 'Double click to follow'));
       _leftTapTimer?.cancel();
       _leftTapTimer = Timer(const Duration(milliseconds: 600), () => _lastLeftTapAt = 0);
       return;
@@ -88,14 +90,15 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     _leftTapTimer?.cancel();
     if (isFavorite) {
       fav.removeRoom(room);
-      ToastUtil.show(i18nOr('ui_unfollowed', '已取消关注'));
+      ToastUtil.show(i18nOr('ui_unfollowed', 'Unfollowed'));
     } else {
       fav.addRoom(room);
       ToastUtil.show(i18n('followed'));
     }
   }
 
-  /// 视频区方向键：命中即消费，摄像头（焦点）不会离开播放器。
+  /// Direction keys inside the video area are consumed on match, so focus never
+  /// leaves the player.
   bool _handleDirection(TraversalDirection direction) {
     final controller = _controller;
     switch (direction) {
@@ -134,7 +137,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     }
 
     final children = <Widget>[
-      // 视频层 + 弹幕层 + 加载指示：整体作为视频区的 D-pad 焦点占位。
+      // Video, danmaku and the loading indicator together act as the D-pad focus
+      // placeholder for the video area.
       DpadFocusable(
         autofocus: true,
         excludeChildFocus: true,
@@ -163,7 +167,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                   ],
                 ),
               ),
-            // 房间标题信息条（无控制面板时展示）。
+            // Room title bar, shown while no control panel is open.
             if (!state.showControls && !showError && state.room != null)
               Positioned(
                 left: 24.sp,
@@ -184,7 +188,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                   ),
                 ),
               ),
-            // 上下键切台后的频道名提示条。
+            // Channel name toast shown after an up/down switch.
             if (state.showChannelBanner)
               Positioned(
                 left: 0,

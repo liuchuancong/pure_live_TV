@@ -147,7 +147,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 child: TvInputField(
                   useNativeTextField: false,
                   controller: _searchController,
-                  hint: "输入主播/直播间名称搜索",
+                  hint: i18n('search_room_hint'),
                   height: 72.sp,
                   maxLines: 1,
                   onSubmitted: _onSearchSubmit,

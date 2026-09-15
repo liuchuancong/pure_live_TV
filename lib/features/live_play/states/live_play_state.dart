@@ -3,21 +3,22 @@ import 'package:pure_live/exports/common_export.dart';
 /// UI-visible state of one playback session.
 enum LivePlayStatus { idle, loadingDetail, preparing, buffering, playing, paused, error }
 
-/// 右侧面板当前展示的内容。
+/// Which side panel is currently shown.
 ///
-/// 同一时刻只展示一个面板（与老项目 live_play 的面板互斥逻辑一致），
-/// 切换面板通过 [LivePlayState.panel] + [LivePlayState.showSidePanel] 控制。
+/// Only one panel is visible at a time, matching the legacy live_play app.
+/// Switching is driven by [LivePlayState.panel] and
+/// [LivePlayState.showSidePanel].
 enum LivePlayPanel {
-  /// 房间信息 + 清晰度 / 线路 + 弹幕列表
+  /// Room info, quality and line pickers, and the danmaku list.
   info,
 
-  /// 播放列表（换台）
+  /// Playlist, used for channel switching.
   playlist,
 
-  /// 弹幕设置（大小 / 速度 / 区域 / 透明度 / 描边）
+  /// Danmaku settings: size, speed, area, opacity and stroke.
   danmakuSettings,
 
-  /// 弹幕过滤（屏蔽词）
+  /// Danmaku filter, by blocked word.
   shield,
 }
 
@@ -48,22 +49,23 @@ class LivePlayState {
   final LivePlayStatus status;
   final String? errorMessage;
 
-  /// 视频区控制面板是否可见（TV 遥控器 OK 键呼出/隐藏，自动隐藏）。
+  /// Whether the video control bar is visible. The remote toggles it with OK and
+  /// it hides itself automatically.
   final bool showControls;
 
-  /// 画面比例索引（PlayerManager.videoFitIndex 的镜像）。
+  /// Aspect ratio index, mirroring PlayerManager.videoFitIndex.
   final int fitIndex;
 
-  /// 当前音量 0.0 - 1.0。
+  /// Current volume, 0.0 to 1.0.
   final double volume;
 
-  /// 右侧信息/弹幕面板是否可见。
+  /// Whether the side info and danmaku panel is visible.
   final bool showSidePanel;
 
-  /// 右侧面板当前展示的内容。
+  /// Which side panel is currently shown.
   final LivePlayPanel panel;
 
-  /// 上下键切台时的频道名提示条文本；为空表示不展示。
+  /// Channel name toast shown after an up/down switch; empty hides it.
   final String? channelBanner;
 
   bool get showChannelBanner => channelBanner != null && channelBanner!.isNotEmpty;

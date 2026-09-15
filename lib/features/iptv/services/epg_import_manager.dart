@@ -25,7 +25,7 @@ class EpgImportManager {
 
   static Future<Directory> _defaultCacheDirectory() => AppPathManager().getDir(AppPathManager.dirIptvCache);
 
-  /// 1. 本地文件浏览器选择导入
+  /// 1. Import by picking a local file.
   Future<bool> importFromLocalPicker() async {
     final result = await FilePicker.pickFile(
       dialogTitle: i18n("select_recover_file"),
@@ -40,7 +40,7 @@ class EpgImportManager {
     return await importEpgFile(file: file, sourceName: name);
   }
 
-  /// 2. 远程网络订阅 URL 下载导入
+  /// 2. Import by downloading a remote subscription URL.
   Future<bool> importFromNetworkUrl(
     String url,
     String sourceName, {
@@ -102,7 +102,7 @@ class EpgImportManager {
     return '.xml';
   }
 
-  /// 3. Web 文本字符串恢复导入
+  /// 3. Import by pasting a text payload from the web UI.
   Future<bool> importFromWebString(String fileString, String sourceName) async {
     try {
       final dir = await _cacheDirectory();
@@ -119,7 +119,8 @@ class EpgImportManager {
     }
   }
 
-  /// 4. 从系统 Share 管道媒体数据中恢复 EPG 节目单（已添加安全格式校验）
+  /// 4. Restore an EPG from media shared through the system share sheet,
+  ///    with format validation in place.
   Future<bool> importFromSharedMedia(dynamic media) async {
     File? file;
     try {
@@ -265,7 +266,7 @@ class EpgImportManager {
       final channelCompanions = parsedResult.channels.map<database.EpgChannelsCompanion>((e) {
         return database.EpgChannelsCompanion.insert(
           id: epgChannelKey(sourceId, e.id),
-          sourceId: sourceId, // 绑定正确的映射主键
+          sourceId: sourceId, // bind the correct mapping primary key
           channelId: e.id,
           displayName: e.displayNames.isNotEmpty ? e.displayNames.first : e.id,
           iconUrl: drift.Value(e.iconUrl),
@@ -281,7 +282,7 @@ class EpgImportManager {
         if (e.channelId.isEmpty || e.title.isEmpty) continue;
         chunk.add(
           database.EpgProgrammesCompanion.insert(
-            sourceId: sourceId, // 绑定正确的映射主键
+            sourceId: sourceId, // bind the correct mapping primary key
             epgChannelId: epgChannelKey(sourceId, e.channelId),
             title: e.title,
             start: e.start,

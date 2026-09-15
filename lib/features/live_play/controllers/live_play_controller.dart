@@ -17,7 +17,8 @@ import 'package:pure_live/services/settings/settings.dart';
 
 part 'live_play_controller.g.dart';
 
-/// 画面比例选项（与 PlayerManager.changeVideoFit 的索引语义对齐）。
+/// Aspect ratio options, aligned with the index semantics of
+/// PlayerManager.changeVideoFit.
 ///
 /// Derived from the same list the settings page stores an index into, so the
 /// playback surface and the settings page can never disagree on the option set.
@@ -41,13 +42,15 @@ class LivePlayController extends _$LivePlayController {
   PlayerManager? _playerManager;
   final List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
 
-  /// 异步引导代际：重试/重建后丢弃过期的异步回调。
+  /// Async bootstrap generation: stale callbacks are dropped after a retry or a
+  /// rebuild.
   int _generation = 0;
 
   @override
   LivePlayState build(LivePlayArgs args) {
     ref.onDispose(_teardown);
-    // 向站点层注册当前房间查询（房间详情的观众数/错误回退需要）
+    // Register the current-room lookup with the site layer, which needs it for
+    // viewer counts and error recovery.
     Sites.currentRoomLookup = (platform, roomId) {
       final room = state.room;
       return (room != null && room.platform == platform && room.roomId == roomId) ? room : null;
@@ -75,7 +78,8 @@ class LivePlayController extends _$LivePlayController {
     _bindPlayerStreams();
     _applyStoredVideoFit();
 
-    // 房间详情：入口携带的 LiveRoom 仅作为平台/房间号提示，结果以站点详情为准。
+    // Room details: the LiveRoom carried by the route only hints at platform and
+    // room id; the site response is authoritative.
     LiveRoom detail;
     try {
       detail = await _repository.fetchRoomDetail(hintRoom: args.room ?? _hintRoom());
@@ -91,15 +95,17 @@ class LivePlayController extends _$LivePlayController {
     if (!_isCurrent(generation)) return;
 
     state = state.copyWith(room: detail, clearDetailError: true);
-    // 展示层音量与房间记忆音量对齐（PlayerManager 起播时会恢复同一值）。
+    // Align the displayed volume with the volume remembered for the room; the
+    // player restores the same value on start.
     state = state.copyWith(volume: detail.getSavedVolume().clamp(0.0, 1.0).toDouble());
-    // 进入房间即写入观看历史：入口未带 playlist 时，历史就是换台列表。
+    // Entering a room writes to watch history, which doubles as the channel list
+    // when the route carried no playlist.
     try {
       SettingsService.to.history.addRoomToHistory(detail);
     } catch (e) {
       log('addRoomToHistory failed: $e', name: 'LivePlayController');
     }
-    // 由上下键切台进来时，先给用户一条频道名提示。
+    // When the entry came from a channel switch, show the channel name first.
     if (args.showChannelBanner) {
       showChannelBanner(detail.nick.isNotEmpty ? detail.nick : detail.title);
     }
@@ -151,7 +157,7 @@ class LivePlayController extends _$LivePlayController {
         }
         break;
       case PlayerState.error:
-        // 终态错误由 onError 带出，这里仅兜底。
+        // Terminal errors arrive through onError; this is only a fallback.
         state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('multiview_play_failed'));
         break;
       case PlayerState.idle:
@@ -189,7 +195,7 @@ class LivePlayController extends _$LivePlayController {
     final manager = _playerManager;
     _playerManager = null;
     if (manager != null) {
-      // PlayerManager 是全局单例：离开房间时停止本次播放会话。
+      // PlayerManager is a global singleton, so leaving a room stops this session.
       unawaited(manager.close().catchError((Object e, StackTrace s) {}));
     }
   }
@@ -330,7 +336,8 @@ class LivePlayController extends _$LivePlayController {
     }
   }
 
-  /// 重新拉取房间详情与线路并起播（用于长时间离线后的完整刷新）。
+  /// Refetches room details and lines, then starts playback. Used for a full
+  /// refresh after a long offline period.
   Future<void> refreshRoom() async {
     _generation++;
     _cancelSubscriptions();
@@ -375,11 +382,12 @@ class LivePlayController extends _$LivePlayController {
   Future<void> volumeDown() => setVolume(state.volume - 0.1);
 
   // =========================
-  // 换台 / 播放列表
+  // Channel switching and the playlist.
   // =========================
 
-  /// 换台列表：优先用入口带来的列表（收藏/热门/分区/搜索当页的房间），
-  /// 否则回退到「观看历史」里仍在直播的房间。
+  /// Channel list: prefer the list carried by the route (the current page of
+  /// favourites, popular, areas or search results),
+  /// otherwise fall back to the rooms in watch history that are still live.
   List<LiveRoom> get channelRooms {
     if (args.playlist.length > 1) return args.playlist;
     final history = SettingsService.to.historyState.historyRooms
@@ -388,7 +396,7 @@ class LivePlayController extends _$LivePlayController {
     return history.length > 1 ? history : args.playlist;
   }
 
-  /// 当前房间在换台列表中的下标；找不到时返回 0。
+  /// Index of the current room in the channel list, or 0 when it is missing.
   int get channelIndex {
     final rooms = channelRooms;
     final current = state.room;
@@ -397,9 +405,11 @@ class LivePlayController extends _$LivePlayController {
     return index < 0 ? 0 : index;
   }
 
-  /// 按 [delta]（-1 上一个 / 1 下一个）取目标频道，循环切换。
+  /// Resolves the target channel for [delta] (-1 previous, 1 next), wrapping
+  /// around at the ends.
   ///
-  /// 返回 null 表示当前没有可切换的频道，调用方应提示用户。
+  /// A null result means there is nothing to switch to and the caller should
+  /// tell the user.
   LiveRoom? relativeChannel(int delta) {
     final rooms = channelRooms;
     if (rooms.length < 2) return null;
@@ -409,15 +419,15 @@ class LivePlayController extends _$LivePlayController {
         ? rooms.length - 1
         : (raw >= rooms.length ? 0 : raw);
     final target = rooms[next];
-    // 只有一个可播房间时切换没有意义。
+    // Switching is pointless when only one playable room exists.
     return state.room != null && target.hasSameIdentity(state.room!) ? null : target;
   }
 
   // =========================
-  // 右侧面板（同一时刻只展示一个）
+  // Side panels. Only one is visible at a time.
   // =========================
 
-  /// 切换右侧面板内容；已经在该面板时再按一次则收起。
+  /// Switches the side panel; pressing again on the active panel collapses it.
   void togglePanel(LivePlayPanel panel) {
     if (state.showSidePanel && state.panel == panel) {
       state = state.copyWith(showSidePanel: false);
@@ -426,18 +436,18 @@ class LivePlayController extends _$LivePlayController {
     }
   }
 
-  /// 直接打开某个面板（不做「再按一次收起」判断）。
+  /// Opens a panel directly, without the press-again-to-collapse behaviour.
   void openPanel(LivePlayPanel panel) {
     state = state.copyWith(panel: panel, showSidePanel: true);
   }
 
   // =========================
-  // 换台提示条
+  // Channel switch toast.
   // =========================
 
   Timer? _channelBannerTimer;
 
-  /// 显示频道名提示条 2 秒（上下键切台时使用）。
+  /// Shows the channel name for two seconds after an up/down switch.
   void showChannelBanner(String text) {
     _channelBannerTimer?.cancel();
     state = state.copyWith(channelBanner: text);
@@ -513,7 +523,8 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     final token = ++_sessionToken;
     final controller = state.barrageController;
 
-    // 断开旧会话并清空渲染层，避免旧房间包串台。
+    // Tear down the old session and clear the render layer so packets from the
+    // previous room cannot leak in.
     final oldEngine = _engine;
     _engine = null;
     if (oldEngine != null) {
@@ -568,10 +579,12 @@ class DanmakuSessionController extends _$DanmakuSessionController {
 
   void _acceptMessage(LiveMessage message, int token) {
     if (token != _sessionToken || !ref.mounted) return;
-    // 弹幕层只关心聊天消息；礼物/进场等消息仅进列表视图。
+    // The danmaku layer only handles chat messages; gifts and entrances go to the
+    // list view alone.
     if (message.type != LiveMessageType.chat) return;
     if (!_messageGate.accepts(message)) return;
-    // 弹幕过滤面板配置的屏蔽词 / 屏蔽用户：命中即丢弃。
+    // Blocked words and users configured in the filter panel are dropped on
+    // match.
     if (!_passesShield(message)) return;
 
     final danmakuSettings = SettingsService.to.danmakuState;
@@ -586,7 +599,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
       return;
     }
 
-    // flame_barrage 渲染（仅当弹幕显示开启时发送到画面层）。
+    // flame_barrage rendering, only fed to the picture layer while danmaku are on.
     if (danmakuSettings.enableDanmakuDisplay && !danmakuSettings.hideDanmaku) {
       state.barrageController.send(_toBarrageItem(message));
     }
@@ -602,10 +615,10 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     state = state.copyWith(messages: messages);
   }
 
-  /// 屏蔽词 / 屏蔽用户过滤。
+  /// Blocked-word and blocked-user filtering.
   ///
-  /// 数据与「弹幕过滤」面板、手机端扫码页面共用同一份 [FavoriteRoomController]
-  /// 状态，所以三处增删是实时一致的。
+  /// The data is shared with the danmaku filter panel and the phone scan page
+  /// through one [FavoriteRoomController], so all three stay in step.
   bool _passesShield(LiveMessage message) {
     final fav = SettingsService.to.favState;
     final blockedUsers = fav.blockedDanmakuUsers;

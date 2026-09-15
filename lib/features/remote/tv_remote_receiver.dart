@@ -41,10 +41,11 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     await _startServerWithRetry(port: port);
   }
 
-  /// 播种弹幕过滤缓存。
+  /// Seeds the danmaku filter cache.
   ///
-  /// 手机扫码页面通过 `GET /api/danmaku_filter` 读取这份缓存，电视端打开
-  /// 「弹幕过滤」面板时先把当前屏蔽词写进来，手机一进去就能看到已有词。
+  /// The phone scan page reads this cache through `GET /api/danmaku_filter`.
+  /// Opening the filter panel on TV writes the current words in first, so the
+  /// phone shows them straight away.
   void seedDanmakuFilters(List<String> filters) {
     _configCache['danmaku_filter'] = List<String>.from(filters);
   }
@@ -54,7 +55,12 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       final ip = await _getLocalIp();
       if (ip == null) {
         state = AsyncValue.data(
-          ServerState(isRunning: false, serverUrl: '', port: port, error: '未找到可用局域网IP，请检查Wi-Fi连接'),
+          ServerState(
+          isRunning: false,
+          serverUrl: '',
+          port: port,
+          error: i18n('remote_no_lan_ip'),
+          ),
         );
         return;
       }
@@ -67,16 +73,23 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
       _server = await _app!.listen(port, '0.0.0.0');
       final fullUrl = 'http://$ip:$port';
-      _addLog('遥控服务启动成功，访问地址: $fullUrl');
+      _addLog('Remote service started at $fullUrl');
 
       state = AsyncValue.data(ServerState(isRunning: true, serverUrl: fullUrl, port: port, error: null));
     } catch (e) {
       if (e.toString().contains('Address already in use') && retry < _maxPortRetry) {
-        _addLog('端口 $port 被占用，尝试端口 ${port + 1}');
+        _addLog('Port $port is taken, trying ${port + 1}');
         await _startServerWithRetry(port: port + 1, retry: retry + 1);
       } else {
-        _addLog('服务启动失败: $e');
-        state = AsyncValue.data(ServerState(isRunning: false, serverUrl: '', port: port, error: '启动异常: $e'));
+        _addLog('Failed to start the service: $e');
+        state = AsyncValue.data(
+        ServerState(
+        isRunning: false,
+        serverUrl: '',
+        port: port,
+        error: i18n('remote_start_failed', args: {'error': '$e'}),
+        ),
+        );
       }
     }
   }
@@ -93,7 +106,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
       return null;
     } catch (e) {
-      _addLog('获取IP失败: $e');
+      _addLog('Failed to read the IP address: $e');
       return null;
     }
   }
@@ -147,16 +160,16 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       final body = await req.body;
       final url = body.toString().trim();
       if (url.isEmpty) return _fail(res, msg: i18n('toolbox_empty_link'));
-      _addLog('收到视频推送: $url');
+      _addLog('Video push received: $url');
       onMovieReceived?.call(url);
       _broadcastWs({'type': 'movie_push', 'url': url});
-      return _ok(res, msg: '推送成功');
+      return _ok(res, msg: i18n('remote_push_success'));
     });
 
     _app!.post('/api/search/streamer', (req, res) async {
       final body = await req.body;
       final name = body.toString().trim();
-      _addLog('收到主播搜索: $name');
+      _addLog('Anchor search received: $name');
       onStreamerSearch?.call(name);
       return _ok(res);
     });
@@ -164,7 +177,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     _app!.post('/api/search/room', (req, res) async {
       final body = await req.body;
       final roomInfo = body.toString().trim();
-      _addLog('收到房间号推送: $roomInfo');
+      _addLog('Room id push received: $roomInfo');
       onRoomPush?.call(roomInfo);
       return _ok(res);
     });
@@ -175,9 +188,9 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
     _app!.post('/api/cookie/douyin', (req, res) async {
       final body = await req.body as Map<String, dynamic>?;
-      if (body == null) return _fail(res, msg: '参数错误');
+      if (body == null) return _fail(res, msg: i18n('remote_bad_request'));
       _configCache['douyin_cookie'] = {'ttwid': body['ttwid'] ?? '', 'cookie': body['cookie'] ?? ''};
-      _addLog('抖音Cookie已更新');
+      _addLog('Douyin cookie updated');
       return _ok(res, msg: i18n('ui_saved'));
     });
 
@@ -194,7 +207,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
         filters = body.toString().split('\n').where((e) => e.trim().isNotEmpty).toList();
       }
       _configCache['danmaku_filter'] = filters;
-      _addLog('弹幕过滤规则已更新，共 ${filters.length} 条');
+      _addLog('Danmaku filter rules updated: ${filters.length} entries');
       onDanmakuFilterUpdated?.call(filters);
       return _ok(res, msg: i18n('ui_saved'));
     });
@@ -224,10 +237,10 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       try {
         await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings.cast<String, dynamic>());
       } catch (error) {
-        _addLog('同步设置失败: $error', color: Colors.red);
+        _addLog('Settings sync failed: $error', color: Colors.red);
         return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
       }
-      _addLog('已从局域网接收设置同步');
+      _addLog('Settings sync received over the LAN');
       return _ok(res, msg: i18n('webdav_sync_success'));
     });
 
@@ -238,7 +251,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     _app!.post('/api/webdav/save', (req, res) async {
       final body = await req.body;
       _configCache['webdav_list'] = body;
-      _addLog('WebDAV配置已更新');
+      _addLog('WebDAV settings updated');
       return _ok(res, msg: i18n('ui_saved'));
     });
 
@@ -247,15 +260,17 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       final fileName = 'pure_live_backup_${DateTime.now().millisecondsSinceEpoch}.json';
       res.headers.set('Content-Disposition', 'attachment; filename=$fileName');
       res.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
-      _addLog('导出配置备份');
+      _addLog('Exported a configuration backup');
       return backup;
     });
 
     _app!.post('/api/backup/import', (req, res) async {
       final body = await req.body as Map<String, dynamic>?;
-      if (body == null || body['config'] == null) return _fail(res, msg: '备份文件格式错误');
+      if (body == null || body['config'] == null) {
+      return _fail(res, msg: i18n('remote_bad_backup'));
+      }
       _configCache.addAll(body['config']);
-      _addLog('导入配置备份成功');
+      _addLog('Configuration backup imported');
       return _ok(res, msg: i18n('ui_imported'));
     });
 
@@ -273,8 +288,8 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
     _app!.post('/api/log/clear', (req, res) {
       Log.clearAllDebugLogs();
-      _addLog('日志已清空', color: Colors.orange);
-      return _ok(res, msg: '清空成功');
+      _addLog('Log cleared', color: Colors.orange);
+      return _ok(res, msg: i18n('remote_clear_success'));
     });
   }
 
@@ -294,7 +309,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
         _setMimeType(assetPath, res);
         return data;
       } else {
-        _addLog('访问前端页面路由: $path');
+        _addLog('Web route requested: $path');
         final indexHtml = await _loadAsset('index.html');
         if (indexHtml == null) {
           res.statusCode = HttpStatus.notFound;
@@ -351,9 +366,9 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   void _handleWsMessage(dynamic message, WebSocket sender) {
     try {
       final data = jsonDecode(message.toString());
-      debugPrint('WS消息: $data');
+      debugPrint('WS message: $data');
     } catch (e) {
-      debugPrint('WS消息解析失败: $e');
+      debugPrint('Failed to parse a WS message: $e');
     }
   }
 
@@ -376,7 +391,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       await _server!.close(force: true);
       _server = null;
       _app = null;
-      _addLog('服务已停止');
+      _addLog('Service stopped');
     }
   }
 }
