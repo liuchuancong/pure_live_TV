@@ -10,13 +10,13 @@ class LiveRoomVolumeManager {
   static double getRoomVolume(String platform, String roomId) {
     final volState = SettingsService.to.volumeState;
 
-    // 全局静音
+    // Muted globally.
     if (volState.globalVolumeMute) return 0.0;
 
     final volume = volState.roomVolumes[roomId];
     if (volume != null && volume.isFinite) return volume.clamp(0.0, 1.0).toDouble();
 
-    // 使用全局默认音量
+    // Fall back to the global default volume.
     final defaultValue = (Platform.isAndroid || Platform.isIOS) ? volState.defaultMobileVolume : volState.defaultDesktopVolume;
     return defaultValue.isFinite ? defaultValue.clamp(0.0, 1.0).toDouble() : 1.0;
   }

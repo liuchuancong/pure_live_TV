@@ -25,8 +25,8 @@ class PlayerPool {
   Future<void> removeFromCache(PlayerEngine engine) async {
     if (_cache.containsKey(engine)) {
       final player = _cache[engine]!;
-      await player.hardDispose(); // 销毁原生
-      _cache.remove(engine); // 从缓存删除
+      await player.hardDispose(); // release the native player
+      _cache.remove(engine); // drop it from the cache
     }
   }
 

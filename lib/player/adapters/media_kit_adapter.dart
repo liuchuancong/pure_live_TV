@@ -33,8 +33,8 @@ import 'package:pure_live/services/settings/settings.dart';
 @visibleForTesting
 bool shouldPublishMediaKitPlaying(bool nativePlaying) => nativePlaying;
 
-/// 官方版 media_kit 无此补丁 API，按 mpv videoParams 就地实现：
-/// 优先裁剪尺寸，其次编码尺寸。
+/// The upstream media_kit build has no such API, so it is derived from mpv
+/// videoParams: the cropped size wins, falling back to the encoded size.
 ({int width, int height})? resolveVideoParamsDisplaySize(VideoParams params) {
   final w = (params.dw ?? 0) > 0 ? params.dw : params.w;
   final h = (params.dh ?? 0) > 0 ? params.dh : params.h;
@@ -78,9 +78,10 @@ class MediaKitAdapter
   /// Applies the shared low-latency live-stream mpv property set to a native
   /// (libmpv) player platform.
   ///
-  /// 单一事实来源：主播放器（[MediaKitAdapter.init]）与 multiview 每格播放器
-  /// 都必须使用同一套属性（seek 白名单、探测时长、LiveBufferPolicy 缓冲上限、
-  /// 网络超时、音频驱动、代理、macOS 硬解关闭），避免两处配置漂移。
+  /// Single source of truth: the main player ([MediaKitAdapter.init]) and every
+  /// multiview tile share one property set (seek whitelist, probe duration,
+  /// LiveBufferPolicy bounds, network timeouts, audio driver, proxy, macOS
+  /// hardware decoding off) so the two never drift apart.
   static Future<void> applyNativeLiveProperties(dynamic native) async {
     await native.setProperty('force-seekable', 'yes');
 
@@ -312,8 +313,8 @@ class MediaKitAdapter
               ),
             );
 
-      // 官方版 media_kit_video 无 frameRevision 补丁 API，
-      // 视频帧进度心跳声明为不支持（VideoFrameProgressAwarePlayer 可选能力）
+      // The upstream media_kit_video build exposes no frameRevision API, so video
+      // frame progress is reported as unsupported (an optional player capability).
 
       await _bindListeners(sourceGeneration: _sourceFence.generation);
 
@@ -975,8 +976,8 @@ class MediaKitAdapter
       pauseUponEnteringBackgroundMode: false,
       resumeUponEnteringForegroundMode: false,
     );
-    // 官方版 media_kit_video 的 VideoController 无 setSize，
-    // 视口尺寸交给 Video(fit) 自身的适配策略处理
+    // VideoController has no setSize upstream, so viewport sizing is left to
+    // Video(fit) and its own fitting strategy.
     return video;
   }
 

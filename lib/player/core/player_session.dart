@@ -74,7 +74,7 @@ class PlayRequest {
   bool get isCompleted => status == PlayRequestStatus.completed;
   bool get isFailed => status == PlayRequestStatus.failed;
 
-  // 检查请求是否仍然有效（未被取消或过期）
+  // Check the request is still valid (neither cancelled nor superseded).
   bool isValid(PlayerSession currentSession, {Duration maxAge = const Duration(seconds: 30)}) {
     if (status == PlayRequestStatus.cancelled || status == PlayRequestStatus.completed) {
       return false;
@@ -90,9 +90,9 @@ class PlayRequest {
 }
 
 enum PlayRequestStatus {
-  pending, // 等待执行
-  active, // 执行中
-  completed, // 已完成
-  failed, // 失败
-  cancelled, // 已取消
+  pending, // queued
+  active, // running
+  completed, // finished
+  failed, // failed
+  cancelled, // cancelled
 }

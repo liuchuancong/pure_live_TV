@@ -74,7 +74,7 @@ class VideoPlayerAdapter
   }
 
   void _bindListeners() {
-    // 先移除旧监听
+    // Drop the previous listener first.
     _removeEventListener();
 
     _eventListener = (BetterPlayerEvent event) {

@@ -85,7 +85,7 @@ class FijkAdapter
   }
 
   void _bindListeners() {
-    // 先移除旧监听
+    // Drop the previous listener first.
     _removePlayerListener();
 
     // Fijk sends freeze=start/end on a separate stream; its native state can
@@ -374,7 +374,7 @@ class FijkAdapter
     if (_disposed) return;
     _disposed = true;
 
-    //  取消所有监听
+    //  Cancel every subscription.
     await _cancelAllSubscriptions();
 
     try {
@@ -383,7 +383,7 @@ class FijkAdapter
 
     _initialized = false;
 
-    // 关闭所有流
+    // Close all streams.
     await _stateSubject.close();
     await _playingSubject.close();
     await _loadingSubject.close();

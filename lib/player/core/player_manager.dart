@@ -22,7 +22,8 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 
-/// 单条待处理的原生错误：与来源 session 绑定，过期的错误直接丢弃。
+/// A single queued native error. It is bound to the source session that
+/// raised it, so anything from a superseded session can be dropped.
 class _PendingPlayerError {
   const _PendingPlayerError({required this.error, required this.sessionId});
 
@@ -156,7 +157,8 @@ class PlayerManager {
 
   final _heightSubject = BehaviorSubject<int?>.seeded(null);
 
-  // 原生 buffering 与恢复逻辑观察的 loading 相互独立。
+  // Native buffering is tracked separately from the loading state that the
+  // recovery logic observes.
   bool _nativeLoading = false;
   int _bufferingRecoveryRevision = 0;
   int _playingRecoveryRevision = 0;
@@ -249,7 +251,7 @@ class PlayerManager {
   }
 
   // =========================
-  // suspension（生命周期暂停/恢复）
+  // suspension (lifecycle pause and resume)
   // =========================
 
   /// A lifecycle pause is an implementation detail, not a user playback
@@ -852,7 +854,7 @@ class PlayerManager {
                         child: StreamBuilder<List<int?>>(
                           stream: CombineLatestStream.list([width, height]),
                           builder: (context, snapshot) {
-                            // 动态使用视频的真实宽高
+                            // Follow the real video dimensions.
                             final vW = snapshot.data?[0]?.toDouble() ?? 1920.0;
                             final vH = snapshot.data?[1]?.toDouble() ?? 1080.0;
                             return SizedBox(width: vW, height: vH, child: _currentPlayer!.getVideoWidget(fit: boxFit));

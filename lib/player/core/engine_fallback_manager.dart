@@ -50,7 +50,7 @@ class EngineFallbackManager {
     _permanentlyFailed.add(current);
     for (final engine in _priority) {
       if (!_permanentlyFailed.contains(engine)) {
-        log("🔄 引擎降级成功: $current -> $engine");
+        log("🔄 Engine fallback succeeded: $current -> $engine");
         _retryMap[engine] = 0;
         return engine;
       }

@@ -41,7 +41,7 @@ class FijkHelper {
     await player.setOption(FijkOption.formatCategory, 'headers', requestHeaders);
   }
 
-  /// 播放器时间转字符串
+  /// Formats a player position as a readable string.
   /// [duration]
   static String formatDuration(Duration duration) {
     if (duration.inMilliseconds < 0) return "-: negtive";

@@ -11,10 +11,10 @@ abstract class UnifiedPlayer {
   Future<void> init({bool audioOnly = false});
   PlayerEngine get engine;
 
-  /// 设置数据源
-  /// [url] 当前播放地址
-  /// [playUrls] 备用地址列表
-  /// [headers] HTTP 请求头
+  /// Sets the media source.
+  /// [url] primary playback address
+  /// [playUrls] fallback addresses
+  /// [headers] HTTP request headers
   Future<void> setDataSource(
     String url,
     List<String> playUrls,
@@ -29,7 +29,7 @@ abstract class UnifiedPlayer {
 
   Future<void> stop();
 
-  // 不销毁播放器
+  // Keeps the native player alive.
   Future<void> softStop();
 
   /// Enables or disables video decoding/rendering without replacing the
@@ -37,14 +37,14 @@ abstract class UnifiedPlayer {
   /// serialize this with their surface lifecycle.
   Future<void> setAudioOnly(bool audioOnly);
 
-  // 真正释放播放器
+  // Actually releases the native player.
   Future<void> hardDispose();
 
   Future<void> setVolume(double volume);
 
-  /// 获取渲染组件
-  /// [fitIndex] 对应 BoxFit 的索引
-  /// [controls] 覆盖在视频上的 UI 控制层
+  /// Returns the widget that renders the video.
+  /// [fitIndex] index into BoxFit
+  /// [controls] overlay drawn on top of the video
   /// Builds the native video view with [fit] as the only viewport scaling
   /// policy for this widget generation.
   ///
@@ -59,7 +59,7 @@ abstract class UnifiedPlayer {
 
   bool get isReusable;
 
-  // --- 状态流 ---
+  // --- State streams ---
 
   Stream<PlayerState> get onStateChanged;
 
