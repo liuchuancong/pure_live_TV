@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'openrec_api.dart';
+import 'package:pure_live/shared/common/hls_attributes.dart';
 
 class OpenrecHlsQuality {
   OpenrecHlsQuality({
@@ -124,16 +125,8 @@ List<OpenrecHlsQuality> parseOpenrecHls(String text, OpenrecMedia source) {
   );
 }
 
-Map<String, String> _attributes(String text) {
-  final result = <String, String>{};
-  var offset = 0;
-  final pattern = RegExp(r'([A-Z0-9-]+)=("[^"]*"|[^,\s]+)(?:,|$)');
-  while (offset < text.length) {
-    final match = pattern.matchAsPrefix(text, offset);
-    if (match == null || result.containsKey(match[1])) throw const OpenrecException(OpenrecFailure.schema);
-    final value = match[2]!;
-    result[match[1]!] = value.startsWith('"') ? value.substring(1, value.length - 1) : value;
-    offset = match.end;
-  }
-  return result;
-}
+  Map<String, String> _attributes(String text) => parseHlsAttributes(
+    text,
+    onError: (message) =>
+        throw const OpenrecException(OpenrecFailure.schema),
+  );

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:pure_live/shared/common/hls_attributes.dart';
 
 /// Explicit video/rendition selection, never a guessed ABR choice. The selected
 /// master retains external audio rather than handing native a video-only child.
@@ -209,17 +210,7 @@ Uri _resolve(Uri source, String text) {
   return uri;
 }
 
-Map<String, String> _attributes(String text) {
-  final values = <String, String>{};
-  final pattern = RegExp(r'([A-Z0-9-]+)=("[^"\r\n\x00]*"|[^,\s"]+)(?:,|$)');
-  var offset = 0;
-  while (offset < text.length) {
-    final match = pattern.matchAsPrefix(text, offset);
-    if (match == null || values.containsKey(match[1])) throw const FormatException('Malformed HLS attributes');
-    final value = match[2]!;
-    values[match[1]!] = value.startsWith('"') ? value.substring(1, value.length - 1) : value;
-    offset = match.end;
-  }
-  if (text.endsWith(',')) throw const FormatException('Incomplete HLS attributes');
-  return values;
-}
+  Map<String, String> _attributes(String text) => parseHlsAttributes(
+    text,
+    onError: (message) => throw FormatException(message),
+  );
