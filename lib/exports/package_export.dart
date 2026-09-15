@@ -12,7 +12,7 @@ export 'package:flutter/services.dart';
 // State management / dependency injection
 export 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// 网络
+// Networking
 export 'package:dio/dio.dart';
 
 // Model generation

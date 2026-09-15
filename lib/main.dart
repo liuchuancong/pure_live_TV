@@ -13,8 +13,8 @@ void main() async {
       supportedLocales: AppConsts.languages.values.toList(growable: false),
       path: 'assets/translations',
       fallbackLocale: const Locale('zh'),
-      // 语言偏好存在 Hive 里，初始化完成后才能读取：启动时直接使用已保存语言，
-      // 避免先按设备语言渲染再跳变。
+      // The language preference lives in Hive and is only readable once storage
+      // is ready, so the saved language is applied up front to avoid a switch.
       startLocale: Locale(SettingsService.to.theme.locale.languageCode),
       useOnlyLangCode: true,
       child: UncontrolledProviderScope(container: initializer.container, child: const App()),
