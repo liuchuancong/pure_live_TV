@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -51,7 +52,8 @@ AppMenuItem myProfileMenuItem(Ref ref) {
   return AppMenuItem(
     index: TvMenuType.profile.value,
     title: i18n('ui_my_account'),
-    icon: Icons.account_circle_outlined,
+    // The icon picker may have re-pointed this entry at another icon.
+    icon: ref.watch(menuIconOverridesProvider)['profile'] ?? Icons.account_circle_outlined,
   );
 }
 
@@ -60,51 +62,54 @@ AppMenuItem myProfileMenuItem(Ref ref) {
 @riverpod
 List<AppMenuItem> sideMenuList(Ref ref) {
   final saved = ref.watch(appSettingsControllerProvider).savedMenuIds;
+  final overrides = ref.watch(menuIconOverridesProvider);
   final ids = saved.isEmpty ? HomeMenu.defaultOrder : AppSettingsController.normalizeMenuIds(saved);
   return [
     for (final id in ids)
-      ?_sideMenuItem(id),
+      ?_sideMenuItem(id, overrides),
   ];
 }
 
-AppMenuItem? _sideMenuItem(String id) {
+AppMenuItem? _sideMenuItem(String id, Map<String, IconData> overrides) {
+  IconData withOverride(IconData fallback) => overrides[id] ?? fallback;
+
   return switch (HomeMenu.fromId(id)) {
     HomeMenu.favorite => AppMenuItem(
       index: TvMenuType.favorite.value,
       title: i18n('ui_following'),
-      icon: Icons.favorite_border,
+      icon: withOverride(Icons.favorite_border),
     ),
     HomeMenu.hot => AppMenuItem(
       index: TvMenuType.hot.value,
       title: i18n('kilakila_hot'),
-      icon: Icons.local_fire_department_outlined,
+      icon: withOverride(Icons.local_fire_department_outlined),
     ),
     // Categories and followed categories are different destinations, so they
     // must not share the same grid glyph.
     HomeMenu.areas => AppMenuItem(
       index: TvMenuType.areas.value,
       title: i18n('ui_category'),
-      icon: Icons.category_rounded,
+      icon: withOverride(Icons.category_rounded),
     ),
     HomeMenu.favoriteAreas => AppMenuItem(
       index: TvMenuType.favoriteAreas.value,
       title: i18n('favorite_areas'),
-      icon: Icons.collections_bookmark_outlined,
+      icon: withOverride(Icons.collections_bookmark_outlined),
     ),
     HomeMenu.moviePlayback => AppMenuItem(
       index: TvMenuType.moviePlayback.value,
       title: i18n('ui_link_playback'),
-      icon: Icons.movie_creation_outlined,
+      icon: withOverride(Icons.movie_creation_outlined),
     ),
     HomeMenu.search => AppMenuItem(
       index: TvMenuType.search.value,
       title: i18n('search_live'),
-      icon: Icons.search_rounded,
+      icon: withOverride(Icons.search_rounded),
     ),
     HomeMenu.history => AppMenuItem(
       index: TvMenuType.history.value,
       title: i18n('watch_history'),
-      icon: Icons.history,
+      icon: withOverride(Icons.history),
     ),
     null => null,
   };
@@ -112,7 +117,11 @@ AppMenuItem? _sideMenuItem(String id) {
 
 @riverpod
 AppMenuItem mySettingsMenuItem(Ref ref) {
-  return AppMenuItem(index: TvMenuType.settings.value, title: i18n('settings'), icon: Icons.settings_outlined);
+  return AppMenuItem(
+    index: TvMenuType.settings.value,
+    title: i18n('settings'),
+    icon: ref.watch(menuIconOverridesProvider)['settings'] ?? Icons.settings_outlined,
+  );
 }
 
 @riverpod

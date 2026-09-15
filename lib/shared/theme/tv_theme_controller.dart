@@ -3,6 +3,7 @@ import 'themes/dark_theme.dart';
 import 'themes/blue_theme.dart';
 import 'themes/anime_theme.dart';
 import 'themes/cyber_theme.dart';
+import 'themes/extra_themes.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -10,7 +11,15 @@ part 'tv_theme_controller.g.dart';
 
 @riverpod
 class TvThemeController extends _$TvThemeController {
-  final List<TvThemeData> themes = [darkTvTheme, blueTvTheme, animeTvTheme, cyberTvTheme];
+  /// Every preset offered by the theme page: the original four, then the
+  /// additional colour presets.
+  final List<TvThemeData> themes = <TvThemeData>[
+    darkTvTheme,
+    blueTvTheme,
+    animeTvTheme,
+    cyberTvTheme,
+    ...extraTvThemes,
+  ];
 
   @override
   TvThemeData build() {

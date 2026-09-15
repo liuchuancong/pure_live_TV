@@ -186,6 +186,7 @@ class SettingsCatalogView extends StatelessWidget {
 /// Titles for the pages that are reached from inside a parent page (or from
 /// the desktop app's own routes) and therefore are not menu rows.
 const Map<String, String> settingsSectionTitleKeys = <String, String>{
+  AppRoutes.kSettingsThemePicker: 'ui_theme',
   AppRoutes.kSettingsPage: 'page_settings',
   AppRoutes.kSettingsFont: 'ui_font_settings',
   AppRoutes.kSettingsFontFamily: 'font_family',

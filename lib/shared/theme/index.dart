@@ -5,6 +5,7 @@ export 'themes/anime_theme.dart';
 export 'themes/blue_theme.dart';
 export 'themes/cyber_theme.dart';
 export 'themes/dark_theme.dart';
+export 'themes/extra_themes.dart';
 export 'tv_theme_controller.dart';
 export 'tv_theme_data.dart';
 export 'tv_theme_extension.dart';

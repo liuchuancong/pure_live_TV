@@ -22,7 +22,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         TvSettingsOptionTile(
           title: i18n('ui_player_kernel'),
           subtitle: i18n('ui_takes_effect_after_re_entering_the_room'),
-          icon: Icons.play_circle_outline_rounded,
+          icon: Remix.toggle_line,
           options: engineKeys.map((k) => engineNames[k] ?? k).toList(),
           index: engineKeys.indexOf(playerState.videoPlayerKey).clamp(0, engineKeys.length - 1),
           onChanged: (i) => player.updateSettings(playerState.copyWith(videoPlayerKey: engineKeys[i])),
@@ -30,7 +30,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         TvSettingsOptionTile(
           title: i18n('ui_preferred_quality'),
           subtitle: i18n('ui_preferred_quality_when_entering_a_room'),
-          icon: Icons.hd_rounded,
+          icon: Remix.hd_line,
           options: PlayerConsts.resolutions,
           index: PlayerConsts.resolutionKeys
               .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolution))
@@ -40,7 +40,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         TvSettingsOptionTile(
           title: i18n('ui_fallback_quality'),
           subtitle: i18n('ui_preferred_quality_on_cellular_networks'),
-          icon: Icons.signal_cellular_alt_rounded,
+          icon: Remix.signal_tower_line,
           options: PlayerConsts.resolutions,
           index: PlayerConsts.resolutionKeys
               .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolutionCellular))
@@ -50,7 +50,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         TvSettingsSwitchTile(
           title: i18n('ui_audio_only'),
           subtitle: i18n('ui_audio_only_no_video_rendering'),
-          icon: Icons.headphones_rounded,
+          icon: Remix.headphone_line,
           value: playerState.audioOnly,
           onChanged: (v) => player.updateSettings(playerState.copyWith(audioOnly: v)),
         ),
@@ -68,19 +68,19 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
           TvSettingsNavTile(
             title: i18n('ui_decoder_settings'),
             subtitle: i18n('ui_decoder_settings_desc'),
-            icon: Icons.memory_rounded,
+            icon: Remix.cpu_line,
             onTap: () => context.push(AppRoutes.kSettingsDecoder),
           ),
           TvSettingsNavTile(
             title: i18n('ui_renderer_settings'),
             subtitle: i18n('ui_renderer_settings_desc'),
-            icon: Icons.graphic_eq_rounded,
+            icon: Remix.tv_line,
             onTap: () => context.push(AppRoutes.kSettingsRenderer),
           ),
           TvSettingsNavTile(
             title: i18n('ui_audio_output'),
             subtitle: i18n('ui_audio_output_desc'),
-            icon: Icons.surround_sound_rounded,
+            icon: Remix.volume_up_line,
             onTap: () => context.push(AppRoutes.kSettingsAudioOutput),
           ),
         ],

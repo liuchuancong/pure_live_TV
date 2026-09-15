@@ -108,6 +108,7 @@ abstract final class AppRoutes {
 
   /// Settings sub-pages that the desktop app pushes without a named route.
   static const kSettingsTheme = "/settings/theme";
+  static const kSettingsThemePicker = "/settings/theme_picker";
   static const kSettingsRefresh = "/settings/refresh";
   static const kSettingsVideo = "/settings/video";
   static const kSettingsPipDanmaku = "/settings/pip_danmaku";
@@ -119,6 +120,9 @@ abstract final class AppRoutes {
   static const kSettingsPlatform = "/settings/platform";
   static const kSettingsCache = "/settings/cache";
   static const kSettingsConfigPreview = "/settings/config_preview";
+
+  /// Icon picker, opened with the current icon as `extra`.
+  static const kSettingsIconPicker = "/settings/icon_picker";
 
   /// Sub-pages opened from inside a settings page.
   static const kSettingsDecoder = "/settings/decoder";

@@ -57,6 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 SettingsSectionScaffold(location: state.matchedLocation, child: child),
             routes: [
               GoRoute(path: 'theme', builder: (context, state) => const ThemeSettingsSectionPage()),
+              GoRoute(path: 'theme_picker', builder: (context, state) => const ThemePickerSectionPage()),
               GoRoute(path: 'refresh', builder: (context, state) => const RefreshSettingsSectionPage()),
               GoRoute(path: 'video', builder: (context, state) => const VideoSettingsSectionPage()),
               GoRoute(path: 'pip_danmaku', builder: (context, state) => const PipDanmakuSettingsSectionPage()),
@@ -93,6 +94,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: AppRoutes.kSettingsDanmuShield, builder: (context, state) => const DanmakuShieldSectionPage()),
           GoRoute(path: AppRoutes.kAbout, builder: (context, state) => const AboutSettingsSectionPage()),
         ],
+      ),
+      // The icon picker owns a grid, so it is a route of its own instead of a
+      // section page inside the scrolling settings shell. The row that opens it
+      // passes the icon it currently shows as `extra` and receives the choice
+      // as the pop result.
+      GoRoute(
+        path: AppRoutes.kSettingsIconPicker,
+        builder: (context, state) => IconPickerSectionPage(currentLabel: state.extra as String?),
       ),
       GoRoute(
         path: AppRoutes.kAreaRooms,

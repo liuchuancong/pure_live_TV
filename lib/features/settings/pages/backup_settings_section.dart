@@ -43,7 +43,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
         TvSettingsOptionTile(
           title: i18n('ui_export_configuration_to_this_device'),
           subtitle: i18n('ui_export_all_settings_to_pure_live_backup_json_in'),
-          icon: Icons.upload_file_rounded,
+          icon: Remix.file_download_line,
           options: [i18n('ui_export')],
           index: 0,
           onChanged: (_) async {
@@ -55,7 +55,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
         TvSettingsOptionTile(
           title: i18n('ui_import_configuration_from_this_device'),
           subtitle: i18n('ui_read_pure_live_backup_json_from_the_app_document'),
-          icon: Icons.download_rounded,
+          icon: Remix.file_upload_line,
           options: [i18n('import_action')],
           index: 0,
           onChanged: (_) async {

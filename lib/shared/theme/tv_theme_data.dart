@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 enum TvBackgroundType { color, image, video }
 
 class TvThemeData {
   final String id;
 
-  final String name;
+  /// Translation key of the display name.
+  ///
+  /// The name is resolved on every read so the theme list follows the active
+  /// language. Storing the translated string froze whichever language was
+  /// active when the preset was first touched.
+  final String nameKey;
+
+  String get name => i18n(nameKey);
 
   final TvBackgroundType backgroundType;
 
@@ -27,7 +35,7 @@ class TvThemeData {
 
   const TvThemeData({
     required this.id,
-    required this.name,
+    required this.nameKey,
     required this.backgroundType,
     required this.backgroundColor,
     required this.focusColor,

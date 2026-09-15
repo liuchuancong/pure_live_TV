@@ -1,11 +1,10 @@
 import '../tv_theme_data.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-final cyberTvTheme = TvThemeData(
+const cyberTvTheme = TvThemeData(
   id: 'cyber',
 
-  name: i18n('ui_cyberpunk'),
+  nameKey: 'ui_cyberpunk',
 
   backgroundType: TvBackgroundType.image,
 

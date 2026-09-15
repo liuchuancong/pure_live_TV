@@ -13,14 +13,22 @@ class TvSettingsNavTile extends StatelessWidget {
   const TvSettingsNavTile({
     super.key,
     required this.title,
-    required this.icon,
+    this.icon,
+    this.leading,
+    this.trailing,
     required this.onTap,
     this.subtitle,
-  });
+  }) : assert(icon != null || leading != null, 'A row needs an icon or a leading widget');
 
   final String title;
   final String? subtitle;
-  final IconData icon;
+  final IconData? icon;
+
+  /// Replaces [icon] when the row is identified by artwork or a swatch.
+  final Widget? leading;
+
+  /// Replaces the trailing chevron.
+  final Widget? trailing;
   final VoidCallback onTap;
 
   @override
@@ -43,7 +51,7 @@ class TvSettingsNavTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, size: 30.sp, color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor),
+              leading ?? Icon(icon!, size: 30.sp, color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor),
               SizedBox(width: 16.sp),
               Expanded(
                 child: Column(
@@ -75,11 +83,12 @@ class TvSettingsNavTile extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 12.sp),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 30.sp,
-                color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor,
-              ),
+              trailing ??
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 30.sp,
+                    color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor,
+                  ),
             ],
           ),
         );

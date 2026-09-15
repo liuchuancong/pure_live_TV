@@ -4,6 +4,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
+import 'package:remixicon/remixicon.dart';
 
 class RefreshSettingsSectionPage extends ConsumerWidget {
   const RefreshSettingsSectionPage({super.key});
@@ -19,14 +20,14 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
         TvSettingsSwitchTile(
           title: i18n('ui_auto_refresh_favorites_2'),
           subtitle: i18n('ui_refresh_the_online_status_of_favorites_periodica'),
-          icon: Icons.refresh_rounded,
+          icon: Remix.refresh_line,
           value: refreshState.autoRefreshFavorite,
           onChanged: (v) => refresh.updateSettings(refreshState.copyWith(autoRefreshFavorite: v)),
         ),
         TvSettingsOptionTile(
           title: i18n('ui_refresh_interval'),
           subtitle: i18n('ui_auto_refresh_interval'),
-          icon: Icons.timer_outlined,
+          icon: Remix.time_line,
           options: [i18n('ui_1_minute'), i18n('ui_2_minutes'), i18n('ui_5_minutes'), i18n('ui_10_minutes'), i18n('ui_30_minutes')],
           index: _intervalIndex(refreshState.autoRefreshInterval),
           onChanged: (i) => refresh.updateSettings(refreshState.copyWith(autoRefreshInterval: _intervalMinutes(i))),
@@ -34,7 +35,7 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
         TvSettingsOptionTile(
           title: i18n('ui_max_concurrent_refreshes'),
           subtitle: i18n('ui_concurrent_refresh_requests_too_many_may_trigger'),
-          icon: Icons.layers_rounded,
+          icon: Remix.server_line,
           options: const ['1', '2', '3', '4', '6', '8'],
           index: _concurrencyIndex(refreshState.maxConcurrentRefresh),
           onChanged: (i) => refresh.updateSettings(refreshState.copyWith(maxConcurrentRefresh: _concurrencyValue(i))),

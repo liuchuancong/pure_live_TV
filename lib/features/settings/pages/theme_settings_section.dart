@@ -13,7 +13,6 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tvThemeController = ref.read(tvThemeControllerProvider.notifier);
     final currentTheme = ref.watch(tvThemeControllerProvider);
     final themeState = ref.watch(themeSettingsControllerProvider);
     final theme = ref.read(themeSettingsControllerProvider.notifier);
@@ -24,33 +23,26 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.only(bottom: 8.sp, left: 16.sp),
-            child: Text(
-              i18n('ui_theme'),
-              style: TextStyle(fontSize: 14.sp, color: context.tvTheme.secondaryTextColor),
-            ),
-          ),
-          ...tvThemeController.themes.map(
-            (t) => TvSettingsOptionTile(
-              title: t.name,
-              subtitle: currentTheme.id == t.id ? i18n('ui_current_theme') : null,
-              icon: Icons.palette_outlined,
-              options: [i18n('ui_use')],
-              index: 0,
-              onChanged: (_) => tvThemeController.switchTheme(t),
-            ),
+          // The preset list lives on its own page now: it grows with every
+          // added preset and needs room for a colour preview.
+          TvSettingsNavTile(
+            title: i18n('ui_theme'),
+            subtitle: currentTheme.name,
+            icon: Remix.palette_line,
+            onTap: () => context.push(AppRoutes.kSettingsThemePicker),
           ),
           SizedBox(height: 8.sp),
           TvSettingsMenuTile<void>(
             title: i18n('ui_background_settings'),
             subtitle: i18n('background_entry_subtitle'),
-            icon: Icons.wallpaper_rounded,
+            icon: Remix.image_line,
             onTap: () async => context.push(AppRoutes.kWallpaperPage),
           ),
           TvSettingsOptionTile(
             title: i18n('theme_mode'),
-            icon: Icons.brightness_6_outlined,
+            // Icon taken from the desktop theme page (moon), so the same row
+            // looks the same in both apps.
+            icon: Remix.moon_clear_line,
             options: [for (final mode in themeModes) i18n(AppConsts.themeModeI18n[mode] ?? mode)],
             index: themeModes.indexOf(themeState.themeModeName).clamp(0, themeModes.length - 1),
             onChanged: (index) => theme.changeThemeMode(themeModes[index]),
@@ -58,7 +50,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           TvSettingsOptionTile(
             title: i18n('change_loading_style'),
             subtitle: i18n('change_loading_style_subtitle'),
-            icon: Icons.downloading_rounded,
+            icon: Remix.loader_4_line,
             options: [for (final style in loadingStyles) _loadingStyleName(style)],
             index: loadingStyles.indexWhere((e) => e['key'] == themeState.loadingStyle).clamp(0, loadingStyles.length - 1),
             onChanged: (index) => theme.updateSettings(themeState.copyWith(loadingStyle: loadingStyles[index]['key'] ?? 'default')),
@@ -66,7 +58,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           TvSettingsOptionTile(
             title: i18n('loading_style_color'),
             subtitle: i18n('loading_style_color_desc'),
-            icon: Icons.color_lens_outlined,
+            icon: Remix.brush_line,
             options: [i18n('follow_theme_color'), ...colorNames],
             index: _loadingColorIndex(themeState.loadingStyleColor),
             onChanged: (index) {
@@ -77,13 +69,13 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           TvSettingsSwitchTile(
             title: i18n('ui_dynamic_theme_color'),
             subtitle: i18n('ui_derive_the_theme_color_from_the_cover_image'),
-            icon: Icons.colorize_rounded,
+            icon: Remix.magic_line,
             value: themeState.enableDynamicTheme,
             onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
           ),
           TvSettingsSliderTile(
             title: i18n('ui_horizontal_card_spacing'),
-            icon: Icons.swap_horiz_rounded,
+            icon: Remix.arrow_left_right_line,
             value: themeState.crossAxisSpacing,
             min: 0,
             max: 24,
@@ -92,7 +84,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           ),
           TvSettingsSliderTile(
             title: i18n('ui_vertical_card_spacing'),
-            icon: Icons.swap_vert_rounded,
+            icon: Remix.arrow_up_down_line,
             value: themeState.mainAxisSpacing,
             min: 0,
             max: 24,
@@ -104,19 +96,19 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           TvSettingsNavTile(
             title: i18n('page_settings'),
             subtitle: i18n('page_settings_subtitle'),
-            icon: Icons.list_alt_rounded,
+            icon: Remix.pages_line,
             onTap: () => context.push(AppRoutes.kSettingsPage),
           ),
           TvSettingsNavTile(
             title: i18n('font_family'),
             subtitle: i18n('change_font_family'),
-            icon: Icons.font_download_outlined,
+            icon: Remix.font_color,
             onTap: () => context.push(AppRoutes.kSettingsFontFamily),
           ),
           TvSettingsNavTile(
             title: i18n('ui_font_settings'),
             subtitle: i18n('font_settings_desc'),
-            icon: Icons.text_fields_rounded,
+            icon: Remix.font_size,
             onTap: () => context.push(AppRoutes.kSettingsFont),
           ),
         ],

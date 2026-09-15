@@ -1,11 +1,16 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/features/settings/pages/icon_picker_section.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
+import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
+import 'package:pure_live/shared/consts/icon_catalog.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// Home side-menu configuration: show or hide entries and change their order.
+/// Home side-menu configuration: show or hide entries, reorder them and pick
+/// the icon each entry shows.
 class NavigationSectionPage extends ConsumerWidget {
   const NavigationSectionPage({super.key});
 
@@ -13,6 +18,7 @@ class NavigationSectionPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appState = ref.watch(appSettingsControllerProvider);
     final app = ref.read(appSettingsControllerProvider.notifier);
+    final overrides = ref.watch(menuIconOverridesProvider);
     final visible = appState.savedMenuIds.isEmpty
         ? HomeMenu.defaultOrder
         : AppSettingsController.normalizeMenuIds(appState.savedMenuIds);
@@ -27,7 +33,7 @@ class NavigationSectionPage extends ConsumerWidget {
                 TvSettingsSwitchTile(
                   title: _title(menu),
                   subtitle: _subtitle(menu),
-                  icon: _icon(menu),
+                  icon: overrides[menu.id] ?? _icon(menu),
                   value: visible.contains(menu.id),
                   onChanged: (enabled) => app.toggleMenuVisibility(menu.id, enabled),
                 ),
@@ -48,9 +54,42 @@ class NavigationSectionPage extends ConsumerWidget {
                 ),
             ],
           ),
+          SizedBox(height: 12.h),
+          TvSettingsCard(
+            children: [
+              for (final menu in HomeMenu.values)
+                TvSettingsNavTile(
+                  title: _title(menu),
+                  subtitle: i18n('ui_choose_icon'),
+                  icon: overrides[menu.id] ?? _icon(menu),
+                  onTap: () => _pickIcon(context, ref, menu),
+                ),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  /// Opens the icon picker for [menu] and stores what comes back.
+  ///
+  /// A null result means the picker was dismissed; a result carrying a null
+  /// icon is the picker's "restore default" action.
+  static Future<void> _pickIcon(BuildContext context, WidgetRef ref, HomeMenu menu) async {
+    final controller = ref.read(menuIconOverridesProvider.notifier);
+
+    final IconPickResult? result = await context.push<IconPickResult>(
+      AppRoutes.kSettingsIconPicker,
+      extra: controller.labelFor(menu.id),
+    );
+    if (result == null) return;
+
+    final IconOption? option = result.option;
+    if (option == null) {
+      await controller.resetIcon(menu.id);
+      return;
+    }
+    await controller.setIcon(menu.id, option);
   }
 
   static String _title(HomeMenu menu) => switch (menu) {
