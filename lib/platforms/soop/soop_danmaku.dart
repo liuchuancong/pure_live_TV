@@ -9,6 +9,7 @@ import 'package:pure_live/platforms/soop/soop_site.dart';
 import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'package:pure_live/platforms/yy/yy_web_socket_channel.dart';
 import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 class SoopDanmakuArgs {
   String url;
   String chatNo;
@@ -60,7 +61,7 @@ class SoopDanmaku implements LiveDanmaku {
   Future<void> start(dynamic args) async {
     CoreLog.d("SoopDanmaku start");
     if (args == null) {
-      onClose?.call("服务器连接失败");
+      onClose?.call(i18n('danmaku_connect_failed'));
       return;
     }
     danmakuArgs = args as SoopDanmakuArgs;
@@ -101,11 +102,11 @@ class SoopDanmaku implements LiveDanmaku {
       },
       onReconnect: () {
         markDisconnected();
-        onReconnect?.call("与服务器断开连接，正在尝试重连");
+        onReconnect?.call(i18n('danmaku_reconnecting'));
       },
       onClose: (e) {
         markDisconnected();
-        onClose?.call("服务器连接失败 $e");
+        onClose?.call('${i18n('danmaku_connect_failed')}: $e');
       },
     );
     webScoketUtils?.connect();

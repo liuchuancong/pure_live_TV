@@ -7,6 +7,7 @@ import 'package:pure_live/platforms/sites.dart';
 import 'package:meta/meta.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 class DouyinSearch {
   static const String host = 'https://live.douyin.com';
   static const String userAgent =
@@ -264,7 +265,7 @@ class DouyinSearch {
       roomId: realWebRid,
       title: title,
       cover: pic,
-      nick: nickname.isNotEmpty ? nickname : '抖音直播',
+      nick: nickname.isNotEmpty ? nickname : i18n('site_douyin'),
       avatar: avatar,
       platform: Sites.douyinSite,
       area: tagText,

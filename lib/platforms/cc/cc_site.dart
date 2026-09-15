@@ -9,7 +9,7 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   String id = Sites.ccSite;
 
   @override
-  String name = "网易CC直播";
+  String name = 'NetEase CC Live';
 
   @override
   LiveDanmaku getDanmaku() => EmptyDanmaku();
@@ -121,9 +121,9 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       'blueray': i18n('prefer_resolution_option_original'),
       'original': i18n('prefer_resolution_option_original'),
       'high': i18n('ui_hd'),
-      'medium': '标准',
-      'standard': '标准',
-      'low': '低清',
+      'medium': i18n('quality_standard'),
+      'standard': i18n('quality_standard'),
+      'low': i18n('quality_low'),
       'ultra': i18n('ui_blu_ray'),
     };
 

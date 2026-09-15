@@ -13,12 +13,13 @@ import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/platforms/kuaishou/kuaishou_danmaku.dart';
 import 'package:pure_live/shared/utils/live_quality_label.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver {
   @override
   String id = Sites.kuaishouSite;
 
   @override
-  String name = "快手直播";
+  String name = 'Kuaishou Live';
 
   String cookie = '';
   Map<String, String> cookieObj = {};
@@ -49,14 +50,14 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [
-      LiveCategory(id: "1", name: "热门", children: []),
-      LiveCategory(id: "2", name: "网游", children: []),
-      LiveCategory(id: "3", name: "单机", children: []),
-      LiveCategory(id: "4", name: "手游", children: []),
-      LiveCategory(id: "5", name: "棋牌", children: []),
-      LiveCategory(id: "6", name: "娱乐", children: []),
-      LiveCategory(id: "7", name: "综合", children: []),
-      LiveCategory(id: "8", name: "文化", children: []),
+      LiveCategory(id: "1", name: i18n('category_hot'), children: []),
+      LiveCategory(id: "2", name: i18n('category_online_games'), children: []),
+      LiveCategory(id: "3", name: i18n('category_single_player'), children: []),
+      LiveCategory(id: "4", name: i18n('category_mobile_games'), children: []),
+      LiveCategory(id: "5", name: i18n('category_board_card'), children: []),
+      LiveCategory(id: "6", name: i18n('category_entertainment'), children: []),
+      LiveCategory(id: "7", name: i18n('category_general'), children: []),
+      LiveCategory(id: "8", name: i18n('category_culture'), children: []),
     ];
 
     for (var item in categories) {
@@ -211,7 +212,7 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
             ? item['shortName'].toString().trim()
             : item['qualityType']?.toString().trim().isNotEmpty == true
             ? item['qualityType'].toString().trim()
-            : '清晰度 $sort';
+            : i18n('quality_numbered', args: {'value': sort.toString()});
         final key = '$name\u0000$sort';
         final existing = merged[key];
         if (existing == null) {

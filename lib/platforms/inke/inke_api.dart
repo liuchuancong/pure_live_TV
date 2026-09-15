@@ -224,7 +224,7 @@ class InkeApi {
         areaType: 'showcase',
         areaId: _text(group['tab_key']),
         areaName: _text(group['channel_name']),
-        typeName: '映客官网精选',
+        typeName: 'Inke official picks',
       ),
   ];
 

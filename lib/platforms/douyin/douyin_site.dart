@@ -8,7 +8,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
   String id = Sites.douyinSite;
 
   @override
-  String name = "抖音直播";
+  String name = 'Douyin Live';
 
   @override
   LiveDanmaku getDanmaku() => DouyinDanmaku();
@@ -367,7 +367,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
         if (text.isNotEmpty) return text;
       }
     }
-    return '热门推荐';
+    return i18n('site_all');
   }
 
   @override

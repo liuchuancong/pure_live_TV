@@ -8,6 +8,7 @@ import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'package:pure_live/shared/models/index.dart';
 import 'yy_protocol.dart';
 import 'yy_web_socket_channel.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class YyDanmakuArgs {
   final int topSid;
@@ -107,7 +108,7 @@ class YyDanmaku implements LiveDanmaku {
         _handshakeTimer?.cancel();
         markDisconnected();
         final detail = _lastSocketFailure.isEmpty ? '' : '（${_compactFailure(_lastSocketFailure)}）';
-        onReconnect?.call('与服务器断开连接$detail，正在尝试重连');
+        onReconnect?.call('${i18n('danmaku_reconnecting')}$detail');
       },
       onFailure: (message) {
         if (generation != _generation) return;
@@ -118,7 +119,7 @@ class YyDanmaku implements LiveDanmaku {
         if (generation != _generation) return;
         _handshakeTimer?.cancel();
         markDisconnected();
-        onClose?.call('服务器连接失败$error');
+        onClose?.call('${i18n('danmaku_connect_failed')}: $error');
       },
     );
 
@@ -138,8 +139,8 @@ class YyDanmaku implements LiveDanmaku {
     _handshakeTimer?.cancel();
     _handshakeTimer = Timer(const Duration(seconds: 15), () {
       if (generation != _generation || isConnected) return;
-      CoreLog.error('YY 弹幕协议握手超时，准备重连');
-      onReconnect?.call('YY 弹幕协议握手超时，正在尝试重连');
+      CoreLog.error('YY danmaku handshake timed out, preparing to reconnect');
+      onReconnect?.call(i18n('danmaku_connect_timeout'));
       webScoketUtils?.reconnect();
     });
   }
@@ -152,7 +153,7 @@ class YyDanmaku implements LiveDanmaku {
       _ => null,
     };
     if (bytes == null) {
-      CoreLog.error('YY 收到未知 WebSocket 数据类型：${data.runtimeType}');
+      CoreLog.error('YY received an unknown WebSocket data type: ${data.runtimeType}');
       return;
     }
 
@@ -185,7 +186,7 @@ class YyDanmaku implements LiveDanmaku {
       _handshakeTimer?.cancel();
       markDisconnected();
       CoreLog.error(failure);
-      onReconnect?.call('$failure，正在尝试重连');
+      onReconnect?.call('$failure, ${i18n('danmaku_reconnecting')}');
       webScoketUtils?.reconnect();
     }
   }

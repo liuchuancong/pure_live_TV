@@ -23,7 +23,7 @@ class DouyuSite
   String id = Sites.douyuSite;
 
   @override
-  String name = "斗鱼直播";
+  String name = 'Douyu Live';
 
   @override
   LiveDanmaku getDanmaku() => DouyuDanmaku(
@@ -504,7 +504,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   static bool isLiveRoomPayload(Map<dynamic, dynamic> roomInfo) {
     return _asInt(roomInfo['show_status']) == 1 &&
         _asInt(roomInfo['videoLoop']) != 1 &&
-        !roomInfo['room_name'].toString().startsWith('【回放】');
+        !roomInfo['room_name'].toString().startsWith('【回放】'); // Douyu prefixes replay titles in Chinese
   }
 
   @override

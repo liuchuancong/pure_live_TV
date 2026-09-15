@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:pure_live/shared/common/index.dart';
 import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class KuaishouDanmakuArgs {
   const KuaishouDanmakuArgs({required this.liveStreamId, this.cookie = ''});
@@ -176,11 +177,11 @@ class KuaishouDanmaku implements LiveDanmaku {
     markDisconnected();
     _reconnectAttempts++;
     if (_reconnectAttempts > _maxReconnectAttempts) {
-      onClose?.call('服务器连接失败：快手弹幕重连超过最大次数');
+      onClose?.call('${i18n('danmaku_connect_failed')}: ${i18n('danmaku_reconnect_exhausted')}');
       return;
     }
     if (_reconnectAttempts == 1) {
-      onReconnect?.call('与服务器断开连接，正在尝试重连');
+      onReconnect?.call(i18n('danmaku_reconnecting'));
     }
     final seconds = 1 << (_reconnectAttempts - 1).clamp(0, 3);
     _schedulePoll(generation, Duration(seconds: seconds));
@@ -277,7 +278,7 @@ class KuaishouDanmaku implements LiveDanmaku {
         messages.add(
           LiveMessage(
             type: LiveMessageType.chat,
-            userName: userName.isEmpty ? '快手用户' : userName,
+            userName: userName.isEmpty ? i18n('danmaku_anonymous_user') : userName,
             userId: userId,
             message: content,
             messageId: 'kuaishou:${rawId.isEmpty ? digest : rawId}',

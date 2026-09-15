@@ -156,7 +156,7 @@ class AcfunSearchClient {
     final explicitEmpty = fragment.querySelector('.empty-page') != null;
     if (total == null &&
         AcfunApi.text(totalNode.attributes['data-total']).isEmpty &&
-        totalNode.text.replaceAll(RegExp(r'\s'), '') == '共0条结果' &&
+        totalNode.text.replaceAll(RegExp(r'\s'), '') == '共0条结果' && // matches the Chinese text AcFun returns
         explicitEmpty &&
         cards.isEmpty) {
       total = 0;

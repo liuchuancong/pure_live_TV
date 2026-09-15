@@ -9,7 +9,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   String id = Sites.bilibiliSite;
 
   @override
-  String name = "哔哩哔哩直播";
+  String name = 'Bilibili Live';
   String get cookie => SettingsService.to.cookieManager.bilibiliCookie.v;
   int get userId => SettingsService.to.cookieManager.bilibiliUid.v;
   @override
@@ -171,7 +171,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
       final qn = int.tryParse(raw['qn']?.toString() ?? '');
       if (qn == null || qn <= 0) continue;
       final description = raw['desc']?.toString().trim() ?? '';
-      descriptions[qn] = description.isEmpty ? '未知清晰度' : description;
+      descriptions[qn] = description.isEmpty ? i18n('quality_unknown') : description;
     }
 
     final accepted = <int>{};
@@ -544,7 +544,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
 
     var queryParams = Map<String, String>.from(Uri.parse(url).queryParameters);
 
-    queryParams["wts"] = currentTime.toString(); // 添加 wts 字段
+    queryParams["wts"] = currentTime.toString(); // add the wts field
 
     // Reorder the parameters by key.
     Map<String, String> map = {};

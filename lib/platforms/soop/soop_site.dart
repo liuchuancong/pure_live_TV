@@ -7,7 +7,7 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
   String get id => Sites.soopSite;
 
   @override
-  String get name => "SOOP直播";
+  String get name => 'SOOP Live';
 
   List<String> imageExtensions = [
     'svgz',
@@ -33,7 +33,7 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
 
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
-    List<LiveCategory> categories = [LiveCategory(id: "1", name: "热门", children: [])];
+    List<LiveCategory> categories = [LiveCategory(id: "1", name: i18n('category_hot'), children: [])];
 
     List<Future> futures = [];
     for (var item in categories) {

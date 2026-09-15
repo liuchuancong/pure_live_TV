@@ -18,7 +18,7 @@ class HuyaSite
   String id = Sites.huyaSite;
   static const baseUrl = HuyaRequestParams.baseUrl;
   @override
-  String name = "虎牙直播";
+  String name = 'Huya Live';
   @override
   LiveDanmaku getDanmaku() => HuyaDanmaku();
 
@@ -135,10 +135,10 @@ class HuyaSite
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     List<LiveCategory> categories = [
-      LiveCategory(id: "1", name: "网游", children: []),
-      LiveCategory(id: "2", name: "单机", children: []),
-      LiveCategory(id: "8", name: "娱乐", children: []),
-      LiveCategory(id: "3", name: "手游", children: []),
+      LiveCategory(id: "1", name: i18n('category_online_games'), children: []),
+      LiveCategory(id: "2", name: i18n('category_single_player'), children: []),
+      LiveCategory(id: "8", name: i18n('category_entertainment'), children: []),
+      LiveCategory(id: "3", name: i18n('category_mobile_games'), children: []),
     ];
 
     for (var item in categories) {

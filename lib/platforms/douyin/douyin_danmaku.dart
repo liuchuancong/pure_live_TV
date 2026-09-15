@@ -12,6 +12,7 @@ import 'package:pure_live/shared/common/index.dart';
 import 'package:pure_live/shared/models/index.dart';
 import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'package:pure_live/platforms/douyin/douyin_request_params.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class DouyinDanmakuArgs {
   final String webRid;
@@ -152,12 +153,12 @@ class DouyinDanmaku implements LiveDanmaku {
       onReconnect: () {
         if (generation != _generation) return;
         markDisconnected();
-        onReconnect?.call("与服务器断开连接，正在尝试重连");
+        onReconnect?.call(i18n('danmaku_reconnecting'));
       },
       onClose: (e) {
         if (generation != _generation) return;
         markDisconnected();
-        onClose?.call("服务器连接失败$e");
+        onClose?.call('${i18n('danmaku_connect_failed')}: $e');
       },
     );
     await webScoketUtils?.connect();

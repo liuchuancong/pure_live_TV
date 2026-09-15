@@ -5,6 +5,7 @@ import 'package:pure_live/shared/common/index.dart';
 import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class TwitchDanmaku implements LiveDanmaku {
   WebSocketUtils? webScoketUtils;
@@ -63,11 +64,11 @@ class TwitchDanmaku implements LiveDanmaku {
       },
       onReconnect: () {
         markDisconnected();
-        onReconnect?.call("与服务器断开连接，正在尝试重连");
+        onReconnect?.call(i18n('danmaku_reconnecting'));
       },
       onClose: (e) {
         markDisconnected();
-        onClose?.call("服务器连接失败$e");
+        onClose?.call('${i18n('danmaku_connect_failed')}: $e');
       },
     );
     await webScoketUtils?.connect();

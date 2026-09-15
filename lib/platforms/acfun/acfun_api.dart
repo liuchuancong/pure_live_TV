@@ -313,8 +313,8 @@ class AcfunApi {
                 'STANDARD' => i18n('ui_hd'),
                 'HIGH' => i18n('prefer_resolution_option_super_hd'),
                 'SUPER' => i18n('ui_blu_ray'),
-                'BLUE_RAY' => '高码率',
-                _ => '画质 $id',
+                'BLUE_RAY' => i18n('quality_high_bitrate'),
+                _ => i18n('quality_numbered', args: {'value': id}),
               };
         // Server quality levels and bitrate are different scales. Known levels
         // sort ahead of unknown levels; bitrate only orders that unknown group.

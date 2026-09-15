@@ -7,6 +7,7 @@ import 'package:pure_live/shared/tars/index.dart';
 import 'package:pure_live/platforms/huya/huya_utils.dart';
 import 'package:pure_live/shared/models/live_message/live_message_model.dart';
 import 'package:pure_live/shared/contracts/live_danmaku.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 // ignore_for_file: no_leading_underscores_for_local_identifiers
 
@@ -113,12 +114,12 @@ class HuyaDanmaku implements LiveDanmaku {
       onReconnect: () {
         if (generation != _generation) return;
         markDisconnected();
-        onReconnect?.call("与服务器断开连接，正在尝试重连");
+        onReconnect?.call(i18n('danmaku_reconnecting'));
       },
       onClose: (e) {
         if (generation != _generation) return;
         markDisconnected();
-        onClose?.call("服务器连接失败$e");
+        onClose?.call('${i18n('danmaku_connect_failed')}: $e');
       },
     );
     await webScoketUtils?.connect();

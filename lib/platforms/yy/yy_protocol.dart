@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Current YY H5 service protocol version published by the YY web client.
 const yyH5ServiceProtocolVersion = '3.2.10';
@@ -256,13 +257,13 @@ class YyProtocolSession {
     var offset = 0;
     while (offset < websocketMessage.length) {
       if (websocketMessage.length - offset < 10) {
-        batch.warnings.add('YY WebSocket 尾部数据不足 10 字节');
+        batch.warnings.add('YY WebSocket trailer shorter than 10 bytes');
         break;
       }
       final header = ByteData.sublistView(websocketMessage, offset);
       final packetLength = header.getUint32(0, Endian.little);
       if (packetLength < 10 || offset + packetLength > websocketMessage.length) {
-        batch.warnings.add('YY WebSocket 帧长度异常：$packetLength/${websocketMessage.length - offset}');
+        batch.warnings.add('YY WebSocket frame length mismatch: $packetLength/${websocketMessage.length - offset}');
         break;
       }
       final packet = Uint8List.sublistView(websocketMessage, offset, offset + packetLength);
@@ -300,12 +301,12 @@ class YyProtocolSession {
       if (phase == YyProtocolPhase.waitingUdb ||
           phase == YyProtocolPhase.waitingAp ||
           phase == YyProtocolPhase.waitingJoin) {
-        _fail(batch, 'YY 弹幕协议握手数据异常：$error');
+        _fail(batch, 'YY danmaku handshake payload is malformed: $error');
       } else {
-        batch.warnings.add('YY 弹幕消息格式异常：$error');
+        batch.warnings.add('YY danmaku message shape is unexpected: $error');
       }
     } catch (error) {
-      batch.warnings.add('YY 弹幕消息解析异常：$error');
+      batch.warnings.add('YY danmaku message failed to parse: $error');
     }
   }
 
@@ -316,7 +317,7 @@ class YyProtocolSession {
     final realUri = reader.readUint32();
     final payload = reader.readByteArray32();
     if (realUri != 20078) {
-      _fail(batch, 'YY 匿名登录返回了未知协议：$realUri');
+      _fail(batch, 'YY anonymous login returned an unknown protocol: $realUri');
       return;
     }
 
@@ -334,7 +335,7 @@ class YyProtocolSession {
     _uid = payloadReader.bytesAvailable >= 8 ? payloadReader.readUint64() : BigInt.from(uid32);
 
     if (!_isSuccess(envelopeCode) || !_isSuccess(resultCode) || _uid == BigInt.zero) {
-      _fail(batch, 'YY 匿名登录失败：$envelopeCode/$resultCode');
+      _fail(batch, 'YY anonymous login failed: $envelopeCode/$resultCode');
       return;
     }
     phase = YyProtocolPhase.waitingAp;
@@ -347,7 +348,7 @@ class YyProtocolSession {
     final resultCode = reader.readUint32();
     reader.readString(); // context: appid:userType
     if (resultCode != 200) {
-      _fail(batch, 'YY AP 登录失败：$resultCode');
+      _fail(batch, 'YY AP login failed: $resultCode');
       return;
     }
     phase = YyProtocolPhase.waitingJoin;
@@ -363,7 +364,7 @@ class YyProtocolSession {
     final payload = reader.readByteArray32();
     if (responseCode != 0 && responseCode != 200) {
       if (realUri == _joinChannelResponseUri) {
-        _fail(batch, 'YY 加入频道路由失败：$responseCode');
+        _fail(batch, 'YY channel routing failed: $responseCode');
       }
       return;
     }
@@ -386,7 +387,7 @@ class YyProtocolSession {
     if (loginStatus != 4 || joinedTopSid != topSid || joinedSubSid != subSid) {
       _fail(
         batch,
-        'YY 加入频道失败：$loginStatus'
+        'YY failed to join the channel: $loginStatus'
         '${errorInfo.isEmpty ? '' : '，$errorInfo'}',
       );
       return;
@@ -422,7 +423,7 @@ class YyProtocolSession {
       final chat = _readChat(reader);
       if (chat != null) batch.chats.add(chat);
     } on FormatException catch (error) {
-      batch.warnings.add('YY 聊天消息格式异常：$error');
+      batch.warnings.add('YY chat message shape is unexpected: $error');
     }
   }
 
@@ -458,7 +459,7 @@ class YyProtocolSession {
     }
     if (message.isEmpty) return null;
     return YyChatMessage(
-      userName: userName.isEmpty ? 'YY用户' : userName,
+      userName: userName.isEmpty ? i18n('danmaku_anonymous_user') : userName,
       message: message,
       topSid: messageTopSid,
       subSid: messageSubSid,

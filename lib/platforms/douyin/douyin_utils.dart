@@ -88,11 +88,11 @@ class DouyinUtils {
             webid = uid.toString();
           }
         } catch (e) {
-          CoreLog.error('解析 RENDER_DATA 失败: $e');
+          CoreLog.error('Failed to parse RENDER_DATA: $e');
         }
       }
     } catch (e) {
-      CoreLog.error('get_ttwid_webid 错误: $e');
+      CoreLog.error('get_ttwid_webid failed: $e');
     }
 
     return {'ttwid': ttwid ?? '', 'webid': webid ?? ''};

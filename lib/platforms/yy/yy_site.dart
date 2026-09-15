@@ -11,7 +11,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   String id = Sites.yySite;
 
   @override
-  String name = 'YY 直播';
+  String name = 'YY Live';
 
   @override
   LiveDanmaku getDanmaku() => YyDanmaku();
