@@ -1,0 +1,678 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dpad/dpad.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/services/background_config/remote/background_catalog.dart';
+import 'package:pure_live/services/background_config/remote/background_repository.dart';
+
+/// 遮罩档位。遥控器上用「循环切换」代替滑杆，操作更省事。
+const List<double> _kMaskSteps = <double>[0, 0.2, 0.35, 0.5, 0.7];
+
+/// 背景设置页。
+///
+/// 数据来自 background 仓库的 catalog（经镜像加速），支持
+/// 官方壁纸 / Wallhaven / 必应 / deepin / 动态壁纸 / 纯色渐变 六类来源。
+/// 整套布局走 dpad，遥控器可全程操作。
+class WallpaperPage extends ConsumerStatefulWidget {
+  const WallpaperPage({super.key});
+
+  @override
+  ConsumerState<WallpaperPage> createState() => _WallpaperPageState();
+}
+
+class _WallpaperPageState extends ConsumerState<WallpaperPage> {
+  int _sourceIndex = 0;
+  int _categoryIndex = 0;
+
+  /// 应用中的资源，用于显示加载态并避免连点
+  String? _applyingFile;
+  bool _busy = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final catalogAsync = ref.watch(backgroundCatalogProvider);
+
+    return TvScaffold(
+      title: i18nOr('ui_background_settings', '背景设置'),
+      child: catalogAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => _ErrorView(
+          message: '$error',
+          onRetry: () {
+            BackgroundRepository.instance.clear();
+            ref.invalidate(backgroundCatalogProvider);
+          },
+        ),
+        data: _buildCatalog,
+      ),
+    );
+  }
+
+  Widget _buildCatalog(BackgroundCatalog catalog) {
+    final sources = catalog.sources;
+    if (sources.isEmpty) {
+      return _ErrorView(
+        message: i18nOr('background_catalog_empty', '远端目录为空'),
+        onRetry: () {
+          BackgroundRepository.instance.clear();
+          ref.invalidate(backgroundCatalogProvider);
+        },
+      );
+    }
+
+    final sourceIndex = _sourceIndex.clamp(0, sources.length - 1);
+    final source = sources[sourceIndex];
+    final categories = source.visibleCategories;
+    if (categories.isEmpty) {
+      return _ErrorView(
+        message: i18nOr('background_no_category', '该来源暂无数据'),
+        onRetry: () => ref.invalidate(backgroundCatalogProvider),
+      );
+    }
+    final categoryIndex = _categoryIndex.clamp(0, categories.length - 1);
+    final category = categories[categoryIndex];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TvTabBar(
+          tabs: [
+            for (final s in sources)
+              TvTabItemData(title: s.name.isEmpty ? s.id : s.name),
+          ],
+          currentIndex: sourceIndex,
+          onTabChange: (index) => setState(() {
+            _sourceIndex = index;
+            _categoryIndex = 0;
+          }),
+        ),
+        if (source.categorized)
+          TvTabBar(
+            tabs: [
+              for (final c in categories)
+                TvTabItemData(title: '${c.name} (${c.count})'),
+            ],
+            currentIndex: categoryIndex,
+            onTabChange: (index) => setState(() => _categoryIndex = index),
+          ),
+        _Toolbar(
+          source: source,
+          busy: _busy,
+          onRefresh: () {
+            BackgroundRepository.instance.clear();
+            ref.invalidate(backgroundCatalogProvider);
+          },
+        ),
+        SizedBox(height: 8.sp),
+        Expanded(child: _buildGrid(source, category)),
+      ],
+    );
+  }
+
+  Widget _buildGrid(BackgroundSource source, BackgroundCategory category) {
+    final shardAsync = ref.watch(backgroundShardProvider(category.catalog));
+    final bgState = SettingsService.to.bgState;
+    final currentUrl = source.kind == BackgroundKind.video
+        ? bgState.networkVideoUrl
+        : bgState.networkImageUrl;
+
+    return shardAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => _ErrorView(
+        message: '$error',
+        onRetry: () => ref.invalidate(backgroundShardProvider(category.catalog)),
+      ),
+      data: (shard) {
+        final items = shard.items;
+        if (items.isEmpty) {
+          return Center(
+            child: Text(
+              i18nOr('background_no_item', '这个分类还没有资源'),
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: context.tvTheme.secondaryTextColor,
+              ),
+            ),
+          );
+        }
+        return DpadRegion(
+          verticalEdge: DpadEdgeBehavior.leave,
+          child: GridView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              mainAxisSpacing: 16.sp,
+              crossAxisSpacing: 16.sp,
+              childAspectRatio: 16 / 9,
+            ),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return _WallpaperTile(
+                item: item,
+                kind: source.kind,
+                current: _isCurrent(currentUrl, item.file),
+                applying: _applyingFile == item.file,
+                onSelect: () => _apply(source, item),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  static bool _isCurrent(String? currentUrl, String file) =>
+      currentUrl != null &&
+      currentUrl.isNotEmpty &&
+      file.isNotEmpty &&
+      currentUrl.endsWith(file);
+
+  Future<void> _apply(BackgroundSource source, BackgroundItem item) async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _applyingFile = item.file;
+    });
+    try {
+      switch (source.kind) {
+        case BackgroundKind.image:
+        case BackgroundKind.video:
+          final url = await BackgroundRepository.instance.urlOf(item.file);
+          if (!mounted) return;
+          if (source.kind == BackgroundKind.video) {
+            SettingsService.to.bg.setNetworkVideo(url);
+          } else {
+            SettingsService.to.bg.setNetworkImage(url);
+          }
+        case BackgroundKind.gradient:
+          final colors = <Color>[
+            for (final stop in item.gradient ?? const <BackgroundGradientStop>[])
+              if (_parseHex(stop.color) case final Color color) color,
+          ];
+          if (colors.length < 2) {
+            _toast(i18nOr('background_invalid_gradient', '这个渐变数据不完整'));
+            return;
+          }
+          SettingsService.to.bg.setGradient(colors);
+      }
+    } catch (error) {
+      _toast(i18nOr('background_apply_failed', '设置失败：{msg}', args: {'msg': '$error'}));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _applyingFile = null;
+        });
+      }
+    }
+  }
+
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
+  static Color? _parseHex(String raw) {
+    var value = raw.trim().replaceFirst('#', '').replaceFirst('0x', '');
+    if (value.length == 3) {
+      value = value.split('').map((c) => '$c$c').join();
+    }
+    if (value.length == 6) value = 'FF$value';
+    if (value.length != 8) return null;
+    final parsed = int.tryParse(value, radix: 16);
+    return parsed == null ? null : Color(parsed);
+  }
+}
+
+/// 顶部工具条：遮罩档位、填充方式、清除背景、刷新目录
+class _Toolbar extends ConsumerWidget {
+  const _Toolbar({
+    required this.source,
+    required this.busy,
+    required this.onRefresh,
+  });
+
+  final BackgroundSource source;
+  final bool busy;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = context.tvTheme;
+    final bg = SettingsService.to.bg;
+    final state = SettingsService.to.bgState;
+    final maskIndex = _nearestMaskIndex(state.maskOpacity);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.sp),
+      child: Row(
+        children: [
+          _ActionChip(
+            icon: Icons.brightness_6_outlined,
+            label: i18nOr(
+              'background_mask',
+              '遮罩 {value}%',
+              args: {'value': '${(state.maskOpacity * 100).round()}'},
+            ),
+            onSelect: () => bg.setMaskOpacity(
+              _kMaskSteps[(maskIndex + 1) % _kMaskSteps.length],
+            ),
+          ),
+          SizedBox(width: 12.sp),
+          _ActionChip(
+            icon: state.boxFit == BoxFit.contain
+                ? Icons.fit_screen_outlined
+                : Icons.crop_free_outlined,
+            label: state.boxFit == BoxFit.contain
+                ? i18nOr('background_fit_contain', '适应')
+                : i18nOr('background_fit_cover', '填充'),
+            onSelect: () => bg.setBoxFit(
+              state.boxFit == BoxFit.cover ? BoxFit.contain : BoxFit.cover,
+            ),
+          ),
+          SizedBox(width: 12.sp),
+          _ActionChip(
+            icon: Icons.layers_clear_outlined,
+            label: i18nOr('background_clear', '清除背景'),
+            onSelect: bg.setNone,
+          ),
+          const Spacer(),
+          if (busy)
+            SizedBox(
+              width: 18.sp,
+              height: 18.sp,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            _ActionChip(
+              icon: Icons.refresh,
+              label: i18nOr('refresh', '刷新'),
+              onSelect: onRefresh,
+            ),
+          SizedBox(width: 8.sp),
+          Text(
+            '${source.count}',
+            style: TextStyle(fontSize: 13.sp, color: theme.secondaryTextColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _nearestMaskIndex(double value) {
+    var best = 0;
+    var bestDelta = double.infinity;
+    for (var i = 0; i < _kMaskSteps.length; i++) {
+      final delta = (_kMaskSteps[i] - value).abs();
+      if (delta < bestDelta) {
+        bestDelta = delta;
+        best = i;
+      }
+    }
+    return best;
+  }
+}
+
+/// 单个背景格子。图片走缩略图代理，视频显示封面，渐变直接本地绘制。
+class _WallpaperTile extends StatefulWidget {
+  const _WallpaperTile({
+    required this.item,
+    required this.kind,
+    required this.current,
+    required this.applying,
+    required this.onSelect,
+  });
+
+  final BackgroundItem item;
+  final BackgroundKind kind;
+  final bool current;
+  final bool applying;
+  final VoidCallback onSelect;
+
+  @override
+  State<_WallpaperTile> createState() => _WallpaperTileState();
+}
+
+class _WallpaperTileState extends State<_WallpaperTile> {
+  String? _thumbUrl;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveThumb();
+  }
+
+  @override
+  void didUpdateWidget(covariant _WallpaperTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.file != widget.item.file) {
+      _thumbUrl = null;
+      _failed = false;
+      _resolveThumb();
+    }
+  }
+
+  Future<void> _resolveThumb() async {
+    // 视频优先用仓库里的封面，图片用自身
+    final raw = await BackgroundRepository.instance.urlOf(
+      widget.item.poster ?? widget.item.file,
+    );
+    if (!mounted) return;
+    setState(() => _thumbUrl = raw);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final radius = BorderRadius.circular(12.sp);
+
+    return DpadFocusable(
+      autofocus: false,
+      effects: <DpadEffect>[
+        DpadScaleEffect(
+          scale: 1.04,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOutCubic,
+        ),
+        DpadGlowEffect(
+          color: theme.focusColor,
+          blurRadius: 16,
+          borderRadius: radius,
+          duration: const Duration(milliseconds: 120),
+        ),
+        DpadBorderEffect(
+          color: theme.focusColor,
+          width: 3,
+          borderRadius: radius,
+          duration: const Duration(milliseconds: 120),
+        ),
+      ],
+      onSelect: widget.onSelect,
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ColoredBox(
+              color: theme.cardColor,
+              child: _buildPreview(theme, radius),
+            ),
+            if (widget.item.bytes != null)
+              Positioned(
+                right: 6.sp,
+                bottom: 6.sp,
+                child: _Badge(text: _sizeLabel(widget.item.bytes!)),
+              ),
+            if (widget.kind == BackgroundKind.video)
+              Positioned(
+                left: 6.sp,
+                bottom: 6.sp,
+                child: Icon(
+                  Icons.play_circle_fill,
+                  size: 20.sp,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+            if (widget.current)
+              Positioned(
+                right: 6.sp,
+                top: 6.sp,
+                child: Icon(
+                  Icons.check_circle,
+                  size: 20.sp,
+                  color: theme.focusColor,
+                ),
+              ),
+            if (widget.applying)
+              ColoredBox(
+                color: Colors.black.withValues(alpha: 0.45),
+                child: const Center(
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPreview(TvThemeData theme, BorderRadius radius) {
+    if (widget.kind == BackgroundKind.gradient) {
+      return _GradientPreview(item: widget.item);
+    }
+    final thumb = _thumbUrl;
+    if (thumb == null) return const SizedBox.shrink();
+    if (_failed) {
+      return Center(
+        child: Icon(
+          Icons.broken_image_outlined,
+          size: 24.sp,
+          color: theme.secondaryTextColor,
+        ),
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: BackgroundRepository.thumbnail(thumb),
+      fit: BoxFit.cover,
+      memCacheWidth: 480,
+      fadeInDuration: const Duration(milliseconds: 120),
+      placeholder: (context, _) => ColoredBox(color: theme.cardColor),
+      errorWidget: (context, _, _) {
+        // 缩略图代理挂了就直接用原图
+        return CachedNetworkImage(
+          imageUrl: thumb,
+          fit: BoxFit.cover,
+          memCacheWidth: 480,
+          errorWidget: (context, _, _) {
+            if (!_failed) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) setState(() => _failed = true);
+              });
+            }
+            return const SizedBox.shrink();
+          },
+        );
+      },
+    );
+  }
+
+  static String _sizeLabel(int bytes) {
+    if (bytes >= 1024 * 1024) {
+      return '${(bytes / 1024 / 1024).toStringAsFixed(1)}M';
+    }
+    return '${(bytes / 1024).round()}K';
+  }
+}
+
+/// 纯色渐变格子，直接把 gradient 画出来，不用下载
+class _GradientPreview extends StatelessWidget {
+  const _GradientPreview({required this.item});
+
+  final BackgroundItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final stops = item.gradient ?? const <BackgroundGradientStop>[];
+    final colors = <Color>[];
+    final positions = <double>[];
+    for (final stop in stops) {
+      final color = _WallpaperPageState._parseHex(stop.color);
+      if (color == null) continue;
+      colors.add(color);
+      positions.add((stop.pos / 100).clamp(0.0, 1.0));
+    }
+    if (colors.length < 2) {
+      return ColoredBox(
+        color: colors.isNotEmpty ? colors.first : const Color(0xFF141E30),
+      );
+    }
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: colors,
+          stops: positions,
+        ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.sp, vertical: 2.sp),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(6.sp),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 11.sp, color: Colors.white),
+      ),
+    );
+  }
+}
+
+/// 工具条上的小按钮
+class _ActionChip extends StatelessWidget {
+  const _ActionChip({
+    required this.icon,
+    required this.label,
+    required this.onSelect,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final radius = BorderRadius.circular(20.sp);
+
+    return DpadFocusable(
+      onSelect: onSelect,
+      effects: <DpadEffect>[
+        DpadScaleEffect(scale: 1.05, duration: const Duration(milliseconds: 100)),
+        DpadBorderEffect(
+          color: theme.focusColor,
+          width: 2,
+          borderRadius: radius,
+          duration: const Duration(milliseconds: 100),
+        ),
+      ],
+      child: Container(
+        height: 34.sp,
+        padding: EdgeInsets.symmetric(horizontal: 16.sp),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: radius,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 17.sp, color: theme.primaryTextColor),
+            SizedBox(width: 6.sp),
+            Text(
+              label,
+              style: TextStyle(fontSize: 14.sp, color: theme.primaryTextColor),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorView extends StatelessWidget {
+  const _ErrorView({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final radius = BorderRadius.circular(20.sp);
+
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.sp),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 42.sp,
+              color: theme.secondaryTextColor,
+            ),
+            SizedBox(height: 12.sp),
+            Text(
+              i18nOr('background_load_failed', '背景目录加载失败'),
+              style: TextStyle(fontSize: 18.sp, color: theme.primaryTextColor),
+            ),
+            SizedBox(height: 6.sp),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: theme.secondaryTextColor,
+              ),
+            ),
+            SizedBox(height: 18.sp),
+            DpadFocusable(
+              autofocus: true,
+              onSelect: onRetry,
+              effects: <DpadEffect>[
+                DpadScaleEffect(scale: 1.05),
+                DpadBorderEffect(
+                  color: theme.focusColor,
+                  width: 2,
+                  borderRadius: radius,
+                ),
+              ],
+              child: Container(
+                height: 36.sp,
+                padding: EdgeInsets.symmetric(horizontal: 22.sp),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: radius,
+                ),
+                child: Text(
+                  i18nOr('retry', '重试'),
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    color: theme.primaryTextColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -50,8 +50,9 @@ class BackgroundRepository {
   Future<BackgroundShard> loadShard(
     BackgroundCategory category, {
     bool force = false,
-  }) {
-    final key = category.catalog;
+  }) => loadShardPath(category.catalog, force: force);
+
+  Future<BackgroundShard> loadShardPath(String key, {bool force = false}) {
     if (key.isEmpty) {
       return Future<BackgroundShard>.error(
         const FormatException('分片路径为空'),
@@ -73,6 +74,15 @@ class BackgroundRepository {
     _inflight[key] = future;
     return future;
   }
+
+  /// 网格缩略图。
+  ///
+  /// 仓库里存的是 2560px 原图（单张几百 KB），直接铺满一屏网格会一次拉几十 MB。
+  /// 这里借 wsrv.nl 做实时缩放，缩略图大约 15~25 KB。代理不可用时
+  /// [CachedNetworkImage] 的 errorWidget 会兜底，点选仍用原图地址。
+  static String thumbnail(String rawUrl, {int width = 400, int height = 225}) =>
+      'https://wsrv.nl/?url=${Uri.encodeComponent(rawUrl)}'
+      '&w=$width&h=$height&fit=cover&output=webp&q=72';
 
   /// 资源的完整远端地址（自动走当前最优镜像）
   Future<String> urlOf(String path) => BackgroundMirror.url(path);
@@ -127,8 +137,13 @@ final backgroundCatalogProvider = FutureProvider<BackgroundCatalog>(
   (ref) => BackgroundRepository.instance.loadCatalog(),
 );
 
-/// 某个分类下的资源清单，按分片路径缓存
+/// 某个分类下的资源清单。
+///
+/// key 用分片的仓库路径（String）而不是 [BackgroundCategory] 对象：
+/// 目录模型没有实现 == / hashCode，用对象做 family key 会在每次 rebuild
+/// 时生成新 provider，导致重复请求。
 final backgroundShardProvider =
-    FutureProvider.family<BackgroundShard, BackgroundCategory>(
-      (ref, category) => BackgroundRepository.instance.loadShard(category),
+    FutureProvider.family<BackgroundShard, String>(
+      (ref, catalogPath) =>
+          BackgroundRepository.instance.loadShardPath(catalogPath),
     );

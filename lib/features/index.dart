@@ -14,3 +14,4 @@ export 'movie_playback/index.dart';
 export 'remote/index.dart';
 export 'search/index.dart';
 export 'settings/index.dart';
+export 'wallpaper/index.dart';

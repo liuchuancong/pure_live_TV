@@ -83,6 +83,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: AppRoutes.kWallpaperPage,
+        builder: (context, state) => const WallpaperPage(),
+      ),
+      GoRoute(
         path: AppRoutes.kLivePlay,
         builder: (context, state) {
           final extra = state.extra;
