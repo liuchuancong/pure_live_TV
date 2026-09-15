@@ -96,6 +96,40 @@ abstract final class AppRoutes {
 
   /// Wallpaper and background settings
   static const kWallpaperPage = "/wallpaper_page";
+
+  /// IPTV playlists and EPG sources (desktop app path).
+  static const kIptv = "/iptv";
+
+  /// Tag management (desktop app path).
+  static const kSettingsTags = "/settingTags";
+
+  /// WebDAV configuration (desktop app path).
+  static const kWebDavPage = "/web_dav_page";
+
+  /// Settings sub-pages that the desktop app pushes without a named route.
+  static const kSettingsTheme = "/settings/theme";
+  static const kSettingsRefresh = "/settings/refresh";
+  static const kSettingsVideo = "/settings/video";
+  static const kSettingsPipDanmaku = "/settings/pip_danmaku";
+  static const kSettingsPlayerKernel = "/settings/player_kernel";
+  static const kSettingsProxy = "/settings/proxy";
+  static const kSettingsLocalInteraction = "/settings/local_interaction";
+  static const kSettingsGeneral = "/settings/general";
+  static const kSettingsNavigation = "/settings/navigation";
+  static const kSettingsPlatform = "/settings/platform";
+  static const kSettingsCache = "/settings/cache";
+  static const kSettingsConfigPreview = "/settings/config_preview";
+
+  /// Sub-pages opened from inside a settings page.
+  static const kSettingsDecoder = "/settings/decoder";
+  static const kSettingsRenderer = "/settings/renderer";
+  static const kSettingsAudioOutput = "/settings/audio_output";
+  static const kSettingsDanmaku = "/settings/danmaku";
+  static const kSettingsFont = "/settings/font";
+  static const kSettingsFontFamily = "/settings/fonts";
+  static const kSettingsPage = "/settings/page";
+  static const kSettingsAudience = "/settings/audience";
+  static const kSettingsLocalBackup = "/settings/backups";
 }
 
 class AreaRoomsArgs {

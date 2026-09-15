@@ -99,6 +99,26 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             displayValue: themeState.mainAxisSpacing.toStringAsFixed(0),
             onChanged: (v) => theme.updateSettings(themeState.copyWith(mainAxisSpacing: v)),
           ),
+          // Sub-pages the desktop theme page hosts, in its order: paging, then
+          // the font family, then the per-component font sizes.
+          TvSettingsNavTile(
+            title: i18n('page_settings'),
+            subtitle: i18n('page_settings_subtitle'),
+            icon: Icons.list_alt_rounded,
+            onTap: () => context.push(AppRoutes.kSettingsPage),
+          ),
+          TvSettingsNavTile(
+            title: i18n('font_family'),
+            subtitle: i18n('change_font_family'),
+            icon: Icons.font_download_outlined,
+            onTap: () => context.push(AppRoutes.kSettingsFontFamily),
+          ),
+          TvSettingsNavTile(
+            title: i18n('ui_font_settings'),
+            subtitle: i18n('font_settings_desc'),
+            icon: Icons.text_fields_rounded,
+            onTap: () => context.push(AppRoutes.kSettingsFont),
+          ),
         ],
       ),
     );

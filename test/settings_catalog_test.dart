@@ -1,88 +1,119 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 
-/// The settings catalog is the only way into a settings section, so a missing
-/// or duplicated entry is exactly the "module has no entry" bug. These tests
-/// keep the catalog and the route table in step.
+/// The settings menu mirrors the desktop app
+/// (`pure_live/lib/modules/settings/settings_page.dart`) and every page must be
+/// reachable: either as a menu row or from inside its parent page. These tests
+/// keep that true, because an unreachable settings page is the "module has no
+/// entry" bug.
 void main() {
-  /// Every settings section registered in the router.
-  const List<String> routedSections = <String>[
-    'general',
-    'theme',
-    'player_kernel',
-    'video',
-    'decoder',
-    'renderer',
-    'audio_output',
-    'danmaku',
-    'shield',
-    'platform',
-    'audience',
-    'tags',
-    'navigation',
-    'page',
-    'refresh',
-    'font',
-    'fonts',
-    'iptv',
-    'cache',
-    'proxy',
-    'backup',
-    'webdav',
-    'backups',
-    'account',
-    'about',
-  ];
-
   List<String> catalogPaths() => <String>[
     for (final SettingsGroup group in settingsCatalog)
       for (final SettingsEntry entry in group.entries) entry.path,
   ];
 
-  test('every routed section has exactly one catalog entry', () {
-    final paths = catalogPaths();
+  test('the menu has the desktop groups, in order', () {
+    expect(settingsCatalog.map((group) => group.titleKey).toList(), <String>[
+      'theme_settings',
+      'iptv_settings',
+      'refresh_settings',
+      'video_settings',
+      'player_kernel_settings',
+      'network_proxy_settings',
+      'general_settings',
+      'data_manage',
+      'backup_manage',
+      'about',
+    ]);
 
-    expect(paths.toSet().length, paths.length, reason: 'duplicate catalog path');
-
-    final expected = routedSections.map((s) => '/settings/$s').toSet();
-    expect(paths.toSet(), expected, reason: 'catalog and routed sections must match');
+    expect(settingsCatalog.map((group) => group.entries.length).toList(), <int>[1, 1, 1, 2, 1, 1, 3, 1, 1, 1]);
   });
 
-  test('catalog entries carry a title, a group heading and an icon', () {
-    for (final SettingsGroup group in settingsCatalog) {
-      expect(group.titleKey, isNotEmpty);
-      expect(group.entries, isNotEmpty, reason: 'group ${group.titleKey} has no rows');
-      for (final SettingsEntry entry in group.entries) {
-        expect(entry.titleKey, isNotEmpty, reason: entry.path);
-        expect(entry.path.startsWith('/settings/'), isTrue, reason: entry.path);
-      }
-    }
+  test('menu rows use the desktop paths and labels', () {
+    expect(catalogPaths(), <String>[
+      AppRoutes.kSettingsTheme,
+      AppRoutes.kIptv,
+      AppRoutes.kSettingsRefresh,
+      AppRoutes.kSettingsVideo,
+      AppRoutes.kSettingsPipDanmaku,
+      AppRoutes.kSettingsPlayerKernel,
+      AppRoutes.kSettingsProxy,
+      AppRoutes.kSettingsGeneral,
+      AppRoutes.kSettingsNavigation,
+      AppRoutes.kSettingsPlatform,
+      AppRoutes.kSettingsCache,
+      AppRoutes.kBackup,
+      AppRoutes.kAbout,
+    ]);
+
+    expect(settingsEntryForLocation(AppRoutes.kSettingsVideo)?.titleKey, 'video');
+    expect(settingsEntryForLocation(AppRoutes.kIptv)?.titleKey, 'iptv_settings');
+    expect(settingsEntryForLocation('/home'), isNull);
   });
 
-  test('the catalog matches the routes actually registered in app_router.dart', () {
-    final file = File('lib/app/router/app_router.dart');
-    if (!file.existsSync()) {
-      markTestSkipped('app_router.dart not found relative to ${Directory.current.path}');
+  test('sub-page titles resolve for pages that are not menu rows', () {
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsDecoder), 'ui_decoder_settings');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsDanmuShield), 'block_list');
+    expect(settingsSectionTitleKey(AppRoutes.kWebDavPage), 'webdav');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsHotAreas), 'platform_display');
+    // A menu row wins over the sub-page table.
+    expect(settingsSectionTitleKey(AppRoutes.kBackup), 'backup_recover');
+  });
+
+  test('no settings route is an orphan', () {
+    final routesFile = File('lib/app/router/app_routes.dart');
+    final routerFile = File('lib/app/router/app_router.dart');
+    if (!routesFile.existsSync() || !routerFile.existsSync()) {
+      markTestSkipped('router sources not found relative to ${Directory.current.path}');
       return;
     }
 
-    // Settings section routes are the relative GoRoute paths inside the
-    // `/settings` branch.
-    final source = file.readAsStringSync();
-    final settingsBranch = source.substring(source.indexOf("path: AppRoutes.kSettings"));
-    final routed = RegExp(r"GoRoute\(path: '([a-z_]+)'").allMatches(settingsBranch).map((m) => m.group(1)!).toSet();
+    // Constant name -> path, from AppRoutes.
+    final constants = <String, String>{};
+    for (final match in RegExp(r'static const (k\w+) = "([^"]+)";').allMatches(routesFile.readAsStringSync())) {
+      constants[match.group(1)!] = match.group(2)!;
+    }
 
-    final inCatalog = catalogPaths().map((p) => p.replaceFirst('/settings/', '')).toSet();
+    // The settings block of the router: from `/settings` up to the next
+    // unrelated route.
+    final routerSource = routerFile.readAsStringSync();
+    final start = routerSource.indexOf('path: AppRoutes.kSettings');
+    final end = routerSource.indexOf('path: AppRoutes.kAreaRooms');
+    final settingsBranch = start < 0 ? '' : routerSource.substring(start, end < 0 ? routerSource.length : end);
 
-    expect(routed, inCatalog, reason: 'a routed section without an entry, or an entry without a route');
-  });
+    final registered = <String>{AppRoutes.kSettings};
+    for (final match in RegExp(r"GoRoute\(path: '([a-z_]+)'").allMatches(settingsBranch)) {
+      registered.add('/settings/${match.group(1)!}');
+    }
+    for (final match in RegExp(r'GoRoute\(path: AppRoutes\.(k\w+)').allMatches(settingsBranch)) {
+      final path = constants[match.group(1)!];
+      if (path != null) registered.add(path);
+    }
+    expect(registered.length, greaterThan(20), reason: 'the settings block should register every page');
 
-  test('location lookup matches whole path segments', () {
-    expect(settingsEntryForLocation('/settings/fonts')!.path, '/settings/fonts');
-    expect(settingsEntryForLocation('/settings/font')!.path, '/settings/font');
-    expect(settingsEntryForLocation('/settings/theme')!.titleKey, 'theme_customization');
-    expect(settingsEntryForLocation('/home'), isNull);
+    // Every registered path must be referenced by its constant somewhere in the
+    // feature code (menu row or parent-page row).
+    final referenced = StringBuffer();
+    for (final directory in <String>['lib/features', 'lib/app']) {
+      final dir = Directory(directory);
+      if (!dir.existsSync()) continue;
+      for (final file in dir.listSync(recursive: true).whereType<File>()) {
+        if (file.path.endsWith('.dart')) referenced.write(file.readAsStringSync());
+      }
+    }
+    final references = referenced.toString();
+
+    final pathToName = <String, String>{for (final entry in constants.entries) entry.value: entry.key};
+    final orphans = <String>[];
+    for (final path in registered) {
+      final name = pathToName[path];
+      if (name == null) continue; // paths built from a relative child
+      if (!references.contains('AppRoutes.$name')) orphans.add('$name ($path)');
+    }
+
+    expect(orphans, isEmpty, reason: 'settings routes with no entry anywhere');
   });
 }

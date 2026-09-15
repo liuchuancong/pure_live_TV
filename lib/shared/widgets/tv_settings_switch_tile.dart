@@ -5,6 +5,9 @@ class TvSettingsSwitchTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final IconData? icon;
+
+  /// Leading widget for rows identified by artwork (platform logos).
+  final Widget? iconWidget;
   final bool value;
   final ValueChanged<bool>? onChanged;
 
@@ -14,6 +17,7 @@ class TvSettingsSwitchTile extends StatelessWidget {
     required this.value,
     this.subtitle,
     this.icon,
+    this.iconWidget,
     this.onChanged,
   });
 
@@ -59,7 +63,10 @@ class TvSettingsSwitchTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                if (icon != null) ...[
+                if (iconWidget != null) ...[
+                  iconWidget!,
+                  const SizedBox(width: 12),
+                ] else if (icon != null) ...[
                   Icon(icon, color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
                   const SizedBox(width: 12),
                 ],

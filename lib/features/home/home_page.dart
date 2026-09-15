@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -102,7 +103,10 @@ class HomePage extends ConsumerWidget {
                       item: mySettingsItem,
                       isExpanded: isExpanded,
                       isSelected: currentIndex == mySettingsItem.index,
-                      onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(mySettingsItem.index),
+                      // Settings opens as its own page (title bar, back button
+                      // and the configuration-preview action), like the desktop
+                      // app, instead of swapping the content pane.
+                      onTap: () => context.push(AppRoutes.kSettings),
                     ),
                   ],
                 ),
@@ -220,7 +224,7 @@ class HomePage extends ConsumerWidget {
           ),
         );
       case TvMenuType.settings:
-        return const TvSettingsEmbedded();
+        return const SettingsCatalogView();
       case TvMenuType.favorite:
         return const FavoritePage();
       case TvMenuType.hot:

@@ -1,25 +1,26 @@
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// One settings destination: its go_router path, translation keys and icon.
+/// One settings destination: its route, translation keys and icon.
 typedef SettingsEntry = ({String path, String titleKey, String? subtitleKey, IconData icon});
 
 /// A titled group of entries — the "big group, small rows" layout.
 typedef SettingsGroup = ({String titleKey, List<SettingsEntry> entries});
 
-/// The settings catalog.
+/// The settings menu.
 ///
-/// Grouping and order follow the desktop settings page
-/// (`pure_live/lib/modules/settings/settings_page.dart`): theme, IPTV, refresh,
-/// video, player kernel, network proxy, local user, general, data, backup.
-/// Sections that only exist here are placed in the group they belong to.
+/// Groups, rows, order, labels and icons follow the desktop settings menu
+/// (`pure_live/lib/modules/settings/settings_page.dart`). Pages that the
+/// desktop app hosts inside one of these pages are not rows here; they are
+/// reached from their parent page, exactly as there.
 final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   (
     titleKey: 'theme_settings',
     entries: <SettingsEntry>[
       (
-        path: '/settings/theme',
+        path: AppRoutes.kSettingsTheme,
         titleKey: 'theme_customization',
         subtitleKey: 'theme_customization_desc',
         icon: Remix.palette_line,
@@ -30,7 +31,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     titleKey: 'iptv_settings',
     entries: <SettingsEntry>[
       (
-        path: '/settings/iptv',
+        path: AppRoutes.kIptv,
         titleKey: 'iptv_settings',
         subtitleKey: 'manage_iptv_sources',
         icon: Remix.tv_line,
@@ -41,7 +42,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     titleKey: 'refresh_settings',
     entries: <SettingsEntry>[
       (
-        path: '/settings/refresh',
+        path: AppRoutes.kSettingsRefresh,
         titleKey: 'refresh_settings',
         subtitleKey: 'refresh_settings_subtitle',
         icon: Remix.refresh_line,
@@ -51,31 +52,12 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   (
     titleKey: 'video_settings',
     entries: <SettingsEntry>[
-      (path: '/settings/video', titleKey: 'video', subtitleKey: 'video_desc', icon: Remix.film_line),
+      (path: AppRoutes.kSettingsVideo, titleKey: 'video', subtitleKey: 'video_desc', icon: Remix.film_line),
       (
-        path: '/settings/danmaku',
-        titleKey: 'danmaku_settings',
-        subtitleKey: 'danmaku_settings_desc',
-        icon: Icons.subtitles_rounded,
-      ),
-      (path: '/settings/shield', titleKey: 'block_list', subtitleKey: 'block_list_desc', icon: Icons.block_rounded),
-      (
-        path: '/settings/decoder',
-        titleKey: 'ui_decoder_settings',
-        subtitleKey: 'ui_decoder_settings_desc',
-        icon: Icons.memory_rounded,
-      ),
-      (
-        path: '/settings/renderer',
-        titleKey: 'ui_renderer_settings',
-        subtitleKey: 'ui_renderer_settings_desc',
-        icon: Icons.graphic_eq_rounded,
-      ),
-      (
-        path: '/settings/audio_output',
-        titleKey: 'ui_audio_output',
-        subtitleKey: 'ui_audio_output_desc',
-        icon: Icons.surround_sound_rounded,
+        path: AppRoutes.kSettingsPipDanmaku,
+        titleKey: 'pip_danmaku',
+        subtitleKey: 'pip_danmaku_desc',
+        icon: Remix.picture_in_picture_2_line,
       ),
     ],
   ),
@@ -83,7 +65,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     titleKey: 'player_kernel_settings',
     entries: <SettingsEntry>[
       (
-        path: '/settings/player_kernel',
+        path: AppRoutes.kSettingsPlayerKernel,
         titleKey: 'player_kernel',
         subtitleKey: 'player_kernel_desc',
         icon: Remix.cpu_line,
@@ -94,7 +76,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     titleKey: 'network_proxy_settings',
     entries: <SettingsEntry>[
       (
-        path: '/settings/proxy',
+        path: AppRoutes.kSettingsProxy,
         titleKey: 'custom_network_proxy',
         subtitleKey: 'custom_network_proxy_desc',
         icon: Remix.global_line,
@@ -102,61 +84,20 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     ],
   ),
   (
-    titleKey: 'local_interaction_settings',
-    entries: <SettingsEntry>[
-      (
-        path: '/settings/account',
-        titleKey: 'bilibili_login',
-        subtitleKey: 'ui_account_desc',
-        icon: Icons.account_circle_outlined,
-      ),
-      (
-        path: '/settings/tags',
-        titleKey: 'tag_management',
-        subtitleKey: 'tag_management_subtitle',
-        icon: Icons.sell_outlined,
-      ),
-      (
-        path: '/settings/audience',
-        titleKey: 'audience_metric_settings',
-        subtitleKey: 'audience_metric_settings_desc',
-        icon: Icons.insights_rounded,
-      ),
-    ],
-  ),
-  (
     titleKey: 'general_settings',
     entries: <SettingsEntry>[
-      (path: '/settings/general', titleKey: 'general', subtitleKey: 'general_desc', icon: Remix.settings_4_line),
+      (path: AppRoutes.kSettingsGeneral, titleKey: 'general', subtitleKey: 'general_desc', icon: Remix.settings_4_line),
       (
-        path: '/settings/navigation',
+        path: AppRoutes.kSettingsNavigation,
         titleKey: 'navigation_display_settings',
         subtitleKey: 'navigation_display_settings_desc',
         icon: Remix.menu_line,
       ),
       (
-        path: '/settings/platform',
+        path: AppRoutes.kSettingsPlatform,
         titleKey: 'platform_settings',
         subtitleKey: 'platform_settings_desc',
         icon: Remix.apps_2_line,
-      ),
-      (
-        path: '/settings/page',
-        titleKey: 'page_settings',
-        subtitleKey: 'page_settings_subtitle',
-        icon: Icons.list_alt_rounded,
-      ),
-      (
-        path: '/settings/font',
-        titleKey: 'ui_font_settings',
-        subtitleKey: 'ui_font_settings_desc',
-        icon: Icons.text_fields_rounded,
-      ),
-      (
-        path: '/settings/fonts',
-        titleKey: 'font_family',
-        subtitleKey: 'font_family_desc',
-        icon: Icons.font_download_outlined,
       ),
     ],
   ),
@@ -164,7 +105,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     titleKey: 'data_manage',
     entries: <SettingsEntry>[
       (
-        path: '/settings/cache',
+        path: AppRoutes.kSettingsCache,
         titleKey: 'cache_and_data',
         subtitleKey: 'cache_and_data_desc',
         icon: Remix.database_2_line,
@@ -175,25 +116,20 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     titleKey: 'backup_manage',
     entries: <SettingsEntry>[
       (
-        path: '/settings/backup',
+        path: AppRoutes.kBackup,
         titleKey: 'backup_recover',
         subtitleKey: 'backup_recover_desc',
         icon: Remix.cloud_line,
       ),
-      (
-        path: '/settings/backups',
-        titleKey: 'local_backup',
-        subtitleKey: 'create_backup_subtitle',
-        icon: Icons.folder_copy_outlined,
-      ),
-      (path: '/settings/webdav', titleKey: 'webdav', subtitleKey: 'backup_to_webdav', icon: Icons.cloud_outlined),
     ],
   ),
+  // The desktop app reaches 关于 from its overflow menu; this app has no such
+  // menu, so the row stays here to keep the page reachable.
   (
     titleKey: 'about',
     entries: <SettingsEntry>[
       (
-        path: '/settings/about',
+        path: AppRoutes.kAbout,
         titleKey: 'ui_pure_live_tv',
         subtitleKey: 'check_update',
         icon: Icons.info_outline_rounded,
@@ -247,32 +183,68 @@ class SettingsCatalogView extends StatelessWidget {
   }
 }
 
-/// `/settings` reached directly: the catalog as its own page.
+/// Titles for the pages that are reached from inside a parent page (or from
+/// the desktop app's own routes) and therefore are not menu rows.
+const Map<String, String> settingsSectionTitleKeys = <String, String>{
+  AppRoutes.kSettingsPage: 'page_settings',
+  AppRoutes.kSettingsFont: 'ui_font_settings',
+  AppRoutes.kSettingsFontFamily: 'font_family',
+  AppRoutes.kSettingsDecoder: 'ui_decoder_settings',
+  AppRoutes.kSettingsRenderer: 'ui_renderer_settings',
+  AppRoutes.kSettingsAudioOutput: 'ui_audio_output',
+  AppRoutes.kSettingsDanmaku: 'danmaku_settings',
+  AppRoutes.kSettingsAudience: 'audience_metric_settings',
+  AppRoutes.kSettingsLocalBackup: 'local_backup',
+  AppRoutes.kSettingsPipDanmaku: 'pip_danmaku',
+  AppRoutes.kSettingsConfigPreview: 'config_preview',
+  AppRoutes.kSettingsDanmuShield: 'block_list',
+  AppRoutes.kSettingsHotAreas: 'platform_display',
+  AppRoutes.kSettingsAccount: 'third_party_auth',
+  AppRoutes.kSettingsTags: 'tag_management',
+  AppRoutes.kWebDavPage: 'webdav',
+};
+
+/// Page title for a settings location: the menu row first, then the
+/// sub-page table.
+String settingsSectionTitleKey(String location) {
+  final SettingsEntry? entry = settingsEntryForLocation(location);
+  if (entry != null) return entry.titleKey;
+  for (final MapEntry<String, String> candidate in settingsSectionTitleKeys.entries) {
+    if (location == candidate.key || location.startsWith('${candidate.key}/')) {
+      return candidate.value;
+    }
+  }
+  return 'ui_settings';
+}
+
+/// `/settings` — the menu as a full page, with the desktop app's
+/// configuration-preview action in the app bar.
 class TvSettingsRoutePage extends StatelessWidget {
   const TvSettingsRoutePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return TvScaffold(title: i18n('settings_title'), child: const SettingsCatalogView());
+    return TvScaffold(
+      appBar: TvAppBar(
+        title: i18n('settings_title'),
+        actions: [
+          TvButton(
+            title: i18n('config_preview'),
+            size: TvButtonSize.mini,
+            icon: Icon(Remix.file_text_line, size: 22.sp),
+            onTap: () => context.push(AppRoutes.kSettingsConfigPreview),
+          ),
+        ],
+      ),
+      child: const SettingsCatalogView(),
+    );
   }
-}
-
-/// The catalog rendered inside the home side menu's content pane.
-///
-/// The home page already supplies the scaffold and the side menu, so a row
-/// selection pushes its section as a full-screen page with a back button.
-class TvSettingsEmbedded extends StatelessWidget {
-  const TvSettingsEmbedded({super.key});
-
-  @override
-  Widget build(BuildContext context) => const SettingsCatalogView();
 }
 
 /// Wraps one settings section route with a title, a back button and scrolling.
 ///
-/// Sections are pushed as `/settings/<module>`, so they are full-screen pages
-/// rather than content sitting next to a module column the d-pad could not
-/// leave.
+/// Sections are pushed as their own page, so they are full-screen rather than
+/// content sitting next to a module column the d-pad could not leave.
 class SettingsSectionScaffold extends StatelessWidget {
   const SettingsSectionScaffold({super.key, required this.location, required this.child});
 
@@ -281,10 +253,8 @@ class SettingsSectionScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SettingsEntry? entry = settingsEntryForLocation(location);
-
     return TvScaffold(
-      title: entry == null ? i18n('ui_settings') : i18n(entry.titleKey),
+      title: i18n(settingsSectionTitleKey(location)),
       child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),
     );
   }

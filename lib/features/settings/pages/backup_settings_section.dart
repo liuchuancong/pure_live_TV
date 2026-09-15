@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
@@ -31,6 +32,14 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // The desktop backup page lists the cloud destinations first; WebDAV is
+        // the one this app implements.
+        TvSettingsNavTile(
+          title: i18n('webdav'),
+          subtitle: i18n('backup_to_webdav'),
+          icon: Remix.cloud_line,
+          onTap: () => context.push(AppRoutes.kWebDavPage),
+        ),
         TvSettingsOptionTile(
           title: i18n('ui_export_configuration_to_this_device'),
           subtitle: i18n('ui_export_all_settings_to_pure_live_backup_json_in'),
@@ -61,6 +70,13 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
             padding: EdgeInsets.only(left: 16.sp, top: 8.sp),
             child: Text(_lastResult, style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor)),
           ),
+        // Local backup files, as on the desktop page's local-backup group.
+        TvSettingsNavTile(
+          title: i18n('local_backup'),
+          subtitle: i18n('create_backup_subtitle'),
+          icon: Icons.folder_copy_outlined,
+          onTap: () => context.push(AppRoutes.kSettingsLocalBackup),
+        ),
         SizedBox(height: 12.h),
         const _LocalLogCard(),
       ],

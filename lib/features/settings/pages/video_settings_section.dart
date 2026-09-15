@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
@@ -32,6 +32,37 @@ class VideoSettingsSectionPage extends ConsumerWidget {
           icon: Icons.memory_rounded,
           value: playerState.enableCodec,
           onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),
+        ),
+        // Sub-pages the desktop video page hosts, in its order: viewer metrics,
+        // picture-in-picture danmaku, the danmaku font and the block list. The
+        // danmaku appearance page is TV-only, so it leads this block.
+        TvSettingsNavTile(
+          title: i18n('danmaku_settings'),
+          subtitle: i18n('ui_show_danmaku_inside_live_rooms'),
+          icon: Icons.subtitles_rounded,
+          onTap: () => context.push(AppRoutes.kSettingsDanmaku),
+        ),
+        TvSettingsNavTile(
+          title: i18n('audience_metric_settings'),
+          subtitle: i18n('audience_metric_settings_desc'),
+          icon: Icons.insights_rounded,
+          onTap: () => context.push(AppRoutes.kSettingsAudience),
+        ),
+        TvSettingsNavTile(
+          title: i18n('pip_danmaku'),
+          subtitle: i18n('pip_danmaku_desc'),
+          icon: Icons.picture_in_picture_alt_rounded,
+          onTap: () => context.push(AppRoutes.kSettingsPipDanmaku),
+        ),
+        TvSettingsNavTile(
+          title: i18n('change_danmaku_font_family'),
+          icon: Icons.font_download_outlined,
+          onTap: () => context.push(AppRoutes.kSettingsFontFamily),
+        ),
+        TvSettingsNavTile(
+          title: i18n('danmaku_filter'),
+          icon: Remix.filter_2_line,
+          onTap: () => context.push(AppRoutes.kSettingsDanmuShield),
         ),
       ],
     );
