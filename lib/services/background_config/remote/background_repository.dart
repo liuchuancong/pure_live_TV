@@ -38,21 +38,40 @@ class BackgroundRepository {
 
   Future<BackgroundCatalog> loadCatalog({bool force = false}) async {
     if (!force && _catalog != null) return _catalog!;
-    final json = await _getJson(catalogPath);
-    final catalog = BackgroundCatalog.fromJson(json);
-    if (catalog.isEmpty) {
-      throw const FormatException('远端目录为空');
+    try {
+      final json = await _getJson(catalogPath);
+      final catalog = BackgroundCatalog.fromJson(json);
+      if (catalog.isEmpty) {
+        throw const FormatException('远端目录为空');
+      }
+      _catalog = catalog;
+    } catch (_) {
+      // 仓库里没有预生成的 catalog.json 时用内置结构和 mapping.json 工作
+      _catalog ??= BackgroundCatalog.builtIn();
+      if (force) rethrow;
     }
-    _catalog = catalog;
-    return catalog;
+    return _catalog!;
   }
 
   Future<BackgroundShard> loadShard(
+    BackgroundSource source,
     BackgroundCategory category, {
     bool force = false,
-  }) => loadShardPath(category.catalog, force: force);
+  }) => loadShardPath(
+    category.catalog,
+    category: category,
+    kind: source.kind,
+    sourceId: source.id,
+    force: force,
+  );
 
-  Future<BackgroundShard> loadShardPath(String key, {bool force = false}) {
+  Future<BackgroundShard> loadShardPath(
+    String key, {
+    required BackgroundCategory category,
+    required BackgroundKind kind,
+    required String sourceId,
+    bool force = false,
+  }) {
     if (key.isEmpty) {
       return Future<BackgroundShard>.error(
         const FormatException('分片路径为空'),
@@ -64,8 +83,15 @@ class BackgroundRepository {
       final pending = _inflight[key];
       if (pending != null) return pending;
     }
-    final future = _getJson(key)
-        .then(BackgroundShard.fromJson)
+    final future = _getRaw(key)
+        .then(
+          (raw) => BackgroundShard.parse(
+            raw,
+            category: category,
+            kind: kind,
+            source: sourceId,
+          ),
+        )
         .then((shard) {
           _shards[key] = shard;
           return shard;
@@ -99,32 +125,43 @@ class BackgroundRepository {
     _inflight.clear();
   }
 
-  /// 带一次换镜像重试的 GET。
-  Future<Map<String, dynamic>> _getJson(
-    String path, {
-    bool retried = false,
-  }) async {
+  /// 带一次换镜像重试的 GET，返回原始 JSON（对象或数组）。
+  ///
+  /// 404 说明文件本来就不存在（比如仓库没放 catalog.json），
+  /// 这时不该作废镜像，直接抛给调用方走兜底。
+  Future<dynamic> _getRaw(String path, {bool retried = false}) async {
     final base = await BackgroundMirror.resolve(force: retried);
     final url = BackgroundMirror.urlWith(base, path);
     try {
       final res = await _dio.get<dynamic>(url);
-      return _asMap(res.data);
+      return _decode(res.data);
+    } on DioException catch (error) {
+      final notFound = error.response?.statusCode == 404;
+      if (retried || notFound) rethrow;
+      await BackgroundMirror.invalidate(base);
+      return _getRaw(path, retried: true);
     } catch (_) {
       if (retried) rethrow;
       // 当前镜像可能已经失效，作废后换一个再来
       await BackgroundMirror.invalidate(base);
-      return _getJson(path, retried: true);
+      return _getRaw(path, retried: true);
     }
   }
 
+  Future<Map<String, dynamic>> _getJson(
+    String path, {
+    bool retried = false,
+  }) async {
+    final raw = await _getRaw(path, retried: retried);
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    throw const FormatException('返回内容不是 JSON 对象');
+  }
+
   /// 部分镜像会以 text/plain 返回，这里统一兜底解析。
-  Map<String, dynamic> _asMap(dynamic data) {
-    if (data is Map) return Map<String, dynamic>.from(data);
-    if (data is String && data.isNotEmpty) {
-      final decoded = jsonDecode(data);
-      if (decoded is Map) return Map<String, dynamic>.from(decoded);
-    }
-    throw const FormatException('返回内容不是合法 JSON 对象');
+  dynamic _decode(dynamic data) {
+    if (data is Map || data is List) return data;
+    if (data is String && data.isNotEmpty) return jsonDecode(data);
+    throw const FormatException('返回内容不是合法 JSON');
   }
 }
 
@@ -139,11 +176,18 @@ final backgroundCatalogProvider = FutureProvider<BackgroundCatalog>(
 
 /// 某个分类下的资源清单。
 ///
-/// key 用分片的仓库路径（String）而不是 [BackgroundCategory] 对象：
-/// 目录模型没有实现 == / hashCode，用对象做 family key 会在每次 rebuild
-/// 时生成新 provider，导致重复请求。
+/// key 用记录（sourceId, kind, category）：[BackgroundCategory] 实现了
+/// == / hashCode，String 和 enum 也是值语义，整条 key 结构相等，
+/// 同分类来回切标签不会重复请求。
 final backgroundShardProvider =
-    FutureProvider.family<BackgroundShard, String>(
-      (ref, catalogPath) =>
-          BackgroundRepository.instance.loadShardPath(catalogPath),
-    );
+    FutureProvider.family<
+      BackgroundShard,
+      ({String sourceId, BackgroundKind kind, BackgroundCategory category})
+    >((ref, key) {
+      return BackgroundRepository.instance.loadShardPath(
+        key.category.catalog,
+        category: key.category,
+        kind: key.kind,
+        sourceId: key.sourceId,
+      );
+    });

@@ -111,12 +111,17 @@ class BackgroundCategory {
   /// 只有一个分类的来源（bing/deepin）置 true，界面不再显示分类栏
   final bool hidden;
 
+  /// 分片是仓库原生的 `mapping.json` 时，条目 `file` 相对的前缀。
+  /// 走 catalog 分片时为空字符串（那时 file 已经是仓库根相对路径）。
+  final String pathPrefix;
+
   const BackgroundCategory({
     required this.id,
     required this.name,
     required this.catalog,
     required this.count,
     this.hidden = false,
+    this.pathPrefix = '',
   });
 
   factory BackgroundCategory.fromJson(Map<String, dynamic> json) =>
@@ -126,7 +131,22 @@ class BackgroundCategory {
         catalog: json['catalog'] as String? ?? '',
         count: (json['count'] as num?)?.toInt() ?? 0,
         hidden: json['hidden'] as bool? ?? false,
+        pathPrefix: json['pathPrefix'] as String? ?? '',
       );
+
+  /// 相等性按「分片路径 + 前缀」判定。
+  /// [backgroundShardProvider] 用本类做 family key，没有 == / hashCode
+  /// 的话每次 rebuild 都会生成新 provider，导致重复请求。
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BackgroundCategory &&
+          other.id == id &&
+          other.catalog == catalog &&
+          other.pathPrefix == pathPrefix;
+
+  @override
+  int get hashCode => Object.hash(id, catalog, pathPrefix);
 }
 
 /// 一个背景来源（官方壁纸 / Wallhaven / 必应 / deepin / 动态壁纸 / 纯色渐变）
@@ -242,6 +262,121 @@ class BackgroundCatalog {
   }
 
   bool get isEmpty => sources.isEmpty;
+
+  /// 内置目录。
+  ///
+  /// 仓库里没有预生成的 `catalog.json` 时用它兜底：结构和分类清单
+  /// 来自本地抓取目录，图片清单仍然从仓库的 `mapping.json` 现取，
+  /// 所以不需要仓库额外放任何文件。
+  ///
+  /// 计数只是分类标签上的初始提示，实际以 `mapping.json` 为准。
+  factory BackgroundCatalog.builtIn() {
+    const prefix = 'wallpapers/';
+    BackgroundSource images(
+      String id,
+      String name,
+      bool categorized,
+      List<(String, String, int)> cats,
+    ) => BackgroundSource(
+      id: id,
+      name: name,
+      kind: BackgroundKind.image,
+      categorized: categorized,
+      count: cats.fold(0, (sum, c) => sum + c.$3),
+      categories: [
+        for (final (catId, catName, count) in cats)
+          BackgroundCategory(
+            id: catId,
+            name: catName,
+            catalog: '$prefix$id/${categorized ? '$catId/' : ''}mapping.json',
+            count: count,
+            hidden: !categorized,
+            pathPrefix: prefix,
+          ),
+      ],
+    );
+
+    return BackgroundCatalog(
+      version: 1,
+      generatedAt: '',
+      repo: const BackgroundRepoInfo(
+        owner: 'liuchuancong',
+        name: 'background',
+        branch: 'master',
+      ),
+      totalItems: 0,
+      sources: <BackgroundSource>[
+        images('official', '官方壁纸', true, const <(String, String, int)>[
+          ('nature', '自然', 240),
+          ('art', '艺术', 155),
+          ('architecture', '建筑', 28),
+          ('life', '生命', 31),
+          ('geometry', '纹理', 72),
+          ('other', '其他', 240),
+        ]),
+        images('wallhaven', 'Wallhaven', true, const <(String, String, int)>[
+          ('popular', '热门', 233),
+          ('minimalism', '极简主义', 240),
+          ('patterns', '图案', 240),
+          ('landscape', '风景', 240),
+          ('nature', '自然', 240),
+          ('cosplay', 'Cosplay', 240),
+          ('spiderman', '蜘蛛侠', 240),
+          ('ghibli', '吉卜力', 240),
+          ('naruto', '火影忍者', 219),
+          ('sci-fi', '科幻', 240),
+          ('anime', '日漫', 240),
+          ('anime-girls', '动漫女孩', 240),
+          ('cyberpunk', '赛博朋克', 240),
+          ('pixel-art', '像素艺术', 240),
+          ('artwork', 'Artwork', 240),
+          ('cityscape', 'Cityscape', 240),
+          ('digital-art', 'Digital Art', 240),
+          ('fantasy-art', 'Fantasy Art', 240),
+          ('final-fantasy', 'Final Fantasy', 240),
+        ]),
+        images('bing', '必应壁纸', false, const <(String, String, int)>[
+          ('all', '必应壁纸', 161),
+        ]),
+        images('deepin', 'deepin', false, const <(String, String, int)>[
+          ('all', 'deepin', 26),
+        ]),
+        BackgroundSource(
+          id: 'video',
+          name: '动态壁纸',
+          kind: BackgroundKind.video,
+          categorized: false,
+          count: 114,
+          categories: const <BackgroundCategory>[
+            BackgroundCategory(
+              id: 'all',
+              name: '动态壁纸',
+              catalog: 'videos/mapping.json',
+              count: 114,
+              hidden: true,
+              pathPrefix: 'videos/',
+            ),
+          ],
+        ),
+        const BackgroundSource(
+          id: 'solid-color',
+          name: '纯色渐变',
+          kind: BackgroundKind.gradient,
+          categorized: false,
+          count: 139,
+          categories: <BackgroundCategory>[
+            BackgroundCategory(
+              id: 'all',
+              name: '纯色渐变',
+              catalog: 'solid-colors.json',
+              count: 139,
+              hidden: true,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 /// 分类分片内容
@@ -286,6 +421,116 @@ class BackgroundShard {
       customPalette: rawPalette is List
           ? rawPalette.whereType<String>().toList(growable: false)
           : const <String>[],
+    );
+  }
+
+  /// 统一解析三种分片格式，避免 App 依赖某一种仓库布局：
+  ///
+  /// 1. `{ items: [...] }` —— 预生成的 catalog 分片，`file` 已是仓库根相对路径
+  /// 2. `[ {...}, ... ]` —— 仓库原生的 `mapping.json`，`file` 相对 [pathPrefix]
+  /// 3. `{ backgrounds: [...] }` —— 根目录的 `solid-colors.json`
+  ///
+  /// [pathPrefix] 来自 [BackgroundCategory.pathPrefix]。
+  factory BackgroundShard.parse(
+    dynamic raw, {
+    required BackgroundCategory category,
+    required BackgroundKind kind,
+    String source = '',
+  }) {
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      if (map['items'] is List) {
+        return BackgroundShard.fromJson(map);
+      }
+      final backgrounds = map['backgrounds'];
+      if (backgrounds is List) {
+        final palette = map['customPalette'];
+        return BackgroundShard(
+          source: source,
+          category: category.id,
+          name: category.name,
+          kind: BackgroundKind.gradient,
+          count: backgrounds.length,
+          customPalette: palette is List
+              ? palette.whereType<String>().toList(growable: false)
+              : const <String>[],
+          items: backgrounds
+              .whereType<Map>()
+              .map((e) => _gradientItem(Map<String, dynamic>.from(e)))
+              .toList(growable: false),
+        );
+      }
+      // 单对象兜底：当成一条记录
+      return BackgroundShard(
+        source: source,
+        category: category.id,
+        name: category.name,
+        kind: kind,
+        count: 1,
+        items: <BackgroundItem>[_mappingItem(map, category.pathPrefix)],
+      );
+    }
+
+    if (raw is List) {
+      final items = <BackgroundItem>[];
+      for (final entry in raw) {
+        if (entry is! Map) continue;
+        final map = Map<String, dynamic>.from(entry);
+        // mapping.json 里会混进下载失败的记录，跳过
+        final status = map['status'];
+        if (status is String &&
+            status != 'ok' &&
+            status != 'exists' &&
+            status != 'listed') {
+          continue;
+        }
+        final item = _mappingItem(map, category.pathPrefix);
+        if (item.file.isEmpty) continue;
+        items.add(item);
+      }
+      return BackgroundShard(
+        source: source,
+        category: category.id,
+        name: category.name,
+        kind: kind,
+        count: items.length,
+        items: items,
+      );
+    }
+
+    throw const FormatException('无法识别的分片格式');
+  }
+
+  /// `mapping.json` 的一条 → [BackgroundItem]，`file` 补成仓库根相对路径
+  static BackgroundItem _mappingItem(Map<String, dynamic> json, String prefix) {
+    final rawFile = json['file'] as String? ?? '';
+    final poster = json['poster'] as String?;
+    return BackgroundItem(
+      file: rawFile.isEmpty ? '' : '$prefix$rawFile',
+      id: json['id'] as String?,
+      name: json['name'] as String?,
+      poster: poster == null || poster.isEmpty ? null : '$prefix$poster',
+      bytes: (json['bytes'] as num?)?.toInt(),
+    );
+  }
+
+  /// `solid-colors.json` 的一条 → [BackgroundItem]（渐变的“文件”就是 css 本身）
+  static BackgroundItem _gradientItem(Map<String, dynamic> json) {
+    return BackgroundItem(
+      file: 'solid-colors.json#${json['index'] ?? ''}',
+      id: json['index'] as String?,
+      name: json['name'] as String?,
+      css: json['css'] as String?,
+      gradient: json['gradient'] is List
+          ? (json['gradient'] as List)
+                .whereType<Map>()
+                .map(
+                  (e) => BackgroundGradientStop.fromJson(
+                    Map<String, dynamic>.from(e),
+                  ),
+                )
+                .toList(growable: false)
+          : null,
     );
   }
 }

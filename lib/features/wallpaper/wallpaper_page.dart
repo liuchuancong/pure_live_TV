@@ -113,7 +113,12 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
   }
 
   Widget _buildGrid(BackgroundSource source, BackgroundCategory category) {
-    final shardAsync = ref.watch(backgroundShardProvider(category.catalog));
+    final shardKey = (
+      sourceId: source.id,
+      kind: source.kind,
+      category: category,
+    );
+    final shardAsync = ref.watch(backgroundShardProvider(shardKey));
     final bgState = SettingsService.to.bgState;
     final currentUrl = source.kind == BackgroundKind.video
         ? bgState.networkVideoUrl
@@ -123,7 +128,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) => _ErrorView(
         message: '$error',
-        onRetry: () => ref.invalidate(backgroundShardProvider(category.catalog)),
+        onRetry: () => ref.invalidate(backgroundShardProvider(shardKey)),
       ),
       data: (shard) {
         final items = shard.items;
