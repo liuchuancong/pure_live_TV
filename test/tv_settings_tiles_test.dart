@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
+import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/shared/dialog/tv_dialog.dart';
+import 'package:pure_live/shared/widgets/tv_settings_nav_tile.dart';
 import 'package:pure_live/shared/widgets/tv_settings_menu_tile.dart';
 import 'package:pure_live/shared/widgets/tv_settings_slider_tile.dart';
 import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
@@ -94,5 +96,29 @@ void main() {
     );
     expect(find.text('Confirm'), findsOneWidget);
     expect(find.text('Cancel'), findsOneWidget);
+  });
+
+  testWidgets('the settings catalog renders every group and row', (tester) async {
+    // A tall viewport so the lazy ListView builds the whole catalog; i18n
+    // falls back to the key when localizations are not loaded, which is what
+    // the finders below match on.
+    tester.view.physicalSize = const Size(1920, 4200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await pump(tester, const SettingsCatalogView());
+
+    final int expectedRows = settingsCatalog.fold(0, (sum, group) => sum + group.entries.length);
+    expect(find.byType(TvSettingsGroupTitle), findsNWidgets(settingsCatalog.length));
+    expect(find.byType(TvSettingsNavTile), findsNWidgets(expectedRows));
+
+    for (final SettingsGroup group in settingsCatalog) {
+      // A group heading may repeat a row title (the reference design does this
+      // for IPTV and refresh), so presence is what matters here.
+      expect(find.text(group.titleKey), findsAtLeastNWidgets(1), reason: 'group ${group.titleKey}');
+      for (final SettingsEntry entry in group.entries) {
+        expect(find.text(entry.titleKey), findsAtLeastNWidgets(1), reason: 'entry ${entry.path}');
+      }
+    }
   });
 }

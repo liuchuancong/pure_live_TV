@@ -16,6 +16,7 @@ export 'tv_scaffold.dart';
 export 'tv_section.dart';
 export 'tv_settings_card.dart';
 export 'tv_settings_menu_tile.dart';
+export 'tv_settings_nav_tile.dart';
 export 'tv_settings_slider_tile.dart';
 export 'tv_settings_switch_tile.dart';
 export 'tv_settings_tile.dart';

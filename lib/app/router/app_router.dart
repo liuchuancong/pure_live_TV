@@ -44,12 +44,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       // nothing at all (see test/settings_route_nesting_test.dart): every link
       // pointed at `/settings/<module>` while no such location existed, which
       // left all 25 settings modules unreachable.
+      //
+      // `/settings` itself is the grouped catalog; each module is a pushed
+      // full-screen section with a back button.
       GoRoute(
         path: AppRoutes.kSettings,
-        redirect: (context, state) => state.uri.path == AppRoutes.kSettings ? '${AppRoutes.kSettings}/general' : null,
+        builder: (context, state) => const TvSettingsRoutePage(),
         routes: [
           ShellRoute(
-            builder: (context, state, child) => TvSettingsShell(child: child),
+            builder: (context, state, child) =>
+                SettingsSectionScaffold(location: state.matchedLocation, child: child),
             routes: [
               GoRoute(path: 'general', builder: (context, state) => GeneralSettingsSectionPage()),
               GoRoute(path: 'theme', builder: (context, state) => ThemeSettingsSectionPage()),

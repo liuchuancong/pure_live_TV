@@ -16,8 +16,9 @@ void main() {
     routes: [
       GoRoute(path: '/home', builder: (context, state) => blank),
       GoRoute(
+        // `/settings` is the grouped catalog; each module is a child route.
         path: '/settings',
-        redirect: (context, state) => state.uri.path == '/settings' ? '/settings/general' : null,
+        builder: (context, state) => blank,
         routes: [
           ShellRoute(
             builder: (context, state, child) => child,
@@ -32,10 +33,10 @@ void main() {
     ],
   );
 
-  test('every settings section matches below /settings', () {
+  test('the catalog and every settings section match below /settings', () {
     final router = buildNestedRouter();
 
-    for (final path in ['/settings/general', '/settings/font', '/settings/fonts']) {
+    for (final path in ['/settings', '/settings/general', '/settings/font', '/settings/fonts']) {
       final match = router.configuration.findMatch(Uri.parse(path));
       expect(match.isError, isFalse, reason: '$path must resolve');
       expect(match.uri.path, path);
