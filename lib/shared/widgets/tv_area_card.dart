@@ -84,17 +84,12 @@ class TvAreaCard extends StatelessWidget {
     return DpadFocusable(
       autofocus: false,
       effects: effects,
+      // `DpadFocusable` already reveals the focused card through
+      // `DpadScroll.ensureVisible` (padded, and it walks every scrollable
+      // ancestor). The extra `Scrollable.ensureVisible` here animated to a
+      // second, different offset and made the grid jitter while moving.
       onSelect: onTap,
       onLongSelect: onLongPress,
-      onFocusChange: (focused) {
-        if (!focused) return;
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          alignment: 0.2,
-        );
-      },
       child: const SizedBox(),
     );
   }

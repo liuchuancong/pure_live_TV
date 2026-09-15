@@ -36,16 +36,16 @@ class TvSettingsSliderTile extends StatelessWidget {
         DpadGlowEffect(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
       ],
       onDirection: (direction) {
-        if (direction == TraversalDirection.left) {
-          final newValue = (value - step).clamp(min, max);
-          onChanged(newValue);
-          return true;
-        } else if (direction == TraversalDirection.right) {
-          final newValue = (value + step).clamp(min, max);
-          onChanged(newValue);
-          return true;
+        if (direction != TraversalDirection.left && direction != TraversalDirection.right) {
+          return false;
         }
-        return false;
+        final double delta = direction == TraversalDirection.left ? -step : step;
+        final double newValue = (value + delta).clamp(min, max);
+        // At the minimum/maximum the value no longer changes: release the key
+        // so focus can leave the slider instead of being trapped on it.
+        if (newValue == value) return false;
+        onChanged(newValue);
+        return true;
       },
       builder: (context, state, child) {
         return Container(

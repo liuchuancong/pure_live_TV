@@ -29,9 +29,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     );
 
     final availableSitesList = Sites().availableSites(containsAll: true);
-    final List<TvTabItemData> siteTabs = availableSitesList.map((site) {
-      return TvTabItemData(title: site.name);
-    }).toList();
+    final List<TvTabItemData> siteTabs = availableSitesList.map(TvTabItemData.site).toList();
 
     return TvScaffold(
       child: Container(
@@ -57,11 +55,14 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                   SizedBox(height: 16.sp),
                   Expanded(
                     child: TvTabView(
-                      memoryKey: "history_tv_view_${historyPageState.tabSiteIndex}_${currentRooms.length}",
+                      // Stable identity: the room count used to be part of the
+                      // key, so clearing or adding one entry rebuilt the view
+                      // and reset focus and scroll position.
+                      memoryKey: "history_tv_view_${historyPageState.tabSiteIndex}",
                       verticalEdge: DpadEdgeBehavior.leave,
                       horizontalEdge: DpadEdgeBehavior.stop,
                       child: BasePagedTvView<LiveRoom>(
-                        key: ValueKey('history_grid_${historyPageState.tabSiteIndex}_${currentRooms.length}'),
+                        key: ValueKey('history_grid_${historyPageState.tabSiteIndex}'),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

@@ -38,36 +38,48 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: AppRoutes.kInitial, builder: (context, state) => const HomePage()),
       GoRoute(path: AppRoutes.kAgreementPage, builder: (context, state) => const AgreementPage()),
-      ShellRoute(
-      builder: (context, state, child) => TvSettingsShell(child: child),
-      routes: [
-        GoRoute(path: 'general', builder: (context, state) => GeneralSettingsSectionPage()),
-        GoRoute(path: 'theme', builder: (context, state) => ThemeSettingsSectionPage()),
-        GoRoute(path: 'player_kernel', builder: (context, state) => PlayerKernelSettingsSectionPage()),
-        GoRoute(path: 'video', builder: (context, state) => VideoSettingsSectionPage()),
-        GoRoute(path: 'decoder', builder: (context, state) => DecoderSettingsSectionPage()),
-        GoRoute(path: 'renderer', builder: (context, state) => RendererSettingsSectionPage()),
-        GoRoute(path: 'audio_output', builder: (context, state) => AudioOutputSettingsSectionPage()),
-        GoRoute(path: 'danmaku', builder: (context, state) => DanmakuSettingsSectionPage()),
-        GoRoute(path: 'platform', builder: (context, state) => PlatformSettingsSectionPage()),
-        GoRoute(path: 'page', builder: (context, state) => PageSettingsSectionPage()),
-        GoRoute(path: 'refresh', builder: (context, state) => RefreshSettingsSectionPage()),
-        GoRoute(path: 'font', builder: (context, state) => FontSettingsSectionPage()),
-        GoRoute(path: 'cache', builder: (context, state) => CacheSettingsSectionPage()),
-        GoRoute(path: 'proxy', builder: (context, state) => ProxySettingsSectionPage()),
-        GoRoute(path: 'backup', builder: (context, state) => BackupSettingsSectionPage()),
-        GoRoute(path: 'webdav', builder: (context, state) => WebDavSettingsSectionPage()),
-        GoRoute(path: 'backups', builder: (context, state) => BackupManageSectionPage()),
-        GoRoute(path: 'account', builder: (context, state) => AccountSettingsSectionPage()),
-        GoRoute(path: 'shield', builder: (context, state) => DanmakuShieldSectionPage()),
-        GoRoute(path: 'audience', builder: (context, state) => AudienceMetricSectionPage()),
-        GoRoute(path: 'tags', builder: (context, state) => TagManagementSectionPage()),
-        GoRoute(path: 'navigation', builder: (context, state) => NavigationSectionPage()),
-        GoRoute(path: 'fonts', builder: (context, state) => FontFamilyManagerSectionPage()),
-        GoRoute(path: 'iptv', builder: (context, state) => IptvManageSectionPage()),
-        GoRoute(path: 'about', builder: (context, state) => AboutSettingsSectionPage()),
-      ],
-    ),
+      // The settings shell must be nested under a GoRoute that owns the
+      // `/settings` prefix. A top-level ShellRoute has no path of its own, so
+      // its relative children have nothing to resolve against and match
+      // nothing at all (see test/settings_route_nesting_test.dart): every link
+      // pointed at `/settings/<module>` while no such location existed, which
+      // left all 25 settings modules unreachable.
+      GoRoute(
+        path: AppRoutes.kSettings,
+        redirect: (context, state) => state.uri.path == AppRoutes.kSettings ? '${AppRoutes.kSettings}/general' : null,
+        routes: [
+          ShellRoute(
+            builder: (context, state, child) => TvSettingsShell(child: child),
+            routes: [
+              GoRoute(path: 'general', builder: (context, state) => GeneralSettingsSectionPage()),
+              GoRoute(path: 'theme', builder: (context, state) => ThemeSettingsSectionPage()),
+              GoRoute(path: 'player_kernel', builder: (context, state) => PlayerKernelSettingsSectionPage()),
+              GoRoute(path: 'video', builder: (context, state) => VideoSettingsSectionPage()),
+              GoRoute(path: 'decoder', builder: (context, state) => DecoderSettingsSectionPage()),
+              GoRoute(path: 'renderer', builder: (context, state) => RendererSettingsSectionPage()),
+              GoRoute(path: 'audio_output', builder: (context, state) => AudioOutputSettingsSectionPage()),
+              GoRoute(path: 'danmaku', builder: (context, state) => DanmakuSettingsSectionPage()),
+              GoRoute(path: 'platform', builder: (context, state) => PlatformSettingsSectionPage()),
+              GoRoute(path: 'page', builder: (context, state) => PageSettingsSectionPage()),
+              GoRoute(path: 'refresh', builder: (context, state) => RefreshSettingsSectionPage()),
+              GoRoute(path: 'font', builder: (context, state) => FontSettingsSectionPage()),
+              GoRoute(path: 'cache', builder: (context, state) => CacheSettingsSectionPage()),
+              GoRoute(path: 'proxy', builder: (context, state) => ProxySettingsSectionPage()),
+              GoRoute(path: 'backup', builder: (context, state) => BackupSettingsSectionPage()),
+              GoRoute(path: 'webdav', builder: (context, state) => WebDavSettingsSectionPage()),
+              GoRoute(path: 'backups', builder: (context, state) => BackupManageSectionPage()),
+              GoRoute(path: 'account', builder: (context, state) => AccountSettingsSectionPage()),
+              GoRoute(path: 'shield', builder: (context, state) => DanmakuShieldSectionPage()),
+              GoRoute(path: 'audience', builder: (context, state) => AudienceMetricSectionPage()),
+              GoRoute(path: 'tags', builder: (context, state) => TagManagementSectionPage()),
+              GoRoute(path: 'navigation', builder: (context, state) => NavigationSectionPage()),
+              GoRoute(path: 'fonts', builder: (context, state) => FontFamilyManagerSectionPage()),
+              GoRoute(path: 'iptv', builder: (context, state) => IptvManageSectionPage()),
+              GoRoute(path: 'about', builder: (context, state) => AboutSettingsSectionPage()),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
         path: AppRoutes.kAreaRooms,
         builder: (context, state) {

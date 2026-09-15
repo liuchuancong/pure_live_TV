@@ -1971,6 +1971,7 @@
     "ui_missevan_fm":  "MissEvan FM",
     "ui_move":  "Reorder",
     "ui_move_down":  "Move down",
+    "ui_move_hidden_entry":  "Hidden in the side menu - enable it above to reorder",
     "ui_move_up":  "Move up",
     "ui_mpv_audio_output":  "MPV audio output",
     "ui_mpv_hardware_decoding_takes_effect_after_re_ente":  "MPV hardware decoding; takes effect after re-entering the room",

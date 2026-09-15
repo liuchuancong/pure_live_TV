@@ -37,14 +37,19 @@ class TvSettingsOptionTile extends StatelessWidget {
         onChanged?.call(next);
       },
       onDirection: (direction) {
-        if (direction == TraversalDirection.right) {
-          onChanged?.call((safeIndex + 1) % options.length);
-          return true;
-        } else if (direction == TraversalDirection.left) {
-          onChanged?.call((safeIndex - 1 + options.length) % options.length);
-          return true;
-        }
-        return false;
+        // Left/right adjust the value, but only while the value can still
+        // change in that direction. Consuming the key at the first/last option
+        // used to trap focus on the row; because the settings content sits to
+        // the right of the module menu, the user could then never navigate
+        // back to pick a different settings module.
+        final int? next = switch (direction) {
+          TraversalDirection.left when safeIndex > 0 => safeIndex - 1,
+          TraversalDirection.right when safeIndex < options.length - 1 => safeIndex + 1,
+          _ => null,
+        };
+        if (next == null) return false;
+        onChanged?.call(next);
+        return true;
       },
       builder: (context, state, child) {
         return Container(

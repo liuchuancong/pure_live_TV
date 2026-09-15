@@ -1,4 +1,3 @@
-import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/shared/pagination/paging_core.dart';
@@ -126,30 +125,24 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
     return Column(
       children: [
         Expanded(
-          child: DpadRegion(
-            child: VirtualGridView(
-              controller: _core.scrollController,
-              gridDelegate: widget.gridDelegate,
-              cacheExtent: 100.sp,
-              padding: EdgeInsets.all(16.sp),
-              physics: const ClampingScrollPhysics(),
-              itemCount: state.items.length,
-              itemBuilder: (context, index) {
-                return DpadRegion(
-                  onFocusChange: (hasFocus) {
-                    if (hasFocus && index < widget.gridDelegate.crossAxisCount) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        final scroll = _core.scrollController;
-                        if (scroll.hasClients && scroll.position.pixels != 0) {
-                          scroll.animateTo(0, duration: const Duration(milliseconds: 50), curve: Curves.easeOutCubic);
-                        }
-                      });
-                    }
-                  },
-                  child: widget.itemBuilder(context, state.items[index], index),
-                );
-              },
-            ),
+          // Deliberately no `DpadRegion` here. The callers already wrap this
+          // view in a `TvTabView` region whose edges they choose; a region per
+          // grid cell (plus one around the grid) replaced that region for every
+          // cell with default `leave/leave` edges, silently discarding the
+          // caller's `horizontalEdge: stop` and fragmenting the focus memory
+          // that makes the grid return to the last watched card.
+          //
+          // The per-cell `onFocusChange` also animated the grid back to offset
+          // 0 whenever a first-row card was focused, competing with the padded
+          // auto-scroll `DpadFocusable` already performs.
+          child: VirtualGridView(
+            controller: _core.scrollController,
+            gridDelegate: widget.gridDelegate,
+            cacheExtent: 100.sp,
+            padding: EdgeInsets.all(16.sp),
+            physics: const ClampingScrollPhysics(),
+            itemCount: state.items.length,
+            itemBuilder: (context, index) => widget.itemBuilder(context, state.items[index], index),
           ),
         ),
         AppStatusView(type: AppStatusType.loading, isMini: true)

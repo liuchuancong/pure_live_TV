@@ -20,12 +20,7 @@ class _AreasPageState extends ConsumerState<AreasPage> {
       return const SizedBox.shrink();
     }
 
-    final List<TvTabItemData> tabItems = platformState.siteList.map((site) {
-      return TvTabItemData(
-        title: site.name,
-        icon: Image.asset(site.logo, width: 24.sp, height: 24.sp, fit: BoxFit.contain),
-      );
-    }).toList();
+    final List<TvTabItemData> tabItems = platformState.siteList.map(TvTabItemData.site).toList();
 
     final currentSite = platformState.siteList[platformState.currentPlatformIndex];
 

@@ -191,6 +191,7 @@ flutter:
     - assets/images/
     - assets/images/video/
     - assets/icons/
+    - assets/translations/
     - assets/webdav/
     - assets/web_remote/
     - assets/web_remote/assets/

@@ -1972,6 +1972,7 @@
     "ui_missevan_fm":  "猫耳FM",
     "ui_move":  "调整顺序",
     "ui_move_down":  "下移",
+    "ui_move_hidden_entry":  "已在侧边菜单中隐藏，需先在上方开启才能调整顺序",
     "ui_move_up":  "上移",
     "ui_mpv_audio_output":  "MPV 音频输出方式",
     "ui_mpv_hardware_decoding_takes_effect_after_re_ente":  "MPV 硬解方式，切换后重新进入直播间生效",

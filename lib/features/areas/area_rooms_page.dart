@@ -69,24 +69,25 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
   Widget build(BuildContext context) {
     return TvScaffold(
       title: widget.subCategory.areaName,
-      child: Expanded(
-        child: TvTabView(
-          memoryKey: "area_rooms_view_${widget.site.id}_${widget.subCategory.areaId}",
-          verticalEdge: DpadEdgeBehavior.leave,
-          horizontalEdge: DpadEdgeBehavior.stop,
-          child: BasePagedTvView<LiveRoom>(
-            key: ValueKey('area_room_grid_${widget.site.id}_${widget.subCategory.areaId}'),
-            param: _currentParam,
-            getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 32.sp,
-              crossAxisSpacing: 32.sp,
-              childAspectRatio: 1.3,
-            ),
-            itemBuilder: (context, room, index) =>
-                TvRoomCard(room: room, onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room)),
+      // No Expanded here: TvScaffold places its child inside a Stack, which is
+      // not a Flex, so an Expanded child asserted during layout and the whole
+      // room list failed to render.
+      child: TvTabView(
+        memoryKey: "area_rooms_view_${widget.site.id}_${widget.subCategory.areaId}",
+        verticalEdge: DpadEdgeBehavior.leave,
+        horizontalEdge: DpadEdgeBehavior.stop,
+        child: BasePagedTvView<LiveRoom>(
+          key: ValueKey('area_room_grid_${widget.site.id}_${widget.subCategory.areaId}'),
+          param: _currentParam,
+          getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            mainAxisSpacing: 32.sp,
+            crossAxisSpacing: 32.sp,
+            childAspectRatio: 1.3,
           ),
+          itemBuilder: (context, room, index) =>
+              TvRoomCard(room: room, onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room)),
         ),
       ),
     );

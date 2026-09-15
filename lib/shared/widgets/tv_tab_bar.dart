@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -7,7 +8,41 @@ class TvTabItemData {
   final String title;
   final Widget? icon;
 
-  const TvTabItemData({required this.title, this.icon});
+  /// Stable identity of the tab.
+  ///
+  /// The bar keys its children with this value so a rebuild (or a platform
+  /// list that changed length) can never recycle an element onto a different
+  /// tab and leave focus sitting on the wrong one. Defaults to [title] when a
+  /// caller does not supply one.
+  final String? id;
+
+  const TvTabItemData({required this.title, this.icon, this.id});
+
+  /// Identity used for element keys.
+  String get tabId => id ?? title;
+
+  /// Platform tab: the platform logo when the asset exists, otherwise a
+  /// neutral icon.
+  ///
+  /// The synthetic "all" platform has no logo file, and a platform can be
+  /// added before its artwork lands; without the fallback the tab renders an
+  /// empty gap (and the asset error is logged) instead of an icon.
+  factory TvTabItemData.site(Site site) {
+    if (site.id == Sites.allSite) {
+      return TvTabItemData(id: site.id, title: site.name, icon: Icon(Icons.apps_rounded, size: 24.sp));
+    }
+    return TvTabItemData(
+      id: site.id,
+      title: site.name,
+      icon: Image.asset(
+        site.logo,
+        width: 24.sp,
+        height: 24.sp,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Icon(Icons.live_tv_rounded, size: 24.sp),
+      ),
+    );
+  }
 }
 
 class TvTabBar extends StatefulWidget {
@@ -31,6 +66,47 @@ class TvTabBar extends StatefulWidget {
 }
 
 class _TvTabBarState extends State<TvTabBar> {
+  /// Keys the individual tabs so the currently selected one can be revealed.
+  final Map<String, GlobalKey> _tabKeys = <String, GlobalKey>{};
+
+  @override
+  void didUpdateWidget(TvTabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // A tab can become current without ever being focused (pointer input,
+    // a programmatic switch, or a focus move that left the bar). The d-pad
+    // layer only reveals tabs it focused, so the bar would keep its previous
+    // offset and leave the new current tab clipped at the edge — visibly
+    // "the first tab does not come back" until another tab is picked.
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _revealCurrentTab();
+    }
+  }
+
+  void _revealCurrentTab() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.currentIndex < 0 || widget.currentIndex >= widget.tabs.length) return;
+
+      final BuildContext? tabContext = _tabKeys[_keyId(widget.currentIndex, widget.tabs[widget.currentIndex])]?.currentContext;
+      if (tabContext == null) return;
+
+      Scrollable.ensureVisible(
+        tabContext,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        alignment: 0.5,
+      );
+    });
+  }
+
+  /// Global keys must stay unique even when two tabs share a title (duplicate
+  /// category names are possible), so the position is part of the identity.
+  String _keyId(int index, TvTabItemData tab) => '$index:${tab.tabId}';
+
+  GlobalKey _keyFor(int index, TvTabItemData tab) =>
+      _tabKeys.putIfAbsent(_keyId(index, tab), () => GlobalKey());
+
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
@@ -99,10 +175,10 @@ class _TvTabBarState extends State<TvTabBar> {
                 ];
 
             return Padding(
+              key: _keyFor(index, tab),
               padding: EdgeInsets.symmetric(horizontal: 6.sp),
               child: DpadFocusable(
                 effects: dynamicEffects,
-                onFocusChange: null,
                 onSelect: () {
                   if (index == widget.currentIndex) {
                     widget.onTabRefresh?.call(index);

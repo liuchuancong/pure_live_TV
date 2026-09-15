@@ -15,7 +15,6 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
     final areasState = ref.watch(favoriteAreasProvider);
-    final currentAreas = areasState.areas;
 
     final currentParam = PagingParam<LiveArea>(
       mode: PagingMode.localReactive,
@@ -28,9 +27,7 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
     );
 
     final availableSitesList = Sites().availableSites(containsAll: true);
-    final List<TvTabItemData> siteTabs = availableSitesList.map((site) {
-      return TvTabItemData(title: site.name);
-    }).toList();
+    final List<TvTabItemData> siteTabs = availableSitesList.map(TvTabItemData.site).toList();
 
     return TvScaffold(
       child: Container(
@@ -51,11 +48,14 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                   SizedBox(height: 16.sp),
                   Expanded(
                     child: TvTabView(
-                      memoryKey: "fav_areas_tv_view_${areasState.tabSiteIndex}_${currentAreas.length}",
+                      // Stable identity: the area count used to be part of the
+                      // key, so following or unfollowing one category rebuilt
+                      // the view and reset focus and scroll position.
+                      memoryKey: "fav_areas_tv_view_${areasState.tabSiteIndex}",
                       verticalEdge: DpadEdgeBehavior.leave,
                       horizontalEdge: DpadEdgeBehavior.stop,
                       child: BasePagedTvView<LiveArea>(
-                        key: ValueKey('fav_areas_grid_${areasState.tabSiteIndex}_${currentAreas.length}'),
+                        key: ValueKey('fav_areas_grid_${areasState.tabSiteIndex}'),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

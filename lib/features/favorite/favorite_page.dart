@@ -35,9 +35,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     ];
 
     final availableSitesList = Sites().availableSites(containsAll: true);
-    final List<TvTabItemData> siteTabs = availableSitesList.map((site) {
-      return TvTabItemData(title: site.name);
-    }).toList();
+    final List<TvTabItemData> siteTabs = availableSitesList.map(TvTabItemData.site).toList();
 
     return TvScaffold(
       child: Container(
@@ -105,13 +103,16 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                   SizedBox(height: 16.sp),
                   Expanded(
                     child: TvTabView(
-                      memoryKey:
-                          "fav_tv_view_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}_${currentRooms.length}",
+                      // Identity is the tab/tag selection only. Including the
+                      // room count here meant that following or unfollowing a
+                      // single room rebuilt the view and dropped both the focus
+                      // memory and the scroll position the user was on.
+                      memoryKey: "fav_tv_view_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}",
                       verticalEdge: DpadEdgeBehavior.leave,
                       horizontalEdge: DpadEdgeBehavior.stop,
                       child: BasePagedTvView<LiveRoom>(
                         key: ValueKey(
-                          'fav_grid_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}_${currentRooms.length}',
+                          'fav_grid_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}',
                         ),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),

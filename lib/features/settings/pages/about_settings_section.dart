@@ -1,6 +1,7 @@
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
+import 'package:pure_live/shared/dialog/tv_dialog.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
@@ -51,30 +52,26 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
 
   Future<void> _showUpdateDialog() async {
     final notes = VersionUtil.latestUpdateLog.trim();
+    final bool canDownload = VersionUtil.downloadUrl.isNotEmpty;
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        scrollable: true,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('${i18n('new_version_found')} ${VersionUtil.latestVersion}'),
-        content: SizedBox(
+      // TvDialog instead of a Material AlertDialog so the dialog can actually
+      // be driven with the remote: the confirm button takes focus on open and
+      // Cancel/Download are reachable with the d-pad.
+      builder: (dialogContext) => TvDialog(
+        title: '${i18n('new_version_found')} ${VersionUtil.latestVersion}',
+        confirmText: canDownload ? i18n('download') : null,
+        cancelText: i18n('cancel'),
+        onCancel: () => Navigator.of(dialogContext).pop(),
+        onConfirm: () {
+          Navigator.of(dialogContext).pop();
+          final uri = Uri.tryParse(VersionUtil.downloadUrl);
+          if (uri != null) launchUrl(uri, mode: LaunchMode.externalApplication);
+        },
+        child: SizedBox(
           width: 640.w,
-          child: SingleChildScrollView(
-            child: Text(notes.isEmpty ? i18n('latest_version') : '${i18n('update_log')}\n$notes'),
-          ),
+          child: Text(notes.isEmpty ? i18n('latest_version') : '${i18n('update_log')}\n$notes'),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text(i18n('cancel'))),
-          if (VersionUtil.downloadUrl.isNotEmpty)
-            TextButton(
-              onPressed: () async {
-                Navigator.of(dialogContext).pop();
-                final uri = Uri.tryParse(VersionUtil.downloadUrl);
-                if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
-              },
-              child: Text(i18n('download')),
-            ),
-        ],
       ),
     );
   }

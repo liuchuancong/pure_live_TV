@@ -23,15 +23,11 @@ class TvFocusable extends StatelessWidget {
       autofocus: autofocus,
       onSelect: onTap,
       onLongSelect: onLongPress,
-      onFocusChange: (focused) {
-        if (!focused) return;
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          alignment: 0.2,
-        );
-      },
+      // No manual `Scrollable.ensureVisible` here: `DpadFocusable` already
+      // reveals the focused item through `DpadScroll.ensureVisible`, which
+      // walks every scrollable ancestor and keeps `scrollPadding` around the
+      // item for its focus glow. Calling `Scrollable.ensureVisible` as well
+      // animated to a second, slightly different offset.
       builder: (context, state, _) {
         final isFocused = state.focused;
         final content = builder != null ? builder!(context, isFocused, child) : (child ?? const SizedBox.shrink());

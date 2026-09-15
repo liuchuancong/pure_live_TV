@@ -49,7 +49,12 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       _PanelAction(
         icon: playing ? Icons.pause : Icons.play_arrow,
         label: playing ? i18n('multiview_pause') : i18n('multiview_play'),
-        autofocus: true,
+        // The region's entry target, not `autofocus`: the bar is removed from
+        // the tree while the controls are hidden, so an autofocus would grab
+        // focus back to play/pause every time the bar reappeared — even when
+        // the user had been on another button. The region remembers the last
+        // focused button and falls back to this entry target the first time.
+        entry: true,
         onSelect: () {
           keepAlive();
           controller.togglePlayPause();
@@ -199,7 +204,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
                     return _PanelButton(
                       icon: action.icon,
                       label: action.label,
-                      autofocus: action.autofocus,
+                      entry: action.entry,
                       highlighted: action.highlighted,
                       onFocusChange: (_) => keepAlive(),
                       onSelect: action.onSelect,
@@ -225,14 +230,16 @@ class _PanelAction {
     required this.icon,
     required this.label,
     required this.onSelect,
-    this.autofocus = false,
+    this.entry = false,
     this.highlighted = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onSelect;
-  final bool autofocus;
+
+  /// Marks the region entry target; see the play/pause action.
+  final bool entry;
 
   /// Panel buttons stay highlighted while their panel is open.
   final bool highlighted;
@@ -243,7 +250,7 @@ class _PanelButton extends StatelessWidget {
   final String label;
   final VoidCallback onSelect;
   final ValueChanged<bool> onFocusChange;
-  final bool autofocus;
+  final bool entry;
   final bool highlighted;
 
   const _PanelButton({
@@ -251,7 +258,7 @@ class _PanelButton extends StatelessWidget {
     required this.label,
     required this.onSelect,
     required this.onFocusChange,
-    this.autofocus = false,
+    this.entry = false,
     this.highlighted = false,
   });
 
@@ -259,7 +266,7 @@ class _PanelButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     return DpadFocusable(
-      autofocus: autofocus,
+      entry: entry,
       effects: [
         DpadScaleEffect(scale: 1.05),
         DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.5)),

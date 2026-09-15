@@ -47,7 +47,6 @@ class _TvInputFieldState extends State<TvInputField> {
   late bool _isObscure;
   late final FocusNode _flutterInputFocusNode;
   bool _isRegionFocused = false;
-  bool _isInputActive = false;
 
   @override
   void initState() {
@@ -68,7 +67,6 @@ class _TvInputFieldState extends State<TvInputField> {
   }
 
   void _deactivateInput() {
-    _isInputActive = false;
     if (widget.useNativeTextField) {
       _callNativeMethod((s) => s.clearFocus());
     } else {
@@ -85,13 +83,6 @@ class _TvInputFieldState extends State<TvInputField> {
         _deactivateInput();
       }
     });
-  }
-
-  void _onEdge(TraversalDirection dir) {
-    if (!_isInputActive) return;
-    if (dir == TraversalDirection.up || dir == TraversalDirection.down) {
-      _deactivateInput();
-    }
   }
 
   @override
@@ -218,9 +209,10 @@ class _TvInputFieldState extends State<TvInputField> {
     }
 
     return DpadRegion(
+      // Focus leaving the field (up/down included) deactivates the input
+      // through `onFocusChange`; the field needs no edge handler of its own.
       horizontalEdge: DpadEdgeBehavior.leave,
       verticalEdge: DpadEdgeBehavior.leave,
-      onEdge: _onEdge,
       onFocusChange: _handleFocusChange,
       child: widget.builder != null
           ? innerWidget

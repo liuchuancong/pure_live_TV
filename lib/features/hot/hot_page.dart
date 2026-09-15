@@ -58,12 +58,7 @@ class _HotPageState extends ConsumerState<HotPage> {
       return const SizedBox.shrink();
     }
 
-    final List<TvTabItemData> tabItems = tabsState.sites.map((site) {
-      return TvTabItemData(
-        title: site.name,
-        icon: Image.asset(site.logo, width: 24.sp, height: 24.sp, fit: BoxFit.contain),
-      );
-    }).toList();
+    final List<TvTabItemData> tabItems = tabsState.sites.map(TvTabItemData.site).toList();
 
     final currentSite = tabsState.sites[tabsState.currentIndex];
     final currentParam = _getOrCreateParam(currentSite.id);

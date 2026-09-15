@@ -81,7 +81,13 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
         final isFocused = state.focused;
         final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
         final titleColor = isFocused ? tvTheme.backgroundColor : tvTheme.primaryTextColor;
-        final subtitleColor = isFocused ? tvTheme.secondaryTextColor : tvTheme.secondaryTextColor;
+        // A focused card is white, so the subtitle has to be derived from the
+        // dark background colour. Both branches of this used to be
+        // `secondaryTextColor`, which left the nickname nearly invisible on the
+        // white focused card.
+        final subtitleColor = isFocused
+            ? tvTheme.backgroundColor.withValues(alpha: 0.7)
+            : tvTheme.secondaryTextColor;
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
@@ -196,15 +202,10 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
     return DpadFocusable(
       autofocus: false,
       effects: effects,
-      onFocusChange: (focused) {
-        if (!focused) return;
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          alignment: 0.2,
-        );
-      },
+      // `DpadFocusable` already reveals the focused card through
+      // `DpadScroll.ensureVisible` (padded, and it walks every scrollable
+      // ancestor). The extra `Scrollable.ensureVisible` here animated to a
+      // second, different offset and made the grid jitter while moving.
       onSelect: () {
         final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
         if (isLocked) return;

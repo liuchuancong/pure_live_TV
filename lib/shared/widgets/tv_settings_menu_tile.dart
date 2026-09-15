@@ -42,16 +42,17 @@ class TvSettingsMenuTile<T> extends StatelessWidget {
         if (onChanged == null || keys.isEmpty || currentIndex == -1) {
           return false;
         }
-        if (direction == TraversalDirection.left) {
-          final nextIndex = (currentIndex - 1 + keys.length) % keys.length;
-          onChanged!(keys[nextIndex]);
-          return true;
-        } else if (direction == TraversalDirection.right) {
-          final nextIndex = (currentIndex + 1) % keys.length;
-          onChanged!(keys[nextIndex]);
-          return true;
-        }
-        return false;
+        // Only consume the key while the value can actually change; consuming
+        // it at the first/last entry would trap focus on the row and make the
+        // neighbouring regions unreachable with the remote.
+        final int? nextIndex = switch (direction) {
+          TraversalDirection.left when currentIndex > 0 => currentIndex - 1,
+          TraversalDirection.right when currentIndex < keys.length - 1 => currentIndex + 1,
+          _ => null,
+        };
+        if (nextIndex == null) return false;
+        onChanged!(keys[nextIndex]);
+        return true;
       },
       builder: (context, state, child) {
         return Container(

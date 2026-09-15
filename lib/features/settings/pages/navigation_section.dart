@@ -1,5 +1,5 @@
+import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -37,12 +37,14 @@ class NavigationSectionPage extends ConsumerWidget {
           TvSettingsCard(
             children: [
               for (final menu in HomeMenu.values)
-                TvSettingsOptionTile(
+                _MoveMenuTile(
                   title: '${_title(menu)} · ${i18n('ui_move')}',
-                  icon: Icons.swap_vert_rounded,
-                  options: [i18n('ui_move_up'), i18n('ui_move_down')],
-                  index: 0,
-                  onChanged: (index) => app.moveMenu(menu.id, index == 0 ? -1 : 1),
+                  // Position among the *visible* entries decides whether a move
+                  // is possible; an entry hidden by the switches above cannot
+                  // be reordered.
+                  visibleIndex: visible.indexOf(menu.id),
+                  visibleCount: visible.length,
+                  onMove: (delta) => app.moveMenu(menu.id, delta),
                 ),
             ],
           ),
@@ -71,13 +73,115 @@ class NavigationSectionPage extends ConsumerWidget {
     HomeMenu.history => i18n('history'),
   };
 
+  /// Kept in step with the icons the side menu itself uses.
   static IconData _icon(HomeMenu menu) => switch (menu) {
     HomeMenu.favorite => Icons.favorite_border,
     HomeMenu.hot => Icons.local_fire_department_outlined,
-    HomeMenu.areas => Icons.apps_rounded,
-    HomeMenu.favoriteAreas => Icons.view_module_rounded,
+    HomeMenu.areas => Icons.category_rounded,
+    HomeMenu.favoriteAreas => Icons.collections_bookmark_outlined,
     HomeMenu.moviePlayback => Icons.movie_creation_outlined,
     HomeMenu.search => Icons.search_rounded,
     HomeMenu.history => Icons.history,
   };
+}
+
+/// One reorder row: left moves the entry up, right moves it down.
+///
+/// This replaces a cycling [TvSettingsOptionTile] whose index was pinned to 0,
+/// which made the label always read "move up" while every action actually
+/// computed index 1 — so "move up" could not be performed at all.
+class _MoveMenuTile extends StatelessWidget {
+  const _MoveMenuTile({
+    required this.title,
+    required this.visibleIndex,
+    required this.visibleCount,
+    required this.onMove,
+  });
+
+  final String title;
+  final int visibleIndex;
+  final int visibleCount;
+  final void Function(int delta) onMove;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isVisible = visibleIndex >= 0;
+    final bool canMoveUp = isVisible && visibleIndex > 0;
+    final bool canMoveDown = isVisible && visibleIndex < visibleCount - 1;
+
+    return DpadFocusable(
+      effects: [
+        DpadScaleEffect(scale: 1.02),
+        DpadGlowEffect(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+      ],
+      // Only consume the key while the entry can actually move that way, so an
+      // entry at the top or bottom never traps the remote on this row.
+      onDirection: (direction) {
+        if (direction == TraversalDirection.left && canMoveUp) {
+          onMove(-1);
+          return true;
+        }
+        if (direction == TraversalDirection.right && canMoveDown) {
+          onMove(1);
+          return true;
+        }
+        return false;
+      },
+      onSelect: () {
+        if (canMoveDown) onMove(1);
+      },
+      builder: (context, state, child) {
+        final Color accent = state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
+        return Container(
+          decoration: BoxDecoration(
+            color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Icon(Icons.swap_vert_rounded, color: accent),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    if (!isVisible) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        i18n('ui_move_hidden_entry'),
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.keyboard_arrow_up_rounded, color: canMoveUp ? accent : theme.disabledColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    isVisible ? '${visibleIndex + 1}/$visibleCount' : '-',
+                    style: TextStyle(color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.keyboard_arrow_down_rounded, color: canMoveDown ? accent : theme.disabledColor),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+      child: const SizedBox.shrink(),
+    );
+  }
 }

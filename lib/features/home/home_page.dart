@@ -220,7 +220,7 @@ class HomePage extends ConsumerWidget {
           ),
         );
       case TvMenuType.settings:
-        return TvSettingsShell(child: SizedBox.shrink());
+        return const TvSettingsEmbedded();
       case TvMenuType.favorite:
         return const FavoritePage();
       case TvMenuType.hot:
@@ -229,7 +229,7 @@ class HomePage extends ConsumerWidget {
         return const AreasPage();
       case TvMenuType.favoriteAreas:
         return const FavoriteAreasPage();
-      case TvMenuType.poviePlaybackPage:
+      case TvMenuType.moviePlayback:
         return const MoviePlaybackPage();
       case TvMenuType.search:
         return const TvSearchPage();

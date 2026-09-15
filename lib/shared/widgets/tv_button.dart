@@ -73,7 +73,7 @@ class TvButton extends StatelessWidget {
             bgColor = activeTheme.focusColor;
             foregroundColor = activeTheme.focusedCardColor;
           } else if (isFocused && useFadedFocus) {
-            bgColor = bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
+            bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
             foregroundColor = activeTheme.focusedCardColor;
           } else if (isFocused) {
             bgColor = activeTheme.focusColor;
@@ -84,8 +84,17 @@ class TvButton extends StatelessWidget {
           }
 
           if (excludeFocus) {
-            bgColor = activeTheme.cardColor;
-            foregroundColor = activeTheme.focusedCardColor;
+            // Non-focusable buttons are labels and badges (followed marker,
+            // replay marker, viewer count, platform name). They never show a
+            // focus state, but they still need readable foreground colours:
+            // this used to force `focusedCardColor` — the foreground meant for
+            // content sitting on an accent-filled *focused* background — onto a
+            // plain card background, which made the badge text nearly invisible.
+            // Selection is still honoured so a selected label stays selected.
+            bgColor = selected ? activeTheme.focusColor : activeTheme.cardColor;
+            foregroundColor = selected
+                ? activeTheme.focusedCardColor
+                : (isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor);
           }
 
           return AnimatedContainer(

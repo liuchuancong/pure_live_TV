@@ -24,7 +24,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
   void initState() {
     super.initState();
     final sites = Sites().availableSites(containsAll: false);
-    _siteTabs = sites.map((site) => TvTabItemData(title: site.name)).toList();
+    _siteTabs = sites.map(TvTabItemData.site).toList();
     _typeTabs = [TvTabItemData(title: i18n('ui_streamer')), TvTabItemData(title: i18n('ui_live_room'))];
     _searchController = NativeTextFieldController();
 
