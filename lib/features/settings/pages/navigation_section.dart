@@ -110,11 +110,17 @@ class _MoveMenuTile extends StatelessWidget {
     final bool canMoveUp = isVisible && visibleIndex > 0;
     final bool canMoveDown = isVisible && visibleIndex < visibleCount - 1;
 
+    // `DpadFocusable` rejects `effects` and `builder` together, so the focus
+    // glow is applied around the builder's presentation instead.
+    final List<DpadEffect> effects = [
+      DpadScaleEffect(scale: 1.02),
+      DpadGlowEffect(
+        color: theme.colorScheme.primary.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ];
+
     return DpadFocusable(
-      effects: [
-        DpadScaleEffect(scale: 1.02),
-        DpadGlowEffect(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
-      ],
       // Only consume the key while the entry can actually move that way, so an
       // entry at the top or bottom never traps the remote on this row.
       onDirection: (direction) {
@@ -133,51 +139,56 @@ class _MoveMenuTile extends StatelessWidget {
       },
       builder: (context, state, child) {
         final Color accent = state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
-        return Container(
-          decoration: BoxDecoration(
-            color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Icon(Icons.swap_vert_rounded, color: accent),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    if (!isVisible) ...[
-                      const SizedBox(height: 2),
+        return DpadEffect.wrap(
+          context,
+          effects,
+          state,
+          Container(
+            decoration: BoxDecoration(
+              color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.swap_vert_rounded, color: accent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        i18n('ui_move_hidden_entry'),
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                        ),
                       ),
+                      if (!isVisible) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          i18n('ui_move_hidden_entry'),
+                          style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                      ],
                     ],
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.keyboard_arrow_up_rounded, color: canMoveUp ? accent : theme.disabledColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      isVisible ? '${visibleIndex + 1}/$visibleCount' : '-',
+                      style: TextStyle(color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.keyboard_arrow_down_rounded, color: canMoveDown ? accent : theme.disabledColor),
                   ],
                 ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.keyboard_arrow_up_rounded, color: canMoveUp ? accent : theme.disabledColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    isVisible ? '${visibleIndex + 1}/$visibleCount' : '-',
-                    style: TextStyle(color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.keyboard_arrow_down_rounded, color: canMoveDown ? accent : theme.disabledColor),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

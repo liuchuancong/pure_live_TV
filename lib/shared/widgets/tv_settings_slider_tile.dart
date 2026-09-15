@@ -30,11 +30,18 @@ class TvSettingsSliderTile extends StatelessWidget {
     final theme = Theme.of(context);
     final double progress = ((value - min) / (max - min)).clamp(0.0, 1.0);
 
+    // `DpadFocusable` asserts that `effects` and `builder` are never both
+    // supplied, so the glow and scale are applied around the builder's own
+    // presentation instead of being passed to the focusable.
+    final List<DpadEffect> effects = [
+      DpadScaleEffect(scale: 1.02),
+      DpadGlowEffect(
+        color: theme.colorScheme.primary.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ];
+
     return DpadFocusable(
-      effects: [
-        DpadScaleEffect(scale: 1.02),
-        DpadGlowEffect(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
-      ],
       onDirection: (direction) {
         if (direction != TraversalDirection.left && direction != TraversalDirection.right) {
           return false;
@@ -48,80 +55,85 @@ class TvSettingsSliderTile extends StatelessWidget {
         return true;
       },
       builder: (context, state, child) {
-        return Container(
-          decoration: BoxDecoration(
-            color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Icon(icon, color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+        return DpadEffect.wrap(
+          context,
+          effects,
+          state,
+          Container(
+            decoration: BoxDecoration(
+              color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(icon, color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.arrow_left,
+                                size: 16,
+                                color: state.focused ? theme.colorScheme.primary : Colors.grey,
+                              ),
+                              Text(
+                                displayValue,
+                                style: TextStyle(
+                                  color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_right,
+                                size: 16,
+                                color: state.focused ? theme.colorScheme.primary : Colors.grey,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      if (subtitle != null && subtitle!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
                         Text(
-                          title,
+                          subtitle!,
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                            fontSize: 12,
+                            color: state.focused
+                                ? theme.colorScheme.primary.withValues(alpha: 0.8)
+                                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                           ),
                         ),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.arrow_left,
-                              size: 16,
-                              color: state.focused ? theme.colorScheme.primary : Colors.grey,
-                            ),
-                            Text(
-                              displayValue,
-                              style: TextStyle(
-                                color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_right,
-                              size: 16,
-                              color: state.focused ? theme.colorScheme.primary : Colors.grey,
-                            ),
-                          ],
-                        ),
                       ],
-                    ),
-                    if (subtitle != null && subtitle!.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: state.focused
-                              ? theme.colorScheme.primary.withValues(alpha: 0.8)
-                              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 6,
+                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            state.focused ? theme.colorScheme.primary : theme.colorScheme.outline,
+                          ),
                         ),
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 6,
-                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          state.focused ? theme.colorScheme.primary : theme.colorScheme.outline,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

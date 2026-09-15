@@ -25,14 +25,22 @@ class TvSettingsOptionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final safeIndex = (index < 0 || index >= options.length) ? 0 : index;
-    final currentOption = options[safeIndex];
+    final currentOption = options.isEmpty ? '' : options[safeIndex];
+
+    // `DpadFocusable` asserts that `effects` and `builder` are never both
+    // supplied, so the glow and scale are applied around the builder's own
+    // presentation instead of being passed to the focusable.
+    final List<DpadEffect> effects = [
+      DpadScaleEffect(scale: 1.02),
+      DpadGlowEffect(
+        color: theme.colorScheme.primary.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ];
 
     return DpadFocusable(
-      effects: [
-        DpadScaleEffect(scale: 1.02),
-        DpadGlowEffect(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
-      ],
       onSelect: () {
+        if (options.isEmpty) return;
         final next = (safeIndex + 1) % options.length;
         onChanged?.call(next);
       },
@@ -52,69 +60,74 @@ class TvSettingsOptionTile extends StatelessWidget {
         return true;
       },
       builder: (context, state, child) {
-        return Container(
-          decoration: BoxDecoration(
-            color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                Icon(icon, color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: 12),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        return DpadEffect.wrap(
+          context,
+          effects,
+          state,
+          Container(
+            decoration: BoxDecoration(
+              color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: state.focused
+                                ? theme.colorScheme.primary.withValues(alpha: 0.7)
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Icon(
+                      Icons.chevron_left,
+                      size: 18,
+                      color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
                     Text(
-                      title,
+                      currentOption,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
                       ),
                     ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: state.focused
-                              ? theme.colorScheme.primary.withValues(alpha: 0.7)
-                              : theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 18,
+                      color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                    ),
                   ],
                 ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.chevron_left,
-                    size: 18,
-                    color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    currentOption,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

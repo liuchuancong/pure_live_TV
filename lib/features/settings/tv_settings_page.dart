@@ -217,37 +217,47 @@ class _SettingsMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
+    // `DpadFocusable` rejects `effects` and `builder` together, so the focus
+    // glow is applied around the builder's presentation instead.
+    final List<DpadEffect> effects = [
+      DpadScaleEffect(scale: 1.03),
+      DpadGlowEffect(color: currentTvTheme.focusColor.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(8)),
+    ];
     return DpadFocusable(
-      effects: [DpadScaleEffect(scale: 1.03), DpadGlowEffect(color: currentTvTheme.focusColor.withValues(alpha: 0.4))],
       onSelect: () => onSelect(),
       builder: (context, state, child) {
         final highlighted = selected || state.focused;
-        return Container(
-          margin: EdgeInsets.only(bottom: 8.sp),
-          padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 12.sp),
-          decoration: BoxDecoration(
-            color: highlighted ? currentTvTheme.focusColor.withValues(alpha: 0.2) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 20.sp,
-                color: highlighted ? currentTvTheme.focusColor : currentTvTheme.secondaryTextColor,
-              ),
-              SizedBox(width: 10.sp),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                    color: highlighted ? currentTvTheme.focusColor : currentTvTheme.primaryTextColor,
+        return DpadEffect.wrap(
+          context,
+          effects,
+          state,
+          Container(
+            margin: EdgeInsets.only(bottom: 8.sp),
+            padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 12.sp),
+            decoration: BoxDecoration(
+              color: highlighted ? currentTvTheme.focusColor.withValues(alpha: 0.2) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 20.sp,
+                  color: highlighted ? currentTvTheme.focusColor : currentTvTheme.secondaryTextColor,
+                ),
+                SizedBox(width: 10.sp),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                      color: highlighted ? currentTvTheme.focusColor : currentTvTheme.primaryTextColor,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
