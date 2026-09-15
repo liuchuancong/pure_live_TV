@@ -237,7 +237,7 @@ class DouyinDanmaku implements LiveDanmaku {
       LiveMessage(
         type: LiveMessageType.chat,
         color: LiveMessageColor.white,
-        //暂不知道具体怎么转换颜色
+        // The exact colour conversion is still unknown.
         // color: chatMessage.common.fullScreenTextColor.
         //     ? LiveMessageColor.white
         //     : LiveMessageColor.numberToColor(color),
@@ -295,12 +295,12 @@ class DouyinDanmaku implements LiveDanmaku {
     webScoketUtils = null;
   }
 
-  /// 获取Websocket签名
-  /// - [roomId] 房间ID, 例如：7382735338101328680
-  /// - [uniqueId] 用户唯一ID, 例如：7273033021933946427
-  /// 参考代码 hua/stream-rec
-  /// 服务端代码：https://github.com/lovelyyoshino/douyin_python，请自行部署后使用
-  /// 自部署 https://github.com/SlotSun/simple_live_api
+  /// Builds the WebSocket signature.
+  /// - [roomId] room id, for example 7382735338101328680
+  /// - [uniqueId] unique user id, for example 7273033021933946427
+  /// Reference implementation: hua/stream-rec.
+  /// Server side: https://github.com/lovelyyoshino/douyin_python. Deploy it yourself.
+  /// Or self-host https://github.com/SlotSun/simple_live_api
   Future<String> getSignature(String roomId, String uniqueId) async {
     try {
       Map<String, dynamic> params = {

@@ -56,7 +56,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   };
 
   /// ============================================================
-  /// 图片
+  /// Image.
   /// ============================================================
 
   String validImgUrl(String imgUrl) {
@@ -118,7 +118,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 分类
+  /// Categories.
   /// ============================================================
 
   @override
@@ -204,7 +204,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 分类直播间
+  /// Rooms inside a category.
   /// ============================================================
 
   @override
@@ -261,7 +261,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 获取直播流
+  /// Loads the live streams.
   /// ============================================================
 
   ({String cid, String sid}) _channelIds(LiveRoom detail) {
@@ -418,7 +418,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 清晰度
+  /// Quality tiers.
   /// ============================================================
 
   @override
@@ -484,7 +484,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 播放地址
+  /// Playback address.
   /// ============================================================
 
   @override
@@ -536,7 +536,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 推荐
+  /// Recommendations.
   /// ============================================================
 
   @override
@@ -579,7 +579,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 分类名称
+  /// Category name.
   /// ============================================================
 
   final Map<String, String> bizAreaNameMap = {};
@@ -616,7 +616,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// ============================================================
-  /// 房间详情
+  /// Room details.
   /// ============================================================
 
   @override
@@ -636,7 +636,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   /// ============================================================
-  /// 房间刷新
+  /// Room refresh.
   /// ============================================================
 
   @override
@@ -688,7 +688,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   /// ============================================================
-  /// 搜索直播间
+  /// Search rooms.
   /// ============================================================
 
   @override
@@ -734,7 +734,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   }
 
   /// ============================================================
-  /// 搜索主播
+  /// Search anchors.
   /// ============================================================
 
   @override
@@ -773,7 +773,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
 
   @override
   Future<List<LiveSuperChatMessage>> getSuperChatMessage({required String roomId}) {
-    //尚不支持
+    // Not supported yet.
     return Future.value([]);
   }
 }

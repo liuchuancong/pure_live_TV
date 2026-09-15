@@ -246,7 +246,7 @@ class MissevanApi {
       watching: score?.toString() ?? '',
       popularity: score?.toString() ?? '',
       audienceMetricType: AudienceMetricType.popularity,
-      // Official UI calls score 热度. online=0 and accumulation are not
+      // The official UI calls score popularity. online=0 and accumulation are not
       // evidence of concurrent viewers; attention_count is followers only.
       status: open == 1,
       liveStatus: open == 1 ? LiveStatus.live : LiveStatus.offline,

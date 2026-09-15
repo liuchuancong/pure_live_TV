@@ -261,7 +261,7 @@ class DouyuDanmaku implements LiveDanmaku {
     return packets;
   }
 
-  //辣鸡STT
+  // Upstream STT quirk workaround.
   dynamic sttToJObject(String str) {
     if (str.contains("//")) {
       var result = [];

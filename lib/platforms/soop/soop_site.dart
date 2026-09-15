@@ -420,7 +420,7 @@ final currentRoom = Sites.currentRoom(Sites.soopSite, roomId);
     final resultCode = rawResultCode is num
         ? rawResultCode.toInt()
         : int.tryParse(rawResultCode?.toString() ?? '') ?? 0;
-    // 业务码：1成功，-6需要登录，0无直播，‑2屏蔽
+    // Business codes: 1 = ok, -6 = login required, 0 = offline, -2 = blocked.
     if (resultCode != 1) {
       CoreLog.w("soop channel result code=$resultCode");
       {

@@ -225,7 +225,7 @@ class HuyaSite
   }
 
   /// Exposes only rates returned by Huya. The old fallback invented a 2000
-  /// kbps "高清" option when the room returned no rate list, so tapping it
+  /// kbps "HD" option when the room returned no rate list, so tapping it
   /// could only reopen the same source stream while the UI claimed a change.
   @visibleForTesting
   static List<LivePlayQuality> parsePlayQualities(HuyaUrlDataModel data) {
@@ -596,7 +596,7 @@ class HuyaSite
       var subSid = 0;
       var huyaLines = <HuyaLineModel>[];
       var huyaBiterates = <HuyaBitRateModel>[];
-      //读取可用线路
+      // Read the available lines.
 
       var baseSteamInfoList = data['stream']['baseSteamInfoList'] as List<dynamic>;
 
@@ -667,7 +667,7 @@ class HuyaSite
           }
         }
       }
-      //清晰度
+      // Quality tiers.
       final encodedBitRates = data['liveData']['bitRateInfo'];
       dynamic rawBitRates;
       if (encodedBitRates is String && encodedBitRates.trim().isNotEmpty) {
@@ -935,7 +935,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
     return room.isLiveNow;
   }
 
-  /// 匿名登录获取uid
+  /// Anonymous sign-in, used to obtain a uid.
   Future<String> getAnonymousUid() async {
     var result = await HttpClient.instance.postJson(
       "https://udblgn.huya.com/web/anonymousLogin",

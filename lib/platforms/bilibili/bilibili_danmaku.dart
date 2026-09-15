@@ -203,24 +203,24 @@ class BiliBiliDanmaku implements LiveDanmaku {
 
   List<int> encodeData(String msg, int action) {
     var data = utf8.encode(msg);
-    //头部长度固定16
+    // Header length is fixed at 16 bytes.
     var length = data.length + 16;
     var buffer = Uint8List(length);
 
     var writer = BinaryWriter([]);
 
-    //数据包长度
+    // Packet length.
     writer.writeInt(buffer.length, 4);
-    //数据包头部长度,固定16
+    // Packet header length, fixed at 16 bytes.
     writer.writeInt(16, 2);
 
-    //协议版本，0=JSON,1=Int32,2=Buffer
+    // Protocol version: 0 = JSON, 1 = Int32, 2 = Buffer.
     writer.writeInt(0, 2);
 
-    //操作类型
+    // Operation type.
     writer.writeInt(action, 4);
 
-    //数据包头部长度,固定1
+    // Header length field, fixed at 1 byte.
 
     writer.writeInt(1, 4);
 

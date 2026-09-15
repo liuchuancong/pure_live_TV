@@ -171,8 +171,8 @@ class CCSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   }
 
   /// CC may omit `vbr` for the untouched stream. Prefer the documented tier
-  /// identity, then use bitrate as a tie-breaker, instead of demoting 原画 to
-  /// the bottom because its metadata happens to be absent.
+  /// identity, then use bitrate as a tie-breaker, instead of demoting the
+  /// original stream to the bottom because its metadata happens to be absent.
   static int _qualitySort(String rawKey, int bitrateKbps) {
     final key = rawKey.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
     final rank = switch (key) {
@@ -388,7 +388,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
 
   @override
   Future<List<LiveSuperChatMessage>> getSuperChatMessage({required String roomId}) {
-    //尚不支持
+    // Not supported yet.
     return Future.value([]);
   }
 }

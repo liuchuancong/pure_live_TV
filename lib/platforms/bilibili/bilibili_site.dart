@@ -512,7 +512,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   Future<(String, String)> _fetchWbiKeys() async {
-    // 获取最新的 img_key 和 sub_key
+    // Fetch the current img_key and sub_key.
     var resp = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/web-interface/nav',
       header: await getHeader(),
@@ -531,14 +531,14 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   String getMixinKey(String origin) {
-    // 对 imgKey 和 subKey 进行字符顺序打乱编码
+    // Reorder the characters of imgKey and subKey to build the mixing table.
     return mixinKeyEncTab.fold("", (s, i) => s + origin[i]).substring(0, 32);
   }
 
   Future<Map<String, String>> getWbiSign(String url, {bool forceRefresh = false}) async {
     var (imgKey, subKey) = await getWbiKeys(forceRefresh: forceRefresh);
 
-    // 为请求参数进行 wbi 签名
+    // Sign the request parameters with the wbi scheme.
     var mixinKey = getMixinKey(imgKey + subKey);
     var currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -546,12 +546,12 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
 
     queryParams["wts"] = currentTime.toString(); // 添加 wts 字段
 
-    //按照 key 重排参数
+    // Reorder the parameters by key.
     Map<String, String> map = {};
     var sortedKeys = queryParams.keys.toList()..sort();
     for (var key in sortedKeys) {
       var value = queryParams[key]!;
-      // 过滤 value 中的 "!'()*" 字符
+      // Strip "!'()*" characters from each value.
       map[key] = value.toString().split('').where((c) => "!'()*".contains(c) == false).join('');
     }
 
@@ -720,7 +720,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
     var queryList = result["data"]["result"]["live_room"] ?? [];
     for (var item in queryList ?? []) {
       var title = item["title"].toString();
-      //移除title中的<em></em>标签
+      // Strip the <em></em> tags from the title.
       title = title.replaceAll(RegExp(r"<.*?em.*?>"), "");
       var roomItem = LiveRoom(
         roomId: item["roomid"].toString(),
@@ -762,7 +762,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
     var items = <LiveAnchorItem>[];
     for (var item in result["data"]["result"] ?? []) {
       var uname = item["uname"].toString();
-      //移除title中的<em></em>标签
+      // Strip the <em></em> tags from the title.
       uname = uname.replaceAll(RegExp(r"<.*?em.*?>"), "");
       var anchorItem = LiveAnchorItem(
         roomId: item["roomid"].toString(),
@@ -834,7 +834,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
       return accessId;
     }
 
-    // 获取 access_id
+    // Fetch the access_id.
     var resp = await HttpClient.instance.getText(
       "https://live.bilibili.com/lol",
       queryParameters: {},

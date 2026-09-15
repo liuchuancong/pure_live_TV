@@ -2,7 +2,8 @@ import 'dart:math';
 import 'dart:convert';
 
 import 'package:pure_live/exports/exports.dart';
-// twitch 的 Stream 模型与 dart:async 的 Stream 同名，这里显式引用以便模式匹配。
+// Twitch names its model Stream, which clashes with dart:async Stream, so it
+// is referenced explicitly to keep pattern matching readable.
 import 'package:pure_live/platforms/twitch/twitch_models.dart';
 
 class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver {

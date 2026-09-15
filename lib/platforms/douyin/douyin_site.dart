@@ -17,7 +17,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
 
   static const String kDefaultAuthority = "live.douyin.com";
 
-  /// 用户设置的 cookie
+  /// Cookie supplied by the user.
   static String cookie = "";
   static Future<String>? _anonymousCookieRequest;
   static final String _anonymousUserUniqueId = generateAnonymousUserUniqueId();
@@ -386,10 +386,10 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   Future<LiveRoom> getRoomDetailByRoomId(String roomId) async {
-    // 读取房间信息
+    // Read the room info.
     var roomData = await _getRoomDataByRoomId(roomId);
 
-    // 通过房间信息获取WebRid
+    // Derive the web rid from the room info.
     var webRid = roomData["data"]["room"]["owner"]["web_rid"].toString();
 
     // Current web clients use a 19-digit anonymous visitor ID. Reuse one ID
@@ -401,8 +401,8 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
 
     final status = int.tryParse(room['status']?.toString() ?? '') ?? 0;
 
-    // roomId是一次性的，用户每次重新开播都会生成一个新的roomId
-    // 所以如果roomId对应的直播间状态不是直播中，就通过webRid获取直播间信息
+    // roomId is single use: every new broadcast gets a fresh one, so fall back
+    // to the web rid whenever the room behind a roomId is no longer live.
     if (status == 4) {
       var result = await getRoomDetailByWebRid(webRid);
       return result;
@@ -412,7 +412,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     final totalViewers = roomStatus ? douyinTotalViewers(room) : '';
     final onlineViewers = roomStatus ? douyinOnlineViewers(room) : '';
     final nativeAudience = totalViewers.isNotEmpty ? totalViewers : onlineViewers;
-    // 主要是为了获取cookie,用于弹幕websocket连接
+    // Mainly here to collect the cookie the danmaku WebSocket needs.
     var headers = await getRequestHeaders();
 
     return LiveRoom(
@@ -442,9 +442,9 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     );
   }
 
-  /// 通过WebRid获取直播间信息
-  /// - [webRid] 直播间RID
-  /// - 返回直播间信息
+  /// Loads room info through a web rid.
+  /// - [webRid] room rid
+  /// - Returns the room info.
   Future<LiveRoom> getRoomDetailByWebRid(String webRid) async {
     try {
       var result = await _getRoomDetailByWebRidApi(webRid);
@@ -455,11 +455,11 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return await _getRoomDetailByWebRidHtml(webRid);
   }
 
-  /// 通过WebRid访问直播间API，从API中获取直播间信息
-  /// - [webRid] 直播间RID
-  /// - 返回直播间信息
+  /// Loads room info by calling the room API with a web rid.
+  /// - [webRid] room rid
+  /// - Returns the room info.
   Future<LiveRoom> _getRoomDetailByWebRidApi(String webRid) async {
-    // 读取房间信息
+    // Read the room info.
     var data = await _getRoomDataByApi(webRid);
 
     var roomData = data["data"][0];
@@ -475,7 +475,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     final onlineViewers = roomStatus ? douyinOnlineViewers(roomData) : '';
     final nativeAudience = totalViewers.isNotEmpty ? totalViewers : onlineViewers;
 
-    // 主要是为了获取cookie,用于弹幕websocket连接
+    // Mainly here to collect the cookie the danmaku WebSocket needs.
     var headers = await getRequestHeaders();
     return LiveRoom(
       roomId: webRid,
@@ -506,9 +506,9 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     );
   }
 
-  /// 通过WebRid访问直播间网页，从网页HTML中获取直播间信息
-  /// - [webRid] 直播间RID
-  /// - 返回直播间信息
+  /// Loads room info by fetching the room page and reading its HTML.
+  /// - [webRid] room rid
+  /// - Returns the room info.
   Future<LiveRoom> _getRoomDetailByWebRidHtml(String roomId) async {
     var detail = await _getRoomDataByHtml(roomId);
     var webRid = roomId;
@@ -524,7 +524,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     final onlineViewers = roomStatus ? douyinOnlineViewers(roomInfo) : '';
     final nativeAudience = totalViewers.isNotEmpty ? totalViewers : onlineViewers;
 
-    // 主要是为了获取cookie,用于弹幕websocket连接
+    // Mainly here to collect the cookie the danmaku WebSocket needs.
     var headers = await getRequestHeaders();
 
     return LiveRoom(
@@ -556,8 +556,8 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     );
   }
 
-  /// 读取用户的唯一ID
-  /// - [webRid] 直播间RID
+  /// Reads the unique user id.
+  /// - [webRid] room rid
   // ignore: unused_element
   Future<String> _getUserUniqueId(String webRid) async {
     try {
@@ -568,8 +568,8 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     }
   }
 
-  /// 进入直播间前需要先获取cookie
-  /// - [webRid] 直播间RID
+  /// A cookie is required before entering the room.
+  /// - [webRid] room rid
   Future<String> _getWebCookie(String webRid) async {
     var headResp = await HttpClient.instance.head("https://live.douyin.com/$webRid", header: headers);
     var dyCookie = "";
@@ -588,8 +588,8 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return dyCookie;
   }
 
-  /// 通过webRid获取直播间Web信息
-  /// - [webRid] 直播间RID
+  /// Loads the room web payload through a web rid.
+  /// - [webRid] room rid
   Future<Map> _getRoomDataByHtml(String webRid) async {
     var dyCookie = await _getWebCookie(webRid);
     var result = await HttpClient.instance.getText(
@@ -610,8 +610,8 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return renderDataJson["state"];
   }
 
-  /// 通过webRid获取直播间Web信息
-  /// - [webRid] 直播间RID
+  /// Loads the room web payload through a web rid.
+  /// - [webRid] room rid
   Future<Map> _getRoomDataByApi(String webRid) async {
     var requestHeader = await getRequestHeaders();
     var queryParams = {
@@ -628,8 +628,8 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return result["data"];
   }
 
-  /// 通过roomId获取直播间信息
-  /// - [roomId] 直播间ID
+  /// Loads room info through a room id.
+  /// - [roomId] room id
   Future<Map> _getRoomDataByRoomId(String roomId) async {
     var result = await HttpClient.instance.getJson(
       'https://webcast.amemv.com/webcast/room/reflow/info/',
@@ -854,7 +854,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return Future.value(<LiveSuperChatMessage>[]);
   }
 
-  //生成指定长度的16进制随机字符串
+  // Builds a random hexadecimal string of the requested length.
   String generateRandomString(int length) {
     var random = math.Random.secure();
     var values = List<int>.generate(length, (i) => random.nextInt(16));
@@ -877,7 +877,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return value.toString();
   }
 
-  // 生成随机的数字
+  // Builds a random number.
   int generateRandomNumber(int length) {
     var random = math.Random.secure();
     var values = List<int>.generate(length, (i) => random.nextInt(10));

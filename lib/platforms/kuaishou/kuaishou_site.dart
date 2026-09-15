@@ -524,7 +524,7 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
 
   @override
   Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) async {
-    // 快手无法搜索主播，只能搜索游戏分类这里不做展示
+    // Kuaishou cannot search anchors, only game categories, so this is hidden.
     return [];
   }
 
@@ -541,7 +541,7 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
 
   @override
   Future<List<LiveSuperChatMessage>> getSuperChatMessage({required String roomId}) {
-    //尚不支持
+    // Not supported yet.
     return Future.value([]);
   }
 }

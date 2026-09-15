@@ -7,21 +7,21 @@ class BufferParser {
 
   BufferParser(this.buffer);
 
-  // 读取 32 位无符号整数
+  // Reads a 32-bit unsigned integer.
   int getUI32() {
     final value = ByteData.view(buffer.buffer).getUint32(offset, Endian.little);
     offset += 4;
     return value;
   }
 
-  // 读取 16 位无符号整数
+  // Reads a 16-bit unsigned integer.
   int getUI16() {
     final value = ByteData.view(buffer.buffer).getUint16(offset, Endian.little);
     offset += 2;
     return value;
   }
 
-  // 读取 UTF8 字符串（先读长度再读内容）
+  // Reads a UTF-8 string, length first and content after.
   String getUTF8() {
     final len = getUI16();
     final subBuffer = buffer.sublist(offset, offset + len);
@@ -29,7 +29,7 @@ class BufferParser {
     return utf8.decode(subBuffer);
   }
 
-  // 读取 String-String 映射
+  // Reads a String-to-String map.
   Map<String, String> getStrStrMap() {
     final map = <String, String>{};
     final len = getUI32();
@@ -41,7 +41,7 @@ class BufferParser {
     return map;
   }
 
-  // 64 位整数拼接（对应 JS addToUInt64）
+  // Combines two halves into a 64-bit integer, matching JS addToUInt64.
   int addToUInt64(int high, int low) {
     return (high << 32) | (low & 0xFFFFFFFF);
   }

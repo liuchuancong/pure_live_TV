@@ -24,7 +24,7 @@ class TwitchDanmaku implements LiveDanmaku {
   }
 
   @override
-  int heartbeatTime = 40 * 1000; //默认是40s
+  int heartbeatTime = 40 * 1000; // 40 s by default
 
   var serverUrl = "wss://irc-ws.chat.twitch.tv";
 

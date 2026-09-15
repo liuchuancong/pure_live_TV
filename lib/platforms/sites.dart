@@ -9,7 +9,9 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 
 class Sites {
-  /// 当前播放房间查询钩子，由播放页（Riverpod 控制器）注册，站点层用它做错误回退。
+  /// Hook for querying the room being played. The playback page registers it
+  /// through its Riverpod controller and the site layer uses it to recover from
+  /// errors.
   static LiveRoom? Function(String platform, String roomId)? currentRoomLookup;
 
   static LiveRoom? currentRoom(String platform, String roomId) {

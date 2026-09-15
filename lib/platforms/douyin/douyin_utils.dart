@@ -7,7 +7,7 @@ import 'abogus.dart';
 import 'douyin_request_params.dart';
 
 class DouyinUtils {
-  // 根据传入长度产生随机字符串
+  // Builds a random string of the requested length.
   static String getMSToken({int randomLength = 184}) {
     if (randomLength < 0) throw ArgumentError.value(randomLength, 'randomLength');
     const baseStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=';
@@ -40,7 +40,7 @@ class DouyinUtils {
   }
 
   Future<Map<String, String>> getTtwidWebid({required String reqUrl}) async {
-    // 先请求以获取 ttwid 等 Cookie，再解析页面的 RENDER_DATA 获取 user_unique_id
+    // First collect cookies such as ttwid, then read user_unique_id out of the
     final headers = <String, String>{
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0",
       "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -51,7 +51,7 @@ class DouyinUtils {
     String? webid;
 
     try {
-      // 先用 HEAD 获取 Set-Cookie（包含 ttwid）
+      // page RENDER_DATA. A HEAD request grabs Set-Cookie, which carries ttwid.
       final headResp = await HttpClient.instance.head(reqUrl, header: headers);
       final setCookies = headResp.headers["set-cookie"];
       if (setCookies != null) {
@@ -64,23 +64,23 @@ class DouyinUtils {
         }
       }
 
-      // 再用 GET 拉取页面 HTML，解析 RENDER_DATA
+      // Then a GET pulls the page HTML so RENDER_DATA can be parsed.
       final html = await HttpClient.instance.getText(reqUrl, header: headers);
 
-      // 提取 RENDER_DATA 脚本块
+      // Extract the RENDER_DATA script block.
       final renderMatches = RegExp(
         r'<script id=\"RENDER_DATA\" type=\"application\/json\">(.*?)<\/script>',
         dotAll: true,
       ).allMatches(html);
       if (renderMatches.isNotEmpty) {
         var renderDataText = renderMatches.first.group(1) ?? "";
-        // URL 解码
+        // URL-decode the payload.
         try {
           renderDataText = Uri.decodeComponent(renderDataText);
         } catch (_) {}
         try {
           final data = jsonDecode(renderDataText) as Map<String, dynamic>;
-          // 路径 app.odin.user_unique_id
+          // Path: app.odin.user_unique_id
           final app = data['app'] as Map<String, dynamic>?;
           final odin = app?['odin'] as Map<String, dynamic>?;
           final uid = odin?['user_unique_id'];
