@@ -1,4 +1,4 @@
-package com.mystyle.purelive
+package com.mystyle.purelive.tv
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity()

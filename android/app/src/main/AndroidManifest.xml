@@ -1,8 +1,18 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="com.mystyle.purelive">
+<!--
+  No package attribute here on purpose. AGP 8 removed namespace support from the
+  manifest and AGP 9 ignores the attribute outright; the application id and the
+  namespace both come from build.gradle.kts. Adding it back only produces a
+  build warning and misleads readers into thinking it still has an effect.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+  <!-- Required from Android 13 to post the foreground service notification. -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.VIBRATE" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
   <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
@@ -10,6 +20,9 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- The app checks for updates itself and hands the downloaded APK to the
+       system package installer, which Android 8+ gates behind this permission. -->
+  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
   <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
   <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
@@ -35,7 +48,9 @@
       android:usesCleartextTraffic="true" 
       android:requestLegacyExternalStorage="true" 
       android:networkSecurityConfig="@xml/network_security_config" 
-      android:allowNativeHeapPointerTagging="false">
+      android:enableOnBackInvokedCallback="true"
+      android:allowNativeHeapPointerTagging="false"
+      android:allowBackup="false">
     <activity 
       android:name=".MainActivity" 
       android:exported="true" 
@@ -66,6 +81,18 @@
     <intent>
       <action android:name="android.intent.action.PROCESS_TEXT" />
       <data android:mimeType="text/plain" />
+    </intent>
+    <!-- url_launcher cannot see any browser without these. Android 11 package
+         visibility hides them otherwise, and opening a link fails silently. -->
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <category android:name="android.intent.category.BROWSABLE" />
+      <data android:scheme="http" />
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <category android:name="android.intent.category.BROWSABLE" />
+      <data android:scheme="https" />
     </intent>
   </queries>
 </manifest>
