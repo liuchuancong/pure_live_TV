@@ -6,6 +6,7 @@ import 'package:pure_live/shared/utils/core_error.dart';
 import 'package:pure_live/shared/utils/custom_interceptor.dart';
 import 'package:pure_live/shared/common/proxy_routing.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class HttpClient {
   static const Duration _connectTimeout = Duration(seconds: 20);
@@ -14,13 +15,6 @@ class HttpClient {
 
   static const int _downloadSuccessCode1 = 200;
   static const int _downloadSuccessCode2 = 206;
-
-  static const String _errorGet = "发送GET请求失败";
-  static const String _errorPost = "发送POST请求失败";
-  static const String _errorHead = "发送HEAD请求失败";
-  static const String _errorDownload = "下载请求失败";
-  static const String _errorDownloadFailed = "下载失败";
-  static const String _errorDownloadCancel = "下载已取消";
 
   HttpClient._();
   static final HttpClient instance = HttpClient._();
@@ -67,7 +61,7 @@ class HttpClient {
       );
       return result.data;
     } catch (e) {
-      throw _handleError(e, _errorGet);
+      throw _handleError(e, i18n('http_error_get'));
     }
   }
 
@@ -86,7 +80,7 @@ class HttpClient {
       );
       return result.data;
     } catch (e) {
-      throw _handleError(e, _errorGet);
+      throw _handleError(e, i18n('http_error_get'));
     }
   }
 
@@ -105,7 +99,7 @@ class HttpClient {
       );
       return result;
     } catch (e) {
-      throw _handleError(e, _errorGet);
+      throw _handleError(e, i18n('http_error_get'));
     }
   }
 
@@ -131,7 +125,7 @@ class HttpClient {
       );
       return result.data;
     } catch (e) {
-      throw _handleError(e, _errorPost);
+      throw _handleError(e, i18n('http_error_post'));
     }
   }
 
@@ -153,7 +147,7 @@ class HttpClient {
       if (e is DioException && e.type == DioExceptionType.badResponse) {
         return e.response!;
       }
-      throw HttpError(_errorHead);
+      throw HttpError(i18n('http_error_head'));
     }
   }
 
@@ -182,15 +176,15 @@ class HttpClient {
       if (response.statusCode == _downloadSuccessCode1 || response.statusCode == _downloadSuccessCode2) {
         return await tempFile.rename(savePath);
       } else {
-        throw HttpError(_errorDownloadFailed, statusCode: response.statusCode ?? 0);
+        throw HttpError(i18n('http_error_download_failed'), statusCode: response.statusCode ?? 0);
       }
     } on DioException catch (e) {
       if (CancelToken.isCancel(e)) {
-        throw HttpError(_errorDownloadCancel);
+        throw HttpError(i18n('http_error_download_cancelled'));
       } else if (e.type == DioExceptionType.badResponse) {
         throw HttpError(e.message ?? "", statusCode: e.response?.statusCode ?? 0);
       } else {
-        throw HttpError(_errorDownload);
+        throw HttpError(i18n('http_error_download'));
       }
     }
   }
