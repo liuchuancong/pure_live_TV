@@ -31,11 +31,12 @@ class App extends ConsumerWidget {
           child: MaterialApp.router(
             routerConfig: router,
             debugShowCheckedModeBanner: false,
-            // 安装 D-pad 根节点：方向键导航、区域焦点记忆、焦点丢失兜底
-            // 都由它提供。没有这一层，电视遥控器的方向键不会移动焦点。
+            // Installs the D-pad root: direction-key navigation, per-region focus
+            // memory and focus-loss recovery all come from it. Without this layer a TV
+            // remote cannot move focus at all.
             builder: Dpad.wrap(),
-            // EasyLocalization 提供语言与本地化代理；应用自有语言设置在
-            // LocalizationsLocaleSync 中同步到渲染层。
+            // EasyLocalization supplies the locale and the delegate list; the app's own
+            // language setting is pushed into the render layer by LocalizationsLocaleSync.
             locale: context.locale,
             supportedLocales: context.supportedLocales,
             localizationsDelegates: context.localizationDelegates,
@@ -73,10 +74,10 @@ ColorScheme _schemeFor(TvThemeData tvTheme, material.ColorScheme? systemScheme) 
   return toFlutterColorScheme(systemScheme).copyWith(surface: tvTheme.backgroundColor);
 }
 
-/// 应用自有语言设置与 EasyLocalization 渲染层之间的同步桥。
+/// Bridges the app's own language setting to the EasyLocalization layer.
 ///
-/// 设置页改写 `languageName` 后，MaterialApp 的语言不会自己变化，
-/// 这里用 setLocale 让已渲染的界面立即切换。
+/// Rewriting `languageName` in settings does not move MaterialApp by itself,
+/// so setLocale is called here to retarget already-rendered widgets.
 class LocalizationsLocaleSync extends StatefulWidget {
   const LocalizationsLocaleSync({super.key, required this.locale, required this.child});
 

@@ -62,7 +62,7 @@ class AppInitializer {
     // Danmaku sockets reuse the proxy policy configured for API and image traffic.
     configureWebSocketProxyRouting((uri) => PlaybackProxyPolicy.currentDirective());
 
-    // 版本信息 + 启动时检查更新
+    // Version info plus the startup update check.
     unawaited(() async {
       await VersionUtil.initPackageInfo();
       if (SettingsService.to.appState.enableAutoCheckUpdate) {

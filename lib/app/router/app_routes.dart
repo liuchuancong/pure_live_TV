@@ -1,100 +1,100 @@
 import 'package:pure_live/exports/common_export.dart';
 
 abstract final class AppRoutes {
-  /// 首页
+  /// Home
   static const kInitial = "/home";
 
-  /// 关注列表
+  /// Followed rooms
   static const kFavorite = "/favorite";
 
-  /// 热门推荐
+  /// Popular picks
   static const kPopular = "/popular";
 
-  /// 分区分类列表
+  /// Category list
   static const kAreas = "/areas";
 
-  /// 分区房间列表
+  /// Rooms inside a category
   static const kAreaRooms = "/area_rooms";
 
-  /// 直播播放页面
+  /// Live playback
   static const kLivePlay = "/live_play";
 
-  /// 搜索页面
+  /// Search
   static const kSearch = "/search";
 
-  // 搜索结果
+  // Search results
   static const kSearchResult = "/search_result";
 
-  /// 全局设置
+  /// Global settings
   static const kSettings = "/settings";
 
-  /// 联系我们
+  /// Contact
   static const kContact = "/contact";
 
-  /// 备份与恢复
+  /// Backup and restore
   static const kBackup = "/backup";
 
-  /// 关于我们
+  /// About
   static const kAbout = "/about";
 
-  /// 播放历史记录
+  /// Watch history
   static const kHistory = "/history";
 
-  /// 捐赠支持
+  /// Donations
   static const kDonate = "/donate";
 
-  /// 个人中心
+  /// Account
   static const kMine = "/mine";
 
-  /// 用户登录
+  /// Sign in
   static const kSignIn = "/sign_in";
 
-  /// 用户管理
+  /// User management
   static const kUserManage = "/user_manage";
 
-  /// 修改密码
+  /// Change password
   static const kUpdatePassword = "/update_password";
 
-  /// 弹幕屏蔽设置
+  /// Danmaku blocklist
   static const kSettingsDanmuShield = "/shield";
 
-  /// 常用分区/热门分区设置
+  /// Preferred and popular categories
   static const kSettingsHotAreas = "/hot_areas";
 
-  /// 账号绑定设置
+  /// Account binding
   static const kSettingsAccount = "/settings_account";
 
-  /// 哔哩哔哩扫码登录
+  /// Bilibili QR sign-in
   static const kBiliBiliQRLogin = "/bilibili_qr_login";
 
-  /// 哔哩哔哩网页登录
+  /// Bilibili web sign-in
   static const kBiliBiliWebLogin = "/bilibili_web_login";
 
-  /// 内嵌网页浏览器
+  /// Embedded web browser
   static const kWebview = "/webview_all";
 
-  /// 数据同步
+  /// Data sync
   static const kSync = "/sync";
 
-  /// 用户协议与隐私政策页面
+  /// Terms of service and privacy policy
   static const kAgreementPage = "/agreement_page";
 
-  /// 关注的分区
+  /// Followed categories
   static const kFavoriteAreas = "/favorite_areas";
 
-  /// 版本检查与更新
+  /// Version check and updates
   static const kVersionPage = "/version_page";
 
-  /// 工具箱
+  /// Toolbox
   static const kToolbox = "/tool_box";
 
-  /// 抖音 Cookie 设置
+  /// Douyin cookie settings
   static const kDouyinCookie = "/douyin_cookie";
 
-  /// 快手 Cookie 设置
+  /// Kuaishou cookie settings
   static const kKuaishouCookie = "/kuaishou_cookie";
 
-  /// 壁纸/背景设置页面
+  /// Wallpaper and background settings
   static const kWallpaperPage = "/wallpaper_page";
 }
 
