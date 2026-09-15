@@ -13,7 +13,8 @@ class BackupRecoveryService {
 
   BackupController get _backup => SettingsService.to.container!.read(backupControllerProvider.notifier);
 
-  /// 把全部设置写入指定备份文件（日期命名由调用方负责）。
+  /// Writes every setting to the given backup file. Naming it by date is the
+  /// caller's responsibility.
   Future<File?> createAppSettingsBackup(String backupDirectory, {DateTime? now}) async {
     final dateStr = _formatBackupTimestamp(now ?? DateTime.now());
     final file = File('$backupDirectory/purelive_$dateStr.txt');
@@ -26,7 +27,7 @@ class BackupRecoveryService {
     return null;
   }
 
-  /// 从本地文件恢复全部设置。
+  /// Restores every setting from a local file.
   Future<bool> recoverSettingsFromFile(String filePath) async {
     final file = File(filePath);
     if (!await file.exists()) return false;

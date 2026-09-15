@@ -102,11 +102,11 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     HivePrefUtil.setObject('theme_settings', state.toJson());
   }
 
-  // 获取辅助对象
+  // Accessor helpers
   ThemeMode get themeMode => AppConsts.themeModes[state.themeModeName] ?? ThemeMode.system;
   Locale get locale => AppConsts.languages[state.languageName] ?? const Locale('zh', 'CN');
 
-  // 备份与恢复
+  // Backup and restore
   Map<String, dynamic> toJson() => state.toJson();
 
   void importFromJson(Map<String, dynamic> json) {

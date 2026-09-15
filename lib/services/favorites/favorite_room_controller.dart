@@ -13,7 +13,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   static FavoriteRoomController get to => SettingsService.to.fav;
   static const int maxShieldKeywordLength = 40;
 
-  // 供播放器核心等非 widget 代码反应式读取。
+  // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<List<LiveRoom>> get favoriteRooms => SettingsValue(() => state.favoriteRooms);
   SettingsValue<List<String>> get hotAreasList => SettingsValue(() => state.hotAreasList);
 
@@ -143,7 +143,8 @@ class FavoriteRoomController extends _$FavoriteRoomController {
         if (!updated.contains(site.id)) updated.add(site.id);
       }
     }
-    // 仅追加新平台，避免每次发版重置用户刻意隐藏的平台。
+    // Only append new platforms, so a release never resets platforms the user
+    // deliberately hid.
     if (version < 3) {
       version = 3;
       return model.copyWith(hotAreasList: updated, siteCatalogMigration: 3);
@@ -208,7 +209,8 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     final index = state.favoriteRooms.indexWhere((e) => e.hasSameIdentity(normalized));
     if (index < 0) return false;
     final updated = List<LiveRoom>.from(state.favoriteRooms);
-    // 以身份键定位后用刷新快照覆盖（保留收藏项刷新元数据的语义由调用方处理）。
+    // Locate by identity key, then overwrite with the refresh snapshot. Keeping
+    // the favourite refresh metadata in step is the caller's responsibility.
     updated[index] = updated[index]
         .withAudienceFallbackFrom(normalized)
         .copyWith(

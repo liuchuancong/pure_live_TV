@@ -11,7 +11,7 @@ abstract class ThemeSettingsModel with _$ThemeSettingsModel {
     @Default("System") String themeModeName,
     @Default(false) bool enableDynamicTheme,
 
-    // 使用你定义的 HexColorConverter
+    // Uses the shared HexColorConverter.
     @HexColorConverter() @Default(Colors.blue) Color themeColor,
 
     @Default("简体中文") String languageName,

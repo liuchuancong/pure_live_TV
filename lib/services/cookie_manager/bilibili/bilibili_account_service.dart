@@ -19,7 +19,8 @@ class BilibiliAccountService {
 
   bool get isLogined => currentCookie.isNotEmpty;
 
-  /// 拉取并提交账号信息；相同 Cookie 的并发加载会去重合并。
+  /// Fetches and publishes account info. Concurrent loads for the same cookie
+  /// are deduplicated into one request.
   Future<bool> loadUserInfo() {
     final cookie = currentCookie;
     if (cookie.isEmpty) {
@@ -49,7 +50,7 @@ class BilibiliAccountService {
       if (!_isCurrent(cookie, revision)) return false;
       if (result == null) return false;
       if (result['code'] != 0) {
-        // 登录过期：清理本地登录态。
+        // Session expired: clear the local sign-in state.
         await logout();
         return false;
       }
@@ -81,7 +82,7 @@ class BilibiliAccountService {
     SettingsService.to.cookieManager.setBilibiliUid(0);
   }
 
-  /// 写入 Cookie 并触发账号信息加载。
+  /// Stores the cookie and triggers an account info load.
   void setCookie(String cookie) {
     final normalized = normalizeAccountCookie(cookie);
     SettingsService.to.cookieManager.setBilibiliCookie(normalized);
@@ -94,7 +95,7 @@ class BilibiliAccountService {
     }
   }
 
-  /// 退出登录：清空 Cookie 并重置本地账号状态。
+  /// Signs out: clears the cookie and resets local account state.
   Future<void> logout() async {
     _loadRevision++;
     SettingsService.to.cookieManager.setBilibiliCookie('');

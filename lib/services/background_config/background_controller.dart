@@ -60,7 +60,7 @@ class BackgroundController extends _$BackgroundController {
 
   void _updateState(BackgroundConfigModel newModel) {
     state = newModel;
-    _configStream.add(newModel); // 同步更新流
+    _configStream.add(newModel); // keep the stream in sync
 
     HivePrefUtil.setString('bgSource', bgSourceToString(newModel.source));
     HivePrefUtil.setString('bgBoxFit', newModel.boxFit.name);

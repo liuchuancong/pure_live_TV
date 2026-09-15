@@ -30,7 +30,7 @@ class BilibiliAccountController extends _$BilibiliAccountController {
     return BilibiliAccountModel(isLogined: cookie.isNotEmpty);
   }
 
-  /// 由 BilibiliAccountService 提交最新的账号状态。
+  /// Latest account state, published by BilibiliAccountService.
   void applyState(BilibiliAccountModel model) {
     if (state == model) return;
     state = model;

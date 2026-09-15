@@ -17,7 +17,8 @@ class WebDavSyncService {
 
   webdav.Client get client => _client;
 
-  /// readDir 校验 HTTP 响应并解析 XML；空集合代表成功，不是失败。
+  /// readDir validates the HTTP response and parses the XML. An empty list
+  /// means success, not failure.
   Future<List<webdav.File>> readDirectory(String path) => _client.readDir(path);
 
   Future<List<int>> readFile(String path) => _client.read(path);
@@ -26,7 +27,7 @@ class WebDavSyncService {
 
   Future<void> removeFile(String path) => _client.remove(path);
 
-  /// 连通性测试：尝试列出根目录内容。
+  /// Connectivity check: tries to list the root directory.
   Future<bool> testConnection() async {
     try {
       await _client.ping();
@@ -42,7 +43,7 @@ class WebDavSyncService {
   static bool isValidAddress(String address) {
     final value = address.trim();
     if (value.isEmpty || RegExp(r'[\x00-\x1f\x7f\\]').hasMatch(value)) return false;
-    // Uri 会把空 user-info 标记归一化掉，解析前先检查。
+    // Uri normalises an empty user-info marker away, so check before parsing.
     if (RegExp(r'^https?://[^/?#]*@', caseSensitive: false).hasMatch(value)) return false;
     try {
       final uri = Uri.tryParse(value);
@@ -76,11 +77,11 @@ class WebDavBackupService {
     final t = time ?? DateTime.now();
     String two(int v) => v.toString().padLeft(2, '0');
     final dateStr = '${t.year}-${two(t.month)}-${two(t.day)}T${two(t.hour)}_${two(t.minute)}_${two(t.second)}';
-    // 纯时间戳命名会在同一秒内互相覆盖，追加 uuid。
+    // A bare timestamp can collide within the same second, so a uuid is appended.
     return 'purelive_${dateStr}_${const Uuid().v4()}.txt';
   }
 
-  /// 把当前全部设置作为备份上传到远端目录，返回远端路径。
+  /// Uploads every current setting as a backup and returns the remote path.
   Future<String> uploadBackup(
     WebDAVConfig config, {
     String dirPath = '/',
@@ -102,7 +103,7 @@ class WebDavBackupService {
     return remotePath;
   }
 
-  /// 下载远端备份并恢复全部设置。
+  /// Downloads a remote backup and restores every setting from it.
   Future<void> downloadAndRestore(WebDAVConfig config, String remotePath) async {
     final service = WebDavSyncService(
       url: config.address,
@@ -121,7 +122,7 @@ class WebDavBackupService {
     }
   }
 
-  /// 删除远端备份文件。
+  /// Deletes a remote backup file.
   Future<void> deleteRemoteFile(WebDAVConfig config, String remotePath) async {
     final service = WebDavSyncService(
       url: config.address,
@@ -135,7 +136,7 @@ class WebDavBackupService {
     }
   }
 
-  /// 列出远端目录中的备份文件（仅 .txt）。
+  /// Lists the backup files in the remote directory (.txt only).
   Future<List<webdav.File>> listBackups(WebDAVConfig config, {String dirPath = '/'}) async {
     final service = WebDavSyncService(
       url: config.address,
@@ -150,7 +151,7 @@ class WebDavBackupService {
     }
   }
 
-  /// 连通性测试。
+  /// Connectivity check.
   static Future<bool> testConnection(WebDAVConfig config) {
     final service = WebDavSyncService(
       url: config.address,

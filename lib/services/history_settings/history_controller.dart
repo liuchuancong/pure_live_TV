@@ -22,7 +22,7 @@ List<T> applyHistoryLimit<T>(Iterable<T> values, int limit) {
       : values.take(normalized).toList(growable: true);
 }
 
-/// 以稳定身份（平台:房间ID）去重插入历史记录。
+/// Inserts into history, deduplicating by stable identity (platform:roomId).
 List<LiveRoom> upsertHistoryRoom(List<LiveRoom> current, LiveRoom room, {int limit = defaultHistoryLimit}) {
   final maxLength = normalizeHistoryLimit(limit);
   final next = List<LiveRoom>.from(current)..removeWhere((entry) => entry.hasSameIdentity(room));
@@ -33,7 +33,8 @@ List<LiveRoom> upsertHistoryRoom(List<LiveRoom> current, LiveRoom room, {int lim
   return next;
 }
 
-/// 刷新后合并房间快照，保留历史条目的展示上下文。
+/// Merges a refreshed room snapshot while keeping the history entry's
+/// display context.
 LiveRoom preserveHistoryMetadata(LiveRoom refreshed, LiveRoom previous) {
   return refreshed.withAudienceFallbackFrom(previous);
 }
@@ -87,7 +88,7 @@ class HistoryController extends _$HistoryController {
     _update(state.copyWith(historyRooms: updated));
   }
 
-  /// 兼容旧调用名（同 removeRoomFromHistory）。
+  /// Legacy alias for removeRoomFromHistory.
   void removeHistory(LiveRoom room) => removeRoomFromHistory(room);
 
   void clearHistory() {

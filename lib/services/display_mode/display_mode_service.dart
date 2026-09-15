@@ -105,7 +105,8 @@ class DisplayModeService {
     info.value = next;
   }
 
-  /// 切换高刷新率模式；平台侧未实现时返回 null。
+  /// Switches the high refresh rate mode. Returns null where the platform has
+  /// no implementation.
   static Future<DisplayModeInfo?> setHighRefreshRate(bool enabled) async {
     _ensureHandler();
     try {
@@ -136,8 +137,9 @@ class DisplayModeService {
     }
   }
 
-  /// 按应用设置（AppSettingsModel.refreshRateMode）应用刷新率模式。
-  /// 支持：''（不动）、'auto'（系统默认）、'high'（最高刷新率）。
+  /// Applies the refresh rate mode held in AppSettingsModel.refreshRateMode.
+  /// Accepted values: '' (leave untouched), 'auto' (system default) and
+  /// 'high' (highest available).
   static Future<void> applyRefreshRateMode([String? mode]) async {
     final refreshRateMode = mode ?? SettingsService.to.appState.refreshRateMode;
     switch (refreshRateMode.trim().toLowerCase()) {

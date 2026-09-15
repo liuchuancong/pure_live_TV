@@ -20,15 +20,16 @@ class IptvSettingsController extends _$IptvSettingsController {
 
   static const String autoSyncHoursIntervalKey = 'autoSyncHoursInterval';
 
-  // 供播放器核心等非 widget 代码反应式读写。
+  // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<String> get selectedSourceId => SettingsValue(() => state.selectedSourceId, selectSourceId);
   SettingsValue<String> get selectedSourceName => SettingsValue(() => state.selectedSourceName, selectSourceName);
   SettingsValue<bool> get isAutoSyncEnabled => SettingsValue(() => state.isAutoSyncEnabled, setAutoSyncEnabled);
 
   int _sourceRevision = 0;
 
-  /// 源选择变更版本号。长任务（EPG 映射重建等）用它检测会话期间的源切换，
-  /// 包括 A→B→A 这种仅靠比较当前值看不出来的情况。
+  /// Source selection revision. Long-running work such as EPG remapping uses it
+  /// to notice a mid-session source switch, including A to B to A changes that
+  /// comparing current values would miss.
   int get sourceRevision => _sourceRevision;
 
   void selectSourceId(String id) => selectSource(state.selectedSourceName, id);

@@ -10,7 +10,7 @@ part 'danmaku_settings_controller.g.dart';
 class DanmakuSettingsController extends _$DanmakuSettingsController {
   static DanmakuSettingsController get to => SettingsService.to.danmaku;
 
-  // 供播放器核心等非 widget 代码反应式读取。
+  // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<bool> get filterDouyuSuspectedAutomatedMessages =>
       SettingsValue(() => state.filterDouyuSuspectedAutomatedMessages);
 

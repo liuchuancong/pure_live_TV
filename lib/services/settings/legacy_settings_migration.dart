@@ -48,15 +48,15 @@ class LegacySettingsMigration {
         "loadingStyle": HivePrefUtil.getString("loadingStyle"),
         "loadingStyleColorSwitch": HivePrefUtil.getString("loadingStyleColorSwitch"),
 
-        // 自动关机
+        // Auto shutdown
         "autoShutDownTime": HivePrefUtil.getInt("autoShutDownTime"),
         "enableAutoShutDownTime": HivePrefUtil.getBool("enableAutoShutDownTime"),
 
-        // 退出
+        // Exit
         "dontAskExit": HivePrefUtil.getBool("dontAskExit"),
         "exitChoose": HivePrefUtil.getString("exitChoose"),
 
-        // 字体
+        // Font
         "fontSizeBodySmall": HivePrefUtil.getDouble("fontSizeBodySmall"),
         "fontSizeBodyMedium": HivePrefUtil.getDouble("fontSizeBodyMedium"),
         "fontSizeBodyLarge": HivePrefUtil.getDouble("fontSizeBodyLarge"),
@@ -65,7 +65,7 @@ class LegacySettingsMigration {
         "fontFamilyName": HivePrefUtil.getString("fontFamilyName"),
         "danmakuFontFamilyName": HivePrefUtil.getString("danmakuFontFamilyName"),
 
-        // 播放器
+        // Player
         "videoFitIndex": HivePrefUtil.getInt("videoFitIndex"),
         "videoPlayerKey": HivePrefUtil.getString("videoPlayerKey"),
         "useHardStopOnExit": HivePrefUtil.getBool("useHardStopOnExit"),
@@ -81,7 +81,7 @@ class LegacySettingsMigration {
         "preferResolutionCellular": HivePrefUtil.getString("preferResolutionCellular"),
         "preferPlatform": HivePrefUtil.getString("preferPlatform"),
 
-        // 弹幕
+        // Danmaku
         "hideDanmaku": HivePrefUtil.getBool("hideDanmaku"),
         "danmakuTopArea": HivePrefUtil.getDouble("danmakuTopArea"),
         "danmakuArea": HivePrefUtil.getDouble("danmakuArea"),
@@ -92,7 +92,7 @@ class LegacySettingsMigration {
         "danmakuOpacity": HivePrefUtil.getDouble("danmakuOpacity"),
         "enableDanmakuDisplay": HivePrefUtil.getBool("enableDanmakuDisplay"),
 
-        // 音量
+        // Volume
         "defaultMobileVolume": HivePrefUtil.getDouble("defaultMobileVolume"),
         "defaultDesktopVolume": HivePrefUtil.getDouble("defaultDesktopVolume"),
         "globalVolumeMute": HivePrefUtil.getBool("globalVolumeMute"),
@@ -104,12 +104,12 @@ class LegacySettingsMigration {
         "douyinCookie": HivePrefUtil.getString("douyinCookie"),
         "kuaishouCookie": HivePrefUtil.getString("kuaishouCookie"),
 
-        // 代理
+        // Proxy
         "enableProxy": HivePrefUtil.getBool("enableProxy"),
         "proxyHost": HivePrefUtil.getString("proxyHost"),
         "proxyPort": HivePrefUtil.getInt("proxyPort"),
 
-        // 收藏、历史、屏蔽
+        // Favorites, history and blocklist
         "favoriteRooms": HivePrefUtil.getStringList("favoriteRooms"),
         "historyRooms": HivePrefUtil.getStringList("historyRooms"),
         "favoriteAreas": HivePrefUtil.getStringList("favoriteAreas"),

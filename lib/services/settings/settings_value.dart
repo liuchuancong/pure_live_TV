@@ -1,5 +1,6 @@
-/// 播放器核心等非 widget 代码读取控制器状态的反应式视图：
-/// `.v` / `.value` 每次读取都会重新取最新状态；提供写入器时可直接赋值。
+/// Reactive view over controller state for non-widget code such as the player
+/// core. Every read of `.v` / `.value` re-reads the latest state, and
+/// assigning works whenever a writer was provided.
 class SettingsValue<T> {
   const SettingsValue(this._read, [this._write]);
 

@@ -13,7 +13,7 @@ part 'cookie_controller.g.dart';
 class CookieController extends _$CookieController {
   static CookieController get to => SettingsService.to.cookieManager;
 
-  // 供播放器核心等非 widget 代码反应式读取。
+  // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<String> get bilibiliCookie => SettingsValue(() => state.bilibiliCookie);
   SettingsValue<int> get bilibiliUid => SettingsValue(() => state.bilibiliUid);
   SettingsValue<String> get huyaCookie => SettingsValue(() => state.huyaCookie);

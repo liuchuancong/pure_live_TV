@@ -23,7 +23,7 @@ abstract class PlayerSettingsModel with _$PlayerSettingsModel {
     @Default(false) bool floatPlay,
     @Default(false) bool audioOnly,
     @Default(false) bool useHardStopOnExit,
-    // Windows/竖屏独占（TV 不消费，仅同步保留）
+    // Windows and portrait only. Synced but never consumed on TV.
     @Default(false) bool windowsPipAlwaysOnTop,
     @Default(false) bool enableRtxVsr,
     @Default(true) bool enablePortraitStreamAdaptation,

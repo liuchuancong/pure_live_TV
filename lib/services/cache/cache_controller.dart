@@ -24,12 +24,12 @@ int _measureDirectoryBytes(List<String> paths) {
           try {
             total += entity.lengthSync();
           } on FileSystemException {
-            // 后台扫描期间缓存文件可能被替换。
+            // Cached files may be replaced while a background scan is running.
           }
         }
       }
     } on FileSystemException {
-      // 显式清理期间平台缓存目录可能消失。
+      // A platform cache directory may disappear during an explicit clear.
     }
   }
   return total;
@@ -76,7 +76,7 @@ class CacheController extends _$CacheController {
     try {
       await DefaultCacheManager().emptyCache();
     } catch (_) {
-      // flutter_cache_manager 在部分平台上可能抛出 IO 异常。
+      // flutter_cache_manager can throw IO errors on some platforms.
     }
   }
 
@@ -216,7 +216,8 @@ class CacheController extends _$CacheController {
     return CacheClearResult(remainingSizeMB: remainingSizeMB, failedOperations: failedOperations);
   }
 
-  /// 丢弃已编码的缩略图缓存。手动刷新会滚动可见图片提供者到新的缓存键。
+  /// Drops the encoded thumbnail cache. A manual refresh rolls the visible
+  /// image providers onto a new cache key.
   Future<void> refreshImageCache({bool refreshVisible = true}) {
     final active = _imageRefreshOperation;
     if (active != null) return active;
@@ -246,7 +247,8 @@ class CacheController extends _$CacheController {
     }
 
     await _encodedImageCacheClearer();
-    // 直播流保留当前像素，避免手动刷新引发全网格占位图与解码风暴。
+    // Live streams keep their current pixels; clearing them would flash
+    // placeholders across the grid and trigger a decode storm.
     PaintingBinding.instance.imageCache.clear();
     if (!refreshVisible) return;
     state = state.copyWith(imageCacheEpoch: state.imageCacheEpoch + 1);

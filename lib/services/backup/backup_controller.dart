@@ -73,7 +73,7 @@ class BackupController extends _$BackupController {
     return data;
   }
 
-  /// 备份离开设备前移除凭据与会话 Cookie。
+  /// Strips credentials and session cookies before a backup leaves the device.
   static Map<String, dynamic> redactSensitiveData(Map<String, dynamic> source) {
     final result = Map<String, dynamic>.from(source)
       ..remove('webdav')
@@ -86,7 +86,7 @@ class BackupController extends _$BackupController {
     return knownSections.where(data.containsKey).length;
   }
 
-  /// 拒绝结构错误的分区，在任何控制器持久化之前抛出。
+  /// Rejects a malformed section before any controller persists it.
   static void validateSectionStructure(Map<String, dynamic> data) {
     for (final name in knownSections) {
       final section = data[name];
@@ -104,7 +104,7 @@ class BackupController extends _$BackupController {
     }
     var recognized = false;
     if (version == null) {
-      // 旧版扁平备份：任意已知键出现即认可。
+      // Legacy flat backup: any known key being present is enough to accept it.
       final legacyTags = data['custom_tags_data'];
       recognized =
           (legacyTags is Map && legacyTags.keys.any((k) => k == 'tags' || k == 'roomTagsMap')) ||
@@ -144,7 +144,8 @@ class BackupController extends _$BackupController {
     };
 
     if (version == null) {
-      // 旧版扁平备份：所有控制器直接消费整份数据（缺失键回落到默认值）。
+      // Legacy flat backup: every controller reads the whole payload directly and
+      // falls back to defaults for keys that are missing.
       for (final parser in sectionParsers.values) {
         parser(data);
       }

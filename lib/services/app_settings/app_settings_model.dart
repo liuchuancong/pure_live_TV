@@ -25,7 +25,7 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(false) bool preferRealOnlineCounts,
     @Default([]) List<String> realOnlinePlatforms,
     @Default(0) int audienceMetricMigration,
-    // Windows 独占（TV 不消费，仅同步保留）
+    // Windows only. Synced across devices but never consumed on TV.
     @Default(true) bool enableMultiView,
     @Default(true) bool enableNewWindowPlay,
     @Default([]) List<String> savedMenuIds,

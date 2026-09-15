@@ -31,7 +31,7 @@ abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
     @Default(0) int danmakuInteractionMigration,
     @Default('') String savedDanmakuTemplate,
     @Default('Default') String danmakuFontFamilyName,
-    // 画中画弹幕（TV 不消费，仅同步保留）
+    // Picture-in-picture danmaku. Synced but never consumed on TV.
     @Default(true) bool enablePipDanmaku,
     @Default(true) bool pipDanmakuAutoScale,
     @Default(false) bool pipDanmakuNoEmojiMode,
@@ -46,7 +46,7 @@ abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
     @Default(0.35) double pipDanmakuEmitInterval,
     @Default(30) int pipDanmakuFps,
     @Default(true) bool pipDanmakuAutoFps,
-    // 消息过滤
+    // Message filtering
     @Default(true) bool filterDouyuSuspectedAutomatedMessages,
     @Default(false) bool enableDanmakuSimilarityFilter,
     @Default(85) int danmakuSimilarityThreshold,
