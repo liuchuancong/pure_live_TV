@@ -54,4 +54,29 @@ void main() {
       expect(theme.focusedCardColor, isNot(theme.focusColor), reason: theme.id);
     }
   });
+
+  test('palettes are designed rather than accent swaps', () {
+    // A theme only looks different if its own surfaces differ: the theme
+    // supplies the page background whenever no background is configured.
+    final backgrounds = themes.map((theme) => theme.backgroundColor.toARGB32()).toSet();
+    final cards = themes.map((theme) => theme.cardColor.toARGB32()).toSet();
+    final accents = themes.map((theme) => theme.focusColor.toARGB32()).toSet();
+
+    expect(backgrounds.length, greaterThanOrEqualTo(8), reason: 'too many presets share one base surface');
+    expect(cards.length, greaterThanOrEqualTo(8), reason: 'too many presets share one card tone');
+    expect(accents.length, themes.length, reason: 'two presets share an accent colour');
+  });
+
+  test('both dark and light presets exist, and light ones keep readable text', () {
+    bool isLight(TvThemeData theme) => theme.backgroundColor.computeLuminance() > 0.5;
+
+    final light = themes.where(isLight).toList();
+    expect(light, isNotEmpty, reason: 'no light preset');
+    expect(themes.where((theme) => !isLight(theme)), isNotEmpty, reason: 'no dark preset');
+
+    for (final theme in light) {
+      expect(theme.primaryTextColor.computeLuminance(), lessThan(0.35), reason: theme.id);
+      expect(theme.secondaryTextColor.computeLuminance(), lessThan(0.5), reason: theme.id);
+    }
+  });
 }

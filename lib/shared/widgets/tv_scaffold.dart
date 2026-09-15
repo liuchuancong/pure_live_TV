@@ -6,6 +6,7 @@ import 'package:pure_live/services/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:pure_live/shared/consts/back_ground_source.dart';
+import 'package:pure_live/shared/theme/index.dart';
 
 class TvScaffold extends StatelessWidget {
   final Widget child;
@@ -69,6 +70,14 @@ class _BackgroundLayer extends StatelessWidget {
       builder: (context, snapshot) {
         final config = snapshot.data!;
 
+        // No background configured: the active theme supplies it. Without this
+        // every page painted the same opaque `solidColor` (a fixed dark navy),
+        // so switching themes only changed the accent and each palette looked
+        // identical.
+        if (config.source == BackgroundSource.none) {
+          return _ThemeBackground(theme: context.tvTheme);
+        }
+
         return switch (config.source) {
           BackgroundSource.none || BackgroundSource.color => _SolidBackground(config: config),
           BackgroundSource.gradient => _GradientBackground(config: config),
@@ -84,6 +93,30 @@ class _BackgroundLayer extends StatelessWidget {
   }
 }
 
+/// Background taken from the active theme: its own colour, lifted towards the
+/// accent so each palette reads as a distinct surface rather than a flat fill.
+class _ThemeBackground extends StatelessWidget {
+  const _ThemeBackground({required this.theme});
+
+  final TvThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color base = theme.backgroundColor;
+    final Color lift = Color.lerp(base, theme.focusColor, 0.10) ?? base;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[base, lift, base],
+        ),
+      ),
+    );
+  }
+}
+
 class _MaskLayer extends StatelessWidget {
   const _MaskLayer();
 
@@ -95,7 +128,19 @@ class _MaskLayer extends StatelessWidget {
       builder: (context, snapshot) {
         final config = snapshot.data!;
 
-        return ColoredBox(color: Colors.black.withValues(alpha: config.maskOpacity));
+        // The mask exists to keep text readable over a photo or video. A theme
+        // background is already contrast-checked, so masking it only muddies the
+        // palette (and would wash out a light theme).
+        if (config.source == BackgroundSource.none) {
+          return const SizedBox.shrink();
+        }
+
+        // A light palette needs a light wash over artwork: darkening it would
+        // leave the dark text unreadable.
+        final bool lightSurface = context.tvTheme.backgroundColor.computeLuminance() > 0.5;
+        return ColoredBox(
+          color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: config.maskOpacity),
+        );
       },
     );
   }

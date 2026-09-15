@@ -6,19 +6,17 @@ const animeTvTheme = TvThemeData(
 
   nameKey: 'ui_anime',
 
-  backgroundType: TvBackgroundType.image,
+  backgroundType: TvBackgroundType.color,
 
-  backgroundImage: 'assets/backgrounds/anime.jpg',
-
-  backgroundColor: Colors.black,
+  backgroundColor: Color(0xff1A0F1E),
 
   focusColor: Color(0xffFF66CC),
 
   primaryTextColor: Colors.white,
 
-  secondaryTextColor: Color(0xffFFD6F2),
+  secondaryTextColor: Color(0xffF0C2E4),
 
-  cardColor: Color(0x88222222),
+  cardColor: Color(0xff2A1830),
 
   focusedCardColor: Colors.white,
 );

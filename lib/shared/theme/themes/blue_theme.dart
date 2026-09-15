@@ -6,19 +6,20 @@ const blueTvTheme = TvThemeData(
 
   nameKey: 'ui_tech_blue',
 
-  backgroundType: TvBackgroundType.image,
+  // The palette carries its own surface: the theme supplies the page background
+  // whenever no background is configured, so the base colour is what makes this
+  // theme look different from the others.
+  backgroundType: TvBackgroundType.color,
 
-  backgroundImage: 'assets/backgrounds/blue.jpg',
-
-  backgroundColor: Colors.black,
+  backgroundColor: Color(0xff0A1526),
 
   focusColor: Color(0xff00D4FF),
 
   primaryTextColor: Colors.white,
 
-  secondaryTextColor: Color(0xffD9F7FF),
+  secondaryTextColor: Color(0xffA8D8F0),
 
-  cardColor: Color(0x991A1A1A),
+  cardColor: Color(0xff10233D),
 
   focusedCardColor: Colors.white,
 );

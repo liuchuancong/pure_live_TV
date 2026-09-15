@@ -6,19 +6,17 @@ const cyberTvTheme = TvThemeData(
 
   nameKey: 'ui_cyberpunk',
 
-  backgroundType: TvBackgroundType.image,
+  backgroundType: TvBackgroundType.color,
 
-  backgroundImage: 'assets/backgrounds/cyber.jpg',
-
-  backgroundColor: Colors.black,
+  backgroundColor: Color(0xff071A16),
 
   focusColor: Color.fromARGB(255, 42, 211, 154),
 
   primaryTextColor: Colors.white,
 
-  secondaryTextColor: Color(0xffAAFFE8),
+  secondaryTextColor: Color(0xff9EE6D0),
 
-  cardColor: Color(0x99202020),
+  cardColor: Color(0xff0E2A24),
 
   focusedCardColor: Colors.white,
 );

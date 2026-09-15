@@ -39,7 +39,8 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             onTap: () async => context.push(AppRoutes.kWallpaperPage),
           ),
           TvSettingsOptionTile(
-            title: i18n('theme_mode'),
+            title: i18n('
+            '),
             // Icon taken from the desktop theme page (moon), so the same row
             // looks the same in both apps.
             icon: Remix.moon_clear_line,
