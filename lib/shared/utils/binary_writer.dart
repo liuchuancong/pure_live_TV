@@ -1,5 +1,12 @@
 import 'dart:typed_data';
 
+/// Big-endian byte reader and writer.
+///
+/// Single implementation for every wire format in the app: the danmaku packet
+/// builders on Bilibili and Douyu, and the TARS codec used by the YY and CC
+/// integrations. Both need the same fixed-width primitives, so they share this
+/// file instead of carrying private copies. Every width accepts an explicit
+/// [Endian] and defaults to big, which is what all current callers want.
 class BinaryWriter {
   List<int> buffer;
   int position = 0;

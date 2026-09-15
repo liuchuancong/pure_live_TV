@@ -1,58 +1,11 @@
+import 'package:pure_live/shared/utils/binary_writer.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import './tars_struct.dart';
 import './tars_encode_exception.dart';
 import 'package:pure_live/shared/utils/log.dart';
 
-class BinaryWriter {
-  List<int> buffer;
-  int position = 0;
-
-  BinaryWriter(this.buffer);
-
-  int get length => buffer.length;
-
-  void writeBytes(Uint8List list) {
-    buffer.addAll(list);
-    position += list.length;
-  }
-
-  void writeInt(int value, int len) {
-    var b = Uint8List(len).buffer;
-    var bytes = ByteData.view(b);
-    if (len == 1) {
-      // Write a byte.
-      bytes.setUint8(0, value.toUnsigned(8));
-    }
-    if (len == 2) {
-      bytes.setInt16(0, value, Endian.big);
-    }
-    if (len == 4) {
-      bytes.setInt32(0, value, Endian.big);
-    }
-    if (len == 8) {
-      bytes.setInt64(0, value, Endian.big);
-    }
-
-    buffer.addAll(bytes.buffer.asUint8List());
-    position += len;
-  }
-
-  void writeDouble(double value, int len) {
-    var b = Uint8List(len).buffer;
-    var bytes = ByteData.view(b);
-
-    if (len == 4) {
-      bytes.setFloat32(0, value, Endian.big);
-    }
-    if (len == 8) {
-      bytes.setFloat64(0, value, Endian.big);
-    }
-
-    buffer.addAll(bytes.buffer.asUint8List());
-    position += len;
-  }
-}
+export 'package:pure_live/shared/utils/binary_writer.dart' show BinaryWriter;
 
 class TarsOutputStream {
   late BinaryWriter bw;

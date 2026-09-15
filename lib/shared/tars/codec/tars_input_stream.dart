@@ -1,9 +1,12 @@
+import 'package:pure_live/shared/utils/binary_writer.dart';
 import 'dart:core';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'tars_struct.dart';
 import 'tars_decode_exception.dart';
 import 'package:pure_live/shared/utils/log.dart';
+
+export 'package:pure_live/shared/utils/binary_writer.dart' show BinaryReader;
 
 class HeadData {
   int type = 0;
@@ -12,81 +15,6 @@ class HeadData {
   void clear() {
     type = 0;
     tag = 0;
-  }
-}
-
-class BinaryReader {
-  Uint8List buffer;
-  int position = 0;
-
-  BinaryReader(this.buffer);
-
-  int get length => buffer.length;
-
-  /// Reads the next byte and advances the stream position by one.
-  /// Returns the next byte, 0-255.
-  int read() {
-    var byte = buffer[position];
-    position += 1;
-    return byte;
-  }
-
-  /// Reads an integer of the given width and advances the position by that width.
-  /// [len] width in bytes
-  /// len 1, 2, 4 and 8 map to int8, int16, int32 and int64; Dart uses int for all.
-  /// Returns the integer.
-  int readInt(int len) {
-    var result = 0;
-    // if (len == 1) {
-    //   result = buffer[position];
-    //   position += len;
-    //   return result;
-    // }
-    var bytes = Uint8List.fromList(buffer.getRange(position, position + len).toList());
-    var byteBuffer = bytes.buffer;
-    var data = ByteData.view(byteBuffer);
-    if (len == 1) {
-      result = data.getUint8(0);
-    }
-    if (len == 2) {
-      result = data.getInt16(0, Endian.big);
-    }
-    if (len == 4) {
-      result = data.getInt32(0, Endian.big);
-    }
-    if (len == 8) {
-      result = data.getInt64(0, Endian.big);
-    }
-    position += len;
-    return result;
-  }
-
-  /// Reads a byte array of the given width and advances the position.
-  /// [len] width in bytes
-  /// Returns the byte array.
-  Uint8List readBytes(int len) {
-    var bytes = Uint8List.fromList(buffer.getRange(position, position + len).toList());
-    position += len;
-    return bytes;
-  }
-
-  /// Reads a float of the given width and advances the position.
-  /// [len] width in bytes
-  /// len 4 is a float and 8 a double; Dart uses double for both.
-  /// Returns the value.
-  double readFloat(int len) {
-    var result = 0.0;
-    var bytes = Uint8List.fromList(buffer.getRange(position, position + len).toList());
-    var byteBuffer = bytes.buffer;
-    var data = ByteData.view(byteBuffer);
-    if (len == 4) {
-      result = data.getFloat32(0, Endian.big);
-    }
-    if (len == 8) {
-      result = data.getFloat64(0, Endian.big);
-    }
-    position += len;
-    return result;
   }
 }
 
