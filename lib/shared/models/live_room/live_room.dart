@@ -285,7 +285,11 @@ abstract class LiveRoom with _$LiveRoom {
     var cleaned = text.trim().replaceAll(',', '');
     if (cleaned.isEmpty) return 0;
     double multiplier = 1;
-    if (cleaned.endsWith(i18n('count_wan'))) {
+    // The suffix comes from the platform response, not from the UI language,
+    // so it must be matched literally. Looking it up through i18n returned the
+    // key itself under a non-Chinese locale, which silently dropped the
+    // multiplier and reported zero viewers.
+    if (cleaned.endsWith('万')) {
       multiplier = 10000;
       cleaned = cleaned.substring(0, cleaned.length - 1);
     } else if (cleaned.endsWith('亿')) {
