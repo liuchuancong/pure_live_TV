@@ -84,6 +84,8 @@
     "history_manage":  "History",
     "delete_history":  "Delete from history",
     "cookie_state_set":  "Set ({count} characters)",
+    "cookie_phone_hint":  "Scan the QR code, paste the cookie in the phone page and submit; the TV saves it and closes this window",
+    "remote_service_unavailable":  "The LAN remote service is not running; check that the TV and phone share a network",
     "loading_style_color":  "Loading indicator color",
     "clear_history_confirm_named":  "This deletes all {count} history entries. Continue?",
     "history_limit_custom_hint":  "Enter how many entries to keep",

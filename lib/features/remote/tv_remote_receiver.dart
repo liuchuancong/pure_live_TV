@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:alfred/alfred.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
+import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
 import 'package:pure_live/shared/utils/log.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -37,8 +38,51 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   }
 
   Future<void> startServer({int port = 8888}) async {
+    // Already listening: starting again would bind a second port and leave two
+    // servers racing for the same state.
+    if (state.value?.isRunning == true) return;
     state = const AsyncLoading();
     await _startServerWithRetry(port: port);
+  }
+
+  /// The cookie the phone asks for, by the site id the web remote uses.
+  String _cookieForSite(String site) {
+    final cookies = ref.read(cookieControllerProvider);
+    return switch (site) {
+      'bilibili' => cookies.bilibiliCookie,
+      'huya' => cookies.huyaCookie,
+      'douyin' => cookies.douyinCookie,
+      'kuaishou' => cookies.kuaishouCookie,
+      'yy' => cookies.yyCookie,
+      'soop' => cookies.soopCookie,
+      'twitch' => cookies.twitchCookie,
+      _ => '',
+    };
+  }
+
+  /// Stores a cookie pushed from the phone. Returns false for a site this app
+  /// has no field for.
+  bool _setCookieForSite(String site, String cookie) {
+    final controller = ref.read(cookieControllerProvider.notifier);
+    switch (site) {
+      case 'bilibili':
+        controller.setBilibiliCookie(cookie);
+      case 'huya':
+        controller.setHuyaCookie(cookie);
+      case 'douyin':
+        controller.setDouyinCookie(cookie);
+      case 'kuaishou':
+        controller.setKuaishouCookie(cookie);
+      case 'yy':
+        controller.setYyCookie(cookie);
+      case 'soop':
+        controller.setSoopCookie(cookie);
+      case 'twitch':
+        controller.setTwitchCookie(cookie);
+      default:
+        return false;
+    }
+    return true;
   }
 
   /// Seeds the danmaku filter cache.
@@ -184,6 +228,28 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
     _app!.get('/api/cookie/douyin', (req, res) {
       return _ok(res, data: _configCache['douyin_cookie']);
+    });
+
+    // Generic cookie bridge for the phone pages: the web remote reads a
+    // platform's cookie and pushes an edited one back. A remote-only TV has no
+    // practical way to type a cookie, so this is the only sensible input path.
+    _app!.get('/api/cookie', (req, res) {
+      final String site = (req.uri.queryParameters['site'] ?? '').trim().toLowerCase();
+      return _ok(res, data: _cookieForSite(site));
+    });
+
+    _app!.post('/api/cookie', (req, res) async {
+      final body = await req.body as Map<String, dynamic>?;
+      if (body == null) return _fail(res, msg: i18n('remote_bad_request'));
+      final String site = (body['site'] ?? '').toString().trim().toLowerCase();
+      final String data = (body['data'] ?? '').toString();
+      if (!_setCookieForSite(site, data)) {
+        _addLog('Cookie push ignored for unknown site: $site');
+        return _fail(res, msg: i18n('remote_bad_request'));
+      }
+      _addLog('Cookie updated from the phone: $site');
+      _broadcastWs({'type': 'cookie_push', 'site': site});
+      return _ok(res, msg: i18n('ui_saved'));
     });
 
     _app!.post('/api/cookie/douyin', (req, res) async {

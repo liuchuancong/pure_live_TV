@@ -34,7 +34,12 @@ class App extends ConsumerWidget {
             // Installs the D-pad root: direction-key navigation, per-region focus
             // memory and focus-loss recovery all come from it. Without this layer a TV
             // remote cannot move focus at all.
-            builder: Dpad.wrap(),
+            builder: Dpad.wrap(
+            // Snap scrolling: key repeats re-measure the item mid-animation,
+            // which aborts the scroll and clips the focused item at the edge.
+            // A zero duration jumps to the exact offset measured at rest.
+            theme: const DpadThemeData(scrollDuration: Duration.zero),
+          ),
             // EasyLocalization supplies the locale and the delegate list; the app's own
             // language setting is pushed into the render layer by LocalizationsLocaleSync.
             locale: context.locale,

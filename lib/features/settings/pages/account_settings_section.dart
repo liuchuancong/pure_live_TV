@@ -5,6 +5,8 @@ import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/app/router/web_router.dart';
+import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
 
 
@@ -125,42 +127,54 @@ class AccountSettingsSectionPageState extends ConsumerState<AccountSettingsSecti
     final showQr = !account.isLogined && _qrUrl.isNotEmpty;
 
     // Platforms whose public pages need a signed-in cookie; every row edits the
-    // same cookie store the sites and the player already read.
+    // same cookie store the sites and the player already read. A cookie is a
+    // long browser header, so where the phone remote has a page for the
+    // platform the row shows a QR code instead of asking the user to type it
+    // with a remote.
     final platforms = <_CookiePlatform>[
       _CookiePlatform(
         name: i18n('site_huya'),
         hint: i18n('huya_cookie_hint'),
         value: cookieState.huyaCookie,
+        read: (model) => model.huyaCookie,
         apply: cookie.setHuyaCookie,
+        webPath: WebRemoteRouter.cookieHuya,
       ),
       _CookiePlatform(
         name: i18n('site_douyin'),
         hint: i18n('douyin_cookie_hint'),
         value: cookieState.douyinCookie,
+        read: (model) => model.douyinCookie,
         apply: cookie.setDouyinCookie,
+        webPath: WebRemoteRouter.cookieDouyin,
       ),
       _CookiePlatform(
         name: i18n('site_kuaishou'),
         hint: i18n('kuaishou_cookie_hint'),
         value: cookieState.kuaishouCookie,
+        read: (model) => model.kuaishouCookie,
         apply: cookie.setKuaishouCookie,
+        webPath: WebRemoteRouter.cookieKuaishou,
       ),
       _CookiePlatform(
         name: i18n('site_yy'),
         hint: i18n('cookie_hint', args: {'name': i18n('site_yy')}),
         value: cookieState.yyCookie,
+        read: (model) => model.yyCookie,
         apply: cookie.setYyCookie,
       ),
       _CookiePlatform(
         name: i18n('site_soop'),
         hint: i18n('soop_cookie_hint'),
         value: cookieState.soopCookie,
+        read: (model) => model.soopCookie,
         apply: cookie.setSoopCookie,
       ),
       _CookiePlatform(
         name: i18n('site_twitch'),
         hint: i18n('twitch_cookie_hint'),
         value: cookieState.twitchCookie,
+        read: (model) => model.twitchCookie,
         apply: cookie.setTwitchCookie,
       ),
     ];
@@ -231,6 +245,13 @@ class AccountSettingsSectionPageState extends ConsumerState<AccountSettingsSecti
   }
 
   Future<void> _editCookie(BuildContext context, _CookiePlatform platform) async {
+    // A platform with a phone page is set by scanning, never by typing: a
+    // cookie is a long browser header and a remote cannot enter it.
+    if (platform.webPath != null) {
+      await _editCookieFromPhone(context, platform);
+      return;
+    }
+
     final result = await TvDialogUtils.show<String>(
       context: context,
       builder: (dialogContext) => _CookieEditorDialog(
@@ -242,6 +263,29 @@ class AccountSettingsSectionPageState extends ConsumerState<AccountSettingsSecti
     if (result == null) return;
     platform.apply(result);
     if (!mounted) return;
+    setState(() => _message = i18n('cookie_saved'));
+  }
+
+  /// Starts the LAN remote and shows the QR code for [platform]'s cookie page.
+  ///
+  /// The dialog closes by itself once the phone pushes a cookie for the same
+  /// platform, so the user never has to confirm anything on the TV.
+  Future<void> _editCookieFromPhone(BuildContext context, _CookiePlatform platform) async {
+    await ref.read(tvRemoteReceiverProvider.notifier).startServer();
+    if (!mounted || !context.mounted) return;
+
+    final server = ref.read(tvRemoteReceiverProvider).value;
+    final String url = server != null && server.isRunning ? '${server.serverUrl}${platform.webPath}' : '';
+
+    final saved = await TvDialogUtils.show<bool>(
+      context: context,
+      builder: (dialogContext) => _PhoneCookieDialog(
+        platformName: platform.name,
+        url: url,
+        read: platform.read,
+      ),
+    );
+    if (saved != true || !mounted) return;
     setState(() => _message = i18n('cookie_saved'));
   }
 
@@ -262,12 +306,85 @@ class AccountSettingsSectionPageState extends ConsumerState<AccountSettingsSecti
 /// One editable cookie row: the display name, the paste hint and the current
 /// value read from the shared cookie store.
 class _CookiePlatform {
-  const _CookiePlatform({required this.name, required this.hint, required this.value, required this.apply});
+  const _CookiePlatform({
+    required this.name,
+    required this.hint,
+    required this.value,
+    required this.read,
+    required this.apply,
+    this.webPath,
+  });
 
   final String name;
   final String hint;
   final String value;
+
+  /// Reads this platform's cookie from the store, for change detection.
+  final String Function(CookieModel) read;
   final ValueChanged<String> apply;
+
+  /// Phone-remote page for this platform; null when the remote has none, in
+  /// which case the row falls back to the on-screen editor.
+  final String? webPath;
+}
+
+/// "Scan with your phone" dialog for a platform the phone remote can set.
+class _PhoneCookieDialog extends ConsumerStatefulWidget {
+  const _PhoneCookieDialog({required this.platformName, required this.url, required this.read});
+
+  final String platformName;
+  final String url;
+  final String Function(CookieModel) read;
+
+  @override
+  ConsumerState<_PhoneCookieDialog> createState() => _PhoneCookieDialogState();
+}
+
+class _PhoneCookieDialogState extends ConsumerState<_PhoneCookieDialog> {
+  late String _baseline;
+
+  @override
+  void initState() {
+    super.initState();
+    _baseline = widget.read(ref.read(cookieControllerProvider));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+
+    // The phone pushes the cookie through the LAN API; that write is the signal
+    // that the user is done.
+    ref.listen(cookieControllerProvider, (previous, next) {
+      if (previous == null) return;
+      final String value = widget.read(next);
+      if (value.isEmpty || value == widget.read(previous) || value == _baseline) return;
+      Navigator.of(context).pop(true);
+    });
+
+    return TvDialog(
+      title: '${i18n('set_cookie')} · ${widget.platformName}',
+      cancelText: i18n('cancel'),
+      onCancel: () => Navigator.of(context).pop(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            i18n('cookie_phone_hint'),
+            style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: 20.sp),
+          ),
+          SizedBox(height: 16.sp),
+          if (widget.url.isEmpty)
+            Text(
+              i18n('remote_service_unavailable'),
+              style: TextStyle(color: tvTheme.focusColor, fontSize: 20.sp),
+            )
+          else
+            Center(child: TvQrCodeCard(qrData: widget.url, urlText: widget.url)),
+        ],
+      ),
+    );
+  }
 }
 
 /// Cookie editor used by the account page.

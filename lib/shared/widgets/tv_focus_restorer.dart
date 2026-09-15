@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 
 /// Shared with the app's [GoRouter]-based navigator so every page using
@@ -27,6 +25,10 @@ class TvFocusRestorer extends StatefulWidget {
 }
 
 class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
+  /// How many frames the page-local restore keeps asserting itself. Enough to
+  /// outlast the dpad root's fallback, short enough never to fight the user.
+  static const int _maxRestoreAttempts = 3;
+
   FocusNode? _focusWhenCovered;
 
   @override
@@ -57,17 +59,35 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
   @override
   void didPopNext() {
     final FocusNode? node = _focusWhenCovered;
-    if (node == null) return;
     _focusWhenCovered = null;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Wait for the dpad root's own restore to settle first; it runs during
-      // the pop transition and would otherwise win over us.
-      scheduleMicrotask(() {
-        final bool usable = node.parent != null && node.context?.mounted == true && node.canRequestFocus;
-        if (!usable) return;
-        node.requestFocus();
-      });
-    });
+    if (node == null) return;
+    _restore(node);
+  }
+
+  /// Hands focus back to [node], and keeps asserting it for a few frames.
+  ///
+  /// The dpad root runs its own fallback restore in a post-frame callback plus
+  /// a microtask. Both restores therefore race, and when the root wins it picks
+  /// the top-left-most node of the whole tree — which can be a node of a route
+  /// further down the stack, leaving the page the user is looking at with no
+  /// usable focus (the remote then appears dead and the title bar is
+  /// unreachable). Re-asserting for a couple of frames makes the page-local
+  /// restore win without fighting the user beyond that.
+  void _restore(FocusNode node) {
+    int attempts = 0;
+    void attempt() {
+      if (!mounted || attempts >= _maxRestoreAttempts) return;
+      attempts++;
+
+      if (FocusManager.instance.primaryFocus == node) return; // Settled.
+      final bool usable = node.parent != null && node.context?.mounted == true && node.canRequestFocus;
+      if (!usable) return;
+      node.requestFocus();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) => scheduleMicrotask(attempt));
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => scheduleMicrotask(attempt));
   }
 
   @override

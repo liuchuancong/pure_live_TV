@@ -29,21 +29,13 @@ void main() {
   Rect rectOf(WidgetTester tester, Finder finder) => tester.getRect(finder);
 
   testWidgets('focusing the last tab scrolls it fully into view', (tester) async {
-    final tabs = List.generate(
-      20,
-      (i) => TvTabItemData(title: 'Tab $i'),
-    );
-    int current = 0;
+    final tabs = List.generate(20, (i) => TvTabItemData(title: 'Tab $i'));
     await pumpApp(
       tester,
       Center(
         child: SizedBox(
           width: 900,
-          child: TvTabBar(
-            tabs: tabs,
-            currentIndex: 0,
-            onTabChange: (i) => current = i,
-          ),
+          child: TvTabBar(tabs: tabs, currentIndex: 0, onTabChange: (i) {}),
         ),
       ),
     );
@@ -59,26 +51,20 @@ void main() {
     expect(
       lastRect.left >= barRect.left && lastRect.right <= barRect.right,
       true,
-      reason: 'focused last tab must be fully inside the bar viewport: '
+      reason:
+          'focused last tab must be fully inside the bar viewport: '
           'bar=$barRect last=$lastRect',
     );
   });
 
   testWidgets('focusing the first tab from the right scrolls it fully into view', (tester) async {
-    final tabs = List.generate(
-      20,
-      (i) => TvTabItemData(title: 'Tab $i'),
-    );
+    final tabs = List.generate(20, (i) => TvTabItemData(title: 'Tab $i'));
     await pumpApp(
       tester,
       Center(
         child: SizedBox(
           width: 900,
-          child: TvTabBar(
-            tabs: tabs,
-            currentIndex: 0,
-            onTabChange: (_) {},
-          ),
+          child: TvTabBar(tabs: tabs, currentIndex: 0, onTabChange: (_) {}),
         ),
       ),
     );
@@ -98,7 +84,8 @@ void main() {
     expect(
       firstRect.left >= barRect.left && firstRect.right <= barRect.right,
       true,
-      reason: 'focused first tab must be fully inside the bar viewport: '
+      reason:
+          'focused first tab must be fully inside the bar viewport: '
           'bar=$barRect first=$firstRect',
     );
   });
@@ -112,11 +99,7 @@ void main() {
           builder: (context) => Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              DpadFocusable(
-                autofocus: true,
-                onSelect: () => rowSelected = true,
-                child: const Text('Row A'),
-              ),
+              DpadFocusable(autofocus: true, onSelect: () => rowSelected = true, child: const Text('Row A')),
               const SizedBox(height: 40),
               Builder(
                 builder: (context) => DpadFocusable(

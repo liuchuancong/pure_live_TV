@@ -93,9 +93,10 @@ class _TvTabBarState extends State<TvTabBar> {
 
       Scrollable.ensureVisible(
         tabContext,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        alignment: 0.5,
+        // Match the dpad layer's snap scrolling (see app.dart): an animated
+        // reveal here races with dpad's own focus-driven scroll and the two
+        // cancel each other out, leaving the current tab clipped.
+        duration: Duration.zero,
       );
     });
   }

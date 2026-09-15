@@ -69,43 +69,54 @@ class TvSettingsRow extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  if (leading != null)
-                    leading!
-                  else if (icon != null)
-                    Icon(icon, size: 30.sp, color: focused ? accent : tvTheme.primaryTextColor),
-                  if (hasLeading) SizedBox(width: 16.sp),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t22W600.copyWith(
-                            color: focused ? accent : tvTheme.primaryTextColor,
-                          ),
-                        ),
-                        if (subtitle != null) ...[
-                          SizedBox(height: 4.sp),
-                          Text(
-                            subtitle!,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16W500.copyWith(
-                              color: focused ? accent.withValues(alpha: 0.85) : tvTheme.secondaryTextColor,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  // Give the value room, but never more than half the row: a
+                  // long option (decoder names, loading styles) must not push
+                  // the title out or spill past the row's edge.
+                  final double trailingMaxWidth = constraints.maxWidth * 0.55;
+                  return Row(
+                    children: [
+                      if (leading != null)
+                        leading!
+                      else if (icon != null)
+                        Icon(icon, size: 30.sp, color: focused ? accent : tvTheme.primaryTextColor),
+                      if (hasLeading) SizedBox(width: 16.sp),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.t22W600.copyWith(
+                                color: focused ? accent : tvTheme.primaryTextColor,
+                              ),
                             ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 12.sp),
-                  trailingBuilder?.call(context, focused) ?? const SizedBox.shrink(),
-                ],
+                            if (subtitle != null) ...[
+                              SizedBox(height: 4.sp),
+                              Text(
+                                subtitle!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.t16W500.copyWith(
+                                  color: focused ? accent.withValues(alpha: 0.85) : tvTheme.secondaryTextColor,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 12.sp),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: trailingMaxWidth),
+                        child: trailingBuilder?.call(context, focused) ?? const SizedBox.shrink(),
+                      ),
+                    ],
+                  );
+                },
               ),
               if (footer != null) ...[SizedBox(height: 10.sp), footer!],
             ],
@@ -137,14 +148,19 @@ Widget tvSettingsValueStepper(BuildContext context, bool focused, String value) 
     children: [
       Icon(Icons.chevron_left_rounded, size: 26.sp, color: focused ? accent : tvTheme.secondaryTextColor),
       SizedBox(width: 4.sp),
-      ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 260.sp),
-        child: Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.t20W600.copyWith(color: focused ? accent : tvTheme.primaryTextColor),
+      // Shrink long values instead of folding them: holding Left/Right cycles
+      // through labels of very different lengths (decoder names, loading
+      // styles), and an ellipsised tail reads as a broken value.
+      Flexible(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: Text(
+            value,
+            maxLines: 1,
+            softWrap: false,
+            style: AppTextStyles.t20W600.copyWith(color: focused ? accent : tvTheme.primaryTextColor),
+          ),
         ),
       ),
       SizedBox(width: 4.sp),
