@@ -1,4 +1,5 @@
 import 'package:pure_live/shared/consts/app_consts.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
@@ -41,6 +42,12 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 8.sp),
+          TvSettingsMenuTile<void>(
+            title: i18n('ui_background_settings'),
+            subtitle: i18n('background_entry_subtitle'),
+            icon: Icons.wallpaper_rounded,
+            onTap: () async => context.push(AppRoutes.kWallpaperPage),
+          ),
           TvSettingsOptionTile(
             title: i18n('theme_mode'),
             icon: Icons.brightness_6_outlined,

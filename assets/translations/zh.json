@@ -160,6 +160,7 @@
     "auto_sync_title":  "启动时全自动同步",
     "avatar_size":  "头像大小",
     "background_apply_failed":  "设置失败：{msg}",
+    "background_entry_subtitle":  "壁纸、动态壁纸、纯色渐变",
     "background_catalog_empty":  "远端目录为空",
     "background_clear":  "清除背景",
     "background_fit_contain":  "适应",

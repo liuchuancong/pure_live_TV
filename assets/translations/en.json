@@ -160,6 +160,7 @@
     "auto_sync_title":  "Auto-Sync on Launch",
     "avatar_size":  "Avatar Size",
     "background_apply_failed":  "Failed to apply: {msg}",
+    "background_entry_subtitle":  "Wallpapers, live wallpapers, gradients",
     "background_catalog_empty":  "Remote catalog is empty",
     "background_clear":  "Clear background",
     "background_fit_contain":  "Fit",
