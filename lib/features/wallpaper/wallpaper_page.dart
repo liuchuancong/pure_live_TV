@@ -55,6 +55,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
 
   Widget _buildCatalog(BackgroundCatalog catalog) {
     final sources = catalog.sources;
+    final languageCode = Localizations.localeOf(context).languageCode;
     if (sources.isEmpty) {
       return _ErrorView(
         message: i18nOr('background_catalog_empty', 'Remote catalog is empty'),
@@ -83,7 +84,9 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
         TvTabBar(
           tabs: [
             for (final s in sources)
-              TvTabItemData(title: s.name.isEmpty ? s.id : s.name),
+              TvTabItemData(
+                title: _tabTitle(s.localizedName(languageCode), s.id),
+              ),
           ],
           currentIndex: sourceIndex,
           onTabChange: (index) => setState(() {
@@ -95,7 +98,10 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
           TvTabBar(
             tabs: [
               for (final c in categories)
-                TvTabItemData(title: '${c.name} (${c.count})'),
+                TvTabItemData(
+                  title:
+                      '${_tabTitle(c.localizedName(languageCode), c.id)} (${c.count})',
+                ),
             ],
             currentIndex: categoryIndex,
             onTabChange: (index) => setState(() => _categoryIndex = index),
@@ -171,6 +177,10 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
       },
     );
   }
+
+  /// Falls back to the raw id when the catalog carries no display name.
+  static String _tabTitle(String localized, String id) =>
+      localized.isNotEmpty ? localized : id;
 
   /// Whether the given file backs the background in use right now.
   static bool _isCurrent(String? currentUrl, String file) =>
