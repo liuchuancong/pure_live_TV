@@ -83,6 +83,16 @@ class BackgroundItem {
     final dot = fromFile.lastIndexOf('.');
     return dot > 0 ? fromFile.substring(0, dot) : (fromFile.isEmpty ? '#$index' : fromFile);
   }
+
+  /// 稳定标识，用于「正在应用」和「当前背景」的比较。
+  ///
+  /// 渐变没有真实文件，`file` 可能是空串；直接比 `file` 会让所有渐变格子
+  /// 判成同一个。这里退化成伪路径。
+  String get key {
+    if (file.isNotEmpty) return file;
+    final identity = id ?? name ?? css ?? '';
+    return 'item:$identity';
+  }
 }
 
 /// 渐变的一个色标

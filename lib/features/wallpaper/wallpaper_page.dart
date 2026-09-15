@@ -160,7 +160,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
                 item: item,
                 kind: source.kind,
                 current: _isCurrent(currentUrl, item.file),
-                applying: _applyingFile == item.file,
+                applying: _applyingFile == item.key,
                 onSelect: () => _apply(source, item),
               );
             },
@@ -180,7 +180,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     if (_busy) return;
     setState(() {
       _busy = true;
-      _applyingFile = item.file;
+      _applyingFile = item.key;
     });
     try {
       switch (source.kind) {
