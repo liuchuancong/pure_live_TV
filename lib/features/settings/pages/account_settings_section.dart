@@ -1,13 +1,12 @@
 import 'dart:async';
-
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
+
 
 /// Bilibili account page: QR-code login plus logout for the signed-in account.
 class AccountSettingsSectionPage extends ConsumerStatefulWidget {

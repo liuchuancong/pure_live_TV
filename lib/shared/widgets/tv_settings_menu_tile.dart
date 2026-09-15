@@ -1,11 +1,12 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/widgets/tv_settings_row.dart';
 
 class TvSettingsMenuTile<T> extends StatelessWidget {
   final String title;
   final String? subtitle;
   final IconData? icon;
-  final Widget? iconWidget;
+  /// Replaces [icon] when the row is identified by artwork or a swatch.
+  final Widget? leading;
   final T? value;
   final Map<T, String> valueMap;
   final ValueChanged<T>? onChanged;
@@ -20,38 +21,29 @@ class TvSettingsMenuTile<T> extends StatelessWidget {
     this.onChanged,
     this.subtitle,
     this.icon,
-    this.iconWidget,
+    this.leading,
     this.onTap,
     this.trailing,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final display = value != null ? (valueMap[value] ?? value.toString()) : '';
     final keys = valueMap.keys.toList();
     final currentIndex = value != null ? keys.indexOf(value as T) : -1;
 
-    // `DpadFocusable` asserts that `effects` and `builder` are never both
-    // supplied, so the glow and scale are applied around the builder's own
-    // presentation instead of being passed to the focusable.
-    final List<DpadEffect> effects = [
-      DpadScaleEffect(scale: 1.02),
-      DpadGlowEffect(
-        color: theme.colorScheme.primary.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ];
-
-    return DpadFocusable(
+    return TvSettingsRow(
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
+      leading: leading,
       onSelect: () => onTap?.call(),
       onDirection: (direction) {
         if (onChanged == null || keys.isEmpty || currentIndex == -1) {
           return false;
         }
         // Only consume the key while the value can actually change; consuming
-        // it at the first/last entry would trap focus on the row and make the
-        // neighbouring regions unreachable with the remote.
+        // it at the first/last entry would trap focus on the row.
         final int? nextIndex = switch (direction) {
           TraversalDirection.left when currentIndex > 0 => currentIndex - 1,
           TraversalDirection.right when currentIndex < keys.length - 1 => currentIndex + 1,
@@ -61,74 +53,11 @@ class TvSettingsMenuTile<T> extends StatelessWidget {
         onChanged!(keys[nextIndex]);
         return true;
       },
-      builder: (context, state, child) {
-        return DpadEffect.wrap(
-          context,
-          effects,
-          state,
-          Container(
-            decoration: BoxDecoration(
-              color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                if (iconWidget != null) ...[
-                  iconWidget!,
-                  const SizedBox(width: 12),
-                ] else if (icon != null) ...[
-                  Icon(icon, color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 12),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: state.focused
-                                ? theme.colorScheme.primary.withValues(alpha: 0.7)
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (trailing != null)
-                  trailing!
-                else if (value != null)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.arrow_left, size: 16, color: state.focused ? theme.colorScheme.primary : Colors.grey),
-                      Text(
-                        display,
-                        style: TextStyle(
-                          color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Icon(Icons.arrow_right, size: 16, color: state.focused ? theme.colorScheme.primary : Colors.grey),
-                    ],
-                  ),
-              ],
-            ),
-          ),
-        );
+      trailingBuilder: (context, focused) {
+        if (trailing != null) return trailing!;
+        if (value == null) return tvSettingsChevron(context, focused);
+        return tvSettingsValueStepper(context, focused, display);
       },
-      child: const SizedBox.shrink(),
     );
   }
 }

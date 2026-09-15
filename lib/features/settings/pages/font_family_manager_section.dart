@@ -1,11 +1,10 @@
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/services/font_settings/font_settings_controller.dart';
+import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/font_model/font_model.dart';
 import 'package:pure_live/shared/platform/font_download_manager.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 
 /// Font family manager: download a font from the manifest, activate it or
 /// remove it from the device.

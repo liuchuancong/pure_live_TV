@@ -4,7 +4,6 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 
 /// WebDAV settings: pick or edit a server configuration, then upload, list,
 /// restore or delete remote settings backups.

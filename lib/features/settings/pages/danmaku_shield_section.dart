@@ -1,9 +1,8 @@
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/services/favorites/favorite_room_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 
 /// Danmaku block list: keywords and blocked users. Both lists live in the
 /// favorites controller so playback and settings read the same state.

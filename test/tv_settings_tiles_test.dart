@@ -1,12 +1,13 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/shared/dialog/tv_dialog.dart';
+import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/shared/widgets/tv_settings_nav_tile.dart';
+import 'package:pure_live/shared/widgets/tv_settings_row.dart';
 import 'package:pure_live/shared/widgets/tv_settings_menu_tile.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/shared/widgets/tv_settings_option_tile.dart';
 import 'package:pure_live/shared/widgets/tv_settings_slider_tile.dart';
 import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
 
@@ -96,6 +97,32 @@ void main() {
     );
     expect(find.text('Confirm'), findsOneWidget);
     expect(find.text('Cancel'), findsOneWidget);
+  });
+
+  testWidgets('every settings row renders through the shared shell', (tester) async {
+    // One shell means one look: padding, palette colours and the bordered focus
+    // treatment cannot drift apart between the switch, option, menu, slider and
+    // navigation rows.
+    final tiles = <Widget>[
+      TvSettingsSwitchTile(title: 'Follow theme', value: true, onChanged: (_) {}),
+      TvSettingsOptionTile(title: 'Quality', options: const ['High', 'Low'], index: 0, onChanged: (_) {}),
+      TvSettingsMenuTile<String>(title: 'Decoder', value: 'a', valueMap: const {'a': 'A'}, onChanged: (_) {}),
+      TvSettingsSliderTile(
+        title: 'Opacity',
+        icon: Icons.opacity,
+        value: 50,
+        min: 0,
+        max: 100,
+        displayValue: '50%',
+        onChanged: (_) {},
+      ),
+      TvSettingsNavTile(title: 'Theme', icon: Icons.palette_outlined, onTap: () {}),
+    ];
+
+    for (final tile in tiles) {
+      await pump(tester, tile);
+      expect(find.byType(TvSettingsRow), findsOneWidget, reason: tile.runtimeType.toString());
+    }
   });
 
   testWidgets('the settings catalog renders every group and row', (tester) async {

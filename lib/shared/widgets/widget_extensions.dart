@@ -1,24 +1,13 @@
 import 'tv_settings_card.dart';
 import 'tv_settings_menu_tile.dart';
+import 'tv_settings_nav_tile.dart';
 import 'tv_settings_switch_tile.dart';
 import 'tv_settings_slider_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/theme/styles/styles.dart';
 
 extension AppLayoutFactory on BuildContext {
   Widget buildGroupTitle(String text) {
-    final theme = Theme.of(this);
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 8),
-      child: Text(
-        text,
-        style: AppTextStyles.t32.copyWith(
-          fontWeight: FontWeight.bold,
-          color: theme.colorScheme.primary.withValues(alpha: 0.65),
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
+    return TvSettingsGroupTitle(title: text);
   }
 
   Widget buildModernCard(List<Widget> children) {
@@ -41,7 +30,7 @@ extension AppLayoutFactory on BuildContext {
   Widget buildTile({
     required String title,
     IconData? icon,
-    Widget? iconWidget,
+    Widget? leading,
     String? subtitle,
     Future<void> Function()? onTap,
     Color? iconColor,
@@ -53,7 +42,7 @@ extension AppLayoutFactory on BuildContext {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      iconWidget: iconWidget,
+      leading: leading,
       value: null,
       valueMap: const {},
       onTap: onTap,

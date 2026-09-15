@@ -1,8 +1,7 @@
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
 class VideoSettingsSectionPage extends ConsumerWidget {

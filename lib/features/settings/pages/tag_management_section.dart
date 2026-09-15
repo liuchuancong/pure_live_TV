@@ -1,9 +1,8 @@
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/services/tag_management/tag_management_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 
 /// Tag management: create tags and remove them. Room assignment happens from
 /// the room card long-press action, which writes the same controller.

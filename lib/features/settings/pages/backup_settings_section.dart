@@ -1,16 +1,13 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:path_provider/path_provider.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/log_settings/log_settings_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/index.dart';
-
-
 
 class BackupSettingsSectionPage extends ConsumerStatefulWidget {
   const BackupSettingsSectionPage({super.key});
@@ -68,7 +65,10 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
         if (_lastResult.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.sp, top: 8.sp),
-            child: Text(_lastResult, style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor)),
+            child: Text(
+              _lastResult,
+              style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor),
+            ),
           ),
         // Local backup files, as on the desktop page's local-backup group.
         TvSettingsNavTile(

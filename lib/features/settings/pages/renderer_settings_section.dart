@@ -1,8 +1,7 @@
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
 class RendererSettingsSectionPage extends ConsumerWidget {

@@ -1,10 +1,9 @@
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/platforms/sites.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
+import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 /// Chooses which audience number the cards and rankings use: the platform heat
 /// value or the concurrent online count, per platform.

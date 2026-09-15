@@ -1,4 +1,3 @@
-import 'package:dpad/dpad.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/pages/icon_picker_section.dart';
@@ -7,6 +6,7 @@ import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/consts/icon_catalog.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
 /// Home side-menu configuration: show or hide entries, reorder them and pick
@@ -144,22 +144,15 @@ class _MoveMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final tvTheme = context.tvTheme;
     final bool isVisible = visibleIndex >= 0;
     final bool canMoveUp = isVisible && visibleIndex > 0;
     final bool canMoveDown = isVisible && visibleIndex < visibleCount - 1;
 
-    // `DpadFocusable` rejects `effects` and `builder` together, so the focus
-    // glow is applied around the builder's presentation instead.
-    final List<DpadEffect> effects = [
-      DpadScaleEffect(scale: 1.02),
-      DpadGlowEffect(
-        color: theme.colorScheme.primary.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ];
-
-    return DpadFocusable(
+    return TvSettingsRow(
+      title: title,
+      subtitle: isVisible ? null : i18n('ui_move_hidden_entry'),
+      icon: Icons.swap_vert_rounded,
       // Only consume the key while the entry can actually move that way, so an
       // entry at the top or bottom never traps the remote on this row.
       onDirection: (direction) {
@@ -176,62 +169,25 @@ class _MoveMenuTile extends StatelessWidget {
       onSelect: () {
         if (canMoveDown) onMove(1);
       },
-      builder: (context, state, child) {
-        final Color accent = state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
-        return DpadEffect.wrap(
-          context,
-          effects,
-          state,
-          Container(
-            decoration: BoxDecoration(
-              color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+      trailingBuilder: (context, focused) {
+        final Color accent = focused ? tvTheme.focusColor : tvTheme.secondaryTextColor;
+        final Color muted = tvTheme.secondaryTextColor.withValues(alpha: 0.35);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.keyboard_arrow_up_rounded, size: 26.sp, color: canMoveUp ? accent : muted),
+            SizedBox(width: 4.sp),
+            Text(
+              isVisible ? '${visibleIndex + 1}/$visibleCount' : '-',
+              style: AppTextStyles.t20W600.copyWith(
+                color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
+              ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Icon(Icons.swap_vert_rounded, color: accent),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      if (!isVisible) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          i18n('ui_move_hidden_entry'),
-                          style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.keyboard_arrow_up_rounded, color: canMoveUp ? accent : theme.disabledColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      isVisible ? '${visibleIndex + 1}/$visibleCount' : '-',
-                      style: TextStyle(color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down_rounded, color: canMoveDown ? accent : theme.disabledColor),
-                  ],
-                ),
-              ],
-            ),
-          ),
+            SizedBox(width: 4.sp),
+            Icon(Icons.keyboard_arrow_down_rounded, size: 26.sp, color: canMoveDown ? accent : muted),
+          ],
         );
       },
-      child: const SizedBox.shrink(),
     );
   }
 }

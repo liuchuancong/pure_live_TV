@@ -1,9 +1,8 @@
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/services/cache/cache_controller.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:remixicon/remixicon.dart';
+import 'package:pure_live/services/cache/cache_controller.dart';
 
 class CacheSettingsSectionPage extends ConsumerStatefulWidget {
   const CacheSettingsSectionPage({super.key});

@@ -25,7 +25,7 @@ class PlatformDisplaySectionPage extends ConsumerWidget {
         for (final site in Sites.supportSites)
           TvSettingsSwitchTile(
             title: site.name,
-            iconWidget: Image.asset(
+            leading: Image.asset(
               site.logo,
               width: 30.sp,
               height: 30.sp,

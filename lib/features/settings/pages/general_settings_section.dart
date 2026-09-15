@@ -1,12 +1,10 @@
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:remixicon/remixicon.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 
 class GeneralSettingsSectionPage extends ConsumerWidget {
   const GeneralSettingsSectionPage({super.key});

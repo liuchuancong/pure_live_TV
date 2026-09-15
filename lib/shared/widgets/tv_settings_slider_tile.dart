@@ -1,5 +1,7 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/tv_settings_row.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvSettingsSliderTile extends StatelessWidget {
   final String title;
@@ -27,21 +29,13 @@ class TvSettingsSliderTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final tvTheme = context.tvTheme;
     final double progress = ((value - min) / (max - min)).clamp(0.0, 1.0);
 
-    // `DpadFocusable` asserts that `effects` and `builder` are never both
-    // supplied, so the glow and scale are applied around the builder's own
-    // presentation instead of being passed to the focusable.
-    final List<DpadEffect> effects = [
-      DpadScaleEffect(scale: 1.02),
-      DpadGlowEffect(
-        color: theme.colorScheme.primary.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ];
-
-    return DpadFocusable(
+    return TvSettingsRow(
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
       onDirection: (direction) {
         if (direction != TraversalDirection.left && direction != TraversalDirection.right) {
           return false;
@@ -54,90 +48,43 @@ class TvSettingsSliderTile extends StatelessWidget {
         onChanged(newValue);
         return true;
       },
-      builder: (context, state, child) {
-        return DpadEffect.wrap(
-          context,
-          effects,
-          state,
-          Container(
-            decoration: BoxDecoration(
-              color: state.focused ? theme.colorScheme.primaryContainer.withValues(alpha: 0.15) : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Icon(icon, color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.arrow_left,
-                                size: 16,
-                                color: state.focused ? theme.colorScheme.primary : Colors.grey,
-                              ),
-                              Text(
-                                displayValue,
-                                style: TextStyle(
-                                  color: state.focused ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_right,
-                                size: 16,
-                                color: state.focused ? theme.colorScheme.primary : Colors.grey,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      if (subtitle != null && subtitle!.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: state.focused
-                                ? theme.colorScheme.primary.withValues(alpha: 0.8)
-                                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6,
-                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            state.focused ? theme.colorScheme.primary : theme.colorScheme.outline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      trailingBuilder: (context, focused) => Text(
+        displayValue,
+        maxLines: 1,
+        style: AppTextStyles.t20W600.copyWith(color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor),
+      ),
+      footer: _SliderTrack(progress: progress, accent: tvTheme.focusColor, track: tvTheme.secondaryTextColor),
+    );
+  }
+}
+
+/// Track drawn with the palette colours instead of the Material progress
+/// indicator, so it matches the row borders on every theme.
+class _SliderTrack extends StatelessWidget {
+  const _SliderTrack({required this.progress, required this.accent, required this.track});
+
+  final double progress;
+  final Color accent;
+  final Color track;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 8.sp,
+      decoration: BoxDecoration(
+        color: track.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(4.sp),
+      ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: progress,
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(4.sp)),
+            child: const SizedBox.expand(),
           ),
-        );
-      },
-      child: const SizedBox.shrink(),
+        ),
+      ),
     );
   }
 }

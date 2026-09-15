@@ -1,14 +1,12 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/tv_settings_row.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// Settings row that opens another page.
 ///
-/// A navigation row intentionally does not react to Left/Right. The settings
-/// catalog is a list of these rows only; the previous layout mixed them with
-/// value rows that consumed Left/Right, so once focus landed in the settings
-/// content it could not be moved back out to the module list.
+/// A navigation row intentionally does not react to Left/Right, and it renders
+/// through [TvSettingsRow] so every other settings row shares its look.
 class TvSettingsNavTile extends StatelessWidget {
   const TvSettingsNavTile({
     super.key,
@@ -33,67 +31,13 @@ class TvSettingsNavTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-
-    return DpadFocusable(
+    return TvSettingsRow(
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
+      leading: leading,
       onSelect: onTap,
-      builder: (context, state, child) {
-        final bool focused = state.focused;
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
-          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
-          decoration: BoxDecoration(
-            color: focused ? tvTheme.focusColor.withValues(alpha: 0.22) : Colors.transparent,
-            borderRadius: BorderRadius.circular(14.sp),
-            border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
-          ),
-          child: Row(
-            children: [
-              leading ?? Icon(icon!, size: 30.sp, color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor),
-              SizedBox(width: 16.sp),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t22W600.copyWith(
-                        color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      SizedBox(height: 4.sp),
-                      Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16W500.copyWith(
-                          color: focused
-                              ? tvTheme.focusColor.withValues(alpha: 0.85)
-                              : tvTheme.secondaryTextColor,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              SizedBox(width: 12.sp),
-              trailing ??
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 30.sp,
-                    color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor,
-                  ),
-            ],
-          ),
-        );
-      },
-      child: const SizedBox.shrink(),
+      trailingBuilder: (context, focused) => trailing ?? tvSettingsChevron(context, focused),
     );
   }
 }

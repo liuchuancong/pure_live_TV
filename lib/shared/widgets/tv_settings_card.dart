@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/theme/index.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
+/// Group container for [TvSettingsRow]s.
+///
+/// Uses the TV palette (like the rows themselves) rather than the Material
+/// card theme, so the whole settings page shares one set of colours.
 class TvSettingsCard extends StatelessWidget {
   final List<Widget> children;
 
@@ -7,17 +13,15 @@ class TvSettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final tvTheme = context.tvTheme;
     final validChildren = children.where((w) => w is! SizedBox).toList();
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
+    return Container(
       clipBehavior: Clip.antiAlias,
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.05), width: 0.5),
+      decoration: BoxDecoration(
+        color: tvTheme.cardColor,
+        borderRadius: BorderRadius.circular(20.sp),
+        border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.12), width: 1.sp),
       ),
       child: Column(
         children: List.generate(validChildren.length, (index) {
@@ -26,11 +30,11 @@ class TvSettingsCard extends StatelessWidget {
               validChildren[index],
               if (index != validChildren.length - 1)
                 Divider(
-                  height: 0.5,
-                  thickness: 0.5,
-                  indent: 16,
-                  endIndent: 16,
-                  color: theme.dividerColor.withValues(alpha: 0.05),
+                  height: 1.sp,
+                  thickness: 1.sp,
+                  indent: 16.sp,
+                  endIndent: 16.sp,
+                  color: tvTheme.secondaryTextColor.withValues(alpha: 0.12),
                 ),
             ],
           );

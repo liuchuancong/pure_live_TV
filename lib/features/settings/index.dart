@@ -19,5 +19,4 @@ export 'pages/renderer_settings_section.dart';
 export 'pages/theme_picker_section.dart';
 export 'pages/theme_settings_section.dart';
 export 'pages/video_settings_section.dart';
-export 'tv_settings_option_tile.dart';
 export 'tv_settings_page.dart';

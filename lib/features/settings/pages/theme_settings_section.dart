@@ -1,12 +1,11 @@
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/app/router/app_routes.dart';
-import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/tv_settings_option_tile.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/player/utils/player_consts.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class ThemeSettingsSectionPage extends ConsumerWidget {
   const ThemeSettingsSectionPage({super.key});
@@ -39,8 +38,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             onTap: () async => context.push(AppRoutes.kWallpaperPage),
           ),
           TvSettingsOptionTile(
-            title: i18n('
-            '),
+            title: i18n('theme_mode'),
             // Icon taken from the desktop theme page (moon), so the same row
             // looks the same in both apps.
             icon: Remix.moon_clear_line,
