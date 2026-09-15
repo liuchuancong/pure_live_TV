@@ -27,7 +27,8 @@ class TvRoomCard extends ConsumerStatefulWidget {
   /// Whether the followed badge is shown.
   final bool showFollowedMark;
 
-  /// 所在房间列表：未提供 [onTap] 时随播放页一起带过去，作为换台列表。
+  /// The room list this card came from. Without an [onTap] it travels with the
+  /// player and becomes the channel list.
   final List<LiveRoom> playlist;
 
   @override
@@ -56,7 +57,8 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
     return readableCount(value);
   }
 
-  /// 未提供 [onTap] 时默认进入直播播放页，并把所在列表带过去作为换台列表。
+  /// Without an [onTap] the card opens the live player and passes the list along
+  /// as the channel list.
   void _openLivePlay() {
     if (!mounted) return;
     context.push(AppRoutes.kLivePlay, extra: LivePlayArgs.fromRoom(widget.room, playlist: widget.playlist));

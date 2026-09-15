@@ -17,7 +17,8 @@ abstract class LivePlayQuality with _$LivePlayQuality {
 
   factory LivePlayQuality.fromJson(Map<String, dynamic> json) => _$LivePlayQualityFromJson(json);
 
-  /// 选流时使用的稳定标识：优先站点给的质量 id，否则退回标签文本。
+  /// Stable identifier used when picking a stream: the site quality id when
+  /// present, otherwise the label text.
   dynamic get selectionId {
     final value = id;
     if (value != null && value.toString().isNotEmpty) return value;

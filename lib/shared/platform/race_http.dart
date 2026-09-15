@@ -36,7 +36,8 @@ class RaceHttp {
     final completer = Completer<String?>();
     var remaining = urls.length;
     final clients = <http.Client>[];
-    // 整体超时兜底：任一镜像成功提前完成，全部失败或超时返回 null
+    // Overall timeout: any mirror can complete early, and a total failure or a
+    // timeout resolves to null.
     final timer = Timer(timeout, () {
       if (!completer.isCompleted) completer.complete(null);
     });
@@ -47,8 +48,8 @@ class RaceHttp {
           final client = http.Client();
           clients.add(client);
           try {
-            // 部分 GitHub 镜像拒绝 HEAD。单字节 GET 走同样的路由，
-            // 又不会真正下载调用方要用的资源
+            // Some GitHub mirrors reject HEAD. A one-byte GET takes the same route
+            // without actually downloading the resource the caller wants.
             final request = http.Request('GET', Uri.parse(url));
             if (headers != null) request.headers.addAll(headers);
             request.headers.putIfAbsent('Range', () => 'bytes=0-0');
@@ -57,7 +58,7 @@ class RaceHttp {
               completer.complete(url);
             }
           } catch (_) {
-            // 其他镜像可能赢得竞速
+            // Another mirror may still win the race.
           } finally {
             client.close();
             remaining--;

@@ -62,7 +62,7 @@ class HivePrefUtil {
     } else if (value is List<String>) {
       _box.put(key, value);
     } else {
-      // 如果传入不支持的类型（如 Map、自定义对象），可选择抛异常或忽略
+      // Unsupported value types such as Map or a custom object are rejected here.
       throw ArgumentError(
         'Unsupported value type for key "$key": ${value.runtimeType}. '
         'Only String, int, bool, double, and List<String> are supported.',

@@ -14,7 +14,7 @@ import 'package:pure_live/shared/utils/platform_utils.dart';
 class VersionUtil {
   static PackageInfo? _packageInfo;
 
-  /// TV 版发布仓库
+  /// Release repository for the TV build.
   static const String updateOwner = 'liuchuancong';
   static const String updateRepository = 'pure_live_TV';
   static final String projectUrl = 'https://github.com/$updateOwner/$updateRepository';
@@ -32,7 +32,8 @@ class VersionUtil {
       ? [mirror.rawUrl('assets/version.json')]
       : mirror.mirrors('assets/version.json');
 
-  /// 是否有新版本；Riverpod 层可 watch 该字段或接收 onChanged 回调
+  /// Whether a newer version exists. The Riverpod layer can watch this field or
+  /// subscribe to onHasNewVersionChanged.
   static bool isHasNewVersion = false;
   static void Function(bool)? onHasNewVersionChanged;
 
@@ -101,10 +102,10 @@ class VersionUtil {
       _applyVersionData(data);
       _cachedVersionJson = data;
       _setHasNewVersion(hasNewVersion());
-      debugPrint('🏁 更新线路成功');
+      debugPrint('🏁 Update mirror resolved');
       return true;
     } catch (e) {
-      debugPrint('⚠️ 更新检查失败: $e');
+      debugPrint('⚠️ Update check failed: $e');
       _resetAfterFailedCheck();
       return false;
     }
@@ -127,7 +128,8 @@ class VersionUtil {
     latestWindowsMsixAvailable = selected['windows_msix_available'] == true;
   }
 
-  /// 只宣传发布源声明已发布的 APK 变体；旧发布源默认 arm64
+  /// Only advertises APK variants the release source declares as published;
+  /// older sources default to arm64.
   static Set<String> selectAndroidAbis(Map<String, dynamic> data) {
     final raw = data['android_abis'];
     if (raw is! List) return const {'arm64-v8a'};
@@ -136,7 +138,8 @@ class VersionUtil {
 
   static const Set<String> _supportAndroidAbis = {'arm64-v8a', 'armeabi-v7a', 'x86_64'};
 
-  /// 按平台字段合并发布信息，兼容旧发布源的顶层字段
+  /// Merges release info per platform field, still accepting the top-level fields
+  /// used by older release sources.
   static Map<String, dynamic> selectPlatformVersionData(Map<String, dynamic> data, {required String platform}) {
     final platforms = data['platforms'];
     final platformData = platforms is Map ? platforms[platform] : null;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/shared/dialog/tv_dialog.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class TvConfirmDialog extends StatefulWidget {
   final String title;
@@ -15,8 +16,8 @@ class TvConfirmDialog extends StatefulWidget {
     super.key,
     required this.title,
     this.message,
-    this.confirmText = "确定",
-    this.cancelText = "取消",
+    this.confirmText,
+    this.cancelText,
     this.onConfirm,
     this.onCancel,
   });
@@ -40,8 +41,8 @@ class _TvConfirmDialogState extends State<TvConfirmDialog> {
 
     return TvDialog(
       title: widget.title,
-      confirmText: widget.confirmText,
-      cancelText: widget.cancelText,
+      confirmText: widget.confirmText ?? i18n('confirm'),
+      cancelText: widget.cancelText ?? i18n('cancel'),
       onConfirm: () {
         final currentTime = DateTime.now().millisecondsSinceEpoch;
         if (currentTime - _initTime < 500) {

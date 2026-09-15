@@ -5,20 +5,21 @@ part 'live_message_model.g.dart';
 
 enum LiveMessageType { chat, gift, online, superChat }
 
-/// 弹幕显示位置。
+/// Where the danmaku is drawn.
 enum LiveMessagePlacement { top, bottom, scroll }
 
-/// 观众人数更新的指标类型（弹幕在线人数推送）。
+/// Metric type of a viewer-count update pushed with the danmaku stream.
 enum LiveAudienceMetricKind { onlineViewers, popularity, totalViewers }
 
-/// 弹幕人数更新负载，挂在 LiveMessage.online 消息的 data 上。
+/// Viewer-count payload carried in the data of a LiveMessage.online message.
 class LiveAudienceUpdate {
   const LiveAudienceUpdate({required this.kind, required this.value});
   final LiveAudienceMetricKind kind;
   final int value;
 }
 
-/// 弹幕渲染样式（字号/描边/位置），由站点适配器按平台礼物或会员消息填充。
+/// Danmaku render style (size, stroke, position), filled in by the site adapter
+/// from a platform gift or membership message.
 class LiveMessageStyle {
   const LiveMessageStyle({
     this.placement,
@@ -34,7 +35,8 @@ class LiveMessageStyle {
   final LiveMessagePlacement? placement;
   final double? fontSize;
 
-  /// 弹幕滚动基础速度（像素/秒），由本地合成弹幕的紧凑布局计算填充。
+  /// Base scroll speed in pixels per second, filled in by the compact layout of
+  /// locally composed danmaku.
   final double? baseSpeed;
   final int fontWeight;
   final String? fontFamily;

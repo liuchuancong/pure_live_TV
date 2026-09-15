@@ -12,17 +12,17 @@ import 'package:android_intent_plus/android_intent.dart';
 class FileUtils {
   static const String systemHotProviderId = "88888";
 
-  /// 获取文件路径中的纯文件名
+  /// Returns just the file name from a path.
   static String getFileName(String fullPath) {
     return fullPath.split(Platform.pathSeparator).last;
   }
 
-  /// 获取不带后缀的文件名
+  /// Returns the file name without its extension.
   static String getBaseName(String fullPath) {
     return p.basenameWithoutExtension(fullPath);
   }
 
-  /// 生成基于时间戳和随机数的唯一长整数 ID 字符串
+  /// Builds a unique numeric id from a timestamp and a random value.
   static String generateUuid() {
     final currentTime = DateTime.now().millisecondsSinceEpoch;
     final randomValue = Random().nextInt(4294967295);
@@ -53,12 +53,12 @@ class FileUtils {
 
   static bool isHostUrl(String value) => parseHttpUrl(value) != null;
 
-  /// 验证字符串是否为纯数字（端口号校验）
+  /// Checks that a string is all digits, used to validate ports.
   static bool isNumericPort(String value) {
     return RegExp(r"^\d+$").hasMatch(value);
   }
 
-  /// 请求外部存储管理权限
+  /// Requests external storage management permission.
   static Future<bool> requestStoragePermission() async {
     if (Platform.isAndroid || Platform.isIOS) {
       if (await Permission.manageExternalStorage.isDenied) {

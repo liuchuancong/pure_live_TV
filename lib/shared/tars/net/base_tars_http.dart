@@ -8,8 +8,8 @@ import 'package:pure_live/shared/tars/tup/tars_uni_packet.dart';
 import 'package:pure_live/shared/tars/codec/tars_input_stream.dart';
 import 'package:pure_live/shared/tars/tup/tup_result_exception.dart';
 
-//tup网络请求封装
-//注意:只支持 PACKET_TYPE_TUP3 = 3 类型的封包
+// TUP request wrapper.
+// Note: only PACKET_TYPE_TUP3 = 3 packets are supported.
 class BaseTarsHttp {
   final String baseUrl;
   final String path;
@@ -38,11 +38,12 @@ class BaseTarsHttp {
       ),
     );
     if (debugLog) {
-      dio.interceptors.add(LogInterceptor(responseBody: false)); //开启请求日志
+      dio.interceptors.add(LogInterceptor(responseBody: false)); // request logging
     }
   }
 
-  //发送http请求,不返回状态码,异常状态码直接抛出异常TupResultException
+  // Sends a request without returning the status code; a failing status throws
+  // TupResultException.
   Future<RSP> tupRequest<REQ, RSP>(String methodName, REQ tReq, RSP tRsp) async {
     TupResponse<RSP> response = await tupRequestWithRspCode(methodName, tReq, tRsp);
     if (response.code == 0) {
@@ -53,7 +54,7 @@ class BaseTarsHttp {
     }
   }
 
-  //发送http请求,返回状态码及response
+  // Sends a request and returns both the status code and the response.
   Future<TupResponse<RSP>> tupRequestWithRspCode<REQ, RSP>(String methodName, REQ tReq, RSP tRsp) async {
     final data = buildRequest(methodName, tReq);
     dio.options.headers[HttpHeaders.contentLengthHeader] = data.lengthInBytes;
@@ -62,7 +63,7 @@ class BaseTarsHttp {
     return tupResponseDecode(methodName, value!, tRsp);
   }
 
-  //发送无response http请求,返回状态码
+  // Sends a request with no response body and returns the status code.
   Future<TupResponse<void>> tupRequestWithRspCodeNoRsp<REQ>(String methodName, REQ tReq) async {
     final data = buildRequest(methodName, tReq);
     dio.options.headers[HttpHeaders.contentLengthHeader] = data.lengthInBytes;
@@ -72,7 +73,8 @@ class BaseTarsHttp {
     return tupEmptyResponseDecode(methodName, value!);
   }
 
-  //发送无response http请求,不返回状态码,异常状态码直接抛出异常TupResultException
+  // Sends a request with no response body and no status code; a failing status
+  // throws TupResultException.
   Future<void> tupRequestNoRsp<REQ>(String methodName, REQ tReq) async {
     TupResponse<void> response = await tupRequestWithRspCodeNoRsp(methodName, tReq);
     if (response.code == 0) {
@@ -83,7 +85,7 @@ class BaseTarsHttp {
     }
   }
 
-  //封包
+  // Encode the packet.
   Uint8List buildRequest<REQ>(String methodName, REQ tReq) {
     TarsUniPacket encodePack = TarsUniPacket();
     encodePack.requestId = 0;
@@ -96,7 +98,7 @@ class BaseTarsHttp {
     return bytes;
   }
 
-  //有response解包
+  // Decode a packet that carries a response.
   TupResponse<RSP> tupResponseDecode<RSP>(String methodName, List<int> list, RSP tRsp) {
     var bytes = Uint8List.fromList(list);
     TarsUniPacket respPack = TarsUniPacket();
@@ -106,7 +108,7 @@ class BaseTarsHttp {
     return TupResponse<RSP>(code: code, response: rsp);
   }
 
-  //无response解包
+  // Decode a packet with no response body.
   TupResponse<void> tupEmptyResponseDecode(String methodName, List<int> list) {
     var bytes = Uint8List.fromList(list);
     BinaryReader br = BinaryReader(bytes);

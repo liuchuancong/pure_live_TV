@@ -33,7 +33,9 @@ class LiveQualityLabel {
     if (raw.isNotEmpty) return raw;
     if (bitrate != null && bitrate > 0) return _bitrateLabel(bitrate);
     final idText = id?.toString().trim() ?? '';
-    return idText.isEmpty ? i18n('default_option') : '清晰度 $idText';
+    return idText.isEmpty
+        ? i18n('default_option')
+        : i18n('quality_numbered', args: {'value': idText});
   }
 
   static String? _bilibili(String token, Object? id) {

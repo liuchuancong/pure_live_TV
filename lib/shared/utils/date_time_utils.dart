@@ -5,7 +5,7 @@ class DateTimeUtils {
   static DateFormat dateFormatWithYear = DateFormat("yyyy-MM-dd HH:mm");
   static DateFormat timeFormat = DateFormat("HH:mm:ss");
 
-  /// 处理时间
+  /// Formats a timestamp for display.
   static String parseTime(DateTime? dt) {
     if (dt == null) {
       return "";

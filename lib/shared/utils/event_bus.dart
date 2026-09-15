@@ -1,6 +1,6 @@
 import 'dart:async';
 
-/// 全局事件
+/// Global event.
 class EventBus {
   static EventBus? _instance;
 
@@ -11,7 +11,7 @@ class EventBus {
 
   final Map<String, StreamController> _streams = {};
 
-  /// 触发事件
+  /// Fires the event.
   void emit<T>(String name, T data) {
     if (!_streams.containsKey(name)) {
       _streams.addAll({name: StreamController.broadcast()});
@@ -20,7 +20,7 @@ class EventBus {
     _streams[name]!.add(data);
   }
 
-  /// 监听事件
+  /// Subscribes to the event.
   StreamSubscription<dynamic> listen(String name, Function(dynamic)? onData) {
     if (!_streams.containsKey(name)) {
       _streams.addAll({name: StreamController.broadcast()});

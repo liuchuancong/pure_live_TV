@@ -6,7 +6,7 @@ class ColorUtil {
   static HashMap<int, Color> colorMap = HashMap<int, Color>();
 
   static Color numberToColor(int intColor) {
-    // 透明度
+    // Alpha.
     // if(intColor < 0xFF000000){
     //
     // }
@@ -15,7 +15,7 @@ class ColorUtil {
     return color;
   }
 
-  /// 16进制颜色转换 #FFFFFF
+  /// Parses a hex colour such as #FFFFFF.
   static Color hexToColor(String colorTxt) {
     var replaceText = colorTxt.replaceAll("#", "");
     var colorValue = int.tryParse(replaceText, radix: 16);

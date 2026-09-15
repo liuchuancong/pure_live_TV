@@ -163,12 +163,7 @@ class Log {
   }
 
   static void addDebugLog(String content, [Color? color]) {
-    String processedContent = content;
-    if (content.contains("请求响应")) {
-      processedContent = content.split("\n").join('\n💡 ');
-    }
-
-    _allLogs.add(DebugLogModel(DateTime.now(), processedContent, color: color));
+    _allLogs.add(DebugLogModel(DateTime.now(), content, color: color));
     final overflow = _allLogs.length - maxDebugEntries;
     if (overflow > 0) _allLogs.removeRange(0, overflow);
   }

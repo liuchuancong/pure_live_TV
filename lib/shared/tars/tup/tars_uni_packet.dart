@@ -14,77 +14,77 @@ class TarsUniPacket extends UniPacket {
     package.status = <String, String>{};
   }
 
-  /// 设置协议版本
+  /// Sets the protocol version.
   void setTarsVersion(int version) {
     setVersion(version);
   }
 
-  /// 设置调用类型
+  /// Sets the call type.
   void setTarsPacketType(int packetType) {
     package.cPacketType = packetType;
   }
 
-  /// 设置消息类型
+  /// Sets the message type.
   void setTarsMessageType(int messageType) {
     package.iMessageType = messageType;
   }
 
-  /// 设置超时时间
+  /// Sets the timeout.
   void setTarsTimeout(int timeout) {
     package.iTimeout = timeout;
   }
 
-  /// 设置参数编码内容
+  /// Sets the encoded request payload.
   void setTarsBuffer(Uint8List buffer) {
     package.sBuffer = buffer;
   }
 
-  /// 设置上下文
+  /// Sets the context.
   void setTarsContext(Map<String, String> context) {
     package.context = context;
   }
 
-  /// 设置特殊消息的状态值
+  /// Sets the status value of a special message.
   void setTarsStatus(Map<String, String> status) {
     package.status = status;
   }
 
-  /// 获取协议版本
+  /// Returns the protocol version.
   int getTarsVersion() {
     return package.iVersion;
   }
 
-  /// 获取调用类型
+  /// Returns the call type.
   int getTarsPacketType() {
     return package.cPacketType;
   }
 
-  /// 获取消息类型
+  /// Returns the message type.
   int getTarsMessageType() {
     return package.iMessageType;
   }
 
-  /// 获取超时时间
+  /// Returns the timeout.
   int getTarsTimeout() {
     return package.iTimeout;
   }
 
-  /// 获取参数编码后内容
+  /// Returns the encoded request payload.
   Uint8List? getTarsBuffer() {
     return package.sBuffer;
   }
 
-  /// 获取上下文信息
+  /// Returns the context.
   Map<String, String>? getTarsContext() {
     return package.context;
   }
 
-  /// 获取特殊消息的状态值
+  /// Returns the status value of a special message.
   Map<String, String>? getTarsStatus() {
     return package.status;
   }
 
-  /// 获取调用tars的返回值
+  /// Returns the value the Tars call produced.
   int getTarsResultCode() {
     int result = 0;
     try {
@@ -97,7 +97,7 @@ class TarsUniPacket extends UniPacket {
     return result;
   }
 
-  /// 获取调用tars的返回描述
+  /// Returns the description the Tars call produced.
   String getTarsResultDesc() {
     String? rdesc = package.status?[Const.STATUS_RESULT_DESC];
     String result = rdesc ?? "";

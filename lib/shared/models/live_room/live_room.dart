@@ -230,7 +230,7 @@ abstract class LiveRoom with _$LiveRoom {
     @Default(false) bool isCatchUp,
     int? catchUpStart,
     int? catchUpEnd,
-    // ---------- IPTV 时移/回看元数据（来自 M3U catchup-* 标签） ----------
+    // ---------- IPTV timeshift and catch-up metadata (M3U catchup-* tags) ----------
     String? catchUpMode,
     String? catchUpSource,
     double? catchUpDays,
@@ -242,13 +242,13 @@ abstract class LiveRoom with _$LiveRoom {
 
   factory LiveRoom.fromJson(Map<String, dynamic> json) => _$LiveRoomFromJson(json);
 
-  // ---------- 身份 ----------
+  // ---------- Identity ----------
 
   String get normalizedPlatformId => platform.trim().toLowerCase();
 
   String get normalizedRoomId => roomId.trim();
 
-  /// 平台 + 房间号的稳定标识，用于收藏/历史去重。
+  /// Stable platform plus room-id key, used to deduplicate favourites and history.
   String get identityKey => '$normalizedPlatformId:$normalizedRoomId';
 
   bool hasIdentity({required String platform, required String roomId}) =>
@@ -264,13 +264,13 @@ abstract class LiveRoom with _$LiveRoom {
   @override
   int get hashCode => Object.hash(platform, roomId);
 
-  // ---------- 播放状态 ----------
+  // ---------- Playback state ----------
 
   bool get isLiveNow => liveStatus == LiveStatus.live || (liveStatus == LiveStatus.unknown && status);
 
   bool get isExplicitlyOfflineNow => liveStatus == LiveStatus.offline || liveStatus == LiveStatus.banned;
 
-  /// 回放/时移同样可播放。
+  /// Replays and timeshift are playable too.
   bool get isPlayableNow => isLiveNow || liveStatus == LiveStatus.replay || isRecord;
 
   LiveStatus get effectiveLiveStatus => liveStatus == LiveStatus.unknown
@@ -459,16 +459,17 @@ abstract class LiveRoom with _$LiveRoom {
     return a.identityKey.compareTo(b.identityKey);
   }
 
-  // ---------- 音量记忆 ----------
+  // ---------- Remembered volume ----------
 
   double getSavedVolume() => LiveRoomVolumeManager.getRoomVolume(platform, roomId);
 
   Future<void> saveCurrentVolume(double volume) => LiveRoomVolumeManager.saveRoomVolume(platform, roomId, volume);
 
-  // ---------- 错误回退 ----------
+  // ---------- Error fallback ----------
 
-  /// 详情拉取失败时构造的可展示房间：保留已有信息并标记为离线，
-  /// 错误消息放在 [data] 中由播放层读取。
+  /// Showable room built when the detail fetch fails: existing fields are kept
+  /// and the room is marked offline. The error message goes into [data] for the
+  /// playback layer to read.
   LiveRoom getLiveRoomWithError({Object? error}) {
     return copyWith(
       liveStatus: isExplicitlyOfflineNow ? liveStatus : LiveStatus.offline,

@@ -12,7 +12,7 @@ class BasicClassTypeUtil {
     if (type == 'bool') {
       return 'bool';
     }
-    // 如果是int,需要检查short/ushort/int32/uint32
+    // For int, short/ushort/int32/uint32 have to be checked separately.
     if (type == 'int') {
       if (obj is int) {
         if (obj >= -32768 && obj <= 32767) {
@@ -31,7 +31,7 @@ class BasicClassTypeUtil {
         return 'int32';
       }
     }
-    // 检查int64/uint64
+    // Check int64 and uint64.
     if (type == BigInt.one.runtimeType.toString()) {
       if (obj is BigInt) {
         if (obj >= BigInt.from(-9223372036854775808) &&
@@ -52,7 +52,7 @@ class BasicClassTypeUtil {
     return type;
   }
 
-  /// 将嵌套的类型转成字符串
+  /// Renders a nested type as a string.
   static String transTypeList(List<String> listType) {
     var sb = StringBuffer();
 

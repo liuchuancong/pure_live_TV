@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 
-/// 短链跳转解析会话：手动跟随 3xx 重定向，供直播间短链还原使用。
-/// 会话可关闭；关闭后所有请求直接返回 null。
+/// Short-link resolution session. Redirects are followed manually so live room
+/// short links can be restored.
+/// The session can be closed; afterwards every request returns null.
 class LiveShortLinkSession {
   LiveShortLinkSession({required Duration timeout, Dio Function()? clientFactory})
     : _dio = _createClient(timeout, clientFactory),
@@ -24,7 +25,8 @@ class LiveShortLinkSession {
     return dio;
   }
 
-  /// 返回原始响应（不抛异常）；失败或会话已关闭时返回 null。
+  /// Returns the raw response instead of throwing; null on failure or once the
+  /// session is closed.
   Future<Response?> get(Uri uri, {Map<String, String> headers = const {}}) async {
     if (_closed) return null;
     try {
