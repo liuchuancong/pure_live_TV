@@ -149,11 +149,13 @@ class _ImageBackground extends StatelessWidget {
     );
   }
 
-  /// 网络背景直接交给 [CachedNetworkImageProvider] 落磁盘缓存。
+  /// Remote images go straight to [CachedNetworkImageProvider], which keeps
+  /// them in the on-disk image cache.
   ///
-  /// 原实现只读 `currentBoxImageBase64`，而设置网络图时写的是
-  /// `networkImageUrl`，两边对不上，所以选了远端图之后背景是空的。
-  /// 顺带避免把整张图转 base64 塞进 Hive 偏好设置。
+  /// The stored URL is used instead of the embedded base64 field: the two are
+  /// written by different setters and never agree, so picking a remote image
+  /// used to render nothing. This also keeps multi-megabyte images out of the
+  /// preferences store.
   ImageProvider? _resolveImage() {
     if (config.source == BackgroundSource.networkImage) {
       final url = config.networkImageUrl;

@@ -3,14 +3,15 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 
-/// GitHub 原始文件加速。
+/// Resolves the fastest base URL for remote asset files.
 ///
-/// 国内直连 `raw.githubusercontent.com` 经常 TLS 断流（curl 35 /
-/// SSL_ERROR_SYSCALL），并发大文件时尤其明显。这里维护一组镜像，
-/// 启动时并发探测同一张小文件，谁先返回用谁，并把结果缓存 6 小时，
-/// 后续所有背景资源都走这个基址。
+/// Direct requests to the origin host often drop mid-handshake, especially
+/// when several large files are fetched at once. This keeps a list of mirror
+/// prefixes, probes one small file on all of them in parallel, keeps whichever
+/// answers first, and caches the winner so later requests reuse one base.
 ///
-/// 探测失败不会抛异常：退回第一个候选，让上层的重试逻辑处理。
+/// A failed probe never throws: it falls back to the first candidate and
+/// leaves retrying to the caller.
 class BackgroundMirror {
   BackgroundMirror._();
 
@@ -18,7 +19,7 @@ class BackgroundMirror {
   static const String repo = 'background';
   static const String branch = 'master';
 
-  /// 探测用的文件，仓库根目录下的小文件
+  /// Small file used for probing.
   static const String probeFile = 'catalog.json';
 
   static const Duration _cacheTtl = Duration(hours: 6);
@@ -26,7 +27,8 @@ class BackgroundMirror {
   static const String _kBase = 'bgMirrorBase';
   static const String _kProbedAt = 'bgMirrorProbedAt';
 
-  /// 候选镜像，占位符会被替换。顺序即优先级，全部失败时用第一个。
+  /// Mirror templates, in priority order. Placeholders get substituted.
+  /// The first entry is also the fallback when every probe fails.
   static const List<String> templates = <String>[
     'https://cdn.jsdelivr.net/gh/{owner}/{repo}@{branch}',
     'https://raw.gitmirror.com/{owner}/{repo}/{branch}',
@@ -50,7 +52,7 @@ class BackgroundMirror {
       sendTimeout: const Duration(seconds: 6),
       responseType: ResponseType.plain,
       headers: const {'User-Agent': 'pure_live_TV'},
-      // 探测阶段自己处理状态码，避免非 200 直接抛
+      // Statuses are inspected by hand below, so only hard failures throw.
       validateStatus: (code) => code != null && code < 500,
     ),
   );
@@ -58,7 +60,7 @@ class BackgroundMirror {
   static String? _resolved;
   static Future<String>? _resolving;
 
-  /// 取当前最优基址。并发调用只会探测一次。
+  /// Returns the best base URL, probing at most once for concurrent callers.
   static Future<String> resolve({bool force = false}) {
     if (!force) {
       final cached = _resolved ?? HivePrefUtil.getString(_kBase);
@@ -78,7 +80,7 @@ class BackgroundMirror {
     });
   }
 
-  /// 并发探测，第一个成功的即胜出；全部失败则退回第一个候选。
+  /// Probes all mirrors in parallel; the first success wins.
   static Future<String> _probe() async {
     final completer = Completer<String>();
     var pending = allBases.length;
@@ -115,21 +117,22 @@ class BackgroundMirror {
     try {
       final res = await _probeDio.get<String>(
         '$base/$probeFile',
-        // 只取头部若干字节，够判断通不通即可
+        // Only the first few bytes are needed to tell whether it answers.
         options: Options(headers: const {'Range': 'bytes=0-255'}),
       );
       final code = res.statusCode ?? 0;
-      // 404 也要算“通”：说明镜像本身正常应答，只是上游没有这个文件。
-      // catalog.json 属于可选的预生成索引，仓库里没有是常态，
-      // 若把 404 判为失败，所有镜像都会落选、退化成固定选第一个，
-      // 就失去了测速的意义。
+      // 404 also counts as reachable: the mirror answered normally and simply
+      // does not have this file. The probe target is an optional prebuilt
+      // index that may legitimately be absent, so treating 404 as failure
+      // would disqualify every mirror and collapse to a fixed first choice.
       return code == 200 || code == 206 || code == 404;
     } catch (_) {
       return false;
     }
   }
 
-  /// 某个基址下载失败时调用，下一次 resolve 会重新测速。
+  /// Called when downloads against [failedBase] fail, so the next resolve
+  /// probes again instead of reusing a dead base.
   static Future<void> invalidate([String? failedBase]) async {
     if (failedBase != null && failedBase == _resolved) {
       _resolved = null;
@@ -137,13 +140,13 @@ class BackgroundMirror {
     }
   }
 
-  /// 仓库相对路径 → 完整 URL（自动等测速结果）
+  /// Repo-relative path to a full URL, awaiting the probe if needed.
   static Future<String> url(String path) async {
     final base = await resolve();
     return '$base/${_clean(path)}';
   }
 
-  /// 已知基址时的同步拼接
+  /// Synchronous variant for callers that already hold a base URL.
   static String urlWith(String base, String path) => '$base/${_clean(path)}';
 
   static String _clean(String path) =>

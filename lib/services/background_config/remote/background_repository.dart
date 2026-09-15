@@ -5,10 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/background_config/remote/background_mirror.dart';
 
-/// 拉取远端背景目录。
+/// Fetches the remote background catalog.
 ///
-/// 索引和分片都做内存缓存：同一分类来回切换标签时不会重复请求。
-/// 单次请求失败会作废当前镜像并换一个基址重试一次。
+/// Both the index and the per-category shards are cached in memory, so
+/// flipping between tabs of the same category does not refetch. A failed
+/// request invalidates the current mirror and retries once against another.
 class BackgroundRepository {
   BackgroundRepository._();
 
@@ -32,7 +33,7 @@ class BackgroundRepository {
 
   BackgroundCatalog? get cachedCatalog => _catalog;
 
-  /// 已缓存的分片，用于先渲染后刷新
+  /// Already loaded shard, handy for rendering before a refresh completes.
   BackgroundShard? cachedShard(BackgroundCategory category) =>
       _shards[category.catalog];
 
@@ -42,11 +43,12 @@ class BackgroundRepository {
       final json = await _getJson(catalogPath);
       final catalog = BackgroundCatalog.fromJson(json);
       if (catalog.isEmpty) {
-        throw const FormatException('远端目录为空');
+        throw const FormatException('remote catalog is empty');
       }
       _catalog = catalog;
     } catch (_) {
-      // 仓库里没有预生成的 catalog.json 时用内置结构和 mapping.json 工作
+      // No prebuilt index upstream; the built-in structure plus the
+      // per-category shards cover the same content.
       _catalog ??= BackgroundCatalog.builtIn();
       if (force) rethrow;
     }
@@ -74,7 +76,7 @@ class BackgroundRepository {
   }) {
     if (key.isEmpty) {
       return Future<BackgroundShard>.error(
-        const FormatException('分片路径为空'),
+        const FormatException('shard path is empty'),
       );
     }
     if (!force) {
@@ -101,19 +103,21 @@ class BackgroundRepository {
     return future;
   }
 
-  /// 网格缩略图。
+  /// Grid thumbnail URL.
   ///
-  /// 仓库里存的是 2560px 原图（单张几百 KB），直接铺满一屏网格会一次拉几十 MB。
-  /// 这里借 wsrv.nl 做实时缩放，缩略图大约 15~25 KB。代理不可用时
-  /// [CachedNetworkImage] 的 errorWidget 会兜底，点选仍用原图地址。
+  /// Stored files are full-resolution (a few hundred KB each); covering a
+  /// full grid with them would pull tens of MB in one go. A resizing proxy
+  /// brings each thumbnail down to roughly 15-25 KB. When the proxy is
+  /// unreachable the widget falls back to the original file, so selecting an
+  /// item always uses the full-size URL.
   static String thumbnail(String rawUrl, {int width = 400, int height = 225}) =>
       'https://wsrv.nl/?url=${Uri.encodeComponent(rawUrl)}'
       '&w=$width&h=$height&fit=cover&output=webp&q=72';
 
-  /// 资源的完整远端地址（自动走当前最优镜像）
+  /// Full remote URL for a stored path, using the current best mirror.
   Future<String> urlOf(String path) => BackgroundMirror.url(path);
 
-  /// 同步版本，仅在已知镜像基址可用时调用
+  /// Synchronous variant for callers that already hold a base URL.
   String? urlOfSync(String? base, String path) =>
       base == null ? null : BackgroundMirror.urlWith(base, path);
 
@@ -125,10 +129,11 @@ class BackgroundRepository {
     _inflight.clear();
   }
 
-  /// 带一次换镜像重试的 GET，返回原始 JSON（对象或数组）。
+  /// GET returning raw JSON (object or array), retrying once on another
+  /// mirror.
   ///
-  /// 404 说明文件本来就不存在（比如仓库没放 catalog.json），
-  /// 这时不该作废镜像，直接抛给调用方走兜底。
+  /// A 404 means the file genuinely is not there, so the mirror is kept and
+  /// the error is handed to the caller to fall back on.
   Future<dynamic> _getRaw(String path, {bool retried = false}) async {
     final base = await BackgroundMirror.resolve(force: retried);
     final url = BackgroundMirror.urlWith(base, path);
@@ -142,7 +147,7 @@ class BackgroundRepository {
       return _getRaw(path, retried: true);
     } catch (_) {
       if (retried) rethrow;
-      // 当前镜像可能已经失效，作废后换一个再来
+      // The mirror may have gone away; drop it and try another.
       await BackgroundMirror.invalidate(base);
       return _getRaw(path, retried: true);
     }
@@ -154,14 +159,14 @@ class BackgroundRepository {
   }) async {
     final raw = await _getRaw(path, retried: retried);
     if (raw is Map) return Map<String, dynamic>.from(raw);
-    throw const FormatException('返回内容不是 JSON 对象');
+    throw const FormatException('response is not a JSON object');
   }
 
-  /// 部分镜像会以 text/plain 返回，这里统一兜底解析。
+  /// Some mirrors answer with text/plain, so parse defensively.
   dynamic _decode(dynamic data) {
     if (data is Map || data is List) return data;
     if (data is String && data.isNotEmpty) return jsonDecode(data);
-    throw const FormatException('返回内容不是合法 JSON');
+    throw const FormatException('response is not valid JSON');
   }
 }
 
@@ -169,16 +174,17 @@ final backgroundRepositoryProvider = Provider<BackgroundRepository>(
   (ref) => BackgroundRepository.instance,
 );
 
-/// 远端背景总索引
+/// Remote background index.
 final backgroundCatalogProvider = FutureProvider<BackgroundCatalog>(
   (ref) => BackgroundRepository.instance.loadCatalog(),
 );
 
-/// 某个分类下的资源清单。
+/// Item list for one category.
 ///
-/// key 用记录（sourceId, kind, category）：[BackgroundCategory] 实现了
-/// == / hashCode，String 和 enum 也是值语义，整条 key 结构相等，
-/// 同分类来回切标签不会重复请求。
+/// The key is a record of (sourceId, kind, category). [BackgroundCategory]
+/// implements == and hashCode, and strings and enums already compare by
+/// value, so the whole key is structurally equal across rebuilds and
+/// switching tabs does not refetch.
 final backgroundShardProvider =
     FutureProvider.family<
       BackgroundShard,

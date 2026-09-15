@@ -8,14 +8,15 @@ import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/background_config/remote/background_repository.dart';
 
-/// 遮罩档位。遥控器上用「循环切换」代替滑杆，操作更省事。
+/// Mask presets. A remote cycles through fixed steps instead of dragging a
+/// slider, which is far easier to operate from a couch.
 const List<double> _kMaskSteps = <double>[0, 0.2, 0.35, 0.5, 0.7];
 
-/// 背景设置页。
+/// Background picker.
 ///
-/// 数据来自 background 仓库的 catalog（经镜像加速），支持
-/// 官方壁纸 / Wallhaven / 必应 / deepin / 动态壁纸 / 纯色渐变 六类来源。
-/// 整套布局走 dpad，遥控器可全程操作。
+/// Reads the remote catalog through the fastest available mirror and offers
+/// static wallpapers, live wallpapers and gradients. The whole layout is
+/// dpad-driven so every control is reachable with a remote.
 class WallpaperPage extends ConsumerStatefulWidget {
   const WallpaperPage({super.key});
 
@@ -27,8 +28,9 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
   int _sourceIndex = 0;
   int _categoryIndex = 0;
 
-  /// 应用中的资源，用于显示加载态并避免连点
-  String? _applyingFile;
+  /// Item currently being applied. Drives the tile spinner and stops repeated
+  /// presses from queueing more work.
+  String? _applyingItem;
   bool _busy = false;
 
   @override
@@ -36,7 +38,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     final catalogAsync = ref.watch(backgroundCatalogProvider);
 
     return TvScaffold(
-      title: i18nOr('ui_background_settings', '背景设置'),
+      title: i18nOr('ui_background_settings', 'Background'),
       child: catalogAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => _ErrorView(
@@ -55,7 +57,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     final sources = catalog.sources;
     if (sources.isEmpty) {
       return _ErrorView(
-        message: i18nOr('background_catalog_empty', '远端目录为空'),
+        message: i18nOr('background_catalog_empty', 'Remote catalog is empty'),
         onRetry: () {
           BackgroundRepository.instance.clear();
           ref.invalidate(backgroundCatalogProvider);
@@ -68,7 +70,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     final categories = source.visibleCategories;
     if (categories.isEmpty) {
       return _ErrorView(
-        message: i18nOr('background_no_category', '该来源暂无数据'),
+        message: i18nOr('background_no_category', 'Nothing available here'),
         onRetry: () => ref.invalidate(backgroundCatalogProvider),
       );
     }
@@ -135,7 +137,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
         if (items.isEmpty) {
           return Center(
             child: Text(
-              i18nOr('background_no_item', '这个分类还没有资源'),
+              i18nOr('background_no_item', 'No wallpapers in this category'),
               style: TextStyle(
                 fontSize: 16.sp,
                 color: context.tvTheme.secondaryTextColor,
@@ -160,7 +162,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
                 item: item,
                 kind: source.kind,
                 current: _isCurrent(currentUrl, item.file),
-                applying: _applyingFile == item.key,
+                applying: _applyingItem == item.key,
                 onSelect: () => _apply(source, item),
               );
             },
@@ -170,6 +172,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     );
   }
 
+  /// Whether the given file backs the background in use right now.
   static bool _isCurrent(String? currentUrl, String file) =>
       currentUrl != null &&
       currentUrl.isNotEmpty &&
@@ -180,7 +183,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     if (_busy) return;
     setState(() {
       _busy = true;
-      _applyingFile = item.key;
+      _applyingItem = item.key;
     });
     try {
       switch (source.kind) {
@@ -195,22 +198,34 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
           }
         case BackgroundKind.gradient:
           final colors = <Color>[
-            for (final stop in item.gradient ?? const <BackgroundGradientStop>[])
+            for (final stop
+                in item.gradient ?? const <BackgroundGradientStop>[])
               if (_parseHex(stop.color) case final Color color) color,
           ];
           if (colors.length < 2) {
-            _toast(i18nOr('background_invalid_gradient', '这个渐变数据不完整'));
+            _toast(
+              i18nOr(
+                'background_invalid_gradient',
+                'Gradient data is incomplete',
+              ),
+            );
             return;
           }
           SettingsService.to.bg.setGradient(colors);
       }
     } catch (error) {
-      _toast(i18nOr('background_apply_failed', '设置失败：{msg}', args: {'msg': '$error'}));
+      _toast(
+        i18nOr(
+          'background_apply_failed',
+          'Failed to apply: {msg}',
+          args: {'msg': '$error'},
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
           _busy = false;
-          _applyingFile = null;
+          _applyingItem = null;
         });
       }
     }
@@ -223,6 +238,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
     );
   }
 
+  /// Parses `#RRGGBB`, `RRGGBB`, `#RGB` and `0xAARRGGBB` forms.
   static Color? _parseHex(String raw) {
     var value = raw.trim().replaceFirst('#', '').replaceFirst('0x', '');
     if (value.length == 3) {
@@ -235,7 +251,7 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
   }
 }
 
-/// 顶部工具条：遮罩档位、填充方式、清除背景、刷新目录
+/// Toolbar above the grid: mask preset, fit mode, clear, refresh.
 class _Toolbar extends ConsumerWidget {
   const _Toolbar({
     required this.source,
@@ -262,7 +278,7 @@ class _Toolbar extends ConsumerWidget {
             icon: Icons.brightness_6_outlined,
             label: i18nOr(
               'background_mask',
-              '遮罩 {value}%',
+              'Mask {value}%',
               args: {'value': '${(state.maskOpacity * 100).round()}'},
             ),
             onSelect: () => bg.setMaskOpacity(
@@ -275,8 +291,8 @@ class _Toolbar extends ConsumerWidget {
                 ? Icons.fit_screen_outlined
                 : Icons.crop_free_outlined,
             label: state.boxFit == BoxFit.contain
-                ? i18nOr('background_fit_contain', '适应')
-                : i18nOr('background_fit_cover', '填充'),
+                ? i18nOr('background_fit_contain', 'Fit')
+                : i18nOr('background_fit_cover', 'Fill'),
             onSelect: () => bg.setBoxFit(
               state.boxFit == BoxFit.cover ? BoxFit.contain : BoxFit.cover,
             ),
@@ -284,7 +300,7 @@ class _Toolbar extends ConsumerWidget {
           SizedBox(width: 12.sp),
           _ActionChip(
             icon: Icons.layers_clear_outlined,
-            label: i18nOr('background_clear', '清除背景'),
+            label: i18nOr('background_clear', 'Clear background'),
             onSelect: bg.setNone,
           ),
           const Spacer(),
@@ -297,7 +313,7 @@ class _Toolbar extends ConsumerWidget {
           else
             _ActionChip(
               icon: Icons.refresh,
-              label: i18nOr('refresh', '刷新'),
+              label: i18nOr('refresh', 'Refresh'),
               onSelect: onRefresh,
             ),
           SizedBox(width: 8.sp),
@@ -310,6 +326,8 @@ class _Toolbar extends ConsumerWidget {
     );
   }
 
+  /// Index of the preset closest to [value], so the cycle continues from
+  /// wherever the stored opacity happens to sit.
   int _nearestMaskIndex(double value) {
     var best = 0;
     var bestDelta = double.infinity;
@@ -324,7 +342,8 @@ class _Toolbar extends ConsumerWidget {
   }
 }
 
-/// 单个背景格子。图片走缩略图代理，视频显示封面，渐变直接本地绘制。
+/// One tile. Images load a scaled-down thumbnail, videos show their poster,
+/// gradients are painted locally.
 class _WallpaperTile extends StatefulWidget {
   const _WallpaperTile({
     required this.item,
@@ -365,7 +384,7 @@ class _WallpaperTileState extends State<_WallpaperTile> {
   }
 
   Future<void> _resolveThumb() async {
-    // 视频优先用仓库里的封面，图片用自身
+    // Videos use their poster image, everything else uses the file itself.
     final raw = await BackgroundRepository.instance.urlOf(
       widget.item.poster ?? widget.item.file,
     );
@@ -407,7 +426,7 @@ class _WallpaperTileState extends State<_WallpaperTile> {
           children: [
             ColoredBox(
               color: theme.cardColor,
-              child: _buildPreview(theme, radius),
+              child: _buildPreview(theme),
             ),
             if (widget.item.bytes != null)
               Positioned(
@@ -452,7 +471,7 @@ class _WallpaperTileState extends State<_WallpaperTile> {
     );
   }
 
-  Widget _buildPreview(TvThemeData theme, BorderRadius radius) {
+  Widget _buildPreview(TvThemeData theme) {
     if (widget.kind == BackgroundKind.gradient) {
       return _GradientPreview(item: widget.item);
     }
@@ -474,7 +493,7 @@ class _WallpaperTileState extends State<_WallpaperTile> {
       fadeInDuration: const Duration(milliseconds: 120),
       placeholder: (context, _) => ColoredBox(color: theme.cardColor),
       errorWidget: (context, _, _) {
-        // 缩略图代理挂了就直接用原图
+        // Thumbnail service unavailable, fall back to the full-size file.
         return CachedNetworkImage(
           imageUrl: thumb,
           fit: BoxFit.cover,
@@ -500,7 +519,7 @@ class _WallpaperTileState extends State<_WallpaperTile> {
   }
 }
 
-/// 纯色渐变格子，直接把 gradient 画出来，不用下载
+/// Paints a gradient tile locally; no download involved.
 class _GradientPreview extends StatelessWidget {
   const _GradientPreview({required this.item});
 
@@ -535,6 +554,7 @@ class _GradientPreview extends StatelessWidget {
   }
 }
 
+/// Rounded size label drawn over a tile.
 class _Badge extends StatelessWidget {
   const _Badge({required this.text});
 
@@ -556,7 +576,7 @@ class _Badge extends StatelessWidget {
   }
 }
 
-/// 工具条上的小按钮
+/// Compact focusable button used by the toolbar.
 class _ActionChip extends StatelessWidget {
   const _ActionChip({
     required this.icon,
@@ -576,7 +596,10 @@ class _ActionChip extends StatelessWidget {
     return DpadFocusable(
       onSelect: onSelect,
       effects: <DpadEffect>[
-        DpadScaleEffect(scale: 1.05, duration: const Duration(milliseconds: 100)),
+        DpadScaleEffect(
+          scale: 1.05,
+          duration: const Duration(milliseconds: 100),
+        ),
         DpadBorderEffect(
           color: theme.focusColor,
           width: 2,
@@ -608,6 +631,7 @@ class _ActionChip extends StatelessWidget {
   }
 }
 
+/// Failure state with a retry button, used for catalog and shard errors.
 class _ErrorView extends StatelessWidget {
   const _ErrorView({required this.message, required this.onRetry});
 
@@ -632,7 +656,7 @@ class _ErrorView extends StatelessWidget {
             ),
             SizedBox(height: 12.sp),
             Text(
-              i18nOr('background_load_failed', '背景目录加载失败'),
+              i18nOr('background_load_failed', 'Failed to load wallpapers'),
               style: TextStyle(fontSize: 18.sp, color: theme.primaryTextColor),
             ),
             SizedBox(height: 6.sp),
@@ -667,7 +691,7 @@ class _ErrorView extends StatelessWidget {
                   borderRadius: radius,
                 ),
                 child: Text(
-                  i18nOr('retry', '重试'),
+                  i18nOr('retry', 'Retry'),
                   style: TextStyle(
                     fontSize: 15.sp,
                     color: theme.primaryTextColor,
