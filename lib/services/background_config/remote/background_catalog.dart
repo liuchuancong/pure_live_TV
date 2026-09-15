@@ -21,10 +21,6 @@ enum BackgroundKind {
         return BackgroundKind.image;
     }
   }
-
-  /// Whether the entry maps to a downloadable file.
-  /// Gradients are painted locally, so they have nothing to fetch.
-  bool get isDownloadable => this != BackgroundKind.gradient;
 }
 
 /// One background entry.
@@ -75,17 +71,6 @@ class BackgroundItem {
                 .toList(growable: false)
           : null,
     );
-  }
-
-  /// Short caption shown under a tile. Falls back to the file stem.
-  String label(int index) {
-    final raw = name?.trim();
-    if (raw != null && raw.isNotEmpty) return raw;
-    final fromFile = file.split('/').last;
-    final dot = fromFile.lastIndexOf('.');
-    return dot > 0
-        ? fromFile.substring(0, dot)
-        : (fromFile.isEmpty ? '#$index' : fromFile);
   }
 
   /// Stable identity used to compare "currently applying" and "in use".

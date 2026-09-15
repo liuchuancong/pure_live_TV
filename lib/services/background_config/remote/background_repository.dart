@@ -1,11 +1,15 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/shared/utils/core_error.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/background_config/remote/background_mirror.dart';
 
 /// Fetches the remote background catalog.
+///
+/// Requests go through the app-wide [HttpClient], so the in-app proxy setting
+/// and the shared logging apply here too.
 ///
 /// Both the index and the per-category shards are cached in memory, so
 /// flipping between tabs of the same category does not refetch. A failed
@@ -17,25 +21,10 @@ class BackgroundRepository {
 
   static const String catalogPath = 'catalog.json';
 
-  final Dio _dio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 12),
-      receiveTimeout: const Duration(seconds: 30),
-      headers: const {'User-Agent': 'pure_live_TV'},
-      responseType: ResponseType.json,
-    ),
-  );
-
   BackgroundCatalog? _catalog;
   final Map<String, BackgroundShard> _shards = <String, BackgroundShard>{};
   final Map<String, Future<BackgroundShard>> _inflight =
       <String, Future<BackgroundShard>>{};
-
-  BackgroundCatalog? get cachedCatalog => _catalog;
-
-  /// Already loaded shard, handy for rendering before a refresh completes.
-  BackgroundShard? cachedShard(BackgroundCategory category) =>
-      _shards[category.catalog];
 
   Future<BackgroundCatalog> loadCatalog({bool force = false}) async {
     if (!force && _catalog != null) return _catalog!;
@@ -54,18 +43,6 @@ class BackgroundRepository {
     }
     return _catalog!;
   }
-
-  Future<BackgroundShard> loadShard(
-    BackgroundSource source,
-    BackgroundCategory category, {
-    bool force = false,
-  }) => loadShardPath(
-    category.catalog,
-    category: category,
-    kind: source.kind,
-    sourceId: source.id,
-    force: force,
-  );
 
   Future<BackgroundShard> loadShardPath(
     String key, {
@@ -117,12 +94,6 @@ class BackgroundRepository {
   /// Full remote URL for a stored path, using the current best mirror.
   Future<String> urlOf(String path) => BackgroundMirror.url(path);
 
-  /// Synchronous variant for callers that already hold a base URL.
-  String? urlOfSync(String? base, String path) =>
-      base == null ? null : BackgroundMirror.urlWith(base, path);
-
-  Future<String> currentBase() => BackgroundMirror.resolve();
-
   void clear() {
     _catalog = null;
     _shards.clear();
@@ -138,15 +109,10 @@ class BackgroundRepository {
     final base = await BackgroundMirror.resolve(force: retried);
     final url = BackgroundMirror.urlWith(base, path);
     try {
-      final res = await _dio.get<dynamic>(url);
-      return _decode(res.data);
-    } on DioException catch (error) {
-      final notFound = error.response?.statusCode == 404;
+      return _decode(await HttpClient.instance.getJson(url));
+    } catch (error) {
+      final notFound = error is HttpError && error.statusCode == 404;
       if (retried || notFound) rethrow;
-      await BackgroundMirror.invalidate(base);
-      return _getRaw(path, retried: true);
-    } catch (_) {
-      if (retried) rethrow;
       // The mirror may have gone away; drop it and try another.
       await BackgroundMirror.invalidate(base);
       return _getRaw(path, retried: true);
@@ -169,10 +135,6 @@ class BackgroundRepository {
     throw const FormatException('response is not valid JSON');
   }
 }
-
-final backgroundRepositoryProvider = Provider<BackgroundRepository>(
-  (ref) => BackgroundRepository.instance,
-);
 
 /// Remote background index.
 final backgroundCatalogProvider = FutureProvider<BackgroundCatalog>(

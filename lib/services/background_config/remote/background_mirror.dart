@@ -28,10 +28,6 @@ class BackgroundMirror {
   static String? _resolved;
   static Future<String>? _resolving;
 
-  /// Every mirror URL for [path], exactly as the shared helper builds them.
-  /// The first entry is the direct origin URL and the CDN entries come last.
-  static List<String> candidates(String path) => _repo.mirrors(path);
-
   /// Returns the best base URL, probing at most once for concurrent callers.
   static Future<String> resolve({bool force = false}) {
     if (!force) {
