@@ -115,16 +115,20 @@ class _TvTabBarState extends State<TvTabBar> {
 
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
-      child: Container(
-        width: double.infinity,
-        height: 50.sp,
-        alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(horizontal: 8.sp),
-        color: Colors.transparent,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          shrinkWrap: true,
-          physics: const ClampingScrollPhysics(),
+        child: Container(
+          width: double.infinity,
+          height: 50.sp,
+          alignment: Alignment.center,
+          color: Colors.transparent,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            // Content padding instead of container padding: it scrolls with
+            // the items, so at min/max scroll extent the first/last tab keeps
+            // a margin inside the viewport and the focus scale (1.05) is not
+            // clipped by the viewport edge.
+            padding: EdgeInsets.symmetric(horizontal: 16.sp),
           itemCount: widget.tabs.length,
           itemBuilder: (context, index) {
             final tab = widget.tabs[index];

@@ -5,6 +5,7 @@ export 'tv_area_card.dart';
 export 'tv_button.dart';
 export 'tv_common_avatar.dart';
 export 'tv_focusable.dart';
+export 'tv_focus_restorer.dart';
 export 'tv_icon_button.dart';
 export 'tv_input_field.dart';
 export 'tv_lazy_wrapper.dart';

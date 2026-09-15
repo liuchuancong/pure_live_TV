@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/widgets/tv_app_bar.dart';
+import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -48,7 +49,11 @@ class TvScaffold extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (finalAppBar != null) SafeArea(bottom: false, child: finalAppBar),
-                  Expanded(child: child),
+                  // Route-aware focus memory: when a pushed page (a settings
+                  // sub-page, a dialog) pops away, focus returns to the item
+                  // the user acted on instead of dying on the dpad root's
+                  // top-left fallback.
+                  Expanded(child: TvFocusRestorer(child: child)),
                 ],
               ),
             ),

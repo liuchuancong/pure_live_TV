@@ -3,6 +3,7 @@ import 'package:pure_live/features/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
+import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
@@ -21,6 +22,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: appNavigatorKey,
+    // Lets every TvScaffold know when it is covered and uncovered again, so
+    // focus can return to the item the user acted on after a pop.
+    observers: [tvRouteObserver],
     initialLocation: AppRoutes.kInitial,
     redirect: (context, state) {
       final location = state.uri.path;
