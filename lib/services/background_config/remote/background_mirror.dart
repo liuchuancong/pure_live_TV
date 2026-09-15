@@ -1,64 +1,36 @@
-import 'dart:async';
-
-import 'package:dio/dio.dart';
+import 'package:pure_live/shared/platform/race_http.dart';
+import 'package:pure_live/shared/utils/githup_mirror.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 
-/// Resolves the fastest base URL for remote asset files.
+/// Resolves one base URL for every background asset.
 ///
-/// Direct requests to the origin host often drop mid-handshake, especially
-/// when several large files are fetched at once. This keeps a list of mirror
-/// prefixes, probes one small file on all of them in parallel, keeps whichever
-/// answers first, and caches the winner so later requests reuse one base.
-///
-/// A failed probe never throws: it falls back to the first candidate and
-/// leaves retrying to the caller.
+/// Mirror generation and racing are delegated to the shared [GitHubMirror]
+/// and [RaceHttp]. This class only adds a caching policy on top: racing once
+/// per file would mean a full round of probes for every thumbnail, so the
+/// winning base is stored and reused until it goes stale or a download
+/// against it fails.
 class BackgroundMirror {
   BackgroundMirror._();
 
-  static const String owner = 'liuchuancong';
-  static const String repo = 'background';
-  static const String branch = 'master';
+  static final GitHubMirror _repo = GitHubMirror(
+    owner: 'liuchuancong',
+    repo: 'background',
+  );
 
-  /// Small file used for probing.
+  /// Small file used to pick the base.
   static const String probeFile = 'catalog.json';
 
-  static const Duration _cacheTtl = Duration(hours: 6);
   static const Duration _probeTimeout = Duration(seconds: 15);
+  static const Duration _cacheTtl = Duration(hours: 6);
   static const String _kBase = 'bgMirrorBase';
   static const String _kProbedAt = 'bgMirrorProbedAt';
 
-  /// Mirror templates, in priority order. Placeholders get substituted.
-  /// The first entry is also the fallback when every probe fails.
-  static const List<String> templates = <String>[
-    'https://cdn.jsdelivr.net/gh/{owner}/{repo}@{branch}',
-    'https://raw.gitmirror.com/{owner}/{repo}/{branch}',
-    'https://ghproxy.net/https://raw.githubusercontent.com/{owner}/{repo}/{branch}',
-    'https://gh-proxy.com/https://raw.githubusercontent.com/{owner}/{repo}/{branch}',
-    'https://raw.githubusercontent.com/{owner}/{repo}/{branch}',
-  ];
-
-  static String fill(String template) => template
-      .replaceAll('{owner}', owner)
-      .replaceAll('{repo}', repo)
-      .replaceAll('{branch}', branch);
-
-  static List<String> get allBases =>
-      templates.map(fill).toList(growable: false);
-
-  static final Dio _probeDio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 6),
-      receiveTimeout: const Duration(seconds: 8),
-      sendTimeout: const Duration(seconds: 6),
-      responseType: ResponseType.plain,
-      headers: const {'User-Agent': 'pure_live_TV'},
-      // Statuses are inspected by hand below, so only hard failures throw.
-      validateStatus: (code) => code != null && code < 500,
-    ),
-  );
-
   static String? _resolved;
   static Future<String>? _resolving;
+
+  /// Every mirror URL for [path], exactly as the shared helper builds them.
+  /// The first entry is the direct origin URL and the CDN entries come last.
+  static List<String> candidates(String path) => _repo.mirrors(path);
 
   /// Returns the best base URL, probing at most once for concurrent callers.
   static Future<String> resolve({bool force = false}) {
@@ -80,55 +52,42 @@ class BackgroundMirror {
     });
   }
 
-  /// Probes all mirrors in parallel; the first success wins.
+  /// Never throws: a failed probe falls back to the CDN entry, so a network
+  /// problem degrades the feature instead of breaking the page.
   static Future<String> _probe() async {
-    final completer = Completer<String>();
-    var pending = allBases.length;
-
-    for (final base in allBases) {
-      unawaited(
-        _isReachable(base).then((ok) {
-          if (ok && !completer.isCompleted) completer.complete(base);
-        }).whenComplete(() {
-          pending--;
-          if (pending == 0 && !completer.isCompleted) {
-            completer.complete(_fallbackBase());
-          }
-        }),
+    // Every mirror URL is "<base>/<path>", so any of them can be trimmed back
+    // to the shared prefix. The CDN entry is the default because the racer
+    // reports no winner when the probe file is simply absent.
+    var base = _baseOf(_repo.jsdelivr(probeFile));
+    try {
+      final fastest = await RaceHttp.findFastestUrl(
+        _repo.mirrors(probeFile),
+        timeout: _probeTimeout,
       );
+      if (fastest != null && fastest.isNotEmpty) {
+        base = _baseOf(fastest);
+      }
+    } catch (_) {
+      // Keep the CDN default.
     }
-
-    final base = await completer.future.timeout(
-      _probeTimeout,
-      onTimeout: _fallbackBase,
-    );
-    await HivePrefUtil.setString(_kBase, base);
-    await HivePrefUtil.setInt(
-      _kProbedAt,
-      DateTime.now().millisecondsSinceEpoch,
-    );
+    try {
+      await HivePrefUtil.setString(_kBase, base);
+      await HivePrefUtil.setInt(
+        _kProbedAt,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (_) {
+      // Caching is best effort; the value still works for this session.
+    }
     return base;
   }
 
-  static String _fallbackBase() =>
-      _resolved ?? HivePrefUtil.getString(_kBase) ?? allBases.first;
-
-  static Future<bool> _isReachable(String base) async {
-    try {
-      final res = await _probeDio.get<String>(
-        '$base/$probeFile',
-        // Only the first few bytes are needed to tell whether it answers.
-        options: Options(headers: const {'Range': 'bytes=0-255'}),
-      );
-      final code = res.statusCode ?? 0;
-      // 404 also counts as reachable: the mirror answered normally and simply
-      // does not have this file. The probe target is an optional prebuilt
-      // index that may legitimately be absent, so treating 404 as failure
-      // would disqualify every mirror and collapse to a fixed first choice.
-      return code == 200 || code == 206 || code == 404;
-    } catch (_) {
-      return false;
-    }
+  /// Drops the probe file suffix, leaving a prefix usable for any other path.
+  static String _baseOf(String url) {
+    final suffix = '/$probeFile';
+    return url.endsWith(suffix)
+        ? url.substring(0, url.length - suffix.length)
+        : url;
   }
 
   /// Called when downloads against [failedBase] fail, so the next resolve
@@ -140,15 +99,13 @@ class BackgroundMirror {
     }
   }
 
-  /// Repo-relative path to a full URL, awaiting the probe if needed.
+  /// Full URL for a stored path, awaiting the probe if needed.
   static Future<String> url(String path) async {
     final base = await resolve();
-    return '$base/${_clean(path)}';
+    return urlWith(base, path);
   }
 
   /// Synchronous variant for callers that already hold a base URL.
-  static String urlWith(String base, String path) => '$base/${_clean(path)}';
-
-  static String _clean(String path) =>
-      path.startsWith('/') ? path.substring(1) : path;
+  static String urlWith(String base, String path) =>
+      '$base/${path.startsWith('/') ? path.substring(1) : path}';
 }
