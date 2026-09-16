@@ -1,20 +1,19 @@
 import 'dart:async';
-
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/player/index.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/dialog/index.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
-import 'package:pure_live/features/live_play/dialogs/room_switch_dialog.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
-import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
+import 'package:pure_live/features/live_play/dialogs/room_switch_dialog.dart';
+import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 
 /// The player's control layer: **no d-pad, no Flutter focus traversal**.
 ///
@@ -111,7 +110,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 
   void _onDirection(TraversalDirection direction, LivePlayState state) {
     final int barCount = _barActions(state).length;
-    final int optionCount = _optionsWithBack(state).length;
+    final int optionCount = _optionsWithClose(state).length;
     if (barCount == 0) return;
 
     // Any key keeps the controls on screen while the user is working them.
@@ -153,7 +152,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
 
     if (_zone == _Zone.options) {
-      final options = _optionsWithBack(state);
+      final options = _optionsWithClose(state);
       if (options.isEmpty) return;
       options[_optionIndex.clamp(0, options.length - 1)].apply();
       return;
@@ -173,8 +172,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     return state.qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)].quality;
   }
 
-  String _fitLabel(LivePlayState state) =>
-      kLivePlayFitLabels[state.fitIndex.clamp(0, kLivePlayFitLabels.length - 1)];
+  String _fitLabel(LivePlayState state) => kLivePlayFitLabels[state.fitIndex.clamp(0, kLivePlayFitLabels.length - 1)];
 
   String _engineLabel() {
     final key = ref.read(playerSettingsControllerProvider).videoPlayerKey;
@@ -211,12 +209,13 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     }
   }
 
-  /// Options plus a leading 返回 entry: every overlay needs a visible way out,
-  /// and in an index-driven UI that is a selectable row.
-  List<({String label, VoidCallback apply, bool active})> _optionsWithBack(LivePlayState state) =>
+  /// The options with a 关闭 row last: the list is a selectable index list, so
+  /// its way out is a row like any other — at the bottom, where the eye ends up
+  /// after walking the list.
+  List<({String label, VoidCallback apply, bool active})> _optionsWithClose(LivePlayState state) =>
       <({String label, VoidCallback apply, bool active})>[
-        (label: i18nOr('ui_back', 'Back'), apply: _closePanel, active: false),
         ..._panelOptions(state),
+        (label: i18nOr('close', '关闭'), apply: _closePanel, active: false),
       ];
 
   String get _panelTitle => switch (_panel) {
@@ -249,9 +248,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       _panel = panel;
       _zone = _Zone.options;
       _optionIndex = switch (panel) {
-        _OptionsPanel.quality => state.qualityIndex + 1,
-        _OptionsPanel.line => state.lineIndex + 1,
-        _OptionsPanel.fit => state.fitIndex + 1,
+        _OptionsPanel.quality => state.qualityIndex,
+        _OptionsPanel.line => state.lineIndex,
+        _OptionsPanel.fit => state.fitIndex,
         _OptionsPanel.none => 0,
       };
     });
@@ -340,20 +339,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         active: state.showSidePanel && state.panel == LivePlayPanel.playlist,
         onSelect: () => controller.togglePanel(LivePlayPanel.playlist),
       ),
-      _PanelAction(
-        icon: Icons.memory_rounded,
-        label: _engineLabel(),
-        onSelect: () => unawaited(_pickEngine()),
-      ),
+      _PanelAction(icon: Icons.memory_rounded, label: _engineLabel(), onSelect: () => unawaited(_pickEngine())),
       _PanelAction(
         icon: Icons.swap_horiz_rounded,
         label: i18n('switch_live_room'),
         onSelect: () => unawaited(_switchRoom(state.room)),
-      ),
-      _PanelAction(
-        icon: Icons.wallpaper_rounded,
-        label: i18nOr('ui_background_settings', 'Background'),
-        onSelect: () => context.push(AppRoutes.kWallpaperPage),
       ),
     ];
   }
@@ -409,7 +399,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final state = ref.watch(livePlayControllerProvider(widget.args));
     final tvTheme = context.tvTheme;
     final actions = _barActions(state);
-    final options = _optionsWithBack(state);
+    final options = _optionsWithClose(state);
     if (_barIndex >= actions.length) _barIndex = actions.isEmpty ? 0 : actions.length - 1;
     if (options.isNotEmpty && _optionIndex >= options.length) _optionIndex = options.length - 1;
 
@@ -437,51 +427,50 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     );
   }
 
-  Widget _buildOptionsPanel(
-    List<({String label, VoidCallback apply, bool active})> options,
-    TvThemeData tvTheme,
-  ) {
+  Widget _buildOptionsPanel(List<({String label, VoidCallback apply, bool active})> options, TvThemeData tvTheme) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.sp),
-      child: Center(child: Container(
-        width: _optionsWidth.sp,
-        constraints: BoxConstraints(maxHeight: 560.sp),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(16.sp),
-          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
-              child: Text(_panelTitle, style: AppTextStyles.t20W600.copyWith(color: Colors.white)),
-            ),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding: EdgeInsets.only(bottom: 12.sp),
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final bool selected = index == _optionIndex;
-                  final option = options[index];
-                  return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
-                    child: _Pill(
-                      label: option.label,
-                      selected: selected,
-                      accent: tvTheme.focusColor,
-                      trailing: option.active ? Icons.check_rounded : null,
-                    ),
-                  );
-                },
+      child: Center(
+        child: Container(
+          width: _optionsWidth.sp,
+          constraints: BoxConstraints(maxHeight: 560.sp),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(16.sp),
+            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
+                child: Text(_panelTitle, style: AppTextStyles.t20W600.copyWith(color: Colors.white)),
               ),
-            ),
-          ],
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.only(bottom: 12.sp),
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final bool selected = index == _optionIndex;
+                    final option = options[index];
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
+                      child: _Pill(
+                        label: option.label,
+                        selected: selected,
+                        accent: tvTheme.focusColor,
+                        trailing: option.active ? Icons.check_rounded : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 
@@ -512,13 +501,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 }
 
 class _PanelAction {
-  const _PanelAction({
-    this.icon,
-    this.asset,
-    required this.label,
-    required this.onSelect,
-    this.active = false,
-  }) : assert(icon != null || asset != null, 'A bar button needs an icon or an asset');
+  const _PanelAction({this.icon, this.asset, required this.label, required this.onSelect, this.active = false})
+    : assert(icon != null || asset != null, 'A bar button needs an icon or an asset');
 
   final IconData? icon;
 
@@ -572,7 +556,12 @@ class _Pill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (asset != null)
-            SvgPicture.asset(asset!, width: 24.sp, height: 24.sp, colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn))
+            SvgPicture.asset(
+              asset!,
+              width: 24.sp,
+              height: 24.sp,
+              colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
+            )
           else if (icon != null)
             Icon(icon, size: 24.sp, color: foreground),
           if (asset != null || icon != null) SizedBox(width: 8.sp),
@@ -582,10 +571,7 @@ class _Pill extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(color: foreground),
           ),
-          if (trailing != null) ...[
-            SizedBox(width: 8.sp),
-            Icon(trailing, size: 22.sp, color: foreground),
-          ],
+          if (trailing != null) ...[SizedBox(width: 8.sp), Icon(trailing, size: 22.sp, color: foreground)],
         ],
       ),
     );
