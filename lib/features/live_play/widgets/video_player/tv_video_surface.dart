@@ -37,7 +37,18 @@ class TvVideoSurface extends ConsumerStatefulWidget {
 }
 
 class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
-  PlayerManager get _playerManager => GlobalPlayerService.instance.playerManager;
+  /// The player manager, or null until [GlobalPlayerService] has finished
+  /// initializing.
+  ///
+  /// `GlobalPlayerService.playerManager` is a `late final` field: reading it
+  /// before initialization throws `LateInitializationError`, and a build that
+  /// throws tears down whatever the previous build had mounted — which disposed
+  /// media_kit's video output and made the next successful frame create a new
+  /// one. That is the whole `VideoOutputManager.create` → `dispose` →
+  /// `Resize 0x0` → `Surface.release()` NPE sequence in logcat. Never read the
+  /// field without this check.
+  PlayerManager? get _playerManagerOrNull =>
+      GlobalPlayerService.instance.initialized ? GlobalPlayerService.instance.playerManager : null;
 
   /// Double-press window for the left key, 500 ms in the legacy app.
   static const Duration _doubleClickWindow = Duration(milliseconds: 500);
@@ -129,19 +140,20 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         state.status == LivePlayStatus.buffering;
     final bool showError = state.status == LivePlayStatus.error;
 
-    // The video widget stays mounted for the whole session.
+    // The video widget stays mounted for the whole session, and the surface is
+    // simply black until the player service is up.
     //
     // It used to be replaced by a black `Container` whenever `showError` was
-    // true. Removing it disposed media_kit's video output and the next frame
-    // created a new one — exactly the logcat sequence
-    // `VideoOutputManager.create` → `dispose` → `VideoOutput.Resize 0x0` →
-    // `NullPointerException: Surface.release() on a null object reference`
-    // (the output was torn down before it ever received a surface). The picture
-    // also went black for a moment on every retry. The failure overlay is drawn
-    // on top of the surface instead, so nothing has to unmount.
-    final Widget video = _playerManager.initialized
-        ? _playerManager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList)
-        : Container(color: Colors.black);
+    // true, and the manager getter threw while the service was still starting.
+    // Either way the previously mounted `Video` was torn down, which disposed
+    // media_kit's video output and made the next frame create a new one — the
+    // `VideoOutputManager.create` → `dispose` → `Resize 0x0` → `Surface.release()`
+    // NPE sequence in logcat (an output destroyed before it ever had a surface).
+    // The failure overlay is drawn on top of the surface instead.
+    final PlayerManager? manager = _playerManagerOrNull;
+    final Widget video = manager != null
+        ? manager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList)
+        : const ColoredBox(color: Colors.black);
 
     final children = <Widget>[
       // Video, danmaku and the loading indicator together act as the D-pad focus
