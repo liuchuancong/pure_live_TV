@@ -63,11 +63,17 @@ class AppInitializer {
     configureWebSocketProxyRouting((uri) => PlaybackProxyPolicy.currentDirective());
 
     // Version info plus the startup update check.
+    //
+    // The check does an HTTP fetch and a JSON parse on the main isolate; running
+    // it while the first frames were being built competed with startup (logcat
+    // showed 65-99 skipped frames and a frame-time warning). It is deferred past
+    // the first frames instead, and only the cheap package-info read happens
+    // now.
     unawaited(() async {
       await VersionUtil.initPackageInfo();
-      if (SettingsService.to.appState.enableAutoCheckUpdate) {
-        await VersionUtil().checkUpdate();
-      }
+      if (!SettingsService.to.appState.enableAutoCheckUpdate) return;
+      await Future<void>.delayed(const Duration(seconds: 3));
+      await VersionUtil().checkUpdate();
     }());
   }
 

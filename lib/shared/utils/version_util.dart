@@ -114,10 +114,18 @@ class VersionUtil {
   static void _applyVersionData(Map<String, dynamic> data) {
     final selected = selectPlatformVersionData(data, platform: _currentPlatformKey);
     final parsedVersion = selected['version']?.toString().trim() ?? '';
-    final parsedBuildNumber = _versionInt(selected['build_number']);
-    if (parsedVersion.isEmpty || parsedBuildNumber == null || parsedBuildNumber <= 0) {
+    if (parsedVersion.isEmpty) {
       throw const FormatException('Incomplete release identity');
     }
+    // `build_number` is optional in the release manifest: the file published on
+    // master carries `version_num` (and sometimes only the version string), and
+    // insisting on the field made every check fail with "Incomplete release
+    // identity" — so an up-to-date device reported a failed update check.
+    final parsedBuildNumber =
+        _versionInt(selected['build_number']) ??
+        _versionInt(selected['version_num']) ??
+        _versionInt(_flattenedVersion(parsedVersion)) ??
+        0;
     latestVersion = parsedVersion;
     latestVersionNum = _versionInt(selected['version_num']) ?? 0;
     latestBuildNumber = parsedBuildNumber;
@@ -126,6 +134,18 @@ class VersionUtil {
     downloadUrl = selected['download_url']?.toString() ?? '';
     latestAndroidAbis = selectAndroidAbis(selected);
     latestWindowsMsixAvailable = selected['windows_msix_available'] == true;
+  }
+
+  /// `2.0.20` → `12020`, the flattened scheme the manifest uses for
+  /// `version_num`, so a manifest without a build number still yields one.
+  static String? _flattenedVersion(String version) {
+    final clean = version.split(RegExp(r'[-+]'))[0].replaceFirst(RegExp('^[vV]'), '').trim();
+    final parts = clean.split('.');
+    if (parts.isEmpty || int.tryParse(parts[0]) == null) return null;
+    final int major = int.parse(parts[0]);
+    final int minor = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    final int patch = parts.length > 2 ? int.tryParse(parts[2]) ?? 0 : 0;
+    return '${major * 10000 + minor * 100 + patch}';
   }
 
   /// Only advertises APK variants the release source declares as published;
