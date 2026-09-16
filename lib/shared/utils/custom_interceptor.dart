@@ -39,8 +39,12 @@ String formatHttpFailureDiagnostic(DioException error) {
   final origin = uri.hasAuthority
       ? Uri(scheme: uri.scheme, host: uri.host, port: uri.hasPort ? uri.port : null).toString()
       : '(relative)';
+  // Exception messages (assertion text, socket errors) carry no credentials,
+  // unlike bodies/headers, and are the only clue to the real failure.
+  final underlyingMessage = error.error?.toString() ?? error.message ?? 'none';
   return '''[HTTP Error] [${error.type.name}] [Time:$elapsed]
 Underlying Type: ${error.error?.runtimeType ?? 'none'}
+Underlying Message: $underlyingMessage
 Request Method: ${request.method}
 Response Code: ${error.response?.statusCode ?? 'none'}
 Request Origin: $origin

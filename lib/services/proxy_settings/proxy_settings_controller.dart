@@ -1,9 +1,8 @@
 import 'proxy_settings_model.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/settings/settings_value.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 
 // proxy_settings_controller.dart
 
@@ -23,13 +22,11 @@ class ProxySettingsController extends _$ProxySettingsController {
 
   @override
   ProxySettingsModel build() {
-    ref.listen(proxySettingsControllerProvider.select((s) => [s.enableAppProxy, s.appProxyHost, s.appProxyPort]), (
-      _,
-      _,
-    ) {
-      _refreshDioConnections();
-    });
-
+    // No ref.listen here: this provider listening to itself is a self
+    // dependency, which Riverpod forbids ("A provider cannot depend on
+    // itself") — and the assertion fires lazily on first read, i.e. inside
+    // HttpClient's findProxy callback during a request, killing that request.
+    // The shared Dio is rebuilt from updateSettings instead.
     return _normalize(
       ProxySettingsModel(
         enableProxy: HivePrefUtil.getBool('enableProxy') ?? false,
@@ -61,8 +58,18 @@ class ProxySettingsController extends _$ProxySettingsController {
   }
 
   void updateSettings(ProxySettingsModel newModel) {
-    state = _normalize(newModel);
+    final normalized = _normalize(newModel);
+    // Rebuild the shared Dio only when the application-proxy endpoint really
+    // changed; unrelated edits (player proxy fields) keep the client alive.
+    final bool appProxyChanged =
+        normalized.enableAppProxy != state.enableAppProxy ||
+        normalized.appProxyHost != state.appProxyHost ||
+        normalized.appProxyPort != state.appProxyPort;
+    state = normalized;
     _persist();
+    if (appProxyChanged) {
+      _refreshDioConnections();
+    }
   }
 
   void _persist() {

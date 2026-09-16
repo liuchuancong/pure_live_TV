@@ -43,7 +43,14 @@ class HttpClient {
   void rebuildDio() {
     final oldDio = dio;
     dio = _createDio();
-    oldDio.close(force: false);
+    // In-flight requests still run on the old client: closing it immediately
+    // kills them (and trips debug asserts inside dart:io's HttpClient.close).
+    // Give them one idle-timeout to drain before teardown.
+    Future.delayed(const Duration(seconds: 30), () {
+      try {
+        oldDio.close(force: false);
+      } catch (_) {}
+    });
   }
 
   Future<String> getText(
