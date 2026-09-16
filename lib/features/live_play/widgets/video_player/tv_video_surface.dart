@@ -129,12 +129,19 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         state.status == LivePlayStatus.buffering;
     final bool showError = state.status == LivePlayStatus.error;
 
-    Widget video;
-    if (_playerManager.initialized && !showError) {
-      video = _playerManager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList);
-    } else {
-      video = Container(color: Colors.black);
-    }
+    // The video widget stays mounted for the whole session.
+    //
+    // It used to be replaced by a black `Container` whenever `showError` was
+    // true. Removing it disposed media_kit's video output and the next frame
+    // created a new one — exactly the logcat sequence
+    // `VideoOutputManager.create` → `dispose` → `VideoOutput.Resize 0x0` →
+    // `NullPointerException: Surface.release() on a null object reference`
+    // (the output was torn down before it ever received a surface). The picture
+    // also went black for a moment on every retry. The failure overlay is drawn
+    // on top of the surface instead, so nothing has to unmount.
+    final Widget video = _playerManager.initialized
+        ? _playerManager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList)
+        : Container(color: Colors.black);
 
     final children = <Widget>[
       // Video, danmaku and the loading indicator together act as the D-pad focus
