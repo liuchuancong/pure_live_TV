@@ -110,72 +110,74 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24.sp), color: tvTheme.cardColor),
-                      child: CachedNetworkImage(
-                        imageUrl: widget.room.cover,
-                        cacheManager: CustomImageCacheManager.instance,
-                        // Rolling the cache epoch (缓存与数据管理 → 刷新直播缩略图)
-                        // re-keys the covers, so the refresh is visible instead of
-                        // only freeing disk space.
-                        cacheKey: coverCacheKey,
-                        fit: BoxFit.cover,
-                        // Decode covers at grid size and reuse the shared disk
-                        // cache so scrolling back does not download again.
-                        memCacheWidth: 640,
-                        maxWidthDiskCache: 1280,
-                        placeholder: (context, url) => Container(
-                          color: tvTheme.cardColor,
-                          child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
+              Expanded(
+                child: Stack(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Container(
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(24.sp), color: tvTheme.cardColor),
+                        child: CachedNetworkImage(
+                          imageUrl: widget.room.cover,
+                          cacheManager: CustomImageCacheManager.instance,
+                          // Rolling the cache epoch (缓存与数据管理 → 刷新直播缩略图)
+                          // re-keys the covers, so the refresh is visible instead of
+                          // only freeing disk space.
+                          cacheKey: coverCacheKey,
+                          fit: BoxFit.cover,
+                          // Decode covers at grid size and reuse the shared disk
+                          // cache so scrolling back does not download again.
+                          memCacheWidth: 640,
+                          maxWidthDiskCache: 1280,
+                          placeholder: (context, url) => Container(
+                            color: tvTheme.cardColor,
+                            child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
+                          ),
+                          errorWidget: (context, url, error) {
+                            debugPrint(error.toString());
+                            return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
+                          },
                         ),
-                        errorWidget: (context, url, error) {
-                          debugPrint(error.toString());
-                          return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
-                        },
-                      ),
-                    ),
-                  ),
-
-                  if (widget.showFollowedMark && _followed)
-                    Positioned(
-                      left: 12.sp,
-                      top: 12.sp,
-                      child: TvButton(
-                        excludeFocus: true,
-                        title: i18n('followed'),
-                        size: TvButtonSize.mini,
-                        icon: Icon(Icons.favorite, size: 18.sp),
                       ),
                     ),
 
-                  if (widget.room.isRecord == true)
-                    Positioned(
-                      right: 12.sp,
-                      top: 12.sp,
-                      child: TvButton(
-                        title: i18n('ui_replay'),
-                        excludeFocus: true,
-                        size: TvButtonSize.mini,
-                        icon: Icon(Icons.videocam_rounded, size: 20.sp),
+                    if (widget.showFollowedMark && _followed)
+                      Positioned(
+                        left: 12.sp,
+                        top: 12.sp,
+                        child: TvButton(
+                          excludeFocus: true,
+                          title: i18n('followed'),
+                          size: TvButtonSize.mini,
+                          icon: Icon(Icons.favorite, size: 18.sp),
+                        ),
                       ),
-                    ),
-                  if (widget.room.isRecord == false && widget.room.liveStatus == LiveStatus.live)
-                    Positioned(
-                      right: 12.sp,
-                      bottom: 12.sp,
-                      child: TvButton(
-                        excludeFocus: true,
-                        title: _audienceText,
-                        size: TvButtonSize.mini,
-                        icon: Icon(Icons.whatshot_rounded, size: 20.sp),
+
+                    if (widget.room.isRecord == true)
+                      Positioned(
+                        right: 12.sp,
+                        top: 12.sp,
+                        child: TvButton(
+                          title: i18n('ui_replay'),
+                          excludeFocus: true,
+                          size: TvButtonSize.mini,
+                          icon: Icon(Icons.videocam_rounded, size: 20.sp),
+                        ),
                       ),
-                    ),
-                ],
+                    if (widget.room.isRecord == false && widget.room.liveStatus == LiveStatus.live)
+                      Positioned(
+                        right: 12.sp,
+                        bottom: 12.sp,
+                        child: TvButton(
+                          excludeFocus: true,
+                          title: _audienceText,
+                          size: TvButtonSize.mini,
+                          icon: Icon(Icons.whatshot_rounded, size: 20.sp),
+                        ),
+                      ),
+                  ],
+                ),
               ),
               Padding(
                 padding: EdgeInsets.only(left: 10.sp, top: 16.sp, right: 16.sp),
