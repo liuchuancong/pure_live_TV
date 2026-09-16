@@ -38,6 +38,29 @@ class _TvDialogFocusGuardState extends State<TvDialogFocusGuard> {
   void initState() {
     super.initState();
     FocusManager.instance.addListener(_handleFocusChange);
+    // Claim the keyboard once the dialog has laid out.
+    //
+    // Listening for focus *changes* is not enough: when a dialog opens while
+    // the page behind it keeps its focus, no change fires and the keyboard stays
+    // on the app-bar back button underneath — every option row is then
+    // unreachable and only a mouse click works. One post-frame claim makes the
+    // dialog own the remote from the first key press.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _claim());
+  }
+
+  /// Hands the keyboard to an option inside the dialog, if it is not there yet.
+  void _claim() {
+    if (!mounted || _holdsKeyboard) return;
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    if (route == null || !route.isCurrent) return;
+    final Iterable<FocusNode> candidates = _candidates;
+    if (candidates.isEmpty) return;
+    final FocusNode? remembered = _lastInside;
+    if (remembered != null && candidates.contains(remembered)) {
+      remembered.requestFocus();
+      return;
+    }
+    candidates.first.requestFocus();
   }
 
   @override

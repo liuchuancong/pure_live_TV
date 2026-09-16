@@ -101,6 +101,12 @@ abstract final class AppRoutes {
   /// Wallpaper and background settings
   static const kWallpaperPage = "/wallpaper_page";
 
+  /// Picture sources of the remote wallpaper library.
+  static const kWallpaperLibrary = "/wallpaper_library";
+
+  /// The random-wallpaper API list.
+  static const kWallpaperApi = "/wallpaper_api";
+
   /// One wallpaper-library source: category list or straight to the grid.
   static const kWallpaperGallery = "/wallpaper_gallery";
 

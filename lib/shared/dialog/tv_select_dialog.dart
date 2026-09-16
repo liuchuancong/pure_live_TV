@@ -37,6 +37,13 @@ class TvSelectDialog<T> extends StatefulWidget {
 
 class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
   late final ScrollController _scrollController;
+
+  /// The row holding the value in force. Handed focus explicitly once the list
+  /// has scrolled to it, so opening the dialog can never leave the highlight on
+  /// the dialog's close button (which is where every option-row dialog used to
+  /// land on a real remote).
+  final FocusNode _selectedNode = FocusNode(debugLabel: 'tv-select/selected');
+
   late int selectedIndex;
 
   @override
@@ -57,11 +64,13 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
     final itemHeight = 72.sp;
     final offset = selectedIndex * itemHeight;
     _scrollController.jumpTo(offset.clamp(0, _scrollController.position.maxScrollExtent));
+    if (_selectedNode.canRequestFocus) _selectedNode.requestFocus();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _selectedNode.dispose();
     super.dispose();
   }
 
@@ -89,6 +98,7 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
               icon: item.leading,
               selected: isSelected,
               autofocus: isSelected,
+              focusNode: isSelected ? _selectedNode : null,
               onTap: () {
                 Navigator.of(context).pop(item.value);
                 widget.onSelected?.call(item.value);

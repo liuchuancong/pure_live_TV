@@ -22,6 +22,7 @@ class TvDialogOptionTile extends StatelessWidget {
     required this.onTap,
     this.selected = false,
     this.autofocus = false,
+    this.focusNode,
     this.subtitle,
     this.icon,
     this.trailing,
@@ -36,6 +37,10 @@ class TvDialogOptionTile extends StatelessWidget {
   /// shows what is selected even while the highlight is elsewhere.
   final bool selected;
   final bool autofocus;
+
+  /// Explicit node for callers that must hand focus to one particular row (a
+  /// select dialog focuses the value in force).
+  final FocusNode? focusNode;
   final String? subtitle;
   final Widget? icon;
   final Widget? trailing;
@@ -51,6 +56,7 @@ class TvDialogOptionTile extends StatelessWidget {
 
     return DpadFocusable(
       autofocus: autofocus,
+      focusNode: focusNode,
       onSelect: onTap,
       builder: (context, state, child) {
         final bool focused = state.focused;

@@ -173,6 +173,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WallpaperPage(),
       ),
       GoRoute(
+        path: AppRoutes.kWallpaperLibrary,
+        builder: (context, state) => const WallpaperLibraryPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.kWallpaperApi,
+        builder: (context, state) => const WallpaperApiPage(),
+      ),
+      GoRoute(
         path: AppRoutes.kWallpaperGallery,
         builder: (context, state) => WallpaperGalleryPage(source: state.extra as BackgroundSource),
       ),
@@ -180,7 +188,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.kWallpaperItems,
         builder: (context, state) {
           final args = state.extra as WallpaperItemsArgs;
-          return WallpaperItemsPage(source: args.source, category: args.category);
+          return WallpaperItemsPage(sourceId: args.sourceId, categoryId: args.categoryId);
         },
       ),
       GoRoute(

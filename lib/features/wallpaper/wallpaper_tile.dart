@@ -1,69 +1,30 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:math' as math;
+
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
+import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/cache_manager.dart';
-import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-import 'package:pure_live/services/background_config/remote/background_repository.dart';
 
-/// One grid tile of the wallpaper browser: images load a scaled-down
-/// thumbnail, videos show their poster, gradients are painted locally.
-///
-/// Kept as its own StatefulWidget so thumbnail resolution state lives and dies
-/// with the tile; the grid page never rebuilds when one thumbnail arrives.
-class WallpaperTile extends StatefulWidget {
+/// One grid tile of the wallpaper browser: pictures load a grid-sized copy,
+/// live wallpapers show their poster, gradients are painted locally.
+class WallpaperTile extends StatelessWidget {
   const WallpaperTile({
     super.key,
     required this.item,
     required this.kind,
     required this.current,
-    required this.applying,
     required this.onSelect,
-    this.autofocus = false,
   });
 
   final BackgroundItem item;
   final BackgroundKind kind;
+
+  /// Marks the item that backs the background in use right now.
   final bool current;
-  final bool applying;
   final VoidCallback onSelect;
-
-  /// Set once when returning from the fullscreen preview so the d-pad lands
-  /// back on the tile the user left from.
-  final bool autofocus;
-
-  @override
-  State<WallpaperTile> createState() => _WallpaperTileState();
-}
-
-class _WallpaperTileState extends State<WallpaperTile> {
-  String? _thumbUrl;
-  bool _failed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _resolveThumb();
-  }
-
-  @override
-  void didUpdateWidget(covariant WallpaperTile oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.item.file != widget.item.file) {
-      _thumbUrl = null;
-      _failed = false;
-      _resolveThumb();
-    }
-  }
-
-  Future<void> _resolveThumb() async {
-    // Videos use their poster image, everything else uses the file itself.
-    final raw = await BackgroundRepository.instance.urlOf(widget.item.poster ?? widget.item.file);
-    if (!mounted) return;
-    setState(() => _thumbUrl = raw);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +32,7 @@ class _WallpaperTileState extends State<WallpaperTile> {
     final radius = BorderRadius.circular(12.sp);
 
     return DpadFocusable(
-      autofocus: widget.autofocus,
+      onSelect: onSelect,
       effects: <DpadEffect>[
         DpadScaleEffect(
           scale: 1.04,
@@ -91,52 +52,25 @@ class _WallpaperTileState extends State<WallpaperTile> {
           duration: const Duration(milliseconds: 120),
         ),
       ],
-      onSelect: widget.onSelect,
       child: ClipRRect(
         borderRadius: radius,
         child: Stack(
           fit: StackFit.expand,
           children: [
-            ColoredBox(
-              color: theme.cardColor,
-              child: _buildPreview(theme),
-            ),
-            if (widget.item.bytes != null)
-              Positioned(
-                right: 6.sp,
-                bottom: 6.sp,
-                child: WallpaperBadge(text: sizeLabel(widget.item.bytes!)),
-              ),
-            if (widget.kind == BackgroundKind.video)
+            ColoredBox(color: theme.cardColor, child: _buildPreview(theme)),
+            if (item.bytes != null)
+              Positioned(right: 6.sp, bottom: 6.sp, child: WallpaperBadge(text: sizeLabel(item.bytes!))),
+            if (kind == BackgroundKind.video)
               Positioned(
                 left: 6.sp,
                 bottom: 6.sp,
-                child: Icon(
-                  Icons.play_circle_fill,
-                  size: 20.sp,
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
+                child: Icon(Icons.play_circle_fill, size: 20.sp, color: Colors.white.withValues(alpha: 0.9)),
               ),
-            if (widget.current)
+            if (current)
               Positioned(
                 right: 6.sp,
                 top: 6.sp,
-                child: Icon(
-                  Icons.check_circle,
-                  size: 20.sp,
-                  color: theme.focusColor,
-                ),
-              ),
-            if (widget.applying)
-              ColoredBox(
-                color: Colors.black.withValues(alpha: 0.45),
-                child: const Center(
-                  child: SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
+                child: Icon(Icons.check_circle, size: 20.sp, color: theme.focusColor),
               ),
           ],
         ),
@@ -145,44 +79,31 @@ class _WallpaperTileState extends State<WallpaperTile> {
   }
 
   Widget _buildPreview(TvThemeData theme) {
-    if (widget.kind == BackgroundKind.gradient) {
-      return GradientPreview(item: widget.item);
+    if (kind == BackgroundKind.gradient) {
+      return GradientPreview(item: item);
     }
-    final thumb = _thumbUrl;
-    if (thumb == null) return const SizedBox.shrink();
-    if (_failed) {
-      return Center(
-        child: Icon(
-          Icons.broken_image_outlined,
-          size: 24.sp,
-          color: theme.secondaryTextColor,
+    if (kind == BackgroundKind.video) {
+      final poster = item.poster ?? item.file;
+      if (poster.isEmpty) return const SizedBox.shrink();
+      return WallpaperNetworkImage(
+        url: item.thumb ?? poster,
+        fallbackUrl: poster,
+        memCacheWidth: 480,
+        placeholder: ColoredBox(color: theme.cardColor),
+        fallback: Center(
+          child: Icon(Icons.broken_image_outlined, size: 24.sp, color: theme.secondaryTextColor),
         ),
       );
     }
-    return CachedNetworkImage(
-      imageUrl: BackgroundRepository.thumbnail(thumb),
-      cacheManager: CustomImageCacheManager.instance,
-      fit: BoxFit.cover,
+    if (item.file.isEmpty) return const SizedBox.shrink();
+    return WallpaperNetworkImage(
+      url: item.thumb ?? item.file,
+      fallbackUrl: item.file,
       memCacheWidth: 480,
-      fadeInDuration: const Duration(milliseconds: 120),
-      placeholder: (context, _) => ColoredBox(color: theme.cardColor),
-      errorWidget: (context, _, _) {
-        // Thumbnail service unavailable, fall back to the full-size file.
-        return CachedNetworkImage(
-          imageUrl: thumb,
-          cacheManager: CustomImageCacheManager.instance,
-          fit: BoxFit.cover,
-          memCacheWidth: 480,
-          errorWidget: (context, _, _) {
-            if (!_failed) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) setState(() => _failed = true);
-              });
-            }
-            return const SizedBox.shrink();
-          },
-        );
-      },
+      placeholder: ColoredBox(color: theme.cardColor),
+      fallback: Center(
+        child: Icon(Icons.broken_image_outlined, size: 24.sp, color: theme.secondaryTextColor),
+      ),
     );
   }
 
@@ -195,10 +116,25 @@ class _WallpaperTileState extends State<WallpaperTile> {
 }
 
 /// Paints a gradient tile locally; no download involved.
+///
+/// The angle follows the CSS convention the source table uses (0° points up,
+/// positive is clockwise), so a 120° gradient runs the same way here as it does
+/// on the iTab new-tab page.
 class GradientPreview extends StatelessWidget {
   const GradientPreview({super.key, required this.item});
 
   final BackgroundItem item;
+
+  /// CSS angle → Flutter begin/end alignment pair.
+  static (Alignment, Alignment) alignmentsFor(int deg) {
+    final double radians = deg * math.pi / 180;
+    final double x = math.sin(radians);
+    final double y = -math.cos(radians);
+    if (x == 0 && y == 0) {
+      return (Alignment.bottomCenter, Alignment.topCenter);
+    }
+    return (Alignment(-x, -y), Alignment(x, y));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,16 +145,15 @@ class GradientPreview extends StatelessWidget {
       colors.add(ColorUtil.hexToColor(stop.color));
       positions.add((stop.pos / 100).clamp(0.0, 1.0));
     }
-    if (colors.length < 2) {
-      return ColoredBox(
-        color: colors.isNotEmpty ? colors.first : const Color(0xFF141E30),
-      );
-    }
+    if (colors.isEmpty) return const ColoredBox(color: Color(0xFF141E30));
+    if (colors.length < 2) return ColoredBox(color: colors.first);
+
+    final (Alignment begin, Alignment end) = alignmentsFor(item.deg);
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: begin,
+          end: end,
           colors: colors,
           stops: positions,
         ),
@@ -241,10 +176,7 @@ class WallpaperBadge extends StatelessWidget {
         color: Colors.black.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(6.sp),
       ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 11.sp, color: Colors.white),
-      ),
+      child: Text(text, style: TextStyle(fontSize: 11.sp, color: Colors.white)),
     );
   }
 }

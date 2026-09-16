@@ -1,44 +1,54 @@
-/// Data models for the remote background catalog.
+/// Data models for the wallpaper browser.
 ///
-/// Mirrors the JSON layout of the index file and the per-category shards.
-/// Fields are kept deliberately small: only what the UI needs to render a
-/// tile and what the downloader needs to fetch it.
+/// Everything the browser shows comes from one of three places, and these models
+/// do not care which:
+///
+/// * the iTab wallpaper API (`base.itab.link`) for the picture library,
+/// * the iTab CDN (`files.itab.link`) for the live wallpapers and for the
+///   deepin set,
+/// * tables compiled into the app for the solid colours and gradients.
+///
+/// The previous revision only knew how to read a prebuilt catalog from a GitHub
+/// repository, which is why the whole library needed a mirror probe, a catalog
+/// download and a per-category shard download before it could show a single
+/// thumbnail — and why a slow or blocked mirror left the page empty.
 library;
 
-/// What kind of background a catalog entry describes.
-enum BackgroundKind {
-  image,
-  video,
-  gradient;
+/// What kind of background an entry describes.
+enum BackgroundKind { image, video, gradient }
 
-  static BackgroundKind parse(String? raw) {
-    switch (raw) {
-      case 'video':
-        return BackgroundKind.video;
-      case 'gradient':
-        return BackgroundKind.gradient;
-      default:
-        return BackgroundKind.image;
-    }
-  }
+/// One colour stop of a gradient.
+class BackgroundGradientStop {
+  final String color;
+
+  /// Position in percent, following the CSS description.
+  final double pos;
+
+  const BackgroundGradientStop({required this.color, required this.pos});
 }
 
 /// One background entry.
 class BackgroundItem {
-  /// Path relative to the repository root, e.g.
-  /// `wallpapers/official/nature/images/xxx.jpeg`.
+  /// Absolute URL of the picture/video, or a synthetic key for a gradient
+  /// (which has no file at all).
   final String file;
   final String? id;
   final String? name;
 
-  /// Poster image path for videos.
+  /// Poster image of a live wallpaper.
   final String? poster;
 
-  /// Size in bytes, shown as a badge on the tile.
+  /// Grid-sized copy of [file]; the API usually supplies one.
+  final String? thumb;
+
+  /// Size in bytes when the source reports it.
   final int? bytes;
 
-  /// Gradient only: CSS-style description of the ramp.
+  /// Gradient only: the CSS description, kept for reference/export.
   final String? css;
+
+  /// Gradient only: CSS angle in degrees (0 points up, clockwise positive).
+  final int deg;
   final List<BackgroundGradientStop>? gradient;
 
   const BackgroundItem({
@@ -46,102 +56,49 @@ class BackgroundItem {
     this.id,
     this.name,
     this.poster,
+    this.thumb,
     this.bytes,
     this.css,
+    this.deg = 0,
     this.gradient,
   });
 
-  factory BackgroundItem.fromJson(Map<String, dynamic> json) {
-    final rawGradient = json['gradient'];
-    return BackgroundItem(
-      file: json['file'] as String? ?? '',
-      id: json['id'] as String?,
-      name: json['name'] as String?,
-      poster: json['poster'] as String?,
-      bytes: (json['bytes'] as num?)?.toInt(),
-      css: json['css'] as String?,
-      gradient: rawGradient is List
-          ? rawGradient
-                .whereType<Map>()
-                .map(
-                  (e) => BackgroundGradientStop.fromJson(
-                    Map<String, dynamic>.from(e),
-                  ),
-                )
-                .toList(growable: false)
-          : null,
-    );
-  }
-
-  /// Stable identity used to compare "currently applying" and "in use".
+  /// Stable identity used to compare "in use" and to key lists.
   ///
-  /// Gradients have no real file and can carry an empty [file]; comparing
-  /// that directly would make every gradient tile look identical, so it
-  /// degrades to a synthetic key.
-  String get key {
-    if (file.isNotEmpty) return file;
-    final identity = id ?? name ?? css ?? '';
-    return 'item:$identity';
-  }
-}
-
-/// One colour stop of a gradient.
-class BackgroundGradientStop {
-  final String color;
-  final double pos;
-
-  const BackgroundGradientStop({required this.color, required this.pos});
-
-  factory BackgroundGradientStop.fromJson(Map<String, dynamic> json) =>
-      BackgroundGradientStop(
-        color: json['color'] as String? ?? '#000000',
-        pos: (json['pos'] as num?)?.toDouble() ?? 0,
-      );
+  /// Gradients carry a synthetic [file], so this is simply the file/URL.
+  String get key => file.isNotEmpty ? file : 'item:${id ?? name ?? css ?? ''}';
 }
 
 /// One group of entries inside a source.
 class BackgroundCategory {
+  /// Stable identity, also shown as the localised name's fallback.
   final String id;
 
-  /// Primary display name, as published by the catalog.
+  /// Primary display name.
   final String name;
 
-  /// English display name; may be empty for older catalogs.
+  /// English display name; may be empty.
   final String nameEn;
 
-  /// Path of the shard holding this group's entries.
-  final String catalog;
+  /// Value of the source's own filter parameter. Empty means "no filter", which
+  /// is how the Wallhaven *popular* group is requested.
+  final String apiQuery;
+
+  /// Hint shown next to the row. The real total comes from the loaded page.
   final int count;
 
-  /// True for sources that expose a single group, so the UI can hide the
-  /// category row entirely.
+  /// True for sources that expose a single group, so the UI can skip the
+  /// category list and open the grid straight away.
   final bool hidden;
-
-  /// Prefix prepended to each entry's `file` when the shard is a raw mapping
-  /// file rather than a prebuilt catalog shard. Empty means the paths are
-  /// already repo-root relative.
-  final String pathPrefix;
 
   const BackgroundCategory({
     required this.id,
     required this.name,
-    required this.catalog,
     required this.count,
     this.nameEn = '',
+    this.apiQuery = '',
     this.hidden = false,
-    this.pathPrefix = '',
   });
-
-  factory BackgroundCategory.fromJson(Map<String, dynamic> json) =>
-      BackgroundCategory(
-        id: json['id'] as String? ?? '',
-        name: json['name'] as String? ?? json['nameZh'] as String? ?? '',
-        nameEn: json['nameEn'] as String? ?? '',
-        catalog: json['catalog'] as String? ?? '',
-        count: (json['count'] as num?)?.toInt() ?? 0,
-        hidden: json['hidden'] as bool? ?? false,
-        pathPrefix: json['pathPrefix'] as String? ?? '',
-      );
 
   /// Display name for [languageCode], falling back to whichever is present.
   String localizedName(String languageCode) {
@@ -149,19 +106,15 @@ class BackgroundCategory {
     return nameEn.isNotEmpty ? nameEn : name;
   }
 
-  /// Equality is by shard path and prefix. [backgroundShardProvider] uses
-  /// this class inside a provider family key; without == and hashCode every
-  /// rebuild would create a new provider and refetch.
+  /// Equality is by id. [backgroundShardProvider] uses this class inside a
+  /// provider family key; without == and hashCode every rebuild would create a
+  /// new provider and refetch.
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is BackgroundCategory &&
-          other.id == id &&
-          other.catalog == catalog &&
-          other.pathPrefix == pathPrefix;
+      identical(this, other) || other is BackgroundCategory && other.id == id;
 
   @override
-  int get hashCode => Object.hash(id, catalog, pathPrefix);
+  int get hashCode => id.hashCode;
 }
 
 /// A top-level group of backgrounds.
@@ -179,32 +132,10 @@ class BackgroundSource {
     required this.name,
     required this.kind,
     required this.categorized,
-    required this.count,
     required this.categories,
     this.nameEn = '',
+    this.count = 0,
   });
-
-  factory BackgroundSource.fromJson(Map<String, dynamic> json) {
-    final rawCategories = json['categories'];
-    return BackgroundSource(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? json['nameZh'] as String? ?? '',
-      nameEn: json['nameEn'] as String? ?? '',
-      kind: BackgroundKind.parse(json['type'] as String?),
-      categorized: json['categorized'] as bool? ?? false,
-      count: (json['count'] as num?)?.toInt() ?? 0,
-      categories: rawCategories is List
-          ? rawCategories
-                .whereType<Map>()
-                .map(
-                  (e) => BackgroundCategory.fromJson(
-                    Map<String, dynamic>.from(e),
-                  ),
-                )
-                .toList(growable: false)
-          : const <BackgroundCategory>[],
-    );
-  }
 
   /// Display name for [languageCode], falling back to whichever is present.
   String localizedName(String languageCode) {
@@ -219,125 +150,108 @@ class BackgroundSource {
       final hiddenOnes = categories.where((c) => c.hidden).toList();
       return hiddenOnes.isNotEmpty ? hiddenOnes : categories;
     }
-    return categories.where((c) => c.count > 0).toList();
+    return categories.where((c) => c.count > 0).toList(growable: false);
   }
 }
 
-/// Repository coordinates used to build remote URLs.
-class BackgroundRepoInfo {
-  final String owner;
-  final String name;
-  final String branch;
+/// Identifiers of the sources the app compiles in.
+class BackgroundSourceIds {
+  const BackgroundSourceIds._();
 
-  const BackgroundRepoInfo({
-    required this.owner,
-    required this.name,
-    required this.branch,
-  });
-
-  factory BackgroundRepoInfo.fromJson(Map<String, dynamic> json) =>
-      BackgroundRepoInfo(
-        owner: json['owner'] as String? ?? '',
-        name: json['name'] as String? ?? '',
-        branch: json['branch'] as String? ?? 'master',
-      );
+  static const String official = 'official';
+  static const String wallhaven = 'wallhaven';
+  static const String bing = 'bing';
+  static const String deepin = 'deepin';
+  static const String video = 'video';
+  static const String solidColor = 'solid-color';
 }
 
-/// Root index of the remote catalog.
+/// The whole source tree.
+///
+/// It is a constant table now: the picture library is addressed by the iTab API
+/// and the other three sources are fixed sets, so there is nothing to download
+/// before the settings page can be drawn.
 class BackgroundCatalog {
-  final int version;
-  final String generatedAt;
-  final BackgroundRepoInfo repo;
-  final int totalItems;
   final List<BackgroundSource> sources;
 
-  const BackgroundCatalog({
-    required this.version,
-    required this.generatedAt,
-    required this.repo,
-    required this.totalItems,
-    required this.sources,
-  });
-
-  factory BackgroundCatalog.fromJson(Map<String, dynamic> json) {
-    final rawSources = json['sources'];
-    final totals = json['totals'];
-    return BackgroundCatalog(
-      version: (json['version'] as num?)?.toInt() ?? 1,
-      generatedAt: json['generatedAt'] as String? ?? '',
-      repo: BackgroundRepoInfo.fromJson(
-        json['repo'] is Map
-            ? Map<String, dynamic>.from(json['repo'] as Map)
-            : const {},
-      ),
-      totalItems: totals is Map
-          ? ((totals['items'] as num?)?.toInt() ?? 0)
-          : 0,
-      sources: rawSources is List
-          ? rawSources
-                .whereType<Map>()
-                .map(
-                  (e) =>
-                      BackgroundSource.fromJson(Map<String, dynamic>.from(e)),
-                )
-                .toList(growable: false)
-          : const <BackgroundSource>[],
-    );
-  }
+  const BackgroundCatalog({required this.sources});
 
   bool get isEmpty => sources.isEmpty;
 
-  /// Fallback structure used when no prebuilt index is available.
-  ///
-  /// Counts are only hints shown on the tab labels; the real total comes from
-  /// the shard that actually loads, so a stale number never hides content.
-  factory BackgroundCatalog.builtIn() {
-    const prefix = 'wallpapers/';
+  /// The source with [id], or null when the catalog has none.
+  BackgroundSource? sourceById(String id) {
+    for (final source in sources) {
+      if (source.id == id) return source;
+    }
+    return null;
+  }
 
+  /// Picture sources, in the order the library page lists them.
+  List<BackgroundSource> get imageSources =>
+      sources.where((s) => s.kind == BackgroundKind.image).toList(growable: false);
+
+  static BackgroundSource _single(
+    String id,
+    String name,
+    String nameEn,
+    BackgroundKind kind,
+    int count,
+  ) => BackgroundSource(
+    id: id,
+    name: name,
+    nameEn: nameEn,
+    kind: kind,
+    categorized: false,
+    count: count,
+    categories: <BackgroundCategory>[
+      BackgroundCategory(id: 'all', name: name, nameEn: nameEn, count: count, hidden: true),
+    ],
+  );
+
+  /// The compiled-in source tree.
+  ///
+  /// Category counts are hints for the row subtitles; the grid reports the real
+  /// number once the page loads.
+  factory BackgroundCatalog.builtIn() {
+    // Official categories, as the extension's own sidebar lists them. The
+    // "all" bucket is deliberately absent: it overlaps the seven groups and
+    // would just duplicate content.
     BackgroundSource images(
       String id,
-      String nameZh,
+      String name,
       String nameEn,
       bool categorized,
       List<(String, String, String, int)> groups,
     ) => BackgroundSource(
       id: id,
-      name: nameZh,
+      name: name,
       nameEn: nameEn,
       kind: BackgroundKind.image,
       categorized: categorized,
       count: groups.fold(0, (sum, g) => sum + g.$4),
-      categories: [
+      categories: <BackgroundCategory>[
         for (final (catId, catZh, catEn, count) in groups)
           BackgroundCategory(
             id: catId,
             name: catZh,
             nameEn: catEn,
-            catalog: '$prefix$id/${categorized ? '$catId/' : ''}mapping.json',
+            apiQuery: catId,
             count: count,
             hidden: !categorized,
-            pathPrefix: prefix,
           ),
       ],
     );
 
     return BackgroundCatalog(
-      version: 1,
-      generatedAt: '',
-      repo: const BackgroundRepoInfo(
-        owner: 'liuchuancong',
-        name: 'background',
-        branch: 'master',
-      ),
-      totalItems: 0,
       sources: <BackgroundSource>[
         images(
-          'official',
+          BackgroundSourceIds.official,
           '官方壁纸',
           'Official',
           true,
           const <(String, String, String, int)>[
             ('nature', '自然', 'Nature', 240),
+            ('acg', '动漫', 'Anime', 240),
             ('art', '艺术', 'Art', 155),
             ('architecture', '建筑', 'Architecture', 28),
             ('life', '生命', 'Life', 31),
@@ -345,76 +259,39 @@ class BackgroundCatalog {
             ('other', '其他', 'Other', 240),
           ],
         ),
-        images(
-          'wallhaven',
-          'Wallhaven',
-          'Wallhaven',
-          true,
-          const <(String, String, String, int)>[
-            ('popular', '热门', 'Popular', 233),
-            ('minimalism', '极简主义', 'Minimalism', 240),
-            ('patterns', '图案', 'Patterns', 240),
-            ('landscape', '风景', 'Landscape', 240),
-            ('nature', '自然', 'Nature', 240),
-            ('cosplay', 'Cosplay', 'Cosplay', 240),
-            ('spiderman', '蜘蛛侠', 'Spider-Man', 240),
-            ('ghibli', '吉卜力', 'Ghibli', 240),
-            ('naruto', '火影忍者', 'Naruto', 219),
-            ('sci-fi', '科幻', 'Sci-Fi', 240),
-            ('anime', '日漫', 'Anime', 240),
-            ('anime-girls', '动漫女孩', 'Anime Girls', 240),
-            ('cyberpunk', '赛博朋克', 'Cyberpunk', 240),
-            ('pixel-art', '像素艺术', 'Pixel Art', 240),
-            ('artwork', 'Artwork', 'Artwork', 240),
-            ('cityscape', 'Cityscape', 'Cityscape', 240),
-            ('digital-art', 'Digital Art', 'Digital Art', 240),
-            ('fantasy-art', 'Fantasy Art', 'Fantasy Art', 240),
-            ('final-fantasy', 'Final Fantasy', 'Final Fantasy', 240),
+        BackgroundSource(
+          id: BackgroundSourceIds.wallhaven,
+          name: 'Wallhaven',
+          nameEn: 'Wallhaven',
+          kind: BackgroundKind.image,
+          categorized: true,
+          count: 4532,
+          categories: const <BackgroundCategory>[
+            BackgroundCategory(id: 'popular', name: '热门', nameEn: 'Popular', count: 233),
+            BackgroundCategory(id: 'minimalism', name: '极简主义', nameEn: 'Minimalism', apiQuery: 'id:2278', count: 240),
+            BackgroundCategory(id: 'patterns', name: '图案', nameEn: 'Patterns', apiQuery: 'id:869', count: 240),
+            BackgroundCategory(id: 'landscape', name: '风景', nameEn: 'Landscape', apiQuery: 'id:711', count: 240),
+            BackgroundCategory(id: 'nature', name: '自然', nameEn: 'Nature', apiQuery: 'id:37', count: 240),
+            BackgroundCategory(id: 'cosplay', name: 'Cosplay', nameEn: 'Cosplay', apiQuery: 'id:12757', count: 240),
+            BackgroundCategory(id: 'spiderman', name: '蜘蛛侠', nameEn: 'Spider-Man', apiQuery: 'id:2319', count: 240),
+            BackgroundCategory(id: 'ghibli', name: '吉卜力', nameEn: 'Ghibli', apiQuery: 'id:1748', count: 240),
+            BackgroundCategory(id: 'naruto', name: '火影忍者', nameEn: 'Naruto', apiQuery: 'id:78174', count: 219),
+            BackgroundCategory(id: 'sci-fi', name: '科幻', nameEn: 'Sci-Fi', apiQuery: 'id:14', count: 240),
+            BackgroundCategory(id: 'anime', name: '日漫', nameEn: 'Anime', apiQuery: 'id:1', count: 240),
+            BackgroundCategory(id: 'anime-girls', name: '动漫女孩', nameEn: 'Anime Girls', apiQuery: 'id:5', count: 240),
+            BackgroundCategory(id: 'cyberpunk', name: '赛博朋克', nameEn: 'Cyberpunk', apiQuery: 'id:376', count: 240),
+            BackgroundCategory(id: 'pixel-art', name: '像素艺术', nameEn: 'Pixel Art', apiQuery: 'id:2321', count: 240),
+            BackgroundCategory(id: 'artwork', name: 'Artwork', nameEn: 'Artwork', apiQuery: 'id:323', count: 240),
+            BackgroundCategory(id: 'cityscape', name: 'Cityscape', nameEn: 'Cityscape', apiQuery: 'id:479', count: 240),
+            BackgroundCategory(id: 'digital-art', name: 'Digital Art', nameEn: 'Digital Art', apiQuery: 'id:13', count: 240),
+            BackgroundCategory(id: 'fantasy-art', name: 'Fantasy Art', nameEn: 'Fantasy Art', apiQuery: 'id:853', count: 240),
+            BackgroundCategory(id: 'final-fantasy', name: 'Final Fantasy', nameEn: 'Final Fantasy', apiQuery: 'id:997', count: 240),
           ],
         ),
-        images('bing', '必应壁纸', 'Bing', false, const <(String, String, String, int)>[
-          ('all', '必应壁纸', 'Bing', 161),
-        ]),
-        images('deepin', 'deepin', 'deepin', false, const <(String, String, String, int)>[
-          ('all', 'deepin', 'deepin', 26),
-        ]),
-        const BackgroundSource(
-          id: 'video',
-          name: '动态壁纸',
-          nameEn: 'Live Wallpapers',
-          kind: BackgroundKind.video,
-          categorized: false,
-          count: 114,
-          categories: <BackgroundCategory>[
-            BackgroundCategory(
-              id: 'all',
-              name: '动态壁纸',
-              nameEn: 'Live Wallpapers',
-              catalog: 'videos/mapping.json',
-              count: 114,
-              hidden: true,
-              pathPrefix: 'videos/',
-            ),
-          ],
-        ),
-        const BackgroundSource(
-          id: 'solid-color',
-          name: '纯色渐变',
-          nameEn: 'Colors',
-          kind: BackgroundKind.gradient,
-          categorized: false,
-          count: 139,
-          categories: <BackgroundCategory>[
-            BackgroundCategory(
-              id: 'all',
-              name: '纯色渐变',
-              nameEn: 'Colors',
-              catalog: 'solid-colors.json',
-              count: 139,
-              hidden: true,
-            ),
-          ],
-        ),
+        _single(BackgroundSourceIds.bing, '必应壁纸', 'Bing', BackgroundKind.image, 2030),
+        _single(BackgroundSourceIds.deepin, 'deepin', 'deepin', BackgroundKind.image, 26),
+        _single(BackgroundSourceIds.video, '动态壁纸', 'Live Wallpapers', BackgroundKind.video, 114),
+        _single(BackgroundSourceIds.solidColor, '纯色渐变', 'Colors', BackgroundKind.gradient, 151),
       ],
     );
   }
@@ -429,7 +306,7 @@ class BackgroundShard {
   final int count;
   final List<BackgroundItem> items;
 
-  /// Palette offered by the gradient source.
+  /// Flat colour swatches offered on top of the gradient list.
   final List<String> customPalette;
 
   const BackgroundShard({
@@ -437,141 +314,8 @@ class BackgroundShard {
     required this.category,
     required this.name,
     required this.kind,
-    required this.count,
     required this.items,
+    this.count = 0,
     this.customPalette = const <String>[],
   });
-
-  factory BackgroundShard.fromJson(Map<String, dynamic> json) {
-    final rawItems = json['items'];
-    final rawPalette = json['customPalette'];
-    return BackgroundShard(
-      source: json['source'] as String? ?? '',
-      category: json['category'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      kind: BackgroundKind.parse(json['type'] as String?),
-      count: (json['count'] as num?)?.toInt() ?? 0,
-      items: rawItems is List
-          ? rawItems
-                .whereType<Map>()
-                .map(
-                  (e) => BackgroundItem.fromJson(Map<String, dynamic>.from(e)),
-                )
-                .toList(growable: false)
-          : const <BackgroundItem>[],
-      customPalette: rawPalette is List
-          ? rawPalette.whereType<String>().toList(growable: false)
-          : const <String>[],
-    );
-  }
-
-  /// Accepts any of the three shard layouts so the app does not depend on one
-  /// particular repository arrangement:
-  ///
-  /// 1. `{ items: [...] }` - prebuilt shard, `file` already repo-root relative
-  /// 2. `[ {...}, ... ]` - raw mapping file, `file` relative to [pathPrefix]
-  /// 3. `{ backgrounds: [...] }` - the standalone gradient list
-  factory BackgroundShard.parse(
-    dynamic raw, {
-    required BackgroundCategory category,
-    required BackgroundKind kind,
-    String source = '',
-  }) {
-    if (raw is Map) {
-      final map = Map<String, dynamic>.from(raw);
-      if (map['items'] is List) {
-        return BackgroundShard.fromJson(map);
-      }
-      final backgrounds = map['backgrounds'];
-      if (backgrounds is List) {
-        final palette = map['customPalette'];
-        return BackgroundShard(
-          source: source,
-          category: category.id,
-          name: category.name,
-          kind: BackgroundKind.gradient,
-          count: backgrounds.length,
-          customPalette: palette is List
-              ? palette.whereType<String>().toList(growable: false)
-              : const <String>[],
-          items: backgrounds
-              .whereType<Map>()
-              .map((e) => _gradientItem(Map<String, dynamic>.from(e)))
-              .toList(growable: false),
-        );
-      }
-      // Single object: treat it as one entry.
-      return BackgroundShard(
-        source: source,
-        category: category.id,
-        name: category.name,
-        kind: kind,
-        count: 1,
-        items: <BackgroundItem>[_mappingItem(map, category.pathPrefix)],
-      );
-    }
-
-    if (raw is List) {
-      final items = <BackgroundItem>[];
-      for (final entry in raw) {
-        if (entry is! Map) continue;
-        final map = Map<String, dynamic>.from(entry);
-        // Mapping files also record failed downloads; skip those.
-        final status = map['status'];
-        if (status is String &&
-            status != 'ok' &&
-            status != 'exists' &&
-            status != 'listed') {
-          continue;
-        }
-        final item = _mappingItem(map, category.pathPrefix);
-        if (item.file.isEmpty) continue;
-        items.add(item);
-      }
-      return BackgroundShard(
-        source: source,
-        category: category.id,
-        name: category.name,
-        kind: kind,
-        count: items.length,
-        items: items,
-      );
-    }
-
-    throw const FormatException('unrecognised shard format');
-  }
-
-  /// One mapping-file row, with `file` widened to a repo-root relative path.
-  static BackgroundItem _mappingItem(Map<String, dynamic> json, String prefix) {
-    final rawFile = json['file'] as String? ?? '';
-    final poster = json['poster'] as String?;
-    return BackgroundItem(
-      file: rawFile.isEmpty ? '' : '$prefix$rawFile',
-      id: json['id'] as String?,
-      name: json['name'] as String?,
-      poster: poster == null || poster.isEmpty ? null : '$prefix$poster',
-      bytes: (json['bytes'] as num?)?.toInt(),
-    );
-  }
-
-  /// One gradient row. Its "file" is the CSS description itself, so the
-  /// pseudo path below only exists to keep tiles distinguishable.
-  static BackgroundItem _gradientItem(Map<String, dynamic> json) {
-    return BackgroundItem(
-      file: 'solid-colors.json#${json['index'] ?? ''}',
-      id: json['index'] as String?,
-      name: json['name'] as String?,
-      css: json['css'] as String?,
-      gradient: json['gradient'] is List
-          ? (json['gradient'] as List)
-                .whereType<Map>()
-                .map(
-                  (e) => BackgroundGradientStop.fromJson(
-                    Map<String, dynamic>.from(e),
-                  ),
-                )
-                .toList(growable: false)
-          : null,
-    );
-  }
 }
