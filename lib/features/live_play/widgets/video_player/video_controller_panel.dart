@@ -121,8 +121,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         switch (direction) {
           case TraversalDirection.left:
             setState(() => _barIndex = (_barIndex - 1 + barCount) % barCount);
+            _revealBarSelection();
           case TraversalDirection.right:
             setState(() => _barIndex = (_barIndex + 1) % barCount);
+            _revealBarSelection();
           case TraversalDirection.up:
             if (_panel != _OptionsPanel.none && optionCount > 0) {
               setState(() => _zone = _Zone.options);
@@ -261,8 +263,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     _zone = _Zone.bar;
   });
 
-  /// Bottom bar, in the reference's order: 关注 / 刷新 / 播放暂停 / 弹幕 / 弹幕设置 /
-  /// 清晰度 / 线路 / 比例 / 弹幕过滤 / 播放列表 / 房间信息 / 内核 / 切换房间 / 背景.
+  /// Bottom bar: the transport, the danmaku group (开关/设置/过滤 together), the
+  /// three value pickers, then the channel actions.
+  ///
+  /// 背景设置 was dropped — it is a settings-page concern, and the bar had grown
+  /// to fourteen buttons, so related items drifted apart.
   List<_PanelAction> _barActions(LivePlayState state) {
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final danmakuSettings = ref.watch(danmakuSettingsControllerProvider);
@@ -277,7 +282,6 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       _PanelAction(
         icon: isFavorite ? Icons.favorite : Icons.favorite_border,
         label: isFavorite ? i18n('followed') : i18n('follow'),
-        active: isFavorite,
         onSelect: () {
           if (room == null) return;
           final fav = ref.read(favoriteRoomControllerProvider.notifier);
@@ -288,17 +292,16 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           }
         },
       ),
-      _PanelAction(icon: Icons.refresh_rounded, label: i18n('retry'), onSelect: controller.retry),
       _PanelAction(
         icon: playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
         label: playing ? i18n('multiview_pause') : i18n('multiview_play'),
         onSelect: controller.togglePlayPause,
       ),
-      // The reference ships these two as SVG; the same assets are used here.
+      _PanelAction(icon: Icons.refresh_rounded, label: i18n('retry'), onSelect: controller.retry),
+      // 弹幕开关 / 弹幕设置 / 弹幕过滤 stay adjacent.
       _PanelAction(
         asset: danmakuOn ? 'assets/images/video/danmu_open.svg' : 'assets/images/video/danmu_close.svg',
         label: danmakuOn ? i18n('ui_danmaku_on') : i18n('ui_danmaku_off'),
-        active: danmakuOn,
         onSelect: () => danmakuNotifier.updateSettings(
           danmakuSettings.copyWith(enableDanmakuDisplay: !danmakuOn, hideDanmaku: danmakuOn),
         ),
@@ -308,6 +311,12 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         label: i18n('danmaku_settings'),
         active: state.showSidePanel && state.panel == LivePlayPanel.danmakuSettings,
         onSelect: () => controller.togglePanel(LivePlayPanel.danmakuSettings),
+      ),
+      _PanelAction(
+        icon: Icons.dynamic_feed_rounded,
+        label: i18n('danmaku_filter'),
+        active: state.showSidePanel && state.panel == LivePlayPanel.shield,
+        onSelect: () => controller.togglePanel(LivePlayPanel.shield),
       ),
       _PanelAction(
         icon: Icons.high_quality_rounded,
@@ -328,24 +337,38 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         onSelect: () => _openPanel(_OptionsPanel.fit, state),
       ),
       _PanelAction(
-        icon: Icons.dynamic_feed_rounded,
-        label: i18n('danmaku_filter'),
-        active: state.showSidePanel && state.panel == LivePlayPanel.shield,
-        onSelect: () => controller.togglePanel(LivePlayPanel.shield),
-      ),
-      _PanelAction(
         icon: Icons.playlist_play_rounded,
         label: i18nOr('ui_playlist', 'Playlist'),
         active: state.showSidePanel && state.panel == LivePlayPanel.playlist,
         onSelect: () => controller.togglePanel(LivePlayPanel.playlist),
       ),
-      _PanelAction(icon: Icons.memory_rounded, label: _engineLabel(), onSelect: () => unawaited(_pickEngine())),
       _PanelAction(
         icon: Icons.swap_horiz_rounded,
         label: i18n('switch_live_room'),
         onSelect: () => unawaited(_switchRoom(state.room)),
       ),
+      _PanelAction(
+        icon: Icons.memory_rounded,
+        label: _engineLabel(),
+        onSelect: () => unawaited(_pickEngine()),
+      ),
     ];
+  }
+
+  /// GlobalKeys so the highlighted button can be revealed while the index walks
+  /// the bar (the bar scrolls horizontally and the remote never scrolls it).
+  final Map<int, GlobalKey> _barKeys = <int, GlobalKey>{};
+  GlobalKey _barKey(int index) => _barKeys.putIfAbsent(index, () => GlobalKey());
+
+  void _revealBarSelection() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final BuildContext? context = _barKeys[_barIndex]?.currentContext;
+      if (context == null) return;
+      // Zero duration on purpose: the d-pad layer snaps scrolling, and an
+      // animated reveal races with it.
+      Scrollable.ensureVisible(context, duration: Duration.zero);
+    });
   }
 
   Future<void> _pickEngine() async {
@@ -478,21 +501,24 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     return Container(
       height: _barHeight.sp + 24.sp,
       alignment: Alignment.centerLeft,
-      padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemCount: actions.length,
-        separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+        separatorBuilder: (_, _) => SizedBox(width: 10.sp),
         itemBuilder: (context, index) {
           final action = actions[index];
-          return _Pill(
+          return KeyedSubtree(
+            key: _barKey(index),
+            child: _Pill(
             icon: action.icon,
             asset: action.asset,
             label: action.label,
             selected: _zone == _Zone.bar && index == _barIndex,
             accent: tvTheme.focusColor,
             tinted: action.active,
+          ),
           );
         },
       ),
@@ -528,6 +554,13 @@ class _Pill extends StatelessWidget {
     this.trailing,
   });
 
+  // Pill geometry lives here so the bar can be retuned in one place.
+  static const double _height = 52;
+  static const double _hPadding = 16;
+  static const double _gap = 8;
+  static const double _iconSize = 28;
+  static const double _trailingSize = 26;
+
   final IconData? icon;
   final String? asset;
   final String label;
@@ -538,40 +571,42 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The same button as TvTabBar: a transparent pill that fills with the
-    // accent colour only while the index is on it. Nothing else tints it, so a
-    // button that merely represents an "on" state (弹幕开) is not coloured at
-    // start-up — its label already says 开/关.
     final Color background = selected ? accent : Colors.transparent;
     final Color foreground = Colors.white;
+
+    // Bigger than the t20 the bar started with — the label is what the viewer
+    // actually reads from the couch, so it should not be the smallest thing on
+    // the pill.
+    final TextStyle textStyle = (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
+      color: foreground,
+      fontSize: 24.sp,
+    );
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
       curve: Curves.easeInOut,
-      height: 46.sp,
+      height: _height.sp,
       alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(horizontal: 24.sp),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(23.sp)),
+      padding: EdgeInsets.symmetric(horizontal: _hPadding.sp),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular((_height / 2).sp)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (asset != null)
             SvgPicture.asset(
               asset!,
-              width: 24.sp,
-              height: 24.sp,
+              width: _iconSize.sp,
+              height: _iconSize.sp,
               colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
             )
           else if (icon != null)
-            Icon(icon, size: 24.sp, color: foreground),
-          if (asset != null || icon != null) SizedBox(width: 8.sp),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(color: foreground),
-          ),
-          if (trailing != null) ...[SizedBox(width: 8.sp), Icon(trailing, size: 22.sp, color: foreground)],
+            Icon(icon, size: _iconSize.sp, color: foreground),
+          if (asset != null || icon != null) SizedBox(width: _gap.sp),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
+          if (trailing != null) ...[
+            SizedBox(width: _gap.sp),
+            Icon(trailing, size: _trailingSize.sp, color: foreground),
+          ],
         ],
       ),
     );
