@@ -34,7 +34,7 @@ class _TvInputDialogState extends State<TvInputDialog> {
     _controller = TextEditingController(text: widget.initialValue);
     _focusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
+      if (mounted) _focusNode.requestFocus();
     });
   }
 

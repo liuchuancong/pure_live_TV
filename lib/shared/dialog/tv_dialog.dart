@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/dialog/tv_dialog_focus_guard.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/tv_button.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -54,44 +55,48 @@ class TvDialog extends StatelessWidget {
         child: DpadRegion(
           horizontalEdge: DpadEdgeBehavior.stop,
           verticalEdge: DpadEdgeBehavior.stop,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (title != null)
-                Padding(
-                  padding: EdgeInsets.only(bottom: 24.sp),
-                  child: Text(
-                    title!,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: tvTheme.primaryTextColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 32.sp,
+          // ...and keeps the keyboard here even when something behind the dialog
+          // rebuilds and the d-pad layer restores focus to a node of that page.
+          child: TvDialogFocusGuard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (title != null)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 24.sp),
+                    child: Text(
+                      title!,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: tvTheme.primaryTextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 32.sp,
+                      ),
                     ),
                   ),
-                ),
-              child,
-              if (confirmText != null || cancelText != null) ...[
-                SizedBox(height: 32.sp),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (cancelText != null)
-                      Padding(
-                        padding: EdgeInsets.only(right: 16.sp),
-                        child: TvButton(
-                          title: cancelText!,
-                          size: TvButtonSize.mini,
-                          isSecondary: true,
-                          onTap: onCancel ?? () => Navigator.of(context).pop(),
+                child,
+                if (confirmText != null || cancelText != null) ...[
+                  SizedBox(height: 32.sp),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (cancelText != null)
+                        Padding(
+                          padding: EdgeInsets.only(right: 16.sp),
+                          child: TvButton(
+                            title: cancelText!,
+                            size: TvButtonSize.mini,
+                            isSecondary: true,
+                            onTap: onCancel ?? () => Navigator.of(context).pop(),
+                          ),
                         ),
-                      ),
-                    if (confirmText != null)
-                      TvButton(title: confirmText!, size: TvButtonSize.mini, autofocus: true, onTap: onConfirm),
-                  ],
-                ),
+                      if (confirmText != null)
+                        TvButton(title: confirmText!, size: TvButtonSize.mini, autofocus: true, onTap: onConfirm),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

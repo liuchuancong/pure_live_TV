@@ -23,22 +23,25 @@ class TvSettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.sp),
         border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.12), width: 1.sp),
       ),
-      child: Column(
-        children: List.generate(validChildren.length, (index) {
-          return Column(
-            children: [
-              validChildren[index],
-              if (index != validChildren.length - 1)
-                Divider(
-                  height: 1.sp,
-                  thickness: 1.sp,
-                  indent: 16.sp,
-                  endIndent: 16.sp,
-                  color: tvTheme.secondaryTextColor.withValues(alpha: 0.12),
-                ),
-            ],
-          );
-        }),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 4.sp, horizontal: 4.sp),
+        child: Column(
+          children: List.generate(validChildren.length, (index) {
+            return Column(
+              children: [
+                validChildren[index],
+                if (index != validChildren.length - 1)
+                  Divider(
+                    height: 1.sp,
+                    thickness: 1.sp,
+                    indent: 16.sp,
+                    endIndent: 16.sp,
+                    color: tvTheme.secondaryTextColor.withValues(alpha: 0.12),
+                  ),
+              ],
+            );
+          }),
+        ),
       ),
     );
   }
