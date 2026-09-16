@@ -29,7 +29,7 @@ void main() {
       'about',
     ]);
 
-    expect(settingsCatalog.map((group) => group.entries.length).toList(), <int>[1, 1, 1, 2, 1, 1, 3, 1, 1, 1]);
+    expect(settingsCatalog.map((group) => group.entries.length).toList(), <int>[1, 1, 1, 1, 1, 1, 3, 1, 1, 1]);
   });
 
   test('menu rows use the desktop paths and labels', () {
@@ -38,7 +38,6 @@ void main() {
       AppRoutes.kIptv,
       AppRoutes.kSettingsRefresh,
       AppRoutes.kSettingsVideo,
-      AppRoutes.kSettingsPipDanmaku,
       AppRoutes.kSettingsPlayerKernel,
       AppRoutes.kSettingsProxy,
       AppRoutes.kSettingsGeneral,
@@ -61,6 +60,48 @@ void main() {
     expect(settingsSectionTitleKey(AppRoutes.kSettingsHotAreas), 'platform_display');
     // A menu row wins over the sub-page table.
     expect(settingsSectionTitleKey(AppRoutes.kBackup), 'backup_recover');
+  });
+
+  test('every settings route has a real title, never the fallback', () {
+    // A sub-page whose title falls back to the generic one shows "系统设置" in
+    // its title bar, which tells the user nothing about where they are.
+    const List<String> routes = <String>[
+      AppRoutes.kSettingsTheme,
+      AppRoutes.kSettingsThemePicker,
+      AppRoutes.kSettingsLoadingStyle,
+      AppRoutes.kSettingsColorPicker,
+      AppRoutes.kSettingsIconPicker,
+      AppRoutes.kSettingsRefresh,
+      AppRoutes.kSettingsVideo,
+      AppRoutes.kSettingsPlayerKernel,
+      AppRoutes.kSettingsProxy,
+      AppRoutes.kSettingsGeneral,
+      AppRoutes.kSettingsNavigation,
+      AppRoutes.kSettingsPlatform,
+      AppRoutes.kSettingsCache,
+      AppRoutes.kSettingsConfigPreview,
+      AppRoutes.kSettingsDecoder,
+      AppRoutes.kSettingsRenderer,
+      AppRoutes.kSettingsAudioOutput,
+      AppRoutes.kSettingsDanmaku,
+      AppRoutes.kSettingsFont,
+      AppRoutes.kSettingsFontFamily,
+      AppRoutes.kSettingsPage,
+      AppRoutes.kSettingsAudience,
+      AppRoutes.kSettingsLocalBackup,
+      AppRoutes.kIptv,
+      AppRoutes.kSettingsHotAreas,
+      AppRoutes.kSettingsAccount,
+      AppRoutes.kSettingsTags,
+      AppRoutes.kBackup,
+      AppRoutes.kWebDavPage,
+      AppRoutes.kSettingsDanmuShield,
+      AppRoutes.kAbout,
+    ];
+
+    for (final String route in routes) {
+      expect(settingsSectionTitleKey(route), isNot('ui_settings'), reason: route);
+    }
   });
 
   test('no settings route is an orphan', () {

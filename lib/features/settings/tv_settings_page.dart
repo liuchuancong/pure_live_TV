@@ -53,12 +53,6 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     titleKey: 'video_settings',
     entries: <SettingsEntry>[
       (path: AppRoutes.kSettingsVideo, titleKey: 'video', subtitleKey: 'video_desc', icon: Remix.film_line),
-      (
-        path: AppRoutes.kSettingsPipDanmaku,
-        titleKey: 'pip_danmaku',
-        subtitleKey: 'pip_danmaku_desc',
-        icon: Remix.picture_in_picture_2_line,
-      ),
     ],
   ),
   (
@@ -187,6 +181,9 @@ class SettingsCatalogView extends StatelessWidget {
 /// the desktop app's own routes) and therefore are not menu rows.
 const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsThemePicker: 'ui_theme',
+  AppRoutes.kSettingsLoadingStyle: 'change_loading_style',
+  AppRoutes.kSettingsColorPicker: 'ui_choose_color',
+  AppRoutes.kSettingsIconPicker: 'ui_choose_icon',
   AppRoutes.kSettingsPage: 'page_settings',
   AppRoutes.kSettingsFont: 'ui_font_settings',
   AppRoutes.kSettingsFontFamily: 'font_family',
@@ -196,7 +193,6 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsDanmaku: 'danmaku_settings',
   AppRoutes.kSettingsAudience: 'audience_metric_settings',
   AppRoutes.kSettingsLocalBackup: 'local_backup',
-  AppRoutes.kSettingsPipDanmaku: 'pip_danmaku',
   AppRoutes.kSettingsConfigPreview: 'config_preview',
   AppRoutes.kSettingsDanmuShield: 'block_list',
   AppRoutes.kSettingsHotAreas: 'platform_display',

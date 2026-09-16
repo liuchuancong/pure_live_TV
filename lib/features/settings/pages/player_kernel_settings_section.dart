@@ -26,25 +26,15 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
           index: engineKeys.indexOf(playerState.videoPlayerKey).clamp(0, engineKeys.length - 1),
           onChanged: (i) => player.updateSettings(playerState.copyWith(videoPlayerKey: engineKeys[i])),
         ),
-        TvSettingsOptionTile(
-          title: i18n('ui_preferred_quality'),
-          subtitle: i18n('ui_preferred_quality_when_entering_a_room'),
-          icon: Remix.hd_line,
-          options: PlayerConsts.resolutions,
-          index: PlayerConsts.resolutionKeys
-              .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolution))
-              .clamp(0, PlayerConsts.resolutionKeys.length - 1),
-          onChanged: (i) => player.changePreferResolution(PlayerConsts.resolutionKeys[i]),
-        ),
-        TvSettingsOptionTile(
-          title: i18n('ui_fallback_quality'),
-          subtitle: i18n('ui_preferred_quality_on_cellular_networks'),
-          icon: Remix.signal_tower_line,
-          options: PlayerConsts.resolutions,
-          index: PlayerConsts.resolutionKeys
-              .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolutionCellular))
-              .clamp(0, PlayerConsts.resolutionKeys.length - 1),
-          onChanged: (i) => player.changePreferResolutionCellular(PlayerConsts.resolutionKeys[i]),
+        // Desktop order inside the core-kernel group: the kernel switch, then
+        // hardware decoding (the desktop keeps the quality rows on its video
+        // page, which is where they live here too).
+        TvSettingsSwitchTile(
+          title: i18n('ui_hardware_decoding'),
+          subtitle: i18n('ui_use_hardware_decoding_to_lower_cpu_usage'),
+          icon: Remix.speed_up_line,
+          value: playerState.enableCodec,
+          onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),
         ),
         TvSettingsSwitchTile(
           title: i18n('ui_audio_only'),

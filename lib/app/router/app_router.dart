@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
@@ -64,7 +65,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(path: 'theme_picker', builder: (context, state) => const ThemePickerSectionPage()),
               GoRoute(path: 'refresh', builder: (context, state) => const RefreshSettingsSectionPage()),
               GoRoute(path: 'video', builder: (context, state) => const VideoSettingsSectionPage()),
-              GoRoute(path: 'pip_danmaku', builder: (context, state) => const PipDanmakuSettingsSectionPage()),
               GoRoute(path: 'player_kernel', builder: (context, state) => const PlayerKernelSettingsSectionPage()),
               GoRoute(path: 'proxy', builder: (context, state) => const ProxySettingsSectionPage()),
               GoRoute(path: 'general', builder: (context, state) => const GeneralSettingsSectionPage()),
@@ -106,6 +106,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.kSettingsIconPicker,
         builder: (context, state) => IconPickerSectionPage(currentLabel: state.extra as String?),
+      ),
+      // Grid pickers own their scroll axis, so they are routes of their own
+      // rather than sections inside the scrolling settings shell.
+      GoRoute(
+        path: AppRoutes.kSettingsLoadingStyle,
+        builder: (context, state) => const LoadingStyleSectionPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.kSettingsColorPicker,
+        builder: (context, state) => ColorPickerSectionPage(current: state.extra as Color?),
       ),
       GoRoute(
         path: AppRoutes.kAreaRooms,

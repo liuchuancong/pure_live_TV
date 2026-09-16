@@ -124,6 +124,12 @@ abstract final class AppRoutes {
   /// Icon picker, opened with the current icon as `extra`.
   static const kSettingsIconPicker = "/settings/icon_picker";
 
+  /// Loading animation picker (grid of live previews).
+  static const kSettingsLoadingStyle = "/settings/loading_style";
+
+  /// Colour picker (grid of colours), opened with the current colour as `extra`.
+  static const kSettingsColorPicker = "/settings/color_picker";
+
   /// Sub-pages opened from inside a settings page.
   static const kSettingsDecoder = "/settings/decoder";
   static const kSettingsRenderer = "/settings/renderer";

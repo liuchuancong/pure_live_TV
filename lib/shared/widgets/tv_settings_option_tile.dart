@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/tv_settings_row.dart';
 
-/// TV settings row that cycles through its options with Left/Right and OK.
-/// Used for discrete settings such as quality, player kernel and aspect ratio.
+/// TV settings row for a discrete choice (quality, player kernel, aspect
+/// ratio, ...).
+///
+/// OK opens a scrollable selection dialog. Stepping with Left/Right is gone: it
+/// hid the alternatives, needed one press per option, and consumed the
+/// horizontal keys that focus traversal needs.
 class TvSettingsOptionTile extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -30,25 +35,21 @@ class TvSettingsOptionTile extends StatelessWidget {
       title: title,
       subtitle: subtitle,
       icon: icon,
-      onSelect: () {
-        if (options.isEmpty) return;
-        onChanged?.call((safeIndex + 1) % options.length);
-      },
-      onDirection: (direction) {
-        // Left/right adjust the value, but only while the value can still
-        // change in that direction. Consuming the key at the first/last option
-        // would trap focus on the row and make the neighbouring rows and
-        // regions unreachable with the remote.
-        final int? next = switch (direction) {
-          TraversalDirection.left when safeIndex > 0 => safeIndex - 1,
-          TraversalDirection.right when safeIndex < options.length - 1 => safeIndex + 1,
-          _ => null,
-        };
-        if (next == null) return false;
-        onChanged?.call(next);
-        return true;
-      },
-      trailingBuilder: (context, focused) => tvSettingsValueStepper(context, focused, currentOption),
+      onSelect: options.isEmpty ? null : () => _openSelector(context, safeIndex),
+      trailingBuilder: (context, focused) => tvSettingsValueLabel(context, focused, currentOption),
     );
+  }
+
+  Future<void> _openSelector(BuildContext context, int safeIndex) async {
+    final selected = await TvDialogUtils.showSelect<int>(
+      context: context,
+      title: title,
+      selectedValue: safeIndex,
+      items: <TvSelectItem<int>>[
+        for (int i = 0; i < options.length; i++) TvSelectItem<int>(title: options[i], value: i),
+      ],
+    );
+    if (selected == null || selected == safeIndex) return;
+    onChanged?.call(selected);
   }
 }

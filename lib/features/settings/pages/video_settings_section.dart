@@ -1,9 +1,18 @@
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/services/player_settings/player_settings_controller.dart';
+import 'package:pure_live/services/index.dart';
 
+/// Video settings.
+///
+/// Only rows that mean something on a TV live here: the video fit, the preferred
+/// quality, the viewer metrics and the danmaku group (appearance, font, block
+/// list). The mobile/desktop app's cellular fallback quality, background play,
+/// "fullscreen by default" and "keep the screen on" switches are deliberately
+/// absent: a TV has no cellular link, the playback page *is* the fullscreen
+/// page, and the screen is always kept awake while a room is open.
 class VideoSettingsSectionPage extends ConsumerWidget {
   const VideoSettingsSectionPage({super.key});
 
@@ -13,10 +22,12 @@ class VideoSettingsSectionPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(playerSettingsControllerProvider);
     final player = ref.read(playerSettingsControllerProvider.notifier);
+    final List<String> resolutions = PlayerConsts.resolutions;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Quality
         TvSettingsOptionTile(
           title: i18n('ui_aspect_ratio'),
           subtitle: i18n('ui_how_the_video_fits_the_screen'),
@@ -25,34 +36,29 @@ class VideoSettingsSectionPage extends ConsumerWidget {
           index: playerState.videoFitIndex.clamp(0, _fitNames.length - 1),
           onChanged: (i) => player.updateSettings(playerState.copyWith(videoFitIndex: i)),
         ),
-        TvSettingsSwitchTile(
-          title: i18n('ui_hardware_decoding'),
-          subtitle: i18n('ui_use_hardware_decoding_to_lower_cpu_usage'),
-          // Same icon the desktop app uses for this switch.
-          icon: Remix.speed_up_line,
-          value: playerState.enableCodec,
-          onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),
+        TvSettingsOptionTile(
+          title: i18n('prefer_resolution'),
+          subtitle: i18n('prefer_resolution_subtitle'),
+          icon: Remix.hd_line,
+          options: resolutions,
+          index: PlayerConsts.resolutionKeys
+              .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolution))
+              .clamp(0, resolutions.length - 1),
+          onChanged: (i) => player.changePreferResolution(PlayerConsts.resolutionKeys[i]),
         ),
-        // Sub-pages the desktop video page hosts, in its order: viewer metrics,
-        // picture-in-picture danmaku, the danmaku font and the block list. The
-        // danmaku appearance page is TV-only, so it leads this block.
-        TvSettingsNavTile(
-          title: i18n('danmaku_settings'),
-          subtitle: i18n('ui_show_danmaku_inside_live_rooms'),
-          icon: Remix.chat_settings_line,
-          onTap: () => context.push(AppRoutes.kSettingsDanmaku),
-        ),
+        // Playback behaviour
         TvSettingsNavTile(
           title: i18n('audience_metric_settings'),
           subtitle: i18n('audience_metric_settings_desc'),
           icon: Icons.groups_2_rounded,
           onTap: () => context.push(AppRoutes.kSettingsAudience),
         ),
+        // Danmaku
         TvSettingsNavTile(
-          title: i18n('pip_danmaku'),
-          subtitle: i18n('pip_danmaku_desc'),
-          icon: Remix.picture_in_picture_2_line,
-          onTap: () => context.push(AppRoutes.kSettingsPipDanmaku),
+          title: i18n('danmaku_settings'),
+          subtitle: i18n('ui_show_danmaku_inside_live_rooms'),
+          icon: Remix.chat_settings_line,
+          onTap: () => context.push(AppRoutes.kSettingsDanmaku),
         ),
         TvSettingsNavTile(
           title: i18n('change_danmaku_font_family'),

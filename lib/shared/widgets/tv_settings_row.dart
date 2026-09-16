@@ -138,23 +138,22 @@ Widget tvSettingsChevron(BuildContext context, bool focused) {
   );
 }
 
-/// `‹ value ›` used by rows whose value is changed with Left/Right.
-Widget tvSettingsValueStepper(BuildContext context, bool focused, String value) {
+/// `value ›` used by rows whose value is picked from a list in a dialog.
+///
+/// The row deliberately does not step with Left/Right: a scrollable dialog
+/// shows every alternative at once and leaves the horizontal keys for focus
+/// traversal.
+Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
   final tvTheme = context.tvTheme;
   final Color accent = tvTheme.focusColor;
 
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Icon(Icons.chevron_left_rounded, size: 26.sp, color: focused ? accent : tvTheme.secondaryTextColor),
-      SizedBox(width: 4.sp),
-      // Shrink long values instead of folding them: holding Left/Right cycles
-      // through labels of very different lengths (decoder names, loading
-      // styles), and an ellipsised tail reads as a broken value.
       Flexible(
         child: FittedBox(
           fit: BoxFit.scaleDown,
-          alignment: Alignment.center,
+          alignment: Alignment.centerRight,
           child: Text(
             value,
             maxLines: 1,
@@ -163,8 +162,8 @@ Widget tvSettingsValueStepper(BuildContext context, bool focused, String value) 
           ),
         ),
       ),
-      SizedBox(width: 4.sp),
-      Icon(Icons.chevron_right_rounded, size: 26.sp, color: focused ? accent : tvTheme.secondaryTextColor),
+      SizedBox(width: 8.sp),
+      Icon(Icons.expand_more_rounded, size: 28.sp, color: focused ? accent : tvTheme.secondaryTextColor),
     ],
   );
 }

@@ -110,11 +110,11 @@ class LivePlayController extends _$LivePlayController {
       showChannelBanner(detail.nick.isNotEmpty ? detail.nick : detail.title);
     }
 
-    // Fullscreen by default hides the controls on entry; disabling it keeps the
-    // control bar visible so quality and line switching are one press away.
-    if (!SettingsService.to.appState.enableFullScreenDefault) {
-      showControls();
-    }
+    // A TV room is always fullscreen, so the controls are never pinned: they
+    // appear for a few seconds on entry (quality and line switching are then one
+    // press away) and hide themselves again.
+    showControls();
+    _holdScreenAwake();
     unawaited(ref.read(danmakuSessionControllerProvider(args).notifier).connectRoom(detail));
 
     await loadQualitiesAndPlay(detail, generation);
@@ -167,17 +167,16 @@ class LivePlayController extends _$LivePlayController {
       case PlayerState.disposed:
         break;
     }
-    _updateScreenKeepOn();
   }
 
-  /// Keeps the screen awake while a room is playing.
+  /// Keeps the screen awake for as long as the player route is open.
   ///
-  /// A TV otherwise dims and starts its screen saver in the middle of a stream,
-  /// so the wake lock follows the user setting and the playback state.
-  void _updateScreenKeepOn() {
-    final enabled = SettingsService.to.appState.enableScreenKeepOn;
-    final playing = state.status == LivePlayStatus.playing || state.status == LivePlayStatus.buffering;
-    unawaited((enabled && playing ? WakelockPlus.enable() : WakelockPlus.disable()).catchError((Object _) {}));
+  /// This is not a setting on a TV: the screen must never dim or start its
+  /// screen saver in the middle of a stream, and while this controller is alive
+  /// the player route is the only thing on screen. The lock is released in
+  /// [_teardown].
+  void _holdScreenAwake() {
+    unawaited(WakelockPlus.enable().catchError((Object _) {}));
   }
 
   void _onPlayerError(PlayerException error) {

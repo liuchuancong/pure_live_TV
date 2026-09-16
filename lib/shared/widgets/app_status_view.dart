@@ -11,6 +11,31 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 enum AppStatusType { loading, empty, error, notLogin }
 
+/// Renders one loading style as a standalone widget.
+///
+/// Used by the loading-style picker so every entry in the list shows the real
+/// animation instead of only its name. The order mirrors what [AppStatusView]
+/// does for the active style: SpinKit first, then `LoadingAnimationWidget`,
+/// then `LoadingIndicator` — each returns an empty box for styles it does not
+/// handle.
+Widget buildLoadingStylePreview({
+  required String style,
+  required Color color,
+  required double size,
+  required TvThemeData theme,
+}) {
+  final Widget spinKit = _AppStatusViewState._getSpinKit(style, color, size);
+  if (spinKit is! SizedBox) return spinKit;
+
+  final Widget animation = _AppStatusViewState._getLoadingAnimation(style, color, size, theme);
+  if (animation is! SizedBox) return animation;
+
+  final Widget indicator = _AppStatusViewState._getLoadingIndicator(style, color, size, theme);
+  if (indicator is! SizedBox) return indicator;
+
+  return const SizedBox.shrink();
+}
+
 class AppStatusView extends StatefulWidget {
   final AppStatusType type;
   final String? title;
@@ -123,7 +148,7 @@ class _AppStatusViewState extends State<AppStatusView> with SingleTickerProvider
     );
   }
 
-  Widget _getSpinKit(String style, Color color, double size) {
+  static Widget _getSpinKit(String style, Color color, double size) {
     return switch (style) {
       'rotatingPlain' => SpinKitRotatingPlain(color: color, size: size),
       'doubleBounce' => SpinKitDoubleBounce(color: color, size: size),
@@ -159,7 +184,7 @@ class _AppStatusViewState extends State<AppStatusView> with SingleTickerProvider
     };
   }
 
-  Widget _getLoadingAnimation(String style, Color color, double size, TvThemeData theme) {
+  static Widget _getLoadingAnimation(String style, Color color, double size, TvThemeData theme) {
     return switch (style) {
       'waveDots' => LoadingAnimationWidget.waveDots(color: color, size: size),
       'inkDrop' => LoadingAnimationWidget.inkDrop(color: color, size: size),
@@ -193,7 +218,7 @@ class _AppStatusViewState extends State<AppStatusView> with SingleTickerProvider
     };
   }
 
-  Widget _getLoadingIndicator(String style, Color color, double size, TvThemeData theme) {
+  static Widget _getLoadingIndicator(String style, Color color, double size, TvThemeData theme) {
     Widget indicator = switch (style) {
       'ballPulse' => LoadingIndicator(indicatorType: Indicator.ballPulse, colors: [color]),
       'ballGridPulse' => LoadingIndicator(indicatorType: Indicator.ballGridPulse, colors: [color]),

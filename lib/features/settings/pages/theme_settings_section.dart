@@ -5,6 +5,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
+import 'package:pure_live/features/settings/pages/color_picker_section.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class ThemeSettingsSectionPage extends ConsumerWidget {
@@ -46,31 +47,36 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             index: themeModes.indexOf(themeState.themeModeName).clamp(0, themeModes.length - 1),
             onChanged: (index) => theme.changeThemeMode(themeModes[index]),
           ),
-          TvSettingsOptionTile(
-            title: i18n('change_loading_style'),
-            subtitle: i18n('change_loading_style_subtitle'),
-            icon: Remix.loader_4_line,
-            options: [for (final style in loadingStyles) _loadingStyleName(style)],
-            index: loadingStyles.indexWhere((e) => e['key'] == themeState.loadingStyle).clamp(0, loadingStyles.length - 1),
-            onChanged: (index) => theme.updateSettings(themeState.copyWith(loadingStyle: loadingStyles[index]['key'] ?? 'default')),
-          ),
-          TvSettingsOptionTile(
-            title: i18n('loading_style_color'),
-            subtitle: i18n('loading_style_color_desc'),
-            icon: Remix.brush_line,
-            options: [i18n('follow_theme_color'), ...colorNames],
-            index: _loadingColorIndex(themeState.loadingStyleColor),
-            onChanged: (index) {
-              final color = index == 0 ? null : _loadingColors[index - 1];
-              theme.updateSettings(themeState.copyWith(loadingStyleColor: color));
-            },
-          ),
+          // Desktop order: dynamic colour belongs with the theme rows, above
+          // the loading animation.
           TvSettingsSwitchTile(
             title: i18n('ui_dynamic_theme_color'),
             subtitle: i18n('ui_derive_the_theme_color_from_the_cover_image'),
             icon: Remix.magic_line,
             value: themeState.enableDynamicTheme,
             onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
+          ),
+          // The animation list carries live previews, so it lives on a page of
+          // its own; a TV has no colour picker, so colours are a page of
+          // swatches.
+          TvSettingsNavTile(
+            title: i18n('change_loading_style'),
+            subtitle: _currentLoadingStyleName(loadingStyles, themeState.loadingStyle),
+            icon: Remix.loader_4_line,
+            onTap: () => context.push(AppRoutes.kSettingsLoadingStyle),
+          ),
+          TvSettingsNavTile(
+            title: i18n('loading_style_color'),
+            subtitle: _loadingColorName(themeState.loadingStyleColor),
+            icon: Remix.brush_line,
+            onTap: () async {
+              final ColorPickResult? result = await context.push<ColorPickResult>(
+                AppRoutes.kSettingsColorPicker,
+                extra: themeState.loadingStyleColor,
+              );
+              if (result == null) return;
+              theme.updateSettings(themeState.copyWith(loadingStyleColor: result.color));
+            },
           ),
           TvSettingsSliderTile(
             title: i18n('ui_horizontal_card_spacing'),
@@ -90,13 +96,26 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             displayValue: themeState.mainAxisSpacing.toStringAsFixed(0),
             onChanged: (v) => theme.updateSettings(themeState.copyWith(mainAxisSpacing: v)),
           ),
-          // Sub-pages the desktop theme page hosts, in its order: paging, then
-          // the font family, then the per-component font sizes.
+          // Sub-pages the desktop theme page hosts, in its order: paging, the
+          // language, the font family, then the per-component font sizes.
           TvSettingsNavTile(
             title: i18n('page_settings'),
             subtitle: i18n('page_settings_subtitle'),
             icon: Remix.pages_line,
             onTap: () => context.push(AppRoutes.kSettingsPage),
+          ),
+          TvSettingsOptionTile(
+            title: i18n('change_language'),
+            subtitle: i18n('change_language_subtitle'),
+            icon: Remix.global_line,
+            options: AppConsts.languages.keys.toList(growable: false),
+            index: _languageIndex(themeState.languageName),
+            onChanged: (i) {
+              final languageName = AppConsts.languages.keys.elementAt(i);
+              theme.changeLanguage(languageName);
+              final locale = AppConsts.languages[languageName];
+              if (locale != null) context.setLocale(Locale(locale.languageCode));
+            },
           ),
           TvSettingsNavTile(
             title: i18n('font_family'),
@@ -126,12 +145,26 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
 
   /// Named accents offered for the loading animation; index 0 keeps the
   /// animation on the colour of the active theme.
-  static final List<String> colorNames = PlayerConsts.themeColors.keys.toList(growable: false);
-  static final List<Color> _loadingColors = PlayerConsts.themeColors.values.toList(growable: false);
+  static String _currentLoadingStyleName(List<Map<String, String>> styles, String key) {
+    for (final style in styles) {
+      if (style['key'] == key) return _loadingStyleName(style);
+    }
+    return key;
+  }
 
-  static int _loadingColorIndex(Color? current) {
-    if (current == null) return 0;
-    final index = _loadingColors.indexWhere((color) => color.toARGB32() == current.toARGB32());
-    return index < 0 ? 0 : index + 1;
+  /// Label of the active loading colour, by name when it is one of the named
+  /// palette entries and by hex otherwise.
+  static String _loadingColorName(Color? current) {
+    if (current == null) return i18n('follow_theme_color');
+    for (final entry in PlayerConsts.themeColors.entries) {
+      if (entry.value.toARGB32() == current.toARGB32()) return entry.key;
+    }
+    return '#${current.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+  }
+
+  /// Index of the persisted language inside [AppConsts.languages].
+  static int _languageIndex(String languageName) {
+    final index = AppConsts.languages.keys.toList(growable: false).indexOf(languageName);
+    return index < 0 ? 1 : index;
   }
 }
