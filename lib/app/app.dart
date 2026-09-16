@@ -18,6 +18,20 @@ class App extends ConsumerWidget {
   static const double _minTextScale = 0.7;
   static const double _maxTextScale = 2.0;
 
+  /// TV page transition: a plain cross-fade with no opaque fill.
+  ///
+  /// The Material defaults (ZoomPageTransitionsBuilder and friends) paint a
+  /// `ColoredBox(colorScheme.surface)` behind the transitioning pages, which
+  /// covers the single app background below the Navigator — that was the
+  /// "black first, then the picture" flash on every push/pop. Pages here are
+  /// transparent by design, so fading the page itself over the always-visible
+  /// background needs no base colour at all.
+  static final PageTransitionsTheme _kPageTransitions = PageTransitionsTheme(
+    builders: <TargetPlatform, PageTransitionsBuilder>{
+      for (final TargetPlatform platform in TargetPlatform.values) platform: const _FadePageTransitionsBuilder(),
+    },
+  );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
@@ -109,6 +123,7 @@ class App extends ConsumerWidget {
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
               scaffoldBackgroundColor: currentTvTheme.backgroundColor,
               canvasColor: Colors.transparent,
+              pageTransitionsTheme: _kPageTransitions,
               colorScheme: _schemeFor(
                 currentTvTheme,
                 themeSettings.enableDynamicTheme ? lightDynamic : null,
@@ -123,6 +138,7 @@ class App extends ConsumerWidget {
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
               scaffoldBackgroundColor: currentTvTheme.backgroundColor,
               canvasColor: Colors.transparent,
+              pageTransitionsTheme: _kPageTransitions,
               colorScheme: _schemeFor(
                 currentTvTheme,
                 themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
@@ -142,6 +158,31 @@ class App extends ConsumerWidget {
 String? _fontFamilyOf(FontSettingsModel? font) {  final String name = font?.fontFamilyName ?? '';
   if (name.isEmpty || name == 'Default') return null;
   return name;
+}
+
+/// The fade-only transition used for every platform; see [App._kPageTransitions].
+class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    // Only the page itself fades; the page below and the app background stay
+    // fully visible, so push and pop read as a cross-fade over the wallpaper.
+    return FadeTransition(
+      opacity: CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      ),
+      child: child,
+    );
+  }
 }
 
 /// 精细化字号微调: the five levels the font page edits, applied to the Material

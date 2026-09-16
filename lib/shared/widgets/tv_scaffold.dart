@@ -276,6 +276,11 @@ class _ImageBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
+        // Always the bottom layer: it also covers the decode window of a fresh
+        // image, so a cold start shows the palette instead of a black frame.
+        DecoratedBox(
+          decoration: BoxDecoration(gradient: LinearGradient(colors: config.gradientColors)),
+        ),
         if (needsBackdrop)
           ImageFiltered(
             imageFilter: ImageFilter.blur(sigmaX: 32, sigmaY: 32, tileMode: TileMode.clamp),
@@ -284,10 +289,6 @@ class _ImageBackground extends StatelessWidget {
                 image: DecorationImage(image: image, fit: BoxFit.cover),
               ),
             ),
-          )
-        else
-          DecoratedBox(
-            decoration: BoxDecoration(gradient: LinearGradient(colors: config.gradientColors)),
           ),
         if (image != null)
           DecoratedBox(
