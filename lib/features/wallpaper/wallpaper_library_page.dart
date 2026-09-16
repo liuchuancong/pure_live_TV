@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/app/router/app_routes.dart';
-import 'package:pure_live/services/background_config/remote/background_repository.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
@@ -32,14 +32,19 @@ class WallpaperLibraryPage extends ConsumerWidget {
               itemCount: sources.length,
               itemBuilder: (context, index) {
                 final source = sources[index];
+                // No item counts here: the lists are paged, so a number would
+                // either be a guess or cost a request per row. Only the sources
+                // that really have sub-categories advertise them.
                 final categories = source.visibleCategories.length;
                 return TvSettingsMenuTile<void>(
                   title: source.localizedName(Localizations.localeOf(context).languageCode),
-                  subtitle: i18nOr(
-                    'wallpaper_library_subtitle',
-                    '{count} 张 · {categories} 个分类',
-                    args: {'count': '${source.count}', 'categories': '$categories'},
-                  ),
+                  subtitle: source.categorized && categories > 1
+                      ? i18nOr(
+                          'wallpaper_category_group',
+                          '{categories} 个分类',
+                          args: {'categories': '$categories'},
+                        )
+                      : null,
                   icon: Icons.image_outlined,
                   onTap: () => context.push(AppRoutes.kWallpaperGallery, extra: source),
                 );

@@ -75,8 +75,7 @@ class LocalWallpapers {
   const LocalWallpapers._();
 
   /// Flat swatches first, then the 139 gradients.
-  static final List<BackgroundItem> solidItems = <BackgroundItem>[
-    for (var i = 0; i < kSolidPalette.length; i++)
+  static final List<BackgroundItem> solidItems = <BackgroundItem>[    for (var i = 0; i < kSolidPalette.length; i++)
       BackgroundItem(
         id: 'flat-$i',
         name: kSolidPalette[i],
@@ -126,27 +125,11 @@ class LocalWallpapers {
       ),
   ];
 
-  static BackgroundShard shard(
-    BackgroundSource source,
-    BackgroundCategory category,
-    List<BackgroundItem> items, {
-    List<String> palette = const <String>[],
-  }) => BackgroundShard(
-    source: source.id,
-    category: category.id,
-    name: category.name,
-    kind: source.kind,
-    count: items.length,
-    items: items,
-    customPalette: palette,
-  );
-
-  static BackgroundShard solidShard(BackgroundSource source, BackgroundCategory category) =>
-      shard(source, category, solidItems, palette: kSolidPalette);
-
-  static BackgroundShard videoShard(BackgroundSource source, BackgroundCategory category) =>
-      shard(source, category, videoItems);
-
-  static BackgroundShard deepinShard(BackgroundSource source, BackgroundCategory category) =>
-      shard(source, category, deepinItems);
+  /// The list belonging to one local source id, or empty for a server source.
+  static List<BackgroundItem> of(String sourceId) => switch (sourceId) {
+    BackgroundSourceIds.solidColor => solidItems,
+    BackgroundSourceIds.video => videoItems,
+    BackgroundSourceIds.deepin => deepinItems,
+    _ => const <BackgroundItem>[],
+  };
 }

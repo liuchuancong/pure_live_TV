@@ -46,7 +46,6 @@ class WallpaperGalleryPage extends StatelessWidget {
           final category = categories[index];
           return TvSettingsMenuTile<void>(
             title: category.localizedName(languageCode),
-            subtitle: i18nOr('wallpaper_category_count', '{count} 张', args: {'count': '${category.count}'}),
             icon: Icons.photo_outlined,
             onTap: () => context.push(
               AppRoutes.kWallpaperItems,

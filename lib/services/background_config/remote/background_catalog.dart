@@ -296,26 +296,3 @@ class BackgroundCatalog {
     );
   }
 }
-
-/// Entries of one category.
-class BackgroundShard {
-  final String source;
-  final String category;
-  final String name;
-  final BackgroundKind kind;
-  final int count;
-  final List<BackgroundItem> items;
-
-  /// Flat colour swatches offered on top of the gradient list.
-  final List<String> customPalette;
-
-  const BackgroundShard({
-    required this.source,
-    required this.category,
-    required this.name,
-    required this.kind,
-    required this.items,
-    this.count = 0,
-    this.customPalette = const <String>[],
-  });
-}

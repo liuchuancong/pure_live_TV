@@ -6,36 +6,43 @@ import 'package:pure_live/services/background_config/remote/background_catalog.d
 ///
 /// Only ids travel through the route. The page resolves them against
 /// `backgroundCatalogProvider`, so a route never captures a stale catalog
-/// object and the library keeps working after the catalog is refreshed.
+/// object.
 class WallpaperItemsArgs {
   const WallpaperItemsArgs({required this.sourceId, this.categoryId});
 
   final String sourceId;
 
   /// Null picks the source's first visible category, which is what the
-  /// single-category sources (colors, live wallpapers) need.
+  /// single-category sources (colors, live wallpapers, bing, deepin) need.
   final String? categoryId;
 }
 
 /// Arguments for the fullscreen preview.
 ///
 /// Exactly one mode is set: [apiSource] previews a random-image API (the page
-/// downloads a fresh picture per request), [items] walks a loaded shard.
+/// downloads a fresh picture per request), otherwise the page walks the paged
+/// grid identified by [sourceId] / [categoryId].
 class WallpaperPreviewArgs {
   const WallpaperPreviewArgs.api(WallpaperApiSource this.apiSource, {this.title})
-    : items = null,
+    : sourceId = null,
+      categoryId = null,
       kind = null,
       initialIndex = 0;
 
   const WallpaperPreviewArgs.catalog({
-    required List<BackgroundItem> this.items,
+    required String this.sourceId,
+    required String this.categoryId,
     required BackgroundKind this.kind,
     this.title,
     this.initialIndex = 0,
   }) : apiSource = null;
 
   final WallpaperApiSource? apiSource;
-  final List<BackgroundItem>? items;
+
+  /// Catalog mode: the paged list to walk. The preview watches the same paging
+  /// core as the grid, so 下一个 can pull the next page in.
+  final String? sourceId;
+  final String? categoryId;
 
   /// Catalog kind, needed to tell video posters and gradients apart.
   final BackgroundKind? kind;

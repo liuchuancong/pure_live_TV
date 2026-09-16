@@ -6,6 +6,7 @@ import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
@@ -13,6 +14,8 @@ import 'package:pure_live/services/background_config/remote/background_catalog.d
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/pagination/models/paging_param.dart';
+import 'package:pure_live/shared/pagination/paging_core.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
@@ -43,14 +46,14 @@ class _PreviewAction {
 ///
 /// Everything is operated through the button bar: `←`/`→` move the highlight
 /// between the buttons and `OK` runs the highlighted one. There is no second
-/// key mode, no page-level d-pad traversal and — deliberately — no arrow key
-/// that switches the picture directly, because the arrows are what the user
-/// needs to reach 设为背景 and the other options. Use 上一个 / 下一个 (or 换一张
-/// in API mode) to change the picture.
+/// key mode and no page-level d-pad traversal — the bar is wrapped in an
+/// [ExcludeFocus] and the highlight is computed here, because the arrows are
+/// what the user needs to reach 设为背景 and the other options.
 ///
-/// The bar is wrapped in an [ExcludeFocus] and the page owns one [Focus]: the
-/// highlight is computed here, so nothing the framework does to focus can move
-/// the selection somewhere invisible. The buttons stay tappable for a mouse.
+/// In catalog mode the page watches the same paging core as the grid, so 上一个
+/// / 下一个 walk straight past the end of the loaded page: the next page is
+/// fetched in the background *before* it is needed, and the picture advances as
+/// soon as it arrives.
 class WallpaperPreviewPage extends ConsumerStatefulWidget {
   const WallpaperPreviewPage({super.key, required this.args});
 
@@ -64,7 +67,7 @@ class WallpaperPreviewPage extends ConsumerStatefulWidget {
 class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   final FocusNode _pageFocus = FocusNode(debugLabel: 'wallpaper-preview');
 
-  /// Catalog mode: position in the shard.
+  /// Catalog mode: position in the paged list.
   int _index = 0;
 
   /// API mode: the downloaded picture and its fetch state.
@@ -74,6 +77,13 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
   /// Which bottom button is highlighted.
   int _actionIndex = 0;
+
+  /// Set when the user asked for the next entry while the next page was still
+  /// being fetched; the advance happens as soon as the list grows.
+  bool _waitingForPage = false;
+
+  /// The paging parameters in force, kept for the key handlers.
+  PagingParam<BackgroundItem>? _param;
 
   @override
   void initState() {
@@ -90,13 +100,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     super.dispose();
   }
 
-  List<BackgroundItem> get _items => widget.args.items ?? const <BackgroundItem>[];
-
-  /// Never throws, even if a caller hands over an empty shard.
+  /// Never throws, even if the page has no entries.
   static const BackgroundItem _emptyItem = BackgroundItem(file: '');
 
-  BackgroundItem get _item {
-    final items = _items;
+  BackgroundItem _itemAt(List<BackgroundItem> items) {
     if (items.isEmpty) return _emptyItem;
     return items[_index.clamp(0, items.length - 1)];
   }
@@ -128,27 +135,51 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  void _next() {
+  /// Pulls the next page in, both on demand and a few entries ahead of the
+  /// cursor so a fast 下一个 never waits on the network.
+  void _prefetch(List<BackgroundItem> items, {bool force = false}) {
+    final param = _param;
+    if (param == null) return;
+    final state = ref.read(pagingCoreProvider(param));
+    if (!state.canLoadMore || state.controllerState.loading) return;
+    if (!force && _index < items.length - 3) return;
+    ref.read(pagingCoreProvider(param).notifier).loadNextPage();
+  }
+
+  void _next(List<BackgroundItem> items) {
     if (widget.args.isApiMode) {
       if (!_apiLoading) _fetchApiImage();
       return;
     }
-    final items = _items;
     if (items.length < 2) return;
-    setState(() => _index = (_index + 1) % items.length);
-  }
 
-  void _prev() {
-    if (widget.args.isApiMode) {
-      if (!_apiLoading) _fetchApiImage();
+    final int next = _index + 1;
+    if (next < items.length) {
+      setState(() => _index = next);
+      _prefetch(items);
       return;
     }
-    final items = _items;
-    if (items.length < 2) return;
-    setState(() => _index = (_index - 1 + items.length) % items.length);
+
+    final param = _param;
+    if (param != null && ref.read(pagingCoreProvider(param)).canLoadMore) {
+      _waitingForPage = true;
+      _prefetch(items, force: true);
+      return;
+    }
+    // End of the list: wrap around.
+    setState(() => _index = 0);
   }
 
-  Future<void> _apply() async {
+  void _prev(List<BackgroundItem> items) {
+    if (widget.args.isApiMode) {
+      _next(items);
+      return;
+    }
+    if (items.length < 2) return;
+    setState(() => _index = _index <= 0 ? items.length - 1 : _index - 1);
+  }
+
+  Future<void> _apply(BackgroundItem item) async {
     if (_applying) return;
     final bg = SettingsService.to.bg;
     setState(() => _applying = true);
@@ -160,12 +191,12 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       } else {
         switch (widget.args.kind!) {
           case BackgroundKind.image:
-            bg.setNetworkImage(_item.file);
+            bg.setNetworkImage(item.file);
           case BackgroundKind.video:
-            bg.setNetworkVideo(_item.file);
+            bg.setNetworkVideo(item.file);
           case BackgroundKind.gradient:
             final colors = <Color>[
-              for (final stop in _item.gradient ?? const <BackgroundGradientStop>[])
+              for (final stop in item.gradient ?? const <BackgroundGradientStop>[])
                 ColorUtil.hexToColor(stop.color),
             ];
             if (colors.length < 2) {
@@ -239,19 +270,19 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     ];
   }
 
-  void _run(_PreviewAction action) {
+  void _run(_PreviewAction action, List<BackgroundItem> items) {
     switch (action.kind) {
       case _PreviewActionKind.fresh:
       case _PreviewActionKind.next:
-        _next();
+        _next(items);
       case _PreviewActionKind.prev:
-        _prev();
+        _prev(items);
       case _PreviewActionKind.fit:
         _cycleFit();
       case _PreviewActionKind.mask:
         _cycleMask();
       case _PreviewActionKind.apply:
-        _apply();
+        _apply(_itemAt(items));
     }
   }
 
@@ -260,7 +291,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     setState(() => _actionIndex = (_actionIndex + step + count) % count);
   }
 
-  KeyEventResult _onKey(KeyEvent event) {
+  KeyEventResult _onKey(KeyEvent event, List<BackgroundItem> items) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
@@ -283,7 +314,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         key == LogicalKeyboardKey.space ||
         key == LogicalKeyboardKey.gameButtonA;
     if (confirm) {
-      _run(actions[_actionIndex.clamp(0, actions.length - 1)]);
+      _run(actions[_actionIndex.clamp(0, actions.length - 1)], items);
       return KeyEventResult.handled;
     }
 
@@ -294,6 +325,18 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   @override
   Widget build(BuildContext context) {
     final bgState = ref.watch(backgroundControllerProvider);
+    final List<BackgroundItem> items = _resolveItems(ref);
+
+    // A page that arrived while the user was already asking for the next entry
+    // advances the cursor now.
+    if (_waitingForPage && _index + 1 < items.length) {
+      _waitingForPage = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _index += 1);
+      });
+    }
+
+    final BackgroundItem item = _itemAt(items);
     final actions = _buildActions();
     final int safeIndex = _actionIndex.clamp(0, actions.length - 1);
     final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
@@ -303,11 +346,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       child: Focus(
         focusNode: _pageFocus,
         autofocus: true,
-        onKeyEvent: (node, event) => _onKey(event),
+        onKeyEvent: (node, event) => _onKey(event, items),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            _buildViewer(bgState),
+            _buildViewer(bgState, item),
             if (widget.args.isApiMode && _apiLoading && hasPicture)
               const Positioned(
                 top: 16,
@@ -321,15 +364,47 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                   ),
                 ),
               ),
-            _buildTopBar(),
-            _buildBottomBar(actions, safeIndex),
+            _buildTopBar(items, item),
+            _buildBottomBar(actions, safeIndex, items),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildViewer(BackgroundConfigModel bgState) {
+  /// The list to walk: the paged core in catalog mode, a one-entry stand-in in
+  /// API mode (which downloads instead).
+  List<BackgroundItem> _resolveItems(WidgetRef ref) {
+    if (widget.args.isApiMode) return const <BackgroundItem>[];
+    final catalog = ref.watch(backgroundCatalogProvider);
+    final source = catalog.sourceById(widget.args.sourceId!);
+    if (source == null) return const <BackgroundItem>[];
+    final category = _pickCategory(source, widget.args.categoryId);
+    if (category == null) return const <BackgroundItem>[];
+
+    final param = wallpaperPagingParam(source, category);
+    _param = param;
+    final state = ref.watch(pagingCoreProvider(param));
+    // Keep a page in hand well before the cursor reaches the end.
+    if (state.canLoadMore && !state.controllerState.loading && _index >= state.items.length - 3) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _prefetch(state.items);
+      });
+    }
+    return state.items;
+  }
+
+  static BackgroundCategory? _pickCategory(BackgroundSource source, String? wanted) {
+    final categories = source.visibleCategories;
+    if (categories.isEmpty) return null;
+    if (wanted == null) return categories.first;
+    for (final category in categories) {
+      if (category.id == wanted) return category;
+    }
+    return categories.first;
+  }
+
+  Widget _buildViewer(BackgroundConfigModel bgState, BackgroundItem item) {
     if (widget.args.isApiMode) {
       final bytes = _apiBytes;
       if (bytes == null) {
@@ -350,7 +425,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
     switch (widget.args.kind!) {
       case BackgroundKind.gradient:
-        return GradientPreview(item: _item);
+        return GradientPreview(item: item);
       case BackgroundKind.video:
         return Stack(
           fit: StackFit.expand,
@@ -358,7 +433,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             // The live picture plays only once it is the background; here the
             // poster stands in for it.
             WallpaperNetworkImage(
-              url: _item.poster ?? _item.file,
+              url: item.poster ?? item.file,
               fit: BoxFit.cover,
               placeholder: const ColoredBox(color: Colors.black),
               fallback: const ColoredBox(color: Colors.black),
@@ -370,7 +445,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         );
       case BackgroundKind.image:
         return WallpaperNetworkImage(
-          url: _item.file,
+          url: item.file,
           fit: bgState.boxFit,
           placeholder: const ColoredBox(color: Colors.black),
           fallback: const ColoredBox(color: Colors.black),
@@ -378,8 +453,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  Widget _buildTopBar() {
-    final items = _items;
+  Widget _buildTopBar(List<BackgroundItem> items, BackgroundItem item) {
     return Positioned(
       top: 0,
       left: 0,
@@ -398,7 +472,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             children: [
               Expanded(
                 child: Text(
-                  _title(),
+                  _title(item),
                   style: TextStyle(fontSize: 18.sp, color: Colors.white, fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -416,7 +490,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     );
   }
 
-  Widget _buildBottomBar(List<_PreviewAction> actions, int safeIndex) {
+  Widget _buildBottomBar(
+    List<_PreviewAction> actions,
+    int safeIndex,
+    List<BackgroundItem> items,
+  ) {
     return Positioned(
       left: 0,
       right: 0,
@@ -454,7 +532,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                       highlighted: i == safeIndex,
                       onTap: () {
                         setState(() => _actionIndex = i);
-                        _run(actions[i]);
+                        _run(actions[i], items);
                       },
                     ),
                   ],
@@ -467,13 +545,13 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     );
   }
 
-  String _title() {
+  String _title(BackgroundItem item) {
     final override = widget.args.title;
     if (override != null && override.isNotEmpty) return override;
     if (widget.args.isApiMode) {
       return '${widget.args.apiSource!.name} · ${i18nOr('wallpaper_random_image', 'Random image')}';
     }
-    final name = _item.name ?? '';
+    final name = item.name ?? '';
     return name.isNotEmpty ? name : '${i18nOr('wallpaper', 'Wallpaper')} ${_index + 1}';
   }
 }

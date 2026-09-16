@@ -7,5 +7,6 @@ export 'wallpaper_image.dart';
 export 'wallpaper_items_page.dart';
 export 'wallpaper_library_page.dart';
 export 'wallpaper_page.dart';
+export 'wallpaper_paging.dart';
 export 'wallpaper_preview_page.dart';
 export 'wallpaper_tile.dart';
