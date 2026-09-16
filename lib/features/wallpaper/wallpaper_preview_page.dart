@@ -100,7 +100,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   VideoController? _videoController;
   StreamSubscription<bool>? _playingSubscription;
   bool _videoPlaying = false;
-  double _volume = 100;
+
+  /// Playback level for the preview's own player. The background layer is muted
+  /// on purpose; this one is not, and the user asked for sound out of the box.
+  static const double _volume = 100;
   String? _openedVideoUrl;
 
   bool get _isVideo =>
@@ -302,23 +305,14 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           busy: _apiLoading,
         )
       else if (_isVideo) ...[
-        // A live wallpaper is watched, so playback leads the bar.
+        // A live wallpaper is watched, so playback leads the bar. Sound is on by
+        // default — there is nothing to configure.
         _PreviewAction(
           kind: _PreviewActionKind.playPause,
           icon: _videoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
           label: _videoPlaying
               ? i18nOr('wallpaper_pause', 'Pause')
               : i18nOr('wallpaper_play', 'Play'),
-        ),
-        _PreviewAction(
-          kind: _PreviewActionKind.volumeDown,
-          icon: Icons.volume_down_rounded,
-          label: i18nOr('wallpaper_volume_down', 'Volume -'),
-        ),
-        _PreviewAction(
-          kind: _PreviewActionKind.volumeUp,
-          icon: Icons.volume_up_rounded,
-          label: i18nOr('wallpaper_volume_up', 'Volume +'),
         ),
         _PreviewAction(
           kind: _PreviewActionKind.prev,
@@ -377,10 +371,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         _apply(_itemAt(items));
       case _PreviewActionKind.playPause:
         unawaited(_togglePlay());
-      case _PreviewActionKind.volumeDown:
-        unawaited(_changeVolume(-10));
-      case _PreviewActionKind.volumeUp:
-        unawaited(_changeVolume(10));
     }
   }
 
@@ -593,16 +583,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                 ),
               if (_isVideo) ...[
                 SizedBox(width: 16.sp),
-                Icon(
-                  _volume <= 0 ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                  size: 18.sp,
-                  color: Colors.white70,
-                ),
-                SizedBox(width: 6.sp),
-                Text(
-                  '${_volume.round()}%',
-                  style: TextStyle(fontSize: 15.sp, color: Colors.white70),
-                ),
+                Icon(Icons.volume_up_rounded, size: 18.sp, color: Colors.white70),
               ],
             ],
           ),
@@ -710,8 +691,7 @@ class _PreviewActionButton extends StatelessWidget {
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
           height: 42.sp,
-          padding: EdgeInsets.symmetric(horizontal: 18.sp),
-          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 16.sp),
           decoration: BoxDecoration(
             color: fill,
             borderRadius: radius,
@@ -720,6 +700,10 @@ class _PreviewActionButton extends StatelessWidget {
               width: 2.sp,
             ),
           ),
+          // No `alignment` here on purpose: a Container with an alignment
+          // expands to the constraint it is given, and inside a `Wrap` that is
+          // the full line width — which put every button on a row of its own.
+          // The intrinsic width comes from the row below instead.
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
