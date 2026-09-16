@@ -1,14 +1,15 @@
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:dpad/dpad.dart';
-import 'package:material_ui/material_ui.dart' as material;
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/tv_scaffold.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/app/router/app_router.dart';
+import 'package:material_ui/material_ui.dart' as material;
+import 'package:pure_live/shared/widgets/tv_scaffold.dart';
+import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
+import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
-import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class App extends ConsumerWidget {
@@ -44,6 +45,9 @@ class App extends ConsumerWidget {
     // the mounted background `Video` still pointed at it (logcat:
     // VideoOutputManager.create → dispose → Resize 0x0 → Surface.release() NPE).
     ref.watch(backgroundControllerProvider);
+    // The LAN sync kit (bonsoir broadcast + discovery, HTTP on 39888): keep it
+    // alive and started for the whole session so the phone can pair at any time.
+    ref.watch(remoteSyncControllerProvider);
     final currentTvTheme = ref.watch(tvThemeControllerProvider);
     final themeSettings = ref.watch(themeSettingsControllerProvider);
     // A TV box reports no night mode (`UI_MODE_NIGHT_NO`), so "跟随系统" would
@@ -80,89 +84,86 @@ class App extends ConsumerWidget {
           accent: systemScheme?.primary,
         );
         return ScreenUtilPlusInit(
-        designSize: Size(1920, 1080),
-        autoRebuild: false,
-        minTextAdapt: false,
-        splitScreenMode: false,
-        child: LocalizationsLocaleSync(
-          locale: appLocale,
-          child: MaterialApp.router(
-            routerConfig: router,
-            debugShowCheckedModeBanner: false,
-            // Installs the D-pad root: direction-key navigation, per-region focus
-            // memory and focus-loss recovery all come from it. Without this layer a TV
-            // remote cannot move focus at all.
-            builder: (context, child) {
-              final Widget withDpad = Dpad.wrap(
-                // Snap scrolling: key repeats re-measure the item mid-animation,
-                // which aborts the scroll and clips the focused item at the edge.
-                // A zero duration jumps to the exact offset measured at rest.
-                theme: const DpadThemeData(scrollDuration: Duration.zero),
-              )(context, child!);
-              // The one place the user's text scale is applied.
+          designSize: Size(1920, 1080),
+          autoRebuild: false,
+          minTextAdapt: false,
+          splitScreenMode: false,
+          child: LocalizationsLocaleSync(
+            locale: appLocale,
+            child: MaterialApp.router(
+              routerConfig: router,
+              debugShowCheckedModeBanner: false,
+              // Installs the D-pad root: direction-key navigation, per-region focus
+              // memory and focus-loss recovery all come from it. Without this layer a TV
+              // remote cannot move focus at all.
+              builder: (context, child) {
+                final Widget withDpad = Dpad.wrap(
+                  // Snap scrolling: key repeats re-measure the item mid-animation,
+                  // which aborts the scroll and clips the focused item at the edge.
+                  // A zero duration jumps to the exact offset measured at rest.
+                  theme: const DpadThemeData(scrollDuration: Duration.zero),
+                )(context, child!);
+                // The one place the user's text scale is applied.
+                //
+                // The app background lives here, below the Navigator, so it is
+                // created once and every page simply stays transparent over it: a
+                // background built per page was re-mounted on every push/pop and
+                // flickered.
+                return MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+                  child: Stack(fit: StackFit.expand, children: <Widget>[const TvAppBackground(), withDpad]),
+                );
+              },
+              // EasyLocalization supplies the locale and the delegate list; the app's own
+              // language setting is pushed into the render layer by LocalizationsLocaleSync.
+              locale: context.locale,
+              supportedLocales: context.supportedLocales,
+              localizationsDelegates: context.localizationDelegates,
+              // 主题模式 was stored and never read. The Material layer follows it
+              // now — dialogs, menus, text selection and the platform keyboard.
+              // The page background and the accent keep coming from the TV
+              // palette, which is what the presets are for: "浅色" therefore means
+              // light Material surfaces over the palette's page, not a different
+              // palette (that is the 主题外观 picker's job).
               //
-              // The app background lives here, below the Navigator, so it is
-              // created once and every page simply stays transparent over it: a
-              // background built per page was re-mounted on every push/pop and
-              // flickered.
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[const TvAppBackground(), withDpad],
+              // Both themes keep the palette colour as the *scaffold* background
+              // (pages that are not a TvScaffold stay opaque) but leave the route
+              // canvas transparent, so the single app background below the
+              // Navigator shows through instead of a Material default — that was
+              // the white flash on every push and pop.
+              theme: ThemeData(
+                useMaterial3: true,
+                brightness: Brightness.light,
+                fontFamily: fontFamily,
+                textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
+                scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
+                canvasColor: Colors.transparent,
+                pageTransitionsTheme: _kPageTransitions,
+                colorScheme: _schemeFor(
+                  resolvedTvTheme,
+                  themeSettings.enableDynamicTheme ? lightDynamic : null,
+                  Brightness.light,
                 ),
-              );
-            },
-            // EasyLocalization supplies the locale and the delegate list; the app's own
-            // language setting is pushed into the render layer by LocalizationsLocaleSync.
-            locale: context.locale,
-            supportedLocales: context.supportedLocales,
-            localizationsDelegates: context.localizationDelegates,
-            // 主题模式 was stored and never read. The Material layer follows it
-            // now — dialogs, menus, text selection and the platform keyboard.
-            // The page background and the accent keep coming from the TV
-            // palette, which is what the presets are for: "浅色" therefore means
-            // light Material surfaces over the palette's page, not a different
-            // palette (that is the 主题外观 picker's job).
-            //
-            // Both themes keep the palette colour as the *scaffold* background
-            // (pages that are not a TvScaffold stay opaque) but leave the route
-            // canvas transparent, so the single app background below the
-            // Navigator shows through instead of a Material default — that was
-            // the white flash on every push and pop.
-            theme: ThemeData(
-              useMaterial3: true,
-              brightness: Brightness.light,
-              fontFamily: fontFamily,
-              textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
-              scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
-              canvasColor: Colors.transparent,
-              pageTransitionsTheme: _kPageTransitions,
-              colorScheme: _schemeFor(
-                resolvedTvTheme,
-                themeSettings.enableDynamicTheme ? lightDynamic : null,
-                Brightness.light,
+                extensions: [TvThemeExtension(theme: resolvedTvTheme)],
               ),
-              extensions: [TvThemeExtension(theme: resolvedTvTheme)],
-            ),
-            darkTheme: ThemeData(
-              useMaterial3: true,
-              brightness: Brightness.dark,
-              fontFamily: fontFamily,
-              textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
-              scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
-              canvasColor: Colors.transparent,
-              pageTransitionsTheme: _kPageTransitions,
-              colorScheme: _schemeFor(
-                resolvedTvTheme,
-                themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
-                Brightness.dark,
+              darkTheme: ThemeData(
+                useMaterial3: true,
+                brightness: Brightness.dark,
+                fontFamily: fontFamily,
+                textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
+                scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
+                canvasColor: Colors.transparent,
+                pageTransitionsTheme: _kPageTransitions,
+                colorScheme: _schemeFor(
+                  resolvedTvTheme,
+                  themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
+                  Brightness.dark,
+                ),
+                extensions: [TvThemeExtension(theme: resolvedTvTheme)],
               ),
-              extensions: [TvThemeExtension(theme: resolvedTvTheme)],
+              themeMode: themeMode,
             ),
-            themeMode: themeMode,
           ),
-        ),
         );
       },
     );
@@ -170,7 +171,8 @@ class App extends ConsumerWidget {
 }
 
 /// The chosen font family, or null for the system default.
-String? _fontFamilyOf(FontSettingsModel? font) {  final String name = font?.fontFamilyName ?? '';
+String? _fontFamilyOf(FontSettingsModel? font) {
+  final String name = font?.fontFamilyName ?? '';
   if (name.isEmpty || name == 'Default') return null;
   return name;
 }
@@ -187,15 +189,19 @@ class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    // Only the page itself fades; the page below and the app background stay
-    // fully visible, so push and pop read as a cross-fade over the wallpaper.
+    // The pages are transparent over the shared wallpaper, so a naive
+    // fade-in of the incoming page stacks it on the *fully lit* outgoing page
+    // — the previous page ghosts through at every intermediate frame. The two
+    // fades below are complementary (same curve, outgoing driven by the
+    // secondary animation): their alphas always sum to ≈1, so content never
+    // double-exposes while the wallpaper itself never fades.
+    final Animatable<double> fadeIn = CurveTween(curve: Curves.easeOutCubic);
+    final Animatable<double> fadeOut = CurveTween(
+      curve: Curves.easeOutCubic,
+    ).chain(Tween<double>(begin: 1.0, end: 0.0));
     return FadeTransition(
-      opacity: CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      ),
-      child: child,
+      opacity: animation.drive(fadeIn),
+      child: FadeTransition(opacity: secondaryAnimation.drive(fadeOut), child: child),
     );
   }
 }

@@ -335,6 +335,8 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Center(child: RemoteSyncQrCard(width: 280)),
+        SizedBox(height: 20.h),
         TvSettingsGroupTitle(title: i18n('iptv_manage')),
         TvSettingsCard(children: _buildResourceRows()),
         SizedBox(height: 20.h),

@@ -37,6 +37,8 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Center(child: RemoteSyncQrCard(width: 280)),
+        SizedBox(height: 20.sp),
         TvSettingsGroupTitle(title: i18n('player_proxy_group_title')),
         TvSettingsCard(
           children: [

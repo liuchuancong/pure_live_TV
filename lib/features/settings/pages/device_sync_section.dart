@@ -3,18 +3,20 @@ import 'dart:async';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
+import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:tv_remote_kit/tv_remote_kit.dart';
 
 /// 设备同步 — the TV end of the LAN sync.
 ///
-/// The phone app's 设备同步 row is the other end: it scans this address and then
-/// pushes (or pulls) the configuration through the LAN remote the TV already
-/// runs for the danmaku filter and cookies — `/api/remote-sync/status`,
-/// `/api/remote-sync/settings`, `/api/backup/export` and `/api/backup/import`.
-/// A TV has no network scanner and no browser, so all this page has to do is
-/// bring the service up and show the address it is reachable at.
+/// Two halves live here. The 8888 web-remote row is unchanged. Below it, the
+/// [TvRemoteKit] service (bonsoir broadcast + discovery, HTTP on 39888) shows
+/// its own pairing QR, lists the peers discovered on the LAN, and pushes/pulls
+/// full settings documents between devices.
 class DeviceSyncSectionPage extends ConsumerStatefulWidget {
   const DeviceSyncSectionPage({super.key});
 
@@ -24,6 +26,7 @@ class DeviceSyncSectionPage extends ConsumerStatefulWidget {
 
 class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
   bool _starting = false;
+  bool _syncing = false;
 
   @override
   void initState() {
@@ -46,15 +49,45 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
     setState(() => _starting = false);
   }
 
+  Future<void> _pushTo(RemoteSyncDevice device) async {
+    final kit = ref.read(remoteSyncControllerProvider.notifier).kit;
+    if (kit == null || _syncing) return;
+    setState(() => _syncing = true);
+    final ok = await kit.syncToDevice(device);
+    if (!mounted) return;
+    setState(() => _syncing = false);
+    ToastUtil.show(
+      ok
+          ? i18nOr('remote_sync_push_done', 'Settings pushed to {name}', args: {'name': device.name})
+          : i18nOr('remote_sync_push_failed', 'Push to {name} failed', args: {'name': device.name}),
+    );
+  }
+
+  Future<void> _pullByAddress() async {
+    final kit = ref.read(remoteSyncControllerProvider.notifier).kit;
+    if (kit == null || _syncing) return;
+    final input = await TvDialogUtils.showInput(
+      context: context,
+      title: i18nOr('remote_sync_pull_title', 'Pull settings from a device'),
+      hintText: '192.168.1.100:39888',
+    );
+    if (input == null || input.trim().isEmpty) return;
+    if (!mounted) return;
+    setState(() => _syncing = true);
+    final ok = await kit.receiveFromQrOrAddress(input);
+    if (!mounted) return;
+    setState(() => _syncing = false);
+    ToastUtil.show(ok ? i18n('webdav_sync_success') : i18n('ui_import_failed_or_file_not_found'));
+  }
+
   @override
   Widget build(BuildContext context) {
     final ServerState? server = ref.watch(tvRemoteReceiverProvider).value;
     final bool running = server?.isRunning == true;
     final String url = running ? (server?.serverUrl ?? '') : '';
     final theme = context.tvTheme;
-    // The mobile app's remote-sync page understands this URI form and offers
-    // send/receive once it scans it; a bare origin still works as a fallback.
-    final String qrData = url.isEmpty ? '' : '${url.replaceFirst('http://', 'purelive://')}/sync';
+    final syncSnapshot = ref.watch(remoteSyncControllerProvider);
+    final devices = syncSnapshot.devices;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,13 +113,42 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
           style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
         ),
         SizedBox(height: 16.h),
-        if (url.isEmpty)
-          Text(
-            i18n('remote_service_unavailable'),
-            style: AppTextStyles.t18W600.copyWith(color: theme.focusColor),
-          )
-        else
-          Center(child: TvQrCodeCard(qrData: qrData, urlText: url)),
+        // The native pairing QR: the phone app scans it, or types the address.
+        Center(child: RemoteSyncQrCard(width: 280)),
+        SizedBox(height: 24.h),
+        // Discovered peers: selecting a row pushes this device's settings to it.
+        TvSettingsGroupTitle(title: i18nOr('remote_sync_devices', 'Devices on this network')),
+        TvSettingsCard(
+          children: [
+            if (devices.isEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 14.h),
+                child: Text(
+                  i18nOr('remote_sync_no_devices', 'No devices discovered yet'),
+                  style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
+                ),
+              )
+            else
+              for (final device in devices)
+                TvSettingsRow(
+                  title: device.name,
+                  subtitle: '${device.address} · ${device.platform}',
+                  icon: Icons.devices_rounded,
+                  trailingBuilder: (context, focused) => tvSettingsValueLabel(
+                    context,
+                    focused,
+                    _syncing ? i18n('ui_loading') : i18nOr('remote_sync_push', 'Push settings'),
+                  ),
+                  onSelect: _syncing ? null : () => unawaited(_pushTo(device)),
+                ),
+            TvSettingsRow(
+              title: i18nOr('remote_sync_pull', 'Pull settings by address'),
+              subtitle: i18nOr('remote_sync_pull_subtitle', 'Enter a peer address to import its settings'),
+              icon: Icons.download_rounded,
+              onSelect: _syncing ? null : () => unawaited(_pullByAddress()),
+            ),
+          ],
+        ),
       ],
     );
   }

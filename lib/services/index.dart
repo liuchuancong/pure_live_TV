@@ -6,6 +6,7 @@ export 'app_settings/app_settings_model.dart';
 export 'background_config/background_config_model.dart';
 export 'background_config/background_controller.dart';
 export 'backup/backup_controller.dart';
+export 'remote_sync/remote_sync_service.dart';
 export 'cache/cache_controller.dart';
 export 'cache/cache_model.dart';
 export 'cookie_manager/bilibili/bilibili_account_controller.dart';

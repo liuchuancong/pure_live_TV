@@ -79,23 +79,8 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final searchState = ref.watch(tvSearchNotifierProvider);
-    final remoteState = ref.watch(tvRemoteReceiverProvider);
     final history = ref.watch(searchHistoryControllerProvider);
     final themeColor = tvTheme.focusColor;
-
-    String qrCodeAddress = i18n('ui_starting_service');
-    String hintText = i18n('ui_initializing_remote_control_connection');
-
-    if (remoteState is AsyncData) {
-      final serverState = remoteState.value!;
-      if (serverState.isRunning) {
-        qrCodeAddress = '${serverState.serverUrl}${WebRemoteRouter.search}';
-        hintText = '${serverState.serverUrl}${WebRemoteRouter.search}';
-      } else if (serverState.error != null) {
-        qrCodeAddress = serverState.error!;
-        hintText = serverState.error!;
-      }
-    }
 
     return TvScaffold(
       showAppBar: false,
@@ -108,10 +93,9 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              width: _centerWidgetWidth.sp,
-              child: TvQrCodeCard(qrData: qrCodeAddress, urlText: hintText),
-            ),
+            // The native sync QR: the phone app scans it (or types the address
+            // below it) once, then every channel — search text included — is live.
+            SizedBox(width: _centerWidgetWidth.sp, child: const RemoteSyncQrCard(width: 320)),
             SizedBox(height: _itemGap.sp),
             SizedBox(height: 12.sp),
             Padding(

@@ -121,6 +121,8 @@ dependencies:
   marquee_list: ^1.0.0
   network_info_plus: ^8.1.0
   bonsoir: ^7.1.5 # 局域网同步
+  tv_remote_kit:
+    path: packages/tv_remote_kit
   android_intent_plus: ^6.0.0
   flutter_inappwebview:
     git:

@@ -153,6 +153,8 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(child: RemoteSyncQrCard(width: 280)),
+          SizedBox(height: 20.h),
           if (widget.header != null) ...[widget.header!, SizedBox(height: 16.h)],
           // 扫码
           if (widget.showPhoneBridge) ...[
