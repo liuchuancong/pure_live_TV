@@ -8,15 +8,23 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
-import 'package:pure_live/services/player_settings/player_settings_controller.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:pure_live/shared/theme/index.dart';
 
 /// 播放器内核设置.
 ///
-/// The rows, their order, the group headings and the labels follow the mobile
-/// page (`pure_live/lib/modules/settings/pages/player_kernel_settings_page.dart`):
-/// 核心内核设置 first, then — for the MPV kernel only — 兼容模式 (Android),
-/// MPV 高级设置 (warning/official docs, reset, the driver sub-pages) and
-/// 音频设置.
+/// Row-for-row the same as the mobile page
+/// (`pure_live/lib/modules/settings/pages/player_kernel_settings_page.dart:31-155`):
+///
+/// 1. 核心内核设置 — 内核切换 → 网络代理设置 (hidden for the Exo kernel) →
+///    开启硬解码 → [启用 RTX VSR, Windows only, not wanted here] → 播放器强制销毁
+/// 2. MPV only — 兼容模式 (Android) → MPV 高级设置 heading → the warning/docs/reset
+///    cluster → 自定义驱动与硬件加速 → 硬件解码器(--hwdec) → 视频输出驱动(--vo)
+/// 3. 音频设置 — 音频输出驱动(--ao)
+///
+/// 仅播放音频 is deliberately *not* here: the mobile app toggles audio-only from
+/// the player controls instead of the settings page, and a TV-only row in the
+/// middle of this list broke the order. It lives on the video page's audio group.
 class PlayerKernelSettingsSectionPage extends ConsumerWidget {
   const PlayerKernelSettingsSectionPage({super.key});
 
@@ -28,7 +36,6 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     final playerState = ref.watch(playerSettingsControllerProvider);
     final player = ref.read(playerSettingsControllerProvider.notifier);
     final String languageCode = Localizations.localeOf(context).languageCode;
-    // 内核名来自 PlayerConsts.names，和移动端同一个 i18n 源（原来这里写死了英文）。
     final List<String> engineKeys = PlayerConsts.engines.keys.toList(growable: false);
     // A key stored by another platform/build may no longer exist; fall back to
     // MPV both for the selected row and for the mpv-only section below.
@@ -36,6 +43,9 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         ? playerState.videoPlayerKey
         : PlayerConsts.defaultKey;
     final bool isMpv = activeEngineKey == PlayerConsts.defaultKey;
+    final bool isExo = activeEngineKey == 'exo';
+    final bool proxyEnabled = SettingsService.to.proxyState.enableProxy;
+    final bool customOutput = playerState.customPlayerOutput;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,25 +61,27 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
               index: engineKeys.indexOf(activeEngineKey).clamp(0, engineKeys.length - 1),
               onChanged: (index) => _selectEngine(ref, engineKeys[index]),
             ),
+            // The reference hides this row for the Exo kernel, which has no
+            // proxy support; everything but Exo keeps it in second position.
+            if (!isExo)
+              TvSettingsNavTile(
+                title: i18n('network_proxy'),
+                subtitle: i18n('network_proxy_subtitle'),
+                icon: Remix.global_line,
+                trailing: Text(
+                  proxyEnabled ? i18n('enabled') : i18n('disabled'),
+                  style: AppTextStyles.t16W600.copyWith(
+                    color: proxyEnabled ? context.tvTheme.focusColor : context.tvTheme.secondaryTextColor,
+                  ),
+                ),
+                onTap: () => context.push(AppRoutes.kSettingsProxy),
+              ),
             TvSettingsSwitchTile(
               title: i18n('enable_codec'),
               subtitle: i18n('gpu_decode'),
               icon: Remix.speed_up_line,
               value: playerState.enableCodec,
               onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),
-            ),
-            // 仅播放音频 is a TV row: the mobile app toggles audio-only from the
-            // playback controls instead. It is wired into the native players
-            // (`PlayerManager.setAudioOnly`), not just stored.
-            TvSettingsSwitchTile(
-              title: i18n('ui_audio_only'),
-              subtitle: i18n('ui_audio_only_no_video_rendering'),
-              icon: Remix.headphone_line,
-              value: playerState.audioOnly,
-              onChanged: (v) {
-                player.updateSettings(playerState.copyWith(audioOnly: v));
-                _applyAudioOnly(v);
-              },
             ),
             TvSettingsSwitchTile(
               title: i18n('force_destroy_player'),
@@ -80,44 +92,47 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
             ),
           ],
         ),
-        // The reference page shows everything below only for the MPV kernel,
-        // because these settings configure mpv itself.
+        // Everything below configures mpv itself, so the reference shows it only
+        // for the MPV kernel.
         if (isMpv) ...[
           SizedBox(height: 20.sp),
+          if (Platform.isAndroid)
+            TvSettingsSwitchTile(
+              title: i18n('compat_mode'),
+              subtitle: i18n('compat_mode_subtitle'),
+              icon: Remix.shield_check_line,
+              value: playerState.playerCompatMode,
+              onChanged: (v) => player.updateSettings(playerState.copyWith(playerCompatMode: v)),
+            ),
+          SizedBox(height: 8.sp),
           TvSettingsGroupTitle(title: i18n('mpv_advanced_settings')),
+          // The reference clusters the warning, the official docs link and the
+          // reset above the settings card. A TV row is one focus stop, so the
+          // link (warning as its subtitle) and the reset are two rows in that
+          // same position — both reference strings are rendered.
+          TvSettingsNavTile(
+            title: i18n('mpv_official_docs'),
+            subtitle: i18n('mpv_warning_text'),
+            icon: Remix.book_open_line,
+            onTap: () => launchUrl(_mpvDocsUri, mode: LaunchMode.externalApplication),
+          ),
+          TvSettingsNavTile(
+            title: i18n('reset'),
+            subtitle: i18n('ui_reset_all_mpv_advanced_settings_to_defaults'),
+            icon: Remix.restart_line,
+            onTap: player.resetMpvPlayerSettings,
+          ),
+          SizedBox(height: 8.sp),
           TvSettingsCard(
             children: [
-              if (Platform.isAndroid)
-                TvSettingsSwitchTile(
-                  title: i18n('compat_mode'),
-                  subtitle: i18n('compat_mode_subtitle'),
-                  icon: Remix.shield_check_line,
-                  value: playerState.playerCompatMode,
-                  onChanged: (v) => player.updateSettings(playerState.copyWith(playerCompatMode: v)),
-                ),
               TvSettingsSwitchTile(
                 title: i18n('custom_output_hwdec'),
-                subtitle: i18n('ui_force_an_output_driver_instead_of_auto_negoti'),
                 icon: Remix.equalizer_line,
-                value: playerState.customPlayerOutput,
+                value: customOutput,
                 onChanged: (v) => player.updateSettings(playerState.copyWith(customPlayerOutput: v)),
               ),
-              // The reference row pairs the warning with an 官方文档 link and a
-              // red reset button. A TV row is one focus stop, so the link gets
-              // its own row (warning as its subtitle) and the reset its own.
-              TvSettingsNavTile(
-                title: i18n('mpv_official_docs'),
-                subtitle: i18n('mpv_warning_text'),
-                icon: Remix.book_open_line,
-                onTap: () => launchUrl(_mpvDocsUri, mode: LaunchMode.externalApplication),
-              ),
-              TvSettingsNavTile(
-                title: i18n('reset'),
-                subtitle: i18n('ui_reset_all_mpv_advanced_settings_to_defaults'),
-                icon: Remix.restart_line,
-                onTap: player.resetMpvPlayerSettings,
-              ),
-              // Sub-page rows show the current choice, like the reference.
+              // The three driver rows keep position even while the switch above
+              // is off; they state that precondition in their own subtitles.
               TvSettingsNavTile(
                 title: i18n('hardware_decoder'),
                 subtitle: PlayerConsts.optionLabelFor(
@@ -165,10 +180,10 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
 
   /// Stores the chosen kernel and moves the live player onto it.
   ///
-  /// Writing `videoPlayerKey` alone only reaches the next player that is
-  /// created from scratch — this app warms the media_kit kernel when the
-  /// playback page boots, so without the switch the row had no visible effect.
-  /// The reference page does the same (`switchEngine(..., isManual: true)`).
+  /// Writing `videoPlayerKey` alone only reaches the next player that is created
+  /// from scratch — this app warms the media_kit kernel when the playback page
+  /// boots, so without the switch the row had no visible effect. The reference
+  /// page does the same (`switchEngine(..., isManual: true)`).
   void _selectEngine(WidgetRef ref, String key) {
     final controller = ref.read(playerSettingsControllerProvider.notifier);
     controller.updateSettings(ref.read(playerSettingsControllerProvider).copyWith(videoPlayerKey: key));
@@ -182,12 +197,5 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         debugPrint('Switch player kernel to $key failed: $error');
       }),
     );
-  }
-
-  /// Pushes 仅播放音频 into the running player instead of only storing it.
-  void _applyAudioOnly(bool value) {
-    final service = GlobalPlayerService.instance;
-    if (!service.initialized) return;
-    unawaited(service.playerManager.setAudioOnly(value));
   }
 }
