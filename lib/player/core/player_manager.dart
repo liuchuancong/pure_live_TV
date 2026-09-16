@@ -728,6 +728,7 @@ class PlayerManager {
 
     try {
       final oldPlayer = _currentPlayer;
+      final oldEngine = _runtimeEngine;
 
       // Every switch — to another kernel, and to the kernel that is already
       // active — hard-disposes the player that is running now.
@@ -753,7 +754,15 @@ class PlayerManager {
 
       _detachCurrentPlayer();
       await _awaitSurfaceHandoff();
-      if (oldPlayer != null) await _safeDestroyPlayer(oldPlayer);
+      if (oldPlayer != null) {
+        await _safeDestroyPlayer(oldPlayer);
+        // One line per switch so a device log shows the kernel that was closed
+        // and the one that took over.
+        log(
+          'switch engine: ${oldEngine?.name ?? '-'} -> ${engine.name}, previous player hard-disposed',
+          name: 'PlayerManager',
+        );
+      }
 
       final newPlayer = await playerPool.getPlayer(engine, audioOnly: _audioOnlySetting);
 
