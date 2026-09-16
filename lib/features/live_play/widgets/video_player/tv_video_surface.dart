@@ -8,6 +8,7 @@ import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dar
 import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
 /// overlay, loading/error overlays and an auto-hiding D-pad control panel.
@@ -97,7 +98,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(strokeWidth: 2),
+                  tvInlineLoading(context, size: 36.sp),
                   SizedBox(height: 12.sp),
                   Text(
                     state.status == LivePlayStatus.loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),

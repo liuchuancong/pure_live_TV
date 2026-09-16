@@ -73,13 +73,13 @@ class TvButton extends StatelessWidget {
 
           if (selected) {
             bgColor = activeTheme.focusColor;
-            foregroundColor = activeTheme.focusedCardColor;
+            foregroundColor = activeTheme.onFocusColor;
           } else if (isFocused && useFadedFocus) {
             bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-            foregroundColor = activeTheme.focusedCardColor;
+            foregroundColor = activeTheme.onFocusColor;
           } else if (isFocused) {
             bgColor = activeTheme.focusColor;
-            foregroundColor = activeTheme.focusedCardColor;
+            foregroundColor = activeTheme.onFocusColor;
           } else {
             bgColor = isSecondary ? activeTheme.cardColor.withValues(alpha: 0.5) : activeTheme.cardColor;
             foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
@@ -95,7 +95,7 @@ class TvButton extends StatelessWidget {
             // Selection is still honoured so a selected label stays selected.
             bgColor = selected ? activeTheme.focusColor : activeTheme.cardColor;
             foregroundColor = selected
-                ? activeTheme.focusedCardColor
+                ? activeTheme.onFocusColor
                 : (isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor);
           }
 

@@ -101,7 +101,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                   SizedBox(
                     width: 18.sp,
                     height: 18.sp,
-                    child: CircularProgressIndicator(strokeWidth: 2.sp, color: context.tvTheme.focusColor),
+                    child: tvInlineLoading(context, size: 18.sp),
                   ),
                   SizedBox(width: 12.sp),
                   Expanded(

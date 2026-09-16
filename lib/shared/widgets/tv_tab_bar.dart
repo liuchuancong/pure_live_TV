@@ -153,11 +153,11 @@ class _TvTabBarState extends State<TvTabBar> {
                         ? currentTvTheme.focusColor.withValues(alpha: 0.5)
                         : Colors.transparent;
 
-                    final foregroundColor = isSelected
-                        ? currentTvTheme.focusedCardColor
-                        : isFocused
-                        ? currentTvTheme.focusColor
-                        : currentTvTheme.primaryTextColor;
+                      final foregroundColor = isSelected
+                          ? currentTvTheme.onFocusColor
+                          : isFocused
+                          ? currentTvTheme.focusColor
+                          : currentTvTheme.primaryTextColor;
 
                     final baseStyle = isSelected || isFocused ? AppTextStyles.t20W600 : AppTextStyles.t20;
 

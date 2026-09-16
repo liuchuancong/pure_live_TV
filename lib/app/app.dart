@@ -52,6 +52,12 @@ class App extends ConsumerWidget {
     // stays an explicit choice.
     final ThemeMode selectedMode = ref.read(themeSettingsControllerProvider.notifier).themeMode;
     final ThemeMode themeMode = selectedMode == ThemeMode.system ? ThemeMode.dark : selectedMode;
+    // Resolve the TV palette for the mode and the dynamic accent. Both used to
+    // live in the Material layer only — every custom widget reads the palette
+    // below, so 动态取色 and 主题模式 looked like they did nothing. The accent
+    // comes from DynamicColorBuilder, so the resolution itself runs in the
+    // builder below.
+    final Brightness paletteBrightness = themeMode == ThemeMode.light ? Brightness.light : Brightness.dark;
     final appLocale = AppConsts.languages[themeSettings.languageName] ?? const Locale('zh');
 
     // 界面字号调节. The app owns the text scale (the font page has a slider for
@@ -65,7 +71,15 @@ class App extends ConsumerWidget {
     // the platform actually provides one; the TV palette keeps supplying the
     // background and the focus colours in either case.
     return DynamicColorBuilder(
-      builder: (lightDynamic, darkDynamic) => ScreenUtilPlusInit(
+      builder: (lightDynamic, darkDynamic) {
+        final material.ColorScheme? systemScheme = themeSettings.enableDynamicTheme
+            ? (paletteBrightness == Brightness.dark ? darkDynamic : lightDynamic)
+            : null;
+        final TvThemeData resolvedTvTheme = currentTvTheme.resolveFor(
+          brightness: paletteBrightness,
+          accent: systemScheme?.primary,
+        );
+        return ScreenUtilPlusInit(
         designSize: Size(1920, 1080),
         autoRebuild: false,
         minTextAdapt: false,
@@ -121,35 +135,36 @@ class App extends ConsumerWidget {
               brightness: Brightness.light,
               fontFamily: fontFamily,
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
-              scaffoldBackgroundColor: currentTvTheme.backgroundColor,
+              scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
               canvasColor: Colors.transparent,
               pageTransitionsTheme: _kPageTransitions,
               colorScheme: _schemeFor(
-                currentTvTheme,
+                resolvedTvTheme,
                 themeSettings.enableDynamicTheme ? lightDynamic : null,
                 Brightness.light,
               ),
-              extensions: [TvThemeExtension(theme: currentTvTheme)],
+              extensions: [TvThemeExtension(theme: resolvedTvTheme)],
             ),
             darkTheme: ThemeData(
               useMaterial3: true,
               brightness: Brightness.dark,
               fontFamily: fontFamily,
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
-              scaffoldBackgroundColor: currentTvTheme.backgroundColor,
+              scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
               canvasColor: Colors.transparent,
               pageTransitionsTheme: _kPageTransitions,
               colorScheme: _schemeFor(
-                currentTvTheme,
+                resolvedTvTheme,
                 themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
                 Brightness.dark,
               ),
-              extensions: [TvThemeExtension(theme: currentTvTheme)],
+              extensions: [TvThemeExtension(theme: resolvedTvTheme)],
             ),
             themeMode: themeMode,
           ),
         ),
-      ),
+        );
+      },
     );
   }
 }

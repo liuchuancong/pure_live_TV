@@ -695,7 +695,7 @@ class _PreviewActionButton extends StatelessWidget {
     final theme = context.tvTheme;
     final radius = BorderRadius.circular(26.sp);
     final Color fill = highlighted ? theme.focusColor : theme.cardColor;
-    final Color foreground = highlighted ? theme.focusedCardColor : theme.primaryTextColor;
+    final Color foreground = highlighted ? theme.onFocusColor : theme.primaryTextColor;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,

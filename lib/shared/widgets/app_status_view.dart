@@ -232,6 +232,28 @@ Widget? _getLoadingIndicator(String style, Color color, double size, TvThemeData
   return SizedBox(width: size, height: size, child: indicator);
 }
 
+/// One themed loading animation in a fixed [size] box, honouring the user's
+/// loading-style setting.
+///
+/// Shared by [AppStatusView] and by the inline spots (player buffering, small
+/// panels) that embed a loader next to text instead of as a page state, so all
+/// of them follow the same style, colour and footprint.
+Widget tvInlineLoading(BuildContext context, {required double size, Color? color}) {
+  final tvTheme = context.tvTheme;
+  final setting = SettingsService.to;
+  final Color parsedColor = color ?? setting.themeState.loadingStyleColor ?? tvTheme.focusColor;
+  final String style = setting.themeState.loadingStyle;
+  final Widget animation = (style != 'default'
+          ? tvLoadingStyleWidget(style: style, color: parsedColor, size: size, theme: tvTheme)
+          : null) ??
+      TvDefaultLoadingRing(color: parsedColor, size: size);
+  return SizedBox(
+    width: size,
+    height: size,
+    child: FittedBox(fit: BoxFit.contain, child: animation),
+  );
+}
+
 class AppStatusView extends StatefulWidget {
   final AppStatusType type;
   final String? title;
@@ -269,17 +291,18 @@ class _AppStatusViewState extends State<AppStatusView> {
   ///
   /// The style and its colour are read from settings at build time, so a choice
   /// made in the animation picker shows up as soon as the page rebuilds.
+  ///
+  /// Every style is fitted into the *same* box: the libraries draw very
+  /// different visual footprints for one `size` (SpinKit's `threeInOut` needs
+  /// ~1.5x, `ripple` fills everything), which made the loader grow and shrink
+  /// when the user switched styles — and made mini loaders inconsistent with
+  /// page loaders. One box + [FittedBox] pins the footprint.
   Widget _buildLoadingWidget(BuildContext context) {
     final tvTheme = context.tvTheme;
     final setting = SettingsService.to;
     final Color parsedColor = setting.themeState.loadingStyleColor ?? widget.iconColor ?? tvTheme.focusColor;
-    final double size = widget.isMini ? 24.sp : 50.sp;
-    final String style = setting.themeState.loadingStyle;
-    if (style != 'default') {
-      final Widget? animation = tvLoadingStyleWidget(style: style, color: parsedColor, size: size, theme: tvTheme);
-      if (animation != null) return animation;
-    }
-    return TvDefaultLoadingRing(color: parsedColor, size: widget.isMini ? 20.sp : 44.sp);
+    final double size = widget.isMini ? 24.sp : 48.sp;
+    return tvInlineLoading(context, size: size, color: parsedColor);
   }
 
 
@@ -308,7 +331,9 @@ class _AppStatusViewState extends State<AppStatusView> {
             decoration: BoxDecoration(
               color: tvTheme.cardColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
-              border: Border.all(color: effectiveIconColor.withValues(alpha: 0.05), width: 1.sp),
+              // 0.05 was invisible on every palette; 0.15 keeps the ring hint
+              // readable on both dark and light surfaces.
+              border: Border.all(color: effectiveIconColor.withValues(alpha: 0.15), width: 1.sp),
             ),
             child: Icon(
               widget.icon ?? (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
