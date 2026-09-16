@@ -2,6 +2,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:dpad/dpad.dart';
 import 'package:material_ui/material_ui.dart' as material;
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/tv_scaffold.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/app/router/app_router.dart';
@@ -61,9 +62,17 @@ class App extends ConsumerWidget {
                 theme: const DpadThemeData(scrollDuration: Duration.zero),
               )(context, child!);
               // The one place the user's text scale is applied.
+              //
+              // The app background lives here, below the Navigator, so it is
+              // created once and every page simply stays transparent over it: a
+              // background built per page was re-mounted on every push/pop and
+              // flickered.
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
-                child: withDpad,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[const TvAppBackground(), withDpad],
+                ),
               );
             },
             // EasyLocalization supplies the locale and the delegate list; the app's own
@@ -78,17 +87,18 @@ class App extends ConsumerWidget {
             // light Material surfaces over the palette's page, not a different
             // palette (that is the 主题外观 picker's job).
             //
-            // Both themes paint the palette background as the scaffold/canvas
-            // colour: a route transition reveals the route's own background
-            // between frames, and leaving that to a light Material default made
-            // every push and pop flash white.
+            // Both themes keep the palette colour as the *scaffold* background
+            // (pages that are not a TvScaffold stay opaque) but leave the route
+            // canvas transparent, so the single app background below the
+            // Navigator shows through instead of a Material default — that was
+            // the white flash on every push and pop.
             theme: ThemeData(
               useMaterial3: true,
               brightness: Brightness.light,
               fontFamily: fontFamily,
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
               scaffoldBackgroundColor: currentTvTheme.backgroundColor,
-              canvasColor: currentTvTheme.backgroundColor,
+              canvasColor: Colors.transparent,
               colorScheme: _schemeFor(
                 currentTvTheme,
                 themeSettings.enableDynamicTheme ? lightDynamic : null,
@@ -102,7 +112,7 @@ class App extends ConsumerWidget {
               fontFamily: fontFamily,
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
               scaffoldBackgroundColor: currentTvTheme.backgroundColor,
-              canvasColor: currentTvTheme.backgroundColor,
+              canvasColor: Colors.transparent,
               colorScheme: _schemeFor(
                 currentTvTheme,
                 themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,

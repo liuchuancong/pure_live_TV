@@ -89,11 +89,12 @@ class _TvScaffoldState extends State<TvScaffold> {
         : TvFocusRestorer(child: widget.child);
 
     return Scaffold(
+      // Transparent on purpose: the background is painted once for the whole app
+      // (see [TvAppBackground]) instead of per page.
+      backgroundColor: Colors.transparent,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const IgnorePointer(child: _BackgroundLayer()),
-          const IgnorePointer(child: _MaskLayer()),
           DpadRegion(
             child: SafeArea(
               child: Column(
@@ -110,6 +111,28 @@ class _TvScaffoldState extends State<TvScaffold> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The background for the entire app: one instance, mounted below the Navigator.
+///
+/// It used to be built inside every [TvScaffold], so each push and pop
+/// re-mounted the layer — a new image layer, a new `Video` widget over the same
+/// controller — which is what made navigation flicker. Now the pages are
+/// transparent and this single widget owns the background pixels for all of
+/// them, so it never rebuilds on navigation and its image/video work is done
+/// once.
+class TvAppBackground extends StatelessWidget {
+  const TvAppBackground({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [_BackgroundLayer(), _MaskLayer()],
       ),
     );
   }
