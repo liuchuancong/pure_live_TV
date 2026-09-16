@@ -42,7 +42,7 @@ final class ExitSettingsControllerProvider
 }
 
 String _$exitSettingsControllerHash() =>
-    r'31ec988ee13090cef7c5f7da51102f591e2f9ddb';
+    r'94a3274c239c57412c9a5cabc04aa972fa35dee5';
 
 abstract class _$ExitSettingsController extends $Notifier<ExitSettingsModel> {
   ExitSettingsModel build();

@@ -2,6 +2,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'tv_search_provider.g.dart';
 
+/// Stable search-type identities passed to the result page. The localized tab
+/// titles must not travel: a language switch would orphan them.
+const String kSearchTypeStreamer = 'streamer';
+const String kSearchTypeRoom = 'room';
+
 class TvSearchState {
   final int tabSiteIndex;
   final int searchTypeIndex;

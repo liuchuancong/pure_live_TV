@@ -41,7 +41,7 @@ final class FavoriteNotifierProvider
   }
 }
 
-String _$favoriteNotifierHash() => r'df8dcbd366a91c59a34db5c22f800a96da39281b';
+String _$favoriteNotifierHash() => r'2c7cfe37bf924f6d5d6183d730b6af1a763a3450';
 
 abstract class _$FavoriteNotifier extends $Notifier<FavoriteState> {
   FavoriteState build();

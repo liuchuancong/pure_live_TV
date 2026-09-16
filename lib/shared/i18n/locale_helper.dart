@@ -41,10 +41,13 @@ Map<String, String> _labels = {
   'xiaohongshu_room_scope': '当前以直播房间号跟踪；主播重新开播使用新房间号时，请重新导入分享链接。',
   // —— 通用 ——
   'cancel': '取消',
+  'clear_search_history': '清空',
   'confirm': '确定',
   'download_failed': '下载失败',
   'epg_import_failed': '节目单导入失败',
   'epg_source_updated': '节目单源已更新',
+  'history_long_press_delete': '长按删除',
+  'search_history': '搜索历史',
   'unsupported_file_format': '不支持的文件格式',
   'provider_name_exists_tip': '该名称已存在，是否覆盖？',
   'subscription_download_or_parse_failed': '订阅下载或解析失败',

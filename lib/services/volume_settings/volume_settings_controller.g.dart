@@ -42,7 +42,7 @@ final class VolumeSettingsControllerProvider
 }
 
 String _$volumeSettingsControllerHash() =>
-    r'dd593259eb50b5e532f96bee0ffb51bdd2e4515b';
+    r'02f2fc699d43aed135bdd5bb2c96f7b2615fb6a2';
 
 abstract class _$VolumeSettingsController
     extends $Notifier<VolumeSettingsModel> {

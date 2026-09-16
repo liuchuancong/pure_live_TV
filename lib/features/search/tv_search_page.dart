@@ -1,3 +1,4 @@
+import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/exports.dart';
 
 class TvSearchPage extends ConsumerStatefulWidget {
@@ -16,7 +17,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
   late final List<TvTabItemData> _typeTabs;
   late final TextEditingController _searchController;
 
-  dynamic _remoteReceiverNotifier;
+  TvRemoteReceiver? _remoteReceiverNotifier;
   bool _isInputFieldFocused = false;
 
   @override
@@ -29,18 +30,19 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _remoteReceiverNotifier = ref.read(tvRemoteReceiverProvider.notifier);
-      _remoteReceiverNotifier.startServer();
+      _remoteReceiverNotifier?.startServer();
       _bindRemoteCallbacks();
     });
   }
 
   void _bindRemoteCallbacks() {
-    if (_remoteReceiverNotifier == null) return;
-    _remoteReceiverNotifier.onStreamerSearch = (searchText) {
+    final receiver = _remoteReceiverNotifier;
+    if (receiver == null) return;
+    receiver.onStreamerSearch = (searchText) {
       _searchController.text = searchText;
       _onSearchSubmit(searchText);
     };
-    _remoteReceiverNotifier.onRoomPush = (searchText) {
+    receiver.onRoomPush = (searchText) {
       _searchController.text = searchText;
       _onSearchSubmit(searchText);
     };
@@ -48,24 +50,28 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
 
   @override
   void dispose() {
-    if (_remoteReceiverNotifier != null) {
-      _remoteReceiverNotifier.onStreamerSearch = null;
-      _remoteReceiverNotifier.onRoomPush = null;
+    final receiver = _remoteReceiverNotifier;
+    if (receiver != null) {
+      receiver.onStreamerSearch = null;
+      receiver.onRoomPush = null;
     }
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _onSearchSubmit(String keyword) async {
-    if (keyword.trim().isEmpty) return;
+    final trimmed = keyword.trim();
+    if (trimmed.isEmpty) return;
+
+    ref.read(searchHistoryControllerProvider.notifier).add(trimmed);
 
     final searchState = ref.read(tvSearchNotifierProvider);
     final currentSite = _siteTabs[searchState.tabSiteIndex].title;
-    final currentType = _typeTabs[searchState.searchTypeIndex].title;
+    final currentType = searchState.searchTypeIndex == 0 ? kSearchTypeStreamer : kSearchTypeRoom;
 
     await context.push(
       AppRoutes.kSearchResult,
-      extra: SearchResultArgs(keyword: keyword.trim(), site: currentSite, searchType: currentType),
+      extra: SearchResultArgs(keyword: trimmed, site: currentSite, searchType: currentType),
     );
   }
 
@@ -74,6 +80,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
     final tvTheme = context.tvTheme;
     final searchState = ref.watch(tvSearchNotifierProvider);
     final remoteState = ref.watch(tvRemoteReceiverProvider);
+    final history = ref.watch(searchHistoryControllerProvider);
     final themeColor = tvTheme.focusColor;
 
     String qrCodeAddress = i18n('ui_starting_service');
@@ -148,6 +155,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                   hint: i18n('search_room_hint'),
                   height: 72.sp,
                   maxLines: 1,
+                  onChanged: (text) => ref.read(tvSearchNotifierProvider.notifier).updateKeyword(text),
                   onSubmitted: _onSearchSubmit,
                   postFixWidget: GestureDetector(
                     onTap: () => _onSearchSubmit(_searchController.text),
@@ -191,6 +199,96 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 ),
               ),
             ),
+            if (history.isNotEmpty) ...[
+              SizedBox(height: 24.sp),
+              _buildHistorySection(history, themeColor),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistorySection(List<String> history, Color themeColor) {
+    return SizedBox(
+      width: (_centerWidgetWidth + 240).sp,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
+            child: Text(
+              '${i18n('search_history')}（${i18n('history_long_press_delete')}）',
+              style: AppTextStyles.t20.copyWith(color: themeColor),
+            ),
+          ),
+          SizedBox(
+            height: 56.sp,
+            child: DpadRegion(
+              horizontalEdge: DpadEdgeBehavior.leave,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const ClampingScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 8.sp),
+                itemCount: history.length + 1,
+                separatorBuilder: (_, _) => SizedBox(width: 10.sp),
+                itemBuilder: (context, index) {
+                  if (index == history.length) {
+                    return _buildHistoryChip(
+                      key: 'search_history_clear',
+                      icon: Icons.delete_outline_rounded,
+                      label: i18n('clear_search_history'),
+                      themeColor: themeColor,
+                      onTap: () => ref.read(searchHistoryControllerProvider.notifier).clear(),
+                    );
+                  }
+                  final keyword = history[index];
+                  return _buildHistoryChip(
+                    key: 'search_history_$keyword',
+                    label: keyword,
+                    themeColor: themeColor,
+                    onTap: () {
+                      _searchController.text = keyword;
+                      _onSearchSubmit(keyword);
+                    },
+                    onLongPress: () => ref.read(searchHistoryControllerProvider.notifier).remove(keyword),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryChip({
+    required String key,
+    required String label,
+    required Color themeColor,
+    required VoidCallback onTap,
+    VoidCallback? onLongPress,
+    IconData? icon,
+  }) {
+    final tvTheme = context.tvTheme;
+    return TvFocusable(
+      key: Key(key),
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Container(
+        height: 44.sp,
+        padding: EdgeInsets.symmetric(horizontal: 22.sp),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: tvTheme.cardColor,
+          borderRadius: BorderRadius.circular(22.sp),
+          border: Border.all(color: themeColor.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[Icon(icon, size: 24.sp, color: themeColor), SizedBox(width: 8.sp)],
+            Text(label, style: AppTextStyles.t20.copyWith(color: tvTheme.primaryTextColor)),
           ],
         ),
       ),

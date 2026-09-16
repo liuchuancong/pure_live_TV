@@ -42,7 +42,7 @@ final class TagManagementControllerProvider
 }
 
 String _$tagManagementControllerHash() =>
-    r'bbf3786c6e2b4b79d1018a7a61c61b90d2a39d00';
+    r'e9e9599a1d1cbaee5df3087dcc0b7eb6487fc09d';
 
 abstract class _$TagManagementController extends $Notifier<TagManagementModel> {
   TagManagementModel build();

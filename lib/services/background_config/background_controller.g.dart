@@ -8,19 +8,43 @@ part of 'background_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Background configuration and the player behind a video background.
+///
+/// keepAlive: the video player and its [VideoController] are created here, and
+/// the background layer only *reads* this provider. As auto-dispose it was
+/// disposed between reads and rebuilt on the next one, so every rebuild created
+/// a new `Player`/`VideoController` and disposed the previous one — the
+/// `VideoOutputManager.create` → `dispose` → `Resize 0x0` →
+/// `Surface.release()` NPE in logcat, plus a reloading wallpaper.
 
 @ProviderFor(BackgroundController)
 final backgroundControllerProvider = BackgroundControllerProvider._();
 
+/// Background configuration and the player behind a video background.
+///
+/// keepAlive: the video player and its [VideoController] are created here, and
+/// the background layer only *reads* this provider. As auto-dispose it was
+/// disposed between reads and rebuilt on the next one, so every rebuild created
+/// a new `Player`/`VideoController` and disposed the previous one — the
+/// `VideoOutputManager.create` → `dispose` → `Resize 0x0` →
+/// `Surface.release()` NPE in logcat, plus a reloading wallpaper.
 final class BackgroundControllerProvider
     extends $NotifierProvider<BackgroundController, BackgroundConfigModel> {
+  /// Background configuration and the player behind a video background.
+  ///
+  /// keepAlive: the video player and its [VideoController] are created here, and
+  /// the background layer only *reads* this provider. As auto-dispose it was
+  /// disposed between reads and rebuilt on the next one, so every rebuild created
+  /// a new `Player`/`VideoController` and disposed the previous one — the
+  /// `VideoOutputManager.create` → `dispose` → `Resize 0x0` →
+  /// `Surface.release()` NPE in logcat, plus a reloading wallpaper.
   BackgroundControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'backgroundControllerProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -42,7 +66,16 @@ final class BackgroundControllerProvider
 }
 
 String _$backgroundControllerHash() =>
-    r'cbb4621dfbdbd8314335a6518316dae8450f1e57';
+    r'5784c378ae8fd5c39f509b14381b9d877e77f939';
+
+/// Background configuration and the player behind a video background.
+///
+/// keepAlive: the video player and its [VideoController] are created here, and
+/// the background layer only *reads* this provider. As auto-dispose it was
+/// disposed between reads and rebuilt on the next one, so every rebuild created
+/// a new `Player`/`VideoController` and disposed the previous one — the
+/// `VideoOutputManager.create` → `dispose` → `Resize 0x0` →
+/// `Surface.release()` NPE in logcat, plus a reloading wallpaper.
 
 abstract class _$BackgroundController extends $Notifier<BackgroundConfigModel> {
   BackgroundConfigModel build();

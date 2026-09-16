@@ -33,6 +33,7 @@ class TvInputField extends StatefulWidget {
   final Color? unFocuesedBorderColor;
   final bool showPasswordToggle;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
   final Widget? postFixWidget;
   final Widget Function(Widget child)? builder;
 
@@ -52,6 +53,7 @@ class TvInputField extends StatefulWidget {
     this.postFixWidget,
     this.builder,
     this.onSubmitted,
+    this.onChanged,
   });
 
   @override
@@ -149,6 +151,7 @@ class _TvInputFieldState extends State<TvInputField> {
           focusedBorder: InputBorder.none,
         ),
         onSubmitted: widget.onSubmitted,
+        onChanged: widget.onChanged,
       ),
     );
 

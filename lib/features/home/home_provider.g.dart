@@ -48,10 +48,16 @@ final class MyProfileMenuItemProvider
   }
 }
 
-String _$myProfileMenuItemHash() => r'c9e00e6e4ebc6c9d250c3a089ea1e54ebb0a8c4c';
+String _$myProfileMenuItemHash() => r'71abac647355c41ad2874b5cc802553bce6efab0';
+
+/// Side menu entries in the order configured in settings, limited to the
+/// visible ones. An empty configuration shows every entry in default order.
 
 @ProviderFor(sideMenuList)
 final sideMenuListProvider = SideMenuListProvider._();
+
+/// Side menu entries in the order configured in settings, limited to the
+/// visible ones. An empty configuration shows every entry in default order.
 
 final class SideMenuListProvider
     extends
@@ -61,6 +67,8 @@ final class SideMenuListProvider
           List<AppMenuItem>
         >
     with $Provider<List<AppMenuItem>> {
+  /// Side menu entries in the order configured in settings, limited to the
+  /// visible ones. An empty configuration shows every entry in default order.
   SideMenuListProvider._()
     : super(
         from: null,
@@ -95,7 +103,7 @@ final class SideMenuListProvider
   }
 }
 
-String _$sideMenuListHash() => r'6ad90c2ae87c4648a026f98bb397c84e28eb8540';
+String _$sideMenuListHash() => r'f3ee494bfa97ddfe57931521b8dbf60b7618872d';
 
 @ProviderFor(mySettingsMenuItem)
 final mySettingsMenuItemProvider = MySettingsMenuItemProvider._();
@@ -137,7 +145,7 @@ final class MySettingsMenuItemProvider
 }
 
 String _$mySettingsMenuItemHash() =>
-    r'9433aed46076f3347f406a36acf7d45760e6846c';
+    r'2b12b2dba8b31b80ad49d3a6ecb8bd5b54265f06';
 
 @ProviderFor(SideMenuIndex)
 final sideMenuIndexProvider = SideMenuIndexProvider._();

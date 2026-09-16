@@ -48,7 +48,7 @@ final class FavoriteRoomControllerProvider
 }
 
 String _$favoriteRoomControllerHash() =>
-    r'9cc80919892d136e4807d523567f6b18255dd884';
+    r'a0f0d33e37b2eced6f608af91f4a32e825544a32';
 
 /// Favorites, blocked words, blocked danmaku users and directory migration,
 /// with identity-based de-duplication.

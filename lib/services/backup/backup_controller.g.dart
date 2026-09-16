@@ -44,7 +44,7 @@ final class BackupControllerProvider
   }
 }
 
-String _$backupControllerHash() => r'5a416a315366729c16ada0df9a141b0c1b762d83';
+String _$backupControllerHash() => r'625f5fd9ef68eca5368807beaae069dffcfd9af2';
 
 /// Full settings backup: export, validate, import and restore.
 

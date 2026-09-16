@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/remote/index.dart';
+import 'package:pure_live/features/search/tv_search_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class TvSearchResultPage extends ConsumerStatefulWidget {
@@ -17,8 +18,10 @@ class TvSearchResultPage extends ConsumerStatefulWidget {
 
 class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
   late String _currentKeyword;
-  dynamic _remoteReceiverNotifier;
+  TvRemoteReceiver? _remoteReceiverNotifier;
   late PagingParam<LiveRoom> _currentParam;
+
+  bool get _isStreamerSearch => widget.searchType == kSearchTypeStreamer;
 
   @override
   void initState() {
@@ -33,13 +36,10 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
   }
 
   void _bindRemoteCallbacks() {
-    if (_remoteReceiverNotifier == null) return;
-    _remoteReceiverNotifier.onStreamerSearch = (searchText) {
-      _handleIncomingSearch(searchText);
-    };
-    _remoteReceiverNotifier.onRoomPush = (searchText) {
-      _handleIncomingSearch(searchText);
-    };
+    final receiver = _remoteReceiverNotifier;
+    if (receiver == null) return;
+    receiver.onStreamerSearch = _handleIncomingSearch;
+    receiver.onRoomPush = _handleIncomingSearch;
   }
 
   void _handleIncomingSearch(String text) {
@@ -68,15 +68,36 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
     final liveSite = Sites.of(selectedSite.id).liveSite;
     final siteId = selectedSite.id;
 
+    // Streamer searches go through searchAnchors and are mapped onto LiveRoom
+    // so the paged grid and TvRoomCard keep working unchanged.
+    Future<List<LiveRoom>> fetch(int page, int size) async {
+      if (!_isStreamerSearch) {
+        return liveSite.searchRooms(_currentKeyword, page: page, pageSize: size);
+      }
+      final anchors = await liveSite.searchAnchors(_currentKeyword, page: page, pageSize: size);
+      return anchors
+          .map(
+            (anchor) => LiveRoom(
+              roomId: anchor.roomId,
+              userId: anchor.roomId,
+              nick: anchor.userName,
+              title: anchor.userName,
+              avatar: anchor.avatar,
+              cover: anchor.avatar,
+              platform: siteId,
+              status: anchor.liveStatus,
+              liveStatus: anchor.liveStatus ? LiveStatus.live : LiveStatus.offline,
+            ),
+          )
+          .toList();
+    }
+
     if (siteId == Sites.kuaishouSite) {
       _currentParam = PagingParam<LiveRoom>(
         mode: PagingMode.serverAll,
         pageSize: 12,
         keepAlive: false,
-        fetchAll: () async {
-          final list = await liveSite.searchRooms(_currentKeyword, page: 1, pageSize: 12);
-          return list;
-        },
+        fetchAll: () => fetch(1, 12),
       );
     } else if (siteId == Sites.douyuSite || siteId == Sites.huyaSite || siteId == Sites.douyinSite) {
       final int fixedSize = switch (siteId) {
@@ -90,29 +111,24 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
         pageSize: 12,
         fixedServerSize: fixedSize,
         keepAlive: false,
-        fetchFixed: (bigPage, size) async {
-          final list = await liveSite.searchRooms(_currentKeyword, page: bigPage, pageSize: size);
-          return list;
-        },
+        fetchFixed: (bigPage, size) => fetch(bigPage, size),
       );
     } else {
       _currentParam = PagingParam<LiveRoom>(
         mode: PagingMode.serverRemote,
         pageSize: 12,
         keepAlive: false,
-        fetchRemote: (page, size) async {
-          final list = await liveSite.searchRooms(_currentKeyword, page: page, pageSize: size);
-          return list;
-        },
+        fetchRemote: (page, size) => fetch(page, size),
       );
     }
   }
 
   @override
   void dispose() {
-    if (_remoteReceiverNotifier != null) {
-      _remoteReceiverNotifier.onStreamerSearch = null;
-      _remoteReceiverNotifier.onRoomPush = null;
+    final receiver = _remoteReceiverNotifier;
+    if (receiver != null) {
+      receiver.onStreamerSearch = null;
+      receiver.onRoomPush = null;
     }
     super.dispose();
   }
@@ -128,7 +144,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
     return TvScaffold(
       title: '${i18n('search')}: $_currentKeyword (${widget.site})',
       child: TvTabView(
-        memoryKey: "tv_search_rooms_view_${widget.site}",
+        memoryKey: "tv_search_rooms_view_${widget.site}_${widget.searchType}",
         verticalEdge: DpadEdgeBehavior.leave,
         horizontalEdge: DpadEdgeBehavior.stop,
         child: BasePagedTvView<LiveRoom>(

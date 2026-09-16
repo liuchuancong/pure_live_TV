@@ -41,7 +41,7 @@ final class TvThemeControllerProvider
   }
 }
 
-String _$tvThemeControllerHash() => r'5578e2d0e7b7dfc2635d9c23fda30b0c2ac0feca';
+String _$tvThemeControllerHash() => r'66b6a5e1a05e8b3f3306c9662742784c2395f1e3';
 
 abstract class _$TvThemeController extends $Notifier<TvThemeData> {
   TvThemeData build();
