@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dpad/dpad.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/player/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
@@ -16,19 +16,22 @@ import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-/// The player's control layer, driven by a **selected index** instead of Flutter
-/// focus.
+/// The player's control layer: **no d-pad, no Flutter focus traversal**.
 ///
-/// Modelled on the reference player (`pure_live_TV/lib/modules/live_play`), where
-/// one value tracks which button is selected (`currentBottomClickType`,
-/// `qualityCurrentIndex`, `lineCurrentIndex`) and a key handler moves it. On a
-/// remote that is far more predictable than focus traversal: Left/Right always
-/// walk the bar, OK always activates what is highlighted, Up moves into the open
-/// panel, Left closes it. Nothing can lose focus, and there is no per-button
-/// focus ring to hunt for.
+/// Ported from the reference player (`E:/project/pure_live_TV/lib/modules/
+/// live_play`), which installs one key handler for the whole video page and
+/// keeps a selected index per area (`currentNodeIndex`, `qualityCurrentIndex`,
+/// `lineCurrentIndex`, `danmukuNodeIndex`). One [Focus] owns the keys here and
+/// steers those indexes, so:
 ///
-/// Volume buttons are gone: a TV has hardware volume and an on-screen pair only
-/// ate two of the most reachable positions.
+/// * Left/Right always walk the bar with wrap, OK always activates what is
+///   highlighted, Up enters the open option list, Left closes it;
+/// * nothing can steal focus, and there is no per-button focus ring to hunt for;
+/// * the bar looks like the reference's: a black strip of pill buttons with an
+///   icon and, where the current value matters, its text.
+///
+/// Volume buttons are omitted on purpose — a TV has hardware volume, and the two
+/// most reachable slots are better used by 清晰度 and 线路.
 class VideoControllerPanel extends ConsumerStatefulWidget {
   final LivePlayArgs args;
 
@@ -45,40 +48,124 @@ enum _Zone { bar, options }
 enum _OptionsPanel { none, quality, line, fit }
 
 class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
-  static const double _barHeight = 56;
+  static const double _barHeight = 64;
   static const double _optionsWidth = 380;
 
-  /// The layer's own focus node.
-  ///
-  /// dpad only delivers [DpadFocusable.onDirection] to the *focused* node, and
-  /// the video area keeps its own autofocus node, so the bar has to claim focus
-  /// when it appears — otherwise Left/Right went to the video node (channel
-  /// switching) and the bar looked frozen.
-  final FocusNode _barFocusNode = FocusNode(debugLabel: 'live_play/controls');
+  final FocusNode _focusNode = FocusNode(debugLabel: 'live_play/controls');
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_barFocusNode.hasFocus) _barFocusNode.requestFocus();
-    });
-  }
-
-  @override
-  void dispose() {
-    _barFocusNode.dispose();
-    super.dispose();
-  }
-
-  /// Remembered across appear/disappear so the controls come back where they
-  /// were left, like the reference's index values.
+  /// Remembered across hide/show, like the reference's index values.
   int _barIndex = 0;
   int _optionIndex = 0;
   _Zone _zone = _Zone.bar;
   _OptionsPanel _panel = _OptionsPanel.none;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_focusNode.hasFocus) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   // =========================
-  // data helpers
+  // key handling (the reference's isConfirmKey set)
+  // =========================
+
+  static bool _isConfirm(LogicalKeyboardKey key) =>
+      key == LogicalKeyboardKey.select ||
+      key == LogicalKeyboardKey.enter ||
+      key == LogicalKeyboardKey.space ||
+      key == LogicalKeyboardKey.controlLeft ||
+      key == LogicalKeyboardKey.controlRight ||
+      key == LogicalKeyboardKey.numpadEnter ||
+      key == LogicalKeyboardKey.gameButtonA;
+
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    final state = ref.read(livePlayControllerProvider(widget.args));
+    final key = event.logicalKey;
+
+    if (_isConfirm(key)) {
+      _onSelect(state);
+      return KeyEventResult.handled;
+    }
+
+    final TraversalDirection? direction = switch (key) {
+      LogicalKeyboardKey.arrowLeft => TraversalDirection.left,
+      LogicalKeyboardKey.arrowRight => TraversalDirection.right,
+      LogicalKeyboardKey.arrowUp => TraversalDirection.up,
+      LogicalKeyboardKey.arrowDown => TraversalDirection.down,
+      _ => null,
+    };
+    if (direction == null) return KeyEventResult.ignored;
+
+    _onDirection(direction, state);
+    return KeyEventResult.handled;
+  }
+
+  void _onDirection(TraversalDirection direction, LivePlayState state) {
+    final int barCount = _barActions(state).length;
+    final int optionCount = _panelOptions(state).length;
+    if (barCount == 0) return;
+
+    // Any key keeps the controls on screen while the user is working them.
+    ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
+
+    switch (_zone) {
+      case _Zone.bar:
+        switch (direction) {
+          case TraversalDirection.left:
+            setState(() => _barIndex = (_barIndex - 1 + barCount) % barCount);
+          case TraversalDirection.right:
+            setState(() => _barIndex = (_barIndex + 1) % barCount);
+          case TraversalDirection.up:
+            if (_panel != _OptionsPanel.none && optionCount > 0) {
+              setState(() => _zone = _Zone.options);
+            }
+          case TraversalDirection.down:
+            break;
+        }
+      case _Zone.options:
+        if (optionCount == 0) {
+          setState(() => _zone = _Zone.bar);
+          return;
+        }
+        switch (direction) {
+          case TraversalDirection.up:
+            setState(() => _optionIndex = (_optionIndex - 1 + optionCount) % optionCount);
+          case TraversalDirection.down:
+            setState(() => _optionIndex = (_optionIndex + 1) % optionCount);
+          case TraversalDirection.left:
+            _closePanel();
+          case TraversalDirection.right:
+            break;
+        }
+    }
+  }
+
+  void _onSelect(LivePlayState state) {
+    ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
+
+    if (_zone == _Zone.options) {
+      final options = _panelOptions(state);
+      if (options.isEmpty) return;
+      options[_optionIndex.clamp(0, options.length - 1)].apply();
+      return;
+    }
+
+    final actions = _barActions(state);
+    if (actions.isEmpty) return;
+    actions[_barIndex.clamp(0, actions.length - 1)].onSelect();
+  }
+
+  // =========================
+  // data
   // =========================
 
   String _qualityLabel(LivePlayState state) {
@@ -94,7 +181,6 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     return i18n(PlayerConsts.names[key] ?? PlayerConsts.names[PlayerConsts.defaultKey] ?? key);
   }
 
-  /// Options of the open panel, as (label, apply) pairs.
   List<({String label, VoidCallback apply, bool active})> _panelOptions(LivePlayState state) {
     switch (_panel) {
       case _OptionsPanel.quality:
@@ -118,11 +204,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       case _OptionsPanel.fit:
         return <({String label, VoidCallback apply, bool active})>[
           for (int i = 0; i < kLivePlayFitLabels.length; i++)
-            (
-              label: kLivePlayFitLabels[i],
-              active: i == state.fitIndex,
-              apply: () => _setFit(i),
-            ),
+            (label: kLivePlayFitLabels[i], active: i == state.fitIndex, apply: () => _setFit(i)),
         ];
       case _OptionsPanel.none:
         return const <({String label, VoidCallback apply, bool active})>[];
@@ -172,64 +254,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     _zone = _Zone.bar;
   });
 
-  // =========================
-  // key handling
-  // =========================
-
-  void _onDirection(TraversalDirection direction, LivePlayState state) {
-    final int barCount = _barActions(state).length;
-    final int optionCount = _panelOptions(state).length;
-
-    switch (_zone) {
-      case _Zone.bar:
-        switch (direction) {
-          case TraversalDirection.left:
-            setState(() => _barIndex = (_barIndex - 1 + barCount) % barCount);
-          case TraversalDirection.right:
-            setState(() => _barIndex = (_barIndex + 1) % barCount);
-          case TraversalDirection.up:
-            if (_panel != _OptionsPanel.none && optionCount > 0) {
-              setState(() => _zone = _Zone.options);
-            }
-          case TraversalDirection.down:
-            break;
-        }
-      case _Zone.options:
-        switch (direction) {
-          case TraversalDirection.up:
-            setState(() => _optionIndex = (_optionIndex - 1 + optionCount) % optionCount);
-          case TraversalDirection.down:
-            setState(() => _optionIndex = (_optionIndex + 1) % optionCount);
-          // Left closes the list, like the reference's panels.
-          case TraversalDirection.left:
-            _closePanel();
-          case TraversalDirection.right:
-            break;
-        }
-    }
-  }
-
-  void _onSelect(LivePlayState state) {
-    final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
-    controller.keepControlsAlive();
-
-    if (_zone == _Zone.options) {
-      final options = _panelOptions(state);
-      if (options.isEmpty) return;
-      options[_optionIndex.clamp(0, options.length - 1)].apply();
-      // 清晰度/线路 reload the stream; the panel closes so the picture is visible.
-      if (_panel == _OptionsPanel.quality || _panel == _OptionsPanel.line) {
-        setState(() => _zone = _Zone.bar);
-      }
-      return;
-    }
-
-    _barActions(state)[_barIndex.clamp(0, _barActions(state).length - 1)].onSelect();
-  }
-
-  /// Bottom bar: what a viewer touches while watching. Icons where a picture
-  /// says it, text where the current value matters (清晰度/线路/比例), exactly like
-  /// the reference bar.
+  /// Bottom bar, in the reference's order: 关注 / 刷新 / 播放暂停 / 弹幕 / 弹幕设置 /
+  /// 清晰度 / 线路 / 比例 / 弹幕过滤 / 播放列表 / 房间信息 / 内核 / 切换房间 / 背景.
   List<_PanelAction> _barActions(LivePlayState state) {
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final danmakuSettings = ref.watch(danmakuSettingsControllerProvider);
@@ -261,8 +287,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         label: playing ? i18n('multiview_pause') : i18n('multiview_play'),
         onSelect: controller.togglePlayPause,
       ),
+      // The reference ships these two as SVG; the same assets are used here.
       _PanelAction(
-        icon: danmakuOn ? Icons.subtitles : Icons.subtitles_off,
+        asset: danmakuOn ? 'assets/images/video/danmu_open.svg' : 'assets/images/video/danmu_close.svg',
         label: danmakuOn ? i18n('ui_danmaku_on') : i18n('ui_danmaku_off'),
         active: danmakuOn,
         onSelect: () => danmakuNotifier.updateSettings(
@@ -270,12 +297,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         ),
       ),
       _PanelAction(
-        icon: Icons.tune_rounded,
+        asset: 'assets/images/video/danmu_setting.svg',
         label: i18n('danmaku_settings'),
         active: state.showSidePanel && state.panel == LivePlayPanel.danmakuSettings,
         onSelect: () => controller.togglePanel(LivePlayPanel.danmakuSettings),
       ),
-      // The three value buttons open the option list on the right.
       _PanelAction(
         icon: Icons.high_quality_rounded,
         label: _qualityLabel(state),
@@ -330,7 +356,6 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     ];
   }
 
-  /// 播放器内核 picker: mpv / ijk / exo, switched on the live service right away.
   Future<void> _pickEngine() async {
     final engineKeys = PlayerConsts.engines.keys.toList(growable: false);
     final playerSettings = ref.read(playerSettingsControllerProvider);
@@ -338,6 +363,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         ? playerSettings.videoPlayerKey
         : PlayerConsts.defaultKey;
 
+    // The dialog takes the keyboard while it is open, then the bar takes it back.
+    _focusNode.unfocus();
     final String? key = await TvDialogUtils.showSelect<String>(
       context: context,
       title: i18n('kernel_switch'),
@@ -346,6 +373,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         for (final String k in engineKeys) TvSelectItem<String>(title: i18n(PlayerConsts.names[k] ?? k), value: k),
       ],
     );
+    if (mounted) _focusNode.requestFocus();
     if (key == null || !mounted || key == activeKey) return;
 
     ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
@@ -363,10 +391,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 
   Future<void> _switchRoom(LiveRoom? room) async {
     if (room == null) return;
+    _focusNode.unfocus();
     final selected = await showRoomSwitchDialog(context, current: room);
+    if (mounted) _focusNode.requestFocus();
     if (selected == null || !mounted) return;
-    // Replacing the route disposes this room's controller and starts the selected
-    // room through the same page.
     context.replace(AppRoutes.kLivePlay, extra: selected);
   }
 
@@ -380,34 +408,34 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final tvTheme = context.tvTheme;
     final actions = _barActions(state);
     final options = _panelOptions(state);
-    // The bar can shrink between frames (a room without qualities); keep the
-    // selection inside it.
     if (_barIndex >= actions.length) _barIndex = actions.isEmpty ? 0 : actions.length - 1;
     if (options.isNotEmpty && _optionIndex >= options.length) _optionIndex = options.length - 1;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.0)],
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _onKeyEvent,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.0)],
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (_panel != _OptionsPanel.none && options.isNotEmpty) _buildOptionsPanel(state, options, tvTheme),
-          _buildBar(actions, tvTheme),
-        ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (_panel != _OptionsPanel.none && options.isNotEmpty) _buildOptionsPanel(options, tvTheme),
+            _buildBar(actions, tvTheme),
+          ],
+        ),
       ),
     );
   }
 
-  /// Right-hand option list: one column, the selected row highlighted, the
-  /// current value ticked.
   Widget _buildOptionsPanel(
-    LivePlayState state,
     List<({String label, VoidCallback apply, bool active})> options,
     TvThemeData tvTheme,
   ) {
@@ -417,7 +445,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         width: _optionsWidth.sp,
         constraints: BoxConstraints(maxHeight: 560.sp),
         decoration: BoxDecoration(
-          color: tvTheme.backgroundColor.withValues(alpha: 0.94),
+          color: Colors.black.withValues(alpha: 0.92),
           borderRadius: BorderRadius.circular(16.sp),
           border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
         ),
@@ -426,11 +454,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
-              child: Text(
-                _panelTitle,
-                style: AppTextStyles.t20W600.copyWith(color: tvTheme.primaryTextColor),
-              ),
+              padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
+              child: Text(_panelTitle, style: AppTextStyles.t20W600.copyWith(color: Colors.white)),
             ),
             Flexible(
               child: ListView.builder(
@@ -442,32 +467,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
                   final option = options[index];
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
-                      decoration: BoxDecoration(
-                        color: selected ? tvTheme.focusColor.withValues(alpha: 0.25) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10.sp),
-                        border: Border.all(
-                          color: selected ? tvTheme.focusColor : Colors.transparent,
-                          width: 2.sp,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              option.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t18W500.copyWith(
-                                color: selected ? tvTheme.focusColor : tvTheme.primaryTextColor,
-                              ),
-                            ),
-                          ),
-                          if (option.active)
-                            Icon(Icons.check_rounded, size: 22.sp, color: tvTheme.focusColor),
-                        ],
-                      ),
+                    child: _Pill(
+                      label: option.label,
+                      selected: selected,
+                      accent: tvTheme.focusColor,
+                      trailing: option.active ? Icons.check_rounded : null,
                     ),
                   );
                 },
@@ -479,108 +483,107 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     );
   }
 
-  /// Bottom bar: one black strip of icon/text buttons, index-driven.
   Widget _buildBar(List<_PanelAction> actions, TvThemeData tvTheme) {
     return Container(
       height: _barHeight.sp + 24.sp,
       alignment: Alignment.centerLeft,
       padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
-      child: DpadFocusable(
-        // The controls are shown by the OK key; the bar claims focus so the
-        // index is the only cursor, and the remembered index decides which
-        // button is highlighted.
-        autofocus: true,
-        focusNode: _barFocusNode,
-        effects: const [],
-        excludeChildFocus: true,
-        // Every direction is consumed here: the index is the only cursor, so
-        // focus can never wander off the controls.
-        onDirection: (direction) {
-          _onDirection(direction, ref.read(livePlayControllerProvider(widget.args)));
-          return true;
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: actions.length,
+        separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+        itemBuilder: (context, index) {
+          final action = actions[index];
+          return _Pill(
+            icon: action.icon,
+            asset: action.asset,
+            label: action.label,
+            selected: _zone == _Zone.bar && index == _barIndex,
+            accent: tvTheme.focusColor,
+            tinted: action.active,
+          );
         },
-        onSelect: () => _onSelect(ref.read(livePlayControllerProvider(widget.args))),
-        child: SizedBox(
-          height: _barHeight.sp,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.zero,
-            itemCount: actions.length,
-            separatorBuilder: (_, _) => SizedBox(width: 12.sp),
-            itemBuilder: (context, index) {
-              final action = actions[index];
-              final bool selected = _zone == _Zone.bar && index == _barIndex;
-              return _BarButton(
-                icon: action.icon,
-                label: action.label,
-                selected: selected,
-                active: action.active,
-                accent: tvTheme.focusColor,
-              );
-            },
-          ),
-        ),
       ),
     );
   }
 }
 
 class _PanelAction {
-  const _PanelAction({required this.icon, required this.label, required this.onSelect, this.active = false});
+  const _PanelAction({
+    this.icon,
+    this.asset,
+    required this.label,
+    required this.onSelect,
+    this.active = false,
+  }) : assert(icon != null || asset != null, 'A bar button needs an icon or an asset');
 
-  final IconData icon;
+  final IconData? icon;
+
+  /// SVG asset, for the buttons the reference ships as artwork (弹幕开关/弹幕设置).
+  final String? asset;
   final String label;
   final VoidCallback onSelect;
 
-  /// A state this button currently represents (followed, danmaku on, open
-  /// panel), shown as a tinted background even when it is not selected.
+  /// A state this button currently represents (followed, danmaku on, open panel).
   final bool active;
 }
 
-/// One bar button: outlined when it is merely on, filled when the index is on it.
-class _BarButton extends StatelessWidget {
-  const _BarButton({
-    required this.icon,
+/// The reference's bottom-bar button: a pill that turns into the accent colour
+/// with dark content when the index selects it, over a translucent white base.
+class _Pill extends StatelessWidget {
+  const _Pill({
+    this.icon,
+    this.asset,
     required this.label,
     required this.selected,
-    required this.active,
     required this.accent,
+    this.tinted = false,
+    this.trailing,
   });
 
-  final IconData icon;
+  final IconData? icon;
+  final String? asset;
   final String label;
   final bool selected;
-  final bool active;
   final Color accent;
+  final bool tinted;
+  final IconData? trailing;
 
   @override
   Widget build(BuildContext context) {
     final Color background = selected
         ? accent
-        : (active ? accent.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.08));
+        : (tinted ? accent.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.10));
     final Color foreground = selected ? Colors.black : Colors.white;
+    final Color border = selected || tinted ? accent : Colors.transparent;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.sp),
+      height: 52.sp,
+      padding: EdgeInsets.symmetric(horizontal: 18.sp),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(10.sp),
-        border: Border.all(
-          color: selected || active ? accent : Colors.white.withValues(alpha: 0.18),
-          width: selected ? 2.sp : 1.sp,
-        ),
+        borderRadius: BorderRadius.circular(26.sp),
+        border: Border.all(color: border, width: selected ? 2.sp : 1.sp),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 22.sp, color: foreground),
-          SizedBox(width: 8.sp),
+          if (asset != null)
+            SvgPicture.asset(asset!, width: 26.sp, height: 26.sp, colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn))
+          else if (icon != null)
+            Icon(icon, size: 24.sp, color: foreground),
+          if (asset != null || icon != null) SizedBox(width: 8.sp),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.t16W500.copyWith(color: foreground, fontWeight: FontWeight.w600),
           ),
+          if (trailing != null) ...[
+            SizedBox(width: 8.sp),
+            Icon(trailing, size: 22.sp, color: foreground),
+          ],
         ],
       ),
     );

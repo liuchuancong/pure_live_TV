@@ -64,6 +64,7 @@ dependencies:
   # UI布局、屏幕适配、图标色彩
   dpad: ^3.0.0                        # TV遥控器方向键导航适配
   flutter_screenutil_plus: ^1.5.0     # 屏幕尺寸适配、字体缩放
+  flutter_svg: ^2.3.0  # 播放页弹幕图标（与参考项目同一套 SVG）
   hexcolor: ^3.1.3                    # 十六进制颜色字符串解析
   url_launcher: ^6.1.12               # 唤起外部浏览器、APP跳转
 
