@@ -176,6 +176,12 @@ class PlayerManager {
   bool _disposed = false;
 
   bool _isSwitchingDueToFallback = false;
+
+  /// Engines that failed in this session; a fallback never switches back to
+  /// them, and the mismatch check below skips them too. Without this the
+  /// fallback and the 'runtime != default' switch bounced off each other
+  /// forever (fijk -> mediaKit -> fijk -> ...) and froze the app.
+  final Set<PlayerEngine> _enginesUnavailableThisSession = <PlayerEngine>{};
   bool _isHandlingError = false;
   _PendingPlayerError? _pendingPlayerError;
   int? _errorDedupeSession;
@@ -465,7 +471,9 @@ class PlayerManager {
         }
         return;
       }
-    } else if (_runtimeEngine != _defaultEngine && !_isSwitchingDueToFallback) {
+    } else if (_runtimeEngine != _defaultEngine &&
+        !_isSwitchingDueToFallback &&
+        !_enginesUnavailableThisSession.contains(_defaultEngine)) {
       await _switchEngineInternal(_defaultEngine!, isManual: false, openCurrentSource: false);
     }
 
@@ -701,6 +709,7 @@ class PlayerManager {
 
       if (isManual) {
         _defaultEngine = engine;
+        _enginesUnavailableThisSession.clear();
       }
 
       if (oldPlayer != null && oldEngine != null && !identical(oldPlayer, _currentPlayer)) {
@@ -1488,6 +1497,16 @@ class PlayerManager {
                     );
               continue;
             }
+            // The engine that was just proven to work becomes the default for
+            // this session.
+            //
+            // It used to stay the failing one, so the very next `_openPlayerSource`
+            // saw `_runtimeEngine != _defaultEngine` and switched *back* to the
+            // broken engine — which failed, fell back again, switched back… a
+            // tight loop that froze the app (logcat: dozens of
+            // "recover playback with engine: fijk -> mediaKit" per second).
+            _defaultEngine = nextEngine;
+            _enginesUnavailableThisSession.add(engineCursor);
             return;
           }
         }
