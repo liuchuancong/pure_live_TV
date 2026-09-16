@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/theme/index.dart';
@@ -8,6 +10,7 @@ import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
+import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Bottom control bar of the video area, driven entirely by D-pad focus.
@@ -28,6 +31,46 @@ class VideoControllerPanel extends ConsumerStatefulWidget {
 
 class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   static const double _barHeight = 56;
+
+  String _qualityLabel(LivePlayState state) {
+    if (state.qualities.isEmpty) return '-';
+    final int index = state.qualityIndex.clamp(0, state.qualities.length - 1);
+    return state.qualities[index].quality;
+  }
+
+  /// 清晰度 picker, over the video.
+  Future<void> _pickQuality(LivePlayState state) async {
+    if (state.qualities.isEmpty) return;
+    final int? index = await TvDialogUtils.showSelect<int>(
+      context: context,
+      title: i18n('recorder_stage_quality'),
+      selectedValue: state.qualityIndex,
+      items: <TvSelectItem<int>>[
+        for (int i = 0; i < state.qualities.length; i++)
+          TvSelectItem<int>(title: state.qualities[i].quality, value: i),
+      ],
+    );
+    if (index == null || !mounted) return;
+    ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
+    await ref.read(livePlayControllerProvider(widget.args).notifier).changeQuality(index);
+  }
+
+  /// 线路 picker, over the video.
+  Future<void> _pickLine(LivePlayState state) async {
+    if (state.playUrls.isEmpty) return;
+    final int? index = await TvDialogUtils.showSelect<int>(
+      context: context,
+      title: i18n('multiview_line_selector'),
+      selectedValue: state.lineIndex,
+      items: <TvSelectItem<int>>[
+        for (int i = 0; i < state.playUrls.length; i++)
+          TvSelectItem<int>(title: i18n('multiview_line', args: {'index': '${i + 1}'}), value: i),
+      ],
+    );
+    if (index == null || !mounted) return;
+    ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
+    await ref.read(livePlayControllerProvider(widget.args).notifier).changeLine(index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +125,25 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         onSelect: () {
           keepAlive();
           controller.cycleFit();
+        },
+      ),
+      // 清晰度 and 线路 belong to the fullscreen controls, like every other
+      // playback choice: a TV viewer switches them while watching, not in a
+      // settings page.
+      _PanelAction(
+        icon: Icons.high_quality_rounded,
+        label: '${i18n('recorder_stage_quality')} ${_qualityLabel(state)}',
+        onSelect: () {
+          keepAlive();
+          unawaited(_pickQuality(state));
+        },
+      ),
+      _PanelAction(
+        icon: Icons.swap_vert_rounded,
+        label: '${i18n('multiview_line_selector')} ${state.lineIndex + 1}',
+        onSelect: () {
+          keepAlive();
+          unawaited(_pickLine(state));
         },
       ),
       _PanelAction(

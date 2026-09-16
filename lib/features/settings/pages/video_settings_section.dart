@@ -4,28 +4,25 @@ import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/index.dart';
 
 /// Video settings, grouped in the mobile page's order
 /// (`pure_live/lib/modules/settings/pages/video_settings_page.dart:81-290`):
-/// 音频设置 → 画质设置 → 播放行为设置 → 弹幕设置.
+/// 音频设置 → 播放行为设置 → 弹幕设置.
 ///
-/// Rows that only mean something on a phone or a desktop are deliberately
-/// absent: cellular quality, background play, ASMR, PiP/window, "fullscreen by
-/// default" and "keep the screen on" (a TV's playback page *is* the fullscreen
-/// page and the screen is always kept awake while a room is open).
+/// 清晰度 and 线路 are *not* settings here: on a TV both are switched from the
+/// fullscreen control bar while watching (`VideoControllerPanel`), which is also
+/// where 画面比例 lives. The mobile page's cellular quality, background play,
+/// ASMR, PiP/window, "fullscreen by default" and "keep the screen on" rows are
+/// absent for the same reason: they describe a phone or a desktop.
 class VideoSettingsSectionPage extends ConsumerWidget {
   const VideoSettingsSectionPage({super.key});
-
-  static final _fitNames = [i18n('ui_default_fit'), i18n('ui_crop_to_center'), i18n('ui_stretch_to_fill'), i18n('ui_fit_height'), i18n('ui_fit_width'), i18n('ui_scale_down_to_fit')];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(playerSettingsControllerProvider);
     final player = ref.read(playerSettingsControllerProvider.notifier);
-    final List<String> resolutions = PlayerConsts.resolutions;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,31 +51,6 @@ class VideoSettingsSectionPage extends ConsumerWidget {
                 player.updateSettings(playerState.copyWith(audioOnly: v));
                 _applyAudioOnly(v);
               },
-            ),
-          ],
-        ),
-        SizedBox(height: 20.sp),
-        // 画质设置
-        TvSettingsGroupTitle(title: i18n('video_quality_settings')),
-        TvSettingsCard(
-          children: [
-            TvSettingsOptionTile(
-              title: i18n('ui_aspect_ratio'),
-              subtitle: i18n('ui_how_the_video_fits_the_screen'),
-              icon: Remix.aspect_ratio_line,
-              options: _fitNames,
-              index: playerState.videoFitIndex.clamp(0, _fitNames.length - 1),
-              onChanged: (i) => player.updateSettings(playerState.copyWith(videoFitIndex: i)),
-            ),
-            TvSettingsOptionTile(
-              title: i18n('prefer_resolution'),
-              subtitle: i18n('prefer_resolution_subtitle'),
-              icon: Remix.hd_line,
-              options: resolutions,
-              index: PlayerConsts.resolutionKeys
-                  .indexOf(PlayerConsts.normalizeResolutionKey(playerState.preferResolution))
-                  .clamp(0, resolutions.length - 1),
-              onChanged: (i) => player.changePreferResolution(PlayerConsts.resolutionKeys[i]),
             ),
           ],
         ),
