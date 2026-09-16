@@ -7,6 +7,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
+import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
@@ -20,6 +21,15 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    // Keep the background provider (and the video player it owns) alive for the
+    // whole app.
+    //
+    // The background layer only *reads* it, so as an auto-dispose provider it was
+    // torn down between reads: every rebuild created a new video player and
+    // disposed the previous one, which disposed media_kit's video output while
+    // the mounted background `Video` still pointed at it (logcat:
+    // VideoOutputManager.create → dispose → Resize 0x0 → Surface.release() NPE).
+    ref.watch(backgroundControllerProvider);
     final currentTvTheme = ref.watch(tvThemeControllerProvider);
     final themeSettings = ref.watch(themeSettingsControllerProvider);
     // A TV box reports no night mode (`UI_MODE_NIGHT_NO`), so "跟随系统" would

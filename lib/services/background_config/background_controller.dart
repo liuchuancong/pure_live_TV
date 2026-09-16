@@ -10,7 +10,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 part 'background_controller.g.dart';
 
-@riverpod
+/// Background configuration and the player behind a video background.
+///
+/// keepAlive: the video player and its [VideoController] are created here, and
+/// the background layer only *reads* this provider. As auto-dispose it was
+/// disposed between reads and rebuilt on the next one, so every rebuild created
+/// a new `Player`/`VideoController` and disposed the previous one — the
+/// `VideoOutputManager.create` → `dispose` → `Resize 0x0` →
+/// `Surface.release()` NPE in logcat, plus a reloading wallpaper.
+@Riverpod(keepAlive: true)
 class BackgroundController extends _$BackgroundController {
   late final Player _videoPlayer;
   late final VideoController videoController;
