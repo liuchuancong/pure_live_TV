@@ -48,6 +48,28 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   static const double _barHeight = 56;
   static const double _optionsWidth = 380;
 
+  /// The layer's own focus node.
+  ///
+  /// dpad only delivers [DpadFocusable.onDirection] to the *focused* node, and
+  /// the video area keeps its own autofocus node, so the bar has to claim focus
+  /// when it appears — otherwise Left/Right went to the video node (channel
+  /// switching) and the bar looked frozen.
+  final FocusNode _barFocusNode = FocusNode(debugLabel: 'live_play/controls');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_barFocusNode.hasFocus) _barFocusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _barFocusNode.dispose();
+    super.dispose();
+  }
+
   /// Remembered across appear/disappear so the controls come back where they
   /// were left, like the reference's index values.
   int _barIndex = 0;
@@ -464,9 +486,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       alignment: Alignment.centerLeft,
       padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
       child: DpadFocusable(
-        // The controls are shown by the OK key; the bar is where the remote
-        // lands, and the remembered index decides which button is highlighted.
+        // The controls are shown by the OK key; the bar claims focus so the
+        // index is the only cursor, and the remembered index decides which
+        // button is highlighted.
         autofocus: true,
+        focusNode: _barFocusNode,
         effects: const [],
         excludeChildFocus: true,
         // Every direction is consumed here: the index is the only cursor, so

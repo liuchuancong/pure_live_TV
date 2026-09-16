@@ -112,6 +112,10 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
   /// leaves the player.
   bool _handleDirection(TraversalDirection direction) {
     final controller = _controller;
+    // While the control layer is up it owns the arrow keys: the layer's selected
+    // index is steered with Left/Right, and letting the video node answer them
+    // too made the bar look frozen (the keys switched channels instead).
+    if (ref.read(livePlayControllerProvider(widget.args)).showControls) return false;
     switch (direction) {
       case TraversalDirection.up:
         _switchChannel(-1);
