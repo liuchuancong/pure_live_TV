@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -178,12 +177,14 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     );
   }
 
-  /// Stores the chosen kernel and moves the live player onto it.
+  /// Stores the chosen kernel and arms it for the next room.
   ///
-  /// Writing `videoPlayerKey` alone only reaches the next player that is created
-  /// from scratch — this app warms the media_kit kernel when the playback page
-  /// boots, so without the switch the row had no visible effect. The reference
-  /// page does the same (`switchEngine(..., isManual: true)`).
+  /// This page must not switch the *running* player: the manager keeps the last
+  /// room's source after the player page is left, so a manual switch here
+  /// re-opened that source and started playing it behind the settings screen
+  /// (`_switchEngineInternal` → `_playInternal`, visible in logcat as a volume
+  /// restore failure). Adopting the engine means the next `play()` opens the
+  /// room on it, which is also what the row's subtitle promises.
   void _selectEngine(WidgetRef ref, String key) {
     final controller = ref.read(playerSettingsControllerProvider.notifier);
     controller.updateSettings(ref.read(playerSettingsControllerProvider).copyWith(videoPlayerKey: key));
@@ -192,10 +193,6 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
 
-    unawaited(
-      service.playerManager.switchEngine(engine, isManual: true).catchError((Object error, StackTrace stackTrace) {
-        debugPrint('Switch player kernel to $key failed: $error');
-      }),
-    );
+    service.playerManager.adoptEngineForNextOpen(engine);
   }
 }

@@ -47,6 +47,16 @@ class PlayerPool {
     }
   }
 
+  /// Drops [player] from the cache, whichever engine slot holds it.
+  ///
+  /// Every destroyed adapter must be evicted: a disposed instance left behind
+  /// is handed out again by [getPlayer], and each native call on it then fails
+  /// with `Assertion failed: "[Player] has been disposed"` — the surface also
+  /// keeps a dead `ValueNotifier` and throws once per frame.
+  Future<void> evict(UnifiedPlayer player) async {
+    _cache.removeWhere((_, cached) => identical(cached, player));
+  }
+
   Future<void> disposeAll() async {
     for (final player in _cache.values) {
       await player.hardDispose();

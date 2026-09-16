@@ -70,8 +70,17 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // NPE sequence in logcat (an output destroyed before it ever had a surface).
     // The failure overlay is drawn on top of the surface instead.
     final PlayerManager? manager = _playerManagerOrNull;
+    // The surface listens to `videoKey` on purpose: an engine switch bumps the
+    // key, and this rebuild is what unmounts the `Video` widget of the retired
+    // controller *before* PlayerManager destroys it. Without the listener the
+    // old subtree survived until the next unrelated state change and kept
+    // throwing "A ValueNotifier<int?> was used after being disposed".
     final Widget video = manager != null
-        ? manager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList)
+        ? StreamBuilder<ValueKey>(
+            stream: manager.videoKey.stream,
+            initialData: manager.videoKey.value,
+            builder: (context, _) => manager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList),
+          )
         : const ColoredBox(color: Colors.black);
 
     final children = <Widget>[

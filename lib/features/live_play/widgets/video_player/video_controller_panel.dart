@@ -397,6 +397,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final engine = PlayerConsts.engines[key];
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
+
+    // The switch is immediate: PlayerManager hands the surface over to the new
+    // player before it destroys the retired one, so the room keeps playing while
+    // the kernel changes underneath it.
     unawaited(
       service.playerManager.switchEngine(engine, isManual: true).catchError((Object error, StackTrace stackTrace) {
         debugPrint('Switch player kernel to $key failed: $error');

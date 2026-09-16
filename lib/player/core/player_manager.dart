@@ -624,7 +624,42 @@ class PlayerManager {
       await _disposePlayerWithTransport(player);
     } catch (e, s) {
       log("destroy player error: $e", stackTrace: s);
+    } finally {
+      // A destroyed adapter must never stay pooled: the next `getPlayer` would
+      // return it and every native call would assert "has been disposed".
+      await playerPool.evict(player);
     }
+  }
+
+  /// Lets the video surface rebuild onto the new player before the retired one
+  /// is destroyed.
+  ///
+  /// The surface keys its `Video` subtree off [videoKey], so the bump schedules
+  /// a rebuild whose unmount releases every listener the old controller still
+  /// has. Destroying the native player first meant those listeners fired on a
+  /// disposed instance: `A ValueNotifier was used after being disposed`
+  /// from media_kit_video, once per frame.
+  ///
+  /// The wait is bounded on purpose — a device delivers the frame immediately,
+  /// while a headless caller with no frames must never stall the lifecycle
+  /// queue.
+  Future<void> _awaitSurfaceHandoff() {
+    final completer = Completer<void>();
+    void complete() {
+      if (!completer.isCompleted) completer.complete();
+    }
+
+    try {
+      // Two frames: the first builds the new subtree, the second proves its
+      // predecessor was unmounted.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => complete());
+      });
+    } catch (_) {
+      return Future<void>.value();
+    }
+
+    return completer.future.timeout(const Duration(milliseconds: 250), onTimeout: complete);
   }
 
   // =========================
@@ -651,6 +686,17 @@ class PlayerManager {
   // =========================
   // switch engine
   // =========================
+
+  /// Adopts [engine] for the next room the user opens, without touching the
+  /// player that is running now.
+  ///
+  /// Used by 内核切换 in Settings, where a live switch would re-open the last
+  /// room's source behind the settings screen. On the player page the bar uses
+  /// [switchEngine] instead, which changes the kernel under the running room.
+  void adoptEngineForNextOpen(PlayerEngine engine) {
+    _defaultEngine = engine;
+    _enginesUnavailableThisSession.clear();
+  }
 
   Future<void> switchEngine(PlayerEngine engine, {bool isManual = false}) {
     return _enqueuePlayerLifecycle(() => _switchEngineInternal(engine, isManual: isManual));
@@ -713,6 +759,15 @@ class PlayerManager {
       }
 
       if (oldPlayer != null && oldEngine != null && !identical(oldPlayer, _currentPlayer)) {
+        // Hand the surface over *before* the retired player dies.
+        //
+        // Destroying it first left the still-mounted `Video` widget bound to a
+        // disposed controller: media_kit_video then threw
+        // `A ValueNotifier was used after being disposed` from
+        // video_texture.dart once per frame, and the volume restore that follows
+        // an open hit the same corpse with `[Player] has been disposed`.
+        videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
+        await _awaitSurfaceHandoff();
         await _safeDestroyPlayer(oldPlayer);
       }
 
@@ -972,7 +1027,12 @@ class PlayerManager {
     final player = _currentPlayer;
 
     if (player != null) {
-      await _disposePlayerWithTransport(player);
+      try {
+        await _disposePlayerWithTransport(player);
+      } finally {
+        // Same rule as [_safeDestroyPlayer]: never leave a dead adapter pooled.
+        await playerPool.evict(player);
+      }
     }
     _currentPlayer = null;
     _runtimeEngine = null;
