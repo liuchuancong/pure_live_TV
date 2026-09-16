@@ -126,17 +126,28 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                           style: AppTextStyles.t16W500.copyWith(color: Colors.white),
                         ),
                       ),
-                      if (state.qualities.isNotEmpty)
-                        Text(
-                          state.qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)].quality,
-                          style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                      // 返回 sits at the top and is clearly labelled: Back on the
+                      // remote does the same thing (it closes the option list, then
+                      // the panel, then the controls).
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 6.sp),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(18.sp),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
                         ),
-                      SizedBox(width: 16.sp),
-                      Text(
-                        i18n('multiview_line', args: {'index': ''}),
-                        style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
-                      ),
-                    ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.arrow_back_rounded, size: 20.sp, color: Colors.white),
+                            SizedBox(width: 6.sp),
+                            Text(
+                              i18nOr('ui_back', '返回'),
+                              style: AppTextStyles.t16W500.copyWith(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),                    ],
                   ),
                 ),
               ),
@@ -181,6 +192,33 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
       );
     } else if (state.showControls) {
       children.add(Positioned(left: 0, right: 0, bottom: 0, child: VideoControllerPanel(args: widget.args)));
+    }
+
+    // 清晰度 / 线路 read-out on the right edge: quieter than putting them in the
+    // top bar, and it stays visible while watching.
+    if (!showError && state.qualities.isNotEmpty) {
+      children.add(
+        Positioned(
+          right: 16.sp,
+          top: 96.sp,
+          child: IgnorePointer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  state.qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)].quality,
+                  style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                ),
+                SizedBox(height: 4.sp),
+                Text(
+                  i18n('multiview_line', args: {'index': '${state.lineIndex + 1}'}),
+                  style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return Stack(fit: StackFit.expand, children: children);
