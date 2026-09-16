@@ -121,7 +121,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
 
   KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
-    final int count = widget.rows.length;
+    final int count = _renderedRows.length;
     final LogicalKeyboardKey key = event.logicalKey;
 
     if (count == 0) {
@@ -130,7 +130,12 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     }
 
     if (_isConfirm(key)) {
-      widget.onSelect(widget.selectedIndex.clamp(0, count - 1));
+      final int index = widget.selectedIndex.clamp(0, count - 1);
+      if (_isBackRow(index)) {
+        widget.onClose();
+      } else {
+        widget.onSelect(index - 1);
+      }
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.arrowUp) {
@@ -143,25 +148,38 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     }
     if (key == LogicalKeyboardKey.arrowLeft) {
       // Stepper panels adjust; list panels close, as in the reference.
-      if (widget.onAdjustLeft != null) {
-        widget.onAdjustLeft!(widget.selectedIndex.clamp(0, count - 1));
+      final int index = widget.selectedIndex.clamp(0, count - 1);
+      if (widget.onAdjustLeft != null && !_isBackRow(index)) {
+        widget.onAdjustLeft!(index - 1);
       } else {
         widget.onClose();
       }
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.arrowRight) {
-      if (widget.onAdjustRight != null) {
-        widget.onAdjustRight!(widget.selectedIndex.clamp(0, count - 1));
-      }
+      final int index = widget.selectedIndex.clamp(0, count - 1);
+      if (widget.onAdjustRight != null && !_isBackRow(index)) widget.onAdjustRight!(index - 1);
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
   }
 
+  /// The rendered list: a 返回 row first, so every panel has a visible way out
+  /// and the remote always has a close target. Its index shifts the real rows by
+  /// one.
+  List<PlayerPanelRow> get _renderedRows => <PlayerPanelRow>[
+        PlayerPanelRow(label: i18nOr('ui_back', 'Back'), icon: Icons.arrow_back_rounded),
+        ...widget.rows,
+      ];
+
+  bool _isBackRow(int index) => index == 0;
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
+    final List<PlayerPanelRow> rows = _renderedRows;
+    final int count = rows.length;
+    final int selected = widget.selectedIndex.clamp(0, count - 1);
 
     return Focus(
       focusNode: _focusNode,
@@ -185,7 +203,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
               ),
             ),
             Expanded(
-              child: widget.rows.isEmpty
+              child: rows.isEmpty
                   ? Center(
                       child: Text(
                         widget.emptyHint ?? i18nOr('ui_empty', 'Empty'),
@@ -195,10 +213,10 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                   : ListView.builder(
                       controller: _scrollController,
                       padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
-                      itemCount: widget.rows.length,
+                      itemCount: rows.length,
                       itemBuilder: (context, index) => _PanelRow(
-                        row: widget.rows[index],
-                        selected: index == widget.selectedIndex,
+                        row: rows[index],
+                        selected: index == selected,
                         accent: tvTheme.focusColor,
                       ),
                     ),

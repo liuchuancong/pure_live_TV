@@ -111,7 +111,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 
   void _onDirection(TraversalDirection direction, LivePlayState state) {
     final int barCount = _barActions(state).length;
-    final int optionCount = _panelOptions(state).length;
+    final int optionCount = _optionsWithBack(state).length;
     if (barCount == 0) return;
 
     // Any key keeps the controls on screen while the user is working them.
@@ -153,7 +153,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
 
     if (_zone == _Zone.options) {
-      final options = _panelOptions(state);
+      final options = _optionsWithBack(state);
       if (options.isEmpty) return;
       options[_optionIndex.clamp(0, options.length - 1)].apply();
       return;
@@ -211,6 +211,14 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     }
   }
 
+  /// Options plus a leading 返回 entry: every overlay needs a visible way out,
+  /// and in an index-driven UI that is a selectable row.
+  List<({String label, VoidCallback apply, bool active})> _optionsWithBack(LivePlayState state) =>
+      <({String label, VoidCallback apply, bool active})>[
+        (label: i18nOr('ui_back', 'Back'), apply: _closePanel, active: false),
+        ..._panelOptions(state),
+      ];
+
   String get _panelTitle => switch (_panel) {
     _OptionsPanel.quality => i18n('recorder_stage_quality'),
     _OptionsPanel.line => i18n('multiview_line_selector'),
@@ -241,9 +249,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       _panel = panel;
       _zone = _Zone.options;
       _optionIndex = switch (panel) {
-        _OptionsPanel.quality => state.qualityIndex,
-        _OptionsPanel.line => state.lineIndex,
-        _OptionsPanel.fit => state.fitIndex,
+        _OptionsPanel.quality => state.qualityIndex + 1,
+        _OptionsPanel.line => state.lineIndex + 1,
+        _OptionsPanel.fit => state.fitIndex + 1,
         _OptionsPanel.none => 0,
       };
     });
@@ -407,7 +415,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final state = ref.watch(livePlayControllerProvider(widget.args));
     final tvTheme = context.tvTheme;
     final actions = _barActions(state);
-    final options = _panelOptions(state);
+    final options = _optionsWithBack(state);
     if (_barIndex >= actions.length) _barIndex = actions.isEmpty ? 0 : actions.length - 1;
     if (options.isNotEmpty && _optionIndex >= options.length) _optionIndex = options.length - 1;
 
@@ -440,8 +448,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     TvThemeData tvTheme,
   ) {
     return Padding(
-      padding: EdgeInsets.only(right: 24.sp, bottom: 12.sp),
-      child: Container(
+      padding: EdgeInsets.only(bottom: 12.sp),
+      child: Center(child: Container(
         width: _optionsWidth.sp,
         constraints: BoxConstraints(maxHeight: 560.sp),
         decoration: BoxDecoration(
@@ -479,7 +487,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 

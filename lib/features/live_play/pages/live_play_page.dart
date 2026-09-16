@@ -122,23 +122,13 @@ class _SidePanel extends ConsumerWidget {
 
     // Collapse button in the panel corner: it keeps a remote path back to the
     // video area.
+    // The panel carries its own visible 返回 row now, so the old d-pad collapse
+    // button is just a hint.
     final collapse = Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
-      child: DpadFocusable(
-        effects: [
-          DpadScaleEffect(scale: 1.03),
-          DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.4)),
-        ],
-        onSelect: onTogglePanel,
-        child: Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.symmetric(vertical: 8.sp),
-          decoration: BoxDecoration(color: tvTheme.cardColor, borderRadius: BorderRadius.circular(8.sp)),
-          child: Text(
-            i18n('ui_collapse_panel'),
-            style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-          ),
-        ),
+      child: Text(
+        i18nOr('ui_panel_keys', '↑↓ select · OK confirm · ← back'),
+        style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
       ),
     );
 

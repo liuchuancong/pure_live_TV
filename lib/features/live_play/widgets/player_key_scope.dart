@@ -153,11 +153,32 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: true,
-      onKeyEvent: _onKeyEvent,
-      child: widget.child,
+    return PopScope(
+      // Back closes what is on screen before it leaves the player: an option
+      // list, then the side panel, then the controls — and only then the page.
+      // Leaving straight from a visible panel is what made the remote feel
+      // unpredictable.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        final state = ref.read(livePlayControllerProvider(widget.args));
+        final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
+        if (state.showSidePanel) {
+          controller.toggleSidePanel();
+          return;
+        }
+        if (state.showControls) {
+          controller.toggleControls();
+          return;
+        }
+        if (mounted) Navigator.of(context).pop();
+      },
+      child: Focus(
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: _onKeyEvent,
+        child: widget.child,
+      ),
     );
   }
 }
