@@ -73,12 +73,6 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
   void didPushNext() => setState(() {});
 
   @override
-  void didRemove() => setState(() {});
-
-  @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) => setState(() {});
-
-  @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final bool hasBackButton = widget.showBackButton && tvShowsBackButton(context);

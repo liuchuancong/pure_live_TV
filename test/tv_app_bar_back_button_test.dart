@@ -10,11 +10,11 @@ import 'package:pure_live/shared/widgets/tv_scaffold.dart';
 /// The back button must follow the route stack, not a value cached at build
 /// time.
 ///
-/// The regression: `TvAppBar` read `Navigator.canPop()` while the page was being
-/// rebuilt *during* a pop. At that moment the pop had not finished, so the page
-/// underneath still saw "there is something to pop" and drew a 返回 — and nothing
-/// rebuilt it afterwards, which is why it stayed on screen on the home page and
-/// on the favorites tab (and why refreshing fixed it).
+/// The regression: the app bar decided "there is something to pop" once, during
+/// a build. A page that is rebuilt while another route sits on top of it — which
+/// is exactly what happens around a pop — kept a 返回 it should not have, and
+/// nothing recomputed it afterwards. That is the stale 返回 the user saw on the
+/// home page and the favorites page until an unrelated rebuild cleared it.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -23,8 +23,11 @@ void main() {
       initialLocation: '/home',
       observers: <NavigatorObserver>[tvRouteObserver],
       routes: <RouteBase>[
-        GoRoute(path: '/home', builder: (context, state) => const TvScaffold(title: 'Home')),
-        GoRoute(path: '/settings', builder: (context, state) => const TvScaffold(title: 'Settings')),
+        GoRoute(path: '/home', builder: (context, state) => const TvScaffold(title: 'Home', child: SizedBox.shrink())),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const TvScaffold(title: 'Settings', child: SizedBox.shrink()),
+        ),
       ],
     );
 
@@ -46,41 +49,56 @@ void main() {
     return router;
   }
 
-  testWidgets('a pushed page shows a back button and the page below does not', (WidgetTester tester) async {
-    final GoRouter router = await pumpApp(tester);
-
+  testWidgets('the first page has no back button', (WidgetTester tester) async {
+    await pumpApp(tester);
     // `i18n` falls back to the key when localizations are not loaded, which is
     // what these finders match on.
-    expect(find.text('ui_back'), findsNothing, reason: 'the first page cannot pop');
-
-    router.push('/settings');
-    await tester.pumpAndSettle();
-    expect(find.text('ui_back'), findsOneWidget, reason: 'the pushed page can pop');
-
-    // Pop and check the frame in which the page underneath is rebuilt, before
-    // the transition has finished — this is where the stale button appeared.
-    router.pop();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 120));
-    expect(find.text('ui_back'), findsNothing, reason: 'the home page must not gain a back button during the pop');
-
-    await tester.pumpAndSettle();
-    expect(find.text('ui_back'), findsNothing, reason: 'and it must stay hidden once the pop has settled');
+    expect(find.text('ui_back'), findsNothing);
   });
 
-  testWidgets('the back button returns after the page above it pops', (WidgetTester tester) async {
+  testWidgets('a covered page hides its back button while the route above is on top', (WidgetTester tester) async {
     final GoRouter router = await pumpApp(tester);
 
     router.push('/settings');
+    // Mid-transition: both pages are mounted, so both app bars are on screen and
+    // the covered one can still pop (`canPop()` is true for it). Only the "am I
+    // the current route" half of the rule keeps its 返回 off the screen.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+
+    expect(find.text('Settings'), findsWidgets, reason: 'the pushed page must be mounted');
+    expect(find.text('ui_back'), findsOneWidget, reason: 'only the page on top may show a back button');
+
     await tester.pumpAndSettle();
-    // A second push: the page in the middle is covered, and the top one shows a
-    // back button. After popping, the middle page must show one again.
+    expect(find.text('ui_back'), findsOneWidget);
+  });
+
+  testWidgets('after a pop the page underneath has no back button', (WidgetTester tester) async {
+    final GoRouter router = await pumpApp(tester);
+
     router.push('/settings');
     await tester.pumpAndSettle();
     expect(find.text('ui_back'), findsOneWidget);
 
     router.pop();
     await tester.pumpAndSettle();
-    expect(find.text('ui_back'), findsOneWidget, reason: 'the covered page is on screen again and can still pop');
+    expect(find.text('ui_back'), findsNothing, reason: 'home cannot pop again, so its 返回 must be gone');
+  });
+
+  testWidgets('a page that becomes current again gets its back button back', (WidgetTester tester) async {
+    final GoRouter router = await pumpApp(tester);
+
+    router.push('/settings');
+    await tester.pumpAndSettle();
+    router.push('/settings');
+    await tester.pumpAndSettle();
+    expect(find.text('ui_back'), findsOneWidget);
+
+    router.pop();
+    await tester.pumpAndSettle();
+    // The middle page is on screen again and can still pop, so the button has to
+    // come back — the other half of the regression: a hidden button that never
+    // returns would be just as broken.
+    expect(find.text('ui_back'), findsOneWidget);
   });
 }
