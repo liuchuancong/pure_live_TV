@@ -20,6 +20,8 @@ import 'package:pure_live/features/settings/pages/navigation_section.dart';
 import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
 import 'package:pure_live/features/settings/pages/nav_order_section.dart';
 import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
+import 'package:pure_live/features/settings/pages/platform_display_visibility_section.dart';
+import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
 import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 
@@ -59,6 +61,8 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   // Pages the mobile app gives its own path.
   AppRoutes.kIptv: (context) => const IptvManageSectionPage(),
   AppRoutes.kSettingsHotAreas: (context) => const PlatformDisplaySectionPage(),
+  AppRoutes.kSettingsHotAreasVisibility: (context) => const PlatformDisplayVisibilitySectionPage(),
+  AppRoutes.kSettingsHotAreasOrder: (context) => const PlatformDisplayOrderSectionPage(),
   AppRoutes.kSettingsAccount: (context) => const AccountSettingsSectionPage(),
   // One page per platform: the mobile app gives every platform its own cookie
   // page, and each of these carries both ways in (扫码 + 手动输入).

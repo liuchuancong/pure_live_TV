@@ -2,6 +2,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/dialog/tv_dialog.dart';
+import 'package:pure_live/shared/dialog/tv_dialog_utils.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -52,11 +53,10 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
   Future<void> _showUpdateDialog() async {
     final notes = VersionUtil.latestUpdateLog.trim();
     final bool canDownload = VersionUtil.downloadUrl.isNotEmpty;
-    await showDialog<void>(
+    // Through TvDialogUtils, so the dialog takes the app's dialog lock as well as
+    // its styling: the page behind must not keep reacting to the remote.
+    await TvDialogUtils.show<void>(
       context: context,
-      // TvDialog instead of a Material AlertDialog so the dialog can actually
-      // be driven with the remote: the confirm button takes focus on open and
-      // Cancel/Download are reachable with the d-pad.
       builder: (dialogContext) => TvDialog(
         title: '${i18n('new_version_found')} ${VersionUtil.latestVersion}',
         confirmText: canDownload ? i18n('download') : null,

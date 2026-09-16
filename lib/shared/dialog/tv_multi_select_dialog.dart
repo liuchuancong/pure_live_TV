@@ -1,7 +1,7 @@
 import 'tv_dialog.dart';
+import 'tv_dialog_option_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/widgets/tv_button.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -77,31 +77,21 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
               child: ListView.separated(
                 controller: _scrollController,
                 shrinkWrap: true,
+                padding: EdgeInsets.symmetric(vertical: 2.sp),
                 itemCount: widget.items.length,
                 separatorBuilder: (_, _) => SizedBox(height: 12.sp),
                 itemBuilder: (_, index) {
                   final item = widget.items[index];
                   final selected = _selection.contains(item.value);
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TvButton(
-                        isSecondary: !selected,
-                        title: item.title,
-                        icon: Icon(selected ? Icons.check_circle_rounded : Icons.circle_outlined),
-                        iconPosition: TvIconPosition.left,
-                        onTap: () => _toggle(item.value),
-                      ),
-                      if (item.subtitle != null && item.subtitle!.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(left: 16.sp, top: 4.sp),
-                          child: Text(
-                            item.subtitle!,
-                            style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: 20.sp),
-                          ),
-                        ),
-                    ],
+                  return TvDialogOptionTile(
+                    title: item.title,
+                    subtitle: item.subtitle,
+                    icon: Icon(selected ? Icons.check_circle_rounded : Icons.circle_outlined),
+                    selected: selected,
+                    // The circle above is this list's own state mark.
+                    showCheck: false,
+                    onTap: () => _toggle(item.value),
                   );
                 },
               ),

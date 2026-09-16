@@ -65,7 +65,10 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(i18n('movie_parse_failed'))));
+        // The app's toast, not a Material SnackBar: every other message in this
+        // TV UI is a toast, and a SnackBar draws a square bar at the bottom of
+        // the screen that no other page has.
+        ToastUtil.show(i18n('movie_parse_failed'));
       }
     } finally {
       if (mounted) {

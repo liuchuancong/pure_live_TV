@@ -5,6 +5,7 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/utils/cache_manager.dart';
+import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
@@ -252,9 +253,9 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
 
   void _toast(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-    );
+    // ToastUtil (the app's toast) instead of a Material SnackBar: the rest of the
+    // TV UI reports in toasts, and a SnackBar is a square Material bar.
+    ToastUtil.show(message);
   }
 }
 

@@ -1,4 +1,5 @@
 import 'favorite_settings_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -294,6 +295,38 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     }
     _update(state.copyWith(hotAreasList: current));
     return true;
+  }
+
+  /// The visible platform ids, normalized and de-duplicated, in display order.
+  ///
+  /// `availableSites()` reads the stored list in order, so this *is* the order of
+  /// the platform tabs on 热门 / 分区.
+  List<String> enabledSiteIds() {
+    final seen = <String>{};
+    return <String>[
+      for (final raw in state.hotAreasList)
+        if (seen.add(raw.trim().toLowerCase())) raw.trim().toLowerCase(),
+    ];
+  }
+
+  /// Moves [siteId] by [delta] positions in the platform display order.
+  void moveSite(String siteId, int delta) {
+    final current = enabledSiteIds();
+    final index = current.indexOf(siteId.trim().toLowerCase());
+    final target = index + delta;
+    if (index < 0 || target < 0 || target >= current.length) return;
+    setHotAreasList(reorderIds(current, current[index], target));
+  }
+
+  /// Puts [siteId] at [targetIndex] of the platform display order.
+  ///
+  /// The 平台排序 page's "pick a platform, then name its position" move: the one
+  /// the user chose lands exactly there instead of being nudged step by step.
+  void moveSiteTo(String siteId, int targetIndex) {
+    final current = enabledSiteIds();
+    final next = reorderIds(current, siteId.trim().toLowerCase(), targetIndex);
+    if (listEquals(next, current)) return;
+    setHotAreasList(next);
   }
 
   void changePreferPlatform(String name) {

@@ -1,6 +1,7 @@
 import 'tv_dialog.dart';
+import 'tv_dialog_option_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/widgets/tv_button.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvSelectItem<T> {
@@ -8,13 +9,24 @@ class TvSelectItem<T> {
   final T value;
   final Widget? leading;
 
-  const TvSelectItem({required this.title, required this.value, this.leading});
+  /// Second line of the row, for entries whose label alone is not enough.
+  final String? subtitle;
+
+  const TvSelectItem({required this.title, required this.value, this.leading, this.subtitle});
 }
 
+/// Dialog that returns the chosen value, or null when it is closed.
+///
+/// The rows are [TvDialogOptionTile]s (rounded rectangles), the value in force is
+/// marked, and the dialog carries its own 关闭 button — every dialog in the app
+/// has a visible way out, so closing one never depends on knowing that the
+/// remote's Back button works.
 class TvSelectDialog<T> extends StatefulWidget {
   final String title;
   final List<TvSelectItem<T>> items;
   final T? selectedValue;
+
+  /// Called with the chosen value as well as returning it from the dialog.
   final ValueChanged<T>? onSelected;
 
   const TvSelectDialog({super.key, required this.title, required this.items, this.selectedValue, this.onSelected});
@@ -42,7 +54,7 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
 
   void _scrollToSelected() {
     if (!_scrollController.hasClients) return;
-    final itemHeight = 64.w + 12.sp;
+    final itemHeight = 72.sp;
     final offset = selectedIndex * itemHeight;
     _scrollController.jumpTo(offset.clamp(0, _scrollController.position.maxScrollExtent));
   }
@@ -57,23 +69,26 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
   Widget build(BuildContext context) {
     return TvDialog(
       title: widget.title,
+      cancelText: i18n('close'),
+      onCancel: () => Navigator.of(context).pop(),
       child: Container(
         constraints: BoxConstraints(maxHeight: 500.sp),
         child: ListView.separated(
           controller: _scrollController,
           shrinkWrap: true,
+          padding: EdgeInsets.symmetric(vertical: 2.sp),
           itemCount: widget.items.length,
           separatorBuilder: (_, _) => SizedBox(height: 12.sp),
           itemBuilder: (_, index) {
             final item = widget.items[index];
             final isSelected = index == selectedIndex;
 
-            return TvButton(
-              autofocus: isSelected,
-              isSecondary: !isSelected,
+            return TvDialogOptionTile(
               title: item.title,
-              icon: isSelected ? const Icon(Icons.check_rounded) : item.leading,
-              iconPosition: isSelected ? TvIconPosition.right : TvIconPosition.left,
+              subtitle: item.subtitle,
+              icon: item.leading,
+              selected: isSelected,
+              autofocus: isSelected,
               onTap: () {
                 Navigator.of(context).pop(item.value);
                 widget.onSelected?.call(item.value);

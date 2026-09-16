@@ -61,6 +61,10 @@ abstract final class AppRoutes {
   /// Preferred and popular categories
   static const kSettingsHotAreas = "/hot_areas";
 
+  /// The two 平台显示 sub-pages: which platforms are listed, and in which order.
+  static const kSettingsHotAreasVisibility = "/hot_areas/visibility";
+  static const kSettingsHotAreasOrder = "/hot_areas/order";
+
   /// Account binding
   static const kSettingsAccount = "/settings_account";
 

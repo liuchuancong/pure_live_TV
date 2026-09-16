@@ -109,6 +109,8 @@ void main() {
       AppRoutes.kSettingsLocalBackup,
       AppRoutes.kIptv,
       AppRoutes.kSettingsHotAreas,
+      AppRoutes.kSettingsHotAreasVisibility,
+      AppRoutes.kSettingsHotAreasOrder,
       AppRoutes.kSettingsAccount,
       AppRoutes.kSettingsTags,
       AppRoutes.kBackup,

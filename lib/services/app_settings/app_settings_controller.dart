@@ -4,6 +4,7 @@ import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/shared/utils/list_reorder.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -129,18 +130,10 @@ class AppSettingsController extends _$AppSettingsController {
   /// [ids] with [menuId] placed at [targetIndex]; the entries it passes shift by
   /// one and nothing is dropped.
   ///
-  /// Pure on purpose: the reorder rule is what the 排序 page promises, and this
-  /// way it is testable without the preference store. [targetIndex] is clamped,
-  /// and an unknown [menuId] leaves [ids] untouched.
-  static List<String> reorderMenuIds(List<String> ids, String menuId, int targetIndex) {
-    final index = ids.indexOf(menuId);
-    if (index < 0 || ids.isEmpty) return List<String>.from(ids);
-    final target = targetIndex.clamp(0, ids.length - 1);
-    if (target == index) return List<String>.from(ids);
-    final next = List<String>.from(ids)..removeAt(index);
-    next.insert(target, menuId);
-    return next;
-  }
+  /// Pure (it delegates to the shared [reorderIds]) so the reorder rule the 排序
+  /// page promises is testable without the preference store.
+  static List<String> reorderMenuIds(List<String> ids, String menuId, int targetIndex) =>
+      reorderIds(ids, menuId, targetIndex);
 
   void toggleMenuVisibility(String menuId, bool visible) {
     final ids = List<String>.from(state.savedMenuIds);

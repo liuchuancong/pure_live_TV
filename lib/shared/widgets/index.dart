@@ -11,6 +11,7 @@ export 'tv_input_field.dart';
 export 'tv_lazy_wrapper.dart';
 export 'tv_marquee.dart';
 export 'tv_page.dart';
+export 'tv_platform_logo.dart';
 export 'tv_qr_card.dart';
 export 'tv_room_card.dart';
 export 'tv_scaffold.dart';

@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 class TvDialogUtils {
+  /// The dialog lock, or null before the settings service is up.
+  ///
+  /// Reads the container through `isInitialized`: the field is `late`, so touching
+  /// `container` itself throws instead of returning null, and a dialog opened
+  /// during startup (or in a widget test) must not crash.
+  static ProviderContainer? get _container =>
+      SettingsService.to.isInitialized ? SettingsService.to.container : null;
+
   static Future<T?> show<T>({required BuildContext context, required WidgetBuilder builder}) async {
-    SettingsService.to.container?.read(tvDialogLockProvider.notifier).lock();
+    _container?.read(tvDialogLockProvider.notifier).lock();
 
     final result = await showGeneralDialog<T>(
       context: context,
@@ -25,7 +34,7 @@ class TvDialogUtils {
       },
     );
 
-    SettingsService.to.container?.read(tvDialogLockProvider.notifier).unlock();
+    _container?.read(tvDialogLockProvider.notifier).unlock();
 
     return result;
   }

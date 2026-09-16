@@ -201,6 +201,9 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsNavVisibility: 'navigation_visibility',
   AppRoutes.kSettingsNavOrder: 'navigation_order',
   AppRoutes.kSettingsNavIcons: 'navigation_icons',
+  // Same for the two 平台显示 sub-pages.
+  AppRoutes.kSettingsHotAreasVisibility: 'platform_display_visibility',
+  AppRoutes.kSettingsHotAreasOrder: 'platform_display_order',
   // Pages whose *menu row* has a different label from their page title.
   //
   // The mobile app's menu says 视频 / 播放器内核 / 自定义网络代理 while the pages
