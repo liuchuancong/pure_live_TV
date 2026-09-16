@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
@@ -107,27 +106,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
 
   // ---------------------------------------------------------------- imports
 
-  /// Imports a playlist from the file picker.
-  Future<void> _importPlaylistFile() async {
-    final picked = await FilePicker.pickFile(
-      dialogTitle: i18n('iptv_import_file'),
-      type: FileType.custom,
-      allowedExtensions: const ['m3u', 'm3u8', 'txt'],
-    );
-    final path = picked?.path;
-    if (path == null) return;
-    await _run(() async {
-      final file = File(path);
-      final ok = await IptvImportManager().importIptvFile(
-        file: file,
-        providerName: p.basenameWithoutExtension(path),
-        forceUpdate: true,
-        showTips: false,
-      );
-      await _reloadWithStatus(ok ? i18n('ui_imported') : i18n('ui_import_failed_or_file_not_found'));
-    });
-  }
-
   /// Downloads a playlist URL into a temp file and imports it.
   ///
   /// When [name] is empty the file name in the URL is used, as the desktop
@@ -158,11 +136,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
       await _reloadWithStatus(ok ? i18n('ui_imported') : i18n('ui_import_failed_or_file_not_found'));
     });
   }
-
-  Future<void> _importEpgLocal() => _run(() async {
-    final ok = await EpgImportManager().importFromLocalPicker();
-    await _reloadWithStatus(ok ? i18n('ui_imported') : i18n('epg_import_failed'));
-  });
 
   Future<void> _importEpgUrl(String url, String name) => _run(() async {
     final ok = await EpgImportManager().importFromNetworkUrl(
@@ -354,28 +327,12 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
               index: 0,
               onChanged: _busy ? null : (_) => _importPlaylistUrl(),
             ),
-            TvSettingsOptionTile(
-              title: i18n('iptv_import_file'),
-              subtitle: i18n('playlist_file_type'),
-              icon: Icons.upload_file_rounded,
-              options: [i18n('iptv_import_file')],
-              index: 0,
-              onChanged: _busy ? null : (_) => _importPlaylistFile(),
-            ),
           ],
         ),
         SizedBox(height: 20.h),
         TvSettingsGroupTitle(title: i18n('epg_settings')),
         TvSettingsCard(
           children: [
-            TvSettingsOptionTile(
-              title: i18n('epg_import'),
-              subtitle: i18n('epg_file_type'),
-              icon: Icons.upload_file_rounded,
-              options: [i18n('epg_import')],
-              index: 0,
-              onChanged: _busy ? null : (_) => _importEpgLocal(),
-            ),
             TvSettingsOptionTile(
               title: i18n('network_import'),
               subtitle: i18n('epg_file_type'),

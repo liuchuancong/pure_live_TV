@@ -14,7 +14,6 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   static const double _itemGap = 36;
 
   final TextEditingController _urlController = TextEditingController();
-  bool _isInputFieldFocused = false;
   bool _isParsing = false;
   dynamic _remoteReceiverNotifier;
 
@@ -206,35 +205,28 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                     child: Icon(Icons.search_rounded, color: themeColor, size: 32.sp),
                   ),
                 ),
-                builder: (content) {
-                  return Focus(
-                    onFocusChange: (hasFocus) {
-                      setState(() {
-                        _isInputFieldFocused = hasFocus;
-                      });
-                    },
-                    child: AnimatedScale(
-                      scale: _isInputFieldFocused ? 1.04 : 1.0,
+                builder: (content, isFocused) {
+                  return AnimatedScale(
+                    scale: isFocused ? 1.04 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOutCubic,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOutCubic,
-                        height: 80.sp,
-                        padding: EdgeInsets.symmetric(horizontal: 18.sp, vertical: 12.sp),
-                        decoration: BoxDecoration(
-                          color: currentTvTheme.backgroundColor,
-                          borderRadius: BorderRadius.circular(32.sp),
-                          border: Border.all(color: themeColor, width: _isInputFieldFocused ? 2.5.sp : 1.5.sp),
-                          boxShadow: [
-                            BoxShadow(
-                              color: themeColor.withValues(alpha: _isInputFieldFocused ? 0.5 : 0.35),
-                              blurRadius: 12.sp,
-                            ),
-                          ],
-                        ),
-                        child: content,
+                      height: 80.sp,
+                      padding: EdgeInsets.symmetric(horizontal: 18.sp, vertical: 12.sp),
+                      decoration: BoxDecoration(
+                        color: currentTvTheme.backgroundColor,
+                        borderRadius: BorderRadius.circular(32.sp),
+                        border: Border.all(color: themeColor, width: isFocused ? 2.5.sp : 1.5.sp),
+                        boxShadow: [
+                          BoxShadow(
+                            color: themeColor.withValues(alpha: isFocused ? 0.5 : 0.35),
+                            blurRadius: 12.sp,
+                          ),
+                        ],
                       ),
+                      child: content,
                     ),
                   );
                 },

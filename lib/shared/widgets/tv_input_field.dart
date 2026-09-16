@@ -35,7 +35,14 @@ class TvInputField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final ValueChanged<String>? onChanged;
   final Widget? postFixWidget;
-  final Widget Function(Widget child)? builder;
+
+  /// Custom frame around the input core.
+  ///
+  /// The second argument is the field's real focus state. Wrapping the content
+  /// in a bare [Focus] widget to track it from the caller is a trap: a plain
+  /// Focus is itself focusable and traversal-visible, so the d-pad lands on
+  /// the wrapper instead of the TextField and OK never opens the keyboard.
+  final Widget Function(Widget content, bool isFocused)? builder;
 
   const TvInputField({
     super.key,
@@ -192,7 +199,7 @@ class _TvInputFieldState extends State<TvInputField> {
 
     final Widget innerWidget;
     if (widget.builder != null) {
-      innerWidget = widget.builder!(content);
+      innerWidget = widget.builder!(content, _isFocused);
     } else {
       innerWidget = AnimatedContainer(
         duration: const Duration(milliseconds: 150),
