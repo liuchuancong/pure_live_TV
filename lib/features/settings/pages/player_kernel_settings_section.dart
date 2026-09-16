@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -177,14 +178,16 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     );
   }
 
-  /// Stores the chosen kernel and arms it for the next room.
+  /// Stores the chosen kernel and switches the player onto it now.
   ///
-  /// This page must not switch the *running* player: the manager keeps the last
-  /// room's source after the player page is left, so a manual switch here
-  /// re-opened that source and started playing it behind the settings screen
-  /// (`_switchEngineInternal` → `_playInternal`, visible in logcat as a volume
-  /// restore failure). Adopting the engine means the next `play()` opens the
-  /// room on it, which is also what the row's subtitle promises.
+  /// The switch hard-disposes the player that is running ([PlayerManager.switchEngine]),
+  /// which is what actually releases the native kernel — including when the same
+  /// kernel is picked again, which therefore doubles as a player reset.
+  ///
+  /// `resumeCurrentSource: false` because the manager still remembers the last
+  /// room after the player page was left; re-opening it here would start playing
+  /// that room behind the settings screen. The next room opens on the new
+  /// kernel.
   void _selectEngine(WidgetRef ref, String key) {
     final controller = ref.read(playerSettingsControllerProvider.notifier);
     controller.updateSettings(ref.read(playerSettingsControllerProvider).copyWith(videoPlayerKey: key));
@@ -193,6 +196,12 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
 
-    service.playerManager.adoptEngineForNextOpen(engine);
+    unawaited(
+      service.playerManager
+          .switchEngine(engine, isManual: true, resumeCurrentSource: false)
+          .catchError((Object error, StackTrace stackTrace) {
+            debugPrint('Switch player kernel to $key failed: $error');
+          }),
+    );
   }
 }

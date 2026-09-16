@@ -389,7 +389,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       ],
     );
     if (mounted) _focusNode.requestFocus();
-    if (key == null || !mounted || key == activeKey) return;
+    if (key == null || !mounted) return;
 
     ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
     ref.read(playerSettingsControllerProvider.notifier).updateSettings(playerSettings.copyWith(videoPlayerKey: key));
@@ -398,9 +398,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
 
-    // The switch is immediate: PlayerManager hands the surface over to the new
-    // player before it destroys the retired one, so the room keeps playing while
-    // the kernel changes underneath it.
+    // Always a real switch: PlayerManager hard-disposes the player that is
+    // running and opens the room on the new one, so choosing the kernel that is
+    // already active restarts the player instead of doing nothing — which is what
+    // a stuck picture needs.
     unawaited(
       service.playerManager.switchEngine(engine, isManual: true).catchError((Object error, StackTrace stackTrace) {
         debugPrint('Switch player kernel to $key failed: $error');

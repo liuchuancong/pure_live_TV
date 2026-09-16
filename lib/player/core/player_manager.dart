@@ -631,6 +631,19 @@ class PlayerManager {
     }
   }
 
+  /// Clears the active player so the video surface rebuilds onto the black
+  /// placeholder, instead of keeping a `Video` widget bound to a controller that
+  /// is about to be destroyed.
+  ///
+  /// The bump is what actually reaches the surface: `TvVideoSurface` listens to
+  /// [videoKey], and `getVideoWidget` renders the placeholder while
+  /// `_currentPlayer` is null.
+  void _detachCurrentPlayer() {
+    _currentPlayer = null;
+    _runtimeEngine = null;
+    videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
+  }
+
   /// Lets the video surface rebuild onto the new player before the retired one
   /// is destroyed.
   ///
@@ -687,26 +700,27 @@ class PlayerManager {
   // switch engine
   // =========================
 
-  /// Adopts [engine] for the next room the user opens, without touching the
-  /// player that is running now.
+  /// Switches the kernel, hard-disposing the player that is running now.
   ///
-  /// Used by 内核切换 in Settings, where a live switch would re-open the last
-  /// room's source behind the settings screen. On the player page the bar uses
-  /// [switchEngine] instead, which changes the kernel under the running room.
-  void adoptEngineForNextOpen(PlayerEngine engine) {
-    _defaultEngine = engine;
-    _enginesUnavailableThisSession.clear();
-  }
-
-  Future<void> switchEngine(PlayerEngine engine, {bool isManual = false}) {
-    return _enqueuePlayerLifecycle(() => _switchEngineInternal(engine, isManual: isManual));
+  /// Every call ends with the previous native player released
+  /// ([UnifiedPlayer.hardDispose]: `Player.dispose()` and its stream teardown),
+  /// even when [engine] is the kernel that is already active — re-selecting the
+  /// current kernel is the caller's way of resetting a stuck player.
+  ///
+  /// [resumeCurrentSource] re-opens the room the manager still remembers. The
+  /// player page wants that (the kernel changes under the running stream);
+  /// 内核切换 in Settings does not, because restarting the last room behind the
+  /// settings screen is a surprise, not a feature.
+  Future<void> switchEngine(PlayerEngine engine, {bool isManual = false, bool resumeCurrentSource = true}) {
+    return _enqueuePlayerLifecycle(
+      () => _switchEngineInternal(engine, isManual: isManual, openCurrentSource: resumeCurrentSource),
+    );
   }
 
   Future<void> _switchEngineInternal(
     PlayerEngine engine, {
     bool isManual = false,
     bool openCurrentSource = true,
-    bool forceRecreate = false,
     bool Function()? isStillRequired,
   }) async {
     if (_disposed || _isClosing) return;
@@ -715,60 +729,53 @@ class PlayerManager {
     try {
       final oldPlayer = _currentPlayer;
 
-      final oldEngine = _runtimeEngine;
+      // Every switch — to another kernel, and to the kernel that is already
+      // active — hard-disposes the player that is running now.
+      //
+      // The order is the whole point:
+      // 1. detach the surface (`_currentPlayer` cleared, [videoKey] bumped) so
+      //    the mounted `Video` widget rebuilds onto the black placeholder and
+      //    drops its listeners, then
+      // 2. `hardDispose()` the old native player
+      //    ([UnifiedPlayer.hardDispose] → `Player.dispose()` + stream teardown),
+      //    which [_safeDestroyPlayer] also evicts from the pool, and only then
+      // 3. allocate the replacement.
+      //
+      // Destroying the old player while the widget still held its controller
+      // threw `A ValueNotifier was used after being disposed` from media_kit_video
+      // once per frame, and the volume restore that follows an open then hit the
+      // corpse with `[Player] has been disposed`. Allocating before destroying
+      // was worse for a same-engine recreation: the pool caches the player the
+      // manager plays, so it handed the active instance back, and the old guard
+      // destroyed that instance and threw — leaving the manager pointing at a
+      // disposed player.
+      await _clearSubscriptions();
 
-      if (forceRecreate) {
-        final candidate = await playerPool.getPlayer(engine, audioOnly: _audioOnlySetting);
-        if (identical(candidate, oldPlayer)) {
-          // Forced recreation must never alias the active instance.
-          await _safeDestroyPlayer(candidate);
-          await playerPool.removeFromCache(engine);
-          throw StateError('Forced player recreation returned the active player instance');
-        }
-        if (isStillRequired?.call() == false || !_isSessionValid(sessionId)) {
-          await _safeDestroyPlayer(candidate);
-          return;
-        }
-        await _clearSubscriptions();
-        _currentPlayer = candidate;
-        _runtimeEngine = engine;
-        await _bindPlayerStreams(candidate, sessionId: sessionId);
-      } else {
-        if (_runtimeEngine == engine && _currentPlayer != null) {
-          return;
-        }
-        await _clearSubscriptions();
+      _detachCurrentPlayer();
+      await _awaitSurfaceHandoff();
+      if (oldPlayer != null) await _safeDestroyPlayer(oldPlayer);
 
-        final newPlayer = await playerPool.getPlayer(engine, audioOnly: _audioOnlySetting);
+      final newPlayer = await playerPool.getPlayer(engine, audioOnly: _audioOnlySetting);
 
-        if (isStillRequired?.call() == false || !_isSessionValid(sessionId)) {
-          await _safeDestroyPlayer(newPlayer);
-          return;
-        }
-
-        _currentPlayer = newPlayer;
-
-        _runtimeEngine = engine;
-
-        await _bindPlayerStreams(newPlayer, sessionId: sessionId);
+      if (identical(newPlayer, oldPlayer)) {
+        // Unreachable while [_safeDestroyPlayer] evicts; a reused corpse would
+        // fail every native call with "has been disposed".
+        await _safeDestroyPlayer(newPlayer);
+        throw StateError('PlayerPool returned the destroyed player instance');
       }
+
+      if (isStillRequired?.call() == false || !_isSessionValid(sessionId)) {
+        await _safeDestroyPlayer(newPlayer);
+        return;
+      }
+
+      _currentPlayer = newPlayer;
+      _runtimeEngine = engine;
+      await _bindPlayerStreams(newPlayer, sessionId: sessionId);
 
       if (isManual) {
         _defaultEngine = engine;
         _enginesUnavailableThisSession.clear();
-      }
-
-      if (oldPlayer != null && oldEngine != null && !identical(oldPlayer, _currentPlayer)) {
-        // Hand the surface over *before* the retired player dies.
-        //
-        // Destroying it first left the still-mounted `Video` widget bound to a
-        // disposed controller: media_kit_video then threw
-        // `A ValueNotifier was used after being disposed` from
-        // video_texture.dart once per frame, and the volume restore that follows
-        // an open hit the same corpse with `[Player] has been disposed`.
-        videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
-        await _awaitSurfaceHandoff();
-        await _safeDestroyPlayer(oldPlayer);
       }
 
       videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
@@ -1735,7 +1742,6 @@ class PlayerManager {
       await _switchEngineInternal(
         activeEngine,
         isManual: false,
-        forceRecreate: true,
         isStillRequired: isStillRequired,
       );
       return true;
