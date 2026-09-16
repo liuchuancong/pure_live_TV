@@ -27,7 +27,7 @@ class RendererSettingsSectionPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: i18n('ui_video_output_driver'),
+          title: i18n('video_output_driver'),
           subtitle: i18n('ui_mpv_video_output'),
           icon: Icons.graphic_eq_rounded,
           options: keys.map((k) => _drivers[k]!).toList(),

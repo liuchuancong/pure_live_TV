@@ -47,6 +47,14 @@ class VolumeSettingsController extends _$VolumeSettingsController {
     _persist();
   }
 
+  /// Global mute. The player core already honours it
+  /// (`player/core/live_room_volume_manager.dart`), but until now nothing in the
+  /// UI could set it.
+  void setGlobalVolumeMute(bool value) {
+    state = state.copyWith(globalVolumeMute: value);
+    _persist();
+  }
+
   void _persist() {
     HivePrefUtil.setDouble('defaultMobileVolume', state.defaultMobileVolume);
     HivePrefUtil.setDouble('defaultDesktopVolume', state.defaultDesktopVolume);

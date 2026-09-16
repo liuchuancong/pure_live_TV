@@ -81,7 +81,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     if (!mounted) return;
     setState(() {
       _downloaded.remove(font.id);
-      _status = i18n('ui_export_success');
+      _status = i18n('delete_success');
     });
   }
 

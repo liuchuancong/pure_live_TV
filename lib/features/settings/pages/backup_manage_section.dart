@@ -85,7 +85,7 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
     await _run(() async {
       if (file.existsSync()) file.deleteSync();
       await _refresh();
-      if (mounted) setState(() => _result = i18n('ui_export_success'));
+      if (mounted) setState(() => _result = i18n('delete_success'));
     });
   }
 

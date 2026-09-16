@@ -4,8 +4,22 @@ import 'package:pure_live/shared/widgets/tv_button.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/extensions.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 
-class TvAppBar extends StatelessWidget {
+/// Whether the default app bar may show its back button here.
+///
+/// Two conditions, and both have to be re-read when the route stack changes:
+/// there must be something to pop, *and* this route has to be the one on
+/// screen. A page underneath a pushed route is rebuilt while the pop is still
+/// running — at that moment `canPop()` is still true, so the page drew a back
+/// button and nothing recomputed it afterwards. That is the stale "返回" the
+/// user saw on the home and favorites pages until an unrelated rebuild fixed it.
+bool tvShowsBackButton(BuildContext context) {
+  final bool isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+  return isCurrent && Navigator.of(context).canPop();
+}
+
+class TvAppBar extends StatefulWidget {
   final String? title;
   final Widget? titleWidget;
   final List<Widget>? actions;
@@ -27,12 +41,49 @@ class TvAppBar extends StatelessWidget {
   });
 
   @override
+  State<TvAppBar> createState() => _TvAppBarState();
+}
+
+class _TvAppBarState extends State<TvAppBar> with RouteAware {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final ModalRoute<void>? route = ModalRoute.of(context);
+    if (route != null) tvRouteObserver.subscribe(this, route);
+  }
+
+  @override
+  void dispose() {
+    tvRouteObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Rebuild on every route-stack change so [tvShowsBackButton] is recomputed:
+  // `didPopNext` is the one that clears a stale back button after a pop.
+  @override
+  void didPopNext() => setState(() {});
+
+  @override
+  void didPop() => setState(() {});
+
+  @override
+  void didPush() => setState(() {});
+
+  @override
+  void didPushNext() => setState(() {});
+
+  @override
+  void didRemove() => setState(() {});
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) => setState(() {});
+
+  @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final bool canPop = Navigator.of(context).canPop();
-    final bool hasBackButton = showBackButton && canPop;
-    final bool hasTitle = (title != null && title!.isNotEmpty) || titleWidget != null;
-    final bool hasActions = actions != null && actions!.isNotEmpty;
+    final bool hasBackButton = widget.showBackButton && tvShowsBackButton(context);
+    final bool hasTitle = (widget.title != null && widget.title!.isNotEmpty) || widget.titleWidget != null;
+    final bool hasActions = widget.actions != null && widget.actions!.isNotEmpty;
 
     if (!hasBackButton && !hasTitle && !hasActions) {
       return const SizedBox.shrink();
@@ -51,11 +102,11 @@ class TvAppBar extends StatelessWidget {
               title: i18n('ui_back'),
               size: TvButtonSize.mini,
               autofocus: true,
-              focusNode: backFocusNode,
+              focusNode: widget.backFocusNode,
               icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.sp),
               onTap: () async {
-                if (beforeBack != null) {
-                  final shouldPop = await beforeBack!();
+                if (widget.beforeBack != null) {
+                  final shouldPop = await widget.beforeBack!();
                   if (!shouldPop) return;
                 }
                 if (context.mounted) {
@@ -67,15 +118,18 @@ class TvAppBar extends StatelessWidget {
           ],
           Expanded(
             child:
-                titleWidget ??
+                widget.titleWidget ??
                 Text(
-                  title ?? '',
+                  widget.title ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor),
                 ),
           ),
-          if (actions != null) ...[SizedBox(width: 16.sp), Row(mainAxisSize: MainAxisSize.min, children: actions!)],
+          if (widget.actions != null) ...[
+            SizedBox(width: 16.sp),
+            Row(mainAxisSize: MainAxisSize.min, children: widget.actions!),
+          ],
         ],
       ),
     );

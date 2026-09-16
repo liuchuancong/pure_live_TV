@@ -31,7 +31,7 @@ class GeneralSettingsSectionPage extends ConsumerWidget {
           onChanged: (v) => app.update(appState.copyWith(enableAutoCheckUpdate: v)),
         ),
         TvSettingsOptionTile(
-          title: i18n('ui_auto_shutdown_countdown'),
+          title: i18n('enable_countdown_close'),
           subtitle: i18n('ui_close_the_app_after_a_period_of_inactivity'),
           icon: Remix.timer_line,
           options: [i18n('close'), i18n('ui_30_minutes'), i18n('ui_60_minutes'), i18n('ui_90_minutes'), i18n('ui_120_minutes')],

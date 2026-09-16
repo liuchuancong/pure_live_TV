@@ -27,6 +27,17 @@ class VideoSettingsSectionPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Audio
+        //
+        // 全局静音 is honoured by the player core (`live_room_volume_manager`)
+        // but the TV app had no row for it, so the setting was unreachable.
+        TvSettingsSwitchTile(
+          title: i18n('global_mute'),
+          subtitle: i18n('global_mute_subtitle'),
+          icon: Remix.volume_mute_line,
+          value: ref.watch(volumeSettingsControllerProvider).globalVolumeMute,
+          onChanged: (v) => ref.read(volumeSettingsControllerProvider.notifier).setGlobalVolumeMute(v),
+        ),
         // Quality
         TvSettingsOptionTile(
           title: i18n('ui_aspect_ratio'),

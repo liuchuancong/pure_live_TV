@@ -23,39 +23,47 @@ class TvColorOption {
   final Color color;
 }
 
-/// Colours offered by the picker: the desktop app's named palette first, then
-/// a wider set so a TV without a colour picker still has a real choice.
+/// Colours offered by the picker.
+///
+/// The mobile app opens a full colour wheel plus the named palette
+/// (`AppConsts.colorsNameMap`); a remote cannot drive a wheel, so the same
+/// freedom is offered as a dense grid: the named colours first, then three
+/// shades of every Material hue, which covers what a wheel is actually used for
+/// — finding a nearby tone.
 final List<TvColorOption> kTvColorOptions = <TvColorOption>[
   for (final MapEntry<String, Color> entry in PlayerConsts.themeColors.entries)
     TvColorOption(entry.key, entry.value),
-  const TvColorOption('#FFFFFF', Color(0xFFFFFFFF)),
-  const TvColorOption('#F5F5F5', Color(0xFFF5F5F5)),
-  const TvColorOption('#9E9E9E', Color(0xFF9E9E9E)),
-  const TvColorOption('#616161', Color(0xFF616161)),
-  const TvColorOption('#212121', Color(0xFF212121)),
-  const TvColorOption('#F44336', Color(0xFFF44336)),
-  const TvColorOption('#E91E63', Color(0xFFE91E63)),
-  const TvColorOption('#FF5722', Color(0xFFFF5722)),
-  const TvColorOption('#FF9800', Color(0xFFFF9800)),
-  const TvColorOption('#FFC107', Color(0xFFFFC107)),
-  const TvColorOption('#FFEB3B', Color(0xFFFFEB3B)),
-  const TvColorOption('#CDDC39', Color(0xFFCDDC39)),
-  const TvColorOption('#8BC34A', Color(0xFF8BC34A)),
-  const TvColorOption('#4CAF50', Color(0xFF4CAF50)),
-  const TvColorOption('#009688', Color(0xFF009688)),
-  const TvColorOption('#00BCD4', Color(0xFF00BCD4)),
-  const TvColorOption('#03A9F4', Color(0xFF03A9F4)),
-  const TvColorOption('#2196F3', Color(0xFF2196F3)),
-  const TvColorOption('#3F51B5', Color(0xFF3F51B5)),
-  const TvColorOption('#673AB7', Color(0xFF673AB7)),
-  const TvColorOption('#9C27B0', Color(0xFF9C27B0)),
-  const TvColorOption('#E040FB', Color(0xFFE040FB)),
-  const TvColorOption('#FF80AB', Color(0xFFFF80AB)),
-  const TvColorOption('#80D8FF', Color(0xFF80D8FF)),
-  const TvColorOption('#A7FFEB', Color(0xFFA7FFEB)),
-  const TvColorOption('#CCFF90', Color(0xFFCCFF90)),
-  const TvColorOption('#FFD180', Color(0xFFFFD180)),
+  const TvColorOption('White', Color(0xFFFFFFFF)),
+  const TvColorOption('Black', Color(0xFF000000)),
+  const TvColorOption('Grey', Color(0xFF9E9E9E)),
+  for (final MapEntry<String, MaterialColor> hue in _tvHueShades.entries)
+    for (final int shade in _tvShadeSteps) TvColorOption('${hue.key} $shade', hue.value[shade]!),
 ];
+
+/// Material hues the palette is built from.
+const Map<String, MaterialColor> _tvHueShades = <String, MaterialColor>{
+  'Red': Colors.red,
+  'Pink': Colors.pink,
+  'Purple': Colors.purple,
+  'Deep Purple': Colors.deepPurple,
+  'Indigo': Colors.indigo,
+  'Blue': Colors.blue,
+  'Light Blue': Colors.lightBlue,
+  'Cyan': Colors.cyan,
+  'Teal': Colors.teal,
+  'Green': Colors.green,
+  'Light Green': Colors.lightGreen,
+  'Lime': Colors.lime,
+  'Yellow': Colors.yellow,
+  'Amber': Colors.amber,
+  'Orange': Colors.orange,
+  'Deep Orange': Colors.deepOrange,
+  'Brown': Colors.brown,
+  'Blue Grey': Colors.blueGrey,
+};
+
+/// One dark, one mid and one light tone per hue.
+const List<int> _tvShadeSteps = <int>[200, 400, 700];
 
 /// Colour picker page: a grid of colours, since a TV has no colour picker.
 class ColorPickerSectionPage extends StatelessWidget {
@@ -69,12 +77,14 @@ class ColorPickerSectionPage extends StatelessWidget {
     return TvScaffold(
       title: i18n('ui_choose_color'),
       child: GridView.builder(
-        padding: EdgeInsets.all(16.sp),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 7,
-          mainAxisSpacing: 12.sp,
-          crossAxisSpacing: 12.sp,
-          childAspectRatio: 1.25,
+        padding: EdgeInsets.all(16.w),
+        // Extent-based, not a fixed column count: the swatches stay small on any
+        // panel size instead of ballooning on a 4K screen.
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 150.w,
+          mainAxisSpacing: 10.w,
+          crossAxisSpacing: 10.w,
+          childAspectRatio: 1.0,
         ),
         itemCount: kTvColorOptions.length + 1,
         itemBuilder: (context, index) {

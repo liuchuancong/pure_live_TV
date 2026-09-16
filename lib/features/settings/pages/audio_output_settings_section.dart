@@ -36,7 +36,7 @@ class AudioOutputSettingsSectionPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: i18n('ui_audio_output_driver'),
+          title: i18n('audio_output_driver'),
           subtitle: i18n('ui_mpv_audio_output'),
           icon: Icons.surround_sound_rounded,
           options: keys.map((k) => _drivers[k]!).toList(),

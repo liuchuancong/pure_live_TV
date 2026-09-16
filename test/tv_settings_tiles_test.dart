@@ -54,6 +54,45 @@ void main() {
     expect(find.text('Empty'), findsOneWidget);
   });
 
+  testWidgets('a single-option tile runs its action instead of opening a one-item list', (tester) async {
+    // The regression: a single-option "action" row (导出配置, 清除缓存, 保存代理,
+    // 检查更新, ...) opened a dialog showing its own value, the dialog reported
+    // "nothing changed" and `onChanged` never ran, so every action row in the
+    // settings was dead.
+    int? fired;
+    await pump(
+      tester,
+      TvSettingsOptionTile(title: 'Export config', options: const ['Export'], index: 0, onChanged: (i) => fired = i),
+    );
+
+    tester.widget<TvSettingsRow>(find.byType(TvSettingsRow)).onSelect!.call();
+    await tester.pumpAndSettle();
+
+    expect(fired, 0);
+    expect(find.byType(TvDialog), findsNothing, reason: 'an action row must not open a selector');
+    // The action label is the row title, so the row wears a chevron rather than
+    // a value with a drop-down arrow.
+    expect(find.text('Export'), findsNothing);
+  });
+
+  testWidgets('a choice row still shows its value, an action row does not', (tester) async {
+    // The two must stay distinguishable: a choice row shows the current value
+    // with a drop-down arrow, an action row wears a plain chevron.
+    await pump(
+      tester,
+      TvSettingsOptionTile(title: 'Quality', options: const ['High', 'Low'], index: 0, onChanged: (_) {}),
+    );
+    expect(find.text('High'), findsOneWidget);
+    expect(find.byIcon(Icons.expand_more_rounded), findsOneWidget);
+
+    await pump(
+      tester,
+      TvSettingsOptionTile(title: 'Check update', options: const ['Check'], index: 0, onChanged: (_) {}),
+    );
+    expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.expand_more_rounded), findsNothing);
+  });
+
   testWidgets('TvSettingsMenuTile renders', (tester) async {
     await pump(
       tester,

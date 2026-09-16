@@ -186,7 +186,7 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsIconPicker: 'ui_choose_icon',
   AppRoutes.kSettingsPage: 'page_settings',
   AppRoutes.kSettingsFont: 'ui_font_settings',
-  AppRoutes.kSettingsFontFamily: 'font_family',
+  AppRoutes.kSettingsFontFamily: 'font_family_settings',
   AppRoutes.kSettingsDecoder: 'ui_decoder_settings',
   AppRoutes.kSettingsRenderer: 'ui_renderer_settings',
   AppRoutes.kSettingsAudioOutput: 'ui_audio_output',

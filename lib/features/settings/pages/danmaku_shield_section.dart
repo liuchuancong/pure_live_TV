@@ -35,7 +35,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
   void _addUser() {
     final controller = ref.read(favoriteRoomControllerProvider.notifier);
     final ok = controller.addBlockedDanmakuUser(_user.text);
-    setState(() => _result = ok ? i18n('cookie_saved') : i18n('ui_parameter_error'));
+    setState(() => _result = ok ? i18n('danmaku_user_blocked') : i18n('ui_parameter_error'));
     if (ok) _user.clear();
   }
 

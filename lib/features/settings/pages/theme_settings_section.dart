@@ -4,8 +4,7 @@ import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/player/utils/player_consts.dart';
-import 'package:pure_live/features/settings/pages/color_picker_section.dart';
+import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class ThemeSettingsSectionPage extends ConsumerWidget {
@@ -18,18 +17,58 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     final theme = ref.read(themeSettingsControllerProvider.notifier);
     final themeModes = AppConsts.themeModes.keys.toList(growable: false);
     final loadingStyles = AppConsts.allStyles;
+    final tvTheme = context.tvTheme;
+    final Color loadingColor = themeState.loadingStyleColor ?? tvTheme.focusColor;
+    // The mobile row shows which family is active, so the row is not just a
+    // blind entry point into the font manager.
+    final String currentFontName = ref.watch(fontSettingsControllerProvider).value?.fontFamilyName ?? i18n('font_default');
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // The preset list lives on its own page now: it grows with every
-          // added preset and needs room for a colour preview.
+          // Mobile order: the theme mode first, then the colour, then dynamic
+          // colour, then the loading animation. The preset list replaces the
+          // mobile colour wheel with its own page.
+          TvSettingsOptionTile(
+            title: i18n('change_theme_mode'),
+            subtitle: i18n('change_theme_mode_subtitle'),
+            // Icon taken from the desktop theme page (moon), so the same row
+            // looks the same in both apps.
+            icon: Remix.moon_clear_line,
+            options: [for (final mode in themeModes) i18n(AppConsts.themeModeI18n[mode] ?? mode)],
+            index: themeModes.indexOf(themeState.themeModeName).clamp(0, themeModes.length - 1),
+            onChanged: (index) => theme.changeThemeMode(themeModes[index]),
+          ),
           TvSettingsNavTile(
             title: i18n('ui_theme'),
             subtitle: currentTheme.name,
             icon: Remix.palette_line,
             onTap: () => context.push(AppRoutes.kSettingsThemePicker),
+          ),
+          // Desktop order: dynamic colour belongs with the theme rows, above
+          // the loading animation.
+          TvSettingsSwitchTile(
+            title: i18n('enable_dynamic_color'),
+            subtitle: i18n('enable_dynamic_color_subtitle'),
+            icon: Remix.magic_line,
+            value: themeState.enableDynamicTheme,
+            onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
+          ),
+          // The animation row shows the animation itself, exactly as the mobile
+          // page does: a name alone does not tell the user what they picked.
+          TvSettingsRow(
+            title: i18n('change_loading_style'),
+            subtitle: i18n('change_loading_style_subtitle'),
+            leading: TvLoadingStylePreview(
+              style: themeState.loadingStyle,
+              color: loadingColor,
+              size: 30.w,
+              theme: tvTheme,
+            ),
+            trailingBuilder: (context, focused) =>
+                tvSettingsValueLabel(context, focused, _currentLoadingStyleName(loadingStyles, themeState.loadingStyle)),
+            onSelect: () => context.push(AppRoutes.kSettingsLoadingStyle),
           ),
           SizedBox(height: 8.sp),
           TvSettingsMenuTile<void>(
@@ -38,48 +77,8 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             icon: Remix.image_line,
             onTap: () async => context.push(AppRoutes.kWallpaperPage),
           ),
-          TvSettingsOptionTile(
-            title: i18n('theme_mode'),
-            // Icon taken from the desktop theme page (moon), so the same row
-            // looks the same in both apps.
-            icon: Remix.moon_clear_line,
-            options: [for (final mode in themeModes) i18n(AppConsts.themeModeI18n[mode] ?? mode)],
-            index: themeModes.indexOf(themeState.themeModeName).clamp(0, themeModes.length - 1),
-            onChanged: (index) => theme.changeThemeMode(themeModes[index]),
-          ),
-          // Desktop order: dynamic colour belongs with the theme rows, above
-          // the loading animation.
-          TvSettingsSwitchTile(
-            title: i18n('ui_dynamic_theme_color'),
-            subtitle: i18n('ui_derive_the_theme_color_from_the_cover_image'),
-            icon: Remix.magic_line,
-            value: themeState.enableDynamicTheme,
-            onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
-          ),
-          // The animation list carries live previews, so it lives on a page of
-          // its own; a TV has no colour picker, so colours are a page of
-          // swatches.
-          TvSettingsNavTile(
-            title: i18n('change_loading_style'),
-            subtitle: _currentLoadingStyleName(loadingStyles, themeState.loadingStyle),
-            icon: Remix.loader_4_line,
-            onTap: () => context.push(AppRoutes.kSettingsLoadingStyle),
-          ),
-          TvSettingsNavTile(
-            title: i18n('loading_style_color'),
-            subtitle: _loadingColorName(themeState.loadingStyleColor),
-            icon: Remix.brush_line,
-            onTap: () async {
-              final ColorPickResult? result = await context.push<ColorPickResult>(
-                AppRoutes.kSettingsColorPicker,
-                extra: themeState.loadingStyleColor,
-              );
-              if (result == null) return;
-              theme.updateSettings(themeState.copyWith(loadingStyleColor: result.color));
-            },
-          ),
           TvSettingsSliderTile(
-            title: i18n('ui_horizontal_card_spacing'),
+            title: i18n('cross_axis_spacing'),
             icon: Remix.arrow_left_right_line,
             value: themeState.crossAxisSpacing,
             min: 0,
@@ -88,7 +87,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             onChanged: (v) => theme.updateSettings(themeState.copyWith(crossAxisSpacing: v)),
           ),
           TvSettingsSliderTile(
-            title: i18n('ui_vertical_card_spacing'),
+            title: i18n('main_axis_spacing'),
             icon: Remix.arrow_up_down_line,
             value: themeState.mainAxisSpacing,
             min: 0,
@@ -118,13 +117,13 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             },
           ),
           TvSettingsNavTile(
-            title: i18n('font_family'),
-            subtitle: i18n('change_font_family'),
+            title: i18n('change_font_family'),
+            subtitle: '${i18n('current_font_prefix')}: $currentFontName',
             icon: Remix.font_color,
             onTap: () => context.push(AppRoutes.kSettingsFontFamily),
           ),
           TvSettingsNavTile(
-            title: i18n('ui_font_settings'),
+            title: i18n('font_settings_title'),
             subtitle: i18n('font_settings_desc'),
             icon: Remix.font_size,
             onTap: () => context.push(AppRoutes.kSettingsFont),
@@ -143,23 +142,12 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     return i18nExists(localized) ? i18n(localized) : (english.isNotEmpty ? english : localized);
   }
 
-  /// Named accents offered for the loading animation; index 0 keeps the
-  /// animation on the colour of the active theme.
+  /// Name of the active animation, as the mobile page shows it.
   static String _currentLoadingStyleName(List<Map<String, String>> styles, String key) {
     for (final style in styles) {
       if (style['key'] == key) return _loadingStyleName(style);
     }
     return key;
-  }
-
-  /// Label of the active loading colour, by name when it is one of the named
-  /// palette entries and by hex otherwise.
-  static String _loadingColorName(Color? current) {
-    if (current == null) return i18n('follow_theme_color');
-    for (final entry in PlayerConsts.themeColors.entries) {
-      if (entry.value.toARGB32() == current.toARGB32()) return entry.key;
-    }
-    return '#${current.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
   }
 
   /// Index of the persisted language inside [AppConsts.languages].

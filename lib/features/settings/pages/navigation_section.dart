@@ -92,20 +92,21 @@ class NavigationSectionPage extends ConsumerWidget {
     await controller.setIcon(menu.id, option);
   }
 
+  /// The three entries the mobile navigation page also has keep its labels
+  /// (关注 / 热门 / 分区); the other four are TV-only destinations.
   static String _title(HomeMenu menu) => switch (menu) {
-    HomeMenu.favorite => i18n('ui_following'),
-    HomeMenu.hot => i18n('kilakila_hot'),
-    HomeMenu.areas => i18n('ui_category'),
+    HomeMenu.favorite => i18n('favorites_title'),
+    HomeMenu.hot => i18n('popular_title'),
+    HomeMenu.areas => i18n('areas_title'),
     HomeMenu.favoriteAreas => i18n('favorite_areas'),
     HomeMenu.moviePlayback => i18n('ui_link_playback'),
     HomeMenu.search => i18n('search_live'),
     HomeMenu.history => i18n('watch_history'),
   };
 
-  static String _subtitle(HomeMenu menu) => switch (menu) {
-    HomeMenu.favorite => i18n('favorites'),
-    HomeMenu.hot => i18n('hot'),
-    HomeMenu.areas => i18n('areas_title'),
+  static String? _subtitle(HomeMenu menu) => switch (menu) {
+    // No subtitle: the mobile page labels these three with the bare name.
+    HomeMenu.favorite || HomeMenu.hot || HomeMenu.areas => null,
     HomeMenu.favoriteAreas => i18n('favorite_areas'),
     HomeMenu.moviePlayback => i18n('movie_playback'),
     HomeMenu.search => i18n('search'),

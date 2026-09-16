@@ -611,10 +611,7 @@
     "enter_fullscreen":  "进入全屏",
     "enter_room":  "进入房间",
     "epg_file_type":  "XML / GZ / JSON",
-    "epg_import":  [
-                       "导入节目单",
-                       "Import EPG"
-                   ],
+    "epg_import":  "导入节目单",
     "epg_import_failed":  "EPG 导入失败",
     "epg_import_success":  "EPG 导入成功",
     "epg_settings":  "EPG 电视节目单设置",
@@ -1911,6 +1908,7 @@
     "ui_crop_to_center":  "裁剪居中",
     "ui_current_theme":  "当前主题",
     "ui_choose_icon":  "选择图标",
+    "ui_choose_color":  "选择颜色",
     "ui_icon":  "图标",
     "ui_custom_player_output":  "自定义播放器输出",
     "ui_cyberpunk":  "赛博朋克",

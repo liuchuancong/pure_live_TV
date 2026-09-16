@@ -131,7 +131,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               onChanged: (v) => update((s) => s.copyWith(danmakuFps: v.round())),
             ),
           TvSettingsSwitchTile(
-            title: i18n('danmaku_repeat_filter'),
+            title: i18n('collapse_repeated_danmaku'),
             subtitle: i18n('collapse_repeated_danmaku_desc'),
             icon: Icons.filter_alt_outlined,
             value: state.collapseRepeatedDanmaku,
@@ -139,7 +139,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
           ),
           if (state.collapseRepeatedDanmaku)
             TvSettingsSliderTile(
-              title: i18n('danmaku_similarity_cache_duration'),
+              title: i18n('repeated_danmaku_window'),
               icon: Icons.timer_outlined,
               value: state.repeatedDanmakuWindowSeconds.toDouble(),
               min: 1,

@@ -62,8 +62,9 @@ class _TvScaffoldState extends State<TvScaffold> {
     Widget? finalAppBar;
 
     if (widget.showAppBar) {
-      final bool canPop = Navigator.of(context).canPop();
-      final bool effectiveShowBackButton = widget.showBackButton ?? canPop;
+      // Same rule the app bar applies itself, so the top-edge focus handoff is
+      // only installed for a back button that is really on screen.
+      final bool effectiveShowBackButton = widget.showBackButton ?? tvShowsBackButton(context);
       _backNode = (widget.appBar == null && effectiveShowBackButton)
           ? (_backNode ?? FocusNode(debugLabel: 'tv_scaffold_back'))
           : null;
@@ -119,6 +120,12 @@ class _BackgroundLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mountable before bootstrap and in widget tests, where the settings
+    // container does not exist yet: the theme supplies the background then.
+    if (!SettingsService.to.isInitialized) {
+      return _ThemeBackground(theme: context.tvTheme);
+    }
+
     return StreamBuilder<BackgroundConfigModel>(
       stream: SettingsService.to.bg.configChanges,
       initialData: SettingsService.to.bgState,
@@ -177,6 +184,8 @@ class _MaskLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!SettingsService.to.isInitialized) return const SizedBox.shrink();
+
     return StreamBuilder<BackgroundConfigModel>(
       stream: SettingsService.to.bg.configChanges,
       initialData: SettingsService.to.bgState,

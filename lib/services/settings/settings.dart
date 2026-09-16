@@ -45,9 +45,17 @@ class SettingsService {
   SettingsService._internal();
   ProviderContainer? get container => _container;
   late final ProviderContainer _container;
+  bool _initialized = false;
+
+  /// Whether [init] has run.
+  ///
+  /// Widgets that are also mounted before bootstrap (and in widget tests) ask
+  /// this before reading settings, instead of crashing on the late container.
+  bool get isInitialized => _initialized;
 
   void init(ProviderContainer container) {
     _container = container;
+    _initialized = true;
   }
 
   // background

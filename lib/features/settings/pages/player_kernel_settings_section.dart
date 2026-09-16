@@ -19,7 +19,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: i18n('ui_player_kernel'),
+          title: i18n('kernel_switch'),
           subtitle: i18n('ui_takes_effect_after_re_entering_the_room'),
           icon: Remix.toggle_line,
           options: engineKeys.map((k) => engineNames[k] ?? k).toList(),
@@ -30,8 +30,8 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         // hardware decoding (the desktop keeps the quality rows on its video
         // page, which is where they live here too).
         TvSettingsSwitchTile(
-          title: i18n('ui_hardware_decoding'),
-          subtitle: i18n('ui_use_hardware_decoding_to_lower_cpu_usage'),
+          title: i18n('enable_codec'),
+          subtitle: i18n('gpu_decode'),
           icon: Remix.speed_up_line,
           value: playerState.enableCodec,
           onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),

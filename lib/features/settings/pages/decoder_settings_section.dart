@@ -64,7 +64,7 @@ class DecoderSettingsSectionPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsOptionTile(
-          title: i18n('ui_hardware_decoder'),
+          title: i18n('hardware_decoder'),
           subtitle: i18n('ui_mpv_hardware_decoding_takes_effect_after_re_ente'),
           icon: Icons.memory_rounded,
           options: keys.map((k) => decoders[k]!).toList(),
