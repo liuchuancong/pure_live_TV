@@ -16,9 +16,13 @@ import 'package:flutter/material.dart';
 /// A dialog stacked *above* this one is untouched: it makes this route stop being
 /// current, and a covered dialog must not fight it for focus.
 class TvDialogFocusGuard extends StatefulWidget {
-  const TvDialogFocusGuard({super.key, required this.child});
+  const TvDialogFocusGuard({super.key, required this.child, this.initialFocusNode});
 
   final Widget child;
+
+  /// The node the dialog should open the keyboard on — for a select dialog the
+  /// row holding the value in force, not merely the first one.
+  final FocusNode? initialFocusNode;
 
   @override
   State<TvDialogFocusGuard> createState() => _TvDialogFocusGuardState();
@@ -45,7 +49,23 @@ class _TvDialogFocusGuardState extends State<TvDialogFocusGuard> {
     // on the app-bar back button underneath — every option row is then
     // unreachable and only a mouse click works. One post-frame claim makes the
     // dialog own the remote from the first key press.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _claim());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _claimWithRetry(0));
+  }
+
+  /// Claims the keyboard, retrying across a few frames.
+  ///
+  /// A dialog body is often a lazy list: on the first layout the option rows
+  /// may not exist yet, and the only focusable node then is the dialog's 关闭
+  /// button — claiming it *did* put the keyboard inside the dialog, but on the
+  /// wrong row, and the guard then defended that wrong row against every later
+  /// correction. Retrying until something inside holds the keyboard lets the
+  /// rows appear first and the preferred node win.
+  void _claimWithRetry(int attempts) {
+    if (!mounted || attempts >= 10) return;
+    if (_holdsKeyboard) return;
+    _claim();
+    if (_holdsKeyboard) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _claimWithRetry(attempts + 1));
   }
 
   /// Hands the keyboard to an option inside the dialog, if it is not there yet.
@@ -55,9 +75,9 @@ class _TvDialogFocusGuardState extends State<TvDialogFocusGuard> {
     if (route == null || !route.isCurrent) return;
     final Iterable<FocusNode> candidates = _candidates;
     if (candidates.isEmpty) return;
-    final FocusNode? remembered = _lastInside;
-    if (remembered != null && candidates.contains(remembered)) {
-      remembered.requestFocus();
+    final FocusNode? preferred = _lastInside ?? widget.initialFocusNode;
+    if (preferred != null && candidates.contains(preferred)) {
+      preferred.requestFocus();
       return;
     }
     candidates.first.requestFocus();
@@ -103,9 +123,9 @@ class _TvDialogFocusGuardState extends State<TvDialogFocusGuard> {
       if (!mounted || _holdsKeyboard) return;
       final Iterable<FocusNode> candidates = _candidates;
       if (candidates.isEmpty) return;
-      final FocusNode? remembered = _lastInside;
-      if (remembered != null && candidates.contains(remembered)) {
-        remembered.requestFocus();
+      final FocusNode? preferred = _lastInside ?? widget.initialFocusNode;
+      if (preferred != null && candidates.contains(preferred)) {
+        preferred.requestFocus();
         return;
       }
       candidates.first.requestFocus();

@@ -31,6 +31,10 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
 
   FocusNode? _focusWhenCovered;
 
+  /// The last node of *this route* that held the keyboard while the route was
+  /// current, so a focus death after the bounded restore can still be corrected.
+  FocusNode? _lastInsideRoute;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -38,11 +42,16 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
     if (route != null) {
       tvRouteObserver.subscribe(this, route);
     }
+    // didChangeDependencies can run again on dependency changes; remove first
+    // so the listener never accumulates.
+    FocusManager.instance.removeListener(_handleFocusChange);
+    FocusManager.instance.addListener(_handleFocusChange);
   }
 
   @override
   void dispose() {
     tvRouteObserver.unsubscribe(this);
+    FocusManager.instance.removeListener(_handleFocusChange);
     super.dispose();
   }
 
@@ -62,6 +71,39 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
     _focusWhenCovered = null;
     if (node == null) return;
     _restore(node);
+  }
+
+  /// Watches for focus deaths while this route is on top.
+  ///
+  /// A dialog's focus tree disposes only when its *exit transition* ends —
+  /// about 300ms after the pop started, long after the frame-bounded
+  /// [restore] above has finished. When those nodes die the d-pad layer
+  /// answers the death itself and lands on the top-most focusable it finds,
+  /// which is the app bar's back button instead of the row the user acted on.
+  /// Re-asserting the last known in-route node covers exactly that window; a
+  /// focus that moved to another node of this route is left alone (the user is
+  /// navigating).
+  void _handleFocusChange() {
+    if (!mounted) return;
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    if (route == null || !route.isCurrent) return;
+
+    final FocusNode? primary = FocusManager.instance.primaryFocus;
+    if (primary != null && _isInsideRoute(primary, route)) {
+      if (primary is! FocusScopeNode) _lastInsideRoute = primary;
+      return;
+    }
+
+    // Focus left this route or died entirely. `primary` is then null or a bare
+    // scope, which is not a usable highlight.
+    final FocusNode? node = _lastInsideRoute;
+    if (node != null) _restore(node);
+  }
+
+  bool _isInsideRoute(FocusNode node, ModalRoute<dynamic> route) {
+    final BuildContext? context = node.context;
+    if (context == null || !context.mounted) return false;
+    return identical(ModalRoute.of(context), route);
   }
 
   /// Hands focus back to [node], and keeps asserting it for a few frames.

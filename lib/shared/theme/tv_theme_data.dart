@@ -72,6 +72,19 @@ class TvThemeData {
   Color get onFocusColor =>
       focusColor.computeLuminance() > 0.5 ? const Color(0xFF101014) : Colors.white;
 
+  /// Text and icon colour for content on the *faded* accent fill — the
+  /// "focused but not selected" state that paints [focusColor] at 50% over the
+  /// page background.
+  ///
+  /// The text must contrast with the **blended** colour, not the accent itself:
+  /// for a mid-blue accent the blend is a darker blue where `onFocusColor`
+  /// (dark) would sink in, and text in `focusColor` on its own 50% wash is the
+  /// blue-on-blue that made the focused tab unreadable.
+  Color get onFadedFocusColor {
+    final Color blended = Color.lerp(backgroundColor, focusColor, 0.5)!;
+    return blended.computeLuminance() > 0.5 ? const Color(0xFF101014) : Colors.white;
+  }
+
   /// Subtle fill for a row that is neither selected nor focused.
   ///
   /// Derived from [primaryTextColor] rather than a white/black constant so one

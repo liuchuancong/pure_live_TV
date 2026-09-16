@@ -156,7 +156,7 @@ class _TvTabBarState extends State<TvTabBar> {
                       final foregroundColor = isSelected
                           ? currentTvTheme.onFocusColor
                           : isFocused
-                          ? currentTvTheme.focusColor
+                          ? currentTvTheme.onFadedFocusColor
                           : currentTvTheme.primaryTextColor;
 
                     final baseStyle = isSelected || isFocused ? AppTextStyles.t20W600 : AppTextStyles.t20;

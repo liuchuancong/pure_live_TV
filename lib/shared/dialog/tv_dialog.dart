@@ -13,6 +13,11 @@ class TvDialog extends StatelessWidget {
   final VoidCallback? onConfirm;
   final VoidCallback? onCancel;
 
+  /// The node the keyboard should open on — a select dialog passes the row
+  /// holding the value in force. Without it the focus guard settles on the
+  /// first focusable, which for a lazy list can transiently be the 关闭 button.
+  final FocusNode? initialFocusNode;
+
   const TvDialog({
     super.key,
     this.title,
@@ -21,6 +26,7 @@ class TvDialog extends StatelessWidget {
     this.cancelText,
     this.onConfirm,
     this.onCancel,
+    this.initialFocusNode,
   });
 
   @override
@@ -58,6 +64,7 @@ class TvDialog extends StatelessWidget {
           // ...and keeps the keyboard here even when something behind the dialog
           // rebuilds and the d-pad layer restores focus to a node of that page.
           child: TvDialogFocusGuard(
+            initialFocusNode: initialFocusNode,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,

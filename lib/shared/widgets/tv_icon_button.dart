@@ -61,7 +61,7 @@ class TvIconButton extends StatelessWidget {
               foregroundColor = activeTheme.onFocusColor;
             } else if (isFocused && useFadedFocus) {
               bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-              foregroundColor = activeTheme.onFocusColor;
+              foregroundColor = activeTheme.onFadedFocusColor;
             } else if (isFocused) {
               bgColor = activeTheme.focusColor;
               foregroundColor = activeTheme.onFocusColor;

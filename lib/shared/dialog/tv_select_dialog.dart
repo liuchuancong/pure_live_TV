@@ -65,6 +65,14 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
     final offset = selectedIndex * itemHeight;
     _scrollController.jumpTo(offset.clamp(0, _scrollController.position.maxScrollExtent));
     if (_selectedNode.canRequestFocus) _selectedNode.requestFocus();
+    // After a jump the selected row may only be built one frame later (lazy
+    // list); the guard's initialFocusNode retry covers that window, and this
+    // extra attempt shortens it for the common case.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_selectedNode.hasFocus && _selectedNode.context?.mounted == true) {
+        _selectedNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -80,6 +88,7 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
       title: widget.title,
       cancelText: i18n('close'),
       onCancel: () => Navigator.of(context).pop(),
+      initialFocusNode: _selectedNode,
       child: Container(
         constraints: BoxConstraints(maxHeight: 500.sp),
         child: ListView.separated(
