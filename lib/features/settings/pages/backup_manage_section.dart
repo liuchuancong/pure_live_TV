@@ -119,6 +119,8 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 本地备份
+          TvSettingsGroupTitle(title: i18n('local_backup')),
           TvSettingsCard(
             children: [
               TvSettingsOptionTile(

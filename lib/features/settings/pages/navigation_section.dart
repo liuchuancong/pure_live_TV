@@ -27,6 +27,11 @@ class NavigationSectionPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // The mobile page heads this whole group (visibility switches and the
+          // reordering rows, plus the TV-only icon entries) with
+          // `navigation_display_settings`; `multiview_title` has no rows here
+          // because multiview playback has no setting on TV.
+          TvSettingsGroupTitle(title: i18n('navigation_display_settings')),
           TvSettingsCard(
             children: [
               for (final menu in HomeMenu.values)

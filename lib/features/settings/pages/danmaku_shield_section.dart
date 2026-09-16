@@ -48,6 +48,8 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 弹幕关键词屏蔽
+          TvSettingsGroupTitle(title: i18n('danmaku_keyword_block')),
           TvSettingsCard(
             children: [
               TvSettingsOptionTile(

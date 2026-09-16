@@ -19,6 +19,7 @@ class AudienceMetricSectionPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          TvSettingsGroupTitle(title: i18n('audience_display_mode')),
           TvSettingsCard(
             children: [
               TvSettingsOptionTile(
@@ -32,6 +33,7 @@ class AudienceMetricSectionPage extends ConsumerWidget {
             ],
           ),
           SizedBox(height: 12.h),
+          TvSettingsGroupTitle(title: i18n('audience_online_platforms')),
           TvSettingsCard(
             children: [
               for (final site in Sites.supportSites)

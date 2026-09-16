@@ -23,36 +23,47 @@ class GeneralSettingsSectionPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsSwitchTile(
-          title: i18n('auto_check_update'),
-          subtitle: i18n('ui_check_for_updates_on_startup'),
-          icon: Remix.refresh_line,
-          value: appState.enableAutoCheckUpdate,
-          onChanged: (v) => app.update(appState.copyWith(enableAutoCheckUpdate: v)),
-        ),
-        TvSettingsOptionTile(
-          title: i18n('enable_countdown_close'),
-          subtitle: i18n('ui_close_the_app_after_a_period_of_inactivity'),
-          icon: Remix.timer_line,
-          options: [i18n('close'), i18n('ui_30_minutes'), i18n('ui_60_minutes'), i18n('ui_90_minutes'), i18n('ui_120_minutes')],
-          index: _shutDownIndex(exitState),
-          onChanged: (i) => exit.updateConfig(_shutDownConfig(exitState, i)),
-        ),
-        TvSettingsSwitchTile(
-          title: i18n('ui_exit_without_confirmation'),
-          subtitle: i18n('ui_back_key_exits_the_app_directly_without_confirma'),
-          icon: Remix.error_warning_line,
-          value: exitState.dontAskExit,
-          onChanged: (v) => exit.setDontAskExit(v),
-        ),
-        // Not present in the desktop app; kept because the TV card layout uses
-        // it.
-        TvSettingsSwitchTile(
-          title: i18n('ui_dense_favorites_layout'),
-          subtitle: i18n('ui_use_a_denser_card_layout_on_the_favorites_page'),
-          icon: Icons.view_comfy_rounded,
-          value: appState.enableDenseFavorites,
-          onChanged: (v) => app.update(appState.copyWith(enableDenseFavorites: v)),
+        TvSettingsGroupTitle(title: i18n('general')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSwitchTile(
+              title: i18n('auto_check_update'),
+              subtitle: i18n('ui_check_for_updates_on_startup'),
+              icon: Remix.refresh_line,
+              value: appState.enableAutoCheckUpdate,
+              onChanged: (v) => app.update(appState.copyWith(enableAutoCheckUpdate: v)),
+            ),
+            TvSettingsOptionTile(
+              title: i18n('enable_countdown_close'),
+              subtitle: i18n('ui_close_the_app_after_a_period_of_inactivity'),
+              icon: Remix.timer_line,
+              options: [
+                i18n('close'),
+                i18n('ui_30_minutes'),
+                i18n('ui_60_minutes'),
+                i18n('ui_90_minutes'),
+                i18n('ui_120_minutes'),
+              ],
+              index: _shutDownIndex(exitState),
+              onChanged: (i) => exit.updateConfig(_shutDownConfig(exitState, i)),
+            ),
+            TvSettingsSwitchTile(
+              title: i18n('ui_exit_without_confirmation'),
+              subtitle: i18n('ui_back_key_exits_the_app_directly_without_confirma'),
+              icon: Remix.error_warning_line,
+              value: exitState.dontAskExit,
+              onChanged: (v) => exit.setDontAskExit(v),
+            ),
+            // Not present in the desktop app; kept because the TV card layout uses
+            // it.
+            TvSettingsSwitchTile(
+              title: i18n('ui_dense_favorites_layout'),
+              subtitle: i18n('ui_use_a_denser_card_layout_on_the_favorites_page'),
+              icon: Icons.view_comfy_rounded,
+              value: appState.enableDenseFavorites,
+              onChanged: (v) => app.update(appState.copyWith(enableDenseFavorites: v)),
+            ),
+          ],
         ),
       ],
     );

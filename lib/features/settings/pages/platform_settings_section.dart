@@ -19,33 +19,38 @@ class PlatformSettingsSectionPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Same rows and order as the desktop platform page: which platforms are
-        // shown, the preferred platform, then the authorisation and tag pages.
-        TvSettingsNavTile(
-          title: i18n('platform_display'),
-          subtitle: i18n('platform_display_subtitle'),
-          icon: Remix.apps_2_line,
-          onTap: () => context.push(AppRoutes.kSettingsHotAreas),
-        ),
-        TvSettingsOptionTile(
-          title: i18n('prefer_platform'),
-          subtitle: i18n('prefer_platform_subtitle'),
-          icon: Remix.heart_3_line,
-          options: siteNames,
-          index: currentIndex,
-          onChanged: (i) => fav.changePreferPlatform(siteIds[i]),
-        ),
-        TvSettingsNavTile(
-          title: i18n('third_party_auth'),
-          subtitle: i18n('third_party_auth_subtitle'),
-          icon: Remix.accessibility_line,
-          onTap: () => context.push(AppRoutes.kSettingsAccount),
-        ),
-        TvSettingsNavTile(
-          title: i18n('tag_management'),
-          subtitle: i18n('tag_management_subtitle'),
-          icon: Remix.price_tag_3_line,
-          onTap: () => context.push(AppRoutes.kSettingsTags),
+        TvSettingsGroupTitle(title: i18n('platform_settings')),
+        TvSettingsCard(
+          children: [
+            // Same rows and order as the desktop platform page: which platforms are
+            // shown, the preferred platform, then the authorisation and tag pages.
+            TvSettingsNavTile(
+              title: i18n('platform_display'),
+              subtitle: i18n('platform_display_subtitle'),
+              icon: Remix.apps_2_line,
+              onTap: () => context.push(AppRoutes.kSettingsHotAreas),
+            ),
+            TvSettingsOptionTile(
+              title: i18n('prefer_platform'),
+              subtitle: i18n('prefer_platform_subtitle'),
+              icon: Remix.heart_3_line,
+              options: siteNames,
+              index: currentIndex,
+              onChanged: (i) => fav.changePreferPlatform(siteIds[i]),
+            ),
+            TvSettingsNavTile(
+              title: i18n('third_party_auth'),
+              subtitle: i18n('third_party_auth_subtitle'),
+              icon: Remix.accessibility_line,
+              onTap: () => context.push(AppRoutes.kSettingsAccount),
+            ),
+            TvSettingsNavTile(
+              title: i18n('tag_management'),
+              subtitle: i18n('tag_management_subtitle'),
+              icon: Remix.price_tag_3_line,
+              onTap: () => context.push(AppRoutes.kSettingsTags),
+            ),
+          ],
         ),
       ],
     );

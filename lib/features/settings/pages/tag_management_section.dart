@@ -46,6 +46,8 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 标签管理
+          TvSettingsGroupTitle(title: i18n('tag_management')),
           TvSettingsCard(
             children: [
               Padding(

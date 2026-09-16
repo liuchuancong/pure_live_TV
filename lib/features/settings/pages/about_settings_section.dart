@@ -83,20 +83,31 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsOptionTile(
-          title: i18n('ui_pure_live_tv'),
-          subtitle: _status.isEmpty ? '${i18n('current_version')} $_version' : _status,
-          icon: Icons.info_outline_rounded,
-          options: _checking ? [i18n('ui_loading')] : [i18n('check_update')],
-          index: 0,
-          onChanged: (_) => _checkUpdate(),
+        TvSettingsGroupTitle(title: i18n('about')),
+        TvSettingsCard(
+          children: [
+            TvSettingsOptionTile(
+              title: i18n('ui_pure_live_tv'),
+              subtitle: _status.isEmpty ? '${i18n('current_version')} $_version' : _status,
+              icon: Icons.info_outline_rounded,
+              options: _checking ? [i18n('ui_loading')] : [i18n('check_update')],
+              index: 0,
+              onChanged: (_) => _checkUpdate(),
+            ),
+          ],
         ),
-        TvSettingsSwitchTile(
-          title: i18n('ui_use_direct_github_updates'),
-          subtitle: i18n('ui_check_updates_directly_on_github_without_a_mirro'),
-          icon: Icons.cloud_outlined,
-          value: appState.useGitHubOriginForUpdates,
-          onChanged: (v) => app.update(appState.copyWith(useGitHubOriginForUpdates: v)),
+        SizedBox(height: 20.sp),
+        TvSettingsGroupTitle(title: i18n('project')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSwitchTile(
+              title: i18n('ui_use_direct_github_updates'),
+              subtitle: i18n('ui_check_updates_directly_on_github_without_a_mirro'),
+              icon: Icons.cloud_outlined,
+              value: appState.useGitHubOriginForUpdates,
+              onChanged: (v) => app.update(appState.copyWith(useGitHubOriginForUpdates: v)),
+            ),
+          ],
         ),
       ],
     );

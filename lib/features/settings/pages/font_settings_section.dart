@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/shared/widgets/tv_settings_slider_tile.dart';
-import 'package:pure_live/services/font_settings/font_settings_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/exports/exports.dart';
 
 class FontSettingsSectionPage extends ConsumerWidget {
   const FontSettingsSectionPage({super.key});
@@ -16,33 +12,44 @@ class FontSettingsSectionPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsSliderTile(
-          title: i18n('ui_global_text_scale'),
-          icon: Icons.format_size_rounded,
-          value: fontState.textScaleFactor,
-          min: 0.8,
-          max: 1.6,
-          step: 0.05,
-          displayValue: '${(fontState.textScaleFactor * 100).toStringAsFixed(0)}%',
-          onChanged: (v) => font.updateSettings(fontState.copyWith(textScaleFactor: v)),
+        TvSettingsGroupTitle(title: i18n('body_typography_group')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSliderTile(
+              title: i18n('ui_global_text_scale'),
+              icon: Icons.format_size_rounded,
+              value: fontState.textScaleFactor,
+              min: 0.8,
+              max: 1.6,
+              step: 0.05,
+              displayValue: '${(fontState.textScaleFactor * 100).toStringAsFixed(0)}%',
+              onChanged: (v) => font.updateSettings(fontState.copyWith(textScaleFactor: v)),
+            ),
+            TvSettingsSliderTile(
+              title: i18n('ui_body_text_size'),
+              icon: Icons.notes_rounded,
+              value: fontState.fontSizeBodyMedium,
+              min: 10,
+              max: 20,
+              displayValue: fontState.fontSizeBodyMedium.toStringAsFixed(0),
+              onChanged: (v) => font.updateSettings(fontState.copyWith(fontSizeBodyMedium: v)),
+            ),
+          ],
         ),
-        TvSettingsSliderTile(
-          title: i18n('ui_body_text_size'),
-          icon: Icons.notes_rounded,
-          value: fontState.fontSizeBodyMedium,
-          min: 10,
-          max: 20,
-          displayValue: fontState.fontSizeBodyMedium.toStringAsFixed(0),
-          onChanged: (v) => font.updateSettings(fontState.copyWith(fontSizeBodyMedium: v)),
-        ),
-        TvSettingsSliderTile(
-          title: i18n('ui_title_text_size'),
-          icon: Icons.title_rounded,
-          value: fontState.fontSizeTitleMedium,
-          min: 12,
-          max: 24,
-          displayValue: fontState.fontSizeTitleMedium.toStringAsFixed(0),
-          onChanged: (v) => font.updateSettings(fontState.copyWith(fontSizeTitleMedium: v)),
+        SizedBox(height: 20.sp),
+        TvSettingsGroupTitle(title: i18n('header_typography_group')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSliderTile(
+              title: i18n('ui_title_text_size'),
+              icon: Icons.title_rounded,
+              value: fontState.fontSizeTitleMedium,
+              min: 12,
+              max: 24,
+              displayValue: fontState.fontSizeTitleMedium.toStringAsFixed(0),
+              onChanged: (v) => font.updateSettings(fontState.copyWith(fontSizeTitleMedium: v)),
+            ),
+          ],
         ),
       ],
     );

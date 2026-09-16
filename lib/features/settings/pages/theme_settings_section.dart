@@ -27,106 +27,141 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Mobile order: the theme mode first, then the colour, then dynamic
-          // colour, then the loading animation. The preset list replaces the
-          // mobile colour wheel with its own page.
-          TvSettingsOptionTile(
-            title: i18n('change_theme_mode'),
-            subtitle: i18n('change_theme_mode_subtitle'),
-            // Icon taken from the desktop theme page (moon), so the same row
-            // looks the same in both apps.
-            icon: Remix.moon_clear_line,
-            options: [for (final mode in themeModes) i18n(AppConsts.themeModeI18n[mode] ?? mode)],
-            index: themeModes.indexOf(themeState.themeModeName).clamp(0, themeModes.length - 1),
-            onChanged: (index) => theme.changeThemeMode(themeModes[index]),
+          TvSettingsGroupTitle(title: i18n('theme_customization')),
+          TvSettingsCard(
+            children: [
+              // Mobile order: the theme mode first, then the colour, then dynamic
+              // colour, then the loading animation. The preset list replaces the
+              // mobile colour wheel with its own page.
+              TvSettingsOptionTile(
+                title: i18n('change_theme_mode'),
+                subtitle: i18n('change_theme_mode_subtitle'),
+                // Icon taken from the desktop theme page (moon), so the same row
+                // looks the same in both apps.
+                icon: Remix.moon_clear_line,
+                options: [for (final mode in themeModes) i18n(AppConsts.themeModeI18n[mode] ?? mode)],
+                index: themeModes.indexOf(themeState.themeModeName).clamp(0, themeModes.length - 1),
+                onChanged: (index) => theme.changeThemeMode(themeModes[index]),
+              ),
+              TvSettingsNavTile(
+                title: i18n('ui_theme'),
+                subtitle: currentTheme.name,
+                icon: Remix.palette_line,
+                onTap: () => context.push(AppRoutes.kSettingsThemePicker),
+              ),
+              // Desktop order: dynamic colour belongs with the theme rows, above
+              // the loading animation.
+              TvSettingsSwitchTile(
+                title: i18n('enable_dynamic_color'),
+                subtitle: i18n('enable_dynamic_color_subtitle'),
+                icon: Remix.magic_line,
+                value: themeState.enableDynamicTheme,
+                onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
+              ),
+              // The animation row shows the animation itself, exactly as the mobile
+              // page does: a name alone does not tell the user what they picked.
+              TvSettingsRow(
+                title: i18n('change_loading_style'),
+                subtitle: i18n('change_loading_style_subtitle'),
+                leading: TvLoadingStylePreview(
+                  style: themeState.loadingStyle,
+                  color: loadingColor,
+                  size: 30.w,
+                  theme: tvTheme,
+                ),
+                trailingBuilder: (context, focused) =>
+                    tvSettingsValueLabel(context, focused, _currentLoadingStyleName(loadingStyles, themeState.loadingStyle)),
+                onSelect: () => context.push(AppRoutes.kSettingsLoadingStyle),
+              ),
+              SizedBox(height: 8.sp),
+              TvSettingsMenuTile<void>(
+                title: i18n('ui_background_settings'),
+                subtitle: i18n('background_entry_subtitle'),
+                icon: Remix.image_line,
+                onTap: () async => context.push(AppRoutes.kWallpaperPage),
+              ),
+            ],
           ),
-          TvSettingsNavTile(
-            title: i18n('ui_theme'),
-            subtitle: currentTheme.name,
-            icon: Remix.palette_line,
-            onTap: () => context.push(AppRoutes.kSettingsThemePicker),
+          SizedBox(height: 20.sp),
+          TvSettingsGroupTitle(title: i18n('grid_spacing_settings')),
+          TvSettingsCard(
+            children: [
+              TvSettingsSliderTile(
+                title: i18n('cross_axis_spacing'),
+                icon: Remix.arrow_left_right_line,
+                value: themeState.crossAxisSpacing,
+                min: 0,
+                max: 24,
+                displayValue: themeState.crossAxisSpacing.toStringAsFixed(0),
+                onChanged: (v) => theme.updateSettings(themeState.copyWith(crossAxisSpacing: v)),
+              ),
+              TvSettingsSliderTile(
+                title: i18n('main_axis_spacing'),
+                icon: Remix.arrow_up_down_line,
+                value: themeState.mainAxisSpacing,
+                min: 0,
+                max: 24,
+                displayValue: themeState.mainAxisSpacing.toStringAsFixed(0),
+                onChanged: (v) => theme.updateSettings(themeState.copyWith(mainAxisSpacing: v)),
+              ),
+            ],
           ),
-          // Desktop order: dynamic colour belongs with the theme rows, above
-          // the loading animation.
-          TvSettingsSwitchTile(
-            title: i18n('enable_dynamic_color'),
-            subtitle: i18n('enable_dynamic_color_subtitle'),
-            icon: Remix.magic_line,
-            value: themeState.enableDynamicTheme,
-            onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
-          ),
-          // The animation row shows the animation itself, exactly as the mobile
-          // page does: a name alone does not tell the user what they picked.
-          TvSettingsRow(
-            title: i18n('change_loading_style'),
-            subtitle: i18n('change_loading_style_subtitle'),
-            leading: TvLoadingStylePreview(
-              style: themeState.loadingStyle,
-              color: loadingColor,
-              size: 30.w,
-              theme: tvTheme,
-            ),
-            trailingBuilder: (context, focused) =>
-                tvSettingsValueLabel(context, focused, _currentLoadingStyleName(loadingStyles, themeState.loadingStyle)),
-            onSelect: () => context.push(AppRoutes.kSettingsLoadingStyle),
-          ),
-          SizedBox(height: 8.sp),
-          TvSettingsMenuTile<void>(
-            title: i18n('ui_background_settings'),
-            subtitle: i18n('background_entry_subtitle'),
-            icon: Remix.image_line,
-            onTap: () async => context.push(AppRoutes.kWallpaperPage),
-          ),
-          TvSettingsSliderTile(
-            title: i18n('cross_axis_spacing'),
-            icon: Remix.arrow_left_right_line,
-            value: themeState.crossAxisSpacing,
-            min: 0,
-            max: 24,
-            displayValue: themeState.crossAxisSpacing.toStringAsFixed(0),
-            onChanged: (v) => theme.updateSettings(themeState.copyWith(crossAxisSpacing: v)),
-          ),
-          TvSettingsSliderTile(
-            title: i18n('main_axis_spacing'),
-            icon: Remix.arrow_up_down_line,
-            value: themeState.mainAxisSpacing,
-            min: 0,
-            max: 24,
-            displayValue: themeState.mainAxisSpacing.toStringAsFixed(0),
-            onChanged: (v) => theme.updateSettings(themeState.copyWith(mainAxisSpacing: v)),
-          ),
+          SizedBox(height: 20.sp),
           // Sub-pages the desktop theme page hosts, in its order: paging, the
           // language, the font family, then the per-component font sizes.
-          TvSettingsNavTile(
-            title: i18n('page_settings'),
-            subtitle: i18n('page_settings_subtitle'),
-            icon: Remix.pages_line,
-            onTap: () => context.push(AppRoutes.kSettingsPage),
+          TvSettingsGroupTitle(title: i18n('page_settings')),
+          TvSettingsCard(
+            children: [
+              TvSettingsNavTile(
+                title: i18n('page_settings'),
+                subtitle: i18n('page_settings_subtitle'),
+                icon: Remix.pages_line,
+                onTap: () => context.push(AppRoutes.kSettingsPage),
+              ),
+            ],
           ),
-          TvSettingsOptionTile(
-            title: i18n('change_language'),
-            subtitle: i18n('change_language_subtitle'),
-            icon: Remix.global_line,
-            options: AppConsts.languages.keys.toList(growable: false),
-            index: _languageIndex(themeState.languageName),
-            onChanged: (i) {
-              final languageName = AppConsts.languages.keys.elementAt(i);
-              theme.changeLanguage(languageName);
-              final locale = AppConsts.languages[languageName];
-              if (locale != null) context.setLocale(Locale(locale.languageCode));
-            },
+          SizedBox(height: 20.sp),
+          TvSettingsGroupTitle(title: i18n('localization_settings')),
+          TvSettingsCard(
+            children: [
+              TvSettingsOptionTile(
+                title: i18n('change_language'),
+                subtitle: i18n('change_language_subtitle'),
+                icon: Remix.global_line,
+                options: AppConsts.languages.keys.toList(growable: false),
+                index: _languageIndex(themeState.languageName),
+                onChanged: (i) {
+                  final languageName = AppConsts.languages.keys.elementAt(i);
+                  theme.changeLanguage(languageName);
+                  final locale = AppConsts.languages[languageName];
+                  if (locale != null) context.setLocale(Locale(locale.languageCode));
+                },
+              ),
+            ],
           ),
-          TvSettingsNavTile(
-            title: i18n('change_font_family'),
-            subtitle: '${i18n('current_font_prefix')}: $currentFontName',
-            icon: Remix.font_color,
-            onTap: () => context.push(AppRoutes.kSettingsFontFamily),
+          SizedBox(height: 20.sp),
+          TvSettingsGroupTitle(title: i18n('font_family_settings')),
+          TvSettingsCard(
+            children: [
+              TvSettingsNavTile(
+                title: i18n('change_font_family'),
+                subtitle: '${i18n('current_font_prefix')}: $currentFontName',
+                icon: Remix.font_color,
+                onTap: () => context.push(AppRoutes.kSettingsFontFamily),
+              ),
+            ],
           ),
-          TvSettingsNavTile(
-            title: i18n('font_settings_title'),
-            subtitle: i18n('font_settings_desc'),
-            icon: Remix.font_size,
-            onTap: () => context.push(AppRoutes.kSettingsFont),
+          SizedBox(height: 20.sp),
+          TvSettingsGroupTitle(title: i18n('text_size_settings')),
+          TvSettingsCard(
+            children: [
+              TvSettingsNavTile(
+                title: i18n('font_settings_title'),
+                subtitle: i18n('font_settings_desc'),
+                icon: Remix.font_size,
+                onTap: () => context.push(AppRoutes.kSettingsFont),
+              ),
+            ],
           ),
         ],
       ),

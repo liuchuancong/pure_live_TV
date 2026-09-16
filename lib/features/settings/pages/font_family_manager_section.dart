@@ -95,6 +95,8 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 出厂默认
+          TvSettingsGroupTitle(title: i18n('factory_default_group')),
           TvSettingsCard(
             children: [
               TvSettingsOptionTile(
@@ -108,6 +110,8 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
             ],
           ),
           SizedBox(height: 12.h),
+          // 云字体
+          TvSettingsGroupTitle(title: i18n('cloud_font_group')),
           for (final font in _fonts) ...[
             TvSettingsCard(
               children: [

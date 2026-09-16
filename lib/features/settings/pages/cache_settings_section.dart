@@ -62,29 +62,34 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsOptionTile(
-          title: i18n('current_cache_size'),
-          subtitle: i18n('cache_size_used', args: {'size': cacheState.cacheSizeMB.toStringAsFixed(1)}),
-          icon: Remix.database_2_line,
-          options: [i18n('refresh')],
-          index: 0,
-          onChanged: (_) => _rescan(),
-        ),
-        TvSettingsOptionTile(
-          title: i18n('refresh_thumbnails'),
-          subtitle: cacheState.isRefreshingImages ? i18n('ui_loading') : i18n('refresh_thumbnails_subtitle'),
-          icon: Remix.image_line,
-          options: [i18n('refresh')],
-          index: 0,
-          onChanged: cacheState.isRefreshingImages ? (_) {} : (_) => _refreshThumbnails(),
-        ),
-        TvSettingsOptionTile(
-          title: i18n('clear_local_cache'),
-          subtitle: i18n('ui_image_and_data_cache'),
-          icon: Remix.delete_bin_6_line,
-          options: [i18n('clear')],
-          index: 0,
-          onChanged: (_) => _clearCache(),
+        TvSettingsGroupTitle(title: i18n('cache_and_data')),
+        TvSettingsCard(
+          children: [
+            TvSettingsOptionTile(
+              title: i18n('current_cache_size'),
+              subtitle: i18n('cache_size_used', args: {'size': cacheState.cacheSizeMB.toStringAsFixed(1)}),
+              icon: Remix.database_2_line,
+              options: [i18n('refresh')],
+              index: 0,
+              onChanged: (_) => _rescan(),
+            ),
+            TvSettingsOptionTile(
+              title: i18n('refresh_thumbnails'),
+              subtitle: cacheState.isRefreshingImages ? i18n('ui_loading') : i18n('refresh_thumbnails_subtitle'),
+              icon: Remix.image_line,
+              options: [i18n('refresh')],
+              index: 0,
+              onChanged: cacheState.isRefreshingImages ? (_) {} : (_) => _refreshThumbnails(),
+            ),
+            TvSettingsOptionTile(
+              title: i18n('clear_local_cache'),
+              subtitle: i18n('ui_image_and_data_cache'),
+              icon: Remix.delete_bin_6_line,
+              options: [i18n('clear')],
+              index: 0,
+              onChanged: (_) => _clearCache(),
+            ),
+          ],
         ),
         if (_result.isNotEmpty)
           Padding(
