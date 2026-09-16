@@ -181,6 +181,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WallpaperApiPage(),
       ),
       GoRoute(
+        path: AppRoutes.kWallpaperApiGroup,
+        builder: (context, state) => WallpaperApiGroupPage(group: state.extra as WallpaperApiGroup),
+      ),
+      GoRoute(
         path: AppRoutes.kWallpaperGallery,
         builder: (context, state) => WallpaperGalleryPage(source: state.extra as BackgroundSource),
       ),

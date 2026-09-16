@@ -1,3 +1,4 @@
+export 'wallpaper_api_group_page.dart';
 export 'wallpaper_api_page.dart';
 export 'wallpaper_api_source.dart';
 export 'wallpaper_args.dart';

@@ -107,6 +107,9 @@ abstract final class AppRoutes {
   /// The random-wallpaper API list.
   static const kWallpaperApi = "/wallpaper_api";
 
+  /// The sources belonging to one API group.
+  static const kWallpaperApiGroup = "/wallpaper_api_group";
+
   /// One wallpaper-library source: category list or straight to the grid.
   static const kWallpaperGallery = "/wallpaper_gallery";
 

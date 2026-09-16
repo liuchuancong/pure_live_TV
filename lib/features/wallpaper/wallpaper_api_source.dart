@@ -68,70 +68,135 @@ class WallpaperApiSource {
   String get host => Uri.tryParse(url)?.host ?? url;
 }
 
-/// Every random-wallpaper entry the picker lists.
+/// One row on the random-API page: a family of random-image sources.
 ///
-/// 栗次元 publishes one category per path segment, and each one is its own
-/// entry: picking a category is the point of the list, and a single "random
-/// across everything" row would hide eleven usable sources.
+/// The picker is two levels because the flat list reached nearly thirty entries
+/// once 栗次元's categories became individual sources. A group row opens
+/// [sources] on a page of its own.
+class WallpaperApiGroup {
+  const WallpaperApiGroup({
+    required this.id,
+    required this.name,
+    required this.nameEn,
+    required this.sources,
+  });
+
+  final String id;
+  final String name;
+  final String nameEn;
+  final List<WallpaperApiSource> sources;
+
+  /// Display name for [languageCode], falling back to whichever is present.
+  String localizedName(String languageCode) {
+    if (languageCode == 'zh') return name.isNotEmpty ? name : nameEn;
+    return nameEn.isNotEmpty ? nameEn : name;
+  }
+}
+
+/// The groups, in the order the API page lists them.
+final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
+  WallpaperApiGroup(
+    id: 'bing',
+    name: '必应壁纸',
+    nameEn: 'Bing',
+    sources: <WallpaperApiSource>[
+      const WallpaperApiSource(name: '必应随机', url: 'https://bing.img.run/rand.php'),
+      const WallpaperApiSource(
+        name: '无铭必应每日壁纸',
+        url: 'https://jkapi.com/api/bing_img',
+        kind: WallpaperApiKind.json,
+        apiKey: '0f57c17bca42966996d6a8bc28594858',
+      ),
+    ],
+  ),
+  WallpaperApiGroup(
+    id: 'alcy',
+    name: '栗次元',
+    nameEn: 'Alcy',
+    sources: <WallpaperApiSource>[
+      const WallpaperApiSource(
+        name: '栗次元 · 随机',
+        url: WallpaperApiSource.alcyBase,
+        kind: WallpaperApiKind.alcy,
+      ),
+      for (final String category in WallpaperApiSource.alcyCategories)
+        WallpaperApiSource(
+          name: '栗次元 · $category',
+          url: '${WallpaperApiSource.alcyBase}$category',
+        ),
+    ],
+  ),
+  WallpaperApiGroup(
+    id: 'wuming',
+    name: '无铭 API',
+    nameEn: 'Wuming API',
+    sources: <WallpaperApiSource>[
+      const WallpaperApiSource(
+        name: '无铭随机美囡图片',
+        url: 'https://jkapi.com/api/meinv_img',
+        kind: WallpaperApiKind.json,
+        apiKey: '872080c8858c40e6a1eb2ba86694d4d8',
+      ),
+      const WallpaperApiSource(
+        name: '无铭随机黑丝图片',
+        url: 'https://jkapi.com/api/heisi_img',
+        kind: WallpaperApiKind.json,
+        apiKey: '0c0c7a39e084db0e9c7cf2e25318f42c',
+      ),
+      const WallpaperApiSource(
+        name: '无铭随机白丝图片',
+        url: 'https://jkapi.com/api/baisi_img',
+        kind: WallpaperApiKind.json,
+        apiKey: '7605369407c689e9b2804bfc56a82ac7',
+      ),
+      const WallpaperApiSource(
+        name: '无铭随机抖音美女图片',
+        url: 'https://jkapi.com/api/dymm_img',
+        kind: WallpaperApiKind.json,
+        apiKey: '7b6c5500e52878bc46264cd140196699',
+      ),
+      const WallpaperApiSource(
+        name: '无铭半次元cosplay',
+        url: 'https://jkapi.com/api/bcy_cos',
+        kind: WallpaperApiKind.json,
+        apiKey: 'f5bce3b84b7409fbe8abb2246b46f4c8',
+      ),
+      const WallpaperApiSource(
+        name: '无铭动漫壁纸',
+        url: 'https://jkapi.com/api/dm_wallpaper',
+        kind: WallpaperApiKind.json,
+        apiKey: '95e3a0e608a8b1bed6d513346f929202',
+      ),
+      const WallpaperApiSource(
+        name: '无铭随机唯美女生图片',
+        url: 'https://jkapi.com/api/wm_girl',
+        kind: WallpaperApiKind.json,
+        apiKey: '0a7c2239bc57624cac60967937da8a1b',
+      ),
+    ],
+  ),
+  WallpaperApiGroup(
+    id: 'misc',
+    name: '其他图源',
+    nameEn: 'Other sources',
+    sources: <WallpaperApiSource>[
+      const WallpaperApiSource(
+        name: '小晓API',
+        url: 'https://v2.xxapi.cn/api/wallpaper',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(name: 'mtyqx', url: 'https://api.mtyqx.cn/tapi/random.php'),
+      const WallpaperApiSource(name: 'picsum', url: 'https://picsum.photos/1280/720/?blur=10'),
+      const WallpaperApiSource(name: 'dmoe', url: 'https://www.dmoe.cc/random.php'),
+      const WallpaperApiSource(name: 'loliApi', url: 'https://www.loliapi.com/bg/'),
+      const WallpaperApiSource(name: 'catvod', url: 'https://pictures.catvod.eu.org/'),
+    ],
+  ),
+];
+
+/// Every source across every group.
 final List<WallpaperApiSource> kWallpaperApiSources = <WallpaperApiSource>[
-  const WallpaperApiSource(name: '必应随机', url: 'https://bing.img.run/rand.php'),
-  const WallpaperApiSource(name: '小晓API', url: 'https://v2.xxapi.cn/api/wallpaper', kind: WallpaperApiKind.json),
-  const WallpaperApiSource(
-    name: '无铭必应每日壁纸',
-    url: 'https://jkapi.com/api/bing_img',
-    kind: WallpaperApiKind.json,
-    apiKey: '0f57c17bca42966996d6a8bc28594858',
-  ),
-  const WallpaperApiSource(
-    name: '无铭随机美囡图片',
-    url: 'https://jkapi.com/api/meinv_img',
-    kind: WallpaperApiKind.json,
-    apiKey: '872080c8858c40e6a1eb2ba86694d4d8',
-  ),
-  const WallpaperApiSource(
-    name: '无铭随机黑丝图片',
-    url: 'https://jkapi.com/api/heisi_img',
-    kind: WallpaperApiKind.json,
-    apiKey: '0c0c7a39e084db0e9c7cf2e25318f42c',
-  ),
-  const WallpaperApiSource(
-    name: '无铭随机白丝图片',
-    url: 'https://jkapi.com/api/baisi_img',
-    kind: WallpaperApiKind.json,
-    apiKey: '7605369407c689e9b2804bfc56a82ac7',
-  ),
-  const WallpaperApiSource(
-    name: '无铭随机抖音美女图片',
-    url: 'https://jkapi.com/api/dymm_img',
-    kind: WallpaperApiKind.json,
-    apiKey: '7b6c5500e52878bc46264cd140196699',
-  ),
-  const WallpaperApiSource(
-    name: '无铭半次元cosplay',
-    url: 'https://jkapi.com/api/bcy_cos',
-    kind: WallpaperApiKind.json,
-    apiKey: 'f5bce3b84b7409fbe8abb2246b46f4c8',
-  ),
-  const WallpaperApiSource(
-    name: '无铭动漫壁纸',
-    url: 'https://jkapi.com/api/dm_wallpaper',
-    kind: WallpaperApiKind.json,
-    apiKey: '95e3a0e608a8b1bed6d513346f929202',
-  ),
-  const WallpaperApiSource(
-    name: '无铭随机唯美女生图片',
-    url: 'https://jkapi.com/api/wm_girl',
-    kind: WallpaperApiKind.json,
-    apiKey: '0a7c2239bc57624cac60967937da8a1b',
-  ),
-  const WallpaperApiSource(name: 'mtyqx', url: 'https://api.mtyqx.cn/tapi/random.php'),
-  WallpaperApiSource(name: '栗次元 · 随机', url: WallpaperApiSource.alcyBase, kind: WallpaperApiKind.alcy),
-  for (final String category in WallpaperApiSource.alcyCategories)
-    WallpaperApiSource(name: '栗次元 · $category', url: '${WallpaperApiSource.alcyBase}$category'),
-  const WallpaperApiSource(name: 'picsum', url: 'https://picsum.photos/1280/720/?blur=10'),
-  const WallpaperApiSource(name: 'dmoe', url: 'https://www.dmoe.cc/random.php'),
-  const WallpaperApiSource(name: 'loliApi', url: 'https://www.loliapi.com/bg/'),
-  const WallpaperApiSource(name: 'catvod', url: 'https://pictures.catvod.eu.org/'),
+  for (final WallpaperApiGroup group in kWallpaperApiGroups) ...group.sources,
 ];
 
 /// Desktop UA: several of these APIs reject app-like agents or answer HTML.

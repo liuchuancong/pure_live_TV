@@ -61,6 +61,7 @@ Map<String, String> _labels = {
   'wallpaper': '壁纸',
   'wallpaper_api_entry_subtitle': '每次打开随机取一张图',
   'wallpaper_api_group': '随机壁纸 API',
+  'wallpaper_api_group_count': '{count} 个来源',
   'wallpaper_background_cleared': '背景已清除',
   'wallpaper_category_count': '{count} 张',
   'wallpaper_category_group': '{categories} 个分类',

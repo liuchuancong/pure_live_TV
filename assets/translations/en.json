@@ -76,6 +76,7 @@
     "wallpaper_category_count":  "{count} items",
     "wallpaper_category_group":  "{categories} categories",
     "wallpaper_api_group":  "Random wallpaper APIs",
+    "wallpaper_api_group_count":  "{count} sources",
     "wallpaper_api_entry_subtitle":  "Downloads a fresh random picture each visit",
     "wallpaper_source_group":  "Background source",
     "wallpaper_solid_color":  "Solid colors",
