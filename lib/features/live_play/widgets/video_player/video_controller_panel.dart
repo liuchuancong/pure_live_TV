@@ -560,25 +560,25 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color background = selected
-        ? accent
-        : (tinted ? accent.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.10));
-    final Color foreground = selected ? Colors.black : Colors.white;
-    final Color border = selected || tinted ? accent : Colors.transparent;
+    // The same button as TvTabBar: a transparent pill that fills with the
+    // accent colour only while the index is on it. Nothing else tints it, so a
+    // button that merely represents an "on" state (弹幕开) is not coloured at
+    // start-up — its label already says 开/关.
+    final Color background = selected ? accent : Colors.transparent;
+    final Color foreground = selected ? tvThemeFocusedCard(context) : Colors.white;
 
-    return Container(
-      height: 52.sp,
-      padding: EdgeInsets.symmetric(horizontal: 18.sp),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(26.sp),
-        border: Border.all(color: border, width: selected ? 2.sp : 1.sp),
-      ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeInOut,
+      height: 46.sp,
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(horizontal: 24.sp),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(23.sp)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (asset != null)
-            SvgPicture.asset(asset!, width: 26.sp, height: 26.sp, colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn))
+            SvgPicture.asset(asset!, width: 24.sp, height: 24.sp, colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn))
           else if (icon != null)
             Icon(icon, size: 24.sp, color: foreground),
           if (asset != null || icon != null) SizedBox(width: 8.sp),
@@ -586,7 +586,7 @@ class _Pill extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.t16W500.copyWith(color: foreground, fontWeight: FontWeight.w600),
+            style: (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(color: foreground),
           ),
           if (trailing != null) ...[
             SizedBox(width: 8.sp),
@@ -597,3 +597,6 @@ class _Pill extends StatelessWidget {
     );
   }
 }
+
+/// Content colour on a filled accent pill, matching TvTabBar.
+Color tvThemeFocusedCard(BuildContext context) => Theme.of(context).colorScheme.onPrimary;

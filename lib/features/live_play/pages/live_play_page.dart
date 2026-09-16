@@ -4,14 +4,13 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
-import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_list_view.dart';
 import 'package:pure_live/features/live_play/widgets/panels/danmaku_settings_panel.dart';
 import 'package:pure_live/features/live_play/widgets/panels/playlist_panel.dart';
 import 'package:pure_live/features/live_play/widgets/panels/shield_panel.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/tv_video_surface.dart';
 import 'package:pure_live/features/live_play/widgets/player_key_scope.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/widgets/tv_common_avatar.dart';
+import 'package:pure_live/features/live_play/player_panel_layout.dart';
+import 'package:pure_live/features/live_play/widgets/panels/player_info_panel.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Fullscreen live playback page.
@@ -74,7 +73,8 @@ class LivePlayPage extends ConsumerWidget {
             Positioned(
               top: 24.sp,
               bottom: 24.sp,
-              right: 24.sp,
+              left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.sp : null,
+              right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.sp,
               width: 400.sp,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20.sp),
@@ -144,11 +144,11 @@ class _SidePanel extends ConsumerWidget {
   Widget _buildContent(BuildContext context) {
     switch (state.panel) {
       case LivePlayPanel.info:
-        return _InfoPanel(
+        return PlayerInfoPanel(
           key: const ValueKey('live-play-panel-info'),
           state: state,
-          controller: controller,
           args: args,
+          onClose: onTogglePanel,
         );
       case LivePlayPanel.playlist:
         return PlaylistPanel(key: const ValueKey('live-play-panel-playlist'), args: args);
@@ -160,85 +160,4 @@ class _SidePanel extends ConsumerWidget {
   }
 }
 
-/// Room info, quality and line pickers, and the danmaku list.
-class _InfoPanel extends ConsumerWidget {
-  final LivePlayState state;
-  final LivePlayController controller;
-  final LivePlayArgs args;
-
-  const _InfoPanel({super.key, required this.state, required this.controller, required this.args});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tvTheme = context.tvTheme;
-    final room = state.room;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Room info header.
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
-          child: Row(
-            children: [
-              TvCommonAvatar(avatarUrl: room?.avatar, radius: 24.sp, fallbackName: room?.nick),
-              SizedBox(width: 12.sp),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      room?.nick ?? (state.detailError ?? i18n('refresh_loading')),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
-                    ),
-                    SizedBox(height: 4.sp),
-                    Text(
-                      _audienceLine(room),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.sp),
-          child: Text(
-            room?.title ?? '',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-          ),
-        ),
-        SizedBox(height: 12.sp),
-        Divider(height: 1, color: tvTheme.secondaryTextColor.withValues(alpha: 0.2)),
-        SizedBox(height: 8.sp),
-        // 清晰度 / 线路 / 画面比例 / 播放器内核 live in the fullscreen control
-        // bar's dialogs, next to where playback is controlled; duplicating the
-        // first two here fought the panel for space on a TV screen.
-        Expanded(
-          child: state.playUrls.isEmpty ? const SizedBox.shrink() : DanmakuListView(args: args),
-        ),
-      ],
-    );
-  }
-
-  String _audienceLine(LiveRoom? room) {
-    if (room == null) return '';
-    final watching = room.watching;
-    final followers = room.followers;
-    final parts = <String>[
-      if (watching.isNotEmpty)
-      i18n('audience_viewers_label', args: {'value': watching}),
-      if (followers.isNotEmpty)
-      '${i18n('audience_followers')} $followers',
-    ];
-    return parts.join(' · ');
-  }
-}
 
