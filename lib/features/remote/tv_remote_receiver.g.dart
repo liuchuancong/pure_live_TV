@@ -8,19 +8,31 @@ part of 'tv_remote_receiver.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// LAN services (web remote on 8888, plus the callbacks every page binds for
+/// phone pushes) live for the whole session: auto-dispose tore the server down
+/// whenever the page that happened to start it was left, and an in-flight
+/// start could then write `state` after disposal and crash the isolate.
 
 @ProviderFor(TvRemoteReceiver)
 final tvRemoteReceiverProvider = TvRemoteReceiverProvider._();
 
+/// LAN services (web remote on 8888, plus the callbacks every page binds for
+/// phone pushes) live for the whole session: auto-dispose tore the server down
+/// whenever the page that happened to start it was left, and an in-flight
+/// start could then write `state` after disposal and crash the isolate.
 final class TvRemoteReceiverProvider
     extends $AsyncNotifierProvider<TvRemoteReceiver, ServerState> {
+  /// LAN services (web remote on 8888, plus the callbacks every page binds for
+  /// phone pushes) live for the whole session: auto-dispose tore the server down
+  /// whenever the page that happened to start it was left, and an in-flight
+  /// start could then write `state` after disposal and crash the isolate.
   TvRemoteReceiverProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'tvRemoteReceiverProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -33,7 +45,12 @@ final class TvRemoteReceiverProvider
   TvRemoteReceiver create() => TvRemoteReceiver();
 }
 
-String _$tvRemoteReceiverHash() => r'b1546e59139fe4399ec19f91157072bab4cb1ff0';
+String _$tvRemoteReceiverHash() => r'65383910337d7bd744d26603045a604fd29f81a6';
+
+/// LAN services (web remote on 8888, plus the callbacks every page binds for
+/// phone pushes) live for the whole session: auto-dispose tore the server down
+/// whenever the page that happened to start it was left, and an in-flight
+/// start could then write `state` after disposal and crash the isolate.
 
 abstract class _$TvRemoteReceiver extends $AsyncNotifier<ServerState> {
   FutureOr<ServerState> build();

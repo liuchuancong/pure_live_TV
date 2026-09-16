@@ -12,7 +12,11 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 part 'tv_remote_receiver.g.dart';
 
-@riverpod
+/// LAN services (web remote on 8888, plus the callbacks every page binds for
+/// phone pushes) live for the whole session: auto-dispose tore the server down
+/// whenever the page that happened to start it was left, and an in-flight
+/// start could then write `state` after disposal and crash the isolate.
+@Riverpod(keepAlive: true)
 class TvRemoteReceiver extends _$TvRemoteReceiver {
   Alfred? _app;
   HttpServer? _server;
@@ -103,8 +107,13 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   }
 
   Future<void> _startServerWithRetry({required int port, int retry = 0}) async {
+    // The start spans several async gaps (IP lookup, port bind, retries); the
+    // provider can be disposed (or the app torn down) in between, and every
+    // `state =` below would then throw "Ref used after disposed".
+    if (!ref.mounted) return;
     try {
       final ip = await _getLocalIp();
+      if (!ref.mounted) return;
       if (ip == null) {
         state = AsyncValue.data(
           ServerState(
@@ -124,12 +133,20 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       _registerStaticRoutes();
 
       _server = await _app!.listen(port, '0.0.0.0');
+      if (!ref.mounted) {
+        // Disposed while binding: the freshly bound server must not linger.
+        await _server?.close(force: true);
+        _server = null;
+        _app = null;
+        return;
+      }
       final fullUrl = 'http://$ip:$port';
       _localAddress = ip;
       _addLog('Remote service started at $fullUrl');
 
       state = AsyncValue.data(ServerState(isRunning: true, serverUrl: fullUrl, port: port, error: null));
     } catch (e) {
+      if (!ref.mounted) return;
       if (e.toString().contains('Address already in use') && retry < _maxPortRetry) {
         _addLog('Port $port is taken, trying ${port + 1}');
         await _startServerWithRetry(port: port + 1, retry: retry + 1);
