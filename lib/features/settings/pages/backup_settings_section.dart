@@ -1,14 +1,22 @@
-import 'dart:io';
 import 'dart:async';
-import 'package:path_provider/path_provider.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/features/remote/models/server_state.dart';
+import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/log_settings/log_settings_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 
+/// Backup and restore, in the mobile page's grouping.
+///
+/// 云端备份 → WebDAV and device sync, 本地备份 → create and restore, 备份设置 →
+/// the backup directory, 日志管理 → the local log. The mobile Firebase row is
+/// deliberately absent.
 class BackupSettingsSectionPage extends ConsumerStatefulWidget {
   const BackupSettingsSectionPage({super.key});
 
@@ -17,118 +25,179 @@ class BackupSettingsSectionPage extends ConsumerStatefulWidget {
 }
 
 class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSectionPage> {
-  String _lastResult = '';
+  static const String _prefix = 'pure_live_backup';
 
-  Future<File> _backupFile(String name) async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}${Platform.pathSeparator}$name');
-  }
+  String _result = '';
+  bool _busy = false;
+  bool _logApplying = false;
+  bool _logFailed = false;
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // The desktop backup page lists the cloud destinations first; WebDAV is
-        // the one this app implements.
-        TvSettingsNavTile(
-          title: i18n('webdav'),
-          subtitle: i18n('backup_to_webdav'),
-          icon: Remix.cloud_line,
-          onTap: () => context.push(AppRoutes.kWebDavPage),
-        ),
-        TvSettingsOptionTile(
-          title: i18n('ui_export_configuration_to_this_device'),
-          subtitle: i18n('ui_export_all_settings_to_pure_live_backup_json_in'),
-          icon: Remix.file_download_line,
-          options: [i18n('ui_export')],
-          index: 0,
-          onChanged: (_) async {
-            final backup = ref.read(backupControllerProvider.notifier);
-            final ok = backup.backup(await _backupFile('pure_live_backup.json'));
-            setState(() => _lastResult = ok ? i18n('ui_exported') : i18n('ui_export_failed'));
-          },
-        ),
-        TvSettingsOptionTile(
-          title: i18n('ui_import_configuration_from_this_device'),
-          subtitle: i18n('ui_read_pure_live_backup_json_from_the_app_document'),
-          icon: Remix.file_upload_line,
-          options: [i18n('import_action')],
-          index: 0,
-          onChanged: (_) async {
-            final backup = ref.read(backupControllerProvider.notifier);
-            final file = await _backupFile('pure_live_backup.json');
-            final ok = file.existsSync() && await backup.recover(file);
-            setState(() => _lastResult = ok ? i18n('ui_imported') : i18n('ui_import_failed_or_file_not_found'));
-          },
-        ),
-        if (_lastResult.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.only(left: 16.sp, top: 8.sp),
-            child: Text(
-              _lastResult,
-              style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor),
-            ),
-          ),
-        // Local backup files, as on the desktop page's local-backup group.
-        TvSettingsNavTile(
-          title: i18n('local_backup'),
-          subtitle: i18n('create_backup_subtitle'),
-          icon: Icons.folder_copy_outlined,
-          onTap: () => context.push(AppRoutes.kSettingsLocalBackup),
-        ),
-        SizedBox(height: 12.h),
-        const _LocalLogCard(),
-      ],
-    );
-  }
-}
-
-/// Local log file switch.
-///
-/// The file is the only way to inspect a release build on a TV; the LAN remote
-/// reads the same in-memory buffer while logging is enabled.
-class _LocalLogCard extends ConsumerStatefulWidget {
-  const _LocalLogCard();
-
-  @override
-  ConsumerState<_LocalLogCard> createState() => _LocalLogCardState();
-}
-
-class _LocalLogCardState extends ConsumerState<_LocalLogCard> {
-  bool _applying = false;
-  bool _failed = false;
-
-  Future<void> _toggle(bool enabled) async {
+  /// `setLoggingEnabled` reports whether the log sink could actually be opened;
+  /// swallowing that bool made a failed enable look like a successful one.
+  Future<void> _toggleLog(bool enabled) async {
     setState(() {
-      _applying = true;
-      _failed = false;
+      _logApplying = true;
+      _logFailed = false;
     });
     final ok = await ref.read(logSettingsControllerProvider.notifier).setLoggingEnabled(enabled);
     if (!mounted) return;
     setState(() {
-      _applying = false;
-      _failed = !ok;
+      _logApplying = false;
+      _logFailed = !ok;
     });
+  }
+
+  String get _directoryLabel {
+    final configured = ref.read(backupControllerProvider.notifier).backupDirectory;
+    return configured.isEmpty ? i18n('please_set_backup_directory') : configured;
+  }
+
+  /// Writes a timestamped backup into the resolved directory (the configured
+  /// 备份目录, or the app documents directory when none was chosen).
+  Future<void> _createBackup() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _result = i18n('ui_loading');
+    });
+    final notifier = ref.read(backupControllerProvider.notifier);
+    final directory = await notifier.resolveBackupDirectory();
+    final stamp = _stamp(DateTime.now());
+    final file = File('${directory.path}${Platform.pathSeparator}${_prefix}_$stamp.json');
+    final ok = notifier.backup(file);
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _result = ok ? '${i18n('ui_exported')}: ${file.path}' : i18n('ui_export_failed');
+    });
+  }
+
+  Future<void> _chooseDirectory() async {
+    final String? path = await FilePicker.getDirectoryPath();
+    if (path == null || path.isEmpty) return;
+    await ref.read(backupControllerProvider.notifier).setBackupDirectory(path);
+    if (!mounted) return;
+    setState(() => _result = '${i18n('backup_directory')}: $path');
+  }
+
+  /// The log is served by the LAN remote; a TV has no browser, so the row shows
+  /// the address to open on a phone or a PC.
+  Future<void> _showLogUrl() async {
+    final notifier = ref.read(tvRemoteReceiverProvider.notifier);
+    ServerState? server = ref.read(tvRemoteReceiverProvider).value;
+    if (server?.isRunning != true) {
+      await notifier.startServer();
+      if (!mounted) return;
+      server = ref.read(tvRemoteReceiverProvider).value;
+    }
+    if (!mounted) return;
+    final url = server?.serverUrl ?? '';
+    setState(() {
+      _result = url.isEmpty
+          ? (server?.error ?? i18n('remote_service_unavailable'))
+          : '${i18n('view_logs_in_browser')}: $url/api/log/download';
+    });
+  }
+
+  static String _stamp(DateTime time) {
+    String two(int value) => value.toString().padLeft(2, '0');
+    return '${time.year}${two(time.month)}${two(time.day)}_${two(time.hour)}${two(time.minute)}${two(time.second)}';
   }
 
   @override
   Widget build(BuildContext context) {
+    final ServerState? server = ref.watch(tvRemoteReceiverProvider).value;
     final logState = ref.watch(logSettingsControllerProvider);
+    final theme = context.tvTheme;
 
-    return TvSettingsCard(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsSwitchTile(
-          title: i18n('enable_local_log'),
-          subtitle: _failed
-              ? i18n('local_log_apply_failed')
-              : _applying
-              ? i18n('local_log_applying')
-              : i18n('enable_local_log_desc'),
-          icon: Icons.description_outlined,
-          value: logState.storedEnableLog,
-          onChanged: _applying ? null : _toggle,
+        // 云端备份
+        TvSettingsGroupTitle(title: i18n('cloud_backup')),
+        TvSettingsCard(
+          children: [
+            TvSettingsNavTile(
+              title: i18n('webdav'),
+              subtitle: i18n('backup_to_webdav'),
+              icon: Remix.cloud_line,
+              onTap: () => context.push(AppRoutes.kWebDavPage),
+            ),
+            TvSettingsNavTile(
+              title: i18n('remote_sync'),
+              subtitle: server?.isRunning == true ? server!.serverUrl : i18n('remote_sync_subtitle'),
+              icon: Icons.devices_other_rounded,
+              onTap: () => context.push(AppRoutes.kSettingsDeviceSync),
+            ),
+          ],
         ),
+        SizedBox(height: 16.h),
+        // 本地备份
+        TvSettingsGroupTitle(title: i18n('local_backup')),
+        TvSettingsCard(
+          children: [
+            TvSettingsOptionTile(
+              title: i18n('create_backup'),
+              subtitle: i18n('create_backup_subtitle'),
+              icon: Remix.save_3_line,
+              options: [i18n('create_backup')],
+              index: 0,
+              onChanged: (_) => _createBackup(),
+            ),
+            TvSettingsNavTile(
+              title: i18n('recover_backup'),
+              subtitle: i18n('recover_backup_subtitle'),
+              icon: Remix.history_line,
+              onTap: () => context.push(AppRoutes.kSettingsLocalBackup),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        // 备份设置
+        TvSettingsGroupTitle(title: i18n('backup_settings')),
+        TvSettingsCard(
+          children: [
+            TvSettingsOptionTile(
+              title: i18n('backup_directory'),
+              subtitle: _directoryLabel,
+              icon: Remix.folder_open_line,
+              options: [i18n('ui_choose')],
+              index: 0,
+              onChanged: (_) => _chooseDirectory(),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        // 日志管理
+        TvSettingsGroupTitle(title: i18n('log_manage')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSwitchTile(
+              title: i18n('enable_local_log'),
+              subtitle: _logFailed
+                  ? i18n('local_log_apply_failed')
+                  : _logApplying
+                  ? i18n('local_log_applying')
+                  : i18n('enable_local_log_desc'),
+              icon: Icons.description_outlined,
+              value: logState.storedEnableLog,
+              onChanged: _logApplying ? null : _toggleLog,
+            ),
+            TvSettingsOptionTile(
+              title: i18n('view_logs_in_browser'),
+              subtitle: i18n('open_log_dir_desc'),
+              icon: Remix.global_line,
+              options: [i18n('ui_show')],
+              index: 0,
+              onChanged: (_) => _showLogUrl(),
+            ),
+          ],
+        ),
+        if (_result.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(left: 16.sp, top: 10.sp),
+            child: Text(_result, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+          ),
       ],
     );
   }

@@ -140,6 +140,19 @@ abstract final class AppRoutes {
   static const kSettingsPage = "/settings/page";
   static const kSettingsAudience = "/settings/audience";
   static const kSettingsLocalBackup = "/settings/backups";
+
+  /// Device sync (the TV end of the phone's 设备同步 row)
+  static const kSettingsDeviceSync = "/settings/device_sync";
+
+  /// Per-platform cookie pages: every platform gets its own page, with both a
+  /// QR (phone page or device sign-in) and manual input.
+  static const kSettingsAccountBilibili = "/settings_account/bilibili";
+  static const kSettingsAccountHuya = "/settings_account/huya";
+  static const kSettingsAccountYy = "/settings_account/yy";
+  static const kSettingsAccountDouyin = "/settings_account/douyin";
+  static const kSettingsAccountKuaishou = "/settings_account/kuaishou";
+  static const kSettingsAccountTwitch = "/settings_account/twitch";
+  static const kSettingsAccountSoop = "/settings_account/soop";
 }
 
 class AreaRoomsArgs {

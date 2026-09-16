@@ -1,12 +1,12 @@
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/services/cache/cache_controller.dart';
 
-/// Cache and data management, in the mobile page's order: the current size
-/// (re-measured when selected) and the confirmed clear.
+/// Cache and data management, mirroring the mobile page: the current size
+/// (re-measured when selected), the thumbnail refresh, then the confirmed clear.
 class CacheSettingsSectionPage extends ConsumerStatefulWidget {
   const CacheSettingsSectionPage({super.key});
 
@@ -15,12 +15,29 @@ class CacheSettingsSectionPage extends ConsumerStatefulWidget {
 }
 
 class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPage> {
+  String _result = '';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(cacheControllerProvider.notifier).getCacheSize();
     });
+  }
+
+  Future<void> _rescan() async {
+    setState(() => _result = '');
+    await ref.read(cacheControllerProvider.notifier).getCacheSize();
+  }
+
+  /// Drops the encoded thumbnail cache and rolls the visible covers onto a new
+  /// cache key (`imageCacheEpoch`), which is what makes the refresh visible on
+  /// screen instead of only freeing disk space.
+  Future<void> _refreshThumbnails() async {
+    setState(() => _result = '');
+    await ref.read(cacheControllerProvider.notifier).refreshImageCache();
+    if (!mounted) return;
+    setState(() => _result = i18n('thumbnail_refresh_done'));
   }
 
   Future<void> _clearCache() async {
@@ -33,13 +50,14 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
     );
     if (confirmed != true) return;
     await ref.read(cacheControllerProvider.notifier).clearCache();
-    await ref.read(cacheControllerProvider.notifier).getCacheSize();
+    if (!mounted) return;
+    setState(() => _result = i18n('clear_success'));
   }
 
   @override
   Widget build(BuildContext context) {
     final cacheState = ref.watch(cacheControllerProvider);
-    final cache = ref.read(cacheControllerProvider.notifier);
+    final theme = context.tvTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +68,15 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
           icon: Remix.database_2_line,
           options: [i18n('refresh')],
           index: 0,
-          onChanged: (_) => cache.getCacheSize(),
+          onChanged: (_) => _rescan(),
+        ),
+        TvSettingsOptionTile(
+          title: i18n('refresh_thumbnails'),
+          subtitle: cacheState.isRefreshingImages ? i18n('ui_loading') : i18n('refresh_thumbnails_subtitle'),
+          icon: Remix.image_line,
+          options: [i18n('refresh')],
+          index: 0,
+          onChanged: cacheState.isRefreshingImages ? (_) {} : (_) => _refreshThumbnails(),
         ),
         TvSettingsOptionTile(
           title: i18n('clear_local_cache'),
@@ -60,6 +86,11 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
           index: 0,
           onChanged: (_) => _clearCache(),
         ),
+        if (_result.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(left: 16.sp, top: 8.sp),
+            child: Text(_result, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+          ),
       ],
     );
   }

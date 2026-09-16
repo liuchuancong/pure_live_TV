@@ -20,6 +20,14 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   static const int _maxPortRetry = 100;
   static const String _appVersion = '1.0.0';
 
+  /// Identity the LAN protocol reports for this device, so the mobile app's
+  /// device list can name it instead of showing a bare address.
+  String get _deviceId => 'pure_live_tv_${Platform.localHostname}';
+  String get _deviceName => 'PureLive TV (${Platform.operatingSystem})';
+
+  /// LAN address the server is reachable at; set when it starts listening.
+  String _localAddress = '';
+
   final Map<String, dynamic> _configCache = {
     'douyin_cookie': <String, String>{'ttwid': '', 'cookie': ''},
     'danmaku_filter': <String>[],
@@ -117,6 +125,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
       _server = await _app!.listen(port, '0.0.0.0');
       final fullUrl = 'http://$ip:$port';
+      _localAddress = ip;
       _addLog('Remote service started at $fullUrl');
 
       state = AsyncValue.data(ServerState(isRunning: true, serverUrl: fullUrl, port: port, error: null));
@@ -255,8 +264,14 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     _app!.post('/api/cookie/douyin', (req, res) async {
       final body = await req.body as Map<String, dynamic>?;
       if (body == null) return _fail(res, msg: i18n('remote_bad_request'));
-      _configCache['douyin_cookie'] = {'ttwid': body['ttwid'] ?? '', 'cookie': body['cookie'] ?? ''};
+      final String cookie = (body['cookie'] ?? '').toString();
+      _configCache['douyin_cookie'] = {'ttwid': body['ttwid'] ?? '', 'cookie': cookie};
+      // The bundled Douyin phone page still posts to this legacy route. Writing
+      // only the local cache meant the cookie never reached the store the site
+      // implementation reads, so a scan looked successful and changed nothing.
+      if (cookie.isNotEmpty) _setCookieForSite('douyin', cookie);
       _addLog('Douyin cookie updated');
+      _broadcastWs({'type': 'cookie_push', 'site': 'douyin'});
       return _ok(res, msg: i18n('ui_saved'));
     });
 
@@ -288,6 +303,12 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
           'version': 1,
           'platform': Platform.operatingSystem,
           'appVersion': _appVersion,
+          // The mobile app's device list identifies a peer by these fields, so
+          // they are part of the protocol rather than decoration.
+          'id': _deviceId,
+          'name': _deviceName,
+          'ip': _localAddress,
+          'port': state.value?.port ?? 0,
         },
       );
     });
@@ -308,6 +329,56 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
       _addLog('Settings sync received over the LAN');
       return _ok(res, msg: i18n('webdav_sync_success'));
+    });
+
+    // Compatibility with the mobile app's 同步TV数据 row.
+    //
+    // That row scans this device's QR, then posts the flat TV document as a
+    // *query parameter* to `/api/setSettings`. The route did not exist, so the
+    // request fell through to the static handler, the phone got the web page
+    // back and reported success while nothing had been applied.
+    _app!.post('/api/setSettings', (req, res) async {
+      final backup = ref.read(backupControllerProvider.notifier);
+      final raw = req.uri.queryParameters['settings'];
+      final body = await req.body;
+
+      Map<String, dynamic>? settings;
+      if (raw != null && raw.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(raw);
+          if (decoded is Map) settings = decoded.cast<String, dynamic>();
+        } catch (error) {
+          _addLog('Sync payload could not be read: $error', color: Colors.red);
+        }
+      }
+      if (settings == null && body is Map) {
+        final nested = body['settings'];
+        settings = nested is Map ? nested.cast<String, dynamic>() : body.cast<String, dynamic>();
+      }
+      if (settings == null) return _fail(res, msg: i18n('ui_parameter_error'));
+
+      try {
+        await backup.restoreAllSettings(settings);
+      } catch (_) {
+        // The flat document (danmaku, favorites, history, cookies, IPTV) is not
+        // a sectioned backup; hand each section the whole map so every parser
+        // picks its own keys out of it.
+        try {
+          await backup.restoreAllSettings(<String, dynamic>{
+            'backupVersion': 1,
+            'danmaku': settings,
+            'favorite': settings,
+            'history': settings,
+            'cookie': settings,
+            'iptv': settings,
+          });
+        } catch (error) {
+          _addLog('Phone sync failed: $error', color: Colors.red);
+          return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
+        }
+      }
+      _addLog('Settings received from the phone (setSettings)');
+      return _ok(res, data: true);
     });
 
     _app!.get('/api/webdav/list', (req, res) {

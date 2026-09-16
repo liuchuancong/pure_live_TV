@@ -8,6 +8,7 @@ import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
+import 'package:pure_live/services/cache/cache_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 class TvRoomCard extends ConsumerStatefulWidget {
@@ -42,6 +43,16 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   void initState() {
     super.initState();
     _followed = SettingsService.to.fav.isFavorite(widget.room);
+  }
+
+  /// Cover cache key for the current cache epoch.
+  ///
+  /// 刷新直播缩略图 clears the encoded-image cache and bumps the epoch; folding
+  /// it into the key is what makes the visible covers reload instead of keeping
+  /// the bitmaps they already decoded.
+  String get coverCacheKey {
+    final int epoch = ref.watch(cacheControllerProvider).imageCacheEpoch;
+    return epoch == 0 ? widget.room.cover : '${widget.room.cover}#$epoch';
   }
 
   /// Audience text for the card: the concurrent online count when the user
@@ -111,6 +122,10 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                       child: CachedNetworkImage(
                         imageUrl: widget.room.cover,
                         cacheManager: CustomImageCacheManager.instance,
+                        // Rolling the cache epoch (缓存与数据管理 → 刷新直播缩略图)
+                        // re-keys the covers, so the refresh is visible instead of
+                        // only freeing disk space.
+                        cacheKey: coverCacheKey,
                         fit: BoxFit.cover,
                         // Decode covers at grid size and reuse the shared disk
                         // cache so scrolling back does not download again.

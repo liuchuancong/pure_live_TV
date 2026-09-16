@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -41,6 +42,27 @@ class BackupController extends _$BackupController {
 
   Future<void> setBackupDirectory(String value) async {
     await HivePrefUtil.setString(backupDirectoryKey, value);
+  }
+
+  /// Where backups are written and listed from.
+  ///
+  /// The configured 备份目录 when the user picked one, otherwise the app
+  /// documents directory. Both the create row and the backup list page resolve
+  /// the directory here so they can never disagree about where the files are.
+  Future<Directory> resolveBackupDirectory() async {
+    final configured = backupDirectory;
+    if (configured.isNotEmpty) {
+      final directory = Directory(configured);
+      if (!directory.existsSync()) {
+        try {
+          directory.createSync(recursive: true);
+        } catch (_) {
+          return getApplicationDocumentsDirectory();
+        }
+      }
+      return directory;
+    }
+    return getApplicationDocumentsDirectory();
   }
 
   Map<String, dynamic> exportAllSettings({bool includeSensitiveData = true}) {

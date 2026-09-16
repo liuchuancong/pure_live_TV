@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:pure_live/services/index.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
@@ -30,7 +29,7 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
     WidgetsBinding.instance.addPostFrameCallback((_) => _refresh());
   }
 
-  Future<Directory> _directory() => getApplicationDocumentsDirectory();
+  Future<Directory> _directory() => ref.read(backupControllerProvider.notifier).resolveBackupDirectory();
 
   Future<void> _refresh() async {
     final dir = await _directory();

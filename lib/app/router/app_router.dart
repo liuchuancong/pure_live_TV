@@ -9,7 +9,10 @@ import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
 import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
+import 'package:pure_live/features/settings/pages/device_sync_section.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
+import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
+import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
 import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
 import 'package:pure_live/features/settings/pages/tag_management_section.dart';
@@ -84,6 +87,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(path: 'page', builder: (context, state) => const PageSettingsSectionPage()),
               GoRoute(path: 'audience', builder: (context, state) => const AudienceMetricSectionPage()),
               GoRoute(path: 'backups', builder: (context, state) => const BackupManageSectionPage()),
+              GoRoute(path: 'device_sync', builder: (context, state) => const DeviceSyncSectionPage()),
             ],
           ),
         ],
@@ -97,6 +101,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: AppRoutes.kIptv, builder: (context, state) => const IptvManageSectionPage()),
           GoRoute(path: AppRoutes.kSettingsHotAreas, builder: (context, state) => const PlatformDisplaySectionPage()),
           GoRoute(path: AppRoutes.kSettingsAccount, builder: (context, state) => const AccountSettingsSectionPage()),
+          // One page per platform: the mobile app gives every platform its own
+          // cookie page, and each of these carries both ways in (扫码 + 手动输入).
+          GoRoute(
+            path: AppRoutes.kSettingsAccountBilibili,
+            builder: (context, state) => const AccountBilibiliPage(),
+          ),
+          for (final String route in <String>[
+            AppRoutes.kSettingsAccountHuya,
+            AppRoutes.kSettingsAccountYy,
+            AppRoutes.kSettingsAccountDouyin,
+            AppRoutes.kSettingsAccountKuaishou,
+            AppRoutes.kSettingsAccountTwitch,
+            AppRoutes.kSettingsAccountSoop,
+          ])
+            GoRoute(path: route, builder: (context, state) => AccountCookiePage(platform: cookiePlatformFor(route))),
           GoRoute(path: AppRoutes.kSettingsTags, builder: (context, state) => const TagManagementSectionPage()),
           GoRoute(path: AppRoutes.kBackup, builder: (context, state) => const BackupSettingsSectionPage()),
           GoRoute(path: AppRoutes.kWebDavPage, builder: (context, state) => const WebDavSettingsSectionPage()),
