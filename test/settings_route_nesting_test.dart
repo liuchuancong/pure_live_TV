@@ -2,46 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-/// Guards how the settings sections are nested in the route table.
+/// Guards the go_router behaviour the settings route table depends on.
 ///
-/// A top-level `ShellRoute` has no path of its own, so its children are
-/// resolved against the root (`/general`, `/theme`, ...). Nesting them under
-/// `GoRoute(path: '/settings')` is what makes `/settings/<module>` match again.
+/// The table itself (`settingsPageRoutes` in `lib/app/router/app_router.dart`) is
+/// one absolute-path map behind ONE shell; `test/settings_shell_title_test.dart`
+/// asserts that shape. These tests keep the underlying rule executable: a
+/// `ShellRoute` that owns no path contributes no prefix, so a *relative* child
+/// can never match. That is why every settings page is registered with its full
+/// path — the shape this file used to mirror (relative children nested inside
+/// `/settings`, plus a second shell for the absolute ones) is exactly what two
+/// layers of routing looked like.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final Widget blank = const SizedBox.shrink();
-
-  GoRouter buildNestedRouter() => GoRouter(
-    routes: [
-      GoRoute(path: '/home', builder: (context, state) => blank),
-      GoRoute(
-        // `/settings` is the grouped catalog; each module is a child route.
-        path: '/settings',
-        builder: (context, state) => blank,
-        routes: [
-          ShellRoute(
-            builder: (context, state, child) => child,
-            routes: [
-              GoRoute(path: 'general', builder: (context, state) => blank),
-              GoRoute(path: 'font', builder: (context, state) => blank),
-              GoRoute(path: 'fonts', builder: (context, state) => blank),
-            ],
-          ),
-        ],
-      ),
-    ],
-  );
-
-  test('the catalog and every settings section match below /settings', () {
-    final router = buildNestedRouter();
-
-    for (final path in ['/settings', '/settings/general', '/settings/font', '/settings/fonts']) {
-      final match = router.configuration.findMatch(Uri.parse(path));
-      expect(match.isError, isFalse, reason: '$path must resolve');
-      expect(match.uri.path, path);
-    }
-  });
 
   test('a path-less top-level ShellRoute leaves relative children unmatchable', () {
     final router = GoRouter(

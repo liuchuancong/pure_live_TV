@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 
@@ -118,22 +119,11 @@ void main() {
       constants[match.group(1)!] = match.group(2)!;
     }
 
-    // The settings block of the router: from `/settings` up to the next
-    // unrelated route.
-    final routerSource = routerFile.readAsStringSync();
-    final start = routerSource.indexOf('path: AppRoutes.kSettings');
-    final end = routerSource.indexOf('path: AppRoutes.kAreaRooms');
-    final settingsBranch = start < 0 ? '' : routerSource.substring(start, end < 0 ? routerSource.length : end);
-
-    final registered = <String>{AppRoutes.kSettings};
-    for (final match in RegExp(r"GoRoute\(path: '([a-z_]+)'").allMatches(settingsBranch)) {
-      registered.add('/settings/${match.group(1)!}');
-    }
-    for (final match in RegExp(r'GoRoute\(path: AppRoutes\.(k\w+)').allMatches(settingsBranch)) {
-      final path = constants[match.group(1)!];
-      if (path != null) registered.add(path);
-    }
-    expect(registered.length, greaterThan(20), reason: 'the settings block should register every page');
+    // The page table the single settings shell iterates. It is imported rather
+    // than scraped out of the router source, so this test cannot drift from the
+    // real table (it used to parse two separate route blocks).
+    final registered = <String>{AppRoutes.kSettings, ...settingsPageRoutes.keys};
+    expect(registered.length, greaterThan(20), reason: 'the settings table should register every page');
 
     // Every registered path must be referenced by its constant somewhere in the
     // feature code (menu row or parent-page row).

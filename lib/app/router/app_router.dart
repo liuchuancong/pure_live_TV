@@ -21,6 +21,61 @@ import 'package:pure_live/features/settings/pages/font_family_manager_section.da
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 
 
+/// Every settings page, by its full path — the one list the settings shell
+/// iterates.
+///
+/// Absolute paths only: the app's own `/settings/...` destinations plus the ones
+/// the mobile app names (`/iptv`, `/backup`, `/settings_account`, ...). Keeping
+/// them in one table is what makes a single shell possible, and it keeps the
+/// page list next to the paths instead of spread over two route blocks.
+final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
+  AppRoutes.kSettingsTheme: (context) => const ThemeSettingsSectionPage(),
+  AppRoutes.kSettingsThemePicker: (context) => const ThemePickerSectionPage(),
+  AppRoutes.kSettingsRefresh: (context) => const RefreshSettingsSectionPage(),
+  AppRoutes.kSettingsVideo: (context) => const VideoSettingsSectionPage(),
+  AppRoutes.kSettingsPlayerKernel: (context) => const PlayerKernelSettingsSectionPage(),
+  AppRoutes.kSettingsProxy: (context) => const ProxySettingsSectionPage(),
+  AppRoutes.kSettingsGeneral: (context) => const GeneralSettingsSectionPage(),
+  AppRoutes.kSettingsNavigation: (context) => const NavigationSectionPage(),
+  AppRoutes.kSettingsPlatform: (context) => const PlatformSettingsSectionPage(),
+  AppRoutes.kSettingsCache: (context) => const CacheSettingsSectionPage(),
+  AppRoutes.kSettingsConfigPreview: (context) => const LocalConfigPreviewSectionPage(),
+  AppRoutes.kSettingsDecoder: (context) => const DecoderSettingsSectionPage(),
+  AppRoutes.kSettingsRenderer: (context) => const RendererSettingsSectionPage(),
+  AppRoutes.kSettingsAudioOutput: (context) => const AudioOutputSettingsSectionPage(),
+  AppRoutes.kSettingsDanmaku: (context) => const DanmakuSettingsSectionPage(),
+  AppRoutes.kSettingsFont: (context) => const FontSettingsSectionPage(),
+  AppRoutes.kSettingsFontFamily: (context) => const FontFamilyManagerSectionPage(),
+  AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
+  AppRoutes.kSettingsAudience: (context) => const AudienceMetricSectionPage(),
+  AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
+  AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),
+  // Pages the mobile app gives its own path.
+  AppRoutes.kIptv: (context) => const IptvManageSectionPage(),
+  AppRoutes.kSettingsHotAreas: (context) => const PlatformDisplaySectionPage(),
+  AppRoutes.kSettingsAccount: (context) => const AccountSettingsSectionPage(),
+  // One page per platform: the mobile app gives every platform its own cookie
+  // page, and each of these carries both ways in (扫码 + 手动输入).
+  AppRoutes.kSettingsAccountBilibili: (context) => const AccountBilibiliPage(),
+  AppRoutes.kSettingsAccountHuya: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountHuya)),
+  AppRoutes.kSettingsAccountYy: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountYy)),
+  AppRoutes.kSettingsAccountDouyin: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyin)),
+  AppRoutes.kSettingsAccountKuaishou: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountKuaishou)),
+  AppRoutes.kSettingsAccountTwitch: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTwitch)),
+  AppRoutes.kSettingsAccountSoop: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
+  AppRoutes.kSettingsTags: (context) => const TagManagementSectionPage(),
+  AppRoutes.kBackup: (context) => const BackupSettingsSectionPage(),
+  AppRoutes.kWebDavPage: (context) => const WebDavSettingsSectionPage(),
+  AppRoutes.kSettingsDanmuShield: (context) => const DanmakuShieldSectionPage(),
+  AppRoutes.kAbout: (context) => const AboutSettingsSectionPage(),
+};
+
 final routerProvider = Provider<GoRouter>((ref) {
   final isFirstInApp = ref.watch(startupControllerProvider);
 
@@ -52,75 +107,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       // the pages the desktop app gives a named route keep that path here
       // (IPTV, backup, about, the block list, platform display, third-party
       // authorisation, tags, WebDAV).
+      GoRoute(path: AppRoutes.kSettings, builder: (context, state) => const TvSettingsRoutePage()),
+      // ONE shell for every settings page.
       //
-      // A ShellRoute that owns no path cannot resolve relative children (see
-      // test/settings_route_nesting_test.dart), which is why `/settings/...`
-      // children hang off this GoRoute and the named pages use absolute paths.
-      GoRoute(
-        path: AppRoutes.kSettings,
-        builder: (context, state) => const TvSettingsRoutePage(),
-        routes: [
-          ShellRoute(
-            // `state.uri.path` — not `matchedLocation`: a relative child match
-            // reports only its own segment ("general"), and every section title
-            // then fell through to the generic "系统设置".
-            builder: (context, state, child) =>
-                SettingsSectionScaffold(location: state.uri.path, child: child),
-            routes: [
-              GoRoute(path: 'theme', builder: (context, state) => const ThemeSettingsSectionPage()),
-              GoRoute(path: 'theme_picker', builder: (context, state) => const ThemePickerSectionPage()),
-              GoRoute(path: 'refresh', builder: (context, state) => const RefreshSettingsSectionPage()),
-              GoRoute(path: 'video', builder: (context, state) => const VideoSettingsSectionPage()),
-              GoRoute(path: 'player_kernel', builder: (context, state) => const PlayerKernelSettingsSectionPage()),
-              GoRoute(path: 'proxy', builder: (context, state) => const ProxySettingsSectionPage()),
-              GoRoute(path: 'general', builder: (context, state) => const GeneralSettingsSectionPage()),
-              GoRoute(path: 'navigation', builder: (context, state) => const NavigationSectionPage()),
-              GoRoute(path: 'platform', builder: (context, state) => const PlatformSettingsSectionPage()),
-              GoRoute(path: 'cache', builder: (context, state) => const CacheSettingsSectionPage()),
-              GoRoute(path: 'config_preview', builder: (context, state) => const LocalConfigPreviewSectionPage()),
-              GoRoute(path: 'decoder', builder: (context, state) => const DecoderSettingsSectionPage()),
-              GoRoute(path: 'renderer', builder: (context, state) => const RendererSettingsSectionPage()),
-              GoRoute(path: 'audio_output', builder: (context, state) => const AudioOutputSettingsSectionPage()),
-              GoRoute(path: 'danmaku', builder: (context, state) => const DanmakuSettingsSectionPage()),
-              GoRoute(path: 'font', builder: (context, state) => const FontSettingsSectionPage()),
-              GoRoute(path: 'fonts', builder: (context, state) => const FontFamilyManagerSectionPage()),
-              GoRoute(path: 'page', builder: (context, state) => const PageSettingsSectionPage()),
-              GoRoute(path: 'audience', builder: (context, state) => const AudienceMetricSectionPage()),
-              GoRoute(path: 'backups', builder: (context, state) => const BackupManageSectionPage()),
-              GoRoute(path: 'device_sync', builder: (context, state) => const DeviceSyncSectionPage()),
-            ],
-          ),
-        ],
-      ),
+      // It used to be two: a nested shell inside the `/settings` route for the
+      // relative children, plus a second top-level shell for the pages with
+      // absolute paths. Two shells meant the same scaffold was wired twice, the
+      // page list lived in two places, and a pop could pass through both. The
+      // page table below is keyed by the full path, so a single shell serves all
+      // of them; `state.uri.path` (not `matchedLocation`, which reports only a
+      // relative child's own segment) supplies the title key.
       ShellRoute(
-        // See the nested shell above: the full request path is what the title
-        // table is keyed by.
         builder: (context, state, child) =>
             SettingsSectionScaffold(location: state.uri.path, child: child),
-        routes: [
-          GoRoute(path: AppRoutes.kIptv, builder: (context, state) => const IptvManageSectionPage()),
-          GoRoute(path: AppRoutes.kSettingsHotAreas, builder: (context, state) => const PlatformDisplaySectionPage()),
-          GoRoute(path: AppRoutes.kSettingsAccount, builder: (context, state) => const AccountSettingsSectionPage()),
-          // One page per platform: the mobile app gives every platform its own
-          // cookie page, and each of these carries both ways in (扫码 + 手动输入).
-          GoRoute(
-            path: AppRoutes.kSettingsAccountBilibili,
-            builder: (context, state) => const AccountBilibiliPage(),
-          ),
-          for (final String route in <String>[
-            AppRoutes.kSettingsAccountHuya,
-            AppRoutes.kSettingsAccountYy,
-            AppRoutes.kSettingsAccountDouyin,
-            AppRoutes.kSettingsAccountKuaishou,
-            AppRoutes.kSettingsAccountTwitch,
-            AppRoutes.kSettingsAccountSoop,
-          ])
-            GoRoute(path: route, builder: (context, state) => AccountCookiePage(platform: cookiePlatformFor(route))),
-          GoRoute(path: AppRoutes.kSettingsTags, builder: (context, state) => const TagManagementSectionPage()),
-          GoRoute(path: AppRoutes.kBackup, builder: (context, state) => const BackupSettingsSectionPage()),
-          GoRoute(path: AppRoutes.kWebDavPage, builder: (context, state) => const WebDavSettingsSectionPage()),
-          GoRoute(path: AppRoutes.kSettingsDanmuShield, builder: (context, state) => const DanmakuShieldSectionPage()),
-          GoRoute(path: AppRoutes.kAbout, builder: (context, state) => const AboutSettingsSectionPage()),
+        routes: <RouteBase>[
+          for (final MapEntry<String, WidgetBuilder> entry in settingsPageRoutes.entries)
+            GoRoute(path: entry.key, builder: (context, state) => entry.value(context)),
         ],
       ),
       // The icon picker owns a grid, so it is a route of its own instead of a

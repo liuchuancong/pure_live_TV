@@ -1,111 +1,67 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
+import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 
-/// Every settings section page takes its title from the location its shell
-/// receives, so the location the router hands over has to be the full path.
+/// The settings routes live in ONE table behind ONE shell.
 ///
-/// The regression this pins: `GoRouterState.matchedLocation` reports only the
-/// relative segment of a relative child match — `general` for
-/// `/settings/general` — so `settingsSectionTitleKey` never matched a row or a
-/// sub-page and *every* section page showed the generic "系统设置".
+/// The regression this pins: the pages used to be split across two `ShellRoute`s
+/// — a nested one inside `/settings` for the relative children and a second
+/// top-level one for the pages with absolute paths. The same scaffold was wired
+/// twice, the page list lived in two places, and a pop could pass through both.
+/// A single absolute-path table keeps every page in one shell.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final routerSource = File('lib/app/router/app_router.dart').readAsStringSync();
-  final routesSource = File('lib/app/router/app_routes.dart').readAsStringSync();
+  final String routerSource = File('lib/app/router/app_router.dart').readAsStringSync();
 
-  final constants = <String, String>{
-    for (final RegExpMatch m in RegExp(r'static const (k\w+) = "([^"]+)";').allMatches(routesSource)) m.group(1)!: m.group(2)!,
-  };
-
-  // The settings block, up to the standalone picker routes (which own their
-  // scaffold and therefore their title).
-  final settingsBranch = routerSource.substring(
-    routerSource.indexOf('path: AppRoutes.kSettings'),
-    routerSource.indexOf('path: AppRoutes.kSettingsIconPicker'),
-  );
-
-  // `/settings/<module>` — relative children of the nested shell.
-  final relativePaths = <String>[
-    for (final RegExpMatch m in RegExp(r"GoRoute\(path: '([a-z_]+)'").allMatches(settingsBranch)) '/settings/${m.group(1)!}',
-  ];
-
-  // The pages the desktop app also gives a named route: absolute children of
-  // the second shell.
-  final secondShell = settingsBranch.substring(settingsBranch.lastIndexOf('ShellRoute('));
-  final absolutePaths = <String>[
-    for (final RegExpMatch m in RegExp(r'GoRoute\(path: AppRoutes\.(k\w+)').allMatches(secondShell))
-      if (constants[m.group(1)!] != null) constants[m.group(1)!]!,
-  ];
-
-  final allPaths = <String>[...relativePaths, ...absolutePaths];
-
-  test('the router hands the settings shell an absolute location', () {
-    expect(settingsBranch, contains('SettingsSectionScaffold'), reason: 'the extracted block must be the real one');
-    expect(settingsBranch, contains("ShellRoute("));
-    // What the relative form resolves to: nothing, hence the generic title.
-    expect(settingsSectionTitleKey('general'), 'ui_settings');
-    expect(settingsSectionTitleKey('/settings/general'), isNot('ui_settings'));
+  test('there is exactly one settings shell', () {
     expect(
-      settingsBranch.contains('location: state.matchedLocation'),
-      isFalse,
-      reason: 'a relative child match reports "general", not "/settings/general"',
+      'ShellRoute('.allMatches(routerSource).length,
+      1,
+      reason: 'a second shell means the settings pages are split across two route tables again',
     );
-    expect(settingsBranch.contains('location: state.uri.path'), isTrue);
-    expect(allPaths.length, greaterThan(20), reason: 'the settings table registers every page');
-    expect(relativePaths, contains('/settings/general'));
-    expect(absolutePaths, contains('/iptv'));
+    expect(routerSource.contains('for (final MapEntry<String, WidgetBuilder> entry in settingsPageRoutes.entries)'), isTrue);
   });
 
-  testWidgets('every settings section resolves a real title from that location', (WidgetTester tester) async {
-    final seen = <String>{};
+  test('the whole page table is absolute paths and covers every settings page', () {
+    expect(settingsPageRoutes.length, greaterThan(30));
+    for (final String path in settingsPageRoutes.keys) {
+      expect(path.startsWith('/'), isTrue, reason: '$path must be absolute or the single shell cannot match it');
+      expect(path.contains(':'), isFalse, reason: 'no path parameters in the settings table');
+    }
+    // The menu itself is not a shell page; it owns its own scaffold.
+    expect(settingsPageRoutes.containsKey('/settings'), isFalse);
+    expect(settingsPageRoutes[AppRoutes.kSettingsPlayerKernel], isNotNull);
+  });
 
-    final router = GoRouter(
-      initialLocation: '/settings',
-      routes: [
-        GoRoute(
-          path: '/settings',
-          builder: (context, state) => const SizedBox.shrink(),
-          routes: [
-            ShellRoute(
-              builder: (context, state, child) {
-                seen.add(state.uri.path);
-                return child;
-              },
-              routes: [
-                for (final String path in relativePaths)
-                  GoRoute(
-                    path: path.substring('/settings/'.length),
-                    builder: (context, state) => const SizedBox.shrink(),
-                  ),
-              ],
-            ),
-          ],
-        ),
-        ShellRoute(
-          builder: (context, state, child) {
-            seen.add(state.uri.path);
-            return child;
-          },
-          routes: [
-            for (final String path in absolutePaths) GoRoute(path: path, builder: (context, state) => const SizedBox.shrink()),
-          ],
-        ),
-      ],
-    );
-
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-
-    for (final String path in allPaths) {
-      router.go(path);
-      await tester.pumpAndSettle();
-
-      expect(seen, contains(path), reason: '$path never reached a settings shell');
+  test('every page resolves a real title from the full path', () {
+    for (final String path in settingsPageRoutes.keys) {
       expect(settingsSectionTitleKey(path), isNot('ui_settings'), reason: '$path would show the generic title');
     }
+  });
+
+  test('the catalog lists every page exactly once', () {
+    final List<String> catalogPaths = <String>[
+      for (final SettingsGroup group in settingsCatalog)
+        for (final SettingsEntry entry in group.entries) entry.path,
+    ];
+
+    // No duplicates inside the catalog.
+    expect(catalogPaths.toSet().length, catalogPaths.length);
+
+    // Every catalog row is a registered page.
+    for (final String path in catalogPaths) {
+      expect(settingsPageRoutes.containsKey(path), isTrue, reason: '$path is listed but not registered');
+    }
+  });
+
+  test('a path-less shell cannot resolve a relative child', () {
+    // Documented go_router behaviour, and the reason the table above is
+    // absolute: see `settings_route_nesting_test.dart`, which exercises it with
+    // a real router.
+    expect(settingsPageRoutes.keys.every((path) => path.startsWith('/')), isTrue);
   });
 }
