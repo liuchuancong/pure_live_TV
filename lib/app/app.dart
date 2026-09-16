@@ -21,7 +21,12 @@ class App extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final currentTvTheme = ref.watch(tvThemeControllerProvider);
     final themeSettings = ref.watch(themeSettingsControllerProvider);
-    final ThemeMode themeMode = ref.read(themeSettingsControllerProvider.notifier).themeMode;
+    // A TV box reports no night mode (`UI_MODE_NIGHT_NO`), so "跟随系统" would
+    // pick the light Material layer on every TV and paint light dialogs over the
+    // dark palette. The app is dark-first: 跟随系统 means dark here, and 浅色
+    // stays an explicit choice.
+    final ThemeMode selectedMode = ref.read(themeSettingsControllerProvider.notifier).themeMode;
+    final ThemeMode themeMode = selectedMode == ThemeMode.system ? ThemeMode.dark : selectedMode;
     final appLocale = AppConsts.languages[themeSettings.languageName] ?? const Locale('zh');
 
     // 界面字号调节. The app owns the text scale (the font page has a slider for
@@ -72,11 +77,18 @@ class App extends ConsumerWidget {
             // palette, which is what the presets are for: "浅色" therefore means
             // light Material surfaces over the palette's page, not a different
             // palette (that is the 主题外观 picker's job).
+            //
+            // Both themes paint the palette background as the scaffold/canvas
+            // colour: a route transition reveals the route's own background
+            // between frames, and leaving that to a light Material default made
+            // every push and pop flash white.
             theme: ThemeData(
               useMaterial3: true,
               brightness: Brightness.light,
               fontFamily: fontFamily,
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
+              scaffoldBackgroundColor: currentTvTheme.backgroundColor,
+              canvasColor: currentTvTheme.backgroundColor,
               colorScheme: _schemeFor(
                 currentTvTheme,
                 themeSettings.enableDynamicTheme ? lightDynamic : null,
@@ -90,6 +102,7 @@ class App extends ConsumerWidget {
               fontFamily: fontFamily,
               textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
               scaffoldBackgroundColor: currentTvTheme.backgroundColor,
+              canvasColor: currentTvTheme.backgroundColor,
               colorScheme: _schemeFor(
                 currentTvTheme,
                 themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
