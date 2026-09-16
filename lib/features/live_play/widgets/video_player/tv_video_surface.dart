@@ -1,7 +1,3 @@
-import 'dart:async';
-
-import 'package:dpad/dpad.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/player/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -11,9 +7,7 @@ import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
-import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
 
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
 /// overlay, loading/error overlays and an auto-hiding D-pad control panel.
@@ -50,87 +44,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
   PlayerManager? get _playerManagerOrNull =>
       GlobalPlayerService.instance.initialized ? GlobalPlayerService.instance.playerManager : null;
 
-  /// Double-press window for the left key, 500 ms in the legacy app.
-  static const Duration _doubleClickWindow = Duration(milliseconds: 500);
-  int _lastLeftTapAt = 0;
-  Timer? _leftTapTimer;
 
-  @override
-  void dispose() {
-    _leftTapTimer?.cancel();
-    super.dispose();
-  }
 
-  LivePlayController get _controller =>
-      ref.read(livePlayControllerProvider(widget.args).notifier);
-
-  /// Switches channel by [delta] (-1 previous, 1 next).
-  void _switchChannel(int delta) {
-    final controller = _controller;
-    final rooms = controller.channelRooms;
-    final target = controller.relativeChannel(delta);
-    if (target == null) {
-      ToastUtil.show(i18nOr('ui_no_switchable_channel', 'No channel available to switch to'));
-      return;
-    }
-    // Channel switching uses a route replace, so the previous session is released.
-    context.replace(
-      AppRoutes.kLivePlay,
-      extra: LivePlayArgs.fromRoom(target, playlist: rooms, showChannelBanner: true),
-    );
-  }
-
-  /// Double press on Left follows or unfollows.
-  void _handleLeftKey() {
-    final room = ref.read(livePlayControllerProvider(widget.args)).room;
-    if (room == null) return;
-    final fav = ref.read(favoriteRoomControllerProvider.notifier);
-    final isFavorite = fav.isFavorite(room);
-
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final isDoubleClick = _lastLeftTapAt != 0 && now - _lastLeftTapAt < _doubleClickWindow.inMilliseconds;
-    if (!isDoubleClick) {
-      _lastLeftTapAt = now;
-      ToastUtil.show(isFavorite ? i18nOr('ui_double_click_unfollow', 'Double click to unfollow') : i18nOr('ui_double_click_follow', 'Double click to follow'));
-      _leftTapTimer?.cancel();
-      _leftTapTimer = Timer(const Duration(milliseconds: 600), () => _lastLeftTapAt = 0);
-      return;
-    }
-
-    _lastLeftTapAt = 0;
-    _leftTapTimer?.cancel();
-    if (isFavorite) {
-      fav.removeRoom(room);
-      ToastUtil.show(i18nOr('ui_unfollowed', 'Unfollowed'));
-    } else {
-      fav.addRoom(room);
-      ToastUtil.show(i18n('followed'));
-    }
-  }
-
-  /// Direction keys inside the video area are consumed on match, so focus never
-  /// leaves the player.
-  bool _handleDirection(TraversalDirection direction) {
-    final controller = _controller;
-    // While the control layer is up it owns the arrow keys: the layer's selected
-    // index is steered with Left/Right, and letting the video node answer them
-    // too made the bar look frozen (the keys switched channels instead).
-    if (ref.read(livePlayControllerProvider(widget.args)).showControls) return false;
-    switch (direction) {
-      case TraversalDirection.up:
-        _switchChannel(-1);
-        return true;
-      case TraversalDirection.down:
-        _switchChannel(1);
-        return true;
-      case TraversalDirection.left:
-        _handleLeftKey();
-        return true;
-      case TraversalDirection.right:
-        controller.togglePanel(LivePlayPanel.playlist);
-        return true;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,49 +75,41 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         : const ColoredBox(color: Colors.black);
 
     final children = <Widget>[
-      // Video, danmaku and the loading indicator together act as the D-pad focus
-      // placeholder for the video area.
-      DpadFocusable(
-        autofocus: true,
-        excludeChildFocus: true,
-        effects: const [],
-        onDirection: _handleDirection,
-        onSelect: controller.toggleControls,
-        onFocusChange: (focused) {
-          if (focused && state.showControls) controller.keepControlsAlive();
-        },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            video,
-            DanmakuOverlay(args: widget.args),
-            if (showLoading && !showError)
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(strokeWidth: 2),
-                    SizedBox(height: 12.sp),
-                    Text(
-                      state.status == LivePlayStatus.loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
-                      style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
-                    ),
-                  ],
-                ),
+      // The video area is NOT a d-pad node any more: the whole player is key
+      // handled by [LivePlayPage], exactly like the reference player. Keys reach
+      // it through the page-level [Focus], so nothing here competes for focus.
+      Stack(
+        fit: StackFit.expand,
+        children: [
+          video,
+          DanmakuOverlay(args: widget.args),
+          if (showLoading && !showError)
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(strokeWidth: 2),
+                  SizedBox(height: 12.sp),
+                  Text(
+                    state.status == LivePlayStatus.loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
+                    style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                  ),
+                ],
               ),
-            // Room title bar, shown while no control panel is open.
-            if (!state.showControls && !showError && state.room != null)
-              Positioned(
-                left: 24.sp,
-                top: 16.sp,
-                child: IgnorePointer(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 6.sp),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(8.sp),
-                    ),
-                    child: Text(
+            ),
+          // Room title bar, shown while no control panel is open.
+          if (!state.showControls && !showError && state.room != null)
+            Positioned(
+              left: 24.sp,
+              top: 16.sp,
+              child: IgnorePointer(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 6.sp),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(8.sp),
+                  ),
+                  child: Text(
                       state.room!.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -238,7 +145,6 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
               ),
           ],
         ),
-      ),
     ];
 
     if (showError) {

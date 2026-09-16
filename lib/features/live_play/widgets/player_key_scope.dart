@@ -1,0 +1,155 @@
+import 'dart:async';
+
+import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
+import 'package:pure_live/features/live_play/models/live_play_args.dart';
+import 'package:pure_live/features/live_play/states/live_play_state.dart';
+import 'package:pure_live/services/favorites/favorite_room_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/utils/toast_util.dart';
+
+/// Key handling for the whole player — **without d-pad**.
+///
+/// Modelled on the reference player
+/// (`E:/project/pure_live_TV/lib/modules/live_play/widgets/video_player/controller/
+/// video_key_handler.dart`): one handler owns every key and decides what to do
+/// from what is currently on screen, instead of leaving focus traversal to the
+/// d-pad layer. Keys reach it through one [Focus], so nothing can steal focus or
+/// leave the player with a dead remote.
+///
+/// * nothing open: OK shows the controls, Up/Down switch channel, Left
+///   double-presses to follow, Right opens the playlist
+/// * a side panel open: keys belong to that panel (they are focus based)
+/// * controls visible: the control layer's own [Focus] handles them first —
+///   events bubble from the primary focus outwards, so this handler stays out of
+///   the way by ignoring them
+class PlayerKeyScope extends ConsumerStatefulWidget {
+  const PlayerKeyScope({super.key, required this.args, required this.child});
+
+  final LivePlayArgs args;
+  final Widget child;
+
+  @override
+  ConsumerState<PlayerKeyScope> createState() => _PlayerKeyScopeState();
+}
+
+class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
+  /// Double-press window for the left key, as in the reference (500 ms).
+  static const Duration _doubleClickWindow = Duration(milliseconds: 500);
+
+  final FocusNode _focusNode = FocusNode(debugLabel: 'live_play/keys');
+  int _lastLeftTapAt = 0;
+  Timer? _leftTapTimer;
+
+  @override
+  void dispose() {
+    _leftTapTimer?.cancel();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  static bool _isConfirm(LogicalKeyboardKey key) =>
+      key == LogicalKeyboardKey.select ||
+      key == LogicalKeyboardKey.enter ||
+      key == LogicalKeyboardKey.space ||
+      key == LogicalKeyboardKey.controlLeft ||
+      key == LogicalKeyboardKey.controlRight ||
+      key == LogicalKeyboardKey.numpadEnter ||
+      key == LogicalKeyboardKey.gameButtonA;
+
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+
+    final state = ref.read(livePlayControllerProvider(widget.args));
+    final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
+    final key = event.logicalKey;
+
+    // A side panel is focus based and owns the keys while it is open.
+    if (state.showSidePanel) return KeyEventResult.ignored;
+    // With the controls up, the control layer's own handler runs first; anything
+    // it does not use has already bubbled to here.
+    if (state.showControls) return KeyEventResult.ignored;
+
+    if (_isConfirm(key)) {
+      controller.showControls();
+      return KeyEventResult.handled;
+    }
+
+    if (key == LogicalKeyboardKey.arrowUp) {
+      _switchChannel(-1);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowDown) {
+      _switchChannel(1);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowLeft) {
+      _handleFollowDoublePress();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowRight) {
+      controller.togglePanel(LivePlayPanel.playlist);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  /// Switches channel by [delta] (-1 previous, 1 next).
+  void _switchChannel(int delta) {
+    final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
+    final rooms = controller.channelRooms;
+    final target = controller.relativeChannel(delta);
+    if (target == null) {
+      ToastUtil.show(i18nOr('ui_no_switchable_channel', 'No channel available to switch to'));
+      return;
+    }
+    // Channel switching uses a route replace, so the previous session is released.
+    context.replace(
+      AppRoutes.kLivePlay,
+      extra: LivePlayArgs.fromRoom(target, playlist: rooms, showChannelBanner: true),
+    );
+  }
+
+  /// Left double-press follows or unfollows the room.
+  void _handleFollowDoublePress() {
+    final room = ref.read(livePlayControllerProvider(widget.args)).room;
+    if (room == null) return;
+    final fav = ref.read(favoriteRoomControllerProvider.notifier);
+    final bool isFavorite = fav.isFavorite(room);
+
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    final bool isDoubleClick = _lastLeftTapAt != 0 && now - _lastLeftTapAt < _doubleClickWindow.inMilliseconds;
+    if (!isDoubleClick) {
+      _lastLeftTapAt = now;
+      ToastUtil.show(
+        isFavorite
+            ? i18nOr('ui_double_click_unfollow', 'Double click to unfollow')
+            : i18nOr('ui_double_click_follow', 'Double click to follow'),
+      );
+      _leftTapTimer?.cancel();
+      _leftTapTimer = Timer(const Duration(milliseconds: 600), () => _lastLeftTapAt = 0);
+      return;
+    }
+
+    _lastLeftTapAt = 0;
+    _leftTapTimer?.cancel();
+    if (isFavorite) {
+      fav.removeRoom(room);
+      ToastUtil.show(i18nOr('ui_unfollowed', 'Unfollowed'));
+    } else {
+      fav.addRoom(room);
+      ToastUtil.show(i18n('followed'));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _onKeyEvent,
+      child: widget.child,
+    );
+  }
+}

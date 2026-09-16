@@ -1,19 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
-
-import 'package:flame_barrage/flame_barrage.dart';
 import 'package:flutter/painting.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
-
-import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/player/index.dart';
-import 'package:pure_live/features/live_play/controllers/danmaku_filters.dart';
-import 'package:pure_live/features/live_play/models/live_play_args.dart';
-import 'package:pure_live/features/live_play/services/live_play_repository.dart';
-import 'package:pure_live/features/live_play/states/live_play_state.dart';
-import 'package:pure_live/services/player_settings/player_settings_controller.dart';
+import 'package:flame_barrage/flame_barrage.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/features/live_play/models/live_play_args.dart';
+import 'package:pure_live/features/live_play/states/live_play_state.dart';
+import 'package:pure_live/features/live_play/controllers/danmaku_filters.dart';
+import 'package:pure_live/features/live_play/services/live_play_repository.dart';
+import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
 part 'live_play_controller.g.dart';
 
@@ -79,8 +77,7 @@ class LivePlayController extends _$LivePlayController {
       // does so when it has no default engine), so 内核切换 appeared to be
       // ignored until the row was used again in the same session.
       await GlobalPlayerService.instance.initialize(
-        defaultEngine:
-            PlayerConsts.engines[SettingsService.to.playerState.videoPlayerKey] ?? PlayerEngine.mediaKit,
+        defaultEngine: PlayerConsts.engines[SettingsService.to.playerState.videoPlayerKey] ?? PlayerEngine.mediaKit,
       );
     } catch (e, s) {
       log('GlobalPlayerService initialize failed: $e', name: 'LivePlayController', error: e, stackTrace: s);
@@ -295,7 +292,10 @@ class LivePlayController extends _$LivePlayController {
       await manager.play(urls.first, urls, const <String, String>{}, room: detail);
     } on ArgumentError catch (e) {
       if (!_isCurrent(generation)) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: e.message ?? i18n('stream_start_invalid_params'));
+      state = state.copyWith(
+        status: LivePlayStatus.error,
+        errorMessage: e.message ?? i18n('stream_start_invalid_params'),
+      );
     } catch (e) {
       if (!_isCurrent(generation)) return;
       state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_start_failed'));
@@ -430,9 +430,7 @@ class LivePlayController extends _$LivePlayController {
     if (rooms.length < 2) return null;
     final current = channelIndex;
     final raw = current + delta;
-    final next = raw < 0
-        ? rooms.length - 1
-        : (raw >= rooms.length ? 0 : raw);
+    final next = raw < 0 ? rooms.length - 1 : (raw >= rooms.length ? 0 : raw);
     final target = rooms[next];
     // Switching is pointless when only one playable room exists.
     return state.room != null && target.hasSameIdentity(state.room!) ? null : target;
@@ -551,7 +549,11 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     _repeatedFilter.clear();
     _similarityFilter.clear();
     controller.clear();
-    state = state.copyWith(messages: const <LiveMessage>[], connected: false, statusText: i18n('connecting_danmaku_server'));
+    state = state.copyWith(
+      messages: const <LiveMessage>[],
+      connected: false,
+      statusText: i18n('connecting_danmaku_server'),
+    );
 
     LiveDanmaku engine;
     try {
@@ -630,10 +632,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     // Keep the list view bounded in a single pass (no copy-then-trim).
     const maxListedMessages = 200;
     final messages = state.messages.length >= maxListedMessages
-        ? <LiveMessage>[
-            ...state.messages.sublist(state.messages.length - maxListedMessages + 1),
-            message,
-          ]
+        ? <LiveMessage>[...state.messages.sublist(state.messages.length - maxListedMessages + 1), message]
         : <LiveMessage>[...state.messages, message];
     state = state.copyWith(messages: messages);
   }

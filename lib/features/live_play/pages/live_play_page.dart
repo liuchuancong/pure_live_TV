@@ -9,6 +9,7 @@ import 'package:pure_live/features/live_play/widgets/panels/danmaku_settings_pan
 import 'package:pure_live/features/live_play/widgets/panels/playlist_panel.dart';
 import 'package:pure_live/features/live_play/widgets/panels/shield_panel.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/tv_video_surface.dart';
+import 'package:pure_live/features/live_play/widgets/player_key_scope.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/widgets/tv_common_avatar.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -30,9 +31,11 @@ class LivePlayPage extends ConsumerWidget {
     final controller = ref.read(livePlayControllerProvider(args).notifier);
     final tvTheme = context.tvTheme;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
+    return PlayerKeyScope(
+      args: args,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
         fit: StackFit.expand,
         children: [
           DpadRegion(
@@ -95,6 +98,7 @@ class LivePlayPage extends ConsumerWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }
