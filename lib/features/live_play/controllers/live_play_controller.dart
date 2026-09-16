@@ -55,7 +55,11 @@ class LivePlayController extends _$LivePlayController {
       final room = state.room;
       return (room != null && room.platform == platform && room.roomId == roomId) ? room : null;
     };
-    unawaited(_bootstrap());
+    // Deferred by a microtask on purpose: `_bootstrap` writes `state`, and while
+    // `build` is still running the provider has no state yet — calling it
+    // directly made Riverpod throw "Tried to read the state of an uninitialized
+    // provider" the moment the room opened.
+    Future<void>.microtask(_bootstrap);
     return const LivePlayState(status: LivePlayStatus.loadingDetail);
   }
 
