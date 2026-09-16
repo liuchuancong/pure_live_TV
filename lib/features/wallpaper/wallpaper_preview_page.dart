@@ -14,6 +14,7 @@ import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
+import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/common/utils/color_util.dart';
@@ -34,16 +35,12 @@ class _PreviewAction {
     required this.icon,
     required this.label,
     this.busy = false,
-    this.primary = false,
   });
 
   final _PreviewActionKind kind;
   final IconData icon;
   final String label;
   final bool busy;
-
-  /// The commit button, drawn filled so it reads as the primary action.
-  final bool primary;
 }
 
 /// Fullscreen preview of exactly one wallpaper.
@@ -136,7 +133,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   void _createVideoPlayer() {
     final player = Player();
     _videoPlayer = player;
-    _videoController = VideoController(player);
+    _videoController = VideoController(
+      player,
+      configuration: wallpaperVideoControllerConfiguration(),
+    );
     player.setVolume(_volume);
     _playingSubscription = player.stream.playing.listen((playing) {
       if (mounted) setState(() => _videoPlaying = playing);
@@ -256,10 +256,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           case BackgroundKind.image:
             bg.setNetworkImage(item.file);
           case BackgroundKind.video:
-            bg.setNetworkVideo(item.file);
-            // The background layer plays its own silent copy; leaving this one
-            // running would stream the same file twice.
-            await _videoPlayer?.pause();
+            await _applyVideo(item);
           case BackgroundKind.gradient:
             final colors = <Color>[
               for (final stop in item.gradient ?? const <BackgroundGradientStop>[])
@@ -281,6 +278,26 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       }
     } finally {
       if (mounted) setState(() => _applying = false);
+    }
+  }
+
+  /// Commits a live wallpaper.
+  ///
+  /// The clip is saved to local storage first and the background is pointed at
+  /// the file. Streaming it for the background layer is what produced a black
+  /// screen: that layer mounts while the network is still settling, and a failed
+  /// open leaves nothing behind. If the download does not work out, the remote
+  /// URL is still set so the wallpaper is not silently lost.
+  Future<void> _applyVideo(BackgroundItem item) async {
+    final bg = SettingsService.to.bg;
+    try {
+      final String path = await WallpaperVideoStore.download(item.file);
+      bg.setLocalVideo(path);
+    } catch (_) {
+      bg.setNetworkVideo(item.file);
+      if (mounted) {
+        ToastUtil.show(i18nOr('wallpaper_video_download_failed', '视频下载失败，已改用在线播放'));
+      }
     }
   }
 
@@ -351,7 +368,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         icon: Icons.check_rounded,
         label: i18nOr('wallpaper_set_background', 'Set as background'),
         busy: _applying,
-        primary: true,
       ),
     ];
   }
@@ -677,10 +693,9 @@ class _PreviewActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.tvTheme;
-    final radius = BorderRadius.circular(22.sp);
-    final bool filled = highlighted || action.primary;
-    final Color fill = filled ? theme.focusColor : theme.cardColor;
-    final Color foreground = filled ? theme.focusedCardColor : theme.primaryTextColor;
+    final radius = BorderRadius.circular(26.sp);
+    final Color fill = highlighted ? theme.focusColor : theme.cardColor;
+    final Color foreground = highlighted ? theme.focusedCardColor : theme.primaryTextColor;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -690,35 +705,31 @@ class _PreviewActionButton extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          height: 42.sp,
-          padding: EdgeInsets.symmetric(horizontal: 16.sp),
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: radius,
-            border: Border.all(
-              color: highlighted ? Colors.white.withValues(alpha: 0.9) : Colors.transparent,
-              width: 2.sp,
-            ),
-          ),
+          height: 56.sp,
+          padding: EdgeInsets.symmetric(horizontal: 24.sp),
+          decoration: BoxDecoration(color: fill, borderRadius: radius),
           // No `alignment` here on purpose: a Container with an alignment
           // expands to the constraint it is given, and inside a `Wrap` that is
           // the full line width — which put every button on a row of its own.
           // The intrinsic width comes from the row below instead.
+          //
+          // No border either: the focus fill already reads as the highlight, and
+          // a white outline on a dark bar looked like a second, louder state.
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (action.busy)
                 SizedBox(
-                  width: 24.sp,
-                  height: 24.sp,
+                  width: 26.sp,
+                  height: 26.sp,
                   child: const AppStatusView(type: AppStatusType.loading, isMini: true),
                 )
               else
-                Icon(action.icon, size: 18.sp, color: foreground),
-              SizedBox(width: 6.sp),
+                Icon(action.icon, size: 24.sp, color: foreground),
+              SizedBox(width: 10.sp),
               Text(
                 action.label,
-                style: TextStyle(fontSize: 14.sp, color: foreground, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 18.sp, color: foreground, fontWeight: FontWeight.w600),
               ),
             ],
           ),

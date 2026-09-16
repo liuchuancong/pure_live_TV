@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/widgets.dart';
@@ -7,6 +8,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 part 'background_controller.g.dart';
 
@@ -32,7 +34,14 @@ class BackgroundController extends _$BackgroundController {
   @override
   BackgroundConfigModel build() {
     _videoPlayer = Player();
-    videoController = VideoController(_videoPlayer);
+    // Same platform workaround the live player uses: media_kit's stock
+    // configuration attaches the Android surface before the video parameters
+    // are known, which is how a background video ends up as a black (or
+    // one-pixel) texture.
+    videoController = VideoController(
+      _videoPlayer,
+      configuration: wallpaperVideoControllerConfiguration(),
+    );
     _videoPlayer.setVolume(0.0);
     _videoPlayer.setPlaylistMode(PlaylistMode.loop);
 
@@ -63,10 +72,21 @@ class BackgroundController extends _$BackgroundController {
     );
 
     _configStream.add(model);
+    // A video background survives a restart, so the player has to pick it up on
+    // startup too. `state` is only readable once `build` has returned, hence the
+    // microtask.
+    unawaited(Future.microtask(reloadBackgroundVideo));
     return model;
   }
 
   void _updateState(BackgroundConfigModel newModel) {
+    final BackgroundConfigModel previous = state;
+    final bool videoChanged =
+        newModel.source != previous.source ||
+        newModel.localVideoPath != previous.localVideoPath ||
+        newModel.networkVideoUrl != previous.networkVideoUrl ||
+        newModel.assetVideoPath != previous.assetVideoPath;
+
     state = newModel;
     _configStream.add(newModel); // keep the stream in sync
 
@@ -85,6 +105,12 @@ class BackgroundController extends _$BackgroundController {
     _writeIfChanged('bgAssetVideoPath', newModel.assetVideoPath ?? "");
     _writeIfChanged('bgLocalVideoPath', newModel.localVideoPath ?? "");
     _writeIfChanged('bgNetworkVideoUrl', newModel.networkVideoUrl ?? "");
+
+    // Nothing used to open the media: the background layer only renders the
+    // controller, so a freshly chosen video stayed a black rectangle until the
+    // app was restarted. Switching away from a video also lands here and stops
+    // the player.
+    if (videoChanged) unawaited(reloadBackgroundVideo());
   }
 
   void _writeIfChanged(String key, Object value) {

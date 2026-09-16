@@ -85,6 +85,7 @@ Map<String, String> _labels = {
   'wallpaper_play': '播放',
   'wallpaper_prev': '上一个',
   'wallpaper_video_failed': '视频播放失败',
+  'wallpaper_video_download_failed': '视频下载失败，已改用在线播放',
   'wallpaper_volume_down': '音量-',
   'wallpaper_volume_up': '音量+',
   'wallpaper_preview_hint': '←→ 选择按钮 · OK 确认 · 返回退出',

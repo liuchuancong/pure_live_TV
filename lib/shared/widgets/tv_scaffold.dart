@@ -313,7 +313,15 @@ class _VideoBackground extends StatelessWidget {
     final controller = SettingsService.to.bg.videoController;
 
     return SizedBox.expand(
-      child: Video(fit: BoxFit.cover, controller: controller),
+      child: Video(
+        controller: controller,
+        fit: BoxFit.cover,
+        // The wallpaper layer is pixels, not a player: media_kit's adaptive
+        // controls would paint a scrub bar over every page, and a background
+        // must not hold a wakelock of its own.
+        controls: (state) => const SizedBox.shrink(),
+        wakelock: false,
+      ),
     );
   }
 }

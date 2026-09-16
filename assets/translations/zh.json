@@ -100,6 +100,7 @@
     "wallpaper_volume_down":  "音量-",
     "wallpaper_volume_up":  "音量+",
     "wallpaper_video_failed":  "视频播放失败",
+    "wallpaper_video_download_failed":  "视频下载失败，已改用在线播放",
     "wallpaper_change_image":  "换一张",
     "wallpaper_set_background":  "设为背景",
     "wallpaper_set_done":  "已设为背景",

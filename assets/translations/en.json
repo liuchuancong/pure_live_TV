@@ -100,6 +100,7 @@
     "wallpaper_volume_down":  "Volume -",
     "wallpaper_volume_up":  "Volume +",
     "wallpaper_video_failed":  "Playback failed",
+    "wallpaper_video_download_failed":  "Download failed, playing from the network instead",
     "wallpaper_change_image":  "New image",
     "wallpaper_set_background":  "Set as background",
     "wallpaper_set_done":  "Background updated",
