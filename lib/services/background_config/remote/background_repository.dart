@@ -28,7 +28,6 @@ class BackgroundRepository {
   /// True for sources whose entries are compiled in and never fetched.
   bool isLocalSource(String sourceId) =>
       sourceId == BackgroundSourceIds.solidColor ||
-      sourceId == BackgroundSourceIds.video ||
       sourceId == BackgroundSourceIds.deepin;
 
   /// Entries of a local source.
@@ -49,6 +48,7 @@ class BackgroundRepository {
     final Map<String, dynamic> query;
     String? nameKey;
     var uhd = false;
+    var video = false;
 
     if (source.id == BackgroundSourceIds.wallhaven) {
       route = '/wallpaper/wallhaven';
@@ -63,6 +63,12 @@ class BackgroundRepository {
       query = const <String, dynamic>{};
       nameKey = 'copyright';
       uhd = true;
+    } else if (source.id == BackgroundSourceIds.video) {
+      // Live wallpapers page from the API too: the rows carry the mp4 url plus
+      // its thumbnail and poster renditions, no token required.
+      route = '/wallpaper/video/list';
+      query = const <String, dynamic>{'sortKey': 'updateTime'};
+      video = true;
     } else {
       route = '/wallpaper/list';
       query = <String, dynamic>{
@@ -84,7 +90,12 @@ class BackgroundRepository {
     final items = <BackgroundItem>[];
     for (final row in rows) {
       if (row is! Map) continue;
-      final item = _item(Map<String, dynamic>.from(row), nameKey: nameKey, uhd: uhd);
+      final item = _item(
+        Map<String, dynamic>.from(row),
+        nameKey: nameKey,
+        uhd: uhd,
+        video: video,
+      );
       if (item != null) items.add(item);
     }
     return items;
@@ -95,21 +106,25 @@ class BackgroundRepository {
     Map<String, dynamic> row, {
     String? nameKey,
     bool uhd = false,
+    bool video = false,
   }) {
-    var raw = (row['raw'] ?? row['url'])?.toString() ?? '';
+    var raw = (video ? row['url'] : (row['raw'] ?? row['url']))?.toString() ?? '';
     if (raw.isEmpty) return null;
     if (uhd) raw = _bingUhd(raw);
 
     final thumb = row['thumb']?.toString() ?? '';
+    final poster = row['poster']?.toString() ?? '';
     String name = row['name']?.toString() ?? '';
     if (name.isEmpty && nameKey != null) name = row[nameKey]?.toString() ?? '';
     if (name.isEmpty) name = _stem(raw);
 
     return BackgroundItem(
       file: raw,
-      // Official, Wallhaven and Bing rows carry their own grid copy. Anything
-      // else gets a server-side resize of the full picture.
+      // Official, Wallhaven and Bing rows carry their own grid copy; the video
+      // endpoint ships thumb + poster renditions. Anything else gets a
+      // server-side resize of the full picture.
       thumb: thumb.isNotEmpty ? thumb : cdnThumb(raw),
+      poster: video && poster.isNotEmpty ? poster : null,
       id: (row['id'] ?? row['_id'])?.toString(),
       name: name,
     );

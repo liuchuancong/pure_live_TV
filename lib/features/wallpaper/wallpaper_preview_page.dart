@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
@@ -21,7 +25,7 @@ import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
 /// What one button in the preview's action bar does.
-enum _PreviewActionKind { prev, next, fresh, fit, mask, apply }
+enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause }
 
 /// One entry of the preview's action bar.
 class _PreviewAction {
@@ -54,6 +58,11 @@ class _PreviewAction {
 /// / 下一个 walk straight past the end of the loaded page: the next page is
 /// fetched in the background *before* it is needed, and the picture advances as
 /// soon as it arrives.
+///
+/// A live wallpaper is **played**, not shown as a still: the preview owns its
+/// own muted-nowhere [Player] with real audio, and the bar grows 播放/暂停 and
+/// volume buttons for it. The background layer keeps its own silent player, so
+/// committing a video as the background never doubles the sound.
 class WallpaperPreviewPage extends ConsumerStatefulWidget {
   const WallpaperPreviewPage({super.key, required this.args});
 
@@ -85,6 +94,18 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   /// The paging parameters in force, kept for the key handlers.
   PagingParam<BackgroundItem>? _param;
 
+  /// Live-wallpaper playback. The player exists only for the video kind and is
+  /// disposed with the page.
+  Player? _videoPlayer;
+  VideoController? _videoController;
+  StreamSubscription<bool>? _playingSubscription;
+  bool _videoPlaying = false;
+  double _volume = 100;
+  String? _openedVideoUrl;
+
+  bool get _isVideo =>
+      !widget.args.isApiMode && widget.args.kind == BackgroundKind.video;
+
   @override
   void initState() {
     super.initState();
@@ -92,12 +113,51 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     if (widget.args.isApiMode) {
       _fetchApiImage();
     }
+    if (_isVideo) {
+      _createVideoPlayer();
+    }
   }
 
   @override
   void dispose() {
+    _playingSubscription?.cancel();
+    _videoPlayer?.dispose();
     _pageFocus.dispose();
     super.dispose();
+  }
+
+  /// Creates the preview's own player.
+  ///
+  /// Deliberately not the background controller's: that one is muted (it exists
+  /// to paint pixels behind the UI), and this one has to be audible.
+  void _createVideoPlayer() {
+    final player = Player();
+    _videoPlayer = player;
+    _videoController = VideoController(player);
+    player.setVolume(_volume);
+    _playingSubscription = player.stream.playing.listen((playing) {
+      if (mounted) setState(() => _videoPlaying = playing);
+    });
+  }
+
+  Future<void> _openVideo(String url) async {
+    final player = _videoPlayer;
+    if (player == null || url.isEmpty) return;
+    try {
+      await player.open(Media(url), play: true);
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18nOr('wallpaper_video_failed', 'Playback failed'));
+    }
+  }
+
+  Future<void> _togglePlay() async {
+    final player = _videoPlayer;
+    if (player == null) return;
+    if (_videoPlaying) {
+      await player.pause();
+    } else {
+      await player.play();
+    }
   }
 
   /// Never throws, even if the page has no entries.
@@ -194,6 +254,9 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             bg.setNetworkImage(item.file);
           case BackgroundKind.video:
             bg.setNetworkVideo(item.file);
+            // The background layer plays its own silent copy; leaving this one
+            // running would stream the same file twice.
+            await _videoPlayer?.pause();
           case BackgroundKind.gradient:
             final colors = <Color>[
               for (final stop in item.gradient ?? const <BackgroundGradientStop>[])
@@ -238,7 +301,36 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           label: i18nOr('wallpaper_change_image', 'New image'),
           busy: _apiLoading,
         )
-      else ...[
+      else if (_isVideo) ...[
+        // A live wallpaper is watched, so playback leads the bar.
+        _PreviewAction(
+          kind: _PreviewActionKind.playPause,
+          icon: _videoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          label: _videoPlaying
+              ? i18nOr('wallpaper_pause', 'Pause')
+              : i18nOr('wallpaper_play', 'Play'),
+        ),
+        _PreviewAction(
+          kind: _PreviewActionKind.volumeDown,
+          icon: Icons.volume_down_rounded,
+          label: i18nOr('wallpaper_volume_down', 'Volume -'),
+        ),
+        _PreviewAction(
+          kind: _PreviewActionKind.volumeUp,
+          icon: Icons.volume_up_rounded,
+          label: i18nOr('wallpaper_volume_up', 'Volume +'),
+        ),
+        _PreviewAction(
+          kind: _PreviewActionKind.prev,
+          icon: Icons.chevron_left_rounded,
+          label: i18nOr('wallpaper_prev', 'Prev'),
+        ),
+        _PreviewAction(
+          kind: _PreviewActionKind.next,
+          icon: Icons.chevron_right_rounded,
+          label: i18nOr('wallpaper_next', 'Next'),
+        ),
+      ] else ...[
         _PreviewAction(
           kind: _PreviewActionKind.prev,
           icon: Icons.chevron_left_rounded,
@@ -283,6 +375,12 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         _cycleMask();
       case _PreviewActionKind.apply:
         _apply(_itemAt(items));
+      case _PreviewActionKind.playPause:
+        unawaited(_togglePlay());
+      case _PreviewActionKind.volumeDown:
+        unawaited(_changeVolume(-10));
+      case _PreviewActionKind.volumeUp:
+        unawaited(_changeVolume(10));
     }
   }
 
@@ -340,6 +438,16 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     final actions = _buildActions();
     final int safeIndex = _actionIndex.clamp(0, actions.length - 1);
     final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
+
+    // Follow the cursor: the first build opens the video, 上一个/下一个 opens the
+    // neighbour and keeps playing.
+    if (_isVideo && item.file.isNotEmpty && item.file != _openedVideoUrl) {
+      _openedVideoUrl = item.file;
+      final String url = item.file;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_openVideo(url));
+      });
+    }
 
     return TvScaffold(
       showAppBar: false,
@@ -427,21 +535,21 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       case BackgroundKind.gradient:
         return GradientPreview(item: item);
       case BackgroundKind.video:
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            // The live picture plays only once it is the background; here the
-            // poster stands in for it.
-            WallpaperNetworkImage(
-              url: item.poster ?? item.file,
-              fit: BoxFit.cover,
-              placeholder: const ColoredBox(color: Colors.black),
-              fallback: const ColoredBox(color: Colors.black),
-            ),
-            Center(
-              child: Icon(Icons.play_circle_outline_rounded, size: 64.sp, color: Colors.white70),
-            ),
-          ],
+        // Play the clip with its own audio; the poster only stands in until the
+        // player has been created.
+        final controller = _videoController;
+        if (controller == null) {
+          return WallpaperNetworkImage(
+            url: item.poster ?? item.thumb ?? item.file,
+            fit: BoxFit.cover,
+            placeholder: const ColoredBox(color: Colors.black),
+            fallback: const ColoredBox(color: Colors.black),
+          );
+        }
+        return Video(
+          controller: controller,
+          fit: bgState.boxFit,
+          controls: (state) => const SizedBox.shrink(),
         );
       case BackgroundKind.image:
         return WallpaperNetworkImage(
@@ -483,6 +591,19 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                   '${_index + 1}/${items.length}',
                   style: TextStyle(fontSize: 15.sp, color: Colors.white70),
                 ),
+              if (_isVideo) ...[
+                SizedBox(width: 16.sp),
+                Icon(
+                  _volume <= 0 ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                  size: 18.sp,
+                  color: Colors.white70,
+                ),
+                SizedBox(width: 6.sp),
+                Text(
+                  '${_volume.round()}%',
+                  style: TextStyle(fontSize: 15.sp, color: Colors.white70),
+                ),
+              ],
             ],
           ),
         ),
@@ -521,12 +642,14 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             SizedBox(height: 12.sp),
             // Focus traversal stays out of the bar: the arrows are handled by
             // the page, and the buttons only react to the highlight computed
-            // here (plus a mouse click).
+            // here (plus a mouse click). A Wrap keeps the extra playback buttons
+            // of a live wallpaper on screen.
             ExcludeFocus(
-              child: Row(
+              child: Wrap(
+                spacing: 10.sp,
+                runSpacing: 10.sp,
                 children: [
-                  for (int i = 0; i < actions.length; i++) ...[
-                    if (i > 0) SizedBox(width: 10.sp),
+                  for (int i = 0; i < actions.length; i++)
                     _PreviewActionButton(
                       action: actions[i],
                       highlighted: i == safeIndex,
@@ -535,7 +658,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                         _run(actions[i], items);
                       },
                     ),
-                  ],
                 ],
               ),
             ),

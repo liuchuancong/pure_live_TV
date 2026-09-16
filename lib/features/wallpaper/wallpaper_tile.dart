@@ -17,6 +17,7 @@ class WallpaperTile extends StatelessWidget {
     required this.kind,
     required this.current,
     required this.onSelect,
+    this.onFocus,
   });
 
   final BackgroundItem item;
@@ -26,6 +27,12 @@ class WallpaperTile extends StatelessWidget {
   final bool current;
   final VoidCallback onSelect;
 
+  /// Fired when the d-pad lands on this tile. The grid uses it to pull the next
+  /// page as soon as the cursor gets near the end of what is loaded, which is
+  /// what actually drives paging on a remote: focus traversal does not always
+  /// produce a scroll event near the bottom.
+  final VoidCallback? onFocus;
+
   @override
   Widget build(BuildContext context) {
     final theme = context.tvTheme;
@@ -33,6 +40,9 @@ class WallpaperTile extends StatelessWidget {
 
     return DpadFocusable(
       onSelect: onSelect,
+      onFocusChange: (focused) {
+        if (focused) onFocus?.call();
+      },
       effects: <DpadEffect>[
         DpadScaleEffect(
           scale: 1.04,

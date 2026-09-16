@@ -290,7 +290,7 @@ class BackgroundCatalog {
         ),
         _single(BackgroundSourceIds.bing, '必应壁纸', 'Bing', BackgroundKind.image, 2030),
         _single(BackgroundSourceIds.deepin, 'deepin', 'deepin', BackgroundKind.image, 26),
-        _single(BackgroundSourceIds.video, '动态壁纸', 'Live Wallpapers', BackgroundKind.video, 114),
+        _single(BackgroundSourceIds.video, '动态壁纸', 'Live Wallpapers', BackgroundKind.video, 125),
         _single(BackgroundSourceIds.solidColor, '纯色渐变', 'Colors', BackgroundKind.gradient, 151),
       ],
     );

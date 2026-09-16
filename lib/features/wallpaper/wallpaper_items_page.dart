@@ -11,6 +11,7 @@ import 'package:pure_live/services/background_config/background_controller.dart'
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/pagination/base_paged_tv_view.dart';
+import 'package:pure_live/shared/pagination/models/paging_param.dart';
 import 'package:pure_live/shared/pagination/paging_core.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
@@ -74,6 +75,7 @@ class WallpaperItemsPage extends ConsumerWidget {
             item: item,
             kind: source.kind,
             current: _isCurrent(currentFile, item.file),
+            onFocus: () => _pageAhead(ref, param, index),
             onSelect: () => context.push(
               AppRoutes.kWallpaperPreview,
               extra: WallpaperPreviewArgs.catalog(
@@ -88,6 +90,18 @@ class WallpaperItemsPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Pulls the next page in when the cursor reaches the tail of the loaded list.
+  ///
+  /// Relying on the scroll listener alone is not enough on a TV: focus
+  /// traversal can reach the last built tile without the scroll offset getting
+  /// within its threshold, and then the grid looks like it simply ends.
+  static void _pageAhead(WidgetRef ref, PagingParam<BackgroundItem> param, int index) {
+    final state = ref.read(pagingCoreProvider(param));
+    if (!state.canLoadMore || state.controllerState.loading) return;
+    if (index < state.items.length - 4) return;
+    ref.read(pagingCoreProvider(param).notifier).loadNextPage();
   }
 
   static BackgroundCategory? _pickCategory(BackgroundSource source, String? wanted) {

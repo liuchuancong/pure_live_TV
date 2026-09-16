@@ -3,33 +3,20 @@
 /// * **Solid colours and gradients** are a fixed table, compiled into the app
 ///   ([kSolidGradients]); nothing about them changes, so fetching them from a
 ///   git mirror on every visit only added latency and a failure mode.
-/// * **Live wallpapers** live on the iTab CDN at a stable path per name, so the
-///   list of names is compiled in and the videos are fetched from the CDN
-///   directly.
-/// * **deepin** is 26 files under the same CDN.
+/// * **deepin** is 26 files under the public iTab CDN.
+///
+/// Live wallpapers used to live here too, but `/wallpaper/video/list` answers
+/// without a token, so they page from the API like every other browser source.
 library;
 
 import 'package:pure_live/services/background_config/local/solid_gradients.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-
-/// Public CDN holding the iTab live wallpapers.
-const String kItabVideoBase = 'https://files.itab.link/itab/defaultWallpaper/videos';
 
 /// Public CDN holding the deepin wallpaper set.
 const String kItabFilesBase = 'https://files.itab.link';
 
 /// Server-side resize preset used for grid thumbnails.
 const String kThumbProcess = 'x-oss-process=image/resize,limit_0,m_fill,w_400,h_225/quality,q_72/format,webp';
-
-/// Video names published under [kItabVideoBase], in CDN order.
-///
-/// Two naming runs exist: plain numbers and `v-<n>`. Both were enumerated from
-/// the CDN by the collector script (`tool/`), and the ranges below are the ones
-/// that actually resolve.
-List<String> get itabVideoNames => <String>[
-  for (var i = 10; i <= 91; i++) '$i',
-  for (var i = 1; i <= 32; i++) 'v-$i',
-];
 
 /// The 26 deepin/UOS wallpapers, named by hand from the artwork.
 const Map<int, String> kDeepinNames = <int, String>{
@@ -61,7 +48,6 @@ const Map<int, String> kDeepinNames = <int, String>{
   25: 'Mountain Lake Reflection',
 };
 
-/// Builds an absolute CDN url plus its resized thumbnail.
 /// `https://…/x.jpg` → `https://…/x.jpg?x-oss-process=…` (or `&…` if it already
 /// carries a query). A URL that is already processed is left alone.
 String cdnThumb(String url) {
@@ -75,7 +61,8 @@ class LocalWallpapers {
   const LocalWallpapers._();
 
   /// Flat swatches first, then the 139 gradients.
-  static final List<BackgroundItem> solidItems = <BackgroundItem>[    for (var i = 0; i < kSolidPalette.length; i++)
+  static final List<BackgroundItem> solidItems = <BackgroundItem>[
+    for (var i = 0; i < kSolidPalette.length; i++)
       BackgroundItem(
         id: 'flat-$i',
         name: kSolidPalette[i],
@@ -91,26 +78,12 @@ class LocalWallpapers {
         id: 'gradient-$i',
         name: kSolidGradients[i].name,
         file: 'solid-color#gradient-$i',
-        css: kSolidGradients[i].stops
-            .map((s) => '${s.$1} ${s.$2.round()}%')
-            .join(', '),
+        css: kSolidGradients[i].stops.map((s) => '${s.$1} ${s.$2.round()}%').join(', '),
         deg: kSolidGradients[i].deg,
         gradient: <BackgroundGradientStop>[
           for (final (color, pos) in kSolidGradients[i].stops)
             BackgroundGradientStop(color: color, pos: pos),
         ],
-      ),
-  ];
-
-  /// Live wallpapers on the iTab CDN.
-  static final List<BackgroundItem> videoItems = <BackgroundItem>[
-    for (final name in itabVideoNames)
-      BackgroundItem(
-        id: name,
-        name: name,
-        file: '$kItabVideoBase/$name.mp4',
-        poster: '$kItabVideoBase/$name.jpg',
-        thumb: cdnThumb('$kItabVideoBase/$name.jpg'),
       ),
   ];
 
@@ -128,7 +101,6 @@ class LocalWallpapers {
   /// The list belonging to one local source id, or empty for a server source.
   static List<BackgroundItem> of(String sourceId) => switch (sourceId) {
     BackgroundSourceIds.solidColor => solidItems,
-    BackgroundSourceIds.video => videoItems,
     BackgroundSourceIds.deepin => deepinItems,
     _ => const <BackgroundItem>[],
   };
