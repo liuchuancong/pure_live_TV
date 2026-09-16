@@ -163,9 +163,9 @@ class _SidePanel extends ConsumerWidget {
       case LivePlayPanel.playlist:
         return PlaylistPanel(key: const ValueKey('live-play-panel-playlist'), args: args);
       case LivePlayPanel.danmakuSettings:
-        return const DanmakuSettingsPanel(key: ValueKey('live-play-panel-danmaku'));
+        return DanmakuSettingsPanel(key: const ValueKey('live-play-panel-danmaku'), onClose: onTogglePanel);
       case LivePlayPanel.shield:
-        return const ShieldPanel(key: ValueKey('live-play-panel-shield'));
+        return ShieldPanel(key: const ValueKey('live-play-panel-shield'), onClose: onTogglePanel);
     }
   }
 }

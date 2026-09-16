@@ -65,8 +65,16 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final key = event.logicalKey;
 
-    // A side panel is focus based and owns the keys while it is open.
-    if (state.showSidePanel) return KeyEventResult.ignored;
+    // A panel with its own index handling consumes its keys first; what reaches
+    // here while a panel is open is Left/Escape, which closes it (房间信息 has no
+    // keys of its own).
+    if (state.showSidePanel) {
+      if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.escape) {
+        controller.toggleSidePanel();
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
     // With the controls up, the control layer's own handler runs first; anything
     // it does not use has already bubbled to here.
     if (state.showControls) return KeyEventResult.ignored;
