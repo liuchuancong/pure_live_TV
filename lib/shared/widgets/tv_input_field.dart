@@ -1,4 +1,3 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -11,6 +10,16 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 /// controller type, so each field threw as soon as it was built. Text entry now
 /// goes through the platform IME (which every Android TV build ships) like any
 /// other Flutter field, and the package dependency is gone.
+///
+/// It also used to wrap itself in a [DpadRegion] to detect "the d-pad reached
+/// the field" — but a nested region is invisible to the dpad traversal policy's
+/// region-first search (nested-region items are only considered once the
+/// enclosing region has no candidate in that direction), so arrow navigation
+/// always skipped straight past the field. The field is now a plain focus
+/// target: dpad lands directly on the [TextField]'s own focus node, dpad's
+/// caret-aware `_directionAllowed` handles moving the caret with Left/Right and
+/// leaving the field with Up/Down, and the visual focus state is tracked with a
+/// simple [Focus.onFocusChange] listener.
 class TvInputField extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
@@ -53,7 +62,7 @@ class _TvInputFieldState extends State<TvInputField> {
   late bool _isObscure;
   late final FocusNode _focusNode;
   bool _ownsFocusNode = false;
-  bool _isRegionFocused = false;
+  bool _isFocused = false;
 
   @override
   void initState() {
@@ -65,24 +74,20 @@ class _TvInputFieldState extends State<TvInputField> {
     } else {
       _focusNode = widget.focusNode!;
     }
+    _focusNode.addListener(_handleFocusChanged);
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_handleFocusChanged);
     if (_ownsFocusNode) _focusNode.dispose();
     super.dispose();
   }
 
-  /// The d-pad region decides when the field is "active": focusing the row opens
-  /// the keyboard, leaving it closes the keyboard again.
-  void _handleFocusChange(bool hasFocus) {
-    if (!mounted) return;
-    setState(() => _isRegionFocused = hasFocus);
-    if (hasFocus) {
-      _focusNode.requestFocus();
-    } else {
-      _focusNode.unfocus();
-    }
+  /// The field is highlighted as soon as its focus node holds (or contains)
+  /// primary focus — no separate d-pad region state needed.
+  void _handleFocusChanged() {
+    if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
   }
 
   @override
@@ -92,11 +97,26 @@ class _TvInputFieldState extends State<TvInputField> {
 
     final resolvedBgColor = widget.builder != null
         ? Colors.transparent
-        : (widget.backgroundColor ?? (_isRegionFocused ? currentTvTheme.focusedCardColor : currentTvTheme.cardColor));
+        : (widget.backgroundColor ??
+              (_isFocused
+                  ? currentTvTheme.focusedCardColor
+                  : currentTvTheme.cardColor));
 
-    final resolvedTextColor = widget.textColor ?? currentTvTheme.primaryTextColor;
-    final resolvedFocusedBorder = widget.focuesedBorderColor ?? currentTvTheme.focusColor;
-    final resolvedUnfocusedBorder = widget.unFocuesedBorderColor ?? Colors.transparent;
+    // Several presets use a near-white focusedCardColor, so when the field is
+    // focused the background can turn light while primaryTextColor stays
+    // white — white text on a white field. Pick the text color from the
+    // effective background's luminance instead of the theme's text color.
+    final Color fallbackTextColor =
+        (widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.cardColor))
+                .computeLuminance() >
+            0.5
+        ? const Color(0xff1B1B1F)
+        : currentTvTheme.primaryTextColor;
+    final resolvedTextColor = widget.textColor ?? fallbackTextColor;
+    final resolvedFocusedBorder =
+        widget.focuesedBorderColor ?? currentTvTheme.focusColor;
+    final resolvedUnfocusedBorder =
+        widget.unFocuesedBorderColor ?? Colors.transparent;
 
     final int lines = widget.maxLines ?? 1;
     final Widget inputCore = Container(
@@ -111,10 +131,17 @@ class _TvInputFieldState extends State<TvInputField> {
         minLines: lines > 1 ? 2 : null,
         maxLines: lines,
         cursorColor: resolvedFocusedBorder,
-        style: TextStyle(color: resolvedTextColor, fontSize: 28.sp, textBaseline: TextBaseline.alphabetic),
+        style: TextStyle(
+          color: resolvedTextColor,
+          fontSize: 28.sp,
+          textBaseline: TextBaseline.alphabetic,
+        ),
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: TextStyle(color: resolvedTextColor.withValues(alpha: 0.4), fontSize: 24.sp),
+          hintStyle: TextStyle(
+            color: resolvedTextColor.withValues(alpha: 0.4),
+            fontSize: 24.sp,
+          ),
           isDense: true,
           contentPadding: EdgeInsets.symmetric(vertical: 2.sp),
           border: InputBorder.none,
@@ -132,7 +159,9 @@ class _TvInputFieldState extends State<TvInputField> {
           width: double.infinity,
           padding: EdgeInsets.only(
             left: 12.sp,
-            right: widget.postFixWidget == null && !widget.showPasswordToggle ? 12.sp : 50.sp,
+            right: widget.postFixWidget == null && !widget.showPasswordToggle
+                ? 12.sp
+                : 50.sp,
           ),
           child: Row(children: [Expanded(child: inputCore)]),
         ),
@@ -168,34 +197,30 @@ class _TvInputFieldState extends State<TvInputField> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12.sp),
           color: resolvedBgColor,
-          border: Border.all(color: _isRegionFocused ? resolvedFocusedBorder : resolvedUnfocusedBorder, width: 2.sp),
+          border: Border.all(
+            color: _isFocused ? resolvedFocusedBorder : resolvedUnfocusedBorder,
+            width: 2.sp,
+          ),
         ),
         child: content,
       );
     }
 
-    return DpadRegion(
-      // Focus leaving the field (up/down included) deactivates the input
-      // through `onFocusChange`; the field needs no edge handler of its own.
-      horizontalEdge: DpadEdgeBehavior.leave,
-      verticalEdge: DpadEdgeBehavior.leave,
-      onFocusChange: _handleFocusChange,
-      child: widget.builder != null
-          ? innerWidget
-          : AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.sp),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: resolvedFocusedBorder.withAlpha(_isRegionFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0),
-                    blurRadius: 18.0.sp,
-                    spreadRadius: 2.0.sp,
-                  ),
-                ],
-              ),
-              child: innerWidget,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.sp),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: resolvedFocusedBorder.withAlpha(
+              _isFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0,
             ),
+            blurRadius: 18.0.sp,
+            spreadRadius: 2.0.sp,
+          ),
+        ],
+      ),
+      child: innerWidget,
     );
   }
 }

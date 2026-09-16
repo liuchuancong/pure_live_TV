@@ -1,15 +1,15 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/features/live_play/models/live_play_args.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
-import 'package:pure_live/services/cache/cache_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/services/cache/cache_controller.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/features/live_play/models/live_play_args.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 class TvRoomCard extends ConsumerStatefulWidget {
   const TvRoomCard({
@@ -96,9 +96,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
         // dark background colour. Both branches of this used to be
         // `secondaryTextColor`, which left the nickname nearly invisible on the
         // white focused card.
-        final subtitleColor = isFocused
-            ? tvTheme.backgroundColor.withValues(alpha: 0.7)
-            : tvTheme.secondaryTextColor;
+        final subtitleColor = isFocused ? tvTheme.backgroundColor.withValues(alpha: 0.7) : tvTheme.secondaryTextColor;
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
@@ -135,8 +133,10 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           color: tvTheme.cardColor,
                           child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
                         ),
-                        errorWidget: (context, url, error) =>
-                            AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true),
+                        errorWidget: (context, url, error) {
+                          debugPrint(error.toString());
+                          return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
+                        },
                       ),
                     ),
                   ),

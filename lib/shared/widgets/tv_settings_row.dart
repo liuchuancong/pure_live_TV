@@ -4,7 +4,8 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// Builds the right-hand side of a [TvSettingsRow], with the live focus state.
-typedef TvSettingsTrailingBuilder = Widget Function(BuildContext context, bool focused);
+typedef TvSettingsTrailingBuilder =
+    Widget Function(BuildContext context, bool focused);
 
 /// The shared shell of every settings row.
 ///
@@ -61,9 +62,14 @@ class TvSettingsRow extends StatelessWidget {
           curve: Curves.easeOutCubic,
           padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
           decoration: BoxDecoration(
-            color: focused ? accent.withValues(alpha: 0.22) : Colors.transparent,
+            color: focused
+                ? accent.withValues(alpha: 0.22)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(14.sp),
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+            border: Border.all(
+              color: focused ? accent : Colors.transparent,
+              width: 2.sp,
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -75,46 +81,67 @@ class TvSettingsRow extends StatelessWidget {
                   // long option (decoder names, loading styles) must not push
                   // the title out or spill past the row's edge.
                   final double trailingMaxWidth = constraints.maxWidth * 0.55;
-                  return Row(
-                    children: [
-                      if (leading != null)
-                        leading!
-                      else if (icon != null)
-                        Icon(icon, size: 30.sp, color: focused ? accent : tvTheme.primaryTextColor),
-                      if (hasLeading) SizedBox(width: 16.sp),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t22W600.copyWith(
-                                color: focused ? accent : tvTheme.primaryTextColor,
-                              ),
-                            ),
-                            if (subtitle != null) ...[
-                              SizedBox(height: 4.sp),
+                  // Single-line rows reserve the same content height as a
+                  // title + subtitle row (title line + gap + subtitle line),
+                  // so mixing both kinds inside one group keeps an even
+                  // rhythm instead of alternating tall and squashed rows.
+                  final double minContentHeight = 30.sp + 4.sp + 22.sp;
+                  return Container(
+                    constraints: BoxConstraints(minHeight: minContentHeight),
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        if (leading != null)
+                          leading!
+                        else if (icon != null)
+                          Icon(
+                            icon,
+                            size: 30.sp,
+                            color: focused ? accent : tvTheme.primaryTextColor,
+                          ),
+                        if (hasLeading) SizedBox(width: 16.sp),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                               Text(
-                                subtitle!,
-                                maxLines: 2,
+                                title,
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t16W500.copyWith(
-                                  color: focused ? accent.withValues(alpha: 0.85) : tvTheme.secondaryTextColor,
+                                style: AppTextStyles.t22W600.copyWith(
+                                  color: focused
+                                      ? accent
+                                      : tvTheme.primaryTextColor,
                                 ),
                               ),
+                              if (subtitle != null) ...[
+                                SizedBox(height: 4.sp),
+                                Text(
+                                  subtitle!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.t16W500.copyWith(
+                                    color: focused
+                                        ? accent.withValues(alpha: 0.85)
+                                        : tvTheme.secondaryTextColor,
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 12.sp),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: trailingMaxWidth),
-                        child: trailingBuilder?.call(context, focused) ?? const SizedBox.shrink(),
-                      ),
-                    ],
+                        SizedBox(width: 12.sp),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: trailingMaxWidth,
+                          ),
+                          child:
+                              trailingBuilder?.call(context, focused) ??
+                              const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -158,12 +185,18 @@ Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
             value,
             maxLines: 1,
             softWrap: false,
-            style: AppTextStyles.t20W600.copyWith(color: focused ? accent : tvTheme.primaryTextColor),
+            style: AppTextStyles.t20W600.copyWith(
+              color: focused ? accent : tvTheme.primaryTextColor,
+            ),
           ),
         ),
       ),
       SizedBox(width: 8.sp),
-      Icon(Icons.expand_more_rounded, size: 28.sp, color: focused ? accent : tvTheme.secondaryTextColor),
+      Icon(
+        Icons.expand_more_rounded,
+        size: 28.sp,
+        color: focused ? accent : tvTheme.secondaryTextColor,
+      ),
     ],
   );
 }
@@ -171,7 +204,11 @@ Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
 /// Bordered on/off indicator, so the switch row matches the bordered row style
 /// instead of using the Material switch chrome.
 class TvSettingsSwitchIndicator extends StatelessWidget {
-  const TvSettingsSwitchIndicator({super.key, required this.value, required this.focused});
+  const TvSettingsSwitchIndicator({
+    super.key,
+    required this.value,
+    required this.focused,
+  });
 
   final bool value;
   final bool focused;
@@ -189,8 +226,13 @@ class TvSettingsSwitchIndicator extends StatelessWidget {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          color: value ? on.withValues(alpha: focused ? 0.35 : 0.22) : Colors.transparent,
-          border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.sp),
+          color: value
+              ? on.withValues(alpha: focused ? 0.35 : 0.22)
+              : Colors.transparent,
+          border: Border.all(
+            color: value ? on : off.withValues(alpha: 0.6),
+            width: 2.sp,
+          ),
           borderRadius: BorderRadius.circular(6.sp),
         ),
         padding: EdgeInsets.all(3.sp),

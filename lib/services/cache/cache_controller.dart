@@ -1,11 +1,13 @@
 import 'dart:io';
-
 import 'cache_model.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/app/bootstrap/app_path_manager.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
+// NOTE: adjust to the actual path in your project.
 
 part 'cache_controller.g.dart';
 
@@ -72,7 +74,18 @@ class CacheController extends _$CacheController {
     return [await manager.imageCacheDir, await manager.iptvCacheDir];
   }
 
+  /// Clears both the custom image cache and the default one.
+  ///
+  /// `CustomImageCacheManager` uses its own directory and its own database.
+  /// Calling `DefaultCacheManager().emptyCache()` alone leaves it untouched
+  /// and desynchronizes the custom manager's DB from the filesystem, which
+  /// later causes cover reads to fail.
   static Future<void> _clearDefaultEncodedImageCache() async {
+    try {
+      await CustomImageCacheManager.emptyCache();
+    } catch (error) {
+      debugPrint('Failed to clear custom image cache: $error');
+    }
     try {
       await DefaultCacheManager().emptyCache();
     } catch (_) {
@@ -82,8 +95,16 @@ class CacheController extends _$CacheController {
 
   static Future<bool> _purgeDirectory(Directory directory) async {
     try {
-      if (await directory.exists()) await directory.delete(recursive: true);
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+      }
       await directory.create(recursive: true);
+      // If the purged directory is the image cache directory, rebuild the
+      // manager so stale DB records do not cause persistent
+      // FileSystemExceptions when reading covers.
+      if (CustomImageCacheManager.ownsDirectory(directory)) {
+        await CustomImageCacheManager.reset();
+      }
       return true;
     } on FileSystemException {
       return false;
@@ -92,11 +113,25 @@ class CacheController extends _$CacheController {
 
   @override
   CacheModel build() {
-    getCacheSize();
+    // build() must not read or write `state` synchronously, otherwise
+    // Riverpod throws:
+    //   "Bad state: Tried to read the state of an uninitialized provider".
+    // Schedule the initial scan on a microtask so it runs after build() has
+    // returned and the initial state has been assigned.
+    Future.microtask(() async {
+      if (!ref.mounted) return;
+      try {
+        await getCacheSize();
+      } catch (error, stack) {
+        debugPrint('Initial cache size scan failed: $error\n$stack');
+      }
+    });
     return const CacheModel();
   }
 
   Future<double> getCacheSize() async {
+    if (!ref.mounted) return 0;
+
     final clearing = _cacheClearOperation;
     if (clearing != null) {
       await clearing;
@@ -130,7 +165,9 @@ class CacheController extends _$CacheController {
       roots.map((directory) => directory.absolute.path).toList(growable: false),
     );
     final size = totalSizeBytes / 1024 / 1024;
-    state = state.copyWith(cacheSizeMB: size);
+    if (ref.mounted) {
+      state = state.copyWith(cacheSizeMB: size);
+    }
     return size;
   }
 
@@ -169,6 +206,8 @@ class CacheController extends _$CacheController {
     }
 
     var failedOperations = 0;
+
+    // 1) Clear the custom image cache and the default cache.
     try {
       await _encodedImageCacheClearer();
     } catch (error) {
@@ -176,6 +215,7 @@ class CacheController extends _$CacheController {
       debugPrint('Failed to clear the encoded image cache: $error');
     }
 
+    // 2) Clear the in-memory image cache.
     try {
       PaintingBinding.instance.imageCache
         ..clear()
@@ -185,6 +225,7 @@ class CacheController extends _$CacheController {
       debugPrint('Failed to clear the in-memory image cache: $error');
     }
 
+    // 3) Purge the on-disk cache directories.
     List<Directory>? directories;
     try {
       directories = _uniqueDirectories(await _cacheDirectoryResolver());
@@ -203,6 +244,7 @@ class CacheController extends _$CacheController {
       if (!cleared) failedOperations++;
     }
 
+    // 4) Re-scan the remaining size.
     var remainingSizeMB = state.cacheSizeMB;
     if (directories != null) {
       try {
@@ -212,7 +254,9 @@ class CacheController extends _$CacheController {
         debugPrint('Failed to refresh cache size after clearing: $error');
       }
     }
-    state = state.copyWith(imageCacheEpoch: state.imageCacheEpoch + 1);
+    if (ref.mounted) {
+      state = state.copyWith(imageCacheEpoch: state.imageCacheEpoch + 1);
+    }
     return CacheClearResult(remainingSizeMB: remainingSizeMB, failedOperations: failedOperations);
   }
 
@@ -237,6 +281,7 @@ class CacheController extends _$CacheController {
   Future<void> _refreshImageCache({required bool refreshVisible}) async {
     final clearing = _cacheClearOperation;
     if (clearing != null) await clearing;
+
     final activeScan = _cacheSizeScan;
     if (activeScan != null) {
       try {
@@ -251,11 +296,14 @@ class CacheController extends _$CacheController {
     // placeholders across the grid and trigger a decode storm.
     PaintingBinding.instance.imageCache.clear();
     if (!refreshVisible) return;
-    state = state.copyWith(imageCacheEpoch: state.imageCacheEpoch + 1);
+    if (ref.mounted) {
+      state = state.copyWith(imageCacheEpoch: state.imageCacheEpoch + 1);
+    }
     await _scanCacheSize();
   }
 
   Future<void> handleManualRefresh() async {
+    if (!ref.mounted) return;
     state = state.copyWith(refreshTurns: state.refreshTurns + 1.0);
     await getCacheSize();
   }
@@ -270,4 +318,3 @@ class CacheController extends _$CacheController {
     return unique.values.toList(growable: false);
   }
 }
-
