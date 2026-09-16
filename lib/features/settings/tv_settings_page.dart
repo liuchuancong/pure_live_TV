@@ -185,17 +185,17 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsColorPicker: 'ui_choose_color',
   AppRoutes.kSettingsIconPicker: 'ui_choose_icon',
   AppRoutes.kSettingsPage: 'page_settings',
-  AppRoutes.kSettingsFont: 'ui_font_settings',
+  AppRoutes.kSettingsFont: 'font_settings_title',
   AppRoutes.kSettingsFontFamily: 'font_family_settings',
-  AppRoutes.kSettingsDecoder: 'ui_decoder_settings',
-  AppRoutes.kSettingsRenderer: 'ui_renderer_settings',
-  AppRoutes.kSettingsAudioOutput: 'ui_audio_output',
+  AppRoutes.kSettingsDecoder: 'hardware_decoder',
+  AppRoutes.kSettingsRenderer: 'video_output_driver',
+  AppRoutes.kSettingsAudioOutput: 'audio_output_driver',
   AppRoutes.kSettingsDanmaku: 'danmaku_settings',
   AppRoutes.kSettingsAudience: 'audience_metric_settings',
   AppRoutes.kSettingsLocalBackup: 'local_backup',
-  AppRoutes.kSettingsDeviceSync: 'remote_sync',
+  AppRoutes.kSettingsDeviceSync: 'remote_sync_receive',
   AppRoutes.kSettingsConfigPreview: 'config_preview',
-  AppRoutes.kSettingsDanmuShield: 'block_list',
+  AppRoutes.kSettingsDanmuShield: 'danmaku_keyword_block',
   AppRoutes.kSettingsHotAreas: 'platform_display',
   AppRoutes.kSettingsAccount: 'third_party_auth',
   AppRoutes.kSettingsAccountBilibili: 'site_bilibili',
@@ -207,18 +207,36 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsAccountSoop: 'site_soop',
   AppRoutes.kSettingsTags: 'tag_management',
   AppRoutes.kWebDavPage: 'webdav',
+  // Pages whose *menu row* has a different label from their page title.
+  //
+  // The mobile app's menu says 视频 / 播放器内核 / 自定义网络代理 while the pages
+  // themselves are titled 视频设置 / 播放内核设置 / 网络与代理设置; taking the
+  // title from the menu row made the TV app bars disagree with the phone's.
+  AppRoutes.kSettingsVideo: 'video_settings',
+  AppRoutes.kSettingsPlayerKernel: 'player_kernel_settings',
+  AppRoutes.kSettingsProxy: 'network_proxy_settings',
 };
 
-/// Page title for a settings location: the menu row first, then the
-/// sub-page table.
+/// Page title for a settings location.
+///
+/// The sub-page table wins over the menu row (a page may be titled differently
+/// from the row that opens it), and the *longest* matching prefix wins so a
+/// platform page under `/settings_account/` gets its own name instead of the
+/// parent's.
 String settingsSectionTitleKey(String location) {
-  final SettingsEntry? entry = settingsEntryForLocation(location);
-  if (entry != null) return entry.titleKey;
+  String? bestPath;
+  String? bestTitle;
   for (final MapEntry<String, String> candidate in settingsSectionTitleKeys.entries) {
-    if (location == candidate.key || location.startsWith('${candidate.key}/')) {
-      return candidate.value;
+    if (location != candidate.key && !location.startsWith('${candidate.key}/')) continue;
+    if (bestPath == null || candidate.key.length > bestPath.length) {
+      bestPath = candidate.key;
+      bestTitle = candidate.value;
     }
   }
+  if (bestTitle != null) return bestTitle;
+
+  final SettingsEntry? entry = settingsEntryForLocation(location);
+  if (entry != null) return entry.titleKey;
   return 'ui_settings';
 }
 

@@ -55,12 +55,26 @@ void main() {
   });
 
   test('sub-page titles resolve for pages that are not menu rows', () {
-    expect(settingsSectionTitleKey(AppRoutes.kSettingsDecoder), 'ui_decoder_settings');
-    expect(settingsSectionTitleKey(AppRoutes.kSettingsDanmuShield), 'block_list');
+    // The page titles the mobile app uses, not the generic TV ones.
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsDecoder), 'hardware_decoder');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsRenderer), 'video_output_driver');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsAudioOutput), 'audio_output_driver');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsDanmuShield), 'danmaku_keyword_block');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsFont), 'font_settings_title');
     expect(settingsSectionTitleKey(AppRoutes.kWebDavPage), 'webdav');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsHotAreas), 'platform_display');
-    // A menu row wins over the sub-page table.
+
+    // A page may be titled differently from the menu row that opens it.
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsVideo), 'video_settings');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsPlayerKernel), 'player_kernel_settings');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsProxy), 'network_proxy_settings');
+
+    // A page that is not in the table falls back to its menu row.
     expect(settingsSectionTitleKey(AppRoutes.kBackup), 'backup_recover');
+
+    // The most specific path wins, so a platform page is not named after 三方认证.
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsAccount), 'third_party_auth');
+    expect(settingsSectionTitleKey(AppRoutes.kSettingsAccountHuya), 'site_huya');
   });
 
   test('every settings route has a real title, never the fallback', () {
