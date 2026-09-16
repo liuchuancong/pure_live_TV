@@ -1,5 +1,6 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 
@@ -42,6 +43,7 @@ class PlayerIndexPanel extends StatefulWidget {
     required this.onClose,
     this.onAdjustLeft,
     this.onAdjustRight,
+    this.rowBuilder,
     this.footer,
     this.emptyHint,
     this.width = 400,
@@ -59,6 +61,13 @@ class PlayerIndexPanel extends StatefulWidget {
   /// Stepper rows (弹幕设置) adjust with Left/Right instead of closing.
   final ValueChanged<int>? onAdjustLeft;
   final ValueChanged<int>? onAdjustRight;
+
+  /// Draws one row itself instead of the default label/value row, so a room list
+  /// can keep its avatars and platform badges while this panel still owns the
+  /// selection and the keys. [index] is the *real* row index; the 关闭 row is not
+  /// passed here.
+  final Widget Function(BuildContext context, int index, bool selected)? rowBuilder;
+
   final Widget? footer;
   final String? emptyHint;
   final double width;
@@ -101,7 +110,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
   /// Keeps the highlighted row on screen while the user walks the list.
   void _scrollToSelection() {
     if (!_scrollController.hasClients) return;
-    const double rowExtent = 64;
+    final double rowExtent = _rowExtent;
     final double target = (widget.selectedIndex * rowExtent) - 120;
     _scrollController.animateTo(
       target.clamp(0, _scrollController.position.maxScrollExtent),
@@ -109,6 +118,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
       curve: Curves.easeOut,
     );
   }
+
+  /// Row height, including its margins, scaled by 面板字号.
+  double get _rowExtent => (66 * PlayerPanelLayout.fontSize).sp;
 
   static bool _isConfirm(LogicalKeyboardKey key) =>
       key == LogicalKeyboardKey.select ||
@@ -131,10 +143,10 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
 
     if (_isConfirm(key)) {
       final int index = widget.selectedIndex.clamp(0, count - 1);
-      if (_isBackRow(index)) {
+      if (_isCloseRow(index)) {
         widget.onClose();
       } else {
-        widget.onSelect(index - 1);
+        widget.onSelect(index);
       }
       return KeyEventResult.handled;
     }
@@ -149,8 +161,8 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     if (key == LogicalKeyboardKey.arrowLeft) {
       // Stepper panels adjust; list panels close, as in the reference.
       final int index = widget.selectedIndex.clamp(0, count - 1);
-      if (widget.onAdjustLeft != null && !_isBackRow(index)) {
-        widget.onAdjustLeft!(index - 1);
+      if (widget.onAdjustLeft != null && !_isCloseRow(index)) {
+        widget.onAdjustLeft!(index);
       } else {
         widget.onClose();
       }
@@ -158,80 +170,103 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     }
     if (key == LogicalKeyboardKey.arrowRight) {
       final int index = widget.selectedIndex.clamp(0, count - 1);
-      if (widget.onAdjustRight != null && !_isBackRow(index)) widget.onAdjustRight!(index - 1);
+      if (widget.onAdjustRight != null && !_isCloseRow(index)) widget.onAdjustRight!(index);
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
   }
 
-  /// The rendered list: a 返回 row first, so every panel has a visible way out
-  /// and the remote always has a close target. Its index shifts the real rows by
-  /// one.
+  /// The rendered list: the rows, then a 关闭 row, so every panel has the same
+  /// way out as the bar's own option lists (清晰度/线路/比例/内核 all end with a
+  /// 关闭 row). It used to be a 返回 row *first*, which is the one place the bar's
+  /// lists and the panels disagreed.
   List<PlayerPanelRow> get _renderedRows => <PlayerPanelRow>[
-        PlayerPanelRow(label: i18nOr('ui_back', 'Back'), icon: Icons.arrow_back_rounded),
         ...widget.rows,
+        PlayerPanelRow(label: i18nOr('close', '关闭'), icon: Icons.close_rounded),
       ];
 
-  bool _isBackRow(int index) => index == 0;
+  bool _isCloseRow(int index) => index == widget.rows.length;
 
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
+    final double scale = PlayerPanelLayout.fontSize;
     final List<PlayerPanelRow> rows = _renderedRows;
     final int count = rows.length;
     final int selected = widget.selectedIndex.clamp(0, count - 1);
 
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: true,
-      onKeyEvent: _onKeyEvent,
-      child: Container(
-        width: widget.width.sp,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(16.sp),
-          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.sp, 14.sp, 20.sp, 6.sp),
-              child: Text(
-                widget.title,
-                style: AppTextStyles.t20W600.copyWith(color: Colors.white),
+    return ValueListenableBuilder<int>(
+      // 面板字号/面板位置 are read from preferences, so the panel rebuilds when the
+      // stepper inside it changes one of them.
+      valueListenable: PlayerPanelLayout.revision,
+      builder: (context, _, _) => Focus(
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: _onKeyEvent,
+        child: Container(
+          width: widget.width.sp,
+          decoration: BoxDecoration(
+            // Theme-driven, like every other surface: on a light palette the
+            // panel is a light card with dark text instead of a black slab.
+            color: tvTheme.cardColor.withValues(alpha: 0.96),
+            borderRadius: BorderRadius.circular(16.sp),
+            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.sp, 14.sp, 20.sp, 6.sp),
+                child: Text(
+                  widget.title,
+                  style: AppTextStyles.t20W600.copyWith(
+                    color: tvTheme.primaryTextColor,
+                    fontSize: 20.sp * scale,
+                  ),
+                ),
               ),
-            ),
-            Expanded(
-              child: rows.isEmpty
-                  ? Center(
-                      child: Text(
-                        widget.emptyHint ?? i18nOr('ui_empty', 'Empty'),
-                        style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+              Expanded(
+                child: rows.isEmpty
+                    ? Center(
+                        child: Text(
+                          widget.emptyHint ?? i18nOr('ui_empty', 'Empty'),
+                          style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
+                        itemCount: rows.length,
+                        itemBuilder: (context, index) {
+                          final bool isSelected = index == selected;
+                          final Widget? custom =
+                              index < widget.rows.length ? widget.rowBuilder?.call(context, index, isSelected) : null;
+                          return custom ??
+                              _PanelRow(
+                                row: rows[index],
+                                selected: isSelected,
+                                accent: tvTheme.focusColor,
+                                theme: tvTheme,
+                                scale: scale,
+                              );
+                        },
                       ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
-                      itemCount: rows.length,
-                      itemBuilder: (context, index) => _PanelRow(
-                        row: rows[index],
-                        selected: index == selected,
-                        accent: tvTheme.focusColor,
-                      ),
-                    ),
-            ),
-            if (widget.footer != null) widget.footer!,
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.sp, 0, 20.sp, 12.sp),
-              child: Text(
-                widget.onAdjustLeft != null
-                    ? i18nOr('ui_panel_keys_adjust', '↑↓ 选择 · ←→ 调整 · OK 确认')
-                    : i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
-                style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
               ),
-            ),
-          ],
+              if (widget.footer != null) widget.footer!,
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.sp, 0, 20.sp, 12.sp),
+                child: Text(
+                  widget.onAdjustLeft != null
+                      ? i18nOr('ui_panel_keys_adjust', '↑↓ 选择 · ←→ 调整 · OK 确认')
+                      : i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
+                  style: AppTextStyles.t14W500.copyWith(
+                    color: tvTheme.secondaryTextColor,
+                    fontSize: 14.sp * scale,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -239,23 +274,35 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
 }
 
 class _PanelRow extends StatelessWidget {
-  const _PanelRow({required this.row, required this.selected, required this.accent});
+  const _PanelRow({
+    required this.row,
+    required this.selected,
+    required this.accent,
+    required this.theme,
+    required this.scale,
+  });
 
   final PlayerPanelRow row;
   final bool selected;
   final Color accent;
+  final TvThemeData theme;
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
-    final Color foreground = selected ? Colors.black : Colors.white;
+    // The selected row keeps white content in both palettes: it sits on the
+    // accent fill, where the theme's own text colours (dark on a light palette)
+    // would be unreadable — 弹幕设置 used to paint its focused row black.
+    final Color foreground = selected ? Colors.white : theme.primaryTextColor;
+    final Color muted = selected ? Colors.white70 : theme.secondaryTextColor;
     return Container(
-      height: 60.sp,
-      margin: EdgeInsets.symmetric(vertical: 3.sp),
+      height: (60 * scale).sp,
+      margin: EdgeInsets.symmetric(vertical: (3 * scale).sp),
       padding: EdgeInsets.symmetric(horizontal: 16.sp),
       decoration: BoxDecoration(
         color: selected
             ? accent
-            : (row.active ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.06)),
+            : (row.active ? accent.withValues(alpha: 0.22) : theme.subtleRowFill),
         borderRadius: BorderRadius.circular(10.sp),
       ),
       child: Row(
@@ -263,12 +310,12 @@ class _PanelRow extends StatelessWidget {
           if (row.asset != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.sp),
+              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.sp * scale),
             )
           else if (row.icon != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: Icon(row.icon, size: 24.sp, color: foreground),
+              child: Icon(row.icon, size: 24.sp * scale, color: foreground),
             ),
           Expanded(
             child: Column(
@@ -279,16 +326,18 @@ class _PanelRow extends StatelessWidget {
                   row.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t16W500.copyWith(color: foreground, fontWeight: FontWeight.w600),
+                  style: AppTextStyles.t16W500.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp * scale,
+                  ),
                 ),
                 if (row.subtitle != null && row.subtitle!.isNotEmpty)
                   Text(
                     row.subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(
-                      color: selected ? Colors.black54 : Colors.white70,
-                    ),
+                    style: AppTextStyles.t14W500.copyWith(color: muted, fontSize: 14.sp * scale),
                   ),
               ],
             ),
@@ -297,7 +346,7 @@ class _PanelRow extends StatelessWidget {
             SizedBox(width: 12.sp),
             Text(
               row.value!,
-              style: AppTextStyles.t16W500.copyWith(color: foreground),
+              style: AppTextStyles.t16W500.copyWith(color: foreground, fontSize: 16.sp * scale),
             ),
           ],
         ],

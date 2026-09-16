@@ -4,12 +4,22 @@ import 'package:hive_ce/hive.dart';
 class HivePrefUtil {
   static late Box _box;
 
+  static bool _initialized = false;
+
+  /// Whether [init] has opened the box.
+  ///
+  /// Preference *reads* outside the app's bootstrap (a widget test, or a widget
+  /// built before the store is up) fall back to their defaults instead of
+  /// throwing `LateInitializationError` on `_box`.
+  static bool get isInitialized => _initialized;
+
   static Future<void> init() async {
     if (!Hive.isBoxOpen('app_settings')) {
       _box = await Hive.openBox('app_settings');
     } else {
       _box = Hive.box('app_settings');
     }
+    _initialized = true;
   }
 
   static dynamic getAnyPref(String key) {

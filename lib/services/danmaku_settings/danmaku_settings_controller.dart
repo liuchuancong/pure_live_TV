@@ -1,8 +1,8 @@
 import 'danmaku_settings_model.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/settings/settings_value.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 
 part 'danmaku_settings_controller.g.dart';
 
@@ -22,7 +22,7 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
       danmakuTopArea: HivePrefUtil.getDouble('danmakuTopArea') ?? 0.0,
       danmakuArea: HivePrefUtil.getDouble('danmakuArea') ?? 1.0,
       danmakuBottomArea: HivePrefUtil.getDouble('danmakuBottomArea') ?? 0.5,
-      danmakuSpeed: HivePrefUtil.getDouble('danmakuSpeed') ?? 8.0,
+      danmakuSpeed: HivePrefUtil.getDouble('danmakuSpeed') ?? 150.0,
       danmakuFontSize: HivePrefUtil.getDouble('danmakuFontSize') ?? 16.0,
       danmakuFontWeight: HivePrefUtil.getInt('danmakuFontWeight') ?? 500,
       danmakuFontBorder: HivePrefUtil.getDouble('danmakuFontBorder') ?? 4.0,

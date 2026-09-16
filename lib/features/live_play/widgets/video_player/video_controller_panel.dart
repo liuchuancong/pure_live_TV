@@ -360,12 +360,6 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         onSelect: () => _openPanel(_OptionsPanel.fit, state),
       ),
       _PanelAction(
-        icon: Icons.playlist_play_rounded,
-        label: i18nOr('ui_playlist', 'Playlist'),
-        active: state.showSidePanel && state.panel == LivePlayPanel.playlist,
-        onSelect: () => controller.togglePanel(LivePlayPanel.playlist),
-      ),
-      _PanelAction(
         icon: Icons.swap_horiz_rounded,
         label: i18n('switch_live_room'),
         onSelect: () => unawaited(_switchRoom(state.room)),
@@ -531,13 +525,13 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           return KeyedSubtree(
             key: _barKey(index),
             child: _Pill(
-            icon: action.icon,
-            asset: action.asset,
-            label: action.label,
-            selected: _zone == _Zone.bar && index == _barIndex,
-            accent: tvTheme.focusColor,
-            tinted: action.active,
-          ),
+              icon: action.icon,
+              asset: action.asset,
+              label: action.label,
+              selected: _zone == _Zone.bar && index == _barIndex,
+              accent: tvTheme.focusColor,
+              tinted: action.active,
+            ),
           );
         },
       ),

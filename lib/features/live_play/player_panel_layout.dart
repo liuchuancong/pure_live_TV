@@ -18,14 +18,21 @@ class PlayerPanelLayout {
   static final ValueNotifier<int> revision = ValueNotifier<int>(0);
 
   /// `'right'` (default) or `'left'`.
-  static String get side => HivePrefUtil.getString(_sideKey) ?? 'right';
+  static String get side => _read<String>(_sideKey, HivePrefUtil.getString) ?? 'right';
   static bool get isLeft => side == 'left';
 
   /// Distance from that edge, in design pixels.
-  static int get offset => HivePrefUtil.getInt(_offsetKey) ?? 24;
+  static int get offset => _read<int>(_offsetKey, HivePrefUtil.getInt) ?? 24;
 
   /// Panel text scale, 1.0 = the default size.
-  static double get fontSize => HivePrefUtil.getDouble(_fontSizeKey) ?? 1.0;
+  static double get fontSize => _read<double>(_fontSizeKey, HivePrefUtil.getDouble) ?? 1.0;
+
+  /// Reads [key], or null when the preference store is not up yet.
+  ///
+  /// The player reads these during build, so a widget test (or a build before
+  /// bootstrap) must not hit `HivePrefUtil`'s late box.
+  static T? _read<T>(String key, T? Function(String) reader) =>
+      HivePrefUtil.isInitialized ? reader(key) : null;
 
   static void setSide(String value) {
     HivePrefUtil.setString(_sideKey, value == 'left' ? 'left' : 'right');

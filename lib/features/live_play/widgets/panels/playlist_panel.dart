@@ -3,16 +3,21 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
+import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 
-/// Playlist panel shown inside the player, as an index list.
+/// Playlist panel shown inside the player, as an index list of room cards.
 ///
 /// See [LivePlayController.channelRooms] for the source: the rooms from the entry
 /// page win, otherwise watch history is used. Up/Down walk the list, OK switches
 /// channel (a route replace, so the previous session is released), and Left/Right
 /// follow or unfollow, exactly like the reference's playlist panel.
+///
+/// Each row is the mobile app's small-screen room card (avatar, title, streamer,
+/// platform and audience) rather than a bare title, so the channel list looks
+/// like the room lists elsewhere in the app.
 class PlaylistPanel extends ConsumerStatefulWidget {
   const PlaylistPanel({super.key, required this.args});
 
@@ -30,22 +35,14 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
     final state = ref.watch(livePlayControllerProvider(widget.args));
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final List<LiveRoom> rooms = controller.channelRooms;
-    final current = state.room;
+    final LiveRoom? current = state.room;
     final favorites = ref.watch(favoriteRoomControllerProvider).favoriteRooms;
     final int index = rooms.isEmpty ? 0 : _index.clamp(0, rooms.length - 1);
 
     return PlayerIndexPanel(
       title: i18nOr('ui_playlist', 'Playlist'),
       rows: <PlayerPanelRow>[
-        for (final LiveRoom room in rooms)
-          PlayerPanelRow(
-            label: room.title,
-            subtitle: room.nick,
-            active: current != null && room.hasSameIdentity(current),
-            icon: favorites.any((item) => item.hasSameIdentity(room))
-                ? Icons.favorite
-                : Icons.play_circle_outline_rounded,
-          ),
+        for (final LiveRoom room in rooms) PlayerPanelRow(label: room.title, subtitle: room.nick),
       ],
       selectedIndex: index,
       onSelectionChanged: (i) => setState(() => _index = i),
@@ -54,6 +51,12 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
       onAdjustLeft: (i) => _toggleFollow(rooms[i]),
       onAdjustRight: (i) => _toggleFollow(rooms[i]),
       onClose: controller.toggleSidePanel,
+      rowBuilder: (context, i, selected) => PlayerRoomRow(
+        room: rooms[i],
+        selected: selected,
+        active: current != null && rooms[i].hasSameIdentity(current),
+        favorite: favorites.any((item) => item.hasSameIdentity(rooms[i])),
+      ),
     );
   }
 

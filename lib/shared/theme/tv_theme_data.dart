@@ -46,4 +46,25 @@ class TvThemeData {
     this.backgroundImage,
     this.backgroundVideo,
   });
+
+  /// Whether this is a light palette (bright background, dark text).
+  bool get isLight => backgroundColor.computeLuminance() > 0.5;
+
+  /// Text and icon colour for content drawn on [focusedCardColor].
+  ///
+  /// Most presets focus a card onto white while the coffee/amber/mint/forest/…
+  /// ones focus onto a dark shade, so the pairing cannot be hard-coded — and the
+  /// old rule (`focused ? backgroundColor : primaryTextColor`) painted near-white
+  /// text on the white focused card of every light preset.
+  Color get onFocusedCard =>
+      focusedCardColor.computeLuminance() > 0.5 ? const Color(0xFF101014) : Colors.white;
+
+  /// Muted companion of [onFocusedCard], for subtitles on a focused card.
+  Color get onFocusedCardSecondary => onFocusedCard.withValues(alpha: 0.7);
+
+  /// Subtle fill for a row that is neither selected nor focused.
+  ///
+  /// Derived from [primaryTextColor] rather than a white/black constant so one
+  /// panel looks right on a dark palette and on a light one.
+  Color get subtleRowFill => primaryTextColor.withValues(alpha: 0.06);
 }

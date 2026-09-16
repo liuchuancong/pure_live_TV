@@ -91,12 +91,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
         final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
-        final titleColor = isFocused ? tvTheme.backgroundColor : tvTheme.primaryTextColor;
-        // A focused card is white, so the subtitle has to be derived from the
-        // dark background colour. Both branches of this used to be
-        // `secondaryTextColor`, which left the nickname nearly invisible on the
-        // white focused card.
-        final subtitleColor = isFocused ? tvTheme.backgroundColor.withValues(alpha: 0.7) : tvTheme.secondaryTextColor;
+        // Contrast with the card that is actually behind the text. The previous
+        // rule (`focused ? backgroundColor : primaryTextColor`) worked only while
+        // every focused card was white; on a light palette `backgroundColor` is
+        // near-white, so a focused card showed near-white text on white.
+        final titleColor = isFocused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
+        final subtitleColor = isFocused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),

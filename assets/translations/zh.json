@@ -1,5 +1,5 @@
-{
-    "ui_panel_keys":  "↑↓ 选择 · OK 确认 · ← 返回",
+﻿{
+    "ui_panel_keys":  "↑↓ 选择 · OK 确认 · ← 关闭",
     "ui_panel_keys_adjust":  "↑↓ 选择 · ←→ 调整 · OK 确认",
     "about":  "关于",
     "action_ban":  "禁用上传",

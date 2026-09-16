@@ -1,18 +1,26 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// Dialog that switches the current playback to another room.
 ///
 /// Only rooms the device already knows are offered: the followed rooms that are
-/// currently live and the recent watch history. Nothing is fetched here, so the
-/// dialog opens instantly even on a slow connection.
+/// live now (or are replaying), and the recent watch history. Nothing is fetched
+/// here, so the dialog opens instantly even on a slow connection.
+///
+/// The entries are the mobile app's small-screen room cards — avatar, title,
+/// streamer, platform badge and audience — the same rows the player's playlist
+/// panel uses, so both lists read alike. They are wrapped in [DpadFocusable]
+/// because a modal dialog is steered with the remote's focus traversal, unlike
+/// the player's own key-driven panels.
 class RoomSwitchDialog extends ConsumerStatefulWidget {
   const RoomSwitchDialog({super.key, required this.current});
 
-  /// Room being played; it is removed from both lists.
+  /// Room being played; it is removed from every list.
   final LiveRoom current;
 
   @override
@@ -25,7 +33,7 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -34,11 +42,24 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
     super.dispose();
   }
 
-  List<LiveRoom> _followedRooms() {
+  /// Followed rooms that are live now; a replay is not "已开播".
+  List<LiveRoom> _liveRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
     return [
       for (final room in rooms)
-        if (room.isLiveNow && !room.hasSameIdentity(widget.current)) room,
+        if (room.isLiveNow && room.effectiveLiveStatus != LiveStatus.replay && !room.hasSameIdentity(widget.current))
+          room,
+    ];
+  }
+
+  /// Followed rooms that are replaying or recorded, matching the mobile page's
+  /// 录播 tab (`effectiveLiveStatus == LiveStatus.replay`).
+  List<LiveRoom> _replayRooms() {
+    final rooms = SettingsService.to.favState.favoriteRooms;
+    return [
+      for (final room in rooms)
+        if (room.isRecord || room.effectiveLiveStatus == LiveStatus.replay)
+          if (!room.hasSameIdentity(widget.current)) room,
     ];
   }
 
@@ -53,7 +74,8 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final followed = _followedRooms();
+    final live = _liveRooms();
+    final replay = _replayRooms();
     final history = _historyRooms();
 
     return TvDialog(
@@ -71,7 +93,8 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
               labelColor: tvTheme.focusColor,
               unselectedLabelColor: tvTheme.secondaryTextColor,
               tabs: [
-                Tab(text: '${i18n('online_room_title')} (${followed.length})'),
+                Tab(text: '${i18n('online_room_title')} (${live.length})'),
+                Tab(text: '${i18n('recording_room_title')} (${replay.length})'),
                 Tab(text: '${i18n('watch_history')} (${history.length})'),
               ],
             ),
@@ -80,7 +103,8 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _RoomList(rooms: followed, emptyHint: i18n('no_followed_room_live')),
+                  _RoomList(rooms: live, emptyHint: i18n('no_followed_room_live')),
+                  _RoomList(rooms: replay, emptyHint: i18n('no_followed_room_live')),
                   _RoomList(rooms: history, emptyHint: i18n('history_empty')),
                 ],
               ),
@@ -103,24 +127,19 @@ class _RoomList extends StatelessWidget {
     final tvTheme = context.tvTheme;
     if (rooms.isEmpty) {
       return Center(
-        child: Text(emptyHint, style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: 22.sp)),
+        child: Text(emptyHint, style: AppTextStyles.t22W500.copyWith(color: tvTheme.secondaryTextColor)),
       );
     }
 
-    return ListView.separated(
+    return ListView.builder(
       itemCount: rooms.length,
-      separatorBuilder: (_, _) => SizedBox(height: 10.sp),
-      itemBuilder: (_, index) {
+      itemBuilder: (context, index) {
         final room = rooms[index];
-        final title = room.title.trim().isNotEmpty ? room.title : i18n('untitled_room');
-        final anchor = room.nick.trim();
-        return TvButton(
+        return DpadFocusable(
           autofocus: index == 0,
-          isSecondary: true,
-          title: anchor.isEmpty ? title : '$title · $anchor',
-          icon: Icon(room.isLiveNow ? Icons.sensors_rounded : Icons.history_rounded),
-          iconPosition: TvIconPosition.left,
-          onTap: () => Navigator.of(context).pop(room),
+          onSelect: () => Navigator.of(context).pop(room),
+          builder: (context, state, child) => PlayerRoomRow(room: room, selected: state.focused),
+          child: const SizedBox.shrink(),
         );
       },
     );

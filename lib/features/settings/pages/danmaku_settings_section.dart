@@ -1,8 +1,8 @@
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
-import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
+import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 
 /// Danmaku appearance and filtering settings for the main player.
 class DanmakuSettingsSectionPage extends ConsumerWidget {
@@ -45,9 +45,9 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
                 title: i18n('danmaku_speed'),
                 icon: Icons.speed_rounded,
                 value: state.danmakuSpeed,
-                min: 2,
-                max: 20,
-                step: 0.5,
+                min: 10,
+                max: 300,
+                step: 10,
                 displayValue: state.danmakuSpeed.toStringAsFixed(1),
                 onChanged: (v) => update((s) => s.copyWith(danmakuSpeed: v)),
               ),

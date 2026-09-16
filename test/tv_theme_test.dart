@@ -79,4 +79,17 @@ void main() {
       expect(theme.secondaryTextColor.computeLuminance(), lessThan(0.5), reason: theme.id);
     }
   });
+
+  test('text on a focused card contrasts with that card in every preset', () {
+    // The room card and the player rows paint their content with
+    // `onFocusedCard`. Most presets focus a card onto white and the
+    // coffee/amber/mint/… ones onto a dark shade, and the light presets focus
+    // onto white as well — the rule that used the page background as the focused
+    // text colour left near-white text on a white card on every light palette.
+    for (final theme in themes) {
+      final double contrast =
+          (theme.onFocusedCard.computeLuminance() - theme.focusedCardColor.computeLuminance()).abs();
+      expect(contrast, greaterThan(0.5), reason: '${theme.id}: focused card text is unreadable');
+    }
+  });
 }
