@@ -194,7 +194,6 @@ flutter:
     - assets/webdav/
     - assets/web_remote/
     - assets/web_remote/assets/
-    - assets/keystore/
     - assets/version.json
     - assets/releases.json
     - assets/emo/images/huya/

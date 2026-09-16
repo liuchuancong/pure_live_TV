@@ -282,15 +282,16 @@ class _ImageBackground extends StatelessWidget {
     );
   }
 
-  /// Remote images go straight to [CachedNetworkImageProvider], which keeps
-  /// them in the on-disk image cache.
-  ///
-  /// The stored URL is used instead of the embedded base64 field: the two are
-  /// written by different setters and never agree, so picking a remote image
-  /// used to render nothing. This also keeps multi-megabyte images out of the
-  /// preferences store.
+  /// Remote backgrounds come from two exclusive slots (the setters guarantee
+  /// only one is filled): embedded bytes for downloaded random-API pictures
+  /// whose URL would return a different image next time, otherwise the stored
+  /// stable URL through [CachedNetworkImageProvider] with the on-disk cache.
   ImageProvider? _resolveImage() {
     if (config.source == BackgroundSource.networkImage) {
+      final base64 = config.currentBoxImageBase64;
+      if (base64.isNotEmpty) {
+        return SettingsService.to.bg.cachedBackgroundImage;
+      }
       final url = config.networkImageUrl;
       if (url != null && url.isNotEmpty) {
         return CachedNetworkImageProvider(

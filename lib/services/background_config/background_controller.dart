@@ -70,18 +70,31 @@ class BackgroundController extends _$BackgroundController {
     state = newModel;
     _configStream.add(newModel); // keep the stream in sync
 
-    HivePrefUtil.setString('bgSource', bgSourceToString(newModel.source));
-    HivePrefUtil.setString('bgBoxFit', newModel.boxFit.name);
-    HivePrefUtil.setDouble('bgMaskOpacity', newModel.maskOpacity);
-    HivePrefUtil.setString('bgSolidColorHex', newModel.solidColor.toHex());
-    HivePrefUtil.setString('bgGradientColors', newModel.gradientColors.map((c) => c.toHex()).join(","));
-    HivePrefUtil.setString('bgAssetImagePath', newModel.assetImagePath ?? "");
-    HivePrefUtil.setString('bgLocalImagePath', newModel.localImagePath ?? "");
-    HivePrefUtil.setString('bgNetworkImageUrl', newModel.networkImageUrl ?? "");
-    HivePrefUtil.setString('bgCurrentBoxImageBase64', newModel.currentBoxImageBase64);
-    HivePrefUtil.setString('bgAssetVideoPath', newModel.assetVideoPath ?? "");
-    HivePrefUtil.setString('bgLocalVideoPath', newModel.localVideoPath ?? "");
-    HivePrefUtil.setString('bgNetworkVideoUrl', newModel.networkVideoUrl ?? "");
+    // Write only keys whose value changed: the base64 image slot can hold a
+    // whole wallpaper, and rewriting it (plus everything else) on every mask
+    // or box-fit cycle was a visible hitch on TV boxes.
+    _writeIfChanged('bgSource', bgSourceToString(newModel.source));
+    _writeIfChanged('bgBoxFit', newModel.boxFit.name);
+    _writeIfChanged('bgMaskOpacity', newModel.maskOpacity);
+    _writeIfChanged('bgSolidColorHex', newModel.solidColor.toHex());
+    _writeIfChanged('bgGradientColors', newModel.gradientColors.map((c) => c.toHex()).join(","));
+    _writeIfChanged('bgAssetImagePath', newModel.assetImagePath ?? "");
+    _writeIfChanged('bgLocalImagePath', newModel.localImagePath ?? "");
+    _writeIfChanged('bgNetworkImageUrl', newModel.networkImageUrl ?? "");
+    _writeIfChanged('bgCurrentBoxImageBase64', newModel.currentBoxImageBase64);
+    _writeIfChanged('bgAssetVideoPath', newModel.assetVideoPath ?? "");
+    _writeIfChanged('bgLocalVideoPath', newModel.localVideoPath ?? "");
+    _writeIfChanged('bgNetworkVideoUrl', newModel.networkVideoUrl ?? "");
+  }
+
+  void _writeIfChanged(String key, Object value) {
+    final current = HivePrefUtil.getAnyPref(key);
+    if (current == value) return;
+    if (value is String) {
+      HivePrefUtil.setString(key, value);
+    } else if (value is double) {
+      HivePrefUtil.setDouble(key, value);
+    }
   }
 
   MemoryImage? get cachedBackgroundImage {
@@ -121,8 +134,28 @@ class BackgroundController extends _$BackgroundController {
   void setLocalImage(String path) => _updateState(
     state.copyWith(source: BackgroundSource.localImage, localImagePath: path, assetImagePath: "", networkImageUrl: ""),
   );
+  // networkImageUrl and currentBoxImageBase64 are exclusive: whichever setter
+  // runs clears the other, so the background layer can trust either field.
   void setNetworkImage(String url) => _updateState(
-    state.copyWith(source: BackgroundSource.networkImage, networkImageUrl: url, assetImagePath: "", localImagePath: ""),
+    state.copyWith(
+      source: BackgroundSource.networkImage,
+      networkImageUrl: url,
+      assetImagePath: "",
+      localImagePath: "",
+      currentBoxImageBase64: "",
+    ),
+  );
+
+  /// Applies a downloaded picture (a random API returns a different image per
+  /// request, so only the bytes are stable) as the network background.
+  void setNetworkImageBytes(Uint8List bytes) => _updateState(
+    state.copyWith(
+      source: BackgroundSource.networkImage,
+      currentBoxImageBase64: base64Encode(bytes),
+      networkImageUrl: "",
+      assetImagePath: "",
+      localImagePath: "",
+    ),
   );
   void setCurrentBoxImage(String base64Str) => _updateState(state.copyWith(currentBoxImageBase64: base64Str));
   void setAssetVideo(String path) => _updateState(

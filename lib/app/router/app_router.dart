@@ -24,6 +24,7 @@ import 'package:pure_live/features/settings/pages/platform_display_visibility_se
 import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
 import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
+import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
 
 /// Every settings page, by its full path — the one list the settings shell
@@ -170,6 +171,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.kWallpaperPage,
         builder: (context, state) => const WallpaperPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.kWallpaperGallery,
+        builder: (context, state) => WallpaperGalleryPage(source: state.extra as BackgroundSource),
+      ),
+      GoRoute(
+        path: AppRoutes.kWallpaperItems,
+        builder: (context, state) {
+          final args = state.extra as WallpaperItemsArgs;
+          return WallpaperItemsPage(source: args.source, category: args.category);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.kWallpaperPreview,
+        builder: (context, state) => WallpaperPreviewPage(args: state.extra as WallpaperPreviewArgs),
       ),
       GoRoute(
         path: AppRoutes.kLivePlay,

@@ -101,6 +101,15 @@ abstract final class AppRoutes {
   /// Wallpaper and background settings
   static const kWallpaperPage = "/wallpaper_page";
 
+  /// One wallpaper-library source: category list or straight to the grid.
+  static const kWallpaperGallery = "/wallpaper_gallery";
+
+  /// One wallpaper-library category: the thumbnail grid.
+  static const kWallpaperItems = "/wallpaper_items";
+
+  /// Fullscreen wallpaper preview (library shard walk or random-API image).
+  static const kWallpaperPreview = "/wallpaper_preview";
+
   /// IPTV playlists and EPG sources (desktop app path).
   static const kIptv = "/iptv";
 
