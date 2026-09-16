@@ -1,5 +1,6 @@
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/live_play/controllers/danmaku_option_steps.dart';
+import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
@@ -165,6 +166,30 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
         prev: toggleEmoji,
         next: toggleEmoji,
         select: toggleEmoji,
+      ),
+      (
+        label: i18nOr('ui_panel_side', '面板位置'),
+        icon: Icons.swap_horiz_rounded,
+        value: PlayerPanelLayout.isLeft ? i18nOr('ui_left', '左') : i18nOr('ui_right', '右'),
+        prev: () => setState(PlayerPanelLayout.toggleSide),
+        next: () => setState(PlayerPanelLayout.toggleSide),
+        select: () => setState(PlayerPanelLayout.toggleSide),
+      ),
+      (
+        label: i18nOr('ui_panel_distance', '左右距离'),
+        icon: Icons.settings_overscan_rounded,
+        value: '${PlayerPanelLayout.offset}',
+        prev: () => setState(() => PlayerPanelLayout.stepOffset(forward: false)),
+        next: () => setState(() => PlayerPanelLayout.stepOffset(forward: true)),
+        select: null,
+      ),
+      (
+        label: i18nOr('ui_panel_font_size', '面板字号'),
+        icon: Icons.format_size_rounded,
+        value: PlayerPanelLayout.fontSizeLabel,
+        prev: () => setState(() => PlayerPanelLayout.stepFontSize(forward: false)),
+        next: () => setState(() => PlayerPanelLayout.stepFontSize(forward: true)),
+        select: null,
       ),
     ];
 

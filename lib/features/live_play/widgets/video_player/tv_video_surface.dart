@@ -97,28 +97,50 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                 ],
               ),
             ),
-          // Room title bar, shown while no control panel is open.
-          if (!state.showControls && !showError && state.room != null)
+          // 房间信息 lives at the top of the screen, as in the reference player:
+          // channel, streamer, platform, quality and line. The danmaku list that
+          // used to sit in a side panel is gone — the danmaku are on the screen
+          // already.
+          if (!showError && state.room != null)
             Positioned(
-              left: 24.sp,
-              top: 16.sp,
+              left: 0,
+              right: 0,
+              top: 0,
               child: IgnorePointer(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 6.sp),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.35),
-                    borderRadius: BorderRadius.circular(8.sp),
-                  ),
-                  child: Text(
-                      state.room!.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t14W500.copyWith(color: Colors.white),
-                    ),
+                  height: 48.sp,
+                  padding: EdgeInsets.symmetric(horizontal: 24.sp),
+                  color: Colors.black.withValues(alpha: 0.45),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          <String>[
+                            state.room!.title,
+                            if (state.room!.nick.isNotEmpty) state.room!.nick,
+                            if (state.room!.platform.isNotEmpty) state.room!.platform,
+                            if (state.qualities.isNotEmpty) state.room!.platform.isEmpty ? '' : '',
+                          ].where((part) => part.isNotEmpty).join('  ·  '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.t16W500.copyWith(color: Colors.white),
+                        ),
+                      ),
+                      if (state.qualities.isNotEmpty)
+                        Text(
+                          state.qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)].quality,
+                          style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                        ),
+                      SizedBox(width: 16.sp),
+                      Text(
+                        i18n('multiview_line', args: {'index': ''}),
+                        style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            // Channel name toast shown after an up/down switch.
+            ),            // Channel name toast shown after an up/down switch.
             if (state.showChannelBanner)
               Positioned(
                 left: 0,

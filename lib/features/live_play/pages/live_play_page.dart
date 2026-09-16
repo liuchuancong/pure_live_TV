@@ -10,7 +10,6 @@ import 'package:pure_live/features/live_play/widgets/panels/shield_panel.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/tv_video_surface.dart';
 import 'package:pure_live/features/live_play/widgets/player_key_scope.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
-import 'package:pure_live/features/live_play/widgets/panels/player_info_panel.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Fullscreen live playback page.
@@ -41,32 +40,6 @@ class LivePlayPage extends ConsumerWidget {
             memoryKey: 'live_play/video',
             child: TvVideoSurface(args: args),
           ),
-          // While the panel is collapsed, keep a touch-reachable way to reopen it; a
-          // remote uses the right key or the bottom bar.
-          if (!state.showSidePanel)
-            Positioned(
-              right: 16.sp,
-              bottom: 16.sp,
-              child: DpadFocusable(
-                effects: [
-                  DpadScaleEffect(scale: 1.05),
-                  DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.5)),
-                ],
-                onSelect: () => controller.openPanel(LivePlayPanel.info),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 8.sp),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(8.sp),
-                    border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    i18n('ui_expand_panel'),
-                    style: AppTextStyles.t14W500.copyWith(color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
           // The panel overlays the video instead of sitting beside it: playback
           // keeps the whole screen and the danmaku keep their geometry.
           if (state.showSidePanel)
@@ -86,7 +59,7 @@ class LivePlayPage extends ConsumerWidget {
                   ),
                   child: DpadRegion(
                     // Each panel remembers its own focus and returns to the previous row.
-                    memoryKey: 'live_play/side-panel/${state.panel.name}',
+                    memoryKey: 'live_play/side-panel/${state.panel?.name ?? 'none'}',
                     child: _SidePanel(
                       state: state,
                       controller: controller,
@@ -143,13 +116,9 @@ class _SidePanel extends ConsumerWidget {
 
   Widget _buildContent(BuildContext context) {
     switch (state.panel) {
-      case LivePlayPanel.info:
-        return PlayerInfoPanel(
-          key: const ValueKey('live-play-panel-info'),
-          state: state,
-          args: args,
-          onClose: onTogglePanel,
-        );
+      // No panel open (or the layout state did not record one yet).
+      case null:
+        return const SizedBox.shrink();
       case LivePlayPanel.playlist:
         return PlaylistPanel(key: const ValueKey('live-play-panel-playlist'), args: args);
       case LivePlayPanel.danmakuSettings:

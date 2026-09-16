@@ -8,19 +8,7 @@ enum LivePlayStatus { idle, loadingDetail, preparing, buffering, playing, paused
 /// Only one panel is visible at a time, matching the legacy live_play app.
 /// Switching is driven by [LivePlayState.panel] and
 /// [LivePlayState.showSidePanel].
-enum LivePlayPanel {
-  /// Room info, quality and line pickers, and the danmaku list.
-  info,
-
-  /// Playlist, used for channel switching.
-  playlist,
-
-  /// Danmaku settings: size, speed, area, opacity and stroke.
-  danmakuSettings,
-
-  /// Danmaku filter, by blocked word.
-  shield,
-}
+enum LivePlayPanel { danmakuSettings, playlist, shield }
 
 class LivePlayState {
   const LivePlayState({
@@ -36,7 +24,7 @@ class LivePlayState {
     this.fitIndex = 0,
     this.volume = 1.0,
     this.showSidePanel = false,
-    this.panel = LivePlayPanel.info,
+    this.panel,
     this.channelBanner,
   });
 
@@ -63,7 +51,7 @@ class LivePlayState {
   final bool showSidePanel;
 
   /// Which side panel is currently shown.
-  final LivePlayPanel panel;
+  final LivePlayPanel? panel;
 
   /// Channel name toast shown after an up/down switch; empty hides it.
   final String? channelBanner;

@@ -341,12 +341,6 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         onSelect: () => controller.togglePanel(LivePlayPanel.playlist),
       ),
       _PanelAction(
-        icon: Icons.info_outline_rounded,
-        label: i18nOr('ui_room_info', 'Room info'),
-        active: state.showSidePanel && state.panel == LivePlayPanel.info,
-        onSelect: () => controller.togglePanel(LivePlayPanel.info),
-      ),
-      _PanelAction(
         icon: Icons.memory_rounded,
         label: _engineLabel(),
         onSelect: () => unawaited(_pickEngine()),
@@ -565,7 +559,7 @@ class _Pill extends StatelessWidget {
     // button that merely represents an "on" state (弹幕开) is not coloured at
     // start-up — its label already says 开/关.
     final Color background = selected ? accent : Colors.transparent;
-    final Color foreground = selected ? tvThemeFocusedCard(context) : Colors.white;
+    final Color foreground = Colors.white;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 100),
