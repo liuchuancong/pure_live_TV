@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:pure_live/player/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -44,7 +43,7 @@ class VideoControllerPanel extends ConsumerStatefulWidget {
 enum _Zone { bar, options }
 
 /// The option list shown next to the bar, if any.
-enum _OptionsPanel { none, quality, line, fit }
+enum _OptionsPanel { none, quality, line, fit, kernel }
 
 class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   static const double _barHeight = 64;
@@ -206,6 +205,19 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           for (int i = 0; i < kLivePlayFitLabels.length; i++)
             (label: kLivePlayFitLabels[i], active: i == state.fitIndex, apply: () => _setFit(i)),
         ];
+      case _OptionsPanel.kernel:
+        // The kernels are a list like every other value picker: the bar used to
+        // open a modal dialog here, which was the one list in the player without
+        // a 关闭 row (and the only one that did not live next to the bar).
+        final String activeKey = _activeEngineKey();
+        return <({String label, VoidCallback apply, bool active})>[
+          for (final String key in PlayerConsts.engines.keys)
+            (
+              label: i18n(PlayerConsts.names[key] ?? key),
+              active: key == activeKey,
+              apply: () => unawaited(_switchKernel(key)),
+            ),
+        ];
       case _OptionsPanel.none:
         return const <({String label, VoidCallback apply, bool active})>[];
     }
@@ -224,6 +236,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     _OptionsPanel.quality => i18n('recorder_stage_quality'),
     _OptionsPanel.line => i18n('multiview_line_selector'),
     _OptionsPanel.fit => i18n('ui_aspect_ratio'),
+    _OptionsPanel.kernel => i18n('kernel_switch'),
     _OptionsPanel.none => '',
   };
 
@@ -253,9 +266,19 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         _OptionsPanel.quality => state.qualityIndex,
         _OptionsPanel.line => state.lineIndex,
         _OptionsPanel.fit => state.fitIndex,
+        // Open on the kernel that is in use, so OK on the row the list opens on
+        // is the reset the user is looking for.
+        _OptionsPanel.kernel => PlayerConsts.engines.keys.toList(growable: false).indexOf(_activeEngineKey()),
         _OptionsPanel.none => 0,
       };
     });
+  }
+
+  /// The kernel key actually in force: the stored one, or the default when the
+  /// stored key is unknown to this build.
+  String _activeEngineKey() {
+    final String stored = ref.read(playerSettingsControllerProvider).videoPlayerKey;
+    return PlayerConsts.engines.containsKey(stored) ? stored : PlayerConsts.defaultKey;
   }
 
   void _closePanel() => setState(() {
@@ -350,7 +373,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       _PanelAction(
         icon: Icons.memory_rounded,
         label: _engineLabel(),
-        onSelect: () => unawaited(_pickEngine()),
+        active: _panel == _OptionsPanel.kernel,
+        onSelect: () => _openPanel(_OptionsPanel.kernel, state),
       ),
     ];
   }
@@ -371,26 +395,20 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     });
   }
 
-  Future<void> _pickEngine() async {
-    final engineKeys = PlayerConsts.engines.keys.toList(growable: false);
+  /// Switches the kernel from the bar's index list.
+  ///
+  /// The list closes first: taking a kernel restarts the stream, so leaving the
+  /// list open over a reloading player helps nobody — unlike 清晰度/线路/比例,
+  /// where staying in the list is how you compare the options. The list still
+  /// carries a 关闭 row at the bottom, like the others.
+  ///
+  /// Every pick is a real switch: PlayerManager hard-disposes the player that is
+  /// running (`hardDispose()` on the current adapter, then the pool is asked for
+  /// a replacement), so taking the kernel that is already active restarts the
+  /// player instead of doing nothing — which is what a stuck picture needs.
+  Future<void> _switchKernel(String key) async {
+    _closePanel();
     final playerSettings = ref.read(playerSettingsControllerProvider);
-    final String activeKey = PlayerConsts.engines.containsKey(playerSettings.videoPlayerKey)
-        ? playerSettings.videoPlayerKey
-        : PlayerConsts.defaultKey;
-
-    // The dialog takes the keyboard while it is open, then the bar takes it back.
-    _focusNode.unfocus();
-    final String? key = await TvDialogUtils.showSelect<String>(
-      context: context,
-      title: i18n('kernel_switch'),
-      selectedValue: activeKey,
-      items: <TvSelectItem<String>>[
-        for (final String k in engineKeys) TvSelectItem<String>(title: i18n(PlayerConsts.names[k] ?? k), value: k),
-      ],
-    );
-    if (mounted) _focusNode.requestFocus();
-    if (key == null || !mounted) return;
-
     ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
     ref.read(playerSettingsControllerProvider.notifier).updateSettings(playerSettings.copyWith(videoPlayerKey: key));
 
@@ -398,15 +416,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
 
-    // Always a real switch: PlayerManager hard-disposes the player that is
-    // running and opens the room on the new one, so choosing the kernel that is
-    // already active restarts the player instead of doing nothing — which is what
-    // a stuck picture needs.
-    unawaited(
-      service.playerManager.switchEngine(engine, isManual: true).catchError((Object error, StackTrace stackTrace) {
-        debugPrint('Switch player kernel to $key failed: $error');
-      }),
-    );
+    try {
+      await service.playerManager.switchEngine(engine, isManual: true);
+    } catch (error, stackTrace) {
+      debugPrint('Switch player kernel to $key failed: $error\n$stackTrace');
+    }
   }
 
   Future<void> _switchRoom(LiveRoom? room) async {
