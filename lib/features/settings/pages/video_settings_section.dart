@@ -80,7 +80,10 @@ class VideoSettingsSectionPage extends ConsumerWidget {
             TvSettingsNavTile(
               title: i18n('change_danmaku_font_family'),
               icon: Remix.font_size,
-              onTap: () => context.push(AppRoutes.kSettingsFontFamily),
+              // Danmaku mode: the selection writes danmakuFontFamilyName and
+              // the flame engine picks it up live, instead of the old path
+              // that silently changed the whole app font.
+              onTap: () => context.push(AppRoutes.kSettingsFontFamilyDanmaku),
             ),
             TvSettingsNavTile(
               title: i18n('danmaku_filter'),

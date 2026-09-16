@@ -60,6 +60,7 @@ class _DanmakuOverlayState extends ConsumerState<DanmakuOverlay> {
     return BarrageConfig(
       // 50ms admit interval plus a visible cap keeps layout and paint cost low.
       emitInterval: 0.05,
+      fontFamily: _resolveFontFamily(settings),
       fontSize: fontSize,
       area: settings.danmakuArea,
       topAreaDistance: settings.danmakuTopArea,
@@ -75,5 +76,16 @@ class _DanmakuOverlayState extends ConsumerState<DanmakuOverlay> {
       trackHeight: (fontSize * 1.55).clamp(24.0, 64.0).toDouble(),
       emojiSize: (fontSize * 1.3).clamp(16.0, 48.0).toDouble(),
     );
+  }
+
+  /// The danmaku font follows its own setting; `Default` falls back to the
+  /// app-wide font so danmaku keeps matching the UI until a dedicated danmaku
+  /// font is picked. The flame engine re-keys its paragraph cache on
+  /// fontFamily, so switching applies to newly painted danmaku at once.
+  String? _resolveFontFamily(DanmakuSettingsModel settings) {
+    final String danmaku = settings.danmakuFontFamilyName;
+    if (danmaku != 'Default' && danmaku.isNotEmpty) return danmaku;
+    final String app = ref.watch(fontSettingsControllerProvider).value?.fontFamilyName ?? 'Default';
+    return app != 'Default' && app.isNotEmpty ? app : null;
   }
 }

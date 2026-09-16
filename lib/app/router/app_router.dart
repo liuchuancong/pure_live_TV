@@ -55,6 +55,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsDanmaku: (context) => const DanmakuSettingsSectionPage(),
   AppRoutes.kSettingsFont: (context) => const FontSettingsSectionPage(),
   AppRoutes.kSettingsFontFamily: (context) => const FontFamilyManagerSectionPage(),
+  AppRoutes.kSettingsFontFamilyDanmaku: (context) => const FontFamilyManagerSectionPage(danmaku: true),
   AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
   AppRoutes.kSettingsAudience: (context) => const AudienceMetricSectionPage(),
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),

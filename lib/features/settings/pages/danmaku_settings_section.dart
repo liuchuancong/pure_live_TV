@@ -1,3 +1,4 @@
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -31,6 +32,14 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
                 icon: Icons.subtitles_rounded,
                 value: enabled,
                 onChanged: (v) => update((s) => s.copyWith(enableDanmakuDisplay: v, hideDanmaku: !v)),
+              ),
+              TvSettingsNavTile(
+                title: i18n('change_danmaku_font_family'),
+                subtitle: state.danmakuFontFamilyName == 'Default'
+                    ? i18n('font_default_subtitle')
+                    : state.danmakuFontFamilyName,
+                icon: Remix.font_size,
+                onTap: () => context.push(AppRoutes.kSettingsFontFamilyDanmaku),
               ),
               TvSettingsSliderTile(
                 title: i18n('danmaku_font_size'),

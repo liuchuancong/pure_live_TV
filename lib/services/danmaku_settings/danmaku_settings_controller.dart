@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'danmaku_settings_model.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/platform/font_download_manager.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
@@ -16,7 +19,7 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
 
   @override
   DanmakuSettingsModel build() {
-    return DanmakuSettingsModel(
+    final model = DanmakuSettingsModel(
       hideDanmaku: HivePrefUtil.getBool('hideDanmaku') ?? false,
       noEmojiMode: HivePrefUtil.getBool('noEmojiMode') ?? false,
       danmakuTopArea: HivePrefUtil.getDouble('danmakuTopArea') ?? 0.0,
@@ -58,6 +61,24 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
       danmakuSimilarityCacheDuration: HivePrefUtil.getInt('danmakuSimilarityCacheDuration') ?? 3,
       danmakuSimilarityMaxCacheSize: HivePrefUtil.getInt('danmakuSimilarityMaxCacheSize') ?? 100,
     );
+
+    // Re-register a previously downloaded danmaku font so danmaku renders in
+    // it right after a restart, without a re-download (same lifecycle the app
+    // font uses in FontSettingsController).
+    final family = model.danmakuFontFamilyName;
+    if (family != 'Default' && family.isNotEmpty) {
+      unawaited(_ensureFontLoaded(family));
+    }
+    return model;
+  }
+
+  Future<void> _ensureFontLoaded(String family) async {
+    try {
+      if (!await FontDownloadManager.instance.checkFontDownloaded(family)) return;
+      await FontDownloadManager.instance.loadFont(family);
+    } catch (_) {
+      // Missing files fall back to the default family silently.
+    }
   }
 
   void updateSettings(DanmakuSettingsModel newSettings) {
