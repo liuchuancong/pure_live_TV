@@ -1,4 +1,6 @@
 {
+    "ui_panel_keys":  "Up/Down select · OK confirm · Left back",
+    "ui_panel_keys_adjust":  "Up/Down select · Left/Right adjust · OK confirm",
     "about":  "About",
     "action_ban":  "Ban Upload",
     "action_delete_account":  "Delete Account",
