@@ -9,6 +9,7 @@ import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/background_config/remote/background_repository.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 /// Mask presets. A remote cycles through fixed steps instead of dragging a
 /// slider, which is far easier to operate from a couch.
@@ -129,6 +130,12 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
       category: category,
     );
     final shardAsync = ref.watch(backgroundShardProvider(shardKey));
+    // 列间距/行间距 are an offset from the 6.0 design default. This grid never
+    // used the shared 32 default, so it keeps its own 16 design-pixel baseline
+    // and the untouched setting reproduces it.
+    final themeState = ref.watch(themeSettingsControllerProvider);
+    final double crossSpacing = 16 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double mainSpacing = 16 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
     final bgState = SettingsService.to.bgState;
     final currentUrl = source.kind == BackgroundKind.video
         ? bgState.networkVideoUrl
@@ -159,8 +166,8 @@ class _WallpaperPageState extends ConsumerState<WallpaperPage> {
             padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 5,
-              mainAxisSpacing: 16.sp,
-              crossAxisSpacing: 16.sp,
+              mainAxisSpacing: mainSpacing.w,
+              crossAxisSpacing: crossSpacing.w,
               childAspectRatio: 16 / 9,
             ),
             itemCount: items.length,

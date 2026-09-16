@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/favorite/favorite_provider.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class FavoritePage extends ConsumerStatefulWidget {
   const FavoritePage({super.key});
@@ -15,6 +16,11 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
     final favoriteState = ref.watch(favoriteProvider);
+    // 列间距/行间距 are an offset from the 6.0 design default, so the untouched
+    // default reproduces the original 32 design-pixel gap.
+    final themeState = ref.watch(themeSettingsControllerProvider);
+    final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
 
     final currentRooms = ref.read(favoriteProvider.notifier).getFilteredRooms();
 
@@ -118,8 +124,8 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: favoriteState.denseLayout ? 5 : 4,
-                          mainAxisSpacing: 32.sp,
-                          crossAxisSpacing: 32.sp,
+                          mainAxisSpacing: mainSpacing.w,
+                          crossAxisSpacing: crossSpacing.w,
                           childAspectRatio: 1.3,
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(

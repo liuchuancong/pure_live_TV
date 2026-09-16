@@ -4,6 +4,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/areas/platform_provider.dart';
 import 'package:pure_live/features/areas/category_provider.dart';
 import 'package:pure_live/app/router/router.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class AreaGridView extends ConsumerStatefulWidget {
   final List<String> labels;
@@ -61,6 +62,11 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
     }).toList();
 
     final currentParam = _pagingParams[currentCategoryIndex];
+    // 列间距/行间距 are an offset from the 6.0 design default, so the untouched
+    // default reproduces the original 32 design-pixel gap.
+    final themeState = ref.watch(themeSettingsControllerProvider);
+    final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,8 +94,8 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
               getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 8,
-                mainAxisSpacing: 32.sp,
-                crossAxisSpacing: 32.sp,
+                mainAxisSpacing: mainSpacing.w,
+                crossAxisSpacing: crossSpacing.w,
                 childAspectRatio: 1.3,
               ),
               itemBuilder: (context, area, index) => TvAreaCard(

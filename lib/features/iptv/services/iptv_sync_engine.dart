@@ -29,7 +29,10 @@ class IptvSyncEngine {
       final network = uri?.scheme == 'http' || uri?.scheme == 'https';
       File file;
       if (network) {
-        final content = await HttpClient.instance.getText(url);
+        // The custom IPTV user agent is applied here as well as at the transport
+        // layer so a playlist host that rejects the default agent can be fixed
+        // from IPTV settings.
+        final content = await HttpClient.instance.getText(url, header: {'user-agent': HttpClient.iptvUserAgent});
         final trimmed = content.trim();
         if (trimmed.isEmpty) return false;
         final ext = provider.type.startsWith('.') ? provider.type.toLowerCase() : '.${provider.type.toLowerCase()}';

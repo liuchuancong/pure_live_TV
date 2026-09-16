@@ -191,7 +191,6 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               ),
               SizedBox(height: _itemGap.sp),
               TvInputField(
-                useNativeTextField: false,
                 controller: _urlController,
                 hint: i18n('movie_wait_phone_sync'),
                 height: 72.sp,

@@ -68,7 +68,16 @@ class LivePlayController extends _$LivePlayController {
     state = state.copyWith(status: LivePlayStatus.loadingDetail, clearDetailError: true, clearErrorMessage: true);
 
     try {
-      await GlobalPlayerService.instance.initialize();
+      // Bring the service up on the kernel the user chose.
+      //
+      // Without this the first launch always pre-warmed media_kit and
+      // `PlayerManager` never consulted the stored `videoPlayerKey` (it only
+      // does so when it has no default engine), so 内核切换 appeared to be
+      // ignored until the row was used again in the same session.
+      await GlobalPlayerService.instance.initialize(
+        defaultEngine:
+            PlayerConsts.engines[SettingsService.to.playerState.videoPlayerKey] ?? PlayerEngine.mediaKit,
+      );
     } catch (e, s) {
       log('GlobalPlayerService initialize failed: $e', name: 'LivePlayController', error: e, stackTrace: s);
     }
@@ -594,8 +603,16 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     )) {
       return;
     }
-    if (danmakuSettings.enableDanmakuSimilarityFilter && !_similarityFilter.shouldDisplay(message.message)) {
-      return;
+    if (danmakuSettings.enableDanmakuSimilarityFilter) {
+      // The three sliders on the danmaku settings page (相似度阈值 / 缓存时间 /
+      // 最大缓存数量) were stored and never applied: the filter kept its
+      // constructor defaults, so changing them did nothing.
+      _similarityFilter.updateConfig(
+        similarityThreshold: danmakuSettings.danmakuSimilarityThreshold,
+        cacheDuration: Duration(seconds: danmakuSettings.danmakuSimilarityCacheDuration.clamp(1, 60)),
+        maxCacheSize: danmakuSettings.danmakuSimilarityMaxCacheSize,
+      );
+      if (!_similarityFilter.shouldDisplay(message.message)) return;
     }
 
     // flame_barrage rendering, only fed to the picture layer while danmaku are on.

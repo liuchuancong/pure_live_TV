@@ -212,12 +212,12 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteProvider(String id) => (delete(providers)..where((t) => t.id.equals(id))).go();
 
-  Future<void> deleteProviderAndChannels(String providerId) async {
-    await transaction(() async {
-      await (delete(channels)..where((t) => t.providerId.equals(providerId))).go();
-      await (delete(providers)..where((t) => t.id.equals(providerId))).go();
-    });
-  }
+  /// Deletes a provider with everything that belongs to its channels.
+  ///
+  /// The whole delete is one transaction: removing the channel rows first
+  /// without their EPG mappings would leave mappings pointing at channels that
+  /// no longer exist, and a later failure would strand them for good.
+  Future<void> deleteProviderAndChannels(String providerId) => deleteProviderCascading(providerId);
 
   // --- Channel queries ---
   Future<void> deleteMappingsByProviderId(String providerId) =>
@@ -376,8 +376,25 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> deleteProviderCascading(String providerId) async {
-    await (delete(channels)..where((t) => t.providerId.equals(providerId))).go();
-    await (delete(providers)..where((t) => t.id.equals(providerId))).go();
+    await transaction(() async {
+      // Mappings and favourites reference channel rows, never the provider row,
+      // so they must be collected before the channels disappear.
+      await (delete(epgMappings)..where((t) => t.providerId.equals(providerId))).go();
+      final channelIds = (await (select(channels)
+                ..where((t) => t.providerId.equals(providerId)))
+              .get())
+          .map((channel) => channel.id)
+          .toList(growable: false);
+      if (channelIds.isNotEmpty) {
+        await (delete(epgMappings)..where((t) => t.channelId.isIn(channelIds))).go();
+        await (delete(favoriteListChannels)..where((t) => t.channelId.isIn(channelIds))).go();
+        await (delete(failoverGroupChannels)..where((t) => t.channelId.isIn(channelIds))).go();
+        await (delete(epgReminders)..where((t) => t.channelId.isIn(channelIds))).go();
+        await (delete(scheduledRecordings)..where((t) => t.channelId.isIn(channelIds))).go();
+      }
+      await (delete(channels)..where((t) => t.providerId.equals(providerId))).go();
+      await (delete(providers)..where((t) => t.id.equals(providerId))).go();
+    });
   }
 
   Future<void> updateProviderUpdateStatus(String providerId, bool status) async {

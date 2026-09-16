@@ -1,48 +1,52 @@
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
-
+/// 音频输出驱动(--ao).
+///
+/// The option list is `PlayerConsts.audioOutputDriversList`, i.e. exactly the
+/// list the mobile audio page renders
+/// (`pure_live/lib/modules/settings/pages/audio_output_settings_page.dart`),
+/// labels included — that is where PipeWire, OSS, WinMM, AudioUnit and libao
+/// came back.
 class AudioOutputSettingsSectionPage extends ConsumerWidget {
   const AudioOutputSettingsSectionPage({super.key});
-
-  /// Common audio output drivers offered by the settings UI.
-  static final Map<String, String> _drivers = {
-    'auto': i18n('ui_auto'),
-    'null': i18n('ui_null_no_audio_output'),
-    'pulse': 'PulseAudio（Linux）',
-    'alsa': i18n('ui_alsa_linux_only'),
-    'jack': i18n('ui_jack_linux_macos_low_latency'),
-    'directsound': i18n('ui_directsound_windows_only'),
-    'wasapi': i18n('ui_wasapi_windows_only'),
-    'coreaudio': i18n('ui_coreaudio_macos_only'),
-    'opensles': i18n('ui_opensl_es_android_only'),
-    'audiotrack': i18n('ui_audiotrack_android_only'),
-    'aaudio': i18n('ui_aaudio_android_only'),
-    'sdl': i18n('ui_sdl_cross_platform'),
-    'openal': i18n('ui_openal_cross_platform'),
-    'pcm': i18n('ui_pcm_cross_platform'),
-  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(playerSettingsControllerProvider);
     final player = ref.read(playerSettingsControllerProvider.notifier);
-    final keys = _drivers.keys.toList();
+    final String languageCode = Localizations.localeOf(context).languageCode;
+    final keys = [for (final item in PlayerConsts.audioOutputDriversList) item['key']!];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsOptionTile(
-          title: i18n('audio_output_driver'),
-          subtitle: i18n('ui_mpv_audio_output'),
-          icon: Icons.surround_sound_rounded,
-          options: keys.map((k) => _drivers[k]!).toList(),
-          index: keys.indexOf(playerState.audioOutputDriver).clamp(0, keys.length - 1),
-          onChanged: (i) => player.updateSettings(playerState.copyWith(audioOutputDriver: keys[i])),
+        TvSettingsGroupTitle(title: i18n('audio_output_driver')),
+        TvSettingsCard(
+          children: [
+            TvSettingsOptionTile(
+              title: i18n('audio_output_driver'),
+              // 自定义驱动与硬件加速 (kernel page) is what puts --ao on the mpv
+              // command line; without it this choice is ignored. The fallback
+              // keeps the row readable even if the translation entry is lost,
+              // instead of printing the raw key.
+              subtitle:
+                  '${i18n('ui_mpv_audio_output')} · '
+                  '${i18nOr('ui_takes_effect_only_with_custom_player_output', i18n('custom_output_hwdec'))}',
+              icon: Icons.surround_sound_rounded,
+              options: [
+                for (final String key in keys)
+                  PlayerConsts.optionLabelFor(PlayerConsts.audioOutputDriversList, key, languageCode),
+              ],
+              index: keys.indexOf(playerState.audioOutputDriver).clamp(0, keys.length - 1),
+              onChanged: (i) => player.updateSettings(playerState.copyWith(audioOutputDriver: keys[i])),
+            ),
+          ],
         ),
+        SizedBox(height: 24.sp),
       ],
     );
   }

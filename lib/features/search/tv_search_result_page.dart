@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/remote/index.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class TvSearchResultPage extends ConsumerStatefulWidget {
   final String keyword;
@@ -118,6 +119,12 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 列间距/行间距 are an offset from the 6.0 design default, so the untouched
+    // default reproduces the original 32 design-pixel gap.
+    final themeState = ref.watch(themeSettingsControllerProvider);
+    final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
+
     return TvScaffold(
       title: '${i18n('search')}: $_currentKeyword (${widget.site})',
       child: TvTabView(
@@ -129,8 +136,8 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
-            mainAxisSpacing: 32.sp,
-            crossAxisSpacing: 32.sp,
+            mainAxisSpacing: mainSpacing.w,
+            crossAxisSpacing: crossSpacing.w,
             childAspectRatio: 1.3,
           ),
           itemBuilder: (context, room, index) =>

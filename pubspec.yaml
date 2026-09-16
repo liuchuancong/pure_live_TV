@@ -131,8 +131,6 @@ dependencies:
     path: plugins/flv_lzc # 本地补丁：16 KB 页大小构建 + fijkview 黑屏修复
   dart_quickjs:
     git: https://github.com/liuchuancong/dart_quickjs.git # QuickJS JS脚本引擎
-  native_textfield_tv:
-    git: https://github.com/liuchuancong/native_textfield_tv.git # TV虚拟键盘输入
 
 # 依赖覆盖（强制指定版本）
 dependency_overrides:

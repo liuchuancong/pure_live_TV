@@ -3,6 +3,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/history/history_page_provider.dart';
 import 'package:pure_live/services/history_settings/history_controller.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
@@ -17,6 +18,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final currentTvTheme = context.tvTheme;
     final historyPageState = ref.watch(historyPageProvider);
     final currentRooms = historyPageState.rooms;
+    // 列间距/行间距 are an offset from the 6.0 design default, so the untouched
+    // default reproduces the original 32 design-pixel gap.
+    final themeState = ref.watch(themeSettingsControllerProvider);
+    final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
 
     final currentParam = PagingParam<LiveRoom>(
       mode: PagingMode.localReactive,
@@ -67,8 +73,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
-                          mainAxisSpacing: 32.sp,
-                          crossAxisSpacing: 32.sp,
+                          mainAxisSpacing: mainSpacing.w,
+                          crossAxisSpacing: crossSpacing.w,
                           childAspectRatio: 1.3,
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(

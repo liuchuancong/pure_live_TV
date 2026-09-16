@@ -37,7 +37,35 @@ class HttpClient {
           return client;
         },
       )
-      ..interceptors.add(CustomLogInterceptor());
+      ..interceptors.add(CustomLogInterceptor())
+      ..interceptors.add(InterceptorsWrapper(onRequest: (options, handler) => handler.next(applyCustomUserAgent(options))));
+  }
+
+  /// The transport-level default when a caller sets an explicit agent anyway.
+  static const String defaultDesktopUserAgent =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36';
+
+  /// User agent for IPTV playlist/EPG fetches: the user's override when set,
+  /// otherwise the desktop browser agent these feeds expect.
+  static String get iptvUserAgent {
+    final custom = SettingsService.to.iptvState.customIptvUserAgent.trim();
+    return custom.isEmpty ? defaultDesktopUserAgent : custom;
+  }
+
+  /// Injects the IPTV "custom user agent" setting into a request unless the
+  /// caller asked for a specific one.
+  ///
+  /// The setting exists to get past playlist/EPG servers that answer 403/444 to
+  /// the default Dio agent, so it has to be applied at the transport layer: the
+  /// IPTV import and sync paths build their own headers and would otherwise
+  /// never see it. Explicit per-call headers (site logins, browser impersonation,
+  /// per-channel M3U headers) always win.
+  static RequestOptions applyCustomUserAgent(RequestOptions options) {
+    if (options.headers.keys.any((name) => name.toLowerCase() == 'user-agent')) return options;
+    final agent = SettingsService.to.iptvState.customIptvUserAgent.trim();
+    if (agent.isEmpty) return options;
+    options.headers['user-agent'] = agent;
+    return options;
   }
 
   void rebuildDio() {

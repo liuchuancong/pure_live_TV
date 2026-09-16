@@ -4,6 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/page_settings/page_settings_controller.dart';
 
+/// Paging settings.
+///
+/// Only 默认每页条数 survives on a TV. The three visibility switches the mobile
+/// page has drive a pager bar (page-size selector, jump-to-page, back-to-top)
+/// that does not exist here: the TV lists are continuous grids that load the next
+/// page as the user scrolls, so those switches wrote values nothing could honour.
+/// The remaining row is wired into the paging core, so it decides how many
+/// entries each page request asks for.
 class PageSettingsSectionPage extends ConsumerWidget {
   const PageSettingsSectionPage({super.key});
 
@@ -15,27 +23,6 @@ class PageSettingsSectionPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsSwitchTile(
-          title: i18n('ui_show_page_size_selector'),
-          subtitle: i18n('ui_show_a_page_size_selector_below_the_list'),
-          icon: Icons.format_list_numbered_rounded,
-          value: pageState.showPageSizeSelector,
-          onChanged: (v) => page.updateSettings(pageState.copyWith(showPageSizeSelector: v)),
-        ),
-        TvSettingsSwitchTile(
-          title: i18n('ui_show_jump_to_page_button'),
-          subtitle: i18n('ui_show_a_jump_to_page_button_below_the_list'),
-          icon: Icons.last_page_rounded,
-          value: pageState.showGotoButton,
-          onChanged: (v) => page.updateSettings(pageState.copyWith(showGotoButton: v)),
-        ),
-        TvSettingsSwitchTile(
-          title: i18n('ui_show_back_to_top_button'),
-          subtitle: i18n('ui_show_a_back_to_top_button_below_the_list'),
-          icon: Icons.vertical_align_top_rounded,
-          value: pageState.showScrollToTopBtn,
-          onChanged: (v) => page.updateSettings(pageState.copyWith(showScrollToTopBtn: v)),
-        ),
         TvSettingsOptionTile(
           title: i18n('ui_default_items_per_page'),
           subtitle: i18n('ui_default_page_size'),

@@ -1,5 +1,4 @@
 import 'package:pure_live/exports/exports.dart';
-import 'package:native_textfield_tv/native_textfield_tv.dart';
 
 class TvSearchPage extends ConsumerStatefulWidget {
   const TvSearchPage({super.key});
@@ -15,7 +14,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
 
   late final List<TvTabItemData> _siteTabs;
   late final List<TvTabItemData> _typeTabs;
-  late final NativeTextFieldController _searchController;
+  late final TextEditingController _searchController;
 
   dynamic _remoteReceiverNotifier;
   bool _isInputFieldFocused = false;
@@ -26,7 +25,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
     final sites = Sites().availableSites(containsAll: false);
     _siteTabs = sites.map(TvTabItemData.site).toList();
     _typeTabs = [TvTabItemData(title: i18n('ui_streamer')), TvTabItemData(title: i18n('ui_live_room'))];
-    _searchController = NativeTextFieldController();
+    _searchController = TextEditingController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _remoteReceiverNotifier = ref.read(tvRemoteReceiverProvider.notifier);
@@ -145,7 +144,6 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                   ],
                 ),
                 child: TvInputField(
-                  useNativeTextField: false,
                   controller: _searchController,
                   hint: i18n('search_room_hint'),
                   height: 72.sp,

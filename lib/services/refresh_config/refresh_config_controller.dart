@@ -13,7 +13,10 @@ class RefreshConfigController extends _$RefreshConfigController {
     return RefreshConfigModel(
       autoRefreshFavorite: HivePrefUtil.getBool('autoRefreshFavorite') ?? false,
       autoRefreshInterval: HivePrefUtil.getInt('autoRefreshInterval') ?? 30,
-      maxConcurrentRefresh: HivePrefUtil.getInt('maxConcurrentRefresh') ?? 2,
+      // 4 matches the mobile app's default (and the value its dialog marks as
+      // 推荐); the TV app defaulted to 2, so the same profile behaved
+      // differently on the two clients.
+      maxConcurrentRefresh: HivePrefUtil.getInt('maxConcurrentRefresh') ?? 4,
     );
   }
 

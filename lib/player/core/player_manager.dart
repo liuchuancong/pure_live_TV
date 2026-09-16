@@ -224,6 +224,20 @@ class PlayerManager {
 
   bool get isPlayingNow => _playingSubject.value;
 
+  /// 仅播放音频 (settings row 仅播放音频) as the native players need it.
+  ///
+  /// The adapters keep the mode per native player and reset it from every
+  /// `setDataSource`/`init` call, so both the pooled instance and the source
+  /// open have to receive it. Reading the setting here keeps the settings page
+  /// free of player-internal plumbing.
+  bool get _audioOnlySetting => SettingsService.to.playerState.audioOnly;
+
+  /// Applies 仅播放音频 to the active player and every pooled adapter.
+  Future<void> setAudioOnly(bool audioOnly) async {
+    if (_disposed) return;
+    await playerPool.setAudioOnly(audioOnly);
+  }
+
   double get currentVideoRatio {
     final w = _widthSubject.value?.toDouble() ?? 1920;
 
@@ -331,7 +345,7 @@ class PlayerManager {
       _defaultEngine = engine;
       _runtimeEngine = engine;
 
-      final player = await playerPool.getPlayer(engine);
+      final player = await playerPool.getPlayer(engine, audioOnly: _audioOnlySetting);
 
       if (!_isSessionValid(sessionId)) {
         await _safeDestroyPlayer(player);
@@ -547,7 +561,7 @@ class PlayerManager {
       if (player is PrivateInputAwarePlayer) {
         (player as PrivateInputAwarePlayer).setPrivateInput(privateInput, sourceIdentity: source.identity);
       }
-      return player.setDataSource(input, inputs, inputHeaders, room: room);
+      return player.setDataSource(input, inputs, inputHeaders, room: room, audioOnly: _audioOnlySetting);
     }
 
     final sourceOpen = switch (source) {
@@ -650,7 +664,7 @@ class PlayerManager {
       final oldEngine = _runtimeEngine;
 
       if (forceRecreate) {
-        final candidate = await playerPool.getPlayer(engine);
+        final candidate = await playerPool.getPlayer(engine, audioOnly: _audioOnlySetting);
         if (identical(candidate, oldPlayer)) {
           // Forced recreation must never alias the active instance.
           await _safeDestroyPlayer(candidate);
@@ -671,7 +685,7 @@ class PlayerManager {
         }
         await _clearSubscriptions();
 
-        final newPlayer = await playerPool.getPlayer(engine);
+        final newPlayer = await playerPool.getPlayer(engine, audioOnly: _audioOnlySetting);
 
         if (isStillRequired?.call() == false || !_isSessionValid(sessionId)) {
           await _safeDestroyPlayer(newPlayer);
@@ -721,9 +735,9 @@ class PlayerManager {
 
     if (_runtimeEngine == null) return;
 
-    final standby = await playerPool.getPlayer(_runtimeEngine!);
+    final standby = await playerPool.getPlayer(_runtimeEngine!, audioOnly: _audioOnlySetting);
 
-    await preloadManager.preload(standby, url, playUrls, headers);
+    await preloadManager.preload(standby, url, playUrls, headers, audioOnly: _audioOnlySetting);
   }
 
   // =========================

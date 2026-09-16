@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/hot/hot_provider.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class HotPage extends ConsumerStatefulWidget {
   const HotPage({super.key});
@@ -58,6 +59,12 @@ class _HotPageState extends ConsumerState<HotPage> {
       return const SizedBox.shrink();
     }
 
+    // 列间距/行间距 are an offset from the 6.0 design default, so the untouched
+    // default reproduces the original 32 design-pixel gap.
+    final themeState = ref.watch(themeSettingsControllerProvider);
+    final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
+
     final List<TvTabItemData> tabItems = tabsState.sites.map(TvTabItemData.site).toList();
 
     final currentSite = tabsState.sites[tabsState.currentIndex];
@@ -94,8 +101,8 @@ class _HotPageState extends ConsumerState<HotPage> {
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
-                          mainAxisSpacing: 32.sp,
-                          crossAxisSpacing: 32.sp,
+                          mainAxisSpacing: mainSpacing.w,
+                          crossAxisSpacing: crossSpacing.w,
                           childAspectRatio: 1.3,
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
