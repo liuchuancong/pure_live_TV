@@ -113,7 +113,8 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                       // room count here meant that following or unfollowing a
                       // single room rebuilt the view and dropped both the focus
                       // memory and the scroll position the user was on.
-                      memoryKey: "fav_tv_view_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}",
+                      memoryKey:
+                          "fav_tv_view_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}",
                       verticalEdge: DpadEdgeBehavior.leave,
                       horizontalEdge: DpadEdgeBehavior.stop,
                       child: BasePagedTvView<LiveRoom>(
@@ -123,7 +124,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: favoriteState.denseLayout ? 5 : 4,
+                          crossAxisCount: 4,
                           mainAxisSpacing: mainSpacing.w,
                           crossAxisSpacing: crossSpacing.w,
                           childAspectRatio: 1.3,
