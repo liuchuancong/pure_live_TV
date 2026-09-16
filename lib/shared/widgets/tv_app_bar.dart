@@ -12,7 +12,19 @@ class TvAppBar extends StatelessWidget {
   final bool showBackButton;
   final Future<bool> Function()? beforeBack;
 
-  const TvAppBar({super.key, this.title, this.titleWidget, this.actions, this.showBackButton = true, this.beforeBack});
+  /// Focus node bound to the back button, so a page can steer focus onto it
+  /// (e.g. when d-pad navigation hits the top edge of the content).
+  final FocusNode? backFocusNode;
+
+  const TvAppBar({
+    super.key,
+    this.title,
+    this.titleWidget,
+    this.actions,
+    this.showBackButton = true,
+    this.beforeBack,
+    this.backFocusNode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +51,7 @@ class TvAppBar extends StatelessWidget {
               title: i18n('ui_back'),
               size: TvButtonSize.mini,
               autofocus: true,
+              focusNode: backFocusNode,
               icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.sp),
               onTap: () async {
                 if (beforeBack != null) {

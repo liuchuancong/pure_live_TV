@@ -9,7 +9,7 @@ import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:pure_live/shared/consts/back_ground_source.dart';
 import 'package:pure_live/shared/theme/index.dart';
 
-class TvScaffold extends StatelessWidget {
+class TvScaffold extends StatefulWidget {
   final Widget child;
   final String? title;
   final TvAppBar? appBar;
@@ -28,14 +28,64 @@ class TvScaffold extends StatelessWidget {
   });
 
   @override
+  State<TvScaffold> createState() => _TvScaffoldState();
+}
+
+class _TvScaffoldState extends State<TvScaffold> {
+  /// The app bar back button, when [TvScaffold] builds the default app bar.
+  /// The content region's top edge hands focus to this node, so "up" from the
+  /// first content row always reaches the back button without relying on
+  /// cross-region geometric search (which is fragile on devices with overscan
+  /// / safe-area offsets).
+  FocusNode? _backNode;
+
+  @override
+  void dispose() {
+    _backNode?.dispose();
+    super.dispose();
+  }
+
+  void _onContentEdge(TraversalDirection direction) {
+    if (direction != TraversalDirection.up) return;
+    final FocusNode? back = _backNode;
+    final bool usable = back != null &&
+        back.parent != null &&
+        back.context?.mounted == true &&
+        back.canRequestFocus;
+    if (!usable) return;
+    DpadRegion.ofNode(back)?.noteFocus(back);
+    back.requestFocus();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Widget? finalAppBar;
 
-    if (showAppBar) {
+    if (widget.showAppBar) {
       final bool canPop = Navigator.of(context).canPop();
-      final bool effectiveShowBackButton = showBackButton ?? canPop;
-      finalAppBar = appBar ?? TvAppBar(title: title, beforeBack: beforeBack, showBackButton: effectiveShowBackButton);
+      final bool effectiveShowBackButton = widget.showBackButton ?? canPop;
+      _backNode = (widget.appBar == null && effectiveShowBackButton)
+          ? (_backNode ?? FocusNode(debugLabel: 'tv_scaffold_back'))
+          : null;
+      finalAppBar = widget.appBar ??
+          TvAppBar(
+            title: widget.title,
+            beforeBack: widget.beforeBack,
+            showBackButton: effectiveShowBackButton,
+            backFocusNode: _backNode,
+          );
     }
+
+    // The content gets its own region with a stopped top edge: pressing up on
+    // the first row deterministically focuses the back button above. Down at
+    // the bottom edge simply stays put, as there is nothing below.
+    final Widget content = _backNode != null
+        ? DpadRegion(
+            verticalEdge: DpadEdgeBehavior.stop,
+            onEdge: _onContentEdge,
+            child: TvFocusRestorer(child: widget.child),
+          )
+        : TvFocusRestorer(child: widget.child);
 
     return Scaffold(
       body: Stack(
@@ -53,7 +103,7 @@ class TvScaffold extends StatelessWidget {
                   // sub-page, a dialog) pops away, focus returns to the item
                   // the user acted on instead of dying on the dpad root's
                   // top-left fallback.
-                  Expanded(child: TvFocusRestorer(child: child)),
+                  Expanded(child: content),
                 ],
               ),
             ),

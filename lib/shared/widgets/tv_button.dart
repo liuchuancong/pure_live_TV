@@ -18,6 +18,7 @@ class TvButton extends StatelessWidget {
   final bool excludeFocus;
   final bool selected;
   final bool useFadedFocus;
+  final FocusNode? focusNode;
 
   const TvButton({
     super.key,
@@ -31,6 +32,7 @@ class TvButton extends StatelessWidget {
     this.excludeFocus = false,
     this.selected = false,
     this.useFadedFocus = false,
+    this.focusNode,
   });
 
   @override
@@ -119,6 +121,7 @@ class TvButton extends StatelessWidget {
     Widget btn = DpadFocusable(
       autofocus: autofocus && !excludeFocus,
       onSelect: excludeFocus ? null : onTap,
+      focusNode: focusNode,
       effects: buildEffects(),
       child: _buildLayout(baseTextStyle, space),
     );
