@@ -90,7 +90,7 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pumpAndSettle();
     expect(
-      FocusManager.instance.primaryFocus?.context?.findAncestorStateOfType<EditableTextState>() ?? null,
+      FocusManager.instance.primaryFocus?.context?.findAncestorStateOfType<EditableTextState>(),
       isNotNull,
       reason: 'focus should be able to re-enter the input field',
     );

@@ -13,11 +13,12 @@ import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/widgets/tv_common_avatar.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-/// Landscape live playback page.
+/// Fullscreen live playback page.
 ///
-/// Left: video surface ([TvVideoSurface]); pressing OK on the D-pad opens the
-/// control panel. Right: one of four panels — room info, playlist,
-/// danmaku settings or danmaku filter (see [LivePlayPanel]).
+/// The video always fills the screen (a TV room is fullscreen, period): the
+/// room info, playlist, danmaku settings and danmaku filter panels (see
+/// [LivePlayPanel]) float over it as an overlay card on the right instead of
+/// squeezing the video into a column.
 class LivePlayPage extends ConsumerWidget {
   final LivePlayArgs args;
 
@@ -31,65 +32,69 @@ class LivePlayPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              flex: 3,
-              child: DpadRegion(
-                memoryKey: 'live_play/video',
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    TvVideoSurface(args: args),
-                    // While the panel is collapsed, keep a touch-reachable way to reopen it; a
-                    // remote uses the right key or the bottom bar.
-                    if (!state.showSidePanel)
-                      Positioned(
-                        right: 16.sp,
-                        bottom: 16.sp,
-                        child: DpadFocusable(
-                          effects: [
-                            DpadScaleEffect(scale: 1.05),
-                            DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.5)),
-                          ],
-                          onSelect: () => controller.openPanel(LivePlayPanel.info),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 8.sp),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(8.sp),
-                              border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.3)),
-                            ),
-                            child: Text(
-                              i18n('ui_expand_panel'),
-                              style: AppTextStyles.t14W500.copyWith(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            if (state.showSidePanel)
-              Container(
-                width: 360.sp,
-                color: tvTheme.backgroundColor,
-                child: DpadRegion(
-                  // Each panel remembers its own focus and returns to the previous row.
-                  memoryKey: 'live_play/side-panel/${state.panel.name}',
-                  child: _SidePanel(
-                    state: state,
-                    controller: controller,
-                    args: args,
-                    onTogglePanel: controller.toggleSidePanel,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          DpadRegion(
+            memoryKey: 'live_play/video',
+            child: TvVideoSurface(args: args),
+          ),
+          // While the panel is collapsed, keep a touch-reachable way to reopen it; a
+          // remote uses the right key or the bottom bar.
+          if (!state.showSidePanel)
+            Positioned(
+              right: 16.sp,
+              bottom: 16.sp,
+              child: DpadFocusable(
+                effects: [
+                  DpadScaleEffect(scale: 1.05),
+                  DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.5)),
+                ],
+                onSelect: () => controller.openPanel(LivePlayPanel.info),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 8.sp),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(8.sp),
+                    border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    i18n('ui_expand_panel'),
+                    style: AppTextStyles.t14W500.copyWith(color: Colors.white),
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+          // The panel overlays the video instead of sitting beside it: playback
+          // keeps the whole screen and the danmaku keep their geometry.
+          if (state.showSidePanel)
+            Positioned(
+              top: 24.sp,
+              bottom: 24.sp,
+              right: 24.sp,
+              width: 400.sp,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.sp),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: tvTheme.backgroundColor.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(20.sp),
+                    border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
+                  ),
+                  child: DpadRegion(
+                    // Each panel remembers its own focus and returns to the previous row.
+                    memoryKey: 'live_play/side-panel/${state.panel.name}',
+                    child: _SidePanel(
+                      state: state,
+                      controller: controller,
+                      args: args,
+                      onTogglePanel: controller.toggleSidePanel,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -219,23 +224,9 @@ class _InfoPanel extends ConsumerWidget {
         SizedBox(height: 12.sp),
         Divider(height: 1, color: tvTheme.secondaryTextColor.withValues(alpha: 0.2)),
         SizedBox(height: 8.sp),
-        _SectionLabel(text: i18n('recorder_stage_quality')),
-        _ChipRow(
-          memoryKey: 'live_play/chips/quality',
-          labels: state.qualities.map((q) => q.quality).toList(growable: false),
-          selectedIndex: state.qualityIndex,
-          onSelect: controller.changeQuality,
-        ),
-        SizedBox(height: 8.sp),
-        _SectionLabel(text: i18n('multiview_line_selector')),
-        _ChipRow(
-          memoryKey: 'live_play/chips/line',
-          labels: [for (var i = 0; i < state.playUrls.length; i++) i18n('multiview_line', args: {'index': '${i + 1}'})],
-          selectedIndex: state.lineIndex,
-          onSelect: controller.changeLine,
-        ),
-        SizedBox(height: 8.sp),
-        Divider(height: 1, color: tvTheme.secondaryTextColor.withValues(alpha: 0.2)),
+        // 清晰度 / 线路 / 画面比例 / 播放器内核 live in the fullscreen control
+        // bar's dialogs, next to where playback is controlled; duplicating the
+        // first two here fought the panel for space on a TV screen.
         Expanded(
           child: state.playUrls.isEmpty ? const SizedBox.shrink() : DanmakuListView(args: args),
         ),
@@ -257,82 +248,3 @@ class _InfoPanel extends ConsumerWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  final String text;
-
-  const _SectionLabel({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
-      child: Text(text, style: AppTextStyles.t14W600.copyWith(color: tvTheme.secondaryTextColor)),
-    );
-  }
-}
-
-class _ChipRow extends StatelessWidget {
-  final List<String> labels;
-  final int selectedIndex;
-  final ValueChanged<int> onSelect;
-  final String memoryKey;
-
-  const _ChipRow({
-    required this.labels,
-    required this.selectedIndex,
-    required this.onSelect,
-    required this.memoryKey,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    if (labels.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
-        child: Text(i18n('ui_none'), style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
-      );
-    }
-    return SizedBox(
-      height: 48.sp,
-      child: DpadRegion(
-        memoryKey: memoryKey,
-        horizontalEdge: DpadEdgeBehavior.wrap,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 16.sp),
-          itemCount: labels.length,
-          separatorBuilder: (_, _) => SizedBox(width: 8.sp),
-          itemBuilder: (context, index) {
-            final selected = index == selectedIndex;
-            return DpadFocusable(
-              effects: [
-                DpadScaleEffect(scale: 1.05),
-                DpadGlowEffect(color: tvTheme.focusColor.withValues(alpha: 0.5)),
-              ],
-              onSelect: () => onSelect(index),
-              child: Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(horizontal: 14.sp),
-                decoration: BoxDecoration(
-                  color: selected ? tvTheme.focusColor.withValues(alpha: 0.25) : tvTheme.cardColor,
-                  borderRadius: BorderRadius.circular(8.sp),
-                  border: Border.all(
-                    color: selected ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Text(
-                  labels[index],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t14W500.copyWith(color: selected ? tvTheme.focusColor : tvTheme.primaryTextColor),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}

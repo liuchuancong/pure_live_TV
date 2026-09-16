@@ -1,11 +1,10 @@
 import 'dart:async';
-
-import 'package:pure_live/player/global_player_service.dart';
+import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/services/index.dart';
+import 'package:pure_live/player/global_player_service.dart';
 
 /// Video settings, grouped in the mobile page's order
 /// (`pure_live/lib/modules/settings/pages/video_settings_page.dart:81-290`):

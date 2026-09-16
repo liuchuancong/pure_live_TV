@@ -35,7 +35,7 @@ class LivePlayState {
     this.showControls = false,
     this.fitIndex = 0,
     this.volume = 1.0,
-    this.showSidePanel = true,
+    this.showSidePanel = false,
     this.panel = LivePlayPanel.info,
     this.channelBanner,
   });

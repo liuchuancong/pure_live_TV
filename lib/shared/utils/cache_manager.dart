@@ -8,6 +8,12 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 /// Fully isolated from [DefaultCacheManager] (own key, own directory, own
 /// database). As a result, clearing must explicitly call [emptyCache];
 /// clearing only DefaultCacheManager will not touch this cache.
+///
+/// The instance mixes in [ImageCacheManager] because every cover widget asks
+/// for `memCacheWidth`/`maxWidthDiskCache`: `cached_network_image` asserts that
+/// a resizing request goes to an [ImageCacheManager] and — in debug builds —
+/// that assertion is swallowed by its own error handler and turned into an
+/// image load failure, so a plain [CacheManager] silently shows no images.
 class CustomImageCacheManager {
   static const _cacheKey = 'customImageCacheKey';
   static CacheManager? _instance;
@@ -45,7 +51,7 @@ class CustomImageCacheManager {
 
     final customFileSystem = IOFileSystem(imageCacheDir.path);
 
-    _instance = CacheManager(
+    _instance = _ResizingImageCacheManager(
       Config(
         _cacheKey,
         stalePeriod: const Duration(days: 7),
@@ -75,8 +81,13 @@ class CustomImageCacheManager {
   }
 }
 
-class HttpFileServiceWithRetry extends HttpFileService {
-  @override
+/// A [CacheManager] that can also resize images on disk, as required by
+/// `cached_network_image`'s `maxWidthDiskCache`/`maxHeightDiskCache`.
+class _ResizingImageCacheManager extends CacheManager with ImageCacheManager {
+  _ResizingImageCacheManager(super.config);
+}
+
+class HttpFileServiceWithRetry extends HttpFileService {  @override
   Future<FileServiceResponse> get(String url, {Map<String, String>? headers}) async {
     int retryCount = 0;
     const int maxRetries = 3;

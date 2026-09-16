@@ -352,13 +352,16 @@ class LivePlayController extends _$LivePlayController {
     await _bootstrap();
   }
 
-  void cycleFit() {
+  /// Applies and persists the aspect ratio at [index]; called from the
+  /// fullscreen control bar's 画面比例 dialog.
+  void setFit(int index) {
     final options = kLivePlayFitList;
-    if (options.isEmpty) return;
-    final next = ref.read(playerSettingsControllerProvider.notifier).advanceVideoFitIndex();
-    if (next == null) return;
-    state = state.copyWith(fitIndex: next);
-    _playerManager?.changeVideoFit(next);
+    if (index < 0 || index >= options.length || index == state.fitIndex) return;
+    ref
+        .read(playerSettingsControllerProvider.notifier)
+        .updateSettings(ref.read(playerSettingsControllerProvider).copyWith(videoFitIndex: index));
+    state = state.copyWith(fitIndex: index);
+    _playerManager?.changeVideoFit(index);
   }
 
   /// Applies the fit mode saved in settings to the current playback session.

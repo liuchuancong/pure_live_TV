@@ -1,7 +1,7 @@
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 
 /// One settings destination: its route, translation keys and icon.
 typedef SettingsEntry = ({String path, String titleKey, String? subtitleKey, IconData icon});
@@ -30,12 +30,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   (
     titleKey: 'iptv_settings',
     entries: <SettingsEntry>[
-      (
-        path: AppRoutes.kIptv,
-        titleKey: 'iptv_settings',
-        subtitleKey: 'manage_iptv_sources',
-        icon: Remix.tv_line,
-      ),
+      (path: AppRoutes.kIptv, titleKey: 'iptv_settings', subtitleKey: 'manage_iptv_sources', icon: Remix.tv_line),
     ],
   ),
   (
@@ -109,12 +104,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   (
     titleKey: 'backup_manage',
     entries: <SettingsEntry>[
-      (
-        path: AppRoutes.kBackup,
-        titleKey: 'backup_recover',
-        subtitleKey: 'backup_recover_desc',
-        icon: Remix.cloud_line,
-      ),
+      (path: AppRoutes.kBackup, titleKey: 'backup_recover', subtitleKey: 'backup_recover_desc', icon: Remix.cloud_line),
     ],
   ),
   // The desktop app reaches 关于 from its overflow menu; this app has no such
