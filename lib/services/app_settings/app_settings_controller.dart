@@ -1,4 +1,5 @@
 import 'app_settings_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
@@ -101,13 +102,44 @@ class AppSettingsController extends _$AppSettingsController {
 
   /// Moves [menuId] by [delta] positions inside the visible list.
   void moveMenu(String menuId, int delta) {
-    final current = state.savedMenuIds.isEmpty ? HomeMenu.defaultOrder : normalizeMenuIds(state.savedMenuIds);
+    final current = _visibleMenuIds();
     final index = current.indexOf(menuId);
     final target = index + delta;
     if (index < 0 || target < 0 || target >= current.length) return;
-    current.removeAt(index);
-    current.insert(target, menuId);
-    update(state.copyWith(savedMenuIds: current));
+    update(state.copyWith(savedMenuIds: reorderMenuIds(current, menuId, target)));
+  }
+
+  /// Puts [menuId] at [targetIndex] of the visible list, shifting the entries it
+  /// passes.
+  ///
+  /// This is the 排序 page's "pick an entry, then name its position" move: the
+  /// entry the user chose lands exactly where they said, instead of being nudged
+  /// there one step at a time.
+  void moveMenuTo(String menuId, int targetIndex) {
+    final current = _visibleMenuIds();
+    final next = reorderMenuIds(current, menuId, targetIndex);
+    if (listEquals(next, current)) return;
+    update(state.copyWith(savedMenuIds: next));
+  }
+
+  /// The visible entries in display order, stored or defaulted.
+  List<String> _visibleMenuIds() =>
+      state.savedMenuIds.isEmpty ? List<String>.from(HomeMenu.defaultOrder) : normalizeMenuIds(state.savedMenuIds);
+
+  /// [ids] with [menuId] placed at [targetIndex]; the entries it passes shift by
+  /// one and nothing is dropped.
+  ///
+  /// Pure on purpose: the reorder rule is what the 排序 page promises, and this
+  /// way it is testable without the preference store. [targetIndex] is clamped,
+  /// and an unknown [menuId] leaves [ids] untouched.
+  static List<String> reorderMenuIds(List<String> ids, String menuId, int targetIndex) {
+    final index = ids.indexOf(menuId);
+    if (index < 0 || ids.isEmpty) return List<String>.from(ids);
+    final target = targetIndex.clamp(0, ids.length - 1);
+    if (target == index) return List<String>.from(ids);
+    final next = List<String>.from(ids)..removeAt(index);
+    next.insert(target, menuId);
+    return next;
   }
 
   void toggleMenuVisibility(String menuId, bool visible) {

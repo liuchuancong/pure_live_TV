@@ -197,6 +197,10 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsAccountSoop: 'site_soop',
   AppRoutes.kSettingsTags: 'tag_management',
   AppRoutes.kWebDavPage: 'webdav',
+  // The three 导航与显示设置 sub-pages are titled like the rows that open them.
+  AppRoutes.kSettingsNavVisibility: 'navigation_visibility',
+  AppRoutes.kSettingsNavOrder: 'navigation_order',
+  AppRoutes.kSettingsNavIcons: 'navigation_icons',
   // Pages whose *menu row* has a different label from their page title.
   //
   // The mobile app's menu says 视频 / 播放器内核 / 自定义网络代理 while the pages

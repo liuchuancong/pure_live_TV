@@ -17,6 +17,9 @@ import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
 import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_section.dart';
+import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
+import 'package:pure_live/features/settings/pages/nav_order_section.dart';
+import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
 import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 
@@ -37,6 +40,9 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsProxy: (context) => const ProxySettingsSectionPage(),
   AppRoutes.kSettingsGeneral: (context) => const GeneralSettingsSectionPage(),
   AppRoutes.kSettingsNavigation: (context) => const NavigationSectionPage(),
+  AppRoutes.kSettingsNavVisibility: (context) => const NavVisibilitySectionPage(),
+  AppRoutes.kSettingsNavOrder: (context) => const NavOrderSectionPage(),
+  AppRoutes.kSettingsNavIcons: (context) => const NavIconsSectionPage(),
   AppRoutes.kSettingsPlatform: (context) => const PlatformSettingsSectionPage(),
   AppRoutes.kSettingsCache: (context) => const CacheSettingsSectionPage(),
   AppRoutes.kSettingsConfigPreview: (context) => const LocalConfigPreviewSectionPage(),

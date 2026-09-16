@@ -117,6 +117,13 @@ abstract final class AppRoutes {
   static const kSettingsLocalInteraction = "/settings/local_interaction";
   static const kSettingsGeneral = "/settings/general";
   static const kSettingsNavigation = "/settings/navigation";
+
+  /// The three 导航与显示设置 sub-pages: which entries the side menu shows, in
+  /// which order, and with which icon.
+  static const kSettingsNavVisibility = "/settings/nav_visibility";
+  static const kSettingsNavOrder = "/settings/nav_order";
+  static const kSettingsNavIcons = "/settings/nav_icons";
+
   static const kSettingsPlatform = "/settings/platform";
   static const kSettingsCache = "/settings/cache";
   static const kSettingsConfigPreview = "/settings/config_preview";
