@@ -14,7 +14,6 @@ class FavoritePage extends ConsumerStatefulWidget {
 class _FavoritePageState extends ConsumerState<FavoritePage> {
   @override
   Widget build(BuildContext context) {
-    final currentTvTheme = context.tvTheme;
     final favoriteState = ref.watch(favoriteProvider);
     // 列间距/行间距 are an offset from the 6.0 design default, so the untouched
     // default reproduces the original 32 design-pixel gap.
@@ -44,9 +43,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     final List<TvTabItemData> siteTabs = availableSitesList.map(TvTabItemData.site).toList();
 
     return TvScaffold(
-      child: Container(
-        color: currentTvTheme.backgroundColor,
-        child: Row(
+      child: Row(
           children: [
             Expanded(
               child: Column(
@@ -145,7 +142,6 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
             ),
           ],
         ),
-      ),
     );
   }
 }

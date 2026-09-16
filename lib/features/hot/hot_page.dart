@@ -52,7 +52,6 @@ class _HotPageState extends ConsumerState<HotPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentTvTheme = context.tvTheme;
     final tabsState = ref.watch(hotTabsProvider);
 
     if (tabsState.sites.isEmpty) {
@@ -71,9 +70,7 @@ class _HotPageState extends ConsumerState<HotPage> {
     final currentParam = _getOrCreateParam(currentSite.id);
 
     return TvScaffold(
-      child: Container(
-        color: currentTvTheme.backgroundColor,
-        child: Row(
+      child: Row(
           children: [
             Expanded(
               child: Column(
@@ -117,7 +114,6 @@ class _HotPageState extends ConsumerState<HotPage> {
             ),
           ],
         ),
-      ),
     );
   }
 }

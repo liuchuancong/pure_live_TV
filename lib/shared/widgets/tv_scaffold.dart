@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/widgets/tv_app_bar.dart';
@@ -265,13 +267,28 @@ class _ImageBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final image = _resolveImage();
+    // Fits that can letterbox a differently-shaped picture previously showed
+    // the flat gradient beside it — visibly "the background does not fill the
+    // screen". A blurred, cover-filled copy of the same picture fills those
+    // bars instead; cover/fill never letterbox so they skip the extra layer.
+    final bool needsBackdrop = image != null && _fitCanLetterbox(config.boxFit);
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(gradient: LinearGradient(colors: config.gradientColors)),
-        ),
+        if (needsBackdrop)
+          ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 32, sigmaY: 32, tileMode: TileMode.clamp),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                image: DecorationImage(image: image, fit: BoxFit.cover),
+              ),
+            ),
+          )
+        else
+          DecoratedBox(
+            decoration: BoxDecoration(gradient: LinearGradient(colors: config.gradientColors)),
+          ),
         if (image != null)
           DecoratedBox(
             decoration: BoxDecoration(
@@ -281,6 +298,13 @@ class _ImageBackground extends StatelessWidget {
       ],
     );
   }
+
+  static bool _fitCanLetterbox(BoxFit fit) =>
+      fit == BoxFit.contain ||
+      fit == BoxFit.fitWidth ||
+      fit == BoxFit.fitHeight ||
+      fit == BoxFit.none ||
+      fit == BoxFit.scaleDown;
 
   /// Remote backgrounds come from two exclusive slots (the setters guarantee
   /// only one is filled): embedded bytes for downloaded random-API pictures

@@ -44,9 +44,7 @@ class HomePage extends ConsumerWidget {
     final stackIndex = cacheableTypes.indexOf(currentMenuType);
 
     return TvScaffold(
-      child: Container(
-        color: currentTvTheme.backgroundColor,
-        child: Row(
+      child: Row(
           children: [
             DpadRegion(
               child: AnimatedContainer(
@@ -173,7 +171,6 @@ class HomePage extends ConsumerWidget {
             ),
           ],
         ),
-      ),
     );
   }
 

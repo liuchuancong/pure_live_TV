@@ -15,7 +15,6 @@ class HistoryPage extends ConsumerStatefulWidget {
 class _HistoryPageState extends ConsumerState<HistoryPage> {
   @override
   Widget build(BuildContext context) {
-    final currentTvTheme = context.tvTheme;
     final historyPageState = ref.watch(historyPageProvider);
     final currentRooms = historyPageState.rooms;
     // 列间距/行间距 are an offset from the 6.0 design default, so the untouched
@@ -38,9 +37,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     final List<TvTabItemData> siteTabs = availableSitesList.map(TvTabItemData.site).toList();
 
     return TvScaffold(
-      child: Container(
-        color: currentTvTheme.backgroundColor,
-        child: Row(
+      child: Row(
           children: [
             Expanded(
               child: Column(
@@ -92,7 +89,6 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             ),
           ],
         ),
-      ),
     );
   }
 
