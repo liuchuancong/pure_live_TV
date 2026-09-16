@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
@@ -97,28 +98,36 @@ class DecoderSettingsSectionPage extends ConsumerWidget {
     // list; show the first entry instead of crashing, and let the next change
     // write a value this platform supports.
     final int storedIndex = keys.indexOf(playerState.videoHardwareDecoder);
-    final int safeIndex = storedIndex == -1 ? 0 : storedIndex;
+    final String currentKey = storedIndex == -1 ? keys.first : keys[storedIndex];
 
+    // The options ARE the page. It used to show a single row named after the
+    // page that opened a selection dialog, so entering it looked like a repeat
+    // of the row you just pressed.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsGroupTitle(title: i18n('hardware_decoder')),
+        if (!playerState.customPlayerOutput)
+          Padding(
+            // 自定义驱动与硬件加速 (kernel page) is what puts --hwdec on the mpv
+            // command line; without it this choice is ignored.
+            padding: EdgeInsets.only(left: 8.sp, bottom: 8.sp, right: 8.sp),
+            child: Text(
+              i18nOr('ui_takes_effect_only_with_custom_player_output', i18n('custom_output_hwdec')),
+              style: AppTextStyles.t16W500.copyWith(color: context.tvTheme.secondaryTextColor),
+            ),
+          ),
         TvSettingsCard(
           children: [
-            TvSettingsOptionTile(
-              title: i18n('hardware_decoder'),
-              // 自定义驱动与硬件加速 (kernel page) is what puts --hwdec on the
-              // mpv command line; without it this choice is ignored. The
-              // fallback keeps the row readable even if the translation entry
-              // is lost, instead of printing the raw key.
-              subtitle:
-                  '${i18n('ui_mpv_hardware_decoding_takes_effect_after_re_ente')} · '
-                  '${i18nOr('ui_takes_effect_only_with_custom_player_output', i18n('custom_output_hwdec'))}',
-              icon: Icons.memory_rounded,
-              options: [for (final String key in keys) _label(key, languageCode)],
-              index: safeIndex,
-              onChanged: (i) => player.updateSettings(playerState.copyWith(videoHardwareDecoder: keys[i])),
-            ),
+            for (final String key in keys)
+              TvSettingsNavTile(
+                title: _label(key, languageCode),
+                icon: key == currentKey ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+                trailing: key == currentKey
+                    ? Icon(Icons.check_rounded, size: 26.sp, color: context.tvTheme.focusColor)
+                    : const SizedBox.shrink(),
+                onTap: () => player.updateSettings(playerState.copyWith(videoHardwareDecoder: key)),
+              ),
           ],
         ),
         SizedBox(height: 24.sp),
