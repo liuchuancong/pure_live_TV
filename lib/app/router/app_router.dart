@@ -58,8 +58,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const TvSettingsRoutePage(),
         routes: [
           ShellRoute(
+            // `state.uri.path` — not `matchedLocation`: a relative child match
+            // reports only its own segment ("general"), and every section title
+            // then fell through to the generic "系统设置".
             builder: (context, state, child) =>
-                SettingsSectionScaffold(location: state.matchedLocation, child: child),
+                SettingsSectionScaffold(location: state.uri.path, child: child),
             routes: [
               GoRoute(path: 'theme', builder: (context, state) => const ThemeSettingsSectionPage()),
               GoRoute(path: 'theme_picker', builder: (context, state) => const ThemePickerSectionPage()),
@@ -86,8 +89,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       ShellRoute(
+        // See the nested shell above: the full request path is what the title
+        // table is keyed by.
         builder: (context, state, child) =>
-            SettingsSectionScaffold(location: state.matchedLocation, child: child),
+            SettingsSectionScaffold(location: state.uri.path, child: child),
         routes: [
           GoRoute(path: AppRoutes.kIptv, builder: (context, state) => const IptvManageSectionPage()),
           GoRoute(path: AppRoutes.kSettingsHotAreas, builder: (context, state) => const PlatformDisplaySectionPage()),
