@@ -39,21 +39,11 @@ class _PreviewAction {
 
 /// Fullscreen preview of exactly one wallpaper.
 ///
-/// Everything is operated through the button bar: `←`/`→` move the highlight
-/// between the buttons and `OK` runs the highlighted one. There is no second
-/// key mode and no page-level d-pad traversal — the bar is wrapped in an
-/// [ExcludeFocus] and the highlight is computed here, because the arrows are
-/// what the user needs to reach 设为背景 and the other options.
-///
-/// In catalog mode the page watches the same paging core as the grid, so 上一个
-/// / 下一个 walk straight past the end of the loaded page: the next page is
-/// fetched in the background *before* it is needed, and the picture advances as
-/// soon as it arrives.
-///
-/// A live wallpaper is **played**, not shown as a still: the preview owns its
-/// own muted-nowhere [Player] with real audio, and the bar grows 播放/暂停 and
-/// volume buttons for it. The background layer keeps its own silent player, so
-/// committing a video as the background never doubles the sound.
+/// The bottom bar is a normal D-pad-navigable row: every button is its own
+/// focus node, ←/→ move between them, OK activates the focused one, and the
+/// page itself never touches the focus tree. That means popping this route
+/// leaves the focus restoration to the framework — the previous page gets
+/// its focus back without any manual bookkeeping.
 class WallpaperPreviewPage extends ConsumerStatefulWidget {
   const WallpaperPreviewPage({super.key, required this.args});
 
@@ -64,8 +54,6 @@ class WallpaperPreviewPage extends ConsumerStatefulWidget {
 }
 
 class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
-  final FocusNode _pageFocus = FocusNode(debugLabel: 'wallpaper-preview');
-
   /// Catalog mode: position in the paged list.
   int _index = 0;
 
@@ -74,14 +62,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   bool _apiLoading = false;
   bool _applying = false;
 
-  /// Which bottom button is highlighted.
-  int _actionIndex = 0;
-
   /// Set when the user asked for the next entry while the next page was still
   /// being fetched; the advance happens as soon as the list grows.
   bool _waitingForPage = false;
 
-  /// The paging parameters in force, kept for the key handlers.
+  /// The paging parameters in force.
   PagingParam<BackgroundItem>? _param;
 
   /// Live-wallpaper playback. The player exists only for the video kind and is
@@ -91,8 +76,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   StreamSubscription<bool>? _playingSubscription;
   bool _videoPlaying = false;
 
-  /// Playback level for the preview's own player. The background layer is muted
-  /// on purpose; this one is not, and the user asked for sound out of the box.
+  /// Playback level for the preview's own player.
   static const double _volume = 100;
   String? _openedVideoUrl;
 
@@ -114,14 +98,9 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   void dispose() {
     _playingSubscription?.cancel();
     _videoPlayer?.dispose();
-    _pageFocus.dispose();
     super.dispose();
   }
 
-  /// Creates the preview's own player.
-  ///
-  /// Deliberately not the background controller's: that one is muted (it exists
-  /// to paint pixels behind the UI), and this one has to be audible.
   void _createVideoPlayer() {
     final player = Player();
     _videoPlayer = player;
@@ -152,7 +131,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  /// Never throws, even if the page has no entries.
   static const BackgroundItem _emptyItem = BackgroundItem(file: '');
 
   BackgroundItem _itemAt(List<BackgroundItem> items) {
@@ -176,8 +154,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     } finally {
       if (mounted) {
         setState(() => _apiLoading = false);
-        // A refresh that fails while a picture is already on screen has no
-        // status view to explain itself, so it reports through a toast.
         if (failed && _apiBytes != null) {
           ToastUtil.show(i18nOr('wallpaper_fetch_failed', 'Failed to fetch an image, try again'));
         }
@@ -185,8 +161,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  /// Pulls the next page in, both on demand and a few entries ahead of the
-  /// cursor so a fast 下一个 never waits on the network.
   void _prefetch(List<BackgroundItem> items, {bool force = false}) {
     final param = _param;
     if (param == null) return;
@@ -216,7 +190,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       _prefetch(items, force: true);
       return;
     }
-    // End of the list: wrap around.
     setState(() => _index = 0);
   }
 
@@ -265,13 +238,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  /// Commits a live wallpaper.
-  ///
-  /// The clip is saved to local storage first and the background is pointed at
-  /// the file. Streaming it for the background layer is what produced a black
-  /// screen: that layer mounts while the network is still settling, and a failed
-  /// open leaves nothing behind. If the download does not work out, the remote
-  /// URL is still set so the wallpaper is not silently lost.
   Future<void> _applyVideo(BackgroundItem item) async {
     final bg = SettingsService.to.bg;
     try {
@@ -306,8 +272,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           busy: _apiLoading,
         )
       else if (_isVideo) ...[
-        // A live wallpaper is watched, so playback leads the bar. Sound is on by
-        // default — there is nothing to configure.
         _PreviewAction(
           kind: _PreviewActionKind.playPause,
           icon: _videoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
@@ -372,49 +336,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  void _move(int step, int count) {
-    if (count == 0) return;
-    setState(() => _actionIndex = (_actionIndex + step + count) % count);
-  }
-
-  KeyEventResult _onKey(KeyEvent event, List<BackgroundItem> items) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final LogicalKeyboardKey key = event.logicalKey;
-    final List<_PreviewAction> actions = _buildActions();
-    if (actions.isEmpty) return KeyEventResult.ignored;
-
-    if (key == LogicalKeyboardKey.arrowLeft) {
-      _move(-1, actions.length);
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.arrowRight) {
-      _move(1, actions.length);
-      return KeyEventResult.handled;
-    }
-
-    final bool confirm =
-        key == LogicalKeyboardKey.enter ||
-        key == LogicalKeyboardKey.select ||
-        key == LogicalKeyboardKey.space ||
-        key == LogicalKeyboardKey.gameButtonA;
-    if (confirm) {
-      _run(actions[_actionIndex.clamp(0, actions.length - 1)], items);
-      return KeyEventResult.handled;
-    }
-
-    // Everything else — including the back key, so the route pops normally.
-    return KeyEventResult.ignored;
-  }
-
   @override
   Widget build(BuildContext context) {
     final bgState = ref.watch(backgroundControllerProvider);
     final List<BackgroundItem> items = _resolveItems(ref);
 
-    // A page that arrived while the user was already asking for the next entry
-    // advances the cursor now.
     if (_waitingForPage && _index + 1 < items.length) {
       _waitingForPage = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -424,11 +350,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
     final BackgroundItem item = _itemAt(items);
     final actions = _buildActions();
-    final int safeIndex = _actionIndex.clamp(0, actions.length - 1);
     final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
 
-    // Follow the cursor: the first build opens the video, 上一个/下一个 opens the
-    // neighbour and keeps playing.
     if (_isVideo && item.file.isNotEmpty && item.file != _openedVideoUrl) {
       _openedVideoUrl = item.file;
       final String url = item.file;
@@ -437,39 +360,30 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       });
     }
 
+    // No page-level Focus wrapper anymore: the bottom bar owns the only
+    // focusable nodes and the framework does the traversal + restoration.
     return TvPageScaffold(
       showAppBar: false,
-      child: Focus(
-        focusNode: _pageFocus,
-        autofocus: true,
-        onKeyEvent: (node, event) => _onKey(event, items),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _buildViewer(bgState, item),
-            if (widget.args.isApiMode && _apiLoading && hasPicture)
-              const Positioned(
-                top: 16,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: SizedBox(
-                    height: 28,
-                    width: 28,
-                    child: AppStatusView(type: AppStatusType.loading, isMini: true),
-                  ),
-                ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildViewer(bgState, item),
+          if (widget.args.isApiMode && _apiLoading && hasPicture)
+            const Positioned(
+              top: 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: SizedBox(height: 28, width: 28, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
               ),
-            _buildTopBar(items, item),
-            _buildBottomBar(actions, safeIndex, items),
-          ],
-        ),
+            ),
+          _buildTopBar(items, item),
+          _buildBottomBar(actions, items),
+        ],
       ),
     );
   }
 
-  /// The list to walk: the paged core in catalog mode, a one-entry stand-in in
-  /// API mode (which downloads instead).
   List<BackgroundItem> _resolveItems(WidgetRef ref) {
     if (widget.args.isApiMode) return const <BackgroundItem>[];
     final catalog = ref.watch(backgroundCatalogProvider);
@@ -481,7 +395,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     final param = wallpaperPagingParam(source, category);
     _param = param;
     final state = ref.watch(pagingCoreProvider(param));
-    // Keep a page in hand well before the cursor reaches the end.
     if (state.canLoadMore && !state.controllerState.loading && _index >= state.items.length - 3) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _prefetch(state.items);
@@ -504,15 +417,12 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     if (widget.args.isApiMode) {
       final bytes = _apiBytes;
       if (bytes == null) {
-        // The shared status views own every loading/error surface on this page.
-        return ExcludeFocus(
-          child: _apiLoading
-              ? const AppStatusView(type: AppStatusType.loading)
-              : AppStatusView(
-                  type: AppStatusType.error,
-                  subtitle: i18nOr('wallpaper_fetch_failed', 'Failed to fetch an image, try again'),
-                ),
-        );
+        return _apiLoading
+            ? const AppStatusView(type: AppStatusType.loading)
+            : AppStatusView(
+                type: AppStatusType.error,
+                subtitle: i18nOr('wallpaper_fetch_failed', 'Failed to fetch an image, try again'),
+              );
       }
       return SizedBox.expand(child: Image.memory(bytes, fit: bgState.boxFit, gaplessPlayback: true));
     }
@@ -521,8 +431,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       case BackgroundKind.gradient:
         return GradientPreview(item: item);
       case BackgroundKind.video:
-        // Play the clip with its own audio; the poster only stands in until the
-        // player has been created.
         final controller = _videoController;
         if (controller == null) {
           return WallpaperNetworkImage(
@@ -584,7 +492,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     );
   }
 
-  Widget _buildBottomBar(List<_PreviewAction> actions, int safeIndex, List<BackgroundItem> items) {
+  Widget _buildBottomBar(List<_PreviewAction> actions, List<BackgroundItem> items) {
     return Positioned(
       left: 0,
       right: 0,
@@ -609,11 +517,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               overflow: TextOverflow.ellipsis,
             ),
             SizedBox(height: 18.sp),
-            // Focus traversal stays out of the bar: the arrows are handled by
-            // the page, and the buttons only react to the highlight computed
-            // here (plus a mouse click). A Wrap keeps the extra playback buttons
-            // of a live wallpaper on screen.
-            ExcludeFocus(
+            // The bar is a normal focus scope now. OrderedTraversalPolicy
+            // keeps ←/→ following the on-screen order, so adding or removing
+            // the playback buttons never breaks navigation.
+            FocusTraversalGroup(
+              policy: OrderedTraversalPolicy(),
               child: Wrap(
                 spacing: 10.sp,
                 runSpacing: 10.sp,
@@ -621,11 +529,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                   for (int i = 0; i < actions.length; i++)
                     _PreviewActionButton(
                       action: actions[i],
-                      highlighted: i == safeIndex,
-                      onTap: () {
-                        setState(() => _actionIndex = i);
-                        _run(actions[i], items);
-                      },
+                      autofocus: i == 0,
+                      onActivate: () => _run(actions[i], items),
                     ),
                 ],
               ),
@@ -649,57 +554,103 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
 /// One bottom-bar button.
 ///
-/// Deliberately not a `DpadFocusable`: the preview owns the keyboard and only
-/// renders the highlight, so there is no traversal that can wander off.
-class _PreviewActionButton extends StatelessWidget {
-  const _PreviewActionButton({required this.action, required this.highlighted, required this.onTap});
+/// A real focus node: it lights up when focused, activates on OK, and lets the
+/// framework move the highlight with ←/→. Nothing here talks to the page or
+/// manipulates the focus tree, so the route can pop cleanly.
+class _PreviewActionButton extends StatefulWidget {
+  const _PreviewActionButton({required this.action, required this.onActivate, this.autofocus = false});
 
   final _PreviewAction action;
-  final bool highlighted;
-  final VoidCallback onTap;
+  final VoidCallback onActivate;
+  final bool autofocus;
+
+  @override
+  State<_PreviewActionButton> createState() => _PreviewActionButtonState();
+}
+
+class _PreviewActionButtonState extends State<_PreviewActionButton> {
+  late final FocusNode _focusNode = FocusNode(debugLabel: 'preview-action');
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    if (mounted) setState(() => _focused = _focusNode.hasFocus);
+  }
+
+  KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.select ||
+        key == LogicalKeyboardKey.space ||
+        key == LogicalKeyboardKey.gameButtonA) {
+      widget.onActivate();
+      return KeyEventResult.handled;
+    }
+    // Everything else — including the back key — falls through so the route
+    // pops normally and the framework restores the previous focus.
+    return KeyEventResult.ignored;
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = context.tvTheme;
     final radius = BorderRadius.circular(26.sp);
-    final Color fill = highlighted ? theme.focusColor : theme.cardColor;
+    final Color fill = _focused ? theme.focusColor : theme.cardColor;
     final Color foreground = Colors.white;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
-          height: 56.sp,
-          padding: EdgeInsets.symmetric(horizontal: 24.sp),
-          decoration: BoxDecoration(color: fill, borderRadius: radius),
-          // No `alignment` here on purpose: a Container with an alignment
-          // expands to the constraint it is given, and inside a `Wrap` that is
-          // the full line width — which put every button on a row of its own.
-          // The intrinsic width comes from the row below instead.
-          //
-          // No border either: the focus fill already reads as the highlight, and
-          // a white outline on a dark bar looked like a second, louder state.
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (action.busy)
-                SizedBox(
-                  width: 26.sp,
-                  height: 26.sp,
-                  child: const AppStatusView(type: AppStatusType.loading, isMini: true, iconColor: Colors.white),
-                )
-              else
-                Icon(action.icon, size: 24.sp, color: foreground),
-              SizedBox(width: 10.sp),
-              Text(
-                action.label,
-                style: TextStyle(fontSize: 18.sp, color: foreground, fontWeight: FontWeight.w600),
-              ),
-            ],
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: widget.autofocus,
+      onKeyEvent: _handleKey,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            // Mouse click: move the highlight here too, so TV and mouse stay
+            // in sync instead of fighting each other.
+            _focusNode.requestFocus();
+            widget.onActivate();
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOutCubic,
+            height: 56.sp,
+            padding: EdgeInsets.symmetric(horizontal: 24.sp),
+            decoration: BoxDecoration(color: fill, borderRadius: radius),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.action.busy)
+                  SizedBox(
+                    width: 26.sp,
+                    height: 26.sp,
+                    child: const AppStatusView(type: AppStatusType.loading, isMini: true, iconColor: Colors.white),
+                  )
+                else
+                  Icon(widget.action.icon, size: 24.sp, color: foreground),
+                SizedBox(width: 10.sp),
+                Text(
+                  widget.action.label,
+                  style: TextStyle(fontSize: 18.sp, color: foreground, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
           ),
         ),
       ),

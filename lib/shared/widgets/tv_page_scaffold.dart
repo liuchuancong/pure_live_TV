@@ -1,6 +1,8 @@
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/widgets/tv_app_bar.dart';
 import 'package:pure_live/shared/widgets/tv_page_shell.dart';
+import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 
 /// A page that owns its chrome: **its own app bar and its own 返回 button**, plus the
 /// focus wiring between them (the highlight opens on 返回, Down walks into the page,
@@ -44,7 +46,7 @@ class TvPageScaffold extends StatefulWidget {
   State<TvPageScaffold> createState() => _TvPageScaffoldState();
 }
 
-class _TvPageScaffoldState extends State<TvPageScaffold> {
+class _TvPageScaffoldState extends State<TvPageScaffold> with RouteAware {
   /// This page's 返回 button node. External when the caller passed one, created here
   /// when this page builds the default app bar.
   FocusNode? _backNode;
@@ -52,8 +54,48 @@ class _TvPageScaffoldState extends State<TvPageScaffold> {
 
   @override
   void dispose() {
+    tvRouteObserver.unsubscribe(this);
     if (_ownsBackNode) _backNode?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final ModalRoute<void>? route = ModalRoute.of(context);
+    if (route != null) tvRouteObserver.subscribe(this, route);
+  }
+
+  /// A pushed page popped back to this one. The child's focus node died with it,
+  /// so the keyboard is left on a dead node and the page stops responding to the
+  /// remote. Hand the opening focus back to 返回, exactly like the first entry.
+  @override
+  void didPopNext() {
+    int attempts = 0;
+    void attempt() {
+      if (!mounted || attempts >= 8) return;
+      attempts++;
+      final FocusNode? node = _backNode;
+      if (node == null) return;
+      if (node.parent == null || node.context?.mounted != true || !node.canRequestFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
+        return;
+      }
+      final FocusNode? primary = FocusManager.instance.primaryFocus;
+      if (primary != null && primary != node && primary.context?.mounted == true && primary.canRequestFocus) {
+        return;
+      }
+      DpadRegion.ofNode(node)?.noteFocus(node);
+      node.requestFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
+  }
+
+  bool _canPopAnyNavigator(BuildContext context) {
+    if (Navigator.of(context).canPop()) return true;
+    return Navigator.maybeOf(context, rootNavigator: true)?.canPop() ?? false;
   }
 
   @override
@@ -62,13 +104,10 @@ class _TvPageScaffoldState extends State<TvPageScaffold> {
 
     if (widget.showAppBar) {
       final TvAppBar? custom = widget.appBar;
-      final bool effectiveShowBackButton =
-          widget.showBackButton ?? custom?.showBackButton ?? tvShowsBackButton(context);
+      final bool wantsBack = widget.showBackButton ?? custom?.showBackButton ?? _canPopAnyNavigator(context);
 
-      // A page can name its 返回 node either on the scaffold or inside the app bar it
-      // built itself; both mean "this node is mine, create none".
       final FocusNode? externalNode = widget.backFocusNode ?? custom?.backFocusNode;
-      if (!effectiveShowBackButton) {
+      if (!wantsBack) {
         _backNode = null;
         _ownsBackNode = false;
       } else if (externalNode != null) {
@@ -79,17 +118,12 @@ class _TvPageScaffoldState extends State<TvPageScaffold> {
         _ownsBackNode = true;
       }
 
-      // One bar either way, so a page that passed its own `TvAppBar` keeps its title
-      // and actions *and* gets the focus node the shell needs: without the node its
-      // 返回 was drawn but unreachable — nothing handed focus Up to it, so the remote
-      // could not select it and it never even showed the focused look the other
-      // pages' 返回 buttons have. `/settings` was exactly that page.
       bar = TvAppBar(
         title: custom?.title ?? widget.title,
         titleWidget: custom?.titleWidget ?? widget.titleWidget,
         actions: custom?.actions ?? widget.actions,
         beforeBack: custom?.beforeBack ?? widget.beforeBack,
-        showBackButton: effectiveShowBackButton,
+        showBackButton: wantsBack,
         backFocusNode: _backNode,
       );
     }
