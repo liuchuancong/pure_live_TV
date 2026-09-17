@@ -41,11 +41,56 @@ class _TvScaffoldState extends State<TvScaffold> {
   /// / safe-area offsets).
   FocusNode? _backNode;
 
+  /// Lets the initial-focus pass reach the content region's nodes.
+  final GlobalKey<DpadRegionState> _contentRegionKey = GlobalKey<DpadRegionState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _giveContentInitialFocus());
+  }
+
   @override
   void dispose() {
     _backNode?.dispose();
     super.dispose();
   }
+
+  /// Lands the keyboard on the first content row of a freshly pushed page.
+  ///
+  /// The back button carries `autofocus: true`, so without this pass every
+  /// page opened with the highlight parked on 返回 (the d-pad root's fallback
+  /// would pick the top-left-most node otherwise, which is the back button
+  /// too). The pass runs only while the back button *still* holds focus —
+  /// the moment the user (or a route restore) moves focus anywhere else, it
+  /// stands down — and retries briefly so pages whose rows arrive a few
+  /// frames late (async font lists and friends) are covered too.
+  void _giveContentInitialFocus() {
+    final FocusNode? back = _backNode;
+    if (back == null || !mounted) return;
+    final FocusNode? primary = FocusManager.instance.primaryFocus;
+    if (primary != null && !identical(primary, back)) return; // user/restore moved on
+
+    final DpadRegionState? region = _contentRegionKey.currentState;
+    // Same usability rule the package's own DpadMarks uses, minus the unexported
+    // helper: attached, mounted, and able to take focus.
+    bool usable(FocusNode node) =>
+        node.parent != null && node.context?.mounted == true && node.canRequestFocus;
+    final FocusNode? first = region?.focusNodes.where(usable).firstOrNull;
+    if (first != null) {
+      region!.noteFocus(first);
+      first.requestFocus();
+      return;
+    }
+    // No focusable content yet — retry while the window is open and the back
+    // button is still the holder.
+    if (_initialFocusAttempts < 10) {
+      _initialFocusAttempts++;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _giveContentInitialFocus());
+    }
+  }
+
+  int _initialFocusAttempts = 0;
 
   void _onContentEdge(TraversalDirection direction) {
     if (direction != TraversalDirection.up) return;
@@ -84,6 +129,7 @@ class _TvScaffoldState extends State<TvScaffold> {
     // the bottom edge simply stays put, as there is nothing below.
     final Widget content = _backNode != null
         ? DpadRegion(
+            key: _contentRegionKey,
             verticalEdge: DpadEdgeBehavior.stop,
             onEdge: _onContentEdge,
             child: TvFocusRestorer(child: widget.child),
