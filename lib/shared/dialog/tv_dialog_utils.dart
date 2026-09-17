@@ -15,6 +15,14 @@ class TvDialogUtils {
   static Future<T?> show<T>({required BuildContext context, required WidgetBuilder builder}) async {
     _container?.read(tvDialogLockProvider.notifier).lock();
 
+    // The row/button that had the keyboard before the dialog opened. Restoring
+    // it here (not from the page's route-lifecycle hooks) is what actually
+    // wins: the dialog's focus tree disposes when its *exit transition* ends —
+    // after any frame-bounded restore has run — and the d-pad layer answers
+    // that focus death by parking on the top-most node it finds, which is the
+    // app bar's back button.
+    final FocusNode? invokingFocus = FocusManager.instance.primaryFocus;
+
     final result = await showGeneralDialog<T>(
       context: context,
       barrierDismissible: false,
@@ -36,7 +44,29 @@ class TvDialogUtils {
 
     _container?.read(tvDialogLockProvider.notifier).unlock();
 
+    // The dialog is fully gone here; hand the keyboard back to exactly where
+    // the user was, asserting for a few frames so the d-pad fallback loses.
+    _restoreInvokingFocus(invokingFocus);
+
     return result;
+  }
+
+  /// Re-asserts [node] for a few frames; gives up silently when the node was
+  /// rebuilt away or the user has already moved focus somewhere deliberately.
+  static void _restoreInvokingFocus(FocusNode? node) {
+    if (node == null) return;
+    var attempts = 0;
+    void attempt() {
+      if (attempts >= 6) return;
+      attempts++;
+      if (identical(FocusManager.instance.primaryFocus, node)) return; // settled
+      final bool usable = node.parent != null && node.context?.mounted == true && node.canRequestFocus;
+      if (!usable) return;
+      node.requestFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
   }
 
   static Future<bool?> showConfirm({
