@@ -1,41 +1,35 @@
 ﻿import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/shared/utils/toast_util.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/pagination/paging_core.dart';
+import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
-import 'package:pure_live/services/background_config/background_config_model.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/shared/pagination/models/paging_param.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
+import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/common/utils/color_util.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/pagination/models/paging_param.dart';
-import 'package:pure_live/shared/pagination/paging_core.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 
 /// What one button in the preview's action bar does.
 enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause }
 
 /// One entry of the preview's action bar.
 class _PreviewAction {
-  const _PreviewAction({
-    required this.kind,
-    required this.icon,
-    required this.label,
-    this.busy = false,
-  });
+  const _PreviewAction({required this.kind, required this.icon, required this.label, this.busy = false});
 
   final _PreviewActionKind kind;
   final IconData icon;
@@ -66,8 +60,7 @@ class WallpaperPreviewPage extends ConsumerStatefulWidget {
   final WallpaperPreviewArgs args;
 
   @override
-  ConsumerState<WallpaperPreviewPage> createState() =>
-      _WallpaperPreviewPageState();
+  ConsumerState<WallpaperPreviewPage> createState() => _WallpaperPreviewPageState();
 }
 
 class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
@@ -103,8 +96,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   static const double _volume = 100;
   String? _openedVideoUrl;
 
-  bool get _isVideo =>
-      !widget.args.isApiMode && widget.args.kind == BackgroundKind.video;
+  bool get _isVideo => !widget.args.isApiMode && widget.args.kind == BackgroundKind.video;
 
   @override
   void initState() {
@@ -133,10 +125,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   void _createVideoPlayer() {
     final player = Player();
     _videoPlayer = player;
-    _videoController = VideoController(
-      player,
-      configuration: wallpaperVideoControllerConfiguration(),
-    );
+    _videoController = VideoController(player, configuration: wallpaperVideoControllerConfiguration());
     player.setVolume(_volume);
     _playingSubscription = player.stream.playing.listen((playing) {
       if (mounted) setState(() => _videoPlaying = playing);
@@ -190,9 +179,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         // A refresh that fails while a picture is already on screen has no
         // status view to explain itself, so it reports through a toast.
         if (failed && _apiBytes != null) {
-          ToastUtil.show(
-            i18nOr('wallpaper_fetch_failed', 'Failed to fetch an image, try again'),
-          );
+          ToastUtil.show(i18nOr('wallpaper_fetch_failed', 'Failed to fetch an image, try again'));
         }
       }
     }
@@ -259,8 +246,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             await _applyVideo(item);
           case BackgroundKind.gradient:
             final colors = <Color>[
-              for (final stop in item.gradient ?? const <BackgroundGradientStop>[])
-                ColorUtil.hexToColor(stop.color),
+              for (final stop in item.gradient ?? const <BackgroundGradientStop>[]) ColorUtil.hexToColor(stop.color),
             ];
             if (colors.length < 2) {
               ToastUtil.show(i18nOr('background_invalid_gradient', '这个渐变数据不完整'));
@@ -272,9 +258,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       if (mounted) ToastUtil.show(i18nOr('wallpaper_set_done', 'Background updated'));
     } catch (error) {
       if (mounted) {
-        ToastUtil.show(
-          i18nOr('background_apply_failed', 'Failed to apply: {msg}', args: {'msg': '$error'}),
-        );
+        ToastUtil.show(i18nOr('background_apply_failed', 'Failed to apply: {msg}', args: {'msg': '$error'}));
       }
     } finally {
       if (mounted) setState(() => _applying = false);
@@ -327,9 +311,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         _PreviewAction(
           kind: _PreviewActionKind.playPause,
           icon: _videoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          label: _videoPlaying
-              ? i18nOr('wallpaper_pause', 'Pause')
-              : i18nOr('wallpaper_play', 'Play'),
+          label: _videoPlaying ? i18nOr('wallpaper_pause', 'Pause') : i18nOr('wallpaper_play', 'Play'),
         ),
         _PreviewAction(
           kind: _PreviewActionKind.prev,
@@ -532,9 +514,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                 ),
         );
       }
-      return SizedBox.expand(
-        child: Image.memory(bytes, fit: bgState.boxFit, gaplessPlayback: true),
-      );
+      return SizedBox.expand(child: Image.memory(bytes, fit: bgState.boxFit, gaplessPlayback: true));
     }
 
     switch (widget.args.kind!) {
@@ -552,11 +532,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             fallback: const ColoredBox(color: Colors.black),
           );
         }
-        return Video(
-          controller: controller,
-          fit: bgState.boxFit,
-          controls: (state) => const SizedBox.shrink(),
-        );
+        return Video(controller: controller, fit: bgState.boxFit, controls: (state) => const SizedBox.shrink());
       case BackgroundKind.image:
         return WallpaperNetworkImage(
           url: item.file,
@@ -595,10 +571,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               if (!widget.args.isApiMode && items.length > 1)
                 Text(
                   '${_index + 1}/${items.length}',
-                  style: TextStyle(fontSize: 15.sp, color: Colors.white70),
+                  style: TextStyle(fontSize: 18.sp, color: Colors.white70),
                 ),
               if (_isVideo) ...[
-                SizedBox(width: 16.sp),
+                SizedBox(width: 18.sp),
                 Icon(Icons.volume_up_rounded, size: 18.sp, color: Colors.white70),
               ],
             ],
@@ -608,11 +584,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     );
   }
 
-  Widget _buildBottomBar(
-    List<_PreviewAction> actions,
-    int safeIndex,
-    List<BackgroundItem> items,
-  ) {
+  Widget _buildBottomBar(List<_PreviewAction> actions, int safeIndex, List<BackgroundItem> items) {
     return Positioned(
       left: 0,
       right: 0,
@@ -632,11 +604,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           children: [
             Text(
               i18nOr('wallpaper_preview_hint', '←→ 选择按钮 · OK 确认 · 返回退出'),
-              style: TextStyle(fontSize: 13.sp, color: Colors.white70),
+              style: TextStyle(fontSize: 16.sp, color: Colors.white70),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 12.sp),
+            SizedBox(height: 18.sp),
             // Focus traversal stays out of the bar: the arrows are handled by
             // the page, and the buttons only react to the highlight computed
             // here (plus a mouse click). A Wrap keeps the extra playback buttons
@@ -680,11 +652,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 /// Deliberately not a `DpadFocusable`: the preview owns the keyboard and only
 /// renders the highlight, so there is no traversal that can wander off.
 class _PreviewActionButton extends StatelessWidget {
-  const _PreviewActionButton({
-    required this.action,
-    required this.highlighted,
-    required this.onTap,
-  });
+  const _PreviewActionButton({required this.action, required this.highlighted, required this.onTap});
 
   final _PreviewAction action;
   final bool highlighted;
@@ -695,7 +663,7 @@ class _PreviewActionButton extends StatelessWidget {
     final theme = context.tvTheme;
     final radius = BorderRadius.circular(26.sp);
     final Color fill = highlighted ? theme.focusColor : theme.cardColor;
-    final Color foreground = highlighted ? theme.onFocusColor : theme.primaryTextColor;
+    final Color foreground = Colors.white;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -722,7 +690,7 @@ class _PreviewActionButton extends StatelessWidget {
                 SizedBox(
                   width: 26.sp,
                   height: 26.sp,
-                  child: const AppStatusView(type: AppStatusType.loading, isMini: true),
+                  child: const AppStatusView(type: AppStatusType.loading, isMini: true, iconColor: Colors.white),
                 )
               else
                 Icon(action.icon, size: 24.sp, color: foreground),

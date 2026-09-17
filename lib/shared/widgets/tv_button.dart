@@ -84,13 +84,13 @@ class TvButton extends StatelessWidget {
 
           if (selected) {
             bgColor = activeTheme.focusColor;
-            foregroundColor = activeTheme.onFadedFocusColor;
+            foregroundColor = Colors.white;
           } else if (isFocused && useFadedFocus) {
             bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-            foregroundColor = activeTheme.onFadedFocusColor;
+            foregroundColor = Colors.white70;
           } else if (isFocused) {
             bgColor = activeTheme.focusColor;
-            foregroundColor = activeTheme.onFadedFocusColor;
+            foregroundColor = Colors.white70;
           } else {
             // buttonSurface, not cardColor: on light palettes the card is a
             // near-white tint, so a card-colored button read as a plain white

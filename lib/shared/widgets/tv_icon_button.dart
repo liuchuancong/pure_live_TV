@@ -58,13 +58,13 @@ class TvIconButton extends StatelessWidget {
 
             if (selected) {
               bgColor = activeTheme.focusColor;
-              foregroundColor = activeTheme.onFadedFocusColor;
+              foregroundColor = Colors.white;
             } else if (isFocused && useFadedFocus) {
               bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-              foregroundColor = activeTheme.onFadedFocusColor;
+              foregroundColor = Colors.white;
             } else if (isFocused) {
               bgColor = activeTheme.focusColor;
-              foregroundColor = activeTheme.onFadedFocusColor;
+              foregroundColor = Colors.white70;
             } else {
               bgColor = isSecondary ? activeTheme.cardColor.withValues(alpha: 0.5) : activeTheme.cardColor;
               foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
