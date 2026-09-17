@@ -33,7 +33,7 @@ class TvScaffold extends StatefulWidget {
   State<TvScaffold> createState() => _TvScaffoldState();
 }
 
-class _TvScaffoldState extends State<TvScaffold> {
+class _TvScaffoldState extends State<TvScaffold> with RouteAware {
   /// The app bar back button, when [TvScaffold] builds the default app bar.
   /// The content region's top edge hands focus to this node, so "up" from the
   /// first content row always reaches the back button without relying on
@@ -44,53 +44,126 @@ class _TvScaffoldState extends State<TvScaffold> {
   /// Lets the initial-focus pass reach the content region's nodes.
   final GlobalKey<DpadRegionState> _contentRegionKey = GlobalKey<DpadRegionState>();
 
+  /// Whether this page is the route on top.
+  ///
+  /// A covered page keeps its widgets laid out (the navigator maintains state), so
+  /// its rows still have screen rectangles — exactly the rectangles of the page
+  /// now on screen, because a settings page pushing another settings page draws the
+  /// same shape twice. Leaving them focusable is what let the remote drive the
+  /// invisible page below: the d-pad layer restores focus itself when the node it
+  /// held dies, and picks the geometrically nearest node, invisible or not.
+  bool _isCurrent = true;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _giveContentInitialFocus());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final ModalRoute<void>? route = ModalRoute.of(context);
+    if (route != null) tvRouteObserver.subscribe(this, route);
   }
 
   @override
   void dispose() {
+    tvRouteObserver.unsubscribe(this);
     _backNode?.dispose();
     super.dispose();
   }
 
-  /// Lands the keyboard on the first content row of a freshly pushed page.
+  @override
+  void didPush() => _setCurrent(true);
+
+  @override
+  void didPopNext() => _setCurrent(true);
+
+  @override
+  void didPushNext() => _setCurrent(false);
+
+  @override
+  void didPop() => _setCurrent(false);
+
+  void _setCurrent(bool current) {
+    if (_isCurrent == current) return;
+    if (!mounted) return;
+    setState(() => _isCurrent = current);
+    // Coming back to the top: [TvFocusRestorer] hands focus back to the item the
+    // user acted on, which beats picking the first row here.
+    if (current) return;
+  }
+
+  /// Whether [node] is one of this page's rows, rather than its app bar.
   ///
-  /// The back button carries `autofocus: true`, so without this pass every
-  /// page opened with the highlight parked on 返回 (the d-pad root's fallback
-  /// would pick the top-left-most node otherwise, which is the back button
-  /// too). The pass runs only while the back button *still* holds focus —
-  /// the moment the user (or a route restore) moves focus anywhere else, it
-  /// stands down — and retries briefly so pages whose rows arrive a few
-  /// frames late (async font lists and friends) are covered too.
-  void _giveContentInitialFocus() {
-    final FocusNode? back = _backNode;
-    if (back == null || !mounted) return;
-    final FocusNode? primary = FocusManager.instance.primaryFocus;
-    if (primary != null && !identical(primary, back)) return; // user/restore moved on
+  /// The nearest [DpadRegion] above the focused widget is the content region for a
+  /// row and the outer region for the back button, which is exactly the
+  /// distinction the focus claim needs.
+  bool _contentOwnsFocus(FocusNode? node) {
+    final BuildContext? nodeContext = node?.context;
+    if (nodeContext == null) return false;
+    return nodeContext.findAncestorStateOfType<DpadRegionState>() == _contentRegionKey.currentState;
+  }
+
+  /// Lands the keyboard on the first content row of a page that just came to the
+  /// top.
+  ///
+  /// The back button carries `autofocus: true`, so without this pass every page
+  /// opened with the highlight parked on 返回. It also settles the race with the
+  /// d-pad layer's own restore: the node that held the keyboard dies when the page
+  /// below is covered (its subtree stops being focusable), and the restore that
+  /// follows can otherwise land on a node of that invisible page.
+  ///
+  /// The pass stands down as soon as a row of this page holds the keyboard, so it
+  /// never fights a user who has already moved on, and it only ever runs once per
+  /// page.
+  void _claimFocus() {
+    if (!mounted || _claimedFocus) return;
+    final ModalRoute<void>? route = ModalRoute.of(context);
+    // A dialog (or any other route) above owns the keyboard.
+    if (route != null && !route.isCurrent) return;
+    if (_contentOwnsFocus(FocusManager.instance.primaryFocus)) {
+      _claimedFocus = true;
+      return;
+    }
 
     final DpadRegionState? region = _contentRegionKey.currentState;
     // Same usability rule the package's own DpadMarks uses, minus the unexported
     // helper: attached, mounted, and able to take focus.
-    bool usable(FocusNode node) =>
-        node.parent != null && node.context?.mounted == true && node.canRequestFocus;
+    bool usable(FocusNode node) => node.parent != null && node.context?.mounted == true && node.canRequestFocus;
+
     final FocusNode? first = region?.focusNodes.where(usable).firstOrNull;
     if (first != null) {
       region!.noteFocus(first);
       first.requestFocus();
+      if (_contentOwnsFocus(FocusManager.instance.primaryFocus)) {
+        _claimedFocus = true;
+        return;
+      }
+    }
+
+    // No focusable row yet (rows that arrive a few frames late, async font lists
+    // and friends): retry briefly, then settle for the back button so the page is
+    // never left without a highlight.
+    if (_focusClaimAttempts < _maxFocusClaimAttempts) {
+      _focusClaimAttempts++;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
       return;
     }
-    // No focusable content yet — retry while the window is open and the back
-    // button is still the holder.
-    if (_initialFocusAttempts < 10) {
-      _initialFocusAttempts++;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _giveContentInitialFocus());
+    _claimedFocus = true;
+    final FocusNode? back = _backNode;
+    if (back != null && usable(back)) {
+      DpadRegion.ofNode(back)?.noteFocus(back);
+      back.requestFocus();
     }
   }
 
-  int _initialFocusAttempts = 0;
+  int _focusClaimAttempts = 0;
+  static const int _maxFocusClaimAttempts = 6;
+
+  /// Set once this page has claimed the keyboard (or given up on it).
+  bool _claimedFocus = false;
 
   void _onContentEdge(TraversalDirection direction) {
     if (direction != TraversalDirection.up) return;
@@ -144,17 +217,23 @@ class _TvScaffoldState extends State<TvScaffold> {
         fit: StackFit.expand,
         children: [
           DpadRegion(
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (finalAppBar != null) SafeArea(bottom: false, child: finalAppBar),
-                  // Route-aware focus memory: when a pushed page (a settings
-                  // sub-page, a dialog) pops away, focus returns to the item
-                  // the user acted on instead of dying on the dpad root's
-                  // top-left fallback.
-                  Expanded(child: content),
-                ],
+            // A covered page offers no focus candidates at all: its rows and its
+            // back button sit at the coordinates of the page on screen, and the
+            // d-pad layer's restore picks by geometry (see [_isCurrent]).
+            child: ExcludeFocus(
+              excluding: !_isCurrent,
+              child: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (finalAppBar != null) SafeArea(bottom: false, child: finalAppBar),
+                    // Route-aware focus memory: when a pushed page (a settings
+                    // sub-page, a dialog) pops away, focus returns to the item
+                    // the user acted on instead of dying on the dpad root's
+                    // top-left fallback.
+                    Expanded(child: content),
+                  ],
+                ),
               ),
             ),
           ),

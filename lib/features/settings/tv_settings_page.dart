@@ -177,6 +177,9 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsPage: 'page_settings',
   AppRoutes.kSettingsFont: 'font_settings_title',
   AppRoutes.kSettingsFontFamily: 'font_family_settings',
+  // The danmaku-only font manager is the same page in its danmaku scope; without
+  // its own entry it falls back to the generic 系统设置 title.
+  AppRoutes.kSettingsFontFamilyDanmaku: 'font_family_settings',
   AppRoutes.kSettingsDecoder: 'hardware_decoder',
   AppRoutes.kSettingsRenderer: 'video_output_driver',
   AppRoutes.kSettingsAudioOutput: 'audio_output_driver',
