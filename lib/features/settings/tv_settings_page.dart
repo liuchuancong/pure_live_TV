@@ -182,6 +182,7 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsFontFamilyDanmaku: 'font_family_settings',
   // The page's own title (`online_update`), or the shell would call it 系统设置.
   AppRoutes.kAppUpdate: 'online_update',
+  AppRoutes.kUpdateHistory: 'version_history',
   AppRoutes.kSettingsDecoder: 'hardware_decoder',
   AppRoutes.kSettingsRenderer: 'video_output_driver',
   AppRoutes.kSettingsAudioOutput: 'audio_output_driver',

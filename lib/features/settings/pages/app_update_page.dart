@@ -1,17 +1,29 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/features/settings/pages/update_history_page.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/models/release_model/release_model.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// 在线更新: current version, the pending release with its changelog and a
-/// download+install flow driven by [AppUpdateController], plus the release
-/// history (更新历史) fetched from the repo manifest.
+/// 在线更新: the running version and its check state, the pending release with its
+/// notes and assets, and a way into 版本历史.
+///
+/// The layout changed shape with the history: the full release list now lives on
+/// [UpdateHistoryPage] (mirroring the mobile app's 版本历史 page), and this page keeps the
+/// newest few releases as a preview. States that used to be a bare label — checking, up to
+/// date, failed — are drawn with the app's own status view, so a TV user can see whether
+/// the box is working or waiting.
 class AppUpdatePage extends ConsumerWidget {
   const AppUpdatePage({super.key});
+
+  /// How many releases the preview under 版本历史 shows.
+  static const int _previewCount = 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,46 +31,44 @@ class AppUpdatePage extends ConsumerWidget {
     final controller = ref.read(appUpdateControllerProvider.notifier);
 
     return TvPageScaffold(
-      title: i18nOr('online_update', 'Online update'),
+      title: i18n('online_update'),
+      actions: <Widget>[
+        TvButton(
+          title: i18n('check_update'),
+          size: TvButtonSize.mini,
+          icon: Icon(Remix.refresh_line, size: 22.sp),
+          onTap: state.phase == AppUpdatePhase.checking ? null : () => controller.check(userInitiated: true),
+        ),
+      ],
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             TvSettingsGroupTitle(title: i18n('ui_pure_live_tv')),
             TvSettingsCard(
-              children: [
+              children: <Widget>[
                 TvSettingsRow(
                   title: i18n('current_version'),
-                  subtitle: state.currentVersion.isEmpty
-                      ? i18n('ui_loading')
-                      : 'v${state.currentVersion}+${state.currentBuild}',
+                  subtitle: _currentVersionSubtitle(state, ref),
                   icon: Icons.info_outline_rounded,
-                  trailingBuilder: (context, focused) {
-                    final String label = switch (state.phase) {
-                      AppUpdatePhase.checking => i18n('ui_loading'),
-                      AppUpdatePhase.upToDate => i18n('already_latest_version'),
-                      AppUpdatePhase.available ||
-                      AppUpdatePhase.downloading ||
-                      AppUpdatePhase.readyToInstall => '${i18n('new_version_found')} ${state.latestVersion}',
-                      AppUpdatePhase.failed => i18n('check_update_failed'),
-                      _ => i18n('check_update'),
-                    };
-                    return tvSettingsValueLabel(context, focused, label);
-                  },
-                  onSelect: state.phase == AppUpdatePhase.checking ? null : () => controller.check(),
+                  trailingBuilder: (context, focused) => tvSettingsValueLabel(context, focused, _statusLabel(state)),
+                  onSelect: state.phase == AppUpdatePhase.checking
+                      ? null
+                      : () => controller.check(userInitiated: true),
                 ),
+                _buildStatus(state, controller),
               ],
             ),
-            SizedBox(height: 20.sp),
             if (state.phase == AppUpdatePhase.available ||
                 state.phase == AppUpdatePhase.downloading ||
-                state.phase == AppUpdatePhase.readyToInstall) ...[
-              _NewVersionCard(state: state, controller: controller),
+                state.phase == AppUpdatePhase.readyToInstall) ...<Widget>[
               SizedBox(height: 20.sp),
+              _NewVersionCard(state: state, controller: controller),
             ],
-            TvSettingsGroupTitle(title: i18nOr('update_history', 'Release history')),
-            TvSettingsCard(children: [_buildHistory(context, state, controller)]),
+            SizedBox(height: 24.sp),
+            TvSettingsGroupTitle(title: i18n('update_history')),
+            TvSettingsCard(children: <Widget>[_buildHistory(context, state, controller)]),
             SizedBox(height: 40.sp),
           ],
         ),
@@ -66,129 +76,107 @@ class AppUpdatePage extends ConsumerWidget {
     );
   }
 
+  /// `v1.2.3+45 · 镜像加速` — where the version comes from is part of reading the state.
+  String _currentVersionSubtitle(AppUpdateState state, WidgetRef ref) {
+    final bool origin = ref.watch(appSettingsControllerProvider).useGitHubOriginForUpdates;
+    final String source = origin ? i18n('update_source_origin') : i18n('update_source_mirror');
+    if (state.currentVersion.isEmpty) return source;
+    return 'v${state.currentVersion}+${state.currentBuild} · $source';
+  }
+
+  String _statusLabel(AppUpdateState state) {
+    return switch (state.phase) {
+      AppUpdatePhase.checking => i18n('ui_loading'),
+      AppUpdatePhase.upToDate => i18n('already_latest_version'),
+      AppUpdatePhase.available ||
+      AppUpdatePhase.downloading ||
+      AppUpdatePhase.readyToInstall => '${i18n('new_version_found')} ${state.latestVersion}',
+      AppUpdatePhase.failed => i18n('check_update_failed'),
+      _ => i18n('check_update'),
+    };
+  }
+
+  /// The check states, drawn instead of described.
+  Widget _buildStatus(AppUpdateState state, AppUpdateController controller) {
+    switch (state.phase) {
+      case AppUpdatePhase.checking:
+        return SizedBox(
+          height: 180.h,
+          child: AppStatusView(
+            type: AppStatusType.loading,
+            subtitle: i18n('check_update'),
+            isMini: true,
+          ),
+        );
+      case AppUpdatePhase.upToDate:
+        return SizedBox(
+          height: 180.h,
+          child: AppStatusView(
+            type: AppStatusType.empty,
+            title: i18n('already_latest_version'),
+            subtitle: state.latestVersion.isEmpty ? '' : 'v${state.currentVersion}+${state.currentBuild}',
+            isMini: true,
+          ),
+        );
+      case AppUpdatePhase.failed:
+        return SizedBox(
+          height: 200.h,
+          child: AppStatusView(
+            type: AppStatusType.error,
+            title: i18n('check_update_failed'),
+            subtitle: state.error,
+            buttonText: i18n('retry'),
+            onTap: () => controller.check(userInitiated: true),
+            isMini: true,
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  /// The 版本历史 entry, a preview of the newest releases and its own load state.
   Widget _buildHistory(BuildContext context, AppUpdateState state, AppUpdateController controller) {
-    if (state.historyLoading) {
-      return _hintRow(context, i18nOr('update_loading_history', 'Loading release history...'));
-    }
-    if (state.historyError != null) {
-      return TvSettingsOptionTile(
-        title: i18nOr('update_history_failed', 'Failed to load release history'),
-        subtitle: state.historyError,
-        icon: Icons.error_outline_rounded,
-        options: [i18n('retry')],
-        index: 0,
-        onChanged: (_) => controller.loadHistory(),
-      );
-    }
-    if (state.history.isEmpty) {
-      return _hintRow(context, i18nOr('update_no_history', 'No release history yet'));
-    }
+    final tvTheme = context.tvTheme;
     return Column(
-      children: [
-        for (final release in state.history)
+      children: <Widget>[
+        TvSettingsNavTile(
+          title: i18n('version_history'),
+          subtitle: state.history.isEmpty
+              ? i18n('update_view_log')
+              : '${state.history.length} · ${i18n('already_latest_version')} v${state.history.first.version}',
+          icon: Remix.history_line,
+          onTap: () => context.push(AppRoutes.kUpdateHistory),
+        ),
+        for (final ReleaseModel release in state.history.take(_previewCount))
           TvSettingsRow(
             title: 'v${release.version}',
-            subtitle: '${release.date}${release.changeLog.trim().isEmpty ? '' : ' · ${_firstChangelogLine(release.changeLog)}'}',
+            subtitle: releaseSubtitle(release),
             icon: Icons.article_outlined,
             trailingBuilder: (context, focused) => tvSettingsValueLabel(
               context,
               focused,
-              release.version == state.latestVersion ? i18n('font_in_use') : i18nOr('update_view_log', 'Changelog'),
+              release.version == state.currentVersion ? i18n('font_in_use') : i18n('update_view_log'),
             ),
-            onSelect: () => _showHistoryDetail(context, release, state, controller),
+            onSelect: () => showReleaseNotesDialog(context: context, release: release, controller: controller),
+          ),
+        if (state.history.isEmpty)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                state.historyLoading
+                    ? i18n('update_loading_history')
+                    : state.historyError != null
+                    ? i18n('update_history_failed')
+                    : i18n('update_no_history'),
+                style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
+              ),
+            ),
           ),
       ],
     );
-  }
-
-  String _firstChangelogLine(String changelog) {
-    final cleaned = _cleanMarkdown(changelog);
-    final line = cleaned.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
-    return line.trim();
-  }
-
-  Future<void> _showHistoryDetail(
-    BuildContext context,
-    dynamic release,
-    AppUpdateState state,
-    AppUpdateController controller,
-  ) async {
-    await TvDialogUtils.show<void>(
-      context: context,
-      builder: (dialogContext) => TvDialog(
-        title: 'v${release.version} · ${release.date}',
-        cancelText: i18n('close'),
-        onCancel: () => Navigator.of(dialogContext).pop(),
-        child: SizedBox(
-          width: 720.w,
-          height: 520.sp,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    _cleanMarkdown(release.changeLog).isEmpty
-                        ? i18nOr('update_no_notes', 'No release notes')
-                        : _cleanMarkdown(release.changeLog),
-                    style: TextStyle(fontSize: 15.sp, height: 1.5, color: context.tvTheme.primaryTextColor),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.sp),
-              Text(
-                i18nOr('update_assets', 'Download files'),
-                style: TextStyle(fontSize: 14.sp, color: context.tvTheme.secondaryTextColor),
-              ),
-              SizedBox(height: 8.sp),
-              for (final file in release.files)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.sp),
-                  child: Row(
-                    children: [
-                      Icon(Icons.download_rounded, size: 16.sp, color: context.tvTheme.focusColor),
-                      SizedBox(width: 8.sp),
-                      Expanded(
-                        child: Text(
-                          '${file.name} · ${file.size}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13.sp, color: context.tvTheme.primaryTextColor),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(dialogContext).pop();
-                          controller.downloadAndInstallUrl(file.url);
-                        },
-                        child: Text(i18n('download'), style: TextStyle(fontSize: 13.sp)),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Strips markdown tables/headers that the release manifest embeds; the TV
-  /// changelog view is plain text.
-  String _cleanMarkdown(String raw) {
-    final buffer = <String>[];
-    for (final line in raw.split('\n')) {
-      final trimmed = line.trimLeft();
-      if (trimmed.startsWith('|')) continue;
-      if (trimmed.startsWith('#')) {
-        final withoutHash = trimmed.replaceFirst(RegExp(r'^#+\s*'), '');
-        if (withoutHash.isNotEmpty) buffer.add(withoutHash);
-        continue;
-      }
-      if (trimmed.startsWith('---')) continue;
-      buffer.add(line);
-    }
-    return buffer.join('\n').trim();
   }
 }
 
@@ -200,65 +188,88 @@ class _NewVersionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = context.tvTheme;
+    final tvTheme = context.tvTheme;
+    final String? size = controller.selectedAssetSize;
+    final String date = _releaseDate(state);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         TvSettingsGroupTitle(title: '${i18n('new_version_found')} v${state.latestVersion}'),
         TvSettingsCard(
-          children: [
-            if (state.prerelease)
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 2.sp),
-                    decoration: BoxDecoration(
-                      color: theme.focusColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8.sp),
-                    ),
+          children: <Widget>[
+            // 发布 / 体积 / 预览版 in one line, so the card starts with facts rather
+            // than a wall of markdown.
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
                     child: Text(
-                      i18nOr('update_prerelease', 'Pre-release'),
-                      style: TextStyle(fontSize: 12.sp, color: theme.focusColor),
+                      <String>[
+                        if (date.isNotEmpty) date,
+                        if (size != null && size.isNotEmpty) size,
+                      ].join(' · '),
+                      style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
                     ),
                   ),
-                ),
+                  if (state.prerelease)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 2.sp),
+                      decoration: BoxDecoration(
+                        color: tvTheme.focusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8.sp),
+                      ),
+                      child: Text(
+                        i18n('update_prerelease'),
+                        style: TextStyle(fontSize: 12.sp, color: tvTheme.focusColor),
+                      ),
+                    ),
+                ],
               ),
+            ),
             Container(
               constraints: BoxConstraints(maxHeight: 260.sp),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
               child: SingleChildScrollView(
                 child: Text(
-                  state.changelog.isEmpty ? i18nOr('update_no_notes', 'No release notes') : state.changelog,
-                  style: TextStyle(fontSize: 15.sp, height: 1.5, color: theme.primaryTextColor),
+                  state.changelog.isEmpty ? i18n('update_no_notes') : state.changelog,
+                  style: TextStyle(fontSize: 15.sp, height: 1.5, color: tvTheme.primaryTextColor),
                 ),
               ),
             ),
-            if (state.abis.length > 1) ...[
+            if (state.abis.length > 1) ...<Widget>[
               SizedBox(height: 8.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Wrap(
-                    spacing: 8.sp,
-                    children: [
-                      for (final abi in state.abis)
-                        TvButton(
-                          title: abi,
-                          size: TvButtonSize.mini,
-                          selected: state.selectedAbi == abi,
-                          onTap: state.phase == AppUpdatePhase.downloading ? null : () => controller.pickAbi(abi),
-                        ),
-                    ],
-                  ),
+                child: Row(
+                  children: <Widget>[
+                    Text(
+                      i18n('update_abi'),
+                      style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
+                    ),
+                    SizedBox(width: 12.sp),
+                    Expanded(
+                      child: Wrap(
+                        spacing: 8.sp,
+                        runSpacing: 8.sp,
+                        children: <Widget>[
+                          for (final abi in state.abis)
+                            TvButton(
+                              title: abi,
+                              size: TvButtonSize.mini,
+                              selected: state.selectedAbi == abi,
+                              onTap: state.phase == AppUpdatePhase.downloading ? null : () => controller.pickAbi(abi),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
               child: _buildAction(context),
             ),
           ],
@@ -267,33 +278,56 @@ class _NewVersionCard extends ConsumerWidget {
     );
   }
 
+  /// The release date of the version being offered, from the history entry when there is
+  /// one (the manifest itself carries no date).
+  String _releaseDate(AppUpdateState state) {
+    for (final ReleaseModel release in state.history) {
+      if (release.version == state.latestVersion ||
+          release.version.replaceFirst(RegExp('^[vV]'), '') == state.latestVersion) {
+        return release.date;
+      }
+    }
+    return '';
+  }
+
   Widget _buildAction(BuildContext context) {
-    final theme = context.tvTheme;
+    final tvTheme = context.tvTheme;
 
     switch (state.phase) {
       case AppUpdatePhase.downloading:
-        final totalText = state.totalBytes > 0
-            ? '${(state.receivedBytes / 1048576).toStringAsFixed(1)} / ${(state.totalBytes / 1048576).toStringAsFixed(1)} MB'
-            : '${(state.receivedBytes / 1048576).toStringAsFixed(1)} MB';
+        final String done = (state.receivedBytes / 1048576).toStringAsFixed(1);
+        final String total = state.totalBytes > 0 ? ' / ${(state.totalBytes / 1048576).toStringAsFixed(1)} MB' : ' MB';
+        final String percent = state.totalBytes > 0 ? '${(state.progress * 100).toStringAsFixed(0)}%' : '';
+        final int? remaining = state.remainingSeconds;
+        final String speed = state.speedMbps > 0 ? '${state.speedMbps.toStringAsFixed(1)} MB/s' : '';
+        final String eta = remaining == null
+            ? ''
+            : '${(remaining ~/ 60).toString().padLeft(2, '0')}:${(remaining % 60).toString().padLeft(2, '0')}';
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             ClipRRect(
               borderRadius: BorderRadius.circular(6.sp),
               child: LinearProgressIndicator(
                 value: state.totalBytes > 0 ? state.progress : null,
                 minHeight: 8.sp,
-                color: theme.focusColor,
-                backgroundColor: theme.cardColor,
+                color: tvTheme.focusColor,
+                backgroundColor: tvTheme.cardColor,
               ),
             ),
             SizedBox(height: 8.sp),
             Row(
-              children: [
+              children: <Widget>[
                 Expanded(
                   child: Text(
-                    '$totalText${state.speedMbps > 0 ? ' · ${state.speedMbps.toStringAsFixed(1)} MB/s' : ''}',
-                    style: TextStyle(fontSize: 13.sp, color: theme.secondaryTextColor),
+                    <String>[
+                      '$done$total',
+                      if (percent.isNotEmpty) percent,
+                      if (speed.isNotEmpty) speed,
+                      if (eta.isNotEmpty) eta,
+                    ].join(' · '),
+                    style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
                   ),
                 ),
                 TvButton(
@@ -307,69 +341,45 @@ class _NewVersionCard extends ConsumerWidget {
           ],
         );
       case AppUpdatePhase.readyToInstall:
-        return TvButton(
-          title: i18nOr('update_install_now', 'Install now'),
-          size: TvButtonSize.small,
-          icon: Icon(Icons.install_mobile_rounded, size: 18.sp),
-          onTap: controller.installDownloaded,
-        );
-      case AppUpdatePhase.failed:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (state.error.isNotEmpty)
-              Text(
-                state.error,
-                style: TextStyle(fontSize: 13.sp, color: theme.secondaryTextColor),
-              ),
-            SizedBox(height: 6.sp),
+        return Row(
+          children: <Widget>[
             TvButton(
-              title: i18nOr('update_download_install', 'Download & install'),
+              title: i18n('update_install_now'),
               size: TvButtonSize.small,
-              icon: Icon(Icons.download_rounded, size: 18.sp),
-              onTap: () => controller.downloadAndInstall(),
+              icon: Icon(Icons.install_mobile_rounded, size: 18.sp),
+              onTap: controller.installDownloaded,
+            ),
+            SizedBox(width: 16.sp),
+            Expanded(
+              child: Text(
+                i18n('update_package_ready'),
+                style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
+              ),
             ),
           ],
         );
       default:
         return Row(
-          children: [
+          children: <Widget>[
             TvButton(
-              title: i18nOr('update_download_install', 'Download & install'),
+              title: i18n('update_download_install'),
               size: TvButtonSize.small,
               icon: Icon(Icons.download_rounded, size: 18.sp),
               onTap: () => controller.downloadAndInstall(),
             ),
-            SizedBox(width: 12.sp),
-            if (state.error.isNotEmpty)
+            if (state.error.isNotEmpty) ...<Widget>[
+              SizedBox(width: 16.sp),
               Expanded(
                 child: Text(
                   state.error,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12.sp, color: theme.secondaryTextColor),
+                  style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
                 ),
               ),
+            ],
           ],
         );
     }
   }
-}
-
-Widget _hintRow(BuildContext context, String label) {
-  final theme = context.tvTheme;
-  return Padding(
-    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 16.sp,
-          height: 16.sp,
-          child: const CircularProgressIndicator(strokeWidth: 2),
-        ),
-        SizedBox(width: 12.sp),
-        Expanded(child: Text(label, style: TextStyle(fontSize: 15.sp, color: theme.secondaryTextColor))),
-      ],
-    ),
-  );
 }

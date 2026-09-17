@@ -11,11 +11,104 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pure_live/shared/models/release_model/release_model.dart';
 import 'package:pure_live/shared/platform/race_http.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_update_service.g.dart';
 
 enum AppUpdatePhase { idle, checking, upToDate, available, downloading, readyToInstall, failed }
+
+/// What the app did to this device's copy of itself.
+enum AppUpdateAction { checked, available, downloaded, installed, failed }
+
+/// One line of 本机更新记录.
+///
+/// Kept in Hive rather than in the state only: the point of the record is to still be
+/// there after the restart that the update itself caused.
+class AppUpdateRecord {
+  const AppUpdateRecord({required this.version, required this.action, required this.time});
+
+  final String version;
+  final AppUpdateAction action;
+  final DateTime time;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'version': version,
+    'action': action.name,
+    'time': time.toIso8601String(),
+  };
+
+  /// Lenient on purpose: one unreadable entry must not drop the whole log.
+  static AppUpdateRecord fromJson(Map<String, dynamic> json) {
+    final String name = '${json['action']}';
+    AppUpdateAction action = AppUpdateAction.checked;
+    for (final AppUpdateAction candidate in AppUpdateAction.values) {
+      if (candidate.name == name) action = candidate;
+    }
+    return AppUpdateRecord(
+      version: '${json['version'] ?? ''}',
+      action: action,
+      time: DateTime.tryParse('${json['time']}') ?? DateTime.fromMillisecondsSinceEpoch(0),
+    );
+  }
+}
+
+/// The release history payload, newest first.
+///
+/// The manifest is a JSON array (or an object with a `releases` array) of
+/// [ReleaseModel]s; the mobile app sorts it by date and falls back to the version when
+/// two entries share one (`version_history.dart`).
+List<ReleaseModel> parseReleaseHistoryPayload(Object? decoded) {
+  final rawList = switch (decoded) {
+    final List values => values,
+    final Map values when values['releases'] is List => values['releases'] as List,
+    _ => null,
+  };
+  if (rawList == null) throw const FormatException('Invalid release history payload');
+
+  final releases = <ReleaseModel>[];
+  for (final entry in rawList) {
+    if (entry is! Map) continue;
+    try {
+      final json = Map<String, dynamic>.from(entry);
+      // `author` is required by the model but not every manifest entry has one; the
+      // release list would otherwise fail to load over a missing avatar.
+      json['author'] ??= <String, dynamic>{};
+      final release = ReleaseModel.fromJson(json);
+      if (release.version.trim().isEmpty) continue;
+      releases.add(release);
+    } catch (_) {
+      // One unreadable entry must not cost the whole history.
+      continue;
+    }
+  }
+  releases.sort((left, right) {
+    final byDate = right.date.compareTo(left.date);
+    return byDate != 0 ? byDate : right.version.compareTo(left.version);
+  });
+  return releases;
+}
+
+/// Release notes without the markdown the TV view cannot draw.
+///
+/// The manifests embed a download table and `#` headers in the changelog; the TV shows
+/// plain text, so the table rows and the `#`/`---` markers are dropped and the header
+/// text is kept.
+String cleanReleaseNotes(String raw) {
+  final buffer = <String>[];
+  for (final line in raw.split('\n')) {
+    final trimmed = line.trimLeft();
+    if (trimmed.startsWith('|')) continue;
+    if (trimmed.startsWith('---')) continue;
+    if (trimmed.startsWith('#')) {
+      final withoutHash = trimmed.replaceFirst(RegExp(r'^#+\s*'), '');
+      if (withoutHash.isNotEmpty) buffer.add(withoutHash);
+      continue;
+    }
+    buffer.add(line);
+  }
+  return buffer.join('\n').trim();
+}
 
 /// Everything the update page renders.
 class AppUpdateState {
@@ -38,6 +131,9 @@ class AppUpdateState {
   final bool historyLoading;
   final String? historyError;
 
+  /// 本机更新记录, newest first.
+  final List<AppUpdateRecord> records;
+
   const AppUpdateState({
     this.phase = AppUpdatePhase.idle,
     this.currentVersion = '',
@@ -54,9 +150,18 @@ class AppUpdateState {
     this.history = const [],
     this.historyLoading = false,
     this.historyError,
+    this.records = const [],
   });
 
   double get progress => totalBytes > 0 ? (receivedBytes / totalBytes).clamp(0.0, 1.0) : 0;
+
+  /// Seconds left, or null while the size or the speed is unknown.
+  int? get remainingSeconds {
+    if (totalBytes <= 0 || receivedBytes <= 0 || speedMbps <= 0) return null;
+    final double remainingMb = (totalBytes - receivedBytes) / (1024 * 1024);
+    final double seconds = remainingMb / speedMbps;
+    return seconds.isFinite && seconds >= 0 ? seconds.round() : null;
+  }
 
   AppUpdateState copyWith({
     AppUpdatePhase? phase,
@@ -74,6 +179,7 @@ class AppUpdateState {
     List<ReleaseModel>? history,
     bool? historyLoading,
     String? historyError,
+    List<AppUpdateRecord>? records,
   }) {
     return AppUpdateState(
       phase: phase ?? this.phase,
@@ -91,6 +197,7 @@ class AppUpdateState {
       history: history ?? this.history,
       historyLoading: historyLoading ?? this.historyLoading,
       historyError: historyError,
+      records: records ?? this.records,
     );
   }
 }
@@ -118,7 +225,7 @@ class AppUpdateController extends _$AppUpdateController {
   AppUpdateState build() {
     ref.onDispose(_cancelDownload);
     unawaited(_bootstrap());
-    return AppUpdateState(phase: AppUpdatePhase.checking);
+    return AppUpdateState(phase: AppUpdatePhase.checking, records: _readRecords());
   }
 
   Future<void> _bootstrap() async {
@@ -136,7 +243,12 @@ class AppUpdateController extends _$AppUpdateController {
     _patchState(currentVersion: VersionUtil.version, currentBuild: '${VersionUtil.buildNumber}');
   }
 
-  Future<void> check() async {
+  /// Checks the repo manifest.
+  ///
+  /// [userInitiated] adds the check itself to 本机更新记录: the startup check runs on every
+  /// launch, and a log full of those would bury the entries that matter (a version was
+  /// found, downloaded, installed).
+  Future<void> check({bool userInitiated = false}) async {
     if (_checking) return;
     _checking = true;
     _patchState(phase: AppUpdatePhase.checking, error: '');
@@ -146,13 +258,14 @@ class AppUpdateController extends _$AppUpdateController {
       final abis = VersionUtil.latestAndroidAbis.toList()..sort();
       if (!hasUpdate) {
         _patchState(phase: AppUpdatePhase.upToDate, latestVersion: VersionUtil.latestVersion, abis: abis);
+        if (userInitiated) _appendRecord(AppUpdateAction.checked, version: VersionUtil.version);
         return;
       }
       final history = state.history;
       _patchState(
         phase: AppUpdatePhase.available,
         latestVersion: VersionUtil.latestVersion,
-        changelog: _cleanChangelog(VersionUtil.latestUpdateLog),
+        changelog: cleanReleaseNotes(VersionUtil.latestUpdateLog),
         prerelease: VersionUtil.prerelease,
         abis: abis,
         selectedAbi: abis.contains(state.selectedAbi) || state.selectedAbi.isEmpty
@@ -162,8 +275,10 @@ class AppUpdateController extends _$AppUpdateController {
         // or the manifest's own download_url as a last resort.
         history: history,
       );
+      _appendRecord(AppUpdateAction.available, version: VersionUtil.latestVersion);
     } catch (error) {
       _patchState(phase: AppUpdatePhase.failed, error: '$error');
+      _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
     } finally {
       _checking = false;
     }
@@ -186,29 +301,47 @@ class AppUpdateController extends _$AppUpdateController {
       if (url == null) throw StateError('no mirror responded');
       final data = await HttpClient.instance.getJson(url);
       final decoded = data is String ? jsonDecode(data) : data;
-      final releases = _parseHistory(decoded);
-      releases.sort((a, b) => b.version.compareTo(a.version));
+      final releases = parseReleaseHistoryPayload(decoded);
       _patchState(history: releases, historyLoading: false);
     } catch (error) {
       _patchState(historyLoading: false, historyError: '$error');
     }
   }
 
-  List<ReleaseModel> _parseHistory(Object? decoded) {
-    final rawList = switch (decoded) {
-      final List values => values,
-      final Map values when values['releases'] is List => values['releases'] as List,
-      _ => null,
-    };
-    if (rawList == null) throw const FormatException('Invalid release history payload');
-    final releases = <ReleaseModel>[];
-    for (final entry in rawList) {
-      if (entry is! Map) continue;
-      final release = ReleaseModel.fromJson(Map<String, dynamic>.from(entry));
-      if (release.version.trim().isEmpty) continue;
-      releases.add(release);
+  // ---------------------------------------------------------------------------
+  // 本机更新记录
+  // ---------------------------------------------------------------------------
+
+  static const String _recordsKey = 'appUpdateRecords';
+
+  /// How many entries the log keeps; the oldest fall off the end.
+  static const int _maxRecords = 40;
+
+  List<AppUpdateRecord> _readRecords() {
+    try {
+      return HivePrefUtil.getObjectList<AppUpdateRecord>(_recordsKey, AppUpdateRecord.fromJson);
+    } catch (_) {
+      // The store is not up yet (or the log is unreadable): start empty.
+      return const <AppUpdateRecord>[];
     }
-    return releases;
+  }
+
+  void _appendRecord(AppUpdateAction action, {String? version}) {
+    final AppUpdateRecord record = AppUpdateRecord(
+      version: (version ?? state.latestVersion).trim(),
+      action: action,
+      time: DateTime.now(),
+    );
+    final List<AppUpdateRecord> next = <AppUpdateRecord>[record, ...state.records];
+    if (next.length > _maxRecords) next.removeRange(_maxRecords, next.length);
+    _patchState(records: next);
+    unawaited(HivePrefUtil.setObjectList<AppUpdateRecord>(_recordsKey, next, (entry) => entry.toJson()));
+  }
+
+  /// Empties 本机更新记录.
+  void clearRecords() {
+    _patchState(records: const <AppUpdateRecord>[]);
+    unawaited(HivePrefUtil.setObjectList<AppUpdateRecord>(_recordsKey, const <AppUpdateRecord>[], (e) => e.toJson()));
   }
 
   // ---------------------------------------------------------------------------
@@ -246,6 +379,20 @@ class AppUpdateController extends _$AppUpdateController {
   }
 
   void pickAbi(String abi) => _patchState(selectedAbi: abi);
+
+  /// The size text of the asset that would be installed for the selected ABI, when the
+  /// history entry for that version carries one.
+  String? get selectedAssetSize {
+    final ReleaseModel? release = _latestRelease;
+    if (release == null) return null;
+
+    final String abi = state.selectedAbi.trim().toLowerCase();
+    for (final ReleaseFileModel file in release.files) {
+      if (file.name.trim().toLowerCase() == abi && file.size.isNotEmpty) return file.size;
+    }
+    if (release.files.length == 1 && release.files.first.size.isNotEmpty) return release.files.first.size;
+    return null;
+  }
 
   // ---------------------------------------------------------------------------
   // Download + install
@@ -296,6 +443,7 @@ class AppUpdateController extends _$AppUpdateController {
         await _downloadOne(candidate, '${target.path}${Platform.pathSeparator}$fileName');
         if (_cancelToken?.isCancelled == true) return;
         _patchState(phase: AppUpdatePhase.readyToInstall, receivedBytes: state.totalBytes);
+        _appendRecord(AppUpdateAction.downloaded, version: state.latestVersion);
         unawaited(_install(target.path, fileName));
         return;
       } catch (error) {
@@ -309,6 +457,7 @@ class AppUpdateController extends _$AppUpdateController {
       receivedBytes: 0,
       totalBytes: 0,
     );
+    _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
   }
 
   Future<void> _downloadOne(String url, String destination) async {
@@ -359,7 +508,10 @@ class AppUpdateController extends _$AppUpdateController {
     final ok = await FileUtils.openFileOrUrl(path);
     if (!ok) {
       _patchState(error: 'installer launch failed');
+      _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
+      return;
     }
+    _appendRecord(AppUpdateAction.installed, version: state.latestVersion);
   }
 
   Future<void> installDownloaded() async {
@@ -418,6 +570,7 @@ class AppUpdateController extends _$AppUpdateController {
     List<ReleaseModel>? history,
     bool? historyLoading,
     String? historyError,
+    List<AppUpdateRecord>? records,
   }) {
     if (!ref.mounted) return;
     state = state.copyWith(
@@ -436,14 +589,8 @@ class AppUpdateController extends _$AppUpdateController {
       history: history,
       historyLoading: historyLoading,
       historyError: historyError,
+      records: records,
     );
-  }
-
-  /// Changelogs often embed the release download table; the page only wants
-  /// the actual notes.
-  String _cleanChangelog(String raw) {
-    final lines = raw.split('\n');
-    return lines.where((line) => !line.trimLeft().startsWith('|')).join('\n').trim();
   }
 
   String _safeFileName(String url) {

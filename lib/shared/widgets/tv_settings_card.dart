@@ -14,7 +14,10 @@ class TvSettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final validChildren = children.where((w) => w is! SizedBox).toList();
+    // A spacer — `const SizedBox(height: …)` with nothing in it — is not a row. A box that
+    // *wraps* content is one: dropping every `SizedBox` silently hid whole sections (the
+    // update page's status view disappeared this way), so only empty boxes are skipped.
+    final validChildren = children.where((w) => w is! SizedBox || w.child != null).toList();
 
     return Container(
       clipBehavior: Clip.antiAlias,

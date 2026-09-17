@@ -1,4 +1,4 @@
-﻿import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
@@ -8,6 +8,7 @@ import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
+import 'package:pure_live/features/settings/pages/update_history_page.dart';
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 import 'package:pure_live/features/settings/pages/nav_order_section.dart';
 import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
@@ -57,6 +58,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsFontFamily: (context) => const FontFamilyManagerSectionPage(),
   AppRoutes.kSettingsFontFamilyDanmaku: (context) => const FontFamilyManagerSectionPage(danmaku: true),
   AppRoutes.kAppUpdate: (context) => const AppUpdatePage(),
+  AppRoutes.kUpdateHistory: (context) => const UpdateHistoryPage(),
   AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
   AppRoutes.kSettingsAudience: (context) => const AudienceMetricSectionPage(),
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
