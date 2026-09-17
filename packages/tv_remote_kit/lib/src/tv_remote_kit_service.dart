@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'remote_sync_device.dart';
 import 'remote_sync_events.dart';
 import 'remote_sync_protocol.dart';
+import 'web_remote_page.dart';
 
 /// Host-supplied state bridge. The kit never touches storage itself; every
 /// channel read/write and the settings export/import land here.
@@ -79,11 +80,15 @@ class TvRemoteKit {
   /// `ip:port` of this device, empty before [start] succeeds.
   String get address => _localIp.isEmpty ? '' : '$_localIp:$_localPort';
 
-  /// QR payload for scan-based pairing: `purelive://ip:port/sync`.
-  String get qrData {
-    if (_localIp.isEmpty || _localPort <= 0) return '';
-    return RemoteSyncProtocol.createQrUri(ip: _localIp, port: _localPort).toString();
-  }
+  /// `http://ip:port/` — what the phone opens. The QR carries this, so a plain camera
+  /// scan lands on the web form instead of an app-only `purelive://` link.
+  String get webAddress => _localIp.isEmpty || _localPort <= 0 ? '' : 'http://$_localIp:$_localPort/';
+
+  /// QR payload for scan-based pairing: the web address of this device.
+  String get qrData => webAddress;
+
+  /// Why the last [start] could not serve, if it could not.
+  String? get lastError => _lastError;
 
   // ---------------------------------------------------------------------------
   // Internals
@@ -96,31 +101,52 @@ class TvRemoteKit {
   StreamSubscription<BonsoirDiscoveryEvent>? _discoverySubscription;
   Timer? _cleanupTimer;
   bool _running = false;
+  bool _starting = false;
   bool _disposed = false;
+  String? _lastError;
 
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
 
+  /// Brings the HTTP server (and then mDNS) up.
+  ///
+  /// [isRunning] only turns true once the server is actually bound, and it stays true
+  /// until [stop]. It used to be the "start in progress" flag cleared in `finally`, so
+  /// every caller that asked `isRunning` after `await start()` — which is exactly what the
+  /// settings card does to decide between the QR and "正在启动局域网同步服务器" — saw false
+  /// forever, even though the server was serving. `_starting` is that guard now.
   Future<void> start() async {
-    if (_disposed || _running) return;
-    _running = true;
+    if (_disposed || _running || _starting) return;
+    _starting = true;
+    _lastError = null;
     try {
       await _refreshNetworkInfo();
-      if (_disposed || _localIp.isEmpty) {
+      if (_disposed) return;
+      if (_localIp.isEmpty) {
+        _lastError = 'no LAN address';
         _log('No usable LAN address; sync server not started');
         return;
       }
-      await _startServer();
-      if (_disposed || !_running) return;
+      final bool bound = await _startServer();
+      if (_disposed) return;
+      if (!bound) {
+        _lastError = 'port $port unavailable';
+        return;
+      }
+      _running = true;
       await _startDiscoveryAndBroadcast();
+    } catch (error) {
+      _lastError = '$error';
+      _log('Sync server failed to start: $error');
     } finally {
-      _running = false;
+      _starting = false;
     }
   }
 
   Future<void> stop() async {
     _disposed = true;
+    _running = false;
     _cleanupTimer?.cancel();
     _cleanupTimer = null;
 
@@ -220,7 +246,7 @@ class TvRemoteKit {
   // HTTP server
   // ---------------------------------------------------------------------------
 
-  Future<void> _startServer() async {
+  Future<bool> _startServer() async {
     HttpServer? server;
     var bindPort = port;
     for (var i = 0; i < 100; i++) {
@@ -233,7 +259,7 @@ class TvRemoteKit {
     }
     if (server == null || _disposed) {
       _log('Could not bind the sync server near port $port');
-      return;
+      return false;
     }
     _server = server;
     _localPort = bindPort;
@@ -246,10 +272,22 @@ class TvRemoteKit {
 
     _cleanupTimer?.cancel();
     _cleanupTimer = Timer.periodic(const Duration(seconds: 15), (_) => _cleanupDevices());
+    return true;
   }
 
   Future<void> _handleRequest(HttpRequest request) async {
     final response = request.response;
+    final path = request.uri.path;
+
+    // The phone's page. It has to answer before the JSON content type below: this is HTML.
+    if (path == '/' || path == '/index.html' || path == '/remote') {
+      response.headers.contentType = ContentType('text', 'html', charset: 'utf-8');
+      response.headers.set('Cache-Control', 'no-store');
+      response.write(kWebRemotePage);
+      await response.close();
+      return;
+    }
+
     response.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
     response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -260,7 +298,6 @@ class TvRemoteKit {
       return;
     }
     try {
-      final path = request.uri.path;
       if (path == RemoteSyncProtocol.apiStatus) {
         await _handleStatus(request);
       } else if (path == RemoteSyncProtocol.apiSettings) {

@@ -2,9 +2,17 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:alfred/alfred.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
+import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
+import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
+import 'package:pure_live/services/webdav/webdav_config.dart';
+import 'package:pure_live/services/webdav/webdav_controller.dart';
+import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/shared/common/http_header_policy.dart';
 import 'package:pure_live/shared/utils/log.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -399,18 +407,95 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     });
 
     _app!.get('/api/webdav/list', (req, res) {
-      return _ok(res, data: _configCache['webdav_list']);
+      // Real configs, not the in-memory cache: the phone page listed (and saved)
+      // entries the TV never used, so a "saved" WebDAV account simply was not there.
+      final controller = ref.read(webDavControllerProvider);
+      return _ok(res, data: <Map<String, dynamic>>[
+        for (final config in controller.webDavConfigs) config.toJson(),
+      ]);
     });
 
     _app!.post('/api/webdav/save', (req, res) async {
       final body = await req.body;
-      _configCache['webdav_list'] = body;
-      _addLog('WebDAV settings updated');
-      return _ok(res, msg: i18n('ui_saved'));
+      final Map<String, dynamic> payload = body is Map
+          ? Map<String, dynamic>.from(body)
+          : <String, dynamic>{'address': body.toString()};
+      try {
+        final config = WebDAVConfig.fromJson(payload);
+        if (config.address.trim().isEmpty) return _fail(res, msg: i18n('ui_parameter_error'));
+        final controller = ref.read(webDavControllerProvider.notifier);
+        final bool ok = controller.isWebDavConfigExist(config.name)
+            ? controller.updateWebDavConfig(config)
+            : controller.addWebDavConfig(config);
+        if (!ok) return _fail(res, msg: i18n('ui_save_failed'));
+        _addLog('WebDAV settings updated from the phone');
+        return _ok(res, msg: i18n('ui_saved'));
+      } catch (error) {
+        _addLog('WebDAV save failed: $error', color: Colors.red);
+        return _fail(res, msg: i18n('ui_parameter_error'));
+      }
+    });
+
+    // 网络代理 — the web remote had no route for it at all, so a phone could not
+    // read or set the proxy the app actually uses.
+    _app!.get('/api/proxy', (req, res) {
+      return _ok(res, data: ref.read(proxySettingsControllerProvider).toJson());
+    });
+
+    _app!.post('/api/proxy', (req, res) async {
+      final body = await req.body;
+      if (body is! Map) return _fail(res, msg: i18n('ui_parameter_error'));
+      try {
+        final model = ProxySettingsModel.fromJson(Map<String, dynamic>.from(body));
+        ref.read(proxySettingsControllerProvider.notifier).updateSettings(model);
+        _addLog('Proxy settings updated from the phone');
+        return _ok(res, msg: i18n('ui_saved'));
+      } catch (error) {
+        _addLog('Proxy update failed: $error', color: Colors.red);
+        return _fail(res, msg: i18n('ui_parameter_error'));
+      }
+    });
+
+    // IPTV 直播源 + 请求头. The phone sends a playlist address and the headers its
+    // operator requires; the headers are written onto the imported channels
+    // (`#EXTHTTP:`), exactly like the LAN-sync channel does.
+    _app!.post('/api/iptv', (req, res) async {
+      final body = await req.body;
+      if (body is! Map) return _fail(res, msg: i18n('ui_parameter_error'));
+      final String url = (body['url'] ?? body['link'] ?? '').toString().trim();
+      final String name = (body['name'] ?? '').toString().trim();
+      final rawHeaders = body['headers'] ?? body['httpHeaders'];
+      final headers = rawHeaders is Map ? HttpHeaderPolicy.normalize(rawHeaders) : const <String, String>{};
+      if (!url.startsWith('http')) return _fail(res, msg: i18n('ui_parameter_error'));
+      try {
+        final content = await HttpClient.instance.getText(
+          url,
+          header: <String, String>{'user-agent': HttpClient.iptvUserAgent, ...headers},
+        );
+        final dir = await getTemporaryDirectory();
+        final file = File(
+          '${dir.path}${Platform.pathSeparator}iptv_remote_${DateTime.now().millisecondsSinceEpoch}.m3u',
+        );
+        await file.writeAsString(HttpHeaderPolicy.mergeIntoM3u(content, headers));
+        final ok = await IptvImportManager().importIptvFile(
+          file: file,
+          providerName: name.isNotEmpty ? name : 'remote_${DateTime.now().millisecondsSinceEpoch}',
+          url: url,
+          forceUpdate: true,
+          showTips: false,
+        );
+        await file.delete();
+        _addLog(ok ? 'IPTV source imported from the phone' : 'IPTV import failed', color: ok ? Colors.blue : Colors.red);
+        return ok ? _ok(res, msg: i18n('ui_saved')) : _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
+      } catch (error) {
+        _addLog('IPTV import failed: $error', color: Colors.red);
+        return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
+      }
     });
 
     _app!.get('/api/backup/export', (req, res) {
-      final backup = {'version': _appVersion, 'export_time': DateTime.now().toIso8601String(), 'config': _configCache};
+      final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
+      final backup = {'version': _appVersion, 'export_time': DateTime.now().toIso8601String(), 'config': settings};
       final fileName = 'pure_live_backup_${DateTime.now().millisecondsSinceEpoch}.json';
       res.headers.set('Content-Disposition', 'attachment; filename=$fileName');
       res.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
@@ -421,9 +506,18 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     _app!.post('/api/backup/import', (req, res) async {
       final body = await req.body as Map<String, dynamic>?;
       if (body == null || body['config'] == null) {
-      return _fail(res, msg: i18n('remote_bad_backup'));
+        return _fail(res, msg: i18n('remote_bad_backup'));
       }
-      _configCache.addAll(body['config']);
+      // Importing used to write the payload into the local cache, which nothing reads:
+      // the page said success and the TV kept its old settings.
+      try {
+        await ref
+            .read(backupControllerProvider.notifier)
+            .restoreAllSettings(Map<String, dynamic>.from(body['config'] as Map));
+      } catch (error) {
+        _addLog('Backup import failed: $error', color: Colors.red);
+        return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
+      }
       _addLog('Configuration backup imported');
       return _ok(res, msg: i18n('ui_imported'));
     });

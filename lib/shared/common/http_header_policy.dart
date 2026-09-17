@@ -50,4 +50,24 @@ class HttpHeaderPolicy {
       return const <String, String>{};
     }
   }
+
+  /// Adds [headers] to every entry of an m3u/m3u8 playlist as `#EXTHTTP:` directives.
+  ///
+  /// This is how a source that needs its own UA/Referer/Cookie carries them without a
+  /// database write: the parser reads per-entry headers from those directives, and
+  /// `#EXTHTTP:` — unlike `#EXTVLCOPT:`, which only accepts `user-agent` and `referer` —
+  /// takes any header. The directive goes **before** each `#EXTINF`, which is where the
+  /// parser expects the headers of the entry that follows.
+  static String mergeIntoM3u(String playlist, Map<dynamic, dynamic>? headers) {
+    final normalized = normalize(headers);
+    if (normalized.isEmpty) return playlist;
+
+    final directive = '#EXTHTTP:${jsonEncode(normalized)}';
+    final buffer = StringBuffer();
+    for (final line in playlist.split('\n')) {
+      if (line.trimLeft().startsWith('#EXTINF')) buffer.writeln(directive);
+      buffer.writeln(line);
+    }
+    return buffer.toString();
+  }
 }

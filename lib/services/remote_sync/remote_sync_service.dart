@@ -11,7 +11,11 @@ import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart
 import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
+import 'package:pure_live/services/webdav/webdav_config.dart';
+import 'package:pure_live/services/webdav/webdav_controller.dart';
 import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/shared/common/http_header_policy.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tv_remote_kit/tv_remote_kit.dart';
@@ -24,6 +28,9 @@ class RemoteSyncSnapshot {
   final bool started;
   final String qrData;
   final String address;
+
+  /// `http://ip:port/` — the page the phone opens.
+  final String webAddress;
   final String? error;
   final List<RemoteSyncDevice> devices;
 
@@ -31,6 +38,7 @@ class RemoteSyncSnapshot {
     this.started = false,
     this.qrData = '',
     this.address = '',
+    this.webAddress = '',
     this.error,
     this.devices = const [],
   });
@@ -46,7 +54,6 @@ class RemoteSyncSnapshot {
 class RemoteSyncController extends _$RemoteSyncController {
   TvRemoteKit? _kit;
   StreamSubscription<RemoteSyncEvent>? _eventSubscription;
-  bool _starting = false;
 
   TvRemoteKit? get kit => _kit;
 
@@ -58,24 +65,36 @@ class RemoteSyncController extends _$RemoteSyncController {
       _kit = null;
     });
 
+    unawaited(_boot());
+    return const RemoteSyncSnapshot();
+  }
+
+  /// Starts a kit and publishes the outcome — including a failure.
+  ///
+  /// The publish used to happen only on the success path, so a start that failed (or that
+  /// found no LAN address) left the card on "正在启动局域网同步服务器" with nothing to do.
+  Future<void> _boot() async {
     final kit = TvRemoteKit(
       deviceId: _loadDeviceId(),
       deviceName: 'PureLive TV (${Platform.operatingSystem})',
       delegate: _AppSyncDelegate(ref),
     );
     _kit = kit;
-
     _eventSubscription = kit.events.listen(_handleEvent);
-    if (!_starting) {
-      _starting = true;
-      unawaited(
-        kit.start().then((_) {
-          _starting = false;
-          _publish(kit);
-        }),
-      );
-    }
-    return const RemoteSyncSnapshot();
+    await kit.start();
+    _publish(kit);
+  }
+
+  /// Restarts the service after a failure. The kit cannot be restarted once stopped, so
+  /// this builds a fresh one.
+  Future<void> restart() async {
+    final TvRemoteKit? old = _kit;
+    await _eventSubscription?.cancel();
+    _eventSubscription = null;
+    _kit = null;
+    if (ref.mounted) state = const RemoteSyncSnapshot();
+    await old?.stop();
+    await _boot();
   }
 
   void _handleEvent(RemoteSyncEvent event) {
@@ -110,9 +129,15 @@ class RemoteSyncController extends _$RemoteSyncController {
       started: kit.isRunning,
       qrData: kit.qrData,
       address: kit.address,
+      webAddress: kit.webAddress,
+      error: kit.isRunning ? null : _startFailure(kit.lastError),
       devices: kit.devices,
     );
   }
+
+  /// The message the card shows instead of an endless spinner.
+  String? _startFailure(String? reason) =>
+      reason == null ? null : '${i18n('remote_sync_start_failed')}（$reason）';
 
   static String _loadDeviceId() {
     const key = 'remote_sync_device_id';
@@ -146,6 +171,10 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
         return _ref.read(proxySettingsControllerProvider).toJson();
       case 'iptv':
         return _ref.read(iptvSettingsControllerProvider).toJson();
+      case 'webdav':
+        return <Map<String, dynamic>>[
+          for (final config in _ref.read(webDavControllerProvider).webDavConfigs) config.toJson(),
+        ];
       default:
         return null;
     }
@@ -175,6 +204,18 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
         }
       case 'iptv':
         return _applyIptvLink(data);
+      case 'webdav':
+        if (data is! Map) return false;
+        try {
+          final WebDAVConfig config = WebDAVConfig.fromJson(Map<String, dynamic>.from(data));
+          if (config.address.trim().isEmpty) return false;
+          final controller = _ref.read(webDavControllerProvider.notifier);
+          // The phone may correct an existing entry; `add` refuses a duplicate name.
+          if (controller.isWebDavConfigExist(config.name)) return controller.updateWebDavConfig(config);
+          return controller.addWebDavConfig(config);
+        } catch (_) {
+          return false;
+        }
       default:
         return false;
     }
@@ -310,9 +351,12 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
   Future<bool> _applyIptvLink(Object? data) async {
     String url;
     String name;
+    Map<String, String> headers = const <String, String>{};
     if (data is Map) {
       url = (data['url'] ?? data['link'] ?? '').toString().trim();
       name = (data['name'] ?? '').toString().trim();
+      final rawHeaders = data['headers'] ?? data['httpHeaders'];
+      if (rawHeaders is Map) headers = HttpHeaderPolicy.normalize(rawHeaders);
     } else {
       url = data.toString().trim();
       name = '';
@@ -320,10 +364,16 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
     if (url.isEmpty || !url.startsWith('http')) return false;
 
     try {
-      final content = await HttpClient.instance.getText(url, header: {'user-agent': HttpClient.iptvUserAgent});
+      final content = await HttpClient.instance.getText(
+        url,
+        header: <String, String>{'user-agent': HttpClient.iptvUserAgent, ...headers},
+      );
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}${Platform.pathSeparator}iptv_remote_${DateTime.now().millisecondsSinceEpoch}.m3u');
-      await file.writeAsString(content);
+      // The headers the user typed on the phone belong to the *channels* of this source,
+      // not just to the download: `mergeIntoM3u` writes them into the playlist the parser
+      // reads, which is how a playlist encodes its own UA/Referer/Cookie.
+      await file.writeAsString(HttpHeaderPolicy.mergeIntoM3u(content, headers));
       final providerName = name.isNotEmpty ? name : 'remote_${DateTime.now().millisecondsSinceEpoch}';
       final ok = await IptvImportManager().importIptvFile(
         file: file,

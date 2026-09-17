@@ -30,11 +30,20 @@ class RemoteSyncProtocol {
     'tags',
     'proxy',
     'iptv',
+    'webdav',
   ];
 
-  /// The payload a phone app encodes into a QR scan: scheme, host, port.
+  /// The page the phone opens; served at `/`.
+  static const String webRemotePath = '/';
+
+  /// The payload a phone encodes into a QR scan.
+  ///
+  /// An **http** address on purpose: scanning it with a camera app opens the web form
+  /// ([webRemotePath]), which is where cookies, IPTV headers, WebDAV and the proxy are
+  /// typed. The `purelive://ip:port/sync` form the old app used is still *accepted* by
+  /// [parseQr], so an already-printed QR keeps working.
   static Uri createQrUri({required String ip, required int port}) {
-    return Uri(scheme: 'purelive', host: ip, port: port, path: '/sync');
+    return Uri(scheme: 'http', host: ip, port: port, path: webRemotePath);
   }
 
   /// TXT attributes every broadcast carries, so a peer can build a device
