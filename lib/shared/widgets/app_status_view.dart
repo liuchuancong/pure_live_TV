@@ -309,7 +309,6 @@ class _AppStatusViewState extends State<AppStatusView> {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final effectiveIconColor = widget.iconColor ?? tvTheme.primaryTextColor;
 
     if (widget.type == AppStatusType.loading) {
       return Center(child: _buildLoadingWidget(context));
@@ -328,17 +327,17 @@ class _AppStatusViewState extends State<AppStatusView> {
         children: [
           Container(
             padding: EdgeInsets.all(widget.isMini ? 8.sp : 22.sp),
+            // Accent-tinted disc instead of a grey-on-grey circle: the empty
+            // state is the page's voice, it should carry the palette.
             decoration: BoxDecoration(
-              color: tvTheme.cardColor.withValues(alpha: 0.15),
+              color: tvTheme.focusColor.withValues(alpha: 0.10),
               shape: BoxShape.circle,
-              // 0.05 was invisible on every palette; 0.15 keeps the ring hint
-              // readable on both dark and light surfaces.
-              border: Border.all(color: effectiveIconColor.withValues(alpha: 0.15), width: 1.sp),
+              border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.sp),
             ),
             child: Icon(
               widget.icon ?? (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
               size: widget.isMini ? 36.sp : 64.sp,
-              color: widget.iconColor ?? tvTheme.primaryTextColor.withValues(alpha: 0.6),
+              color: widget.iconColor ?? tvTheme.focusColor,
             ),
           ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
 

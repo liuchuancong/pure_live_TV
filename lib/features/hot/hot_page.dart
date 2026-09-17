@@ -96,6 +96,7 @@ class _HotPageState extends ConsumerState<HotPage> {
                         key: ValueKey('hot_site_${currentSite.id}'),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+                        emptyScene: EmptyScene.hot,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
                           mainAxisSpacing: mainSpacing.w,

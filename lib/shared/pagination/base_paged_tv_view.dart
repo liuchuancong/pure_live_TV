@@ -15,6 +15,14 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
   final Widget Function(BuildContext context, String errorMsg, VoidCallback onRetry)? errorBuilder;
   final Widget Function(BuildContext context, VoidCallback onRefresh)? emptyBuilder;
 
+  /// Business context for the built-in empty state (icon/copy/action); used
+  /// when [emptyBuilder] is null.
+  final EmptyScene emptyScene;
+
+  /// Callbacks behind the scene's navigational action (去搜索 / 去逛热门).
+  final VoidCallback? onEmptyGoSearch;
+  final VoidCallback? onEmptyGoHot;
+
   const BasePagedTvView({
     super.key,
     required this.param,
@@ -24,6 +32,9 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
     this.notLoginBuilder,
     this.errorBuilder,
     this.emptyBuilder,
+    this.emptyScene = EmptyScene.generic,
+    this.onEmptyGoSearch,
+    this.onEmptyGoHot,
   });
 
   @override
@@ -119,7 +130,13 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
       // No results
       return widget.emptyBuilder != null
           ? widget.emptyBuilder!(context, _triggerRefresh)
-          : AppStatusView(type: AppStatusType.empty, title: i18n('status_empty_title'), onTap: _triggerRefresh);
+          : sceneEmptyView(
+              context,
+              scene: widget.emptyScene,
+              onRetry: _triggerRefresh,
+              onGoSearch: widget.onEmptyGoSearch,
+              onGoHot: widget.onEmptyGoHot,
+            );
     }
 
     return Column(

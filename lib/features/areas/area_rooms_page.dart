@@ -87,6 +87,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           key: ValueKey('area_room_grid_${widget.site.id}_${widget.subCategory.areaId}'),
           param: _currentParam,
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
+          emptyScene: EmptyScene.areaRooms,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
             mainAxisSpacing: mainSpacing.w,

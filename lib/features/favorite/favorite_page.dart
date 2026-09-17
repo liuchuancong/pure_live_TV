@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/favorite/favorite_provider.dart';
+import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class FavoritePage extends ConsumerStatefulWidget {
@@ -120,6 +121,8 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         ),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+                        emptyScene: EmptyScene.favorite,
+                        onEmptyGoSearch: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
                           mainAxisSpacing: mainSpacing.w,

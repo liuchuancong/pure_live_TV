@@ -150,6 +150,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
         child: BasePagedTvView<LiveRoom>(
           param: _currentParam,
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
+          emptyScene: EmptyScene.searchResult,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
             mainAxisSpacing: mainSpacing.w,

@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/history/history_page_provider.dart';
+import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/services/history_settings/history_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
@@ -68,6 +69,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         key: ValueKey('history_grid_${historyPageState.tabSiteIndex}'),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+                        emptyScene: EmptyScene.history,
+                        onEmptyGoHot: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.hot.value),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
                           mainAxisSpacing: mainSpacing.w,

@@ -61,6 +61,7 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                         key: ValueKey('fav_areas_grid_${areasState.tabSiteIndex}'),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+                        emptyScene: EmptyScene.favoriteAreas,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 8,
                           mainAxisSpacing: mainSpacing.w,
