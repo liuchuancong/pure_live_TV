@@ -1,10 +1,7 @@
-import 'package:url_launcher/url_launcher.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/dialog/tv_dialog.dart';
-import 'package:pure_live/shared/dialog/tv_dialog_utils.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/utils/version_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
@@ -17,8 +14,6 @@ class AboutSettingsSectionPage extends ConsumerStatefulWidget {
 
 class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPage> {
   String _version = '';
-  String _status = '';
-  bool _checking = false;
 
   @override
   void initState() {
@@ -26,53 +21,6 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
     PackageInfo.fromPlatform().then((info) {
       if (mounted) setState(() => _version = '${info.version}+${info.buildNumber}');
     });
-  }
-
-  Future<void> _checkUpdate() async {
-    if (_checking) return;
-    setState(() {
-      _checking = true;
-      _status = '';
-    });
-    try {
-      final hasUpdate = await VersionUtil().checkUpdate();
-      if (!mounted) return;
-      setState(() {
-        _status = hasUpdate
-            ? '${i18n('latest_version')} ${VersionUtil.latestVersion}'
-            : i18n('already_latest_version');
-      });
-      if (hasUpdate) await _showUpdateDialog();
-    } catch (error) {
-      if (mounted) setState(() => _status = '${i18n('check_update_failed')} · $error');
-    } finally {
-      if (mounted) setState(() => _checking = false);
-    }
-  }
-
-  Future<void> _showUpdateDialog() async {
-    final notes = VersionUtil.latestUpdateLog.trim();
-    final bool canDownload = VersionUtil.downloadUrl.isNotEmpty;
-    // Through TvDialogUtils, so the dialog takes the app's dialog lock as well as
-    // its styling: the page behind must not keep reacting to the remote.
-    await TvDialogUtils.show<void>(
-      context: context,
-      builder: (dialogContext) => TvDialog(
-        title: '${i18n('new_version_found')} ${VersionUtil.latestVersion}',
-        confirmText: canDownload ? i18n('download') : null,
-        cancelText: i18n('cancel'),
-        onCancel: () => Navigator.of(dialogContext).pop(),
-        onConfirm: () {
-          Navigator.of(dialogContext).pop();
-          final uri = Uri.tryParse(VersionUtil.downloadUrl);
-          if (uri != null) launchUrl(uri, mode: LaunchMode.externalApplication);
-        },
-        child: SizedBox(
-          width: 640.w,
-          child: Text(notes.isEmpty ? i18n('latest_version') : '${i18n('update_log')}\n$notes'),
-        ),
-      ),
-    );
   }
 
   @override
@@ -86,13 +34,11 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
         TvSettingsGroupTitle(title: i18n('about')),
         TvSettingsCard(
           children: [
-            TvSettingsOptionTile(
-              title: i18n('ui_pure_live_tv'),
-              subtitle: _status.isEmpty ? '${i18n('current_version')} $_version' : _status,
-              icon: Icons.info_outline_rounded,
-              options: _checking ? [i18n('ui_loading')] : [i18n('check_update')],
-              index: 0,
-              onChanged: (_) => _checkUpdate(),
+            TvSettingsNavTile(
+              title: i18nOr('online_update', 'Online update'),
+              subtitle: _version.isEmpty ? i18n('current_version') : '${i18n('current_version')} v$_version',
+              icon: Icons.system_update_alt_rounded,
+              onTap: () => context.push(AppRoutes.kAppUpdate),
             ),
           ],
         ),

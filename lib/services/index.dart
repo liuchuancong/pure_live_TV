@@ -5,6 +5,7 @@ export 'app_settings/app_settings_controller.dart';
 export 'app_settings/app_settings_model.dart';
 export 'background_config/background_config_model.dart';
 export 'background_config/background_controller.dart';
+export 'app_update/app_update_service.dart';
 export 'backup/backup_controller.dart';
 export 'remote_sync/remote_sync_service.dart';
 export 'cache/cache_controller.dart';

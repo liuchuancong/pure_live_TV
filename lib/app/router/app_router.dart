@@ -7,6 +7,7 @@ import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
+import 'package:pure_live/features/settings/pages/app_update_page.dart';
 import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
 import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
 import 'package:pure_live/features/settings/pages/device_sync_section.dart';
@@ -56,6 +57,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsFont: (context) => const FontSettingsSectionPage(),
   AppRoutes.kSettingsFontFamily: (context) => const FontFamilyManagerSectionPage(),
   AppRoutes.kSettingsFontFamilyDanmaku: (context) => const FontFamilyManagerSectionPage(danmaku: true),
+  AppRoutes.kAppUpdate: (context) => const AppUpdatePage(),
   AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
   AppRoutes.kSettingsAudience: (context) => const AudienceMetricSectionPage(),
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
