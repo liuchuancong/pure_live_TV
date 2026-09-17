@@ -61,31 +61,37 @@ class _TvPageScaffoldState extends State<TvPageScaffold> {
     Widget? bar;
 
     if (widget.showAppBar) {
-      final bool effectiveShowBackButton = widget.showBackButton ?? tvShowsBackButton(context);
+      final TvAppBar? custom = widget.appBar;
+      final bool effectiveShowBackButton =
+          widget.showBackButton ?? custom?.showBackButton ?? tvShowsBackButton(context);
+
+      // A page can name its 返回 node either on the scaffold or inside the app bar it
+      // built itself; both mean "this node is mine, create none".
+      final FocusNode? externalNode = widget.backFocusNode ?? custom?.backFocusNode;
       if (!effectiveShowBackButton) {
         _backNode = null;
         _ownsBackNode = false;
-      } else if (widget.backFocusNode != null) {
-        _backNode = widget.backFocusNode;
+      } else if (externalNode != null) {
+        _backNode = externalNode;
         _ownsBackNode = false;
-      } else if (widget.appBar == null) {
+      } else {
         _backNode ??= FocusNode(debugLabel: 'tv_page_back');
         _ownsBackNode = true;
-      } else {
-        // A custom app bar builds its own button and node.
-        _backNode = null;
-        _ownsBackNode = false;
       }
-      bar =
-          widget.appBar ??
-          TvAppBar(
-            title: widget.title,
-            titleWidget: widget.titleWidget,
-            actions: widget.actions,
-            beforeBack: widget.beforeBack,
-            showBackButton: effectiveShowBackButton,
-            backFocusNode: _backNode,
-          );
+
+      // One bar either way, so a page that passed its own `TvAppBar` keeps its title
+      // and actions *and* gets the focus node the shell needs: without the node its
+      // 返回 was drawn but unreachable — nothing handed focus Up to it, so the remote
+      // could not select it and it never even showed the focused look the other
+      // pages' 返回 buttons have. `/settings` was exactly that page.
+      bar = TvAppBar(
+        title: custom?.title ?? widget.title,
+        titleWidget: custom?.titleWidget ?? widget.titleWidget,
+        actions: custom?.actions ?? widget.actions,
+        beforeBack: custom?.beforeBack ?? widget.beforeBack,
+        showBackButton: effectiveShowBackButton,
+        backFocusNode: _backNode,
+      );
     }
 
     return TvPageShell(topBar: bar, openingFocus: _backNode, child: widget.child);

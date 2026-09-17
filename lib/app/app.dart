@@ -18,6 +18,19 @@ class App extends ConsumerWidget {
   static const double _minTextScale = 0.7;
   static const double _maxTextScale = 2.0;
 
+  /// TV page transition: a fade-through with no opaque fill.
+  ///
+  /// The Material defaults (ZoomPageTransitionsBuilder and friends) paint a
+  /// `ColoredBox(colorScheme.surface)` behind the transitioning pages, which covers
+  /// the single app background below the Navigator — that was the "black first, then
+  /// the picture" flash on every push/pop. Pages here are transparent by design, so
+  /// fading the page itself over the always-visible background needs no base colour.
+  static final PageTransitionsTheme _kPageTransitions = PageTransitionsTheme(
+    builders: <TargetPlatform, PageTransitionsBuilder>{
+      for (final TargetPlatform platform in TargetPlatform.values) platform: const _FadePageTransitionsBuilder(),
+    },
+  );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
@@ -132,6 +145,7 @@ class App extends ConsumerWidget {
                 brightness: Brightness.light,
                 fontFamily: fontFamily,
                 baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
+                pageTransitions: _kPageTransitions,
                 colorScheme: _schemeFor(
                   resolvedTvTheme,
                   themeSettings.enableDynamicTheme ? lightDynamic : null,
@@ -143,6 +157,7 @@ class App extends ConsumerWidget {
                 brightness: Brightness.dark,
                 fontFamily: fontFamily,
                 baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
+                pageTransitions: _kPageTransitions,
                 colorScheme: _schemeFor(
                   resolvedTvTheme,
                   themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
@@ -154,6 +169,35 @@ class App extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// The fade-through transition used for every platform; see [App._kPageTransitions].
+class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    // Fade-through, not cross-fade. Every page is transparent over the shared
+    // wallpaper, so blending an incoming page with the outgoing one — however the
+    // alphas are balanced — puts both pages' content on screen at once, which reads as
+    // a ghost of the previous page. Sequencing instead: the outgoing page is gone
+    // within the first third, the incoming page fills the last two thirds, and the
+    // brief wallpaper-only moment in between is the constant backdrop, not a missing
+    // page.
+    final Animatable<double> fadeIn = CurveTween(curve: const Interval(0.35, 1.0, curve: Curves.easeOutCubic));
+    final Animatable<double> fadeOut =
+        CurveTween(curve: const Interval(0.0, 0.35, curve: Curves.easeIn)).chain(Tween<double>(begin: 1.0, end: 0.0));
+    return FadeTransition(
+      opacity: animation.drive(fadeIn),
+      child: FadeTransition(opacity: secondaryAnimation.drive(fadeOut), child: child),
     );
   }
 }

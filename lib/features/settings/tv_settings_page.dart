@@ -1,4 +1,4 @@
-﻿import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -249,8 +249,12 @@ class TvSettingsRoutePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The bar belongs to the page's chrome, not to its list: inside the list it would
+    // scroll away, and `TvAppBar` draws a 返回 of its own — two back buttons under the
+    // one `TvPageScaffold` also builds. Passing the title keeps `TvPageScaffold` in
+    // charge of the bar and of the focus node that makes 返回 selectable.
     return TvPageScaffold(
-      appBar: TvAppBar(title: i18n('settings_title')),
+      title: i18n('settings_title'),
       child: const SettingsCatalogView(),
     );
   }
