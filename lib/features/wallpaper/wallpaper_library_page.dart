@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +20,7 @@ class WallpaperLibraryPage extends ConsumerWidget {
     final catalog = ref.watch(backgroundCatalogProvider);
     final sources = catalog.imageSources;
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: i18n('wallpaper_library'),
       child: sources.isEmpty
           ? AppStatusView(

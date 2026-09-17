@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -40,7 +40,7 @@ class WallpaperItemsPage extends ConsumerWidget {
     final source = catalog.sourceById(sourceId);
     final category = source == null ? null : _pickCategory(source, categoryId);
     if (source == null || category == null) {
-      return TvScaffold(
+      return TvPageScaffold(
         title: i18nOr('wallpaper', '壁纸'),
         child: AppStatusView(
           type: AppStatusType.empty,
@@ -55,7 +55,7 @@ class WallpaperItemsPage extends ConsumerWidget {
         : bgState.networkImageUrl;
     final String title = category.localizedName(languageCode);
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: title,
       // The paged view deliberately installs no region of its own; this one lets
       // the d-pad leave upward so the scaffold can hand focus to the back button.

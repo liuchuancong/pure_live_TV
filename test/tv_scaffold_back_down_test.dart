@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -13,7 +13,7 @@ import 'package:pure_live/shared/widgets/index.dart';
 /// the third-level failure shipped: the copy was right while the real scaffold was
 /// not. It builds the real [TvScaffold] now.
 Widget scaffoldPage(String title, {required List<Widget> rows}) {
-  return TvScaffold(
+  return TvPageScaffold(
     title: title,
     child: SingleChildScrollView(child: Column(children: rows)),
   );

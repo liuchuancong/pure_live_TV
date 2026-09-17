@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,7 +6,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/tv_button.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
-import 'package:pure_live/shared/widgets/tv_scaffold.dart';
+import 'package:pure_live/shared/widgets/tv_page_scaffold.dart';
 
 /// Walking up out of a page's content and back down again must keep working.
 ///
@@ -147,7 +147,7 @@ class _Page extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TvScaffold(
+    return TvPageScaffold(
       title: 'level $level',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

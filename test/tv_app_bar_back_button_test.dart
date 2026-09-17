@@ -1,11 +1,11 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
-import 'package:pure_live/shared/widgets/tv_scaffold.dart';
+import 'package:pure_live/shared/widgets/tv_page_scaffold.dart';
 
 /// The back button must follow the route stack, not a value cached at build
 /// time.
@@ -23,10 +23,10 @@ void main() {
       initialLocation: '/home',
       observers: <NavigatorObserver>[tvRouteObserver],
       routes: <RouteBase>[
-        GoRoute(path: '/home', builder: (context, state) => const TvScaffold(title: 'Home', child: SizedBox.shrink())),
+        GoRoute(path: '/home', builder: (context, state) => const TvPageScaffold(title: 'Home', child: SizedBox.shrink())),
         GoRoute(
           path: '/settings',
-          builder: (context, state) => const TvScaffold(title: 'Settings', child: SizedBox.shrink()),
+          builder: (context, state) => const TvPageScaffold(title: 'Settings', child: SizedBox.shrink()),
         ),
       ],
     );

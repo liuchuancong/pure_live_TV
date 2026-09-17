@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
@@ -74,7 +74,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
     final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
     final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: widget.subCategory.areaName,
       // No Expanded here: TvScaffold places its child inside a Stack, which is
       // not a Flex, so an Expanded child asserted during layout and the whole

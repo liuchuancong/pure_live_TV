@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/remote/index.dart';
@@ -141,7 +141,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
     final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
     final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: '${i18n('search')}: $_currentKeyword (${widget.site})',
       child: TvTabView(
         memoryKey: "tv_search_rooms_view_${widget.site}_${widget.searchType}",

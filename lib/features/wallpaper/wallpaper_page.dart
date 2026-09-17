@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +28,7 @@ class WallpaperPage extends ConsumerWidget {
     // made in the preview (or by clearing the background right here).
     final bgState = ref.watch(backgroundControllerProvider);
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: i18n('ui_background_settings'),
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),

@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/pages/color_picker_section.dart';
@@ -25,7 +25,7 @@ class LoadingStyleSectionPage extends ConsumerWidget {
     final tvTheme = context.tvTheme;
     final Color color = themeState.loadingStyleColor ?? tvTheme.focusColor;
 
-    return TvScaffold(
+    return TvPageScaffold(
       appBar: TvAppBar(
         title: i18n('change_loading_style'),
         actions: [

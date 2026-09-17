@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -74,7 +74,7 @@ class ColorPickerSectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TvScaffold(
+    return TvPageScaffold(
       title: i18n('ui_choose_color'),
       child: GridView.builder(
         padding: EdgeInsets.all(16.w),

@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -142,7 +142,7 @@ class _Page extends StatelessWidget {
   Widget build(BuildContext context) {
     // Each page owns its scaffold — its app bar, its 返回 button and the focus
     // handoff between them — like `SettingsSectionScaffold` does for the real pages.
-    return TvScaffold(
+    return TvPageScaffold(
       title: 'level $level',
       child: SingleChildScrollView(
         child: Column(

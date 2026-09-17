@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/app/router/app_routes.dart';
@@ -24,7 +24,7 @@ class WallpaperGalleryPage extends StatelessWidget {
     final categories = source.visibleCategories;
 
     if (categories.isEmpty) {
-      return TvScaffold(
+      return TvPageScaffold(
         title: source.localizedName(languageCode),
         child: AppStatusView(
           type: AppStatusType.empty,
@@ -37,7 +37,7 @@ class WallpaperGalleryPage extends StatelessWidget {
       return WallpaperItemsPage(sourceId: source.id, categoryId: categories.first.id);
     }
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: source.localizedName(languageCode),
       child: ListView.builder(
         padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),

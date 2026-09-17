@@ -1,4 +1,4 @@
-import 'package:pure_live/shared/widgets/index.dart';
+﻿import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -249,7 +249,7 @@ class TvSettingsRoutePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TvScaffold(
+    return TvPageScaffold(
       appBar: TvAppBar(title: i18n('settings_title')),
       child: const SettingsCatalogView(),
     );
@@ -268,7 +268,7 @@ class SettingsSectionScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TvScaffold(
+    return TvPageScaffold(
       title: i18n(settingsSectionTitleKey(location)),
       // Each settings page carries its own scaffold — its own app bar, its own 返回
       // button and its own focus wiring — inside its own route of the shell's nested

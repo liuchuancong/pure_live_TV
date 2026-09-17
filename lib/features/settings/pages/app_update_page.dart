@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
@@ -18,7 +18,7 @@ class AppUpdatePage extends ConsumerWidget {
     final state = ref.watch(appUpdateControllerProvider);
     final controller = ref.read(appUpdateControllerProvider.notifier);
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: i18nOr('online_update', 'Online update'),
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),

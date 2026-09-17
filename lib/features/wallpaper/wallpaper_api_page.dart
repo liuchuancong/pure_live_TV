@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/app/router/app_routes.dart';
@@ -27,7 +27,7 @@ class WallpaperApiPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final String languageCode = Localizations.localeOf(context).languageCode;
 
-    return TvScaffold(
+    return TvPageScaffold(
       title: i18n('wallpaper_api_group'),
       child: ListView.builder(
         padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),

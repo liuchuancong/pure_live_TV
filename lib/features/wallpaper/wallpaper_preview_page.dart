@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -455,7 +455,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       });
     }
 
-    return TvScaffold(
+    return TvPageScaffold(
       showAppBar: false,
       child: Focus(
         focusNode: _pageFocus,

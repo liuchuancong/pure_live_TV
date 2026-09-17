@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/exports.dart';
 
 class TvSearchPage extends ConsumerStatefulWidget {
@@ -81,7 +81,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
     final history = ref.watch(searchHistoryControllerProvider);
     final themeColor = tvTheme.focusColor;
 
-    return TvScaffold(
+    return TvPageScaffold(
       showAppBar: false,
       showBackButton: false,
       child: Container(

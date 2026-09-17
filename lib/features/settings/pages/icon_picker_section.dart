@@ -1,4 +1,4 @@
-import 'package:dpad/dpad.dart';
+﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/icon_catalog.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -28,7 +28,7 @@ class IconPickerSectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TvScaffold(
+    return TvPageScaffold(
       appBar: TvAppBar(
         title: i18n('ui_choose_icon'),
         actions: [
