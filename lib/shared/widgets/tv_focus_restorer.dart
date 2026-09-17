@@ -83,6 +83,16 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
   /// Re-asserting the last known in-route node covers exactly that window; a
   /// focus that moved to another node of this route is left alone (the user is
   /// navigating).
+  ///
+  /// The decision is deferred by one frame, because a focus that *moves* into
+  /// another route's scope also reports a bare [FocusScopeNode] for an instant.
+  /// Restoring on that instant is what pulled the highlight back to 返回 on every
+  /// up/down round trip: the settings shell keeps one scaffold and swaps the page
+  /// inside it with a nested navigator, so the keyboard crossing between the app
+  /// bar and a page of that nested navigator always passes through such a scope —
+  /// which is why only third- and deeper-level pages were affected. One frame
+  /// later the focus is either on something real (nothing to do) or genuinely
+  /// gone (restore).
   void _handleFocusChange() {
     if (!mounted) return;
     final ModalRoute<dynamic>? route = ModalRoute.of(context);
@@ -94,11 +104,21 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
       return;
     }
 
-    // Focus left this route or died entirely. `primary` is then null or a bare
-    // scope, which is not a usable highlight.
-    final FocusNode? node = _lastInsideRoute;
-    if (node != null) _restore(node);
+    if (_restoreScheduled) return;
+    _restoreScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _restoreScheduled = false;
+      if (!mounted) return;
+      final FocusNode? settled = FocusManager.instance.primaryFocus;
+      // Something real has the keyboard: the focus moved, it did not die.
+      if (settled != null && settled is! FocusScopeNode) return;
+      final FocusNode? node = _lastInsideRoute;
+      if (node == null) return;
+      _restore(node);
+    });
   }
+
+  bool _restoreScheduled = false;
 
   bool _isInsideRoute(FocusNode node, ModalRoute<dynamic> route) {
     final BuildContext? context = node.context;

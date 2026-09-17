@@ -95,7 +95,14 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
             TvButton(
               title: i18n('ui_back'),
               size: TvButtonSize.mini,
-              autofocus: true,
+              // No autofocus: the page owns the opening highlight (TvScaffold's
+              // focus claim lands it on the first row), and an autofocusing back
+              // button keeps taking the keyboard back — including from a page that
+              // lives inside the settings shell's nested navigator, where the
+              // focus belongs to a scope this button does not share. That fight is
+              // what made the highlight jump back to 返回 and left the remote
+              // stuck there.
+              autofocus: false,
               focusNode: widget.backFocusNode,
               icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.sp),
               onTap: () async {

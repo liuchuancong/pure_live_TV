@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pure_live/shared/widgets/tv_app_bar.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -95,6 +96,36 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     if (current) return;
   }
 
+  /// Down on the app bar hands the keyboard to the page's rows explicitly.
+  ///
+  /// Up already works — the content region's top edge calls [_onContentEdge] — but
+  /// the other direction was left to the d-pad policy's cross-region search: from
+  /// the back button it looks for the nearest focusable below, and with a shared
+  /// scaffold that search can settle on a row of the page *inside* that is no longer
+  /// the visible one (the inner navigator keeps the pages below it alive and laid
+  /// out, at the same coordinates). Naming the target here makes the round trip
+  /// deterministic instead of geometric.
+  KeyEventResult _onAppBarKey(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    if (event.logicalKey != LogicalKeyboardKey.arrowDown) return KeyEventResult.ignored;
+    final FocusNode? target = _contentFocusTarget();
+    if (target == null) return KeyEventResult.ignored;
+    DpadRegion.ofNode(target)?.noteFocus(target);
+    target.requestFocus();
+    return KeyEventResult.handled;
+  }
+
+  /// The row the remote should land on when it comes down from the app bar: the one
+  /// the content region remembers, otherwise the first usable one.
+  FocusNode? _contentFocusTarget() {
+    final DpadRegionState? region = _contentRegionKey.currentState;
+    if (region == null) return null;
+    bool usable(FocusNode node) => node.parent != null && node.context?.mounted == true && node.canRequestFocus;
+    final FocusNode? remembered = region.lastFocused;
+    if (remembered != null && usable(remembered) && region.focusNodes.contains(remembered)) return remembered;
+    return region.focusNodes.where(usable).firstOrNull;
+  }
+
   /// Whether [node] is one of this page's rows, rather than its app bar.
   ///
   /// The nearest [DpadRegion] above the focused widget is the content region for a
@@ -168,10 +199,8 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
   void _onContentEdge(TraversalDirection direction) {
     if (direction != TraversalDirection.up) return;
     final FocusNode? back = _backNode;
-    final bool usable = back != null &&
-        back.parent != null &&
-        back.context?.mounted == true &&
-        back.canRequestFocus;
+    final bool usable =
+        back != null && back.parent != null && back.context?.mounted == true && back.canRequestFocus;
     if (!usable) return;
     DpadRegion.ofNode(back)?.noteFocus(back);
     back.requestFocus();
@@ -226,7 +255,18 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (finalAppBar != null) SafeArea(bottom: false, child: finalAppBar),
+                    if (finalAppBar != null)
+                      SafeArea(
+                        bottom: false,
+                        // Passive node: it never takes focus itself, it only sees the
+                        // keys the app bar's buttons leave unhandled (a Down on 返回).
+                        child: Focus(
+                          canRequestFocus: false,
+                          skipTraversal: true,
+                          onKeyEvent: _onAppBarKey,
+                          child: finalAppBar,
+                        ),
+                      ),
                     // Route-aware focus memory: when a pushed page (a settings
                     // sub-page, a dialog) pops away, focus returns to the item
                     // the user acted on instead of dying on the dpad root's
