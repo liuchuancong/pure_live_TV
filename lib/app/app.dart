@@ -189,15 +189,18 @@ class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    // The pages are transparent over the shared wallpaper, so a naive
-    // fade-in of the incoming page stacks it on the *fully lit* outgoing page
-    // — the previous page ghosts through at every intermediate frame. The two
-    // fades below are complementary (same curve, outgoing driven by the
-    // secondary animation): their alphas always sum to ≈1, so content never
-    // double-exposes while the wallpaper itself never fades.
-    final Animatable<double> fadeIn = CurveTween(curve: Curves.easeOutCubic);
+    // Fade-through, not cross-fade. Every page is transparent over the shared
+    // wallpaper, so blending an incoming page with the outgoing one — however
+    // the alphas are balanced — puts both pages' content on screen at once,
+    // which reads as a ghost of the previous page. Sequencing instead: the
+    // outgoing page is gone within the first third, the incoming page fills
+    // the last two thirds, and the brief wallpaper-only moment in between is
+    // the constant backdrop, not a missing page.
+    final Animatable<double> fadeIn = CurveTween(
+      curve: const Interval(0.35, 1.0, curve: Curves.easeOutCubic),
+    );
     final Animatable<double> fadeOut = CurveTween(
-      curve: Curves.easeOutCubic,
+      curve: const Interval(0.0, 0.35, curve: Curves.easeIn),
     ).chain(Tween<double>(begin: 1.0, end: 0.0));
     return FadeTransition(
       opacity: animation.drive(fadeIn),
