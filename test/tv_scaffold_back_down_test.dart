@@ -78,17 +78,13 @@ void main() {
     await pushPage(tester, scaffoldPage('level 2', rows: makeRows()));
     await pushPage(tester, scaffoldPage('level 3', rows: makeRows()));
 
-    // A freshly pushed page opens on its own first row — that is what
-    // `TvScaffold`'s focus claim is for — and never on the page below.
-    expect(
-      focusIsInside<TvSettingsSwitchTile>(),
-      isTrue,
-      reason: 'the third-level page takes the highlight with it',
-    );
+    // A pushed page opens with the highlight on 返回, never on a row of the page
+    // below.
+    expect(focusIsInside<TvButton>(), isTrue, reason: 'the third-level page opens on 返回');
 
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
     await tester.pumpAndSettle();
-    expect(focusIsInside<TvButton>(), isTrue, reason: 'up reaches 返回');
+    expect(focusIsInside<TvButton>(), isTrue, reason: 'up stays on 返回 at the top');
 
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pumpAndSettle();

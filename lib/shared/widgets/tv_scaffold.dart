@@ -20,6 +20,15 @@ class TvScaffold extends StatefulWidget {
   final bool? showBackButton;
   final Future<bool> Function()? beforeBack;
 
+  /// Identity of the page inside this scaffold, when the scaffold is shared.
+  ///
+  /// The settings shell keeps ONE [TvScaffold] for every settings page and swaps
+  /// the page with a nested navigator, so pushing 排序 inside 导航与显示设置 fires no
+  /// route callback here: from this scaffold's point of view nothing was pushed.
+  /// A changed value therefore means "the content is a different page now, open it
+  /// like a page" (from 返回).
+  final Object? contentIdentity;
+
   const TvScaffold({
     super.key,
     required this.child,
@@ -28,6 +37,7 @@ class TvScaffold extends StatefulWidget {
     this.showAppBar = true,
     this.showBackButton,
     this.beforeBack,
+    this.contentIdentity,
   });
 
   @override
@@ -79,6 +89,17 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
   void didPush() => _setCurrent(true);
 
   @override
+  void didUpdateWidget(covariant TvScaffold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The page inside a shared scaffold changed (see [TvScaffold.contentIdentity]):
+    // open the new page the same way a pushed route opens.
+    if (oldWidget.contentIdentity == widget.contentIdentity) return;
+    _claimedFocus = false;
+    _focusClaimAttempts = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
+  }
+
+  @override
   void didPopNext() => _setCurrent(true);
 
   @override
@@ -116,78 +137,94 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
   }
 
   /// The row the remote should land on when it comes down from the app bar: the one
-  /// the content region remembers, otherwise the first usable one.
+  /// the content region remembers, otherwise the visually first one.
   FocusNode? _contentFocusTarget() {
     final DpadRegionState? region = _contentRegionKey.currentState;
     if (region == null) return null;
     bool usable(FocusNode node) => node.parent != null && node.context?.mounted == true && node.canRequestFocus;
     final FocusNode? remembered = region.lastFocused;
     if (remembered != null && usable(remembered) && region.focusNodes.contains(remembered)) return remembered;
-    return region.focusNodes.where(usable).firstOrNull;
+    return _topLeftMost(region.focusNodes.where(usable));
   }
 
-  /// Whether [node] is one of this page's rows, rather than its app bar.
+  /// Lands the opening highlight on 返回, or on the page's first row when there is
+  /// no back button (the menu itself, the home page, a fullscreen page).
   ///
-  /// The nearest [DpadRegion] above the focused widget is the content region for a
-  /// row and the outer region for the back button, which is exactly the
-  /// distinction the focus claim needs.
-  bool _contentOwnsFocus(FocusNode? node) {
-    final BuildContext? nodeContext = node?.context;
-    if (nodeContext == null) return false;
-    return nodeContext.findAncestorStateOfType<DpadRegionState>() == _contentRegionKey.currentState;
-  }
-
-  /// Lands the keyboard on the first content row of a page that just came to the
-  /// top.
+  /// Left to itself the d-pad layer picks the node nearest the *previously* focused
+  /// one, so a page could open on any row of the list — 通用设置 on one device, a
+  /// different row elsewhere — which looks random and makes the remote feel
+  /// unreliable. Naming the target here makes it the same every time, and 返回 is
+  /// where a remote user expects to land: OK leaves the page, Down walks into it
+  /// ([_onAppBarKey]), Up comes back ([_onContentEdge]).
   ///
-  /// The back button carries `autofocus: true`, so without this pass every page
-  /// opened with the highlight parked on 返回. It also settles the race with the
-  /// d-pad layer's own restore: the node that held the keyboard dies when the page
-  /// below is covered (its subtree stops being focusable), and the restore that
-  /// follows can otherwise land on a node of that invisible page.
+  /// It also settles the race with the d-pad layer's restore: the node that held the
+  /// keyboard dies when the page below is covered (its subtree stops being
+  /// focusable), and that restore can otherwise land on a node of the invisible page.
   ///
-  /// The pass stands down as soon as a row of this page holds the keyboard, so it
-  /// never fights a user who has already moved on, and it only ever runs once per
-  /// page.
+  /// Runs once per page (and once per content change in a shared scaffold), retrying
+  /// a few frames while the app bar and the rows are being built.
   void _claimFocus() {
     if (!mounted || _claimedFocus) return;
     final ModalRoute<void>? route = ModalRoute.of(context);
     // A dialog (or any other route) above owns the keyboard.
     if (route != null && !route.isCurrent) return;
-    if (_contentOwnsFocus(FocusManager.instance.primaryFocus)) {
-      _claimedFocus = true;
-      return;
-    }
 
-    final DpadRegionState? region = _contentRegionKey.currentState;
     // Same usability rule the package's own DpadMarks uses, minus the unexported
     // helper: attached, mounted, and able to take focus.
     bool usable(FocusNode node) => node.parent != null && node.context?.mounted == true && node.canRequestFocus;
 
-    final FocusNode? first = region?.focusNodes.where(usable).firstOrNull;
+    // 1. The back button, when this page has one.
+    final FocusNode? back = _backNode;
+    if (back != null && usable(back)) {
+      if (!identical(FocusManager.instance.primaryFocus, back)) {
+        DpadRegion.ofNode(back)?.noteFocus(back);
+        back.requestFocus();
+      }
+      _claimedFocus = true;
+      return;
+    }
+
+    // 2. No back button yet, or none at all: the top-left-most row, which is the
+    //    first one visually instead of whatever order the focus tree reports.
+    final DpadRegionState? region = _contentRegionKey.currentState;
+    final FocusNode? first = _topLeftMost(region?.focusNodes.where(usable) ?? const <FocusNode>[]);
     if (first != null) {
       region!.noteFocus(first);
       first.requestFocus();
-      if (_contentOwnsFocus(FocusManager.instance.primaryFocus)) {
-        _claimedFocus = true;
-        return;
-      }
+      _claimedFocus = true;
+      return;
     }
 
-    // No focusable row yet (rows that arrive a few frames late, async font lists
-    // and friends): retry briefly, then settle for the back button so the page is
-    // never left without a highlight.
+    // 3. Nothing to focus yet (rows that arrive a few frames late, async font
+    //    lists and friends): retry briefly, then leave the highlight where it is
+    //    rather than parking it somewhere arbitrary.
     if (_focusClaimAttempts < _maxFocusClaimAttempts) {
       _focusClaimAttempts++;
       WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
-      return;
     }
-    _claimedFocus = true;
-    final FocusNode? back = _backNode;
-    if (back != null && usable(back)) {
-      DpadRegion.ofNode(back)?.noteFocus(back);
-      back.requestFocus();
+  }
+
+  /// The visually first node: topmost, then leftmost.
+  FocusNode? _topLeftMost(Iterable<FocusNode> nodes) {
+    FocusNode? best;
+    Rect? bestRect;
+    for (final FocusNode node in nodes) {
+      final Rect? rect = _rectOf(node);
+      if (rect == null) continue;
+      final bool better =
+          bestRect == null || rect.top < bestRect.top - 1 || (rect.top <= bestRect.top + 1 && rect.left < bestRect.left);
+      if (better) {
+        best = node;
+        bestRect = rect;
+      }
     }
+    return best;
+  }
+
+  Rect? _rectOf(FocusNode node) {
+    final RenderObject? object = node.context?.findRenderObject();
+    if (object is! RenderBox || !object.attached || !object.hasSize) return null;
+    return object.localToGlobal(Offset.zero) & object.size;
   }
 
   int _focusClaimAttempts = 0;

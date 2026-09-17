@@ -52,31 +52,31 @@ void main() {
   testWidgets('level 3: up to 返回 and back down again, repeatedly', (tester) async {
     await pumpShell(tester, depth: 3);
 
-    // A pushed page opens on its own first row.
-    expect(onRow(), isTrue, reason: 'the new page must take the highlight');
+    // Every page opens with the highlight on 返回.
+    expect(onBackButton(), isTrue, reason: 'a page opens on 返回');
 
     for (int cycle = 0; cycle < 5; cycle++) {
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
-      await tester.pumpAndSettle();
-      expect(onBackButton(), isTrue, reason: 'cycle $cycle: up reaches 返回');
-
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pumpAndSettle();
-      expect(onRow(), isTrue, reason: 'cycle $cycle: down from 返回 must reach the page rows again');
+      expect(onRow(), isTrue, reason: 'cycle $cycle: down from 返回 reaches the rows');
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pumpAndSettle();
+      expect(onBackButton(), isTrue, reason: 'cycle $cycle: up returns to 返回');
     }
   });
 
   testWidgets('level 4: the same walk after two inner pushes', (tester) async {
     await pumpShell(tester, depth: 4);
-    expect(onRow(), isTrue);
+    expect(onBackButton(), isTrue, reason: 'a page opens on 返回');
 
     for (int cycle = 0; cycle < 3; cycle++) {
-      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
-      await tester.pumpAndSettle();
-      expect(onBackButton(), isTrue, reason: 'cycle $cycle: up reaches 返回');
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pumpAndSettle();
-      expect(onRow(), isTrue, reason: 'cycle $cycle: down from 返回 must reach the page rows again');
+      expect(onRow(), isTrue, reason: 'cycle $cycle: down from 返回 reaches the rows');
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pumpAndSettle();
+      expect(onBackButton(), isTrue, reason: 'cycle $cycle: up returns to 返回');
     }
   });
 }
@@ -126,6 +126,9 @@ class _ShellState extends State<_Shell> {
   Widget build(BuildContext context) {
     return TvScaffold(
       title: _title,
+      // The shell knows which page is inside it; a nested push fires no route
+      // callback here.
+      contentIdentity: _title,
       child: Navigator(
         key: _inner,
         // go_router merges the router's observers into the shell's navigator (with a

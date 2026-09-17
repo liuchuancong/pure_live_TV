@@ -115,25 +115,25 @@ void main() {
     expect(back.hasPrimaryFocus, isTrue);
   });
 
-  testWidgets('a freshly pushed page takes the highlight with it', (WidgetTester tester) async {
+  testWidgets('a freshly pushed page opens on 返回 and leaves the page below alone', (WidgetTester tester) async {
     await pumpApp(tester);
-    debugPrint('DIAG after home: ${FocusManager.instance.primaryFocus?.debugLabel}');
     await pushLevel(tester, 2);
-    debugPrint('DIAG after push2: ${FocusManager.instance.primaryFocus?.debugLabel}');
     await pushLevel(tester, 3);
-    debugPrint('DIAG after push3: ${FocusManager.instance.primaryFocus?.debugLabel}');
 
-    // Focus must not stay on the covered page: that is what makes the remote drive
-    // an invisible screen.
-    final FocusNode firstRow = rowsFor(3).first;
-    expect(
-      firstRow.hasPrimaryFocus,
-      isTrue,
-      reason: 'a pushed page focuses its own first row, not a row of the page below',
-    );
+    // The highlight opens on this page's own 返回, not on a row of the page below
+    // (which is what made the remote drive an invisible screen).
+    expect(nodes(tester, 3).back?.hasPrimaryFocus, isTrue, reason: 'a pushed page opens on its own 返回');
     for (final FocusNode covered in rowsFor(2)) {
       expect(covered.hasPrimaryFocus, isFalse, reason: 'the covered page must have given the keyboard up');
     }
+
+    // Down walks into the page, up comes back: the round trip on a pushed route.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    expect(rowsFor(3).first.hasPrimaryFocus, isTrue, reason: 'down from 返回 reaches the first row');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.pump();
+    expect(nodes(tester, 3).back?.hasPrimaryFocus, isTrue, reason: 'up from the first row returns to 返回');
   });
 }
 

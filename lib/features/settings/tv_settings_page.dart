@@ -268,6 +268,10 @@ class SettingsSectionScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return TvScaffold(
       title: i18n(settingsSectionTitleKey(location)),
+      // One scaffold serves every settings page (the shell swaps the page inside
+      // it), so the path is what tells it the content is a different page now and
+      // the highlight has to open on 返回 again.
+      contentIdentity: location,
       child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),
     );
   }
