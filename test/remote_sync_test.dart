@@ -104,8 +104,6 @@ void main() {
       'c_bilibili',
       'iptv_url',
       'iptv_headers',
-      'dav_address',
-      'dav_user',
       'p_host',
       'p_app_host',
       'streamer',
@@ -117,7 +115,6 @@ void main() {
     }
     expect(html, contains("'/api/channel/cookie'"));
     expect(html, contains("'/api/channel/iptv'"));
-    expect(html, contains("saveChannel('webdav'"));
     expect(html, contains("saveChannel('proxy'"));
     expect(html, contains("'/api/search/'"));
   });
@@ -129,14 +126,14 @@ void main() {
     final (status, body) = await request(
       tester,
       port,
-      '/api/channel/webdav',
+      '/api/channel/proxy',
       method: 'POST',
-      body: jsonEncode(<String, dynamic>{'name': 'dav', 'address': 'https://dav.example/dav/'}),
+      body: jsonEncode(<String, dynamic>{'enableProxy': true, 'proxyHost': '127.0.0.1', 'proxyPort': 7897}),
     );
 
     expect(status, 200);
     expect(jsonDecode(body)['data'], isTrue);
-    expect(delegate.applied['webdav'], isA<Map<dynamic, dynamic>>());
+    expect(delegate.applied['proxy'], isA<Map<dynamic, dynamic>>());
 
     // The text inputs a phone pushes (search / room / movie) land as events.
     final events = <RemoteSyncEvent>[];
@@ -191,7 +188,7 @@ void main() {
     test('covers every channel a phone form can write', () {
       // The page is a plain string in the kit; this pins that the sections the report
       // named are wired to the channels the delegate implements.
-      for (final channel in <String>['cookie', 'iptv', 'webdav', 'proxy']) {
+      for (final channel in <String>['cookie', 'iptv', 'proxy']) {
         expect(RemoteSyncProtocol.channels, contains(channel));
       }
     });

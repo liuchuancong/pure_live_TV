@@ -202,7 +202,6 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsAccountTwitch: 'site_twitch',
   AppRoutes.kSettingsAccountSoop: 'site_soop',
   AppRoutes.kSettingsTags: 'tag_management',
-  AppRoutes.kWebDavPage: 'webdav',
   // The three 导航与显示设置 sub-pages are titled like the rows that open them.
   AppRoutes.kSettingsNavVisibility: 'navigation_visibility',
   AppRoutes.kSettingsNavOrder: 'navigation_order',

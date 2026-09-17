@@ -16,7 +16,6 @@ class BackupManageSectionPage extends ConsumerStatefulWidget {
 }
 
 class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage> {
-  static const _prefix = 'pure_live_backup';
   static const _maxEntries = 20;
 
   final List<File> _files = [];
@@ -38,7 +37,9 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
       for (final entity in dir.listSync()) {
         if (entity is! File) continue;
         final name = entity.uri.pathSegments.last.toLowerCase();
-        if (!name.startsWith(_prefix) || !name.endsWith('.json')) continue;
+        // `.txt` is the format now (the mobile app's); `.json` keeps an older TV backup
+        // restorable, and both of this app's name prefixes are listed.
+        if (!BackupController.isBackupFileName(name)) continue;
         files.add(entity);
       }
     }
@@ -88,12 +89,7 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
     });
   }
 
-  static String _buildName(DateTime time) {
-    String two(int value) => value.toString().padLeft(2, '0');
-    final stamp =
-        '${time.year}${two(time.month)}${two(time.day)}_${two(time.hour)}${two(time.minute)}${two(time.second)}';
-    return '${_prefix}_$stamp.json';
-  }
+  static String _buildName(DateTime time) => BackupController.backupFileName(time);
 
   static String _describe(File file) {
     final stat = file.statSync();

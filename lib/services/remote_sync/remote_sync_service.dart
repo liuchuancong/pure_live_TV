@@ -11,8 +11,6 @@ import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart
 import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
-import 'package:pure_live/services/webdav/webdav_config.dart';
-import 'package:pure_live/services/webdav/webdav_controller.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/common/http_header_policy.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -171,10 +169,6 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
         return _ref.read(proxySettingsControllerProvider).toJson();
       case 'iptv':
         return _ref.read(iptvSettingsControllerProvider).toJson();
-      case 'webdav':
-        return <Map<String, dynamic>>[
-          for (final config in _ref.read(webDavControllerProvider).webDavConfigs) config.toJson(),
-        ];
       default:
         return null;
     }
@@ -204,18 +198,6 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
         }
       case 'iptv':
         return _applyIptvLink(data);
-      case 'webdav':
-        if (data is! Map) return false;
-        try {
-          final WebDAVConfig config = WebDAVConfig.fromJson(Map<String, dynamic>.from(data));
-          if (config.address.trim().isEmpty) return false;
-          final controller = _ref.read(webDavControllerProvider.notifier);
-          // The phone may correct an existing entry; `add` refuses a duplicate name.
-          if (controller.isWebDavConfigExist(config.name)) return controller.updateWebDavConfig(config);
-          return controller.addWebDavConfig(config);
-        } catch (_) {
-          return false;
-        }
       default:
         return false;
     }

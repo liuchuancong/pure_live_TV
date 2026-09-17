@@ -30,7 +30,6 @@ class RemoteSyncProtocol {
     'tags',
     'proxy',
     'iptv',
-    'webdav',
   ];
 
   /// The page the phone opens; served at `/`.

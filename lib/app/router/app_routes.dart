@@ -125,9 +125,6 @@ abstract final class AppRoutes {
   /// Tag management (desktop app path).
   static const kSettingsTags = "/settingTags";
 
-  /// WebDAV configuration (desktop app path).
-  static const kWebDavPage = "/web_dav_page";
-
   /// Settings sub-pages that the desktop app pushes without a named route.
   static const kSettingsTheme = "/settings/theme";
   static const kSettingsThemePicker = "/settings/theme_picker";

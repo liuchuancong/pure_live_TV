@@ -31,12 +31,6 @@ class WebRemoteRouter {
   /// NetEase CC cookie
   static const String cookieCc = '/#/cookie/cc';
 
-  /// WebDAV settings
-  static const String webdavSettings = '/#/webdav_settings';
-
-  /// WebDAV help
-  static const String webdavHelp = '/#/webdav-help';
-
   /// Danmaku keyword filter settings
   static const String danmakuFilter = '/#/danmaku';
 

@@ -117,10 +117,9 @@ class LegacySettingsMigration {
         "hotAreasList": HivePrefUtil.getStringList("hotAreasList"),
         "savedMenuIds": HivePrefUtil.getStringList("savedMenuIds"),
 
-        // WebDAV
+        // 备份目录 (the WebDAV keys that used to sit here are gone with the module; a
+        // legacy key is simply ignored by the import below).
         "backupDirectory": HivePrefUtil.getString("backupDirectory"),
-        "currentWebDavConfig": HivePrefUtil.getString("currentWebDavConfig"),
-        "webDavConfigs": HivePrefUtil.getStringList("webDavConfigs"),
         "m3uDirectory": HivePrefUtil.getString("m3uDirectory"),
       };
     } catch (e) {
@@ -138,7 +137,6 @@ class LegacySettingsMigration {
     s.volume.importFromJson(legacy);
     s.fav.importFromJson(legacy);
     s.history.importFromJson(legacy);
-    s.webDav.importFromJson(legacy);
     s.cookieManager.importFromJson(legacy);
     s.proxy.importFromJson(legacy);
     s.exit.importFromJson(legacy);

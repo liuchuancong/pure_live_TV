@@ -61,7 +61,6 @@ void main() {
     expect(settingsSectionTitleKey(AppRoutes.kSettingsAudioOutput), 'audio_output_driver');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsDanmuShield), 'danmaku_keyword_block');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsFont), 'font_settings_title');
-    expect(settingsSectionTitleKey(AppRoutes.kWebDavPage), 'webdav');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsHotAreas), 'platform_display');
 
     // A page may be titled differently from the menu row that opens it.
@@ -114,7 +113,6 @@ void main() {
       AppRoutes.kSettingsAccount,
       AppRoutes.kSettingsTags,
       AppRoutes.kBackup,
-      AppRoutes.kWebDavPage,
       AppRoutes.kSettingsDanmuShield,
       AppRoutes.kAbout,
     ];

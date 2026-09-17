@@ -23,7 +23,6 @@ class BackupController extends _$BackupController {
     'volume',
     'favorite',
     'history',
-    'webdav',
     'iptv',
     'cookie',
     'proxy',
@@ -34,6 +33,36 @@ class BackupController extends _$BackupController {
     'log',
     'tags',
   ];
+
+  /// The name a backup is written under, e.g. `purelive_2026-09-17T20_15_03.txt`.
+  ///
+  /// The mobile app's own name and extension (`BackupRecoveryService`), so the same file
+  /// can be moved between the phone and the TV. The content is the indented JSON both apps
+  /// write — a `.txt` suffix is what the mobile app uses for it, not a different format.
+  static String backupFileName(DateTime now) {
+    String two(int value) => value.toString().padLeft(2, '0');
+    final stamp = '${now.year}-${two(now.month)}-${two(now.day)}'
+        'T${two(now.hour)}_${two(now.minute)}_${two(now.second)}';
+    return '$backupNamePrefix$stamp.txt';
+  }
+
+  /// File name prefix for a new backup.
+  static const String backupNamePrefix = 'purelive_';
+
+  /// Prefixes a backup list accepts, so files written by an older TV build stay visible.
+  static const List<String> backupNamePrefixes = <String>['purelive_', 'pure_live_backup'];
+
+  /// Extensions the backup pickers accept.
+  ///
+  /// `.txt` is the format; `.json` is accepted so backups an older TV build wrote can
+  /// still be restored.
+  static const List<String> backupExtensions = <String>['txt', 'json'];
+
+  static bool isBackupFileName(String fileName) {
+    final String name = fileName.toLowerCase();
+    if (!backupExtensions.any(name.endsWith)) return false;
+    return backupNamePrefixes.any(name.startsWith);
+  }
 
   @override
   void build() {}
@@ -89,17 +118,19 @@ class BackupController extends _$BackupController {
     };
 
     if (includeSensitiveData) {
-      data['webdav'] = s.webDav.toJson();
       data['cookie'] = s.cookieManager.toJson();
     }
     return data;
   }
 
-  /// Strips credentials and session cookies before a backup leaves the device.
+  /// Strips session cookies — and the WebDAV credentials a backup imported from an older
+  /// build may still carry — before a backup leaves the device.
   static Map<String, dynamic> redactSensitiveData(Map<String, dynamic> source) {
     final result = Map<String, dynamic>.from(source)
-      ..remove('webdav')
-      ..remove('cookie');
+      ..remove('cookie')
+      // The module is gone, but a file it wrote (or a peer's document) can still be
+      // imported and re-exported; its passwords must not come along.
+      ..remove('webdav');
     result['sensitiveDataIncluded'] = false;
     return result;
   }
@@ -161,7 +192,6 @@ class BackupController extends _$BackupController {
       'startup': s.startup.importFromJson,
       'refresh': s.refresh.importFromJson,
       'page': s.page.importFromJson,
-      'webdav': s.webDav.importFromJson,
       'cookie': s.cookieManager.importFromJson,
     };
 
@@ -189,6 +219,11 @@ class BackupController extends _$BackupController {
     }
   }
 
+  /// Writes the settings document into [file].
+  ///
+  /// The file is the `.txt` the mobile app writes: same name shape, same indented JSON
+  /// inside — a `.txt` filled with JSON is what "备份" means on both apps, so a phone
+  /// backup opens here and a TV backup opens there.
   bool backup(File file) {
     try {
       final data = exportAllSettings();

@@ -2,9 +2,9 @@
 ///
 /// It talks to the same HTTP API the mobile app uses (`/api/channel/<name>`,
 /// `/api/search/streamer`, …), so a browser becomes a second client of the LAN sync
-/// service: cookies, IPTV playlists with their request headers, WebDAV, the network
-/// proxy, danmaku filters and tags are all typed on the phone and land in the TV's own
-/// settings pages.
+/// service: cookies, IPTV playlists with their request headers, the network proxy,
+/// danmaku filters and tags are all typed on the phone and land in the TV's own settings
+/// pages.
 const String kWebRemotePage = r'''<!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -80,19 +80,6 @@ const String kWebRemotePage = r'''<!DOCTYPE html>
   <textarea id="iptv_headers" placeholder="user-agent: okhttp/3.12&#10;referer: http://example.com/&#10;cookie: a=b"></textarea>
   <div class="hint">导入后这些请求头会写到该源的每个频道上。</div>
   <button onclick="saveIptv()">导入到电视</button>
-</div>
-
-<div class="card">
-  <h2>WebDAV 备份</h2>
-  <label>名称</label>
-  <input id="dav_name" placeholder="我的网盘" autocomplete="off">
-  <label>地址</label>
-  <input id="dav_address" placeholder="https://dav.example.com/dav/" autocomplete="off">
-  <div class="row">
-    <div><label>用户名</label><input id="dav_user" autocomplete="off"></div>
-    <div><label>密码</label><input id="dav_pass" type="password" autocomplete="off"></div>
-  </div>
-  <button onclick="saveWebdav()">保存到电视</button>
 </div>
 
 <div class="card">
@@ -217,16 +204,6 @@ async function saveIptv() {
     await post('/api/channel/iptv', { url: url, name: $('iptv_name').value.trim(), headers: parseHeaders($('iptv_headers').value) });
     toast('已开始导入直播源', 'ok');
   } catch (e) { toast('失败：' + e.message, 'err'); }
-}
-async function saveWebdav() {
-  const address = $('dav_address').value.trim();
-  if (!address) { toast('请填写 WebDAV 地址', 'err'); return; }
-  await saveChannel('webdav', {
-    name: $('dav_name').value.trim() || 'WebDAV',
-    address: address,
-    username: $('dav_user').value.trim(),
-    password: $('dav_pass').value,
-  }, 'WebDAV 已保存');
 }
 async function loadProxy() {
   const data = (await channel('proxy')) || {};

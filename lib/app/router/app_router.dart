@@ -20,7 +20,6 @@ import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
 import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
 import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
-import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
 import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
@@ -62,8 +61,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
   AppRoutes.kSettingsAudience: (context) => const AudienceMetricSectionPage(),
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
-  AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),
-  // Pages the mobile app gives its own path.
+  AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),  // Pages the mobile app gives its own path.
   AppRoutes.kIptv: (context) => const IptvManageSectionPage(),
   AppRoutes.kSettingsHotAreas: (context) => const PlatformDisplaySectionPage(),
   AppRoutes.kSettingsHotAreasVisibility: (context) => const PlatformDisplayVisibilitySectionPage(),
@@ -86,7 +84,6 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
       AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
   AppRoutes.kSettingsTags: (context) => const TagManagementSectionPage(),
   AppRoutes.kBackup: (context) => const BackupSettingsSectionPage(),
-  AppRoutes.kWebDavPage: (context) => const WebDavSettingsSectionPage(),
   AppRoutes.kSettingsDanmuShield: (context) => const DanmakuShieldSectionPage(),
   AppRoutes.kAbout: (context) => const AboutSettingsSectionPage(),
 };
@@ -121,7 +118,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // menu, every page is pushed as its own screen with a back button, and
       // the pages the desktop app gives a named route keep that path here
       // (IPTV, backup, about, the block list, platform display, third-party
-      // authorisation, tags, WebDAV).
+      // authorisation, tags).
       GoRoute(path: AppRoutes.kSettings, builder: (context, state) => const TvSettingsRoutePage()),
       // ONE shell for every settings page, and it contributes **no chrome**: each
       // page brings its own scaffold (its own app bar, its own 返回 button and its

@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/cache/cache_model.dart';
-import 'package:pure_live/services/webdav/webdav_model.dart';
 import 'package:pure_live/services/cache/cache_controller.dart';
-import 'package:pure_live/services/webdav/webdav_controller.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_model.dart';
 import 'package:pure_live/services/history_settings/history_model.dart';
@@ -89,9 +87,6 @@ class SettingsService {
   // cookieManager
   CookieModel get cookieState => _container.read(cookieControllerProvider);
   CookieController get cookieManager => _container.read(cookieControllerProvider.notifier);
-  // webDav
-  WebDavModel get webDavState => _container.read(webDavControllerProvider);
-  WebDavController get webDav => _container.read(webDavControllerProvider.notifier);
   // iptv
   IptvSettingsModel get iptvState => _container.read(iptvSettingsControllerProvider);
   IptvSettingsController get iptv => _container.read(iptvSettingsControllerProvider.notifier);

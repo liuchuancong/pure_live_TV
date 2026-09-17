@@ -33,7 +33,6 @@ dependencies:
   # WebSocket、网络通信、流媒体协议
   web_socket_channel: ^3.0.1          # WebSocket长连接通信
   stream_channel: ^2.1.4             # YY自定义WebSocket通道保留请求头
-  webdav_client: ^1.2.2               # WebDAV网盘文件同步
   connectivity_plus: ^7.1.1           # 网络状态检测(Wi-Fi/移动/无网)
 
   # 本地持久化数据库 & 缓存
@@ -193,7 +192,6 @@ flutter:
     - assets/images/video/
     - assets/icons/
     - assets/translations/
-    - assets/webdav/
     - assets/web_remote/
     - assets/web_remote/assets/
     - assets/version.json

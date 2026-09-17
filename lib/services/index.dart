@@ -1,4 +1,4 @@
-/// Cross-feature state exports: settings, cookies, backup, cache, WebDAV.
+/// Cross-feature state exports: settings, cookies, backup, cache.
 library;
 
 export 'app_settings/app_settings_controller.dart';
@@ -52,7 +52,3 @@ export 'theme_settings/theme_settings_controller.dart';
 export 'theme_settings/theme_settings_model.dart';
 export 'volume_settings/volume_settings_controller.dart';
 export 'volume_settings/volume_settings_model.dart';
-export 'webdav/webdav_config.dart';
-export 'webdav/webdav_controller.dart';
-export 'webdav/webdav_model.dart';
-export 'webdav/webdav_sync_service.dart';

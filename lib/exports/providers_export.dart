@@ -21,5 +21,4 @@ export 'package:pure_live/services/startup/startup_controller.dart';
 export 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 export 'package:pure_live/services/tag_management/tag_management_controller.dart';
 export 'package:pure_live/services/volume_settings/volume_settings_controller.dart';
-export 'package:pure_live/services/webdav/webdav_controller.dart';
 export 'package:pure_live/shared/theme/tv_theme_controller.dart';

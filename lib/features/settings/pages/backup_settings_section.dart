@@ -25,8 +25,6 @@ class BackupSettingsSectionPage extends ConsumerStatefulWidget {
 }
 
 class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSectionPage> {
-  static const String _prefix = 'pure_live_backup';
-
   String _result = '';
   bool _busy = false;
   bool _logApplying = false;
@@ -54,6 +52,8 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
 
   /// Writes a timestamped backup into the resolved directory (the configured
   /// 备份目录, or the app documents directory when none was chosen).
+  ///
+  /// `.txt`, named `purelive_<date>.txt` — the mobile app's own backup file.
   Future<void> _createBackup() async {
     if (_busy) return;
     setState(() {
@@ -62,13 +62,35 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     });
     final notifier = ref.read(backupControllerProvider.notifier);
     final directory = await notifier.resolveBackupDirectory();
-    final stamp = _stamp(DateTime.now());
-    final file = File('${directory.path}${Platform.pathSeparator}${_prefix}_$stamp.json');
+    final file = File('${directory.path}${Platform.pathSeparator}${BackupController.backupFileName(DateTime.now())}');
     final ok = notifier.backup(file);
     if (!mounted) return;
     setState(() {
       _busy = false;
       _result = ok ? '${i18n('ui_exported')}: ${file.path}' : i18n('ui_export_failed');
+    });
+  }
+
+  /// Restores a backup file the user picks, the way the mobile page does.
+  Future<void> _recoverFromFile() async {
+    if (_busy) return;
+    final result = await FilePicker.pickFile(
+      dialogTitle: i18n('select_recover_file'),
+      type: FileType.custom,
+      allowedExtensions: BackupController.backupExtensions,
+    );
+    final path = result?.path;
+    if (path == null || path.isEmpty) return;
+
+    setState(() {
+      _busy = true;
+      _result = i18n('ui_loading');
+    });
+    final ok = await ref.read(backupControllerProvider.notifier).recover(File(path));
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _result = ok ? i18n('recover_backup_success') : i18n('recover_backup_failed');
     });
   }
 
@@ -99,11 +121,6 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     });
   }
 
-  static String _stamp(DateTime time) {
-    String two(int value) => value.toString().padLeft(2, '0');
-    return '${time.year}${two(time.month)}${two(time.day)}_${two(time.hour)}${two(time.minute)}${two(time.second)}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final ServerState? server = ref.watch(tvRemoteReceiverProvider).value;
@@ -113,16 +130,10 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 云端备份
+        // 云端备份 — 设备同步 is the cloud path now that WebDAV is gone.
         TvSettingsGroupTitle(title: i18n('cloud_backup')),
         TvSettingsCard(
           children: [
-            TvSettingsNavTile(
-              title: i18n('webdav'),
-              subtitle: i18n('backup_to_webdav'),
-              icon: Remix.cloud_line,
-              onTap: () => context.push(AppRoutes.kWebDavPage),
-            ),
             TvSettingsNavTile(
               title: i18n('remote_sync'),
               subtitle: server?.isRunning == true ? server!.serverUrl : i18n('remote_sync_subtitle'),
@@ -144,9 +155,17 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               index: 0,
               onChanged: (_) => _createBackup(),
             ),
-            TvSettingsNavTile(
+            TvSettingsOptionTile(
               title: i18n('recover_backup'),
               subtitle: i18n('recover_backup_subtitle'),
+              icon: Remix.file_upload_line,
+              options: [i18n('ui_choose')],
+              index: 0,
+              onChanged: (_) => _recoverFromFile(),
+            ),
+            TvSettingsNavTile(
+              title: i18n('local_backup'),
+              subtitle: i18n('backup_settings'),
               icon: Remix.history_line,
               onTap: () => context.push(AppRoutes.kSettingsLocalBackup),
             ),

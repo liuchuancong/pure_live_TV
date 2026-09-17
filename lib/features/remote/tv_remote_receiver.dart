@@ -9,8 +9,6 @@ import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
-import 'package:pure_live/services/webdav/webdav_config.dart';
-import 'package:pure_live/services/webdav/webdav_controller.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/common/http_header_policy.dart';
 import 'package:pure_live/shared/utils/log.dart';
@@ -43,7 +41,6 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   final Map<String, dynamic> _configCache = {
     'douyin_cookie': <String, String>{'ttwid': '', 'cookie': ''},
     'danmaku_filter': <String>[],
-    'webdav_list': <Map<String, dynamic>>[],
   };
 
   Function(String videoUrl)? onMovieReceived;
@@ -404,36 +401,6 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
       _addLog('Settings received from the phone (setSettings)');
       return _ok(res, data: true);
-    });
-
-    _app!.get('/api/webdav/list', (req, res) {
-      // Real configs, not the in-memory cache: the phone page listed (and saved)
-      // entries the TV never used, so a "saved" WebDAV account simply was not there.
-      final controller = ref.read(webDavControllerProvider);
-      return _ok(res, data: <Map<String, dynamic>>[
-        for (final config in controller.webDavConfigs) config.toJson(),
-      ]);
-    });
-
-    _app!.post('/api/webdav/save', (req, res) async {
-      final body = await req.body;
-      final Map<String, dynamic> payload = body is Map
-          ? Map<String, dynamic>.from(body)
-          : <String, dynamic>{'address': body.toString()};
-      try {
-        final config = WebDAVConfig.fromJson(payload);
-        if (config.address.trim().isEmpty) return _fail(res, msg: i18n('ui_parameter_error'));
-        final controller = ref.read(webDavControllerProvider.notifier);
-        final bool ok = controller.isWebDavConfigExist(config.name)
-            ? controller.updateWebDavConfig(config)
-            : controller.addWebDavConfig(config);
-        if (!ok) return _fail(res, msg: i18n('ui_save_failed'));
-        _addLog('WebDAV settings updated from the phone');
-        return _ok(res, msg: i18n('ui_saved'));
-      } catch (error) {
-        _addLog('WebDAV save failed: $error', color: Colors.red);
-        return _fail(res, msg: i18n('ui_parameter_error'));
-      }
     });
 
     // 网络代理 — the web remote had no route for it at all, so a phone could not
