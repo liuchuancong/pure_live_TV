@@ -1,16 +1,16 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:dpad/dpad.dart';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pure_live/shared/widgets/tv_app_bar.dart';
-import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/shared/utils/cache_manager.dart';
-import 'package:pure_live/shared/consts/back_ground_source.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pure_live/shared/widgets/tv_app_bar.dart';
+import 'package:pure_live/shared/utils/cache_manager.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
+import 'package:pure_live/shared/consts/back_ground_source.dart';
+
 
 class TvScaffold extends StatefulWidget {
   final Widget child;

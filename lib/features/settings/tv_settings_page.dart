@@ -272,6 +272,7 @@ class SettingsSectionScaffold extends StatelessWidget {
       // it), so the path is what tells it the content is a different page now and
       // the highlight has to open on 返回 again.
       contentIdentity: location,
+      showBackButton: true,
       child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),
     );
   }
