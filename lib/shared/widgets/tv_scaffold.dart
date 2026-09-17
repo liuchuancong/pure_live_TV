@@ -147,22 +147,29 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     return _topLeftMost(region.focusNodes.where(usable));
   }
 
-  /// Lands the opening highlight on 返回, or on the page's first row when there is
-  /// no back button (the menu itself, the home page, a fullscreen page).
+  /// Lands the opening highlight on the page's first content row, or on 返回
+  /// when there is nothing to focus yet (the rows load late) or the page has
+  /// no rows at all.
+  ///
+  /// Opening on the first row is what a remote user expects: the page is
+  /// immediately walkable with Down and OK, and 返回 stays one Up away
+  /// ([_onContentEdge]). Opening on 返回 instead cost an extra key press
+  /// before anything could be selected.
   ///
   /// Left to itself the d-pad layer picks the node nearest the *previously* focused
   /// one, so a page could open on any row of the list — 通用设置 on one device, a
   /// different row elsewhere — which looks random and makes the remote feel
-  /// unreliable. Naming the target here makes it the same every time, and 返回 is
-  /// where a remote user expects to land: OK leaves the page, Down walks into it
-  /// ([_onAppBarKey]), Up comes back ([_onContentEdge]).
+  /// unreliable. Naming the target here makes it the same every time.
   ///
   /// It also settles the race with the d-pad layer's restore: the node that held the
   /// keyboard dies when the page below is covered (its subtree stops being
   /// focusable), and that restore can otherwise land on a node of the invisible page.
   ///
   /// Runs once per page (and once per content change in a shared scaffold), retrying
-  /// a few frames while the app bar and the rows are being built.
+  /// for a while as the app bar and the rows are being built — lazy pages
+  /// (paged grids, async lists) take more than a couple of frames to offer any
+  /// focusable node, and a claim that gave up left the keyboard dead: the first
+  /// Down then went to 返回 via the d-pad fallback instead of into the list.
   void _claimFocus() {
     if (!mounted || _claimedFocus) return;
     final ModalRoute<void>? route = ModalRoute.of(context);
@@ -173,35 +180,59 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     // helper: attached, mounted, and able to take focus.
     bool usable(FocusNode node) => node.parent != null && node.context?.mounted == true && node.canRequestFocus;
 
-    // 1. The back button, when this page has one.
+    final DpadRegionState? region = _contentRegionKey.currentState;
+
+    // 1. The top-left-most content row, which is the first one visually instead
+    //    of whatever order the focus tree reports.
+    final FocusNode? first = _topLeftMost(region?.focusNodes.where(usable) ?? const <FocusNode>[]);
+    if (first != null) {
+      final FocusNode? primary = FocusManager.instance.primaryFocus;
+      // Steer only while the keyboard is still where this scaffold left it (or
+      // nowhere at all): once the user has moved the highlight themselves, the
+      // page is open for business and must not be pulled back.
+      final bool steering =
+          primary == null || primary == _backNode || (region != null && _insideRegion(primary, region));
+      if (steering) {
+        region!.noteFocus(first);
+        first.requestFocus();
+      }
+      _claimedFocus = true;
+      return;
+    }
+
+    // 2. No row yet (or a page that has none): 返回 holds the keyboard for now.
+    //    Not claimed yet — a lazy page's rows can still appear, and the opening
+    //    highlight then moves onto the first one (step 1 on a later attempt).
     final FocusNode? back = _backNode;
     if (back != null && usable(back)) {
       if (!identical(FocusManager.instance.primaryFocus, back)) {
         DpadRegion.ofNode(back)?.noteFocus(back);
         back.requestFocus();
       }
-      _claimedFocus = true;
-      return;
-    }
-
-    // 2. No back button yet, or none at all: the top-left-most row, which is the
-    //    first one visually instead of whatever order the focus tree reports.
-    final DpadRegionState? region = _contentRegionKey.currentState;
-    final FocusNode? first = _topLeftMost(region?.focusNodes.where(usable) ?? const <FocusNode>[]);
-    if (first != null) {
-      region!.noteFocus(first);
-      first.requestFocus();
+      if (_focusClaimAttempts < _maxFocusClaimAttempts) {
+        _focusClaimAttempts++;
+        WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
+        return;
+      }
       _claimedFocus = true;
       return;
     }
 
     // 3. Nothing to focus yet (rows that arrive a few frames late, async font
-    //    lists and friends): retry briefly, then leave the highlight where it is
+    //    lists and friends): keep retrying, then leave the highlight where it is
     //    rather than parking it somewhere arbitrary.
     if (_focusClaimAttempts < _maxFocusClaimAttempts) {
       _focusClaimAttempts++;
       WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
     }
+  }
+
+  /// Whether [node] is (or sits inside) one of the content region's rows.
+  bool _insideRegion(FocusNode node, DpadRegionState region) {
+    for (FocusNode? walk = node; walk != null; walk = walk.parent) {
+      if (region.focusNodes.contains(walk)) return true;
+    }
+    return false;
   }
 
   /// The visually first node: topmost, then leftmost.
@@ -228,7 +259,7 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
   }
 
   int _focusClaimAttempts = 0;
-  static const int _maxFocusClaimAttempts = 6;
+  static const int _maxFocusClaimAttempts = 15;
 
   /// Set once this page has claimed the keyboard (or given up on it).
   bool _claimedFocus = false;

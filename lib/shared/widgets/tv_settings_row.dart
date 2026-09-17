@@ -14,7 +14,7 @@ typedef TvSettingsTrailingBuilder =
 /// focus treatment — a border plus a tinted fill rather than a rounded card
 /// chrome. Rows only differ in what they put in [trailingBuilder] (and, for a
 /// slider, in [footer]).
-class TvSettingsRow extends StatelessWidget {
+class TvSettingsRow extends StatefulWidget {
   const TvSettingsRow({
     super.key,
     required this.title,
@@ -45,17 +45,39 @@ class TvSettingsRow extends StatelessWidget {
   final bool autofocus;
 
   @override
+  State<TvSettingsRow> createState() => _TvSettingsRowState();
+}
+
+class _TvSettingsRowState extends State<TvSettingsRow> {
+  /// The row's own stable focus node.
+  ///
+  /// `DpadFocusable` creates a fresh node on every rebuild, so a row whose
+  /// value just changed through a dialog (选择解码器, 主题模式, ...) gets a new
+  /// node while the dialog is closing — the node the dialog remembered, and the
+  /// node the page's focus restorer remembered, both die, and the keyboard ends
+  /// up on 返回 instead of back on the row. A state-owned node survives the
+  /// rebuild, so both restores land where the user actually was.
+  final FocusNode _focusNode = FocusNode(debugLabel: 'tv_settings_row');
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
 
     return DpadFocusable(
-      autofocus: autofocus,
-      onSelect: onSelect,
-      onDirection: onDirection,
+      autofocus: widget.autofocus,
+      focusNode: _focusNode,
+      onSelect: widget.onSelect,
+      onDirection: widget.onDirection,
       builder: (context, state, child) {
         final bool focused = state.focused;
         final Color accent = tvTheme.focusColor;
-        final bool hasLeading = leading != null || icon != null;
+        final bool hasLeading = widget.leading != null || widget.icon != null;
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
@@ -91,11 +113,11 @@ class TvSettingsRow extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Row(
                       children: [
-                        if (leading != null)
-                          leading!
-                        else if (icon != null)
+                        if (widget.leading != null)
+                          widget.leading!
+                        else if (widget.icon != null)
                           Icon(
-                            icon,
+                            widget.icon,
                             size: 30.sp,
                             color: focused ? accent : tvTheme.primaryTextColor,
                           ),
@@ -106,7 +128,7 @@ class TvSettingsRow extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                title,
+                                widget.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTextStyles.t22W600.copyWith(
@@ -115,10 +137,10 @@ class TvSettingsRow extends StatelessWidget {
                                       : tvTheme.primaryTextColor,
                                 ),
                               ),
-                              if (subtitle != null) ...[
+                              if (widget.subtitle != null) ...[
                                 SizedBox(height: 4.sp),
                                 Text(
-                                  subtitle!,
+                                  widget.subtitle!,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTextStyles.t16W500.copyWith(
@@ -137,7 +159,7 @@ class TvSettingsRow extends StatelessWidget {
                             maxWidth: trailingMaxWidth,
                           ),
                           child:
-                              trailingBuilder?.call(context, focused) ??
+                              widget.trailingBuilder?.call(context, focused) ??
                               const SizedBox.shrink(),
                         ),
                       ],
@@ -145,7 +167,7 @@ class TvSettingsRow extends StatelessWidget {
                   );
                 },
               ),
-              if (footer != null) ...[SizedBox(height: 10.sp), footer!],
+              if (widget.footer != null) ...[SizedBox(height: 10.sp), widget.footer!],
             ],
           ),
         );
