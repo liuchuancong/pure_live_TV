@@ -45,6 +45,9 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
   int _focusClaimAttempts = 0;
   static const int _maxFocusClaimAttempts = 15;
 
+  /// Whether this page's subtree is on stage — see [build].
+  bool _onStage = true;
+
   @override
   void initState() {
     super.initState();
@@ -207,6 +210,26 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
   @override
   Widget build(BuildContext context) {
     final bool hasBar = widget.topBar != null;
+
+    // Whether this page is really on screen — a covered page is off stage in the
+    // overlay, which is the ticker mode this subtree sees.
+    //
+    // [RouteAware] alone is not enough: it only reports pushes inside *this page's*
+    // navigator, and the settings shell keeps every page in a nested one. A top-level
+    // route (背景设置, 纯色, …) therefore covers the shell without pushing inside it, so
+    // `/settings/theme` never heard that it was hidden, kept a live focus tree behind
+    // the visible page, and the d-pad's fallback restore landed on it — the visible page
+    // ended up with no highlight and a remote that did nothing (设置 → 主题设置 →
+    // 背景设置 → 纯色 → 返回).
+    final bool onStage = TickerMode.valuesOf(context).enabled;
+    if (onStage != _onStage) {
+      _onStage = onStage;
+      // On screen again: whatever covered this page is gone, so take the highlight
+      // back. Until the overlay puts the page back on stage its nodes cannot be
+      // focused (they are ExcludeFocus'ed below), so the claim has to wait for this.
+      if (onStage) _reclaim();
+    }
+
     // Content region: its top edge hands focus to the page's bar when there is one;
     // otherwise the d-pad is left to search across regions.
     final Widget content = DpadRegion(
@@ -225,7 +248,7 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
         children: [
           DpadRegion(
             child: ExcludeFocus(
-              excluding: !_isCurrent,
+              excluding: !_isCurrent || !onStage,
               child: SafeArea(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
