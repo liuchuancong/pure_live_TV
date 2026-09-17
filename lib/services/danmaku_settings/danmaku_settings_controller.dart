@@ -34,17 +34,20 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
     final model = DanmakuSettingsModel(
       hideDanmaku: HivePrefUtil.getBool('hideDanmaku') ?? false,
       noEmojiMode: HivePrefUtil.getBool('noEmojiMode') ?? false,
-      danmakuTopArea: HivePrefUtil.getDouble('danmakuTopArea') ?? 0.0,
-      danmakuArea: HivePrefUtil.getDouble('danmakuArea') ?? 1.0,
-      danmakuBottomArea: HivePrefUtil.getDouble('danmakuBottomArea') ?? 0.5,
-      danmakuSpeed: HivePrefUtil.getDouble('danmakuSpeed') ?? 150.0,
-      danmakuFontSize: HivePrefUtil.getDouble('danmakuFontSize') ?? 16.0,
-      danmakuFontWeight: HivePrefUtil.getInt('danmakuFontWeight') ?? 500,
-      danmakuFontBorder: HivePrefUtil.getDouble('danmakuFontBorder') ?? 4.0,
-      danmakuOpacity: HivePrefUtil.getDouble('danmakuOpacity') ?? 1.0,
+      danmakuTopArea: DanmakuSettingsModel.normalizeDistance(HivePrefUtil.getDouble('danmakuTopArea')),
+      danmakuArea: (HivePrefUtil.getDouble('danmakuArea') ?? 1.0).clamp(
+        DanmakuSettingsModel.minArea,
+        DanmakuSettingsModel.maxArea,
+      ),
+      danmakuBottomArea: DanmakuSettingsModel.normalizeDistance(HivePrefUtil.getDouble('danmakuBottomArea')),
+      danmakuSpeed: DanmakuSettingsModel.normalizeSpeed(HivePrefUtil.getDouble('danmakuSpeed')),
+      danmakuFontSize: (HivePrefUtil.getDouble('danmakuFontSize') ?? 16.0).clamp(8.0, 72.0),
+      danmakuFontWeight: DanmakuSettingsModel.normalizeFontWeight(HivePrefUtil.getInt('danmakuFontWeight')),
+      danmakuFontBorder: (HivePrefUtil.getDouble('danmakuFontBorder') ?? 4.0).clamp(0.0, 8.0),
+      danmakuOpacity: (HivePrefUtil.getDouble('danmakuOpacity') ?? 1.0).clamp(0.05, 1.0),
       enableDanmakuDisplay: HivePrefUtil.getBool('enableDanmakuDisplay') ?? true,
       enableDanmakuStroke: HivePrefUtil.getBool('enableDanmakuStroke') ?? true,
-      danmakuFps: HivePrefUtil.getInt('danmakuFps') ?? 60,
+      danmakuFps: (HivePrefUtil.getInt('danmakuFps') ?? 60).clamp(30, 240),
       danmakuAutoFps: HivePrefUtil.getBool('danmakuAutoFps') ?? true,
       enableDanmakuTapInteraction: HivePrefUtil.getBool('enableDanmakuTapInteraction') ?? true,
       enableDanmakuLongPressInteraction: HivePrefUtil.getBool('enableDanmakuLongPressInteraction') ?? true,
@@ -181,8 +184,24 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
     HivePrefUtil.setInt('danmakuSimilarityMaxCacheSize', state.danmakuSimilarityMaxCacheSize);
   }
 
+  /// Applies a backup/peer document, clamped into the engine's units.
+  ///
+  /// `DanmakuSettingsModel.fromJson` keeps whatever the document says — including the
+  /// mobile app's own defaults, or an old install's "speed level" — so the value goes
+  /// through the same bounds the Hive read does before it can reach the renderer.
   void importFromJson(Map<String, dynamic> json) {
-    state = DanmakuSettingsModel.fromJson(json);
+    final imported = DanmakuSettingsModel.fromJson(json);
+    state = imported.copyWith(
+      danmakuTopArea: DanmakuSettingsModel.normalizeDistance(imported.danmakuTopArea),
+      danmakuBottomArea: DanmakuSettingsModel.normalizeDistance(imported.danmakuBottomArea),
+      danmakuSpeed: DanmakuSettingsModel.normalizeSpeed(imported.danmakuSpeed),
+      danmakuArea: imported.danmakuArea.clamp(DanmakuSettingsModel.minArea, DanmakuSettingsModel.maxArea),
+      danmakuFontSize: imported.danmakuFontSize.clamp(8.0, 72.0),
+      danmakuFontWeight: DanmakuSettingsModel.normalizeFontWeight(imported.danmakuFontWeight),
+      danmakuFontBorder: imported.danmakuFontBorder.clamp(0.0, 8.0),
+      danmakuOpacity: imported.danmakuOpacity.clamp(0.05, 1.0),
+      danmakuFps: imported.danmakuFps.clamp(30, 240),
+    );
     _persist();
   }
 

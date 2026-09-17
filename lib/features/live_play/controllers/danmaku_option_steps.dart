@@ -9,16 +9,19 @@ class DanmakuOptionSteps {
   /// Font size.
   static const List<double> fontSize = <double>[10, 12, 14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 64, 72];
 
-  /// Speed.
-  static const List<double> speed = <double>[4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32];
+  /// Speed, in px/s — the unit the engine's `baseSpeed` is in.
+  ///
+  /// The old table (4-32) was the legacy app's "speed level" scale; feeding those numbers
+  /// straight to the renderer froze every danmaku at a few pixels per second.
+  static const List<double> speed = <double>[40, 60, 80, 100, 120, 150, 180, 210, 240, 280, 320, 360, 400];
 
-  /// Display area and opacity (0.1 - 1.0).
+  /// Display area ratio and opacity (0.1 - 1.0).
   static const List<double> ratio = <double>[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
 
-  /// Distance from the top and from the bottom.
-  static const List<double> distance = <double>[0, 5, 10, 15, 20, 25, 30, 35, 40, 50, 70, 100];
+  /// Distance from the top and from the bottom, in logical pixels (0 - 300).
+  static const List<double> distance = <double>[0, 10, 20, 30, 40, 50, 70, 100, 140, 180, 220, 260, 300];
 
-  /// Stroke width: stored as 0-8 and displayed as 2-18.
+  /// Stroke width, in logical pixels (0 - 8).
   static const List<double> stroke = <double>[0, 1, 2, 3, 4, 5, 6, 7, 8];
 
   /// Steps through [values] in the [forward] direction, wrapping at the ends and
@@ -45,8 +48,12 @@ class DanmakuOptionSteps {
   /// Renders 0.1 - 1.0 as a percentage.
   static String percent(double value) => '${(value * 100).round()}%';
 
-  /// Maps a stored stroke value to its real width.
-  static String strokeLabel(double value) => '${(value * 2 + 2).round()}';
+  /// Speed, in the unit the engine takes (`px/s`).
+  static String speedLabel(double value) => '${number(value)} px/s';
+
+  /// Distances and stroke widths are plain logical pixels; showing the value the engine
+  /// receives is the point — the old stroke label multiplied it by two and added two.
+  static String pixelLabel(double value) => '${number(value)} px';
 
   /// Integers are shown without a decimal point.
   static String number(double value) =>

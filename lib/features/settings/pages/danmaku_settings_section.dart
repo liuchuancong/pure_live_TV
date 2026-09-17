@@ -53,11 +53,14 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               TvSettingsSliderTile(
                 title: i18n('danmaku_speed'),
                 icon: Icons.speed_rounded,
+                // px/s, the unit the engine's baseSpeed is in — the old 10-300 slider and
+                // the panel's 4-32 "level" list disagreed with it (and with each other),
+                // which is why moving the row barely changed what was on screen.
                 value: state.danmakuSpeed,
-                min: 10,
-                max: 300,
+                min: DanmakuSettingsModel.minSpeed,
+                max: DanmakuSettingsModel.maxSpeed,
                 step: 10,
-                displayValue: state.danmakuSpeed.toStringAsFixed(1),
+                displayValue: '${state.danmakuSpeed.toStringAsFixed(0)} px/s',
                 onChanged: (v) => update((s) => s.copyWith(danmakuSpeed: v)),
               ),
               TvSettingsSliderTile(
@@ -102,20 +105,33 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
                 title: i18n('danmaku_area'),
                 icon: Icons.vertical_align_top_rounded,
                 value: state.danmakuArea,
-                min: 0.1,
-                max: 1.0,
+                min: DanmakuSettingsModel.minArea,
+                max: DanmakuSettingsModel.maxArea,
                 step: 0.05,
                 displayValue: '${(state.danmakuArea * 100).toStringAsFixed(0)}%',
                 onChanged: (v) => update((s) => s.copyWith(danmakuArea: v)),
+              ),
+              // 顶部/底部距离 are pixel insets in the engine (`topAreaDistance` /
+              // `bottomAreaDistance`), not ratios: the page used to hand 0.0-0.8 to a
+              // field measured in pixels, so the slider rendered as "no change".
+              TvSettingsSliderTile(
+                title: i18nOr('danmaku_area_top', '顶部距离'),
+                icon: Icons.vertical_align_center_rounded,
+                value: state.danmakuTopArea,
+                min: DanmakuSettingsModel.minDistance,
+                max: DanmakuSettingsModel.maxDistance,
+                step: 10,
+                displayValue: '${state.danmakuTopArea.toStringAsFixed(0)} px',
+                onChanged: (v) => update((s) => s.copyWith(danmakuTopArea: v)),
               ),
               TvSettingsSliderTile(
                 title: i18n('danmaku_area_bottom'),
                 icon: Icons.vertical_align_bottom_rounded,
                 value: state.danmakuBottomArea,
-                min: 0.0,
-                max: 0.8,
-                step: 0.05,
-                displayValue: '${(state.danmakuBottomArea * 100).toStringAsFixed(0)}%',
+                min: DanmakuSettingsModel.minDistance,
+                max: DanmakuSettingsModel.maxDistance,
+                step: 10,
+                displayValue: '${state.danmakuBottomArea.toStringAsFixed(0)} px',
                 onChanged: (v) => update((s) => s.copyWith(danmakuBottomArea: v)),
               ),
               TvSettingsSwitchTile(
@@ -136,9 +152,11 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
                   title: i18n('danmaku_fps'),
                   icon: Icons.monitor_heart_outlined,
                   value: state.danmakuFps.toDouble(),
-                  min: 15,
-                  max: 120,
-                  step: 5,
+                  // The engine clamps to 30-240, so offering 15 here would be a slider
+                  // position that never arrives.
+                  min: 30,
+                  max: 240,
+                  step: 10,
                   displayValue: '${state.danmakuFps}',
                   onChanged: (v) => update((s) => s.copyWith(danmakuFps: v.round())),
                 ),

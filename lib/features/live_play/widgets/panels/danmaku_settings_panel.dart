@@ -66,7 +66,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
       (
         label: i18n('danmaku_speed'),
         icon: Icons.speed_rounded,
-        value: DanmakuOptionSteps.number(settings.danmakuSpeed),
+        value: DanmakuOptionSteps.speedLabel(settings.danmakuSpeed),
         prev: () => update(
           (s) => s.copyWith(danmakuSpeed: DanmakuOptionSteps.step(DanmakuOptionSteps.speed, s.danmakuSpeed, forward: false)),
         ),
@@ -102,7 +102,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
       (
         label: i18n('danmaku_stroke_width'),
         icon: Icons.line_weight_rounded,
-        value: DanmakuOptionSteps.strokeLabel(settings.danmakuFontBorder),
+        value: DanmakuOptionSteps.pixelLabel(settings.danmakuFontBorder),
         prev: () => update(
           (s) => s.copyWith(
             danmakuFontBorder: DanmakuOptionSteps.step(DanmakuOptionSteps.stroke, s.danmakuFontBorder, forward: false),
@@ -130,7 +130,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
       (
         label: i18nOr('danmaku_area_top', 'Top offset'),
         icon: Icons.vertical_align_center_rounded,
-        value: DanmakuOptionSteps.number(settings.danmakuTopArea),
+        value: DanmakuOptionSteps.pixelLabel(settings.danmakuTopArea),
         prev: () => update(
           (s) => s.copyWith(
             danmakuTopArea: DanmakuOptionSteps.step(DanmakuOptionSteps.distance, s.danmakuTopArea, forward: false),
@@ -146,15 +146,19 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
       (
         label: i18n('danmaku_area_bottom'),
         icon: Icons.vertical_align_bottom_rounded,
-        value: DanmakuOptionSteps.percent(settings.danmakuBottomArea),
+        value: DanmakuOptionSteps.pixelLabel(settings.danmakuBottomArea),
         prev: () => update(
           (s) => s.copyWith(
-            danmakuBottomArea: DanmakuOptionSteps.step(DanmakuOptionSteps.ratio, s.danmakuBottomArea, forward: false),
+            danmakuBottomArea: DanmakuOptionSteps.step(
+              DanmakuOptionSteps.distance,
+              s.danmakuBottomArea,
+              forward: false,
+            ),
           ),
         ),
         next: () => update(
           (s) => s.copyWith(
-            danmakuBottomArea: DanmakuOptionSteps.step(DanmakuOptionSteps.ratio, s.danmakuBottomArea, forward: true),
+            danmakuBottomArea: DanmakuOptionSteps.step(DanmakuOptionSteps.distance, s.danmakuBottomArea, forward: true),
           ),
         ),
         select: null,

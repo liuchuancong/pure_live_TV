@@ -1,6 +1,7 @@
 import 'package:flame_barrage/flame_barrage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/features/live_play/controllers/danmaku_config_builder.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/services/index.dart';
@@ -55,27 +56,9 @@ class _DanmakuOverlayState extends ConsumerState<DanmakuOverlay> {
   }
 
   BarrageConfig _buildConfig(DanmakuSettingsModel settings) {
-    final fps = settings.danmakuAutoFps ? 60 : settings.danmakuFps.clamp(30, 240);
-    final fontSize = settings.danmakuFontSize;
-    return BarrageConfig(
-      // 50ms admit interval plus a visible cap keeps layout and paint cost low.
-      emitInterval: 0.05,
-      fontFamily: _resolveFontFamily(settings),
-      fontSize: fontSize,
-      area: settings.danmakuArea,
-      topAreaDistance: settings.danmakuTopArea,
-      bottomAreaDistance: settings.danmakuBottomArea,
-      baseSpeed: settings.danmakuSpeed,
-      opacity: settings.danmakuOpacity,
-      fontWeight: FontWeight(settings.danmakuFontWeight.clamp(100, 900)),
-      strokeWidth: settings.danmakuFontBorder,
-      showStroke: settings.enableDanmakuStroke,
-      noEmojiMode: settings.noEmojiMode,
-      fps: fps,
-      maxVisibleCount: 48,
-      trackHeight: (fontSize * 1.55).clamp(24.0, 64.0).toDouble(),
-      emojiSize: (fontSize * 1.3).clamp(16.0, 48.0).toDouble(),
-    );
+    // The mapping lives in `danmaku_config_builder.dart` so a dropped setting is caught by
+    // a unit test instead of by watching the screen.
+    return buildDanmakuConfig(settings, fontFamily: _resolveFontFamily(settings));
   }
 
   /// The danmaku font follows its own setting; `Default` falls back to the
