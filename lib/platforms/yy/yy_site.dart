@@ -129,22 +129,20 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       header: getHeaders(),
     );
     final result = decode(resultText);
-    final List<LiveCategory> categories = [];
     final categoryTabs = result['categoryTabs'] ?? [];
-    for (final item in categoryTabs) {
-      categories.add(LiveCategory(id: item['id'].toString(), name: item['title'].toString(), children: []));
-    }
-    final futures = <Future>[];
-    for (final category in categories) {
-      futures.add(
-        Future(() async {
-          final items = await getAllSubCategores(category, 1, 120, []);
-          category.children.addAll(items);
+    // `LiveCategory` is a freezed model, so `children` is an *unmodifiable* view of the
+    // list it was built with: sub-categories have to be in hand when the category is
+    // created. Filling `children` afterwards threw
+    // `Unsupported operation: Cannot add to an unmodifiable list`, which is what the
+    // 分区 page showed as 数据加载失败 on this platform.
+    return Future.wait(<Future<LiveCategory>>[
+      for (final item in categoryTabs)
+        Future<LiveCategory>(() async {
+          final stub = LiveCategory(id: item['id'].toString(), name: item['title'].toString(), children: const []);
+          final items = await getAllSubCategores(stub, 1, 120, <LiveArea>[]);
+          return stub.copyWith(children: items);
         }),
-      );
-    }
-    await Future.wait(futures);
-    return categories;
+    ]);
   }
 
   Future<List<LiveArea>> getAllSubCategores(

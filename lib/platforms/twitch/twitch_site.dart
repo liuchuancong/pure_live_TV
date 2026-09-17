@@ -421,17 +421,16 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
         categories.add(LiveCategory(id: item["id"], name: item["tagName"], children: []));
       }
 
-      List<Future> futures = [];
-      for (var item in categories) {
-        futures.add(
-          Future(() async {
-            var items = await getAllSubCategores(item, 1, 30, []);
-            item.children.addAll(items);
+      // `children` on a freezed `LiveCategory` is an unmodifiable view — see the note in
+      // `yy_site.dart` — so each category is rebuilt with the sub-categories it fetched.
+      final List<LiveCategory> filled = await Future.wait(<Future<LiveCategory>>[
+        for (final item in categories)
+          Future<LiveCategory>(() async {
+            final items = await getAllSubCategores(item, 1, 30, <LiveArea>[]);
+            return item.copyWith(children: items);
           }),
-        );
-      }
-      await Future.wait(futures);
-      return categories;
+      ]);
+      return filled;
     } catch (error, stackTrace) {
       // A blocked/reset GraphQL connection is not the same as a successful
       // empty directory. Propagate it so the shared page controller can show

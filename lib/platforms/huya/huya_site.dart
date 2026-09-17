@@ -141,11 +141,14 @@ class HuyaSite
       LiveCategory(id: "3", name: i18n('category_mobile_games'), children: []),
     ];
 
-    for (var item in categories) {
-      var items = await getSubCategores(item);
-      item.children.addAll(items);
+    final List<LiveCategory> result = <LiveCategory>[];
+    for (final item in categories) {
+      final items = await getSubCategores(item);
+      // `children` on a freezed `LiveCategory` is an unmodifiable view — see the note in
+      // `yy_site.dart` — so the category is rebuilt with its sub-categories.
+      result.add(item.copyWith(children: items));
     }
-    return categories;
+    return result;
   }
 
   final String kUserAgent =

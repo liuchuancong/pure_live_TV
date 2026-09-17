@@ -60,11 +60,15 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
       LiveCategory(id: "8", name: i18n('category_culture'), children: []),
     ];
 
-    for (var item in categories) {
-      var items = await getAllSubCategores(item, 1, 30, []);
-      item.children.addAll(items);
+    // `children` on a freezed `LiveCategory` is an unmodifiable view — see the note in
+    // `yy_site.dart` — so each category is rebuilt with the sub-categories it fetched
+    // instead of being filled in place.
+    final List<LiveCategory> result = <LiveCategory>[];
+    for (final item in categories) {
+      final items = await getAllSubCategores(item, 1, 30, <LiveArea>[]);
+      result.add(item.copyWith(children: items));
     }
-    return categories;
+    return result;
   }
 
   final Map<String, dynamic> headers = {

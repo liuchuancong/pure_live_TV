@@ -33,19 +33,18 @@ class SoopSite extends LiveSite implements LiveSiteRoomRefresher, LiveSiteRecord
 
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
-    List<LiveCategory> categories = [LiveCategory(id: "1", name: i18n('category_hot'), children: [])];
+    final List<LiveCategory> categories = [LiveCategory(id: "1", name: i18n('category_hot'), children: const [])];
 
-    List<Future> futures = [];
-    for (var item in categories) {
-      futures.add(
-        Future(() async {
-          var items = await getAllSubCategores(item, 1, 120, []);
-          item.children.addAll(items);
+    // `children` on a freezed `LiveCategory` is an unmodifiable view — see the note in
+    // `yy_site.dart` — so the filled category replaces the stub instead of being mutated.
+    final List<LiveCategory> filled = await Future.wait(<Future<LiveCategory>>[
+      for (final item in categories)
+        Future<LiveCategory>(() async {
+          final items = await getAllSubCategores(item, 1, 120, <LiveArea>[]);
+          return item.copyWith(children: items);
         }),
-      );
-    }
-    await Future.wait(futures);
-    return categories;
+    ]);
+    return filled;
   }
 
   static dynamic decode(dynamic data) {
