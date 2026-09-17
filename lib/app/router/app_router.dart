@@ -1,11 +1,10 @@
-import 'package:flutter/widgets.dart';
+﻿import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
-import 'package:pure_live/shared/widgets/tv_page_focus_scope.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
@@ -123,26 +122,29 @@ final routerProvider = Provider<GoRouter>((ref) {
       // (IPTV, backup, about, the block list, platform display, third-party
       // authorisation, tags, WebDAV).
       GoRoute(path: AppRoutes.kSettings, builder: (context, state) => const TvSettingsRoutePage()),
-      // ONE shell for every settings page.
+      // ONE shell for every settings page, and it contributes **no chrome**: each
+      // page brings its own scaffold (its own app bar, its own 返回 button and its
+      // own focus wiring) inside its own route of this nested navigator.
       //
-      // It used to be two: a nested shell inside the `/settings` route for the
-      // relative children, plus a second top-level shell for the pages with
-      // absolute paths. Two shells meant the same scaffold was wired twice, the
-      // page list lived in two places, and a pop could pass through both. The
-      // page table below is keyed by the full path, so a single shell serves all
-      // of them; `state.uri.path` (not `matchedLocation`, which reports only a
-      // relative child's own segment) supplies the title key.
+      // The shell used to hold one `TvScaffold` for all of them, which meant the app
+      // bar — and the 返回 button with it — belonged to the shell instead of to the
+      // page: an inner push fired no route callback for that scaffold, its back
+      // button survived every page change, and the highlight kept ending up on a
+      // screen the user was not looking at. Page-local chrome removes that whole
+      // class of confusion.
+      //
+      // It used to be two shells as well (one nested inside `/settings` for the
+      // relative children, one top-level for the absolute paths); the page table
+      // below is keyed by the full path, so a single shell serves all of them, and
+      // `state.uri.path` supplies the title key.
       ShellRoute(
-        builder: (context, state, child) =>
-            SettingsSectionScaffold(location: state.uri.path, child: child),
+        builder: (context, state, child) => child,
         routes: <RouteBase>[
           for (final MapEntry<String, WidgetBuilder> entry in settingsPageRoutes.entries)
-            // Each page gets its own focus policy: the shell keeps one TvScaffold
-            // and swaps the page inside it with this nested navigator, so the
-            // scaffold never sees these pushes (see [TvPageFocusScope]).
             GoRoute(
               path: entry.key,
-              builder: (context, state) => TvPageFocusScope(child: entry.value(context)),
+              builder: (context, state) =>
+                  SettingsSectionScaffold(location: state.uri.path, child: entry.value(context)),
             ),
         ],
       ),

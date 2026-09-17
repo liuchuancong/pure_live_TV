@@ -18,15 +18,7 @@ class TvScaffold extends StatefulWidget {
   final bool showAppBar;
   final bool? showBackButton;
   final Future<bool> Function()? beforeBack;
-
-  /// Identity of the page inside this scaffold, when the scaffold is shared.
-  ///
-  /// The settings shell keeps ONE [TvScaffold] for every settings page and swaps
-  /// the page with a nested navigator, so pushing 排序 inside 导航与显示设置 fires no
-  /// route callback here: from this scaffold's point of view nothing was pushed.
-  /// A changed value therefore means "the content is a different page now, open it
-  /// like a page" (from 返回).
-  final Object? contentIdentity;
+  final FocusNode? backFocusNode;
 
   const TvScaffold({
     super.key,
@@ -36,7 +28,7 @@ class TvScaffold extends StatefulWidget {
     this.showAppBar = true,
     this.showBackButton,
     this.beforeBack,
-    this.contentIdentity,
+    this.backFocusNode,
   });
 
   @override
@@ -44,24 +36,17 @@ class TvScaffold extends StatefulWidget {
 }
 
 class _TvScaffoldState extends State<TvScaffold> with RouteAware {
-  /// The app bar back button, when [TvScaffold] builds the default app bar.
-  /// The content region's top edge hands focus to this node, so "up" from the
-  /// first content row always reaches the back button without relying on
-  /// cross-region geometric search (which is fragile on devices with overscan
-  /// / safe-area offsets).
+  /// The app bar back button node. Its ownership is decided in [build]:
+  /// external when the caller passes [TvScaffold.backFocusNode], otherwise
+  /// created here when the default [TvAppBar] is used.
   FocusNode? _backNode;
+  bool _ownsBackNode = false;
 
   /// Lets the initial-focus pass reach the content region's nodes.
   final GlobalKey<DpadRegionState> _contentRegionKey = GlobalKey<DpadRegionState>();
 
-  /// Whether this page is the route on top.
-  ///
-  /// A covered page keeps its widgets laid out (the navigator maintains state), so
-  /// its rows still have screen rectangles — exactly the rectangles of the page
-  /// now on screen, because a settings page pushing another settings page draws the
-  /// same shape twice. Leaving them focusable is what let the remote drive the
-  /// invisible page below: the d-pad layer restores focus itself when the node it
-  /// held dies, and picks the geometrically nearest node, invisible or not.
+  /// Whether this page is the route on top. A covered page excludes focus so
+  /// its widgets cannot be reached while another page is on screen.
   bool _isCurrent = true;
 
   @override
@@ -80,26 +65,21 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
   @override
   void dispose() {
     tvRouteObserver.unsubscribe(this);
-    _backNode?.dispose();
+    if (_ownsBackNode) _backNode?.dispose();
     super.dispose();
   }
 
   @override
-  void didPush() => _setCurrent(true);
-
-  @override
-  void didUpdateWidget(covariant TvScaffold oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // The page inside a shared scaffold changed (see [TvScaffold.contentIdentity]):
-    // open the new page the same way a pushed route opens.
-    if (oldWidget.contentIdentity == widget.contentIdentity) return;
-    _claimedFocus = false;
-    _focusClaimAttempts = 0;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
+  void didPush() {
+    _setCurrent(true);
+    _reclaim();
   }
 
   @override
-  void didPopNext() => _setCurrent(true);
+  void didPopNext() {
+    _setCurrent(true);
+    _reclaim();
+  }
 
   @override
   void didPushNext() => _setCurrent(false);
@@ -111,20 +91,16 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     if (_isCurrent == current) return;
     if (!mounted) return;
     setState(() => _isCurrent = current);
-    // Coming back to the top: [TvFocusRestorer] hands focus back to the item the
-    // user acted on, which beats picking the first row here.
-    if (current) return;
+  }
+
+  /// Rearms the opening-focus claim and schedules it for the next frame.
+  void _reclaim() {
+    _claimedFocus = false;
+    _focusClaimAttempts = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
   }
 
   /// Down on the app bar hands the keyboard to the page's rows explicitly.
-  ///
-  /// Up already works — the content region's top edge calls [_onContentEdge] — but
-  /// the other direction was left to the d-pad policy's cross-region search: from
-  /// the back button it looks for the nearest focusable below, and with a shared
-  /// scaffold that search can settle on a row of the page *inside* that is no longer
-  /// the visible one (the inner navigator keeps the pages below it alive and laid
-  /// out, at the same coordinates). Naming the target here makes the round trip
-  /// deterministic instead of geometric.
   KeyEventResult _onAppBarKey(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
     if (event.logicalKey != LogicalKeyboardKey.arrowDown) return KeyEventResult.ignored;
@@ -135,8 +111,7 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     return KeyEventResult.handled;
   }
 
-  /// The row the remote should land on when it comes down from the app bar: the one
-  /// the content region remembers, otherwise the visually first one.
+  /// The row the remote should land on when it comes down from the app bar.
   FocusNode? _contentFocusTarget() {
     final DpadRegionState? region = _contentRegionKey.currentState;
     if (region == null) return null;
@@ -146,125 +121,51 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     return _topLeftMost(region.focusNodes.where(usable));
   }
 
-  /// Lands the opening highlight on the page's first content row, or on 返回
-  /// when there is nothing to focus yet (the rows load late) or the page has
-  /// no rows at all.
+  /// Puts the opening highlight on the back button, or on the first content
+  /// row when the page has no back button (the menu itself, the home page, a
+  /// fullscreen page).
   ///
-  /// Opening on the first row is what a remote user expects: the page is
-  /// immediately walkable with Down and OK, and 返回 stays one Up away
-  /// ([_onContentEdge]). Opening on 返回 instead cost an extra key press
-  /// before anything could be selected.
-  ///
-  /// Left to itself the d-pad layer picks the node nearest the *previously* focused
-  /// one, so a page could open on any row of the list — 通用设置 on one device, a
-  /// different row elsewhere — which looks random and makes the remote feel
-  /// unreliable. Naming the target here makes it the same every time.
-  ///
-  /// It also settles the race with the d-pad layer's restore: the node that held the
-  /// keyboard dies when the page below is covered (its subtree stops being
-  /// focusable), and that restore can otherwise land on a node of the invisible page.
-  ///
-  /// Runs once per page (and once per content change in a shared scaffold), retrying
-  /// for a while as the app bar and the rows are being built — lazy pages
-  /// (paged grids, async lists) take more than a couple of frames to offer any
-  /// focusable node, and a claim that gave up left the keyboard dead: the first
-  /// Down then went to 返回 via the d-pad fallback instead of into the list.
+  /// Runs once per page (and once per content change in a shared scaffold),
+  /// retrying a few frames while the app bar and the rows are being built.
   void _claimFocus() {
     if (!mounted || _claimedFocus) return;
     final ModalRoute<void>? route = ModalRoute.of(context);
-    // A dialog (or any other route) above owns the keyboard.
-    if (route != null && !route.isCurrent) return;
-
-    // Same usability rule the package's own DpadMarks uses, minus the unexported
-    // helper: attached, mounted, and able to take focus.
-    bool usable(FocusNode node) => node.parent != null && node.context?.mounted == true && node.canRequestFocus;
-
-    final DpadRegionState? region = _contentRegionKey.currentState;
-
-    // 1. The top-left-most content row, which is the first one visually instead
-    //    of whatever order the focus tree reports.
-    final FocusNode? first = _topLeftMost(region?.focusNodes.where(usable) ?? const <FocusNode>[]);
-    if (first != null) {
-      final FocusNode? primary = FocusManager.instance.primaryFocus;
-      // Steer only when the keyboard is genuinely elsewhere *for this page*:
-      // either nobody holds it, or the holder is dead (the node of the page
-      // below, unmounted or excluded from focus once covered), or it is one of
-      // this page's own nodes. A dead foreign node must not be mistaken for
-      // "the user moved" — that left the opening highlight to the d-pad
-      // fallback, which picks the row nearest the *previous* page's focus
-      // (a mid-list row like 通用) instead of the first one.
-      final bool foreignDead = primary != null && !(primary.context?.mounted == true && primary.canRequestFocus);
-      final bool steering =
-          primary == null || primary == _backNode || foreignDead || (region != null && _insideRegion(primary, region));
-      if (steering) {
-        region!.noteFocus(first);
-        first.requestFocus();
-        _keepOpeningFocus(first, region);
+    if (route != null && !route.isCurrent) {
+      if (_focusClaimAttempts < _maxFocusClaimAttempts) {
+        _focusClaimAttempts++;
+        WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
       }
-      _claimedFocus = true;
       return;
     }
 
-    // 2. No row yet (or a page that has none): 返回 holds the keyboard for now.
-    //    Not claimed yet — a lazy page's rows can still appear, and the opening
-    //    highlight then moves onto the first one (step 1 on a later attempt).
+    bool usable(FocusNode node) => node.parent != null && node.context?.mounted == true && node.canRequestFocus;
+
+    // 1. 返回按钮优先。
     final FocusNode? back = _backNode;
     if (back != null && usable(back)) {
       if (!identical(FocusManager.instance.primaryFocus, back)) {
         DpadRegion.ofNode(back)?.noteFocus(back);
         back.requestFocus();
       }
-      if (_focusClaimAttempts < _maxFocusClaimAttempts) {
-        _focusClaimAttempts++;
-        WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
-        return;
-      }
       _claimedFocus = true;
       return;
     }
 
-    // 3. Nothing to focus yet (rows that arrive a few frames late, async font
-    //    lists and friends): keep retrying, then leave the highlight where it is
-    //    rather than parking it somewhere arbitrary.
+    // 2. 没有返回按钮：落内容第一项。
+    final DpadRegionState? region = _contentRegionKey.currentState;
+    final FocusNode? first = _topLeftMost(region?.focusNodes.where(usable) ?? const <FocusNode>[]);
+    if (first != null) {
+      region!.noteFocus(first);
+      first.requestFocus();
+      _claimedFocus = true;
+      return;
+    }
+
+    // 3. 都还没准备好：重试几帧。
     if (_focusClaimAttempts < _maxFocusClaimAttempts) {
       _focusClaimAttempts++;
       WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
     }
-  }
-
-  /// Whether [node] is (or sits inside) one of the content region's rows.
-  bool _insideRegion(FocusNode node, DpadRegionState region) {
-    for (FocusNode? walk = node; walk != null; walk = walk.parent) {
-      if (region.focusNodes.contains(walk)) return true;
-    }
-    return false;
-  }
-
-  /// Re-asserts the opening highlight for a short window after the page opens.
-  ///
-  /// The d-pad layer answers a dead foreign node (the page below losing focus)
-  /// with its own restore, which runs a post-frame callback plus a microtask
-  /// after this scaffold claimed the first row — and wins the race, moving the
-  /// highlight to the row nearest the *previous* page's focus instead. Holding
-  /// the opening target for a few more frames lets this claim outlast that
-  /// fallback without ever fighting the user: the moment the keyboard is on any
-  /// other live node of this page (another row, or 返回), the guard stands down.
-  void _keepOpeningFocus(FocusNode node, DpadRegionState region) {
-    int attempts = 0;
-    void attempt() {
-      if (!mounted || attempts >= 12) return;
-      attempts++;
-      final FocusNode? primary = FocusManager.instance.primaryFocus;
-      final bool userMoved = primary != null && primary != node && _insideRegion(primary, region);
-      if (primary == _backNode || userMoved) return;
-      if (primary != node) {
-        region.noteFocus(node);
-        node.requestFocus();
-      }
-      WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
   }
 
   /// The visually first node: topmost, then leftmost.
@@ -312,12 +213,20 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     Widget? finalAppBar;
 
     if (widget.showAppBar) {
-      // Same rule the app bar applies itself, so the top-edge focus handoff is
-      // only installed for a back button that is really on screen.
       final bool effectiveShowBackButton = widget.showBackButton ?? tvShowsBackButton(context);
-      _backNode = (widget.appBar == null && effectiveShowBackButton)
-          ? (_backNode ?? FocusNode(debugLabel: 'tv_scaffold_back'))
-          : null;
+      if (!effectiveShowBackButton) {
+        _backNode = null;
+        _ownsBackNode = false;
+      } else if (widget.backFocusNode != null) {
+        _backNode = widget.backFocusNode;
+        _ownsBackNode = false;
+      } else if (widget.appBar == null) {
+        _backNode ??= FocusNode(debugLabel: 'tv_scaffold_back');
+        _ownsBackNode = true;
+      } else {
+        _backNode = null;
+        _ownsBackNode = false;
+      }
       finalAppBar =
           widget.appBar ??
           TvAppBar(
@@ -328,17 +237,14 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
           );
     }
 
-    // The content gets its own region with a stopped top edge: pressing up on
-    // the first row deterministically focuses the back button above. Down at
-    // the bottom edge simply stays put, as there is nothing below.
-    final Widget content = _backNode != null
-        ? DpadRegion(
-            key: _contentRegionKey,
-            verticalEdge: DpadEdgeBehavior.stop,
-            onEdge: _onContentEdge,
-            child: TvFocusRestorer(child: widget.child),
-          )
-        : TvFocusRestorer(child: widget.child);
+    // Content region: top edge hands focus to the back button when there is
+    // one; without a back button the dpad is left to search across regions.
+    final Widget content = DpadRegion(
+      key: _contentRegionKey,
+      verticalEdge: _backNode != null ? DpadEdgeBehavior.stop : DpadEdgeBehavior.leave,
+      onEdge: _backNode != null ? _onContentEdge : null,
+      child: TvFocusRestorer(child: widget.child),
+    );
 
     return Scaffold(
       // Transparent on purpose: the background is painted once for the whole app
@@ -348,9 +254,6 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
         fit: StackFit.expand,
         children: [
           DpadRegion(
-            // A covered page offers no focus candidates at all: its rows and its
-            // back button sit at the coordinates of the page on screen, and the
-            // d-pad layer's restore picks by geometry (see [_isCurrent]).
             child: ExcludeFocus(
               excluding: !_isCurrent,
               child: SafeArea(
@@ -369,10 +272,6 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
                           child: finalAppBar,
                         ),
                       ),
-                    // Route-aware focus memory: when a pushed page (a settings
-                    // sub-page, a dialog) pops away, focus returns to the item
-                    // the user acted on instead of dying on the dpad root's
-                    // top-left fallback.
                     Expanded(child: content),
                   ],
                 ),
@@ -386,13 +285,6 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
 }
 
 /// The background for the entire app: one instance, mounted below the Navigator.
-///
-/// It used to be built inside every [TvScaffold], so each push and pop
-/// re-mounted the layer — a new image layer, a new `Video` widget over the same
-/// controller — which is what made navigation flicker. Now the pages are
-/// transparent and this single widget owns the background pixels for all of
-/// them, so it never rebuilds on navigation and its image/video work is done
-/// once.
 class TvAppBackground extends StatelessWidget {
   const TvAppBackground({super.key});
 
@@ -409,8 +301,6 @@ class _BackgroundLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Mountable before bootstrap and in widget tests, where the settings
-    // container does not exist yet: the theme supplies the background then.
     if (!SettingsService.to.isInitialized) {
       return _ThemeBackground(theme: context.tvTheme);
     }
@@ -421,10 +311,6 @@ class _BackgroundLayer extends StatelessWidget {
       builder: (context, snapshot) {
         final config = snapshot.data!;
 
-        // No background configured: the active theme supplies it. Without this
-        // every page painted the same opaque `solidColor` (a fixed dark navy),
-        // so switching themes only changed the accent and each palette looked
-        // identical.
         if (config.source == BackgroundSource.none) {
           return _ThemeBackground(theme: context.tvTheme);
         }
@@ -444,8 +330,6 @@ class _BackgroundLayer extends StatelessWidget {
   }
 }
 
-/// Background taken from the active theme: its own colour, lifted towards the
-/// accent so each palette reads as a distinct surface rather than a flat fill.
 class _ThemeBackground extends StatelessWidget {
   const _ThemeBackground({required this.theme});
 
@@ -481,15 +365,10 @@ class _MaskLayer extends StatelessWidget {
       builder: (context, snapshot) {
         final config = snapshot.data!;
 
-        // The mask exists to keep text readable over a photo or video. A theme
-        // background is already contrast-checked, so masking it only muddies the
-        // palette (and would wash out a light theme).
         if (config.source == BackgroundSource.none) {
           return const SizedBox.shrink();
         }
 
-        // A light palette needs a light wash over artwork: darkening it would
-        // leave the dark text unreadable.
         final bool lightSurface = context.tvTheme.backgroundColor.computeLuminance() > 0.5;
         return ColoredBox(color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: config.maskOpacity));
       },
@@ -529,17 +408,11 @@ class _ImageBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final image = _resolveImage();
-    // Fits that can letterbox a differently-shaped picture previously showed
-    // the flat gradient beside it — visibly "the background does not fill the
-    // screen". A blurred, cover-filled copy of the same picture fills those
-    // bars instead; cover/fill never letterbox so they skip the extra layer.
     final bool needsBackdrop = image != null && _fitCanLetterbox(config.boxFit);
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Always the bottom layer: it also covers the decode window of a fresh
-        // image, so a cold start shows the palette instead of a black frame.
         DecoratedBox(
           decoration: BoxDecoration(gradient: LinearGradient(colors: config.gradientColors)),
         ),
@@ -569,10 +442,6 @@ class _ImageBackground extends StatelessWidget {
       fit == BoxFit.none ||
       fit == BoxFit.scaleDown;
 
-  /// Remote backgrounds come from two exclusive slots (the setters guarantee
-  /// only one is filled): embedded bytes for downloaded random-API pictures
-  /// whose URL would return a different image next time, otherwise the stored
-  /// stable URL through [CachedNetworkImageProvider] with the on-disk cache.
   ImageProvider? _resolveImage() {
     if (config.source == BackgroundSource.networkImage) {
       final base64 = config.currentBoxImageBase64;
@@ -600,9 +469,6 @@ class _VideoBackground extends StatelessWidget {
       child: Video(
         controller: controller,
         fit: BoxFit.cover,
-        // The wallpaper layer is pixels, not a player: media_kit's adaptive
-        // controls would paint a scrub bar over every page, and a background
-        // must not hold a wakelock of its own.
         controls: (state) => const SizedBox.shrink(),
         wakelock: false,
       ),

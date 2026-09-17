@@ -93,7 +93,6 @@ class _Shell extends StatefulWidget {
 
 class _ShellState extends State<_Shell> {
   final GlobalKey<NavigatorState> _inner = GlobalKey<NavigatorState>();
-  late String _title = 'level 1';
 
   @override
   void initState() {
@@ -110,33 +109,25 @@ class _ShellState extends State<_Shell> {
   void _open(int level) {
     _inner.currentState?.push<void>(
       MaterialPageRoute<void>(
-        // The real shell wraps every page in a TvPageFocusScope (see the route
-        // table): the scaffold above the nested navigator never sees these pushes.
-        builder: (context) => TvPageFocusScope(
-          child: _Page(level: level, onOpenNext: () => _open(level + 1)),
-        ),
+        // Every page carries its own chrome, exactly like the real route table:
+        // `SettingsSectionScaffold` wraps each page, and the shell itself adds
+        // nothing.
+        builder: (context) => _Page(level: level, onOpenNext: () => _open(level + 1)),
       ),
     );
-    // The shell rebuilds with the new path's title, exactly as
-    // `SettingsSectionScaffold(location: state.uri.path)` does.
-    setState(() => _title = 'level $level');
   }
 
   @override
   Widget build(BuildContext context) {
-    return TvScaffold(
-      title: _title,
-      // The shell knows which page is inside it; a nested push fires no route
-      // callback here.
-      contentIdentity: _title,
-      child: Navigator(
-        key: _inner,
-        // go_router merges the router's observers into the shell's navigator (with a
-        // per-navigator wrapper, since an observer can only attach to one navigator),
-        // which is how [TvPageFocusScope] inside a page receives route events.
-        observers: <NavigatorObserver>[_ForwardingObserver()],
-        onGenerateRoute: (_) => MaterialPageRoute<void>(builder: (_) => const SizedBox.shrink()),
-      ),
+    // The shell contributes no scaffold: one shared app bar (and its 返回 button)
+    // for every page is what used to steal the highlight.
+    return Navigator(
+      key: _inner,
+      // go_router merges the router's observers into the shell's navigator (with a
+      // per-navigator wrapper, since an observer can only attach to one navigator),
+      // which is how a page's own scaffold receives route events.
+      observers: <NavigatorObserver>[_ForwardingObserver()],
+      onGenerateRoute: (_) => MaterialPageRoute<void>(builder: (_) => const SizedBox.shrink()),
     );
   }
 }
@@ -149,16 +140,21 @@ class _Page extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: <Widget>[
-          for (int row = 1; row <= 3; row++)
-            TvSettingsSwitchTile(
-              title: 'level $level row $row',
-              value: false,
-              onChanged: (_) => onOpenNext(),
-            ),
-        ],
+    // Each page owns its scaffold — its app bar, its 返回 button and the focus
+    // handoff between them — like `SettingsSectionScaffold` does for the real pages.
+    return TvScaffold(
+      title: 'level $level',
+      child: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            for (int row = 1; row <= 3; row++)
+              TvSettingsSwitchTile(
+                title: 'level $level row $row',
+                value: false,
+                onChanged: (_) => onOpenNext(),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -180,6 +180,8 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   // The danmaku-only font manager is the same page in its danmaku scope; without
   // its own entry it falls back to the generic 系统设置 title.
   AppRoutes.kSettingsFontFamilyDanmaku: 'font_family_settings',
+  // The page's own title (`online_update`), or the shell would call it 系统设置.
+  AppRoutes.kAppUpdate: 'online_update',
   AppRoutes.kSettingsDecoder: 'hardware_decoder',
   AppRoutes.kSettingsRenderer: 'video_output_driver',
   AppRoutes.kSettingsAudioOutput: 'audio_output_driver',
@@ -268,11 +270,11 @@ class SettingsSectionScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return TvScaffold(
       title: i18n(settingsSectionTitleKey(location)),
-      // One scaffold serves every settings page (the shell swaps the page inside
-      // it), so the path is what tells it the content is a different page now and
-      // the highlight has to open on 返回 again.
-      contentIdentity: location,
-      showBackButton: true,
+      // Each settings page carries its own scaffold — its own app bar, its own 返回
+      // button and its own focus wiring — inside its own route of the shell's nested
+      // navigator. The shell deliberately contributes no chrome (see the route
+      // table): a scaffold shared by every page never saw an inner push, so its 返回
+      // button outlived the page it belonged to and stole the highlight.
       child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),
     );
   }

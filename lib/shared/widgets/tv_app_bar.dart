@@ -8,15 +8,24 @@ import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 
 /// Whether the default app bar may show its back button here.
 ///
-/// Two conditions, and both have to be re-read when the route stack changes:
-/// there must be something to pop, *and* this route has to be the one on
-/// screen. A page underneath a pushed route is rebuilt while the pop is still
-/// running — at that moment `canPop()` is still true, so the page drew a back
-/// button and nothing recomputed it afterwards. That is the stale "返回" the
-/// user saw on the home and favorites pages until an unrelated rebuild fixed it.
+/// Three conditions, and all of them have to be re-read when the route stack
+/// changes: there must be something to pop, this route has to be the one on screen,
+/// and — for a page that lives inside a nested navigator (every settings section page
+/// is) — the *outer* navigator counts too. Such a page can be the first page of its own
+/// navigator while the settings shell above it can still be popped, and without that
+/// check 返回 simply did not appear on it.
+///
+/// A page underneath a pushed route is rebuilt while the pop is still running — at
+/// that moment `canPop()` is still true, so the page drew a back button and nothing
+/// recomputed it afterwards. That is the stale "返回" the user saw on the home and
+/// favorites pages until an unrelated rebuild fixed it.
 bool tvShowsBackButton(BuildContext context) {
   final bool isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
-  return isCurrent && Navigator.of(context).canPop();
+  if (!isCurrent) return false;
+  if (Navigator.of(context).canPop()) return true;
+  // `rootNavigator: true` throws when this context is not under a Navigator at all
+  // (a widget test that mounts an app bar on its own).
+  return Navigator.maybeOf(context, rootNavigator: true)?.canPop() ?? false;
 }
 
 class TvAppBar extends StatefulWidget {
