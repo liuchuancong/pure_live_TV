@@ -87,7 +87,10 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
       ),
-      DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
+      // Light palette: the 18px glow is a grey smear on white; crisp ring.
+      tvTheme.isLight
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
+          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
         final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;

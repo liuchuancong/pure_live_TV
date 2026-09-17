@@ -56,12 +56,23 @@ class TvButton extends StatelessWidget {
           ),
         );
         list.add(
-          DpadGlowEffect(
-            color: activeTheme.focusColor.withValues(alpha: 0.35),
-            blurRadius: 2.w,
-            spreadRadius: 2.0.w,
-            borderRadius: borderRadius,
-          ),
+          // On a light palette the soft halo reads as a fuzzy smear behind the
+          // button, so focus looks out of focus; a crisp ring keeps it sharp.
+          // Dark palettes keep the glow.
+          activeTheme.isLight
+              ? DpadGlowEffect(
+                  color: activeTheme.focusColor,
+                  opacity: 1,
+                  blurRadius: 0,
+                  spreadRadius: 2.0.w,
+                  borderRadius: borderRadius,
+                )
+              : DpadGlowEffect(
+                  color: activeTheme.focusColor.withValues(alpha: 0.35),
+                  blurRadius: 2.w,
+                  spreadRadius: 2.0.w,
+                  borderRadius: borderRadius,
+                ),
         );
       }
       list.add(

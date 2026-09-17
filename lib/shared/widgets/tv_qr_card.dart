@@ -32,11 +32,14 @@ class TvQrCodeCard extends StatelessWidget {
             size: 240.sp,
             padding: EdgeInsets.all(6.0.sp),
             version: QrVersions.auto,
-            backgroundColor: tvTheme.cardColor,
-            eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: tvTheme.focusedCardColor),
-            dataModuleStyle: QrDataModuleStyle(
+            // A QR must stay a fixed dark-on-white pattern: themeing the modules
+            // painted them in focusedCardColor, which is white on every light
+            // preset — an invisible code on a white card.
+            backgroundColor: Colors.white,
+            eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF101014)),
+            dataModuleStyle: const QrDataModuleStyle(
               dataModuleShape: QrDataModuleShape.square,
-              color: tvTheme.focusedCardColor,
+              color: Color(0xFF101014),
             ),
           ),
         ),

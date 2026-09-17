@@ -220,13 +220,15 @@ class _TvInputFieldState extends State<TvInputField> {
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.sp),
+        // On light palettes an 18px blur is a grey smear around the focused
+        // field; a hard accent ring reads as a crisp focus indicator.
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: resolvedFocusedBorder.withAlpha(
               _isFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0,
             ),
-            blurRadius: 18.0.sp,
-            spreadRadius: 2.0.sp,
+            blurRadius: currentTvTheme.isLight ? 0 : 18.0.sp,
+            spreadRadius: currentTvTheme.isLight ? 2.0.sp : 2.0.sp,
           ),
         ],
       ),
