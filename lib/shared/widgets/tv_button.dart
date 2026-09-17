@@ -92,7 +92,12 @@ class TvButton extends StatelessWidget {
             bgColor = activeTheme.focusColor;
             foregroundColor = activeTheme.onFocusColor;
           } else {
-            bgColor = isSecondary ? activeTheme.cardColor.withValues(alpha: 0.5) : activeTheme.cardColor;
+            // buttonSurface, not cardColor: on light palettes the card is a
+            // near-white tint, so a card-colored button read as a plain white
+            // block no matter which preset was active.
+            bgColor = isSecondary
+                ? activeTheme.buttonSurface.withValues(alpha: 0.5)
+                : activeTheme.buttonSurface;
             foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
           }
 
@@ -104,7 +109,7 @@ class TvButton extends StatelessWidget {
             // content sitting on an accent-filled *focused* background — onto a
             // plain card background, which made the badge text nearly invisible.
             // Selection is still honoured so a selected label stays selected.
-            bgColor = selected ? activeTheme.focusColor : activeTheme.cardColor;
+            bgColor = selected ? activeTheme.focusColor : activeTheme.buttonSurface;
             foregroundColor = selected
                 ? activeTheme.onFocusColor
                 : (isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor);

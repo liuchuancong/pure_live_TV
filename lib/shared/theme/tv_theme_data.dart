@@ -105,6 +105,31 @@ class TvThemeData {
   /// panel looks right on a dark palette and on a light one.
   Color get subtleRowFill => primaryTextColor.withValues(alpha: 0.06);
 
+  /// Background of an idle (unfocused, unselected) button.
+  ///
+  /// [cardColor] alone reads as a white block on every light palette — the
+  /// derived light presets lift their cards to a near-white tint, so buttons
+  /// and the page behind them differed only in the page colour. A gentle pull
+  /// towards [focusColor] keeps each preset's identity on the button while
+  /// staying quiet; dark palettes keep their card colour unchanged.
+  Color get buttonSurface => isLight ? Color.lerp(cardColor, focusColor, 0.10)! : cardColor;
+
+  /// This preset with legacy hard-coded focus surfaces rewritten.
+  ///
+  /// Most presets declared `focusedCardColor: Colors.white` — on a dark palette
+  /// the focused input field or card flashed pure white regardless of the
+  /// theme's accent (and the three light presets focused onto the same white
+  /// their idle card already had, so focus was invisible). The white is now
+  /// blended from the card towards the accent: a dark palette focuses onto a
+  /// deep accent shade, a light one onto a pale accent wash, and
+  /// [onFocusedCard] keeps the text readable on either.
+  TvThemeData normalized() {
+    if (focusedCardColor != const Color(0xFFFFFFFF)) {
+      return this;
+    }
+    return copyWith(focusedCardColor: Color.lerp(cardColor, focusColor, isLight ? 0.14 : 0.22)!);
+  }
+
   TvThemeData copyWith({
     Color? backgroundColor,
     Color? focusColor,
@@ -140,9 +165,9 @@ class TvThemeData {
   TvThemeData resolveFor({Brightness brightness = Brightness.dark, Color? accent}) {
     final Color resolvedAccent = accent ?? focusColor;
     if (brightness == Brightness.dark) {
-      return isLight ? _deriveDark(resolvedAccent) : copyWith(focusColor: resolvedAccent);
+      return isLight ? _deriveDark(resolvedAccent) : copyWith(focusColor: resolvedAccent).normalized();
     }
-    return isLight ? copyWith(focusColor: resolvedAccent) : _deriveLight(resolvedAccent);
+    return isLight ? copyWith(focusColor: resolvedAccent).normalized() : _deriveLight(resolvedAccent);
   }
 
   /// Moves [accent] towards [towards] until it contrasts with [background] by at
@@ -174,10 +199,17 @@ class TvThemeData {
     return copyWith(
       focusColor: readableAccent,
       backgroundColor: background,
-      cardColor: Color.lerp(const Color(0xFFFFFFFF), accent, 0.14)!,
+      // A 0.14 lift left the card indistinguishable from the page, so every
+      // idle button read as a white block; tinting deeper gives the preset a
+      // visible surface of its own while staying clearly "light".
+      cardColor: Color.lerp(const Color(0xFFFFFFFF), accent, 0.30)!,
       primaryTextColor: Color.lerp(const Color(0xFF15171C), accent, 0.12)!,
       secondaryTextColor: Color.lerp(const Color(0xFF4A4E57), accent, 0.25)!,
-      focusedCardColor: readableAccent,
+      // Not the accent itself: the preset's whole light sibling would then
+      // focus onto the same colour its selected buttons use, and a pale accent
+      // left the focused card nearly the same white as before. A mid blend
+      // keeps focus distinct from both the card and the filled button.
+      focusedCardColor: Color.lerp(const Color(0xFFFFFFFF), accent, 0.16)!,
     );
   }
 
@@ -194,7 +226,10 @@ class TvThemeData {
       cardColor: Color.lerp(const Color(0xFF1A1D24), accent, 0.12)!,
       primaryTextColor: const Color(0xFFF3F4F6),
       secondaryTextColor: Color.lerp(const Color(0xFFB9BDC6), accent, 0.2)!,
-      focusedCardColor: Colors.white,
+      // Not Colors.white: that flattened every derived dark palette's focus
+      // state into a pure white flash that ignored the preset's accent. A
+      // white-accent blend keeps focus bright yet recognizably this theme.
+      focusedCardColor: Color.lerp(const Color(0xFFFFFFFF), accent, 0.18)!,
     );
   }
 }

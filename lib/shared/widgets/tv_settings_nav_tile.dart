@@ -50,14 +50,17 @@ class TvSettingsGroupTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // The TV palette, not the Material scheme: the scheme's primary follows the
+    // 主题模式 and drifted to a washed-out grey-blue on some presets, while the
+    // rows below already use the palette accent — one heading, one accent.
+    final theme = context.tvTheme;
     return Padding(
       padding: EdgeInsets.only(left: 8.sp, bottom: 8.sp),
       child: Text(
         title,
         style: AppTextStyles.t16W600.copyWith(
           fontWeight: FontWeight.bold,
-          color: theme.colorScheme.primary.withValues(alpha: 0.65),
+          color: theme.focusColor.withValues(alpha: 0.85),
           letterSpacing: 0.5,
         ),
       ),

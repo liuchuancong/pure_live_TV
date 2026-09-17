@@ -51,7 +51,7 @@ class WallpaperApiGroupPage extends StatelessWidget {
     return TvScaffold(
       title: group.localizedName(Localizations.localeOf(context).languageCode),
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
         itemCount: group.sources.length,
         itemBuilder: (context, index) {
           final source = group.sources[index];

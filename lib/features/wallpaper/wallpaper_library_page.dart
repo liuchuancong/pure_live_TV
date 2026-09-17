@@ -28,7 +28,7 @@ class WallpaperLibraryPage extends ConsumerWidget {
               subtitle: i18nOr('background_catalog_empty', '远端目录为空'),
             )
           : ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
               itemCount: sources.length,
               itemBuilder: (context, index) {
                 final source = sources[index];
