@@ -11,7 +11,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/shared/consts/back_ground_source.dart';
 
-
 class TvScaffold extends StatefulWidget {
   final Widget child;
   final String? title;
@@ -187,14 +186,20 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     final FocusNode? first = _topLeftMost(region?.focusNodes.where(usable) ?? const <FocusNode>[]);
     if (first != null) {
       final FocusNode? primary = FocusManager.instance.primaryFocus;
-      // Steer only while the keyboard is still where this scaffold left it (or
-      // nowhere at all): once the user has moved the highlight themselves, the
-      // page is open for business and must not be pulled back.
+      // Steer only when the keyboard is genuinely elsewhere *for this page*:
+      // either nobody holds it, or the holder is dead (the node of the page
+      // below, unmounted or excluded from focus once covered), or it is one of
+      // this page's own nodes. A dead foreign node must not be mistaken for
+      // "the user moved" — that left the opening highlight to the d-pad
+      // fallback, which picks the row nearest the *previous* page's focus
+      // (a mid-list row like 通用) instead of the first one.
+      final bool foreignDead = primary != null && !(primary.context?.mounted == true && primary.canRequestFocus);
       final bool steering =
-          primary == null || primary == _backNode || (region != null && _insideRegion(primary, region));
+          primary == null || primary == _backNode || foreignDead || (region != null && _insideRegion(primary, region));
       if (steering) {
         region!.noteFocus(first);
         first.requestFocus();
+        _keepOpeningFocus(first, region);
       }
       _claimedFocus = true;
       return;
@@ -235,6 +240,33 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
     return false;
   }
 
+  /// Re-asserts the opening highlight for a short window after the page opens.
+  ///
+  /// The d-pad layer answers a dead foreign node (the page below losing focus)
+  /// with its own restore, which runs a post-frame callback plus a microtask
+  /// after this scaffold claimed the first row — and wins the race, moving the
+  /// highlight to the row nearest the *previous* page's focus instead. Holding
+  /// the opening target for a few more frames lets this claim outlast that
+  /// fallback without ever fighting the user: the moment the keyboard is on any
+  /// other live node of this page (another row, or 返回), the guard stands down.
+  void _keepOpeningFocus(FocusNode node, DpadRegionState region) {
+    int attempts = 0;
+    void attempt() {
+      if (!mounted || attempts >= 12) return;
+      attempts++;
+      final FocusNode? primary = FocusManager.instance.primaryFocus;
+      final bool userMoved = primary != null && primary != node && _insideRegion(primary, region);
+      if (primary == _backNode || userMoved) return;
+      if (primary != node) {
+        region.noteFocus(node);
+        node.requestFocus();
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
+  }
+
   /// The visually first node: topmost, then leftmost.
   FocusNode? _topLeftMost(Iterable<FocusNode> nodes) {
     FocusNode? best;
@@ -243,7 +275,9 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
       final Rect? rect = _rectOf(node);
       if (rect == null) continue;
       final bool better =
-          bestRect == null || rect.top < bestRect.top - 1 || (rect.top <= bestRect.top + 1 && rect.left < bestRect.left);
+          bestRect == null ||
+          rect.top < bestRect.top - 1 ||
+          (rect.top <= bestRect.top + 1 && rect.left < bestRect.left);
       if (better) {
         best = node;
         bestRect = rect;
@@ -267,8 +301,7 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
   void _onContentEdge(TraversalDirection direction) {
     if (direction != TraversalDirection.up) return;
     final FocusNode? back = _backNode;
-    final bool usable =
-        back != null && back.parent != null && back.context?.mounted == true && back.canRequestFocus;
+    final bool usable = back != null && back.parent != null && back.context?.mounted == true && back.canRequestFocus;
     if (!usable) return;
     DpadRegion.ofNode(back)?.noteFocus(back);
     back.requestFocus();
@@ -285,7 +318,8 @@ class _TvScaffoldState extends State<TvScaffold> with RouteAware {
       _backNode = (widget.appBar == null && effectiveShowBackButton)
           ? (_backNode ?? FocusNode(debugLabel: 'tv_scaffold_back'))
           : null;
-      finalAppBar = widget.appBar ??
+      finalAppBar =
+          widget.appBar ??
           TvAppBar(
             title: widget.title,
             beforeBack: widget.beforeBack,
@@ -365,10 +399,7 @@ class TvAppBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const IgnorePointer(
-      child: Stack(
-        fit: StackFit.expand,
-        children: [_BackgroundLayer(), _MaskLayer()],
-      ),
+      child: Stack(fit: StackFit.expand, children: [_BackgroundLayer(), _MaskLayer()]),
     );
   }
 }
@@ -460,9 +491,7 @@ class _MaskLayer extends StatelessWidget {
         // A light palette needs a light wash over artwork: darkening it would
         // leave the dark text unreadable.
         final bool lightSurface = context.tvTheme.backgroundColor.computeLuminance() > 0.5;
-        return ColoredBox(
-          color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: config.maskOpacity),
-        );
+        return ColoredBox(color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: config.maskOpacity));
       },
     );
   }
@@ -552,10 +581,7 @@ class _ImageBackground extends StatelessWidget {
       }
       final url = config.networkImageUrl;
       if (url != null && url.isNotEmpty) {
-        return CachedNetworkImageProvider(
-          url,
-          cacheManager: CustomImageCacheManager.instance,
-        );
+        return CachedNetworkImageProvider(url, cacheManager: CustomImageCacheManager.instance);
       }
       return null;
     }
