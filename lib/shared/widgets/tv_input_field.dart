@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/theme/tv_theme_data.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -111,16 +112,14 @@ class _TvInputFieldState extends State<TvInputField> {
                   ? currentTvTheme.focusedCardColor
                   : currentTvTheme.cardColor));
 
-    // Several presets use a near-white focusedCardColor, so when the field is
-    // focused the background can turn light while primaryTextColor stays
-    // white — white text on a white field. Pick the text color from the
-    // effective background's luminance instead of the theme's text color.
-    final Color fallbackTextColor =
-        (widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.cardColor))
-                .computeLuminance() >
-            0.5
-        ? const Color(0xff1B1B1F)
-        : currentTvTheme.primaryTextColor;
+    // The focused fill can be the accent (light palettes focus onto it) and the
+    // unfocused one is a card, so the text colour is picked from the *effective*
+    // background by contrast rather than from the palette's default text colour —
+    // the old luminance threshold left dark palettes with white-on-blue at 2.8:1 and
+    // light ones with white text on a white field.
+    final Color fallbackTextColor = TvThemeData.readableOn(
+      widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.cardColor),
+    );
     final resolvedTextColor = widget.textColor ?? fallbackTextColor;
     final resolvedFocusedBorder =
         widget.focuesedBorderColor ?? currentTvTheme.focusColor;
