@@ -89,7 +89,6 @@ class WallpaperApiGroup {
 }
 
 /// The groups, in the order the API page lists them.
-/// The groups, in the order the API page lists them.
 final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
   WallpaperApiGroup(
     id: 'bing',
@@ -104,13 +103,12 @@ final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
         name: '必应随机Jason Zeng',
         url: 'https://bingw.jasonzeng.dev/?resolution=1920x1080&index=random',
       ),
-      const WallpaperApiSource(name: '必应随机Adunm', url: 'https://bing-api.adunm.top/random?w=1920&h=1080'),
       const WallpaperApiSource(
         name: '必应随机UAPI',
         url: 'https://uapis.cn/api/v1/image/bing-daily?random=true&resolution=1080',
       ),
-      const WallpaperApiSource(name: '必应随机W3H5', url: 'https://bz.w3h5.com/img/rand_fhd'),
       const WallpaperApiSource(name: '必应随机YingJoy', url: 'https://api.1314.cool/bingimg'),
+      const WallpaperApiSource(name: '必应W3H5', url: 'https://bz.w3h5.com/img/rand_fhd'),
       const WallpaperApiSource(
         name: '无铭必应每日壁纸',
         url: 'https://jkapi.com/api/bing_img',
@@ -147,6 +145,12 @@ final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
         apiKey: '0c0c7a39e084db0e9c7cf2e25318f42c',
       ),
       const WallpaperApiSource(
+        name: '抖音美女·无铭API',
+        url: 'https://jkapi.com/api/dymm_img',
+        kind: WallpaperApiKind.json,
+        apiKey: '7b6c5500e52878bc46264cd140196699',
+      ),
+      const WallpaperApiSource(
         name: '无铭随机白丝图片',
         url: 'https://jkapi.com/api/baisi_img',
         kind: WallpaperApiKind.json,
@@ -179,21 +183,34 @@ final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
     ],
   ),
   WallpaperApiGroup(
-    id: 'misc',
-    name: '其他图源',
-    nameEn: 'Other sources',
+    id: 'uapi',
+    name: 'UAPI 随机图',
+    nameEn: 'UAPI',
     sources: <WallpaperApiSource>[
-      const WallpaperApiSource(name: '小晓API', url: 'https://v2.xxapi.cn/api/wallpaper', kind: WallpaperApiKind.json),
-      const WallpaperApiSource(name: 'mtyqx', url: 'https://api.mtyqx.cn/tapi/random.php'),
-      const WallpaperApiSource(name: 'picsum', url: 'https://picsum.photos/1280/720/?blur=10'),
-      const WallpaperApiSource(name: 'dmoe', url: 'https://www.dmoe.cc/random.php'),
-      const WallpaperApiSource(name: 'loliApi', url: 'https://www.loliapi.com/bg/'),
-      const WallpaperApiSource(name: 'catvod', url: 'https://pictures.catvod.eu.org/'),
-      const WallpaperApiSource(name: 'LQB二次元DM', url: 'https://api.lqbby.com/api/dm?return=img'),
-      const WallpaperApiSource(name: 'LQB二次元PC', url: 'https://api.lqbby.com/api/pc?return=img'),
-      const WallpaperApiSource(name: 'UAPI随机二次元', url: 'https://uapis.cn/api/v1/random/image?category=acg'),
-      const WallpaperApiSource(name: 'UAPI随机风景', url: 'https://uapis.cn/api/v1/random/image?category=landscape'),
-      const WallpaperApiSource(name: 'UAPI随机AI绘画', url: 'https://uapis.cn/api/v1/random/image?category=ai_drawing'),
+      const WallpaperApiSource(name: 'UAPI全部随机', url: 'https://uapis.cn/api/v1/random/image'),
+      const WallpaperApiSource(name: 'UAPI二次元动漫', url: 'https://uapis.cn/api/v1/random/image?category=acg'),
+      const WallpaperApiSource(name: 'UAPI二次元·电脑', url: 'https://uapis.cn/api/v1/random/image?category=acg&type=pc'),
+      const WallpaperApiSource(name: 'UAPI二次元·手机', url: 'https://uapis.cn/api/v1/random/image?category=acg&type=mb'),
+      const WallpaperApiSource(name: 'UAPI风景图', url: 'https://uapis.cn/api/v1/random/image?category=landscape'),
+      const WallpaperApiSource(name: 'UAPI混合动漫', url: 'https://uapis.cn/api/v1/random/image?category=anime'),
+      const WallpaperApiSource(name: 'UAPI电脑壁纸', url: 'https://uapis.cn/api/v1/random/image?category=pc_wallpaper'),
+      const WallpaperApiSource(name: 'UAPI手机壁纸', url: 'https://uapis.cn/api/v1/random/image?category=mobile_wallpaper'),
+      const WallpaperApiSource(name: 'UAPI动漫图', url: 'https://uapis.cn/api/v1/random/image?category=general_anime'),
+      const WallpaperApiSource(name: 'UAPI福瑞', url: 'https://uapis.cn/api/v1/random/image?category=furry'),
+      const WallpaperApiSource(name: 'UAPI福瑞·z4k', url: 'https://uapis.cn/api/v1/random/image?category=furry&type=z4k'),
+      const WallpaperApiSource(
+        name: 'UAPI福瑞·szs8k',
+        url: 'https://uapis.cn/api/v1/random/image?category=furry&type=szs8k',
+      ),
+      const WallpaperApiSource(name: 'UAPI福瑞·s4k', url: 'https://uapis.cn/api/v1/random/image?category=furry&type=s4k'),
+      const WallpaperApiSource(name: 'UAPI福瑞·4k', url: 'https://uapis.cn/api/v1/random/image?category=furry&type=4k'),
+    ],
+  ),
+  WallpaperApiGroup(
+    id: '360',
+    name: '360壁纸',
+    nameEn: '360 Wallpaper',
+    sources: <WallpaperApiSource>[
       const WallpaperApiSource(
         name: '360壁纸美女',
         url: 'https://v1.apizero.cn/api/wallpaper?category=美女&resolution=1920x1080&count=1',
@@ -205,10 +222,88 @@ final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
         kind: WallpaperApiKind.json,
       ),
       const WallpaperApiSource(
+        name: '360壁纸游戏',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=游戏&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸影视',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=影视&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸时尚',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=时尚&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸明星',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=明星&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸汽车',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=汽车&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸萌宠',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=萌宠&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸清新',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=清新&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸体育',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=体育&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸萌娃',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=萌娃&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸军事',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=军事&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
         name: '360壁纸动漫',
         url: 'https://v1.apizero.cn/api/wallpaper?category=动漫&resolution=1920x1080&count=1',
         kind: WallpaperApiKind.json,
       ),
+      const WallpaperApiSource(
+        name: '360壁纸日历',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=日历&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸爱情',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=爱情&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(
+        name: '360壁纸格言',
+        url: 'https://v1.apizero.cn/api/wallpaper?category=格言&resolution=1920x1080&count=1',
+        kind: WallpaperApiKind.json,
+      ),
+    ],
+  ),
+  WallpaperApiGroup(
+    id: 'misc',
+    name: '其他图源',
+    nameEn: 'Other sources',
+    sources: <WallpaperApiSource>[
+      const WallpaperApiSource(name: '小晓API', url: 'https://v2.xxapi.cn/api/wallpaper', kind: WallpaperApiKind.json),
+      const WallpaperApiSource(name: 'mtyqx', url: 'https://api.mtyqx.cn/tapi/random.php'),
+      const WallpaperApiSource(name: 'picsum', url: 'https://picsum.photos/1280/720/?blur=10'),
+      const WallpaperApiSource(name: 'dmoe', url: 'https://www.dmoe.cc/random.php'),
+      const WallpaperApiSource(name: 'loliApi', url: 'https://www.loliapi.com/bg/'),
+      const WallpaperApiSource(name: 'catvod', url: 'https://pictures.catvod.eu.org/'),
     ],
   ),
   WallpaperApiGroup(
@@ -216,22 +311,23 @@ final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
     name: '性感美女',
     nameEn: 'Sexy',
     sources: <WallpaperApiSource>[
-      const WallpaperApiSource(name: '随机黑丝·小小API', url: 'https://v2.xxapi.cn/api/heisi'),
-      const WallpaperApiSource(name: '随机白丝·小小API', url: 'https://v2.xxapi.cn/api/baisi'),
-      const WallpaperApiSource(name: '随机JK·小小API', url: 'https://v2.xxapi.cn/api/jk'),
-      const WallpaperApiSource(name: '随机美腿·云知API', url: 'https://yunzhiapi.cn/API/sjmtzs.php'),
+      const WallpaperApiSource(name: '随机黑丝·小小API', url: 'https://v2.xxapi.cn/api/heisi', kind: WallpaperApiKind.json),
+      const WallpaperApiSource(name: '随机白丝·小小API', url: 'https://v2.xxapi.cn/api/baisi', kind: WallpaperApiKind.json),
+      const WallpaperApiSource(name: '随机JK·小小API', url: 'https://v2.xxapi.cn/api/jk', kind: WallpaperApiKind.json),
       const WallpaperApiSource(name: '随机小姐姐·素颜API', url: 'https://api.suyanw.cn/api/ksxjj.php'),
       const WallpaperApiSource(name: '随机美女·素颜API', url: 'https://api.suyanw.cn/api/meinv.php'),
       const WallpaperApiSource(name: '随机妹子·素颜API', url: 'https://api.suyanw.cn/api/meizi.php'),
       const WallpaperApiSource(name: '随机黑丝·素颜API', url: 'https://api.suyanw.cn/api/hs.php'),
-      const WallpaperApiSource(name: '随机美女·星海API', url: 'https://api.zhcnli.com/api/mntp/index.php'),
       const WallpaperApiSource(
         name: '随机妹子·小渡API',
         url: 'https://openapi.dwo.cc/api/meinv?type=json',
         kind: WallpaperApiKind.json,
       ),
-      const WallpaperApiSource(name: '随机丝袜·Nonebot', url: 'https://api.nonebot.top/api/v1/random/wallpaper?type=meizi'),
-      const WallpaperApiSource(name: '甜辣妹壁纸·Lolimi', url: 'https://api.lolimi.cn/API/xjj/lt'),
+      const WallpaperApiSource(
+        name: '随机丝袜·Nonebot',
+        url: 'https://api.nonebot.top/api/v1/random/wallpaper?type=meizi',
+        kind: WallpaperApiKind.json,
+      ),
       const WallpaperApiSource(name: 'PC美女壁纸·Ltywl', url: 'https://pic.ltywl.top/mn/pc.php'),
       const WallpaperApiSource(name: 'PE美女壁纸·Ltywl', url: 'https://pic.ltywl.top/mn/pe.php'),
       const WallpaperApiSource(
@@ -239,83 +335,26 @@ final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
         url: 'https://v1.apizero.cn/api/wallpaper?category=美女&resolution=1920x1080&count=1',
         kind: WallpaperApiKind.json,
       ),
-      const WallpaperApiSource(name: '电脑端小姐姐·Nsuuu', url: 'https://v1.nsuuu.com/api/pcmeinvpic'),
-      const WallpaperApiSource(name: '随机白丝·Nsuuu', url: 'https://v1.nsuuu.com/api/baisi'),
-      const WallpaperApiSource(name: '随机黑丝·AA1', url: 'https://api.aa1.cn/api/heisi', kind: WallpaperApiKind.json),
-      const WallpaperApiSource(name: '随机白丝·AA1', url: 'https://api.aa1.cn/api/baisi', kind: WallpaperApiKind.json),
-      const WallpaperApiSource(name: '随机小姐姐·AA1', url: 'https://img.8845.top/xjj'),
+      const WallpaperApiSource(
+        name: '电脑端小姐姐·Nsuuu',
+        url: 'https://v1.nsuuu.com/api/pcmeinvpic',
+        kind: WallpaperApiKind.json,
+      ),
+      const WallpaperApiSource(name: '随机白丝·Nsuuu', url: 'https://v1.nsuuu.com/api/baisi', kind: WallpaperApiKind.json),
       const WallpaperApiSource(name: '随机美女·搏天API', url: 'http://api.btstu.cn/sjbz/api.php?lx=meizi&format=images'),
       const WallpaperApiSource(name: '随机二次元·搏天API', url: 'http://api.btstu.cn/sjbz/api.php?lx=dongman&format=images'),
       const WallpaperApiSource(
-        name: '随机美女·姬长信API',
-        url: 'https://api.jichangxin.cn/api/meinv',
+        name: '随机小姐姐·快手',
+        url: 'http://api.nonebot.top/api/v1/random/wallpaper?type=kuaishou',
         kind: WallpaperApiKind.json,
       ),
       const WallpaperApiSource(
-        name: '随机小姐姐·姬长信API',
-        url: 'https://api.jichangxin.cn/api/xiaojiejie',
+        name: '随机Cos·Nonebot',
+        url: 'http://api.nonebot.top/api/v1/random/wallpaper?type=cos',
         kind: WallpaperApiKind.json,
       ),
-      const WallpaperApiSource(
-        name: '随机美女·API盒子',
-        url: 'https://cn.apihz.cn/api/img/apihzimg.php?imgtype=2',
-        kind: WallpaperApiKind.json,
-      ),
-      const WallpaperApiSource(name: '随机小姐姐·快手', url: 'http://api.nonebot.top/api/v1/random/wallpaper?type=kuaishou'),
-      const WallpaperApiSource(name: '随机Cos·Nonebot', url: 'http://api.nonebot.top/api/v1/random/wallpaper?type=cos'),
-      const WallpaperApiSource(name: '随机美女·IMGBOX', url: 'https://api-github.img11.eu.org/random'),
-      const WallpaperApiSource(name: '随机美女·HeylieAPI', url: 'https://api.heylie.cn/api/img'),
       const WallpaperApiSource(name: '随机美女·CZL', url: 'https://random-api.czl.net/pic/ai'),
-      const WallpaperApiSource(name: '随机小姐姐·夏柔专线', url: 'https://v.api.aa1.cn/api/api-girl-11-02/index.php'),
       const WallpaperApiSource(name: '随机美女·Mioical', url: 'https://api.mioical.moe/img'),
-      const WallpaperApiSource(name: '抖音随机美女·HeylieAPI', url: 'https://api.heylie.cn/api/img?xq=dy'),
-      const WallpaperApiSource(name: '随机AI美女·HeylieAPI', url: 'https://api.heylie.cn/api/img?xq=ai'),
-      const WallpaperApiSource(name: '抖音博主·削七', url: 'https://api.heylie.cn/api/img?xq=xq'),
-      const WallpaperApiSource(name: '随机美女·PicCDN', url: 'https://api.piccdn.top/api/v1/girls/random'),
-      const WallpaperApiSource(name: '随机美女·WaifuLand', url: 'https://api.waifuland.xyz/images/random'),
-    ],
-  ),
-  WallpaperApiGroup(
-    id: 'douyin',
-    name: '抖音小姐姐',
-    nameEn: 'Douyin',
-    sources: <WallpaperApiSource>[
-      const WallpaperApiSource(
-        name: '抖音美女·无铭API',
-        url: 'https://jkapi.com/api/dymm_img',
-        kind: WallpaperApiKind.json,
-        apiKey: '7b6c5500e52878bc46264cd140196699',
-      ),
-      const WallpaperApiSource(name: '抖音随机·HeylieAPI', url: 'https://api.heylie.cn/api/img?xq=dy'),
-      const WallpaperApiSource(name: '抖音博主·削七', url: 'https://api.heylie.cn/api/img?xq=xq'),
-      const WallpaperApiSource(
-        name: '抖音小姐姐·小渡API',
-        url: 'https://openapi.dwo.cc/api/douyin',
-        kind: WallpaperApiKind.json,
-      ),
-      const WallpaperApiSource(name: '抖音随机·Nsuuu', url: 'https://v1.nsuuu.com/api/douyin'),
-      const WallpaperApiSource(name: '抖音美女·山he', url: 'https://api.shanhe.kim/api/douyin'),
-      const WallpaperApiSource(name: '抖音随机·AA1', url: 'https://api.aa1.cn/api/douyin', kind: WallpaperApiKind.json),
-    ],
-  ),
-  WallpaperApiGroup(
-    id: 'xiaohongshu',
-    name: '小红书美女',
-    nameEn: 'Xiaohongshu',
-    sources: <WallpaperApiSource>[
-      const WallpaperApiSource(
-        name: '小红书随机·小渡API',
-        url: 'https://openapi.dwo.cc/api/xiaohongshu',
-        kind: WallpaperApiKind.json,
-      ),
-      const WallpaperApiSource(name: '小红书美女·Nsuuu', url: 'https://v1.nsuuu.com/api/xiaohongshu'),
-      const WallpaperApiSource(name: '小红书随机·山he', url: 'https://api.shanhe.kim/api/xiaohongshu'),
-      const WallpaperApiSource(
-        name: '小红书随机·AA1',
-        url: 'https://api.aa1.cn/api/xiaohongshu',
-        kind: WallpaperApiKind.json,
-      ),
-      const WallpaperApiSource(name: '小红书图集·RedNote', url: 'https://api.rednote.icu/api/random'),
     ],
   ),
 ];
@@ -387,6 +426,7 @@ String? _pickUrl(dynamic data) {
       'imgurl',
       'data',
       'image',
+      'images',
     ]) {
       final String? found = _pickUrl(data[key]);
       if (found != null) return found;

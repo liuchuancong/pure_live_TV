@@ -6,14 +6,6 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
 
-/// Icon per API group, keyed by the group id.
-const Map<String, IconData> _kGroupIcons = <String, IconData>{
-  'bing': RemixIcons.calendar_line,
-  'alcy': RemixIcons.gallery_line,
-  'wuming': RemixIcons.apps_2_line,
-  'misc': RemixIcons.image_line,
-};
-
 /// The random-wallpaper APIs, grouped.
 ///
 /// The list reached nearly thirty entries once 栗次元's categories became
@@ -37,7 +29,7 @@ class WallpaperApiPage extends StatelessWidget {
           return TvSettingsMenuTile<void>(
             title: group.localizedName(languageCode),
             subtitle: i18nOr('wallpaper_api_group_count', '{count} 个来源', args: {'count': '${group.sources.length}'}),
-            icon: _kGroupIcons[group.id] ?? RemixIcons.apps_2_line,
+            leading: NumberLeading(index + 1),
             onTap: () => context.push(AppRoutes.kWallpaperApiGroup, extra: group),
           );
         },

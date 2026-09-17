@@ -8,25 +8,24 @@ import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
-import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
-import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
-import 'package:pure_live/features/settings/pages/device_sync_section.dart';
-import 'package:pure_live/features/settings/pages/account_settings_section.dart';
-import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
-import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
-import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
-import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
-import 'package:pure_live/features/settings/pages/tag_management_section.dart';
-import 'package:pure_live/features/settings/pages/navigation_section.dart';
-import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 import 'package:pure_live/features/settings/pages/nav_order_section.dart';
 import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
-import 'package:pure_live/features/settings/pages/platform_display_visibility_section.dart';
-import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
+import 'package:pure_live/features/settings/pages/navigation_section.dart';
+import 'package:pure_live/features/settings/pages/device_sync_section.dart';
+import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
+import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
+import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
+import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
+import 'package:pure_live/features/settings/pages/tag_management_section.dart';
+import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
+import 'package:pure_live/features/settings/pages/webdav_settings_section.dart';
+import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
+import 'package:pure_live/features/settings/pages/account_settings_section.dart';
 import 'package:pure_live/features/settings/pages/font_family_manager_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-
+import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
+import 'package:pure_live/features/settings/pages/platform_display_visibility_section.dart';
 
 /// Every settings page, by its full path — the one list the settings shell
 /// iterates.
@@ -158,10 +157,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       // Grid pickers own their scroll axis, so they are routes of their own
       // rather than sections inside the scrolling settings shell.
-      GoRoute(
-        path: AppRoutes.kSettingsLoadingStyle,
-        builder: (context, state) => const LoadingStyleSectionPage(),
-      ),
+      GoRoute(path: AppRoutes.kSettingsLoadingStyle, builder: (context, state) => const LoadingStyleSectionPage()),
       GoRoute(
         path: AppRoutes.kSettingsColorPicker,
         builder: (context, state) => ColorPickerSectionPage(current: state.extra as Color?),
@@ -180,18 +176,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           return TvSearchResultPage(keyword: args.keyword, site: args.site, searchType: args.searchType);
         },
       ),
-      GoRoute(
-        path: AppRoutes.kWallpaperPage,
-        builder: (context, state) => const WallpaperPage(),
-      ),
-      GoRoute(
-        path: AppRoutes.kWallpaperLibrary,
-        builder: (context, state) => const WallpaperLibraryPage(),
-      ),
-      GoRoute(
-        path: AppRoutes.kWallpaperApi,
-        builder: (context, state) => const WallpaperApiPage(),
-      ),
+      GoRoute(path: AppRoutes.kWallpaperPage, builder: (context, state) => const WallpaperPage()),
+      GoRoute(path: AppRoutes.kWallpaperLibrary, builder: (context, state) => const WallpaperLibraryPage()),
+      GoRoute(path: AppRoutes.kWallpaperApi, builder: (context, state) => const WallpaperApiPage()),
       GoRoute(
         path: AppRoutes.kWallpaperApiGroup,
         builder: (context, state) => WallpaperApiGroupPage(group: state.extra as WallpaperApiGroup),
@@ -224,4 +211,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-

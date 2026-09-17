@@ -84,6 +84,7 @@
     "wallpaper_category_count": "{count} 张",
     "wallpaper_category_group": "{categories} 个分类",
     "wallpaper_api_group": "随机壁纸 API",
+     "wallpaper_api_video_group": "随机视频壁纸 API",
     "wallpaper_api_group_count": "{count} 个来源",
     "wallpaper_api_entry_subtitle": "每次打开随机取一张图",
     "wallpaper_source_group": "背景来源",
