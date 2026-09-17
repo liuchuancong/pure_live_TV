@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'danmaku_settings_model.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/platform/font_download_manager.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,6 +15,15 @@ part 'danmaku_settings_controller.g.dart';
 @riverpod
 class DanmakuSettingsController extends _$DanmakuSettingsController {
   static DanmakuSettingsController get to => SettingsService.to.danmaku;
+
+  static const String _familyKey = 'danmakuFontFamilyName';
+  static const String _fileNameKey = 'danmakuFontFamilyFileName';
+
+  /// The weight file the danmaku family is locked to, or `''` for the whole family.
+  ///
+  /// Device-local, like the app font's own weight lock, so it lives beside the family
+  /// in Hive instead of in the shared settings model.
+  String get danmakuFontFamilyFileName => HivePrefUtil.getString(_fileNameKey) ?? '';
 
   // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<bool> get filterDouyuSuspectedAutomatedMessages =>
@@ -40,7 +52,7 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
       repeatedDanmakuWindowSeconds: HivePrefUtil.getInt('repeatedDanmakuWindowSeconds') ?? 5,
       danmakuInteractionMigration: HivePrefUtil.getInt('danmakuInteractionMigration') ?? 0,
       savedDanmakuTemplate: HivePrefUtil.getString('savedDanmakuTemplate') ?? '',
-      danmakuFontFamilyName: HivePrefUtil.getString('danmakuFontFamilyName') ?? 'Default',
+      danmakuFontFamilyName: HivePrefUtil.getString(_familyKey) ?? 'Default',
       enablePipDanmaku: HivePrefUtil.getBool('enablePipDanmaku') ?? true,
       pipDanmakuAutoScale: HivePrefUtil.getBool('pipDanmakuAutoScale') ?? true,
       pipDanmakuNoEmojiMode: HivePrefUtil.getBool('pipDanmaNoEmojiMode') ?? false,
@@ -64,21 +76,61 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
 
     // Re-register a previously downloaded danmaku font so danmaku renders in
     // it right after a restart, without a re-download (same lifecycle the app
-    // font uses in FontSettingsController).
+    // font uses in FontSettingsController — weight lock and fallback included).
     final family = model.danmakuFontFamilyName;
     if (family != 'Default' && family.isNotEmpty) {
-      unawaited(_ensureFontLoaded(family));
+      unawaited(_restoreFontFamily(family));
     }
     return model;
   }
 
-  Future<void> _ensureFontLoaded(String family) async {
+  /// Re-registers [family] after a restart, dropping to the bundled font when its files
+  /// (or the weight it was locked to) are gone.
+  Future<void> _restoreFontFamily(String family) async {
     try {
-      if (!await FontDownloadManager.instance.checkFontDownloaded(family)) return;
-      await FontDownloadManager.instance.loadFont(family);
+      if (!await FontDownloadManager.instance.checkFontDownloaded(family)) {
+        await resetDanmakuFontFamily();
+        return;
+      }
+
+      final String storedFile = danmakuFontFamilyFileName;
+      bool loaded = await FontDownloadManager.instance.loadFont(family, fileName: storedFile);
+      if (!loaded && storedFile.isNotEmpty) {
+        // The locked weight was removed but the family is still usable.
+        loaded = await FontDownloadManager.instance.loadFont(family);
+        if (loaded) await HivePrefUtil.setString(_fileNameKey, '');
+      }
+      if (!loaded) await resetDanmakuFontFamily();
     } catch (_) {
       // Missing files fall back to the default family silently.
+      await resetDanmakuFontFamily();
     }
+  }
+
+  /// Applies [font] to danmaku, optionally locked to a single weight file.
+  ///
+  /// Registration is verified first, so a family whose files are gone leaves the current
+  /// danmaku font alone and only reports why.
+  Future<bool> activateDanmakuFontFamily(FontModel font, {String? targetFileName}) async {
+    final bool loaded = await FontDownloadManager.instance.loadFont(font.id, fileName: targetFileName ?? '');
+    if (!loaded) {
+      ToastUtil.show(i18n('font_not_downloaded_or_corrupted'));
+      return false;
+    }
+    updateSettings(state.copyWith(danmakuFontFamilyName: font.id));
+    await HivePrefUtil.setString(_fileNameKey, targetFileName ?? '');
+    return true;
+  }
+
+  /// Drops danmaku back to the font bundled with the app.
+  Future<void> resetDanmakuFontFamily() async {
+    updateSettings(state.copyWith(danmakuFontFamilyName: 'Default'));
+    await HivePrefUtil.setString(_fileNameKey, '');
+  }
+
+  /// Drops the danmaku selection when [fontId] is the family in force.
+  Future<void> resetIfActive(String fontId) async {
+    if (state.danmakuFontFamilyName == fontId) await resetDanmakuFontFamily();
   }
 
   void updateSettings(DanmakuSettingsModel newSettings) {

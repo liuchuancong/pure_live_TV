@@ -10,6 +10,7 @@ class AppPathManager {
   static const String dirIptvCache = 'IPTV_CACHE';
   static const String iptvTable = 'pure_live_tv';
   static const String dirDownload = 'DOWNLOADS';
+  static const String fontDirectoryName = 'fonts';
   static const String dirLogs = 'LOGS';
   static const String dirHiveDB = 'HIVE_DB';
   static const String dirImageCache = 'IMAGE_CACHE';
@@ -49,6 +50,23 @@ class AppPathManager {
   Future<Directory> get hiveDbDir => getDir(dirHiveDB);
   Future<Directory> get imageCacheDir => getDir(dirImageCache);
   Future<Directory> get recordsDir => getDir(dirRecords);
+
+  /// `DOWNLOADS/fonts` — the root every downloaded font family lives under.
+  Future<Directory> get fontRootDir async {
+    final Directory downloadDir = await getDir(dirDownload);
+    final Directory fontRoot = Directory(p.join(downloadDir.path, fontDirectoryName));
+    if (!await fontRoot.exists()) {
+      await fontRoot.create(recursive: true);
+    }
+    return fontRoot;
+  }
+
+  /// The folder holding every weight file of one downloaded family.
+  ///
+  /// The same layout the mobile app uses (`AppPathManager.getFontFamilyFolderPath`),
+  /// so a family downloaded by either app is found by the other.
+  Future<String> getFontFamilyFolderPath(String fontId) async =>
+      p.join((await fontRootDir).path, fontId);
 
   String get secureBasePath => _secureBasePath ?? (throw StateError('AppPathManager is not initialized'));
   String get cacheBasePath => _cacheBasePath ?? (throw StateError('AppPathManager is not initialized'));
