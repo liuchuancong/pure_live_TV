@@ -1,18 +1,18 @@
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/areas/areas_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/features/history/history_page.dart';
 import 'package:pure_live/features/search/tv_search_page.dart';
 import 'package:pure_live/features/favorite/favorite_page.dart';
+import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
-import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 class HomePage extends ConsumerWidget {
@@ -47,7 +47,7 @@ class HomePage extends ConsumerWidget {
       });
     }
 
-    final sidebarWidth = isExpanded ? 250.sp : 110.sp;
+    final sidebarWidth = isExpanded ? 200.sp : 110.sp;
 
     final cacheableTypes = [
       TvMenuType.profile,
@@ -64,132 +64,132 @@ class HomePage extends ConsumerWidget {
 
     return TvScaffold(
       child: Row(
-          children: [
-            DpadRegion(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                curve: Curves.easeOutCubic,
-                width: sidebarWidth,
-                color: currentTvTheme.cardColor,
-                padding: EdgeInsets.symmetric(vertical: 24.sp),
-                child: Column(
-                  children: [
-                    Padding(
+        children: [
+          DpadRegion(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOutCubic,
+              width: sidebarWidth,
+              color: currentTvTheme.cardColor,
+              padding: EdgeInsets.symmetric(vertical: 24.sp),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 14.sp),
+                    child: _buildAdaptiveItem(
+                      ref: ref,
+                      item: myProfileItem,
+                      isExpanded: isExpanded,
+                      isSelected: currentIndex == myProfileItem.index,
+                      onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(myProfileItem.index),
+                    ),
+                  ),
+                  const Spacer(),
+                  ...List.generate(menuList.length, (index) {
+                    final item = menuList[index];
+                    final isSelected = currentIndex == item.index;
+
+                    return Padding(
                       padding: EdgeInsets.only(bottom: 14.sp),
                       child: _buildAdaptiveItem(
                         ref: ref,
-                        item: myProfileItem,
+                        item: item,
                         isExpanded: isExpanded,
-                        isSelected: currentIndex == myProfileItem.index,
-                        onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(myProfileItem.index),
+                        isSelected: isSelected,
+                        onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
                       ),
-                    ),
-                    const Spacer(),
-                    ...List.generate(menuList.length, (index) {
-                      final item = menuList[index];
-                      final isSelected = currentIndex == item.index;
-
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 14.sp),
-                        child: _buildAdaptiveItem(
-                          ref: ref,
-                          item: item,
-                          isExpanded: isExpanded,
-                          isSelected: isSelected,
-                          onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
-                        ),
-                      );
-                    }),
-                    const Spacer(),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 14.sp),
-                      child: TvIconButton(
-                        icon: AnimatedRotation(
-                          turns: isExpanded ? 0.5 : 0.0,
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeOutCubic,
-                          child: const Icon(Icons.arrow_forward_ios_rounded),
-                        ),
-                        size: TvIconButtonSize.medium,
-                        isSecondary: true,
-                        onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
+                    );
+                  }),
+                  const Spacer(),
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 14.sp),
+                    child: TvIconButton(
+                      icon: AnimatedRotation(
+                        turns: isExpanded ? 0.5 : 0.0,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                        child: const Icon(Icons.arrow_forward_ios_rounded),
                       ),
+                      size: TvIconButtonSize.medium,
+                      isSecondary: true,
+                      onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
                     ),
-                    _buildAdaptiveItem(
-                      ref: ref,
-                      item: mySettingsItem,
-                      isExpanded: isExpanded,
-                      isSelected: currentIndex == mySettingsItem.index,
-                      // Settings opens as its own page (title bar, back button
-                      // and the configuration-preview action), like the desktop
-                      // app, instead of swapping the content pane.
-                      onTap: () => context.push(AppRoutes.kSettings),
-                    ),
-                  ],
-                ),
+                  ),
+                  _buildAdaptiveItem(
+                    ref: ref,
+                    item: mySettingsItem,
+                    isExpanded: isExpanded,
+                    isSelected: currentIndex == mySettingsItem.index,
+                    // Settings opens as its own page (title bar, back button
+                    // and the configuration-preview action), like the desktop
+                    // app, instead of swapping the content pane.
+                    onTap: () => context.push(AppRoutes.kSettings),
+                  ),
+                ],
               ),
             ),
-            Expanded(
-              child: DpadRegion(
-                child: Padding(
-                  padding: EdgeInsets.all(8.sp),
-                  child: effectiveKeepAlive
-                      ? Stack(
-                          children: [
-                            Visibility(
-                              visible: isCurrentCacheable,
-                              maintainState: true,
-                              child: IndexedStack(
-                                index: stackIndex != -1 ? stackIndex : 0,
-                                children: cacheableTypes.map((type) {
-                                  final isCurrent = currentMenuType == type;
-                                  return TvLazyWrapper(
-                                    isCurrent: isCurrent,
-                                    child: _buildPageContent(context, ref, type)
-                                        .animate(target: isCurrent ? 1.0 : 0.0)
-                                        .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
-                                        .scale(
-                                          begin: const Offset(0.95, 0.95),
-                                          end: const Offset(1.0, 1.0),
-                                          duration: 250.ms,
-                                          curve: Curves.easeOutCubic,
-                                        ),
-                                  );
-                                }).toList(),
-                              ),
+          ),
+          Expanded(
+            child: DpadRegion(
+              child: Padding(
+                padding: EdgeInsets.all(8.sp),
+                child: effectiveKeepAlive
+                    ? Stack(
+                        children: [
+                          Visibility(
+                            visible: isCurrentCacheable,
+                            maintainState: true,
+                            child: IndexedStack(
+                              index: stackIndex != -1 ? stackIndex : 0,
+                              children: cacheableTypes.map((type) {
+                                final isCurrent = currentMenuType == type;
+                                return TvLazyWrapper(
+                                  isCurrent: isCurrent,
+                                  child: _buildPageContent(context, ref, type)
+                                      .animate(target: isCurrent ? 1.0 : 0.0)
+                                      .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                                      .scale(
+                                        begin: const Offset(0.95, 0.95),
+                                        end: const Offset(1.0, 1.0),
+                                        duration: 250.ms,
+                                        curve: Curves.easeOutCubic,
+                                      ),
+                                );
+                              }).toList(),
                             ),
-                            if (!isCurrentCacheable)
-                              Container(
-                                key: ValueKey(currentIndex),
-                                child: _buildPageContent(context, ref, currentMenuType)
-                                    .animate()
-                                    .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
-                                    .scale(
-                                      begin: const Offset(0.95, 0.95),
-                                      end: const Offset(1.0, 1.0),
-                                      duration: 250.ms,
-                                      curve: Curves.easeOutCubic,
-                                    ),
-                              ),
-                          ],
-                        )
-                      : Container(
-                          key: ValueKey(currentIndex),
-                          child: _buildPageContent(context, ref, currentMenuType)
-                              .animate()
-                              .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
-                              .scale(
-                                begin: const Offset(0.95, 0.95),
-                                end: const Offset(1.0, 1.0),
-                                duration: 250.ms,
-                                curve: Curves.easeOutCubic,
-                              ),
-                        ),
-                ),
+                          ),
+                          if (!isCurrentCacheable)
+                            Container(
+                              key: ValueKey(currentIndex),
+                              child: _buildPageContent(context, ref, currentMenuType)
+                                  .animate()
+                                  .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                                  .scale(
+                                    begin: const Offset(0.95, 0.95),
+                                    end: const Offset(1.0, 1.0),
+                                    duration: 250.ms,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                            ),
+                        ],
+                      )
+                    : Container(
+                        key: ValueKey(currentIndex),
+                        child: _buildPageContent(context, ref, currentMenuType)
+                            .animate()
+                            .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                            .scale(
+                              begin: const Offset(0.95, 0.95),
+                              end: const Offset(1.0, 1.0),
+                              duration: 250.ms,
+                              curve: Curves.easeOutCubic,
+                            ),
+                      ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -208,7 +208,7 @@ class HomePage extends ConsumerWidget {
           title: item.title,
           icon: Icon(item.icon, size: 32.sp),
           iconPosition: TvIconPosition.left,
-          size: TvButtonSize.medium,
+          size: TvButtonSize.mini,
           isSecondary: !isSelected,
           selected: isSelected,
           useFadedFocus: true,
