@@ -54,8 +54,36 @@ void main() {
     expect(still, isEmpty, reason: 'styles that do not animate: $still');
   });
 
-  testWidgets('a preview scales styles that paint wider than their box', (WidgetTester tester) async {
-    // SpinKitThreeInOut paints ~1.5x its size; unscaled it overflowed the tile
+  testWidgets('every loading style paints in a preview smaller than 25 px', (WidgetTester tester) async {
+    // The picker previews at `44.w`, and the settings row at `30.w`, which is under 25
+    // logical pixels on a small TV. `SpinKitWaveSpinner` could not paint that small: its
+    // painter builds `RRect.fromRectAndRadius` with a radius of
+    // `(w - 10 * max(2.5, w * 0.015)) / 2`, negative below 25, which trips
+    // `assert(tlRadiusX >= 0)` in `dart:ui/geometry.dart` — 主题设置 → 加载动画 threw out
+    // of the render tree. Every style is painted at these sizes so the next style with a
+    // minimum size of its own fails here instead of on the device.
+    for (final double size in <double>[12, 18, 24]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Wrap(
+              children: <Widget>[
+                for (final Map<String, String> style in AppConsts.allStyles)
+                  TvLoadingStylePreview(style: style['key']!, color: Colors.red, size: size, theme: darkTvTheme),
+              ],
+            ),
+          ),
+        ),
+      );
+      // Pump by hand: every preview animates forever, so `pumpAndSettle` never returns.
+      for (int frame = 0; frame < 4; frame++) {
+        await tester.pump(const Duration(milliseconds: 120));
+      }
+      expect(tester.takeException(), isNull, reason: 'a loading style threw at $size px');
+    }
+  });
+
+  testWidgets('a preview scales styles that paint wider than their box', (WidgetTester tester) async {    // SpinKitThreeInOut paints ~1.5x its size; unscaled it overflowed the tile
     // and painted over its neighbours.
     await tester.pumpWidget(
       MaterialApp(

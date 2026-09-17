@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 enum AppStatusType { loading, empty, error, notLogin }
 
@@ -114,6 +114,18 @@ class _TvDefaultLoadingRingState extends State<TvDefaultLoadingRing> with Single
   }
 }
 
+/// The smallest square `SpinKitWaveSpinner` can paint in.
+///
+/// Its painter derives the arc radius as
+/// `(w - multiplier * max(2.5, w * 0.015)) / 2` and hands that to
+/// `RRect.fromRectAndRadius`, which asserts `radius >= 0`: below 25 logical pixels the
+/// value is negative and painting throws out of `dart:ui/geometry.dart`
+/// (`assert(tlRadiusX >= 0)`). The loading-style picker previews at `44.w`/`30.w`,
+/// which is under that on a small TV, so opening 主题设置 → 加载动画 crashed the page.
+/// The preview scales whatever it is given with a `FittedBox`, so clamping the square
+/// here keeps the animation visible inside its tile at any size.
+const double _minWaveSpinnerSize = 30;
+
 Widget? _getSpinKit(String style, Color color, double size) {
   return switch (style) {
     'rotatingPlain' => SpinKitRotatingPlain(color: color, size: size),
@@ -144,7 +156,7 @@ Widget? _getSpinKit(String style, Color color, double size) {
     'pianoWave' => SpinKitPianoWave(color: color, size: size),
     'dancingSquare' => SpinKitDancingSquare(color: color, size: size),
     'threeInOut' => SpinKitThreeInOut(color: color, size: size),
-    'waveSpinner' => SpinKitWaveSpinner(color: color, size: size),
+    'waveSpinner' => SpinKitWaveSpinner(color: color, size: size < _minWaveSpinnerSize ? _minWaveSpinnerSize : size),
     'pulsingGrid' => SpinKitPulsingGrid(color: color, size: size),
     _ => null,
   };
@@ -167,11 +179,7 @@ Widget? _getLoadingAnimation(String style, Color color, double size, TvThemeData
     'discreteCircular' => LoadingAnimationWidget.discreteCircle(color: color, size: size),
     'threeArchedCircle' => LoadingAnimationWidget.threeArchedCircle(color: color, size: size),
     'bouncingBall' => LoadingAnimationWidget.bouncingBall(color: color, size: size),
-    'flickr' => LoadingAnimationWidget.flickr(
-      leftDotColor: color,
-      rightDotColor: theme.secondaryTextColor,
-      size: size,
-    ),
+    'flickr' => LoadingAnimationWidget.flickr(leftDotColor: color, rightDotColor: theme.secondaryTextColor, size: size),
     'hexagonDots' => LoadingAnimationWidget.hexagonDots(color: color, size: size),
     'beat' => LoadingAnimationWidget.beat(color: color, size: size),
     'twoRotatingArc' => LoadingAnimationWidget.twoRotatingArc(color: color, size: size),
@@ -243,7 +251,8 @@ Widget tvInlineLoading(BuildContext context, {required double size, Color? color
   final setting = SettingsService.to;
   final Color parsedColor = color ?? setting.themeState.loadingStyleColor ?? tvTheme.focusColor;
   final String style = setting.themeState.loadingStyle;
-  final Widget animation = (style != 'default'
+  final Widget animation =
+      (style != 'default'
           ? tvLoadingStyleWidget(style: style, color: parsedColor, size: size, theme: tvTheme)
           : null) ??
       TvDefaultLoadingRing(color: parsedColor, size: size);
@@ -301,22 +310,23 @@ class _AppStatusViewState extends State<AppStatusView> {
     final tvTheme = context.tvTheme;
     final setting = SettingsService.to;
     final Color parsedColor = setting.themeState.loadingStyleColor ?? widget.iconColor ?? tvTheme.focusColor;
-    final double size = widget.isMini ? 24.sp : 48.sp;
+    final double size = widget.isMini ? 32.sp : 48.sp;
     return tvInlineLoading(context, size: size, color: parsedColor);
   }
-
 
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
 
     if (widget.type == AppStatusType.loading) {
-      return Center(child: _buildLoadingWidget(context));
+      return ExcludeFocus(child: Center(child: _buildLoadingWidget(context)));
     }
 
-    final String finalTitle = widget.title ?? (widget.type == AppStatusType.error ? i18n('network_error_title') : i18n('status_empty_title'));
+    final String finalTitle =
+        widget.title ?? (widget.type == AppStatusType.error ? i18n('network_error_title') : i18n('status_empty_title'));
     final String finalSubtitle =
-        widget.subtitle ?? (widget.type == AppStatusType.error ? i18n('network_error_subtitle') : i18n('status_empty_subtitle'));
+        widget.subtitle ??
+        (widget.type == AppStatusType.error ? i18n('network_error_subtitle') : i18n('status_empty_subtitle'));
     final String finalButtonText = widget.buttonText ?? i18n('status_retry_button');
     final Widget finalIcon =
         widget.buttonTextIcon ??
