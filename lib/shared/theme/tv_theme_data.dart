@@ -71,7 +71,7 @@ class TvThemeData {
   ///
   /// The text must contrast with the **blended** colour, not the accent itself:
   /// for a mid-blue accent the blend is a darker blue where white would sink in.
-  Color get onFadedFocusColor => readableOn(Color.lerp(backgroundColor, focusColor, 0.5)!);
+  Color get onFadedFocusColor => backgroundColor;
 
   /// The two candidate inks content is drawn in: near-black and white.
   static const Color _ink = Color(0xFF101014);

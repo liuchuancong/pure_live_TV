@@ -1,5 +1,4 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
@@ -7,6 +6,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:material_ui/material_ui.dart' as material;
 import 'package:pure_live/shared/widgets/tv_scaffold.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
@@ -15,24 +15,8 @@ import 'package:pure_live/services/theme_settings/theme_settings_controller.dart
 
 class App extends ConsumerWidget {
   const App({super.key});
-
-  /// Bounds for 全局文字缩放, matching what the font page offers.
   static const double _minTextScale = 0.7;
   static const double _maxTextScale = 2.0;
-
-  /// TV page transition: a plain cross-fade with no opaque fill.
-  ///
-  /// The Material defaults (ZoomPageTransitionsBuilder and friends) paint a
-  /// `ColoredBox(colorScheme.surface)` behind the transitioning pages, which
-  /// covers the single app background below the Navigator — that was the
-  /// "black first, then the picture" flash on every push/pop. Pages here are
-  /// transparent by design, so fading the page itself over the always-visible
-  /// background needs no base colour at all.
-  static final PageTransitionsTheme _kPageTransitions = PageTransitionsTheme(
-    builders: <TargetPlatform, PageTransitionsBuilder>{
-      for (final TargetPlatform platform in TargetPlatform.values) platform: const _FadePageTransitionsBuilder(),
-    },
-  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -113,15 +97,18 @@ class App extends ConsumerWidget {
                 // flutter_smart_dialog needs to hook the navigator's overlay to
                 // show toasts; without this wrapper its context is never
                 // initialized and the first showToast throws.
-                return FlutterSmartDialog.init()(context, MediaQuery(
-                  data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
-                  // Everything the widgets do not colour themselves follows the TV
-                  // palette, in both 主题模式 settings (see [TvPaletteDefaults]).
-                  child: TvPaletteDefaults(
-                    theme: resolvedTvTheme,
-                    child: Stack(fit: StackFit.expand, children: <Widget>[const TvAppBackground(), withDpad]),
+                return FlutterSmartDialog.init()(
+                  context,
+                  MediaQuery(
+                    data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+                    // Everything the widgets do not colour themselves follows the TV
+                    // palette, in both 主题模式 settings (see [TvPaletteDefaults]).
+                    child: TvPaletteDefaults(
+                      theme: resolvedTvTheme,
+                      child: Stack(fit: StackFit.expand, children: <Widget>[const TvAppBackground(), withDpad]),
+                    ),
                   ),
-                ));
+                );
               },
               // EasyLocalization supplies the locale and the delegate list; the app's own
               // language setting is pushed into the render layer by LocalizationsLocaleSync.
@@ -145,7 +132,6 @@ class App extends ConsumerWidget {
                 brightness: Brightness.light,
                 fontFamily: fontFamily,
                 baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
-                pageTransitions: _kPageTransitions,
                 colorScheme: _schemeFor(
                   resolvedTvTheme,
                   themeSettings.enableDynamicTheme ? lightDynamic : null,
@@ -157,7 +143,6 @@ class App extends ConsumerWidget {
                 brightness: Brightness.dark,
                 fontFamily: fontFamily,
                 baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
-                pageTransitions: _kPageTransitions,
                 colorScheme: _schemeFor(
                   resolvedTvTheme,
                   themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
@@ -180,41 +165,6 @@ String? _fontFamilyOf(FontSettingsModel? font) {
   return name;
 }
 
-/// The fade-only transition used for every platform; see [App._kPageTransitions].
-class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
-  const _FadePageTransitionsBuilder();
-
-  @override
-  Widget buildTransitions<T>(
-    PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) {
-    // Fade-through, not cross-fade. Every page is transparent over the shared
-    // wallpaper, so blending an incoming page with the outgoing one — however
-    // the alphas are balanced — puts both pages' content on screen at once,
-    // which reads as a ghost of the previous page. Sequencing instead: the
-    // outgoing page is gone within the first third, the incoming page fills
-    // the last two thirds, and the brief wallpaper-only moment in between is
-    // the constant backdrop, not a missing page.
-    final Animatable<double> fadeIn = CurveTween(
-      curve: const Interval(0.35, 1.0, curve: Curves.easeOutCubic),
-    );
-    final Animatable<double> fadeOut = CurveTween(
-      curve: const Interval(0.0, 0.35, curve: Curves.easeIn),
-    ).chain(Tween<double>(begin: 1.0, end: 0.0));
-    return FadeTransition(
-      opacity: animation.drive(fadeIn),
-      child: FadeTransition(opacity: secondaryAnimation.drive(fadeOut), child: child),
-    );
-  }
-}
-
-/// 精细化字号微调: the five levels the font page edits, applied to the Material
-/// text theme. The app's own text goes through `AppTextStyles` and follows the
-/// global text scale instead.
 TextTheme _textThemeFor(FontSettingsModel? font, TextTheme base) {
   if (font == null) return base;
   return base.copyWith(
@@ -226,11 +176,6 @@ TextTheme _textThemeFor(FontSettingsModel? font, TextTheme base) {
   );
 }
 
-/// Material color scheme for the active TV palette.
-///
-/// A system palette replaces the seeded accent roles but keeps the TV
-/// background, so an enabled dynamic theme changes the accents without
-/// flattening the curated TV appearance.
 ColorScheme _schemeFor(TvThemeData tvTheme, material.ColorScheme? systemScheme, Brightness brightness) {
   final bool dark = brightness == Brightness.dark;
   if (systemScheme == null) {

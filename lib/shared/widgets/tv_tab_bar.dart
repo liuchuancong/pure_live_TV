@@ -29,7 +29,11 @@ class TvTabItemData {
   /// empty gap (and the asset error is logged) instead of an icon.
   factory TvTabItemData.site(Site site) {
     if (site.id == Sites.allSite) {
-      return TvTabItemData(id: site.id, title: site.name, icon: Icon(Icons.apps_rounded, size: 24.sp));
+      return TvTabItemData(
+        id: site.id,
+        title: site.name,
+        icon: Icon(Icons.apps_rounded, size: 24.sp),
+      );
     }
     return TvTabItemData(
       id: site.id,
@@ -88,7 +92,8 @@ class _TvTabBarState extends State<TvTabBar> {
       if (!mounted) return;
       if (widget.currentIndex < 0 || widget.currentIndex >= widget.tabs.length) return;
 
-      final BuildContext? tabContext = _tabKeys[_keyId(widget.currentIndex, widget.tabs[widget.currentIndex])]?.currentContext;
+      final BuildContext? tabContext =
+          _tabKeys[_keyId(widget.currentIndex, widget.tabs[widget.currentIndex])]?.currentContext;
       if (tabContext == null) return;
 
       Scrollable.ensureVisible(
@@ -105,8 +110,7 @@ class _TvTabBarState extends State<TvTabBar> {
   /// category names are possible), so the position is part of the identity.
   String _keyId(int index, TvTabItemData tab) => '$index:${tab.tabId}';
 
-  GlobalKey _keyFor(int index, TvTabItemData tab) =>
-      _tabKeys.putIfAbsent(_keyId(index, tab), () => GlobalKey());
+  GlobalKey _keyFor(int index, TvTabItemData tab) => _tabKeys.putIfAbsent(_keyId(index, tab), () => GlobalKey());
 
   @override
   Widget build(BuildContext context) {
@@ -116,20 +120,20 @@ class _TvTabBarState extends State<TvTabBar> {
 
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
-        child: Container(
-          width: double.infinity,
-          height: 50.sp,
-          alignment: Alignment.center,
-          color: Colors.transparent,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            // Content padding instead of container padding: it scrolls with
-            // the items, so at min/max scroll extent the first/last tab keeps
-            // a margin inside the viewport and the focus scale (1.05) is not
-            // clipped by the viewport edge.
-            padding: EdgeInsets.symmetric(horizontal: 16.sp),
+      child: Container(
+        width: double.infinity,
+        height: 50.sp,
+        alignment: Alignment.center,
+        color: Colors.transparent,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          shrinkWrap: true,
+          physics: const ClampingScrollPhysics(),
+          // Content padding instead of container padding: it scrolls with
+          // the items, so at min/max scroll extent the first/last tab keeps
+          // a margin inside the viewport and the focus scale (1.05) is not
+          // clipped by the viewport edge.
+          padding: EdgeInsets.symmetric(horizontal: 16.sp),
           itemCount: widget.tabs.length,
           itemBuilder: (context, index) {
             final tab = widget.tabs[index];
@@ -153,11 +157,11 @@ class _TvTabBarState extends State<TvTabBar> {
                         ? currentTvTheme.focusColor.withValues(alpha: 0.5)
                         : Colors.transparent;
 
-                      final foregroundColor = isSelected
-                          ? currentTvTheme.onFocusColor
-                          : isFocused
-                          ? currentTvTheme.onFadedFocusColor
-                          : currentTvTheme.primaryTextColor;
+                    final foregroundColor = isSelected
+                        ? currentTvTheme.onFadedFocusColor
+                        : isFocused
+                        ? currentTvTheme.onFadedFocusColor
+                        : currentTvTheme.primaryTextColor;
 
                     final baseStyle = isSelected || isFocused ? AppTextStyles.t20W600 : AppTextStyles.t20;
 
