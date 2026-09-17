@@ -17,6 +17,7 @@ class RefreshConfigController extends _$RefreshConfigController {
       // 推荐); the TV app defaulted to 2, so the same profile behaved
       // differently on the two clients.
       maxConcurrentRefresh: HivePrefUtil.getInt('maxConcurrentRefresh') ?? 4,
+      homeKeepAlive: HivePrefUtil.getBool('homeKeepAlive') ?? true,
     );
   }
 
@@ -29,6 +30,7 @@ class RefreshConfigController extends _$RefreshConfigController {
     HivePrefUtil.setBool('autoRefreshFavorite', state.autoRefreshFavorite);
     HivePrefUtil.setInt('autoRefreshInterval', state.autoRefreshInterval);
     HivePrefUtil.setInt('maxConcurrentRefresh', state.maxConcurrentRefresh);
+    HivePrefUtil.setBool('homeKeepAlive', state.homeKeepAlive);
   }
 
   Map<String, dynamic> toJson() => state.toJson();

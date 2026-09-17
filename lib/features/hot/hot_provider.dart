@@ -15,12 +15,16 @@ class HotTabsState {
 class HotTabs extends _$HotTabs {
   @override
   HotTabsState build() {
+    // Watch the whole favorites state: hotAreasList (平台显示 visibility and
+    // order) is part of it, and watching only preferPlatform left stale tabs
+    // after a platform-config change.
+    final favState = ref.watch(favoriteRoomControllerProvider);
     final availableSites = Sites().availableSites();
     if (availableSites.isEmpty) {
       return const HotTabsState(sites: [], currentIndex: 0);
     }
 
-    final preferPlatform = ref.watch(favoriteRoomControllerProvider).preferPlatform;
+    final preferPlatform = favState.preferPlatform;
     final pIndex = availableSites.indexWhere((e) => e.id == preferPlatform);
     final initialIndex = pIndex == -1 ? 0 : pIndex;
 

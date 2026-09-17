@@ -12,6 +12,7 @@ _RefreshConfigModel _$RefreshConfigModelFromJson(Map<String, dynamic> json) =>
       autoRefreshInterval: (json['autoRefreshInterval'] as num?)?.toInt() ?? 30,
       maxConcurrentRefresh:
           (json['maxConcurrentRefresh'] as num?)?.toInt() ?? 2,
+      homeKeepAlive: json['homeKeepAlive'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$RefreshConfigModelToJson(_RefreshConfigModel instance) =>
@@ -19,4 +20,5 @@ Map<String, dynamic> _$RefreshConfigModelToJson(_RefreshConfigModel instance) =>
       'autoRefreshFavorite': instance.autoRefreshFavorite,
       'autoRefreshInterval': instance.autoRefreshInterval,
       'maxConcurrentRefresh': instance.maxConcurrentRefresh,
+      'homeKeepAlive': instance.homeKeepAlive,
     };

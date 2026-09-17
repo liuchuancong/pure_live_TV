@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RefreshConfigModel {
 
- bool get autoRefreshFavorite; int get autoRefreshInterval; int get maxConcurrentRefresh;
+ bool get autoRefreshFavorite; int get autoRefreshInterval; int get maxConcurrentRefresh;/// Whether the home shell keeps its tab pages alive in an IndexedStack.
+/// Off = every switch rebuilds the page, which also clears any cached
+/// tab/platform state after config changes.
+ bool get homeKeepAlive;
 /// Create a copy of RefreshConfigModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $RefreshConfigModelCopyWith<RefreshConfigModel> get copyWith => _$RefreshConfigM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefreshConfigModel&&(identical(other.autoRefreshFavorite, autoRefreshFavorite) || other.autoRefreshFavorite == autoRefreshFavorite)&&(identical(other.autoRefreshInterval, autoRefreshInterval) || other.autoRefreshInterval == autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, maxConcurrentRefresh) || other.maxConcurrentRefresh == maxConcurrentRefresh));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefreshConfigModel&&(identical(other.autoRefreshFavorite, autoRefreshFavorite) || other.autoRefreshFavorite == autoRefreshFavorite)&&(identical(other.autoRefreshInterval, autoRefreshInterval) || other.autoRefreshInterval == autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, maxConcurrentRefresh) || other.maxConcurrentRefresh == maxConcurrentRefresh)&&(identical(other.homeKeepAlive, homeKeepAlive) || other.homeKeepAlive == homeKeepAlive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,autoRefreshFavorite,autoRefreshInterval,maxConcurrentRefresh);
+int get hashCode => Object.hash(runtimeType,autoRefreshFavorite,autoRefreshInterval,maxConcurrentRefresh,homeKeepAlive);
 
 @override
 String toString() {
-  return 'RefreshConfigModel(autoRefreshFavorite: $autoRefreshFavorite, autoRefreshInterval: $autoRefreshInterval, maxConcurrentRefresh: $maxConcurrentRefresh)';
+  return 'RefreshConfigModel(autoRefreshFavorite: $autoRefreshFavorite, autoRefreshInterval: $autoRefreshInterval, maxConcurrentRefresh: $maxConcurrentRefresh, homeKeepAlive: $homeKeepAlive)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $RefreshConfigModelCopyWith<$Res>  {
   factory $RefreshConfigModelCopyWith(RefreshConfigModel value, $Res Function(RefreshConfigModel) _then) = _$RefreshConfigModelCopyWithImpl;
 @useResult
 $Res call({
- bool autoRefreshFavorite, int autoRefreshInterval, int maxConcurrentRefresh
+ bool autoRefreshFavorite, int autoRefreshInterval, int maxConcurrentRefresh, bool homeKeepAlive
 });
 
 
@@ -65,12 +68,13 @@ class _$RefreshConfigModelCopyWithImpl<$Res>
 
 /// Create a copy of RefreshConfigModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? autoRefreshFavorite = null,Object? autoRefreshInterval = null,Object? maxConcurrentRefresh = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? autoRefreshFavorite = null,Object? autoRefreshInterval = null,Object? maxConcurrentRefresh = null,Object? homeKeepAlive = null,}) {
   return _then(_self.copyWith(
 autoRefreshFavorite: null == autoRefreshFavorite ? _self.autoRefreshFavorite : autoRefreshFavorite // ignore: cast_nullable_to_non_nullable
 as bool,autoRefreshInterval: null == autoRefreshInterval ? _self.autoRefreshInterval : autoRefreshInterval // ignore: cast_nullable_to_non_nullable
 as int,maxConcurrentRefresh: null == maxConcurrentRefresh ? _self.maxConcurrentRefresh : maxConcurrentRefresh // ignore: cast_nullable_to_non_nullable
-as int,
+as int,homeKeepAlive: null == homeKeepAlive ? _self.homeKeepAlive : homeKeepAlive // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -155,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool autoRefreshFavorite,  int autoRefreshInterval,  int maxConcurrentRefresh)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool autoRefreshFavorite,  int autoRefreshInterval,  int maxConcurrentRefresh,  bool homeKeepAlive)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RefreshConfigModel() when $default != null:
-return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxConcurrentRefresh);case _:
+return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxConcurrentRefresh,_that.homeKeepAlive);case _:
   return orElse();
 
 }
@@ -176,10 +180,10 @@ return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxCon
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool autoRefreshFavorite,  int autoRefreshInterval,  int maxConcurrentRefresh)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool autoRefreshFavorite,  int autoRefreshInterval,  int maxConcurrentRefresh,  bool homeKeepAlive)  $default,) {final _that = this;
 switch (_that) {
 case _RefreshConfigModel():
-return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxConcurrentRefresh);case _:
+return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxConcurrentRefresh,_that.homeKeepAlive);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +200,10 @@ return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxCon
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool autoRefreshFavorite,  int autoRefreshInterval,  int maxConcurrentRefresh)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool autoRefreshFavorite,  int autoRefreshInterval,  int maxConcurrentRefresh,  bool homeKeepAlive)?  $default,) {final _that = this;
 switch (_that) {
 case _RefreshConfigModel() when $default != null:
-return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxConcurrentRefresh);case _:
+return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxConcurrentRefresh,_that.homeKeepAlive);case _:
   return null;
 
 }
@@ -211,12 +215,16 @@ return $default(_that.autoRefreshFavorite,_that.autoRefreshInterval,_that.maxCon
 @JsonSerializable()
 
 class _RefreshConfigModel implements RefreshConfigModel {
-  const _RefreshConfigModel({this.autoRefreshFavorite = false, this.autoRefreshInterval = 30, this.maxConcurrentRefresh = 2});
+  const _RefreshConfigModel({this.autoRefreshFavorite = false, this.autoRefreshInterval = 30, this.maxConcurrentRefresh = 2, this.homeKeepAlive = true});
   factory _RefreshConfigModel.fromJson(Map<String, dynamic> json) => _$RefreshConfigModelFromJson(json);
 
 @override@JsonKey() final  bool autoRefreshFavorite;
 @override@JsonKey() final  int autoRefreshInterval;
 @override@JsonKey() final  int maxConcurrentRefresh;
+/// Whether the home shell keeps its tab pages alive in an IndexedStack.
+/// Off = every switch rebuilds the page, which also clears any cached
+/// tab/platform state after config changes.
+@override@JsonKey() final  bool homeKeepAlive;
 
 /// Create a copy of RefreshConfigModel
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +239,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefreshConfigModel&&(identical(other.autoRefreshFavorite, autoRefreshFavorite) || other.autoRefreshFavorite == autoRefreshFavorite)&&(identical(other.autoRefreshInterval, autoRefreshInterval) || other.autoRefreshInterval == autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, maxConcurrentRefresh) || other.maxConcurrentRefresh == maxConcurrentRefresh));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefreshConfigModel&&(identical(other.autoRefreshFavorite, autoRefreshFavorite) || other.autoRefreshFavorite == autoRefreshFavorite)&&(identical(other.autoRefreshInterval, autoRefreshInterval) || other.autoRefreshInterval == autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, maxConcurrentRefresh) || other.maxConcurrentRefresh == maxConcurrentRefresh)&&(identical(other.homeKeepAlive, homeKeepAlive) || other.homeKeepAlive == homeKeepAlive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,autoRefreshFavorite,autoRefreshInterval,maxConcurrentRefresh);
+int get hashCode => Object.hash(runtimeType,autoRefreshFavorite,autoRefreshInterval,maxConcurrentRefresh,homeKeepAlive);
 
 @override
 String toString() {
-  return 'RefreshConfigModel(autoRefreshFavorite: $autoRefreshFavorite, autoRefreshInterval: $autoRefreshInterval, maxConcurrentRefresh: $maxConcurrentRefresh)';
+  return 'RefreshConfigModel(autoRefreshFavorite: $autoRefreshFavorite, autoRefreshInterval: $autoRefreshInterval, maxConcurrentRefresh: $maxConcurrentRefresh, homeKeepAlive: $homeKeepAlive)';
 }
 
 
@@ -251,7 +259,7 @@ abstract mixin class _$RefreshConfigModelCopyWith<$Res> implements $RefreshConfi
   factory _$RefreshConfigModelCopyWith(_RefreshConfigModel value, $Res Function(_RefreshConfigModel) _then) = __$RefreshConfigModelCopyWithImpl;
 @override @useResult
 $Res call({
- bool autoRefreshFavorite, int autoRefreshInterval, int maxConcurrentRefresh
+ bool autoRefreshFavorite, int autoRefreshInterval, int maxConcurrentRefresh, bool homeKeepAlive
 });
 
 
@@ -268,12 +276,13 @@ class __$RefreshConfigModelCopyWithImpl<$Res>
 
 /// Create a copy of RefreshConfigModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? autoRefreshFavorite = null,Object? autoRefreshInterval = null,Object? maxConcurrentRefresh = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? autoRefreshFavorite = null,Object? autoRefreshInterval = null,Object? maxConcurrentRefresh = null,Object? homeKeepAlive = null,}) {
   return _then(_RefreshConfigModel(
 autoRefreshFavorite: null == autoRefreshFavorite ? _self.autoRefreshFavorite : autoRefreshFavorite // ignore: cast_nullable_to_non_nullable
 as bool,autoRefreshInterval: null == autoRefreshInterval ? _self.autoRefreshInterval : autoRefreshInterval // ignore: cast_nullable_to_non_nullable
 as int,maxConcurrentRefresh: null == maxConcurrentRefresh ? _self.maxConcurrentRefresh : maxConcurrentRefresh // ignore: cast_nullable_to_non_nullable
-as int,
+as int,homeKeepAlive: null == homeKeepAlive ? _self.homeKeepAlive : homeKeepAlive // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

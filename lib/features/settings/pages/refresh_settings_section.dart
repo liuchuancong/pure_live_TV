@@ -1,5 +1,6 @@
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
@@ -33,6 +34,19 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        TvSettingsGroupTitle(title: i18n('home_cache_group')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSwitchTile(
+              title: i18n('home_keep_alive'),
+              subtitle: i18n('home_keep_alive_desc'),
+              icon: Icons.cached_rounded,
+              value: refreshState.homeKeepAlive,
+              onChanged: (v) => refresh.updateSettings(refreshState.copyWith(homeKeepAlive: v)),
+            ),
+          ],
+        ),
+        SizedBox(height: 20.sp),
         TvSettingsGroupTitle(title: i18n('auto_refresh_settings')),
         TvSettingsCard(
           children: [

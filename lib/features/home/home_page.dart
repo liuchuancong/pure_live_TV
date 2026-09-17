@@ -13,6 +13,7 @@ import 'package:pure_live/features/favorite/favorite_page.dart';
 import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
+import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 class HomePage extends ConsumerWidget {
   final bool keepAlive;
@@ -27,6 +28,24 @@ class HomePage extends ConsumerWidget {
     final mySettingsItem = ref.watch(mySettingsMenuItemProvider);
     final isExpanded = ref.watch(isMenuExpandedProvider);
     final currentTvTheme = context.tvTheme;
+    // 设置刷新 → 主页缓存: on top of the widget default, the user can turn the
+    // page cache off so every switch rebuilds the content fresh (and clears
+    // cached tab state after nav/platform config changes).
+    final bool effectiveKeepAlive = keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
+
+    // A menu entry hidden in 导航显示 while its page is on screen leaves the
+    // sidebar with no selection and the old page lingering. Auto-correct once
+    // per menu-list change.
+    final visibleIndexes = menuList.map((item) => item.index).toSet();
+    final currentIndexVisible =
+        currentIndex == TvMenuType.profile.value ||
+        currentIndex == TvMenuType.settings.value ||
+        visibleIndexes.contains(currentIndex);
+    if (!currentIndexVisible && visibleIndexes.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(sideMenuIndexProvider.notifier).changeIndex(visibleIndexes.first);
+      });
+    }
 
     final sidebarWidth = isExpanded ? 250.sp : 110.sp;
 
@@ -114,7 +133,7 @@ class HomePage extends ConsumerWidget {
               child: DpadRegion(
                 child: Padding(
                   padding: EdgeInsets.all(8.sp),
-                  child: keepAlive
+                  child: effectiveKeepAlive
                       ? Stack(
                           children: [
                             Visibility(

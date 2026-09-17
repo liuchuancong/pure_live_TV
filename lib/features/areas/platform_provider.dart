@@ -14,9 +14,12 @@ class PlatformTabState {
 class PlatformTab extends _$PlatformTab {
   @override
   PlatformTabState build() {
+    // Whole favorites state: hotAreasList (平台显示 config) feeds
+    // availableSites, and watching only preferPlatform left stale tabs.
+    final favState = ref.watch(favoriteRoomControllerProvider);
     final sites = Sites().availableSites();
     if (sites.isEmpty) return const PlatformTabState(siteList: [], currentPlatformIndex: 0);
-    final preferId = ref.watch(favoriteRoomControllerProvider).preferPlatform;
+    final preferId = favState.preferPlatform;
     final targetIndex = sites.indexWhere((s) => s.id == preferId);
     return PlatformTabState(siteList: sites, currentPlatformIndex: targetIndex == -1 ? 0 : targetIndex);
   }
