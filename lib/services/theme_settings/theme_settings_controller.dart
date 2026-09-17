@@ -1,6 +1,7 @@
 import 'theme_settings_model.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -15,7 +16,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   static const double defaultSpacing = 6;
   static const double minSpacing = 0;
   static const double maxSpacing = 64;
-
+  static bool _hasSwitchedOnce = false;
   static final Set<String> _loadingStyleKeys = AppConsts.allStyles
       .map((item) => item['key'] ?? '')
       .where((key) => key.isNotEmpty)
@@ -83,6 +84,30 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
   void changeThemeColor(Color color) {
     updateSettings(state.copyWith(themeColor: color));
+  }
+
+  Future<void> changeLanguageWithRetry(BuildContext context, {required String languageName}) async {
+    changeLanguage(languageName);
+
+    final targetLocale = AppConsts.languages[languageName];
+    if (targetLocale == null) return;
+    if (!_hasSwitchedOnce) {
+      final pivotLanguage = AppConsts.languages.keys.firstWhere(
+        (key) => key != languageName,
+        orElse: () => languageName,
+      );
+      final pivotLocale = AppConsts.languages[pivotLanguage]!;
+      await context.setLocale(Locale(targetLocale.languageCode));
+      // ignore: use_build_context_synchronously
+      await context.setLocale(Locale(pivotLocale.languageCode));
+      // ignore: use_build_context_synchronously
+      await context.setLocale(Locale(targetLocale.languageCode));
+
+      _hasSwitchedOnce = true;
+    } else {
+      // 之后正常一次
+      await context.setLocale(Locale(targetLocale.languageCode));
+    }
   }
 
   void changeLanguage(String lang) {

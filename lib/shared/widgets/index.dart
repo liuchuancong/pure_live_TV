@@ -11,6 +11,7 @@ export 'tv_focus_restorer.dart';
 export 'tv_icon_button.dart';
 export 'tv_input_field.dart';
 export 'tv_lazy_wrapper.dart';
+export 'tv_locale_rebuilder.dart';
 export 'tv_marquee.dart';
 export 'tv_page.dart';
 export 'tv_page_scaffold.dart';

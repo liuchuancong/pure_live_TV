@@ -1,5 +1,5 @@
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/app.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/app/bootstrap/initialized.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -17,7 +17,7 @@ void main() async {
       // is ready, so the saved language is applied up front to avoid a switch.
       startLocale: Locale(SettingsService.to.theme.locale.languageCode),
       useOnlyLangCode: true,
-      child: UncontrolledProviderScope(container: initializer.container, child: const App()),
+      child: UncontrolledProviderScope(container: initializer.container, child: App()),
     ),
   );
 }

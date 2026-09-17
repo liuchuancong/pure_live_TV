@@ -21,7 +21,8 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     final Color loadingColor = themeState.loadingStyleColor ?? tvTheme.focusColor;
     // The mobile row shows which family is active, so the row is not just a
     // blind entry point into the font manager.
-    final String currentFontName = ref.watch(fontSettingsControllerProvider).value?.fontFamilyName ?? i18n('font_default');
+    final String currentFontName =
+        ref.watch(fontSettingsControllerProvider).value?.fontFamilyName ?? i18n('font_default');
 
     return SingleChildScrollView(
       child: Column(
@@ -69,8 +70,11 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                   size: 30.w,
                   theme: tvTheme,
                 ),
-                trailingBuilder: (context, focused) =>
-                    tvSettingsValueLabel(context, focused, _currentLoadingStyleName(loadingStyles, themeState.loadingStyle)),
+                trailingBuilder: (context, focused) => tvSettingsValueLabel(
+                  context,
+                  focused,
+                  _currentLoadingStyleName(loadingStyles, themeState.loadingStyle),
+                ),
                 onSelect: () => context.push(AppRoutes.kSettingsLoadingStyle),
               ),
               SizedBox(height: 8.sp),
@@ -130,11 +134,9 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 icon: Remix.global_line,
                 options: AppConsts.languages.keys.toList(growable: false),
                 index: _languageIndex(themeState.languageName),
-                onChanged: (i) {
+                onChanged: (i) async {
                   final languageName = AppConsts.languages.keys.elementAt(i);
-                  theme.changeLanguage(languageName);
-                  final locale = AppConsts.languages[languageName];
-                  if (locale != null) context.setLocale(Locale(locale.languageCode));
+                  await theme.changeLanguageWithRetry(context, languageName: languageName);
                 },
               ),
             ],
