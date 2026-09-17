@@ -248,17 +248,7 @@ class TvSettingsRoutePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TvScaffold(
-      appBar: TvAppBar(
-        title: i18n('settings_title'),
-        actions: [
-          TvButton(
-            title: i18n('config_preview'),
-            size: TvButtonSize.mini,
-            icon: Icon(Remix.file_text_line, size: 22.sp),
-            onTap: () => context.push(AppRoutes.kSettingsConfigPreview),
-          ),
-        ],
-      ),
+      appBar: TvAppBar(title: i18n('settings_title')),
       child: const SettingsCatalogView(),
     );
   }
