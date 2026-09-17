@@ -30,7 +30,7 @@ class WallpaperApiPage extends StatelessWidget {
     return TvScaffold(
       title: i18n('wallpaper_api_group'),
       child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
         itemCount: kWallpaperApiGroups.length,
         itemBuilder: (context, index) {
           final group = kWallpaperApiGroups[index];

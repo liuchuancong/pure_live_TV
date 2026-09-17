@@ -52,7 +52,12 @@ class TvDialog extends StatelessWidget {
           color: tvTheme.cardColor,
           borderRadius: borderRadius,
           boxShadow: [
-            BoxShadow(color: tvTheme.focusColor.withValues(alpha: .75), blurRadius: 12.sp, spreadRadius: 1.sp),
+            // Crisp ring on light palettes; the blurred halo smears on white.
+            BoxShadow(
+              color: tvTheme.focusColor.withValues(alpha: .75),
+              blurRadius: tvTheme.isLight ? 0 : 12.sp,
+              spreadRadius: 1.sp,
+            ),
           ],
           border: Border.all(color: tvTheme.focusColor, width: 1.sp),
         ),

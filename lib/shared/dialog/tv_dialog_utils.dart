@@ -51,14 +51,19 @@ class TvDialogUtils {
     return result;
   }
 
-  /// Re-asserts [node] for a few frames; gives up silently when the node was
-  /// rebuilt away or the user has already moved focus somewhere deliberately.
-  static void _restoreInvokingFocus(FocusNode? node) {
+  /// Re-asserts [node] until it settles, for up to [deadline]; gives up
+  /// silently when the node was rebuilt away or focus moved on deliberately.
+  ///
+  /// The window must outlast the dialog's 300ms *exit* transition: the dialog's
+  /// focus tree (and its focus guard) only disposes when that animation ends,
+  /// and that disposal is the moment the d-pad fallback parks on the app bar's
+  /// back button. A frame-counted retry ran out inside the transition and the
+  /// fallback still won on pages like 背景 → 比例.
+  static void _restoreInvokingFocus(FocusNode? node, {Duration deadline = const Duration(milliseconds: 900)}) {
     if (node == null) return;
-    var attempts = 0;
+    final DateTime stopAt = DateTime.now().add(deadline);
     void attempt() {
-      if (attempts >= 6) return;
-      attempts++;
+      if (DateTime.now().isAfter(stopAt)) return;
       if (identical(FocusManager.instance.primaryFocus, node)) return; // settled
       final bool usable = node.parent != null && node.context?.mounted == true && node.canRequestFocus;
       if (!usable) return;

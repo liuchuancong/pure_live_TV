@@ -8,5 +8,7 @@ export 'themes/dark_theme.dart';
 export 'themes/extra_themes.dart';
 export 'tv_theme_controller.dart';
 export 'tv_theme_data.dart';
+export 'tv_theme_builder.dart';
 export 'tv_theme_extension.dart';
+export 'tv_palette_defaults.dart';
 export 'tv_theme_x.dart';

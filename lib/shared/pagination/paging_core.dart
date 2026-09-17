@@ -2,16 +2,16 @@ import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/utils/log.dart';
-import 'package:pure_live/shared/pagination/type_def/fun.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/shared/pagination/type_def/fun.dart';
+import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 import 'package:pure_live/shared/pagination/models/paging_model.dart';
 import 'package:pure_live/shared/pagination/models/paging_param.dart';
 import 'package:pure_live/shared/pagination/models/base_paged_state.dart';
-import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 import 'package:pure_live/shared/pagination/models/base_controller_state.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 part 'paging_core.g.dart';
@@ -90,6 +90,8 @@ class PagingCore<T> extends _$PagingCore<T> {
     try {
       final result = await Connectivity().checkConnectivity();
 
+      if (!ref.mounted) return false;
+
       if (result.isEmpty || result.contains(ConnectivityResult.none)) {
         handleError("network_disconnected");
         return false;
@@ -148,6 +150,7 @@ class PagingCore<T> extends _$PagingCore<T> {
   }
 
   Future<void> refresh() async {
+    if (!ref.mounted) return;
     _requestToken++;
     _loadedPageSet.clear();
     state = state.copyWith(controllerState: state.controllerState.copyWith(pageLoading: true));
@@ -165,7 +168,7 @@ class PagingCore<T> extends _$PagingCore<T> {
 
   Future<void> _loadLocalNext(int targetPage) async {
     final token = _requestToken;
-    if (token != _requestToken) return;
+    if (!ref.mounted || token != _requestToken) return;
     _sliceLocalData(state.allLocalItems, targetPage);
   }
 
@@ -201,7 +204,9 @@ class PagingCore<T> extends _$PagingCore<T> {
       }
     } finally {
       _loadingMore = false;
-      state = state.copyWith(controllerState: state.controllerState.copyWith(loading: false));
+      if (ref.mounted) {
+        state = state.copyWith(controllerState: state.controllerState.copyWith(loading: false));
+      }
     }
   }
 
@@ -263,6 +268,7 @@ class PagingCore<T> extends _$PagingCore<T> {
     );
     onLocalSourceUpdate?.call();
     final pool = await fetchAll?.call() ?? <T>[];
+    if (!ref.mounted) return;
     _sliceLocalData(pool, firstPageKey);
   }
 
@@ -330,12 +336,13 @@ class PagingCore<T> extends _$PagingCore<T> {
 
     final isNetworkOk = await checkNetworkBeforeRequest();
 
+    if (!ref.mounted || token != _requestToken) return;
     if (!isNetworkOk) return;
 
     try {
       final all = await fetchAll!();
 
-      if (token != _requestToken) {
+      if (!ref.mounted || token != _requestToken) {
         return;
       }
 
@@ -343,7 +350,7 @@ class PagingCore<T> extends _$PagingCore<T> {
       _loadedPageSet.add(pageKey);
       _sliceLocalData(all, pageKey);
     } catch (e) {
-      if (token != _requestToken) {
+      if (!ref.mounted || token != _requestToken) {
         return;
       }
 
@@ -367,12 +374,13 @@ class PagingCore<T> extends _$PagingCore<T> {
 
     final isNetworkOk = await checkNetworkBeforeRequest();
 
+    if (!ref.mounted || token != _requestToken) return;
     if (!isNetworkOk) return;
 
     try {
       final list = await fetchRemote!(pageKey, state.pageSize);
 
-      if (token != _requestToken) {
+      if (!ref.mounted || token != _requestToken) {
         return;
       }
 
@@ -391,7 +399,7 @@ class PagingCore<T> extends _$PagingCore<T> {
       );
       _loadedPageSet.add(pageKey);
     } catch (e) {
-      if (token != _requestToken) {
+      if (!ref.mounted || token != _requestToken) {
         return;
       }
 
@@ -417,6 +425,7 @@ class PagingCore<T> extends _$PagingCore<T> {
 
     final isNetworkOk = await checkNetworkBeforeRequest();
 
+    if (!ref.mounted || token != _requestToken) return;
     if (!isNetworkOk) return;
 
     final ps = state.pageSize;
@@ -442,11 +451,11 @@ class PagingCore<T> extends _$PagingCore<T> {
         } else {
           bigData = await fetchFixed!(bigPage, fixedServerPageSize);
 
-          _putCache(bigPage, bigData);
-        }
+          if (!ref.mounted || token != _requestToken) {
+            return;
+          }
 
-        if (token != _requestToken) {
-          return;
+          _putCache(bigPage, bigData);
         }
 
         if (bigData.isEmpty) {
@@ -474,7 +483,7 @@ class PagingCore<T> extends _$PagingCore<T> {
         }
       }
 
-      if (token != _requestToken) {
+      if (!ref.mounted || token != _requestToken) {
         return;
       }
 
@@ -491,7 +500,7 @@ class PagingCore<T> extends _$PagingCore<T> {
       );
       _loadedPageSet.add(pageKey);
     } catch (e) {
-      if (token != _requestToken) {
+      if (!ref.mounted || token != _requestToken) {
         return;
       }
       state = state.copyWith(

@@ -56,12 +56,23 @@ class TvButton extends StatelessWidget {
           ),
         );
         list.add(
-          DpadGlowEffect(
-            color: activeTheme.focusColor.withValues(alpha: 0.35),
-            blurRadius: 2.w,
-            spreadRadius: 2.0.w,
-            borderRadius: borderRadius,
-          ),
+          // On a light palette the soft halo reads as a fuzzy smear behind the
+          // button, so focus looks out of focus; a crisp ring keeps it sharp.
+          // Dark palettes keep the glow.
+          activeTheme.isLight
+              ? DpadGlowEffect(
+                  color: activeTheme.focusColor,
+                  opacity: 1,
+                  blurRadius: 0,
+                  spreadRadius: 2.0.w,
+                  borderRadius: borderRadius,
+                )
+              : DpadGlowEffect(
+                  color: activeTheme.focusColor.withValues(alpha: 0.35),
+                  blurRadius: 2.w,
+                  spreadRadius: 2.0.w,
+                  borderRadius: borderRadius,
+                ),
         );
       }
       list.add(
@@ -81,7 +92,12 @@ class TvButton extends StatelessWidget {
             bgColor = activeTheme.focusColor;
             foregroundColor = activeTheme.onFocusColor;
           } else {
-            bgColor = isSecondary ? activeTheme.cardColor.withValues(alpha: 0.5) : activeTheme.cardColor;
+            // buttonSurface, not cardColor: on light palettes the card is a
+            // near-white tint, so a card-colored button read as a plain white
+            // block no matter which preset was active.
+            bgColor = isSecondary
+                ? activeTheme.buttonSurface.withValues(alpha: 0.5)
+                : activeTheme.buttonSurface;
             foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
           }
 
@@ -93,7 +109,7 @@ class TvButton extends StatelessWidget {
             // content sitting on an accent-filled *focused* background — onto a
             // plain card background, which made the badge text nearly invisible.
             // Selection is still honoured so a selected label stays selected.
-            bgColor = selected ? activeTheme.focusColor : activeTheme.cardColor;
+            bgColor = selected ? activeTheme.focusColor : activeTheme.buttonSurface;
             foregroundColor = selected
                 ? activeTheme.onFocusColor
                 : (isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor);

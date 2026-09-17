@@ -31,7 +31,7 @@ class WallpaperPage extends ConsumerWidget {
     return TvScaffold(
       title: i18n('ui_background_settings'),
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -177,6 +177,9 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsPage: 'page_settings',
   AppRoutes.kSettingsFont: 'font_settings_title',
   AppRoutes.kSettingsFontFamily: 'font_family_settings',
+  // The danmaku-only font manager is the same page in its danmaku scope; without
+  // its own entry it falls back to the generic 系统设置 title.
+  AppRoutes.kSettingsFontFamilyDanmaku: 'font_family_settings',
   AppRoutes.kSettingsDecoder: 'hardware_decoder',
   AppRoutes.kSettingsRenderer: 'video_output_driver',
   AppRoutes.kSettingsAudioOutput: 'audio_output_driver',
@@ -245,17 +248,7 @@ class TvSettingsRoutePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TvScaffold(
-      appBar: TvAppBar(
-        title: i18n('settings_title'),
-        actions: [
-          TvButton(
-            title: i18n('config_preview'),
-            size: TvButtonSize.mini,
-            icon: Icon(Remix.file_text_line, size: 22.sp),
-            onTap: () => context.push(AppRoutes.kSettingsConfigPreview),
-          ),
-        ],
-      ),
+      appBar: TvAppBar(title: i18n('settings_title')),
       child: const SettingsCatalogView(),
     );
   }
@@ -275,6 +268,11 @@ class SettingsSectionScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return TvScaffold(
       title: i18n(settingsSectionTitleKey(location)),
+      // One scaffold serves every settings page (the shell swaps the page inside
+      // it), so the path is what tells it the content is a different page now and
+      // the highlight has to open on 返回 again.
+      contentIdentity: location,
+      showBackButton: true,
       child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),
     );
   }

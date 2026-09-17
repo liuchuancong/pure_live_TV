@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
@@ -109,10 +110,18 @@ class App extends ConsumerWidget {
                 // created once and every page simply stays transparent over it: a
                 // background built per page was re-mounted on every push/pop and
                 // flickered.
-                return MediaQuery(
+                // flutter_smart_dialog needs to hook the navigator's overlay to
+                // show toasts; without this wrapper its context is never
+                // initialized and the first showToast throws.
+                return FlutterSmartDialog.init()(context, MediaQuery(
                   data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
-                  child: Stack(fit: StackFit.expand, children: <Widget>[const TvAppBackground(), withDpad]),
-                );
+                  // Everything the widgets do not colour themselves follows the TV
+                  // palette, in both 主题模式 settings (see [TvPaletteDefaults]).
+                  child: TvPaletteDefaults(
+                    theme: resolvedTvTheme,
+                    child: Stack(fit: StackFit.expand, children: <Widget>[const TvAppBackground(), withDpad]),
+                  ),
+                ));
               },
               // EasyLocalization supplies the locale and the delegate list; the app's own
               // language setting is pushed into the render layer by LocalizationsLocaleSync.
@@ -131,35 +140,29 @@ class App extends ConsumerWidget {
               // canvas transparent, so the single app background below the
               // Navigator shows through instead of a Material default — that was
               // the white flash on every push and pop.
-              theme: ThemeData(
-                useMaterial3: true,
+              theme: buildTvThemeData(
+                palette: resolvedTvTheme,
                 brightness: Brightness.light,
                 fontFamily: fontFamily,
-                textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
-                scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
-                canvasColor: Colors.transparent,
-                pageTransitionsTheme: _kPageTransitions,
+                baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
+                pageTransitions: _kPageTransitions,
                 colorScheme: _schemeFor(
                   resolvedTvTheme,
                   themeSettings.enableDynamicTheme ? lightDynamic : null,
                   Brightness.light,
                 ),
-                extensions: [TvThemeExtension(theme: resolvedTvTheme)],
               ),
-              darkTheme: ThemeData(
-                useMaterial3: true,
+              darkTheme: buildTvThemeData(
+                palette: resolvedTvTheme,
                 brightness: Brightness.dark,
                 fontFamily: fontFamily,
-                textTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
-                scaffoldBackgroundColor: resolvedTvTheme.backgroundColor,
-                canvasColor: Colors.transparent,
-                pageTransitionsTheme: _kPageTransitions,
+                baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
+                pageTransitions: _kPageTransitions,
                 colorScheme: _schemeFor(
                   resolvedTvTheme,
                   themeSettings.enableDynamicTheme ? darkDynamic ?? lightDynamic : null,
                   Brightness.dark,
                 ),
-                extensions: [TvThemeExtension(theme: resolvedTvTheme)],
               ),
               themeMode: themeMode,
             ),
