@@ -91,7 +91,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              RemoteSyncPairQrCard(width: 300),
+              RemoteSyncPairQrCard(width: 400),
               SizedBox(width: 28.sp),
               Expanded(
                 child: Column(

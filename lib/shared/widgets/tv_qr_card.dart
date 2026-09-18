@@ -4,9 +4,13 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvQrCodeCard extends StatelessWidget {
-  const TvQrCodeCard({super.key, required this.qrData, this.urlText});
+  const TvQrCodeCard({super.key, required this.qrData, this.urlText, this.qrSize = 240});
 
   final String qrData;
+
+  /// Code side in design pixels; pages with room (device sync) pass a larger
+  /// code, compact panels keep the default.
+  final double qrSize;
 
   /// Plain text under the code; hidden when empty so a TV screen does not
   /// broadcast the address.
@@ -35,7 +39,7 @@ class TvQrCodeCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16.sp),
             child: QrImageView(
               data: qrData,
-              size: 240.sp,
+              size: qrSize.sp,
               padding: EdgeInsets.all(8.0.sp),
               version: QrVersions.auto,
               // A QR must stay a fixed dark-on-white pattern: themeing the modules

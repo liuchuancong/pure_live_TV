@@ -13,7 +13,7 @@ import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 /// app scans it, parses `ip:port` and pushes/pulls settings over the sync
 /// protocol. This is *not* the web-form entry — that is the 8888 web remote.
 class RemoteSyncPairQrCard extends ConsumerWidget {
-  const RemoteSyncPairQrCard({super.key, this.width = 280});
+  const RemoteSyncPairQrCard({super.key, this.width = 380});
 
   final double width;
 
@@ -80,7 +80,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           if (qrPayload.isNotEmpty)
-            TvQrCodeCard(qrData: qrPayload, urlText: address)
+            TvQrCodeCard(qrData: qrPayload, urlText: address, qrSize: 300)
           else
             Container(
               width: double.infinity,
@@ -97,10 +97,15 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
               ),
             ),
           SizedBox(height: 10.sp),
-          Text(
-            i18nOr('remote_sync_pair_hint', 'Open PureLive on your phone and scan this code to sync settings.'),
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
+          SizedBox(
+            width: 340.sp,
+            child: Text(
+              i18nOr('remote_sync_pair_hint', 'Open PureLive on your phone and scan this code to sync settings.'),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
+            ),
           ),
         ],
       ),
