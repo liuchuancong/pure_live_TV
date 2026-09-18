@@ -288,7 +288,8 @@ void main() {
       expect(find.text('修复了 A'), findsOneWidget);
       expect(find.text('arm64-v8a'), findsWidgets);
       expect(find.text('armeabi-v7a'), findsOneWidget);
-      expect(find.text('update_download_install'), findsOneWidget);
+      // One 下载并安装 button per published ABI row.
+      expect(find.text('update_download_install'), findsWidgets);
       expect(find.byType(AppStatusView), findsNothing, reason: 'an available update is not a status card');
     });
   });

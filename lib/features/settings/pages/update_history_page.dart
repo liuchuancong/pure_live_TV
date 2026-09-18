@@ -1,11 +1,11 @@
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/release_model/release_model.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/app_update/app_update_service.dart';
+import 'package:pure_live/shared/models/release_model/release_model.dart';
 
 /// 版本历史 — the release list the update page links to, plus 本机更新记录.
 ///
@@ -120,7 +120,10 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
 
   Widget _buildReleases(AppUpdateState state, AppUpdateController controller) {
     if (state.historyLoading && state.history.isEmpty) {
-      return SizedBox(height: 220.h, child: const AppStatusView(type: AppStatusType.loading));
+      return SizedBox(
+        height: 220.h,
+        child: const AppStatusView(type: AppStatusType.loading),
+      );
     }
     if (state.historyError != null && state.history.isEmpty) {
       return SizedBox(
@@ -173,7 +176,9 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
     }
     // Reached directly (a widget test, or a future deep link): open the update page so the
     // download is not invisible.
-    const AppUpdateRoute().push(context);
+    // Typed navigation needs a router in scope; a bare widget test has none.
+    final GoRouter? router = GoRouter.maybeOf(context);
+    if (router != null) const AppUpdateRoute().push(context);
   }
 
   Widget _hint(String label) {
@@ -182,7 +187,10 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(label, style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor)),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
+        ),
       ),
     );
   }

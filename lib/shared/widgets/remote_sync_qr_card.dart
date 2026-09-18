@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 
 /// The "connect your phone" card: a QR that opens the web form, plus the plain
 /// `http://ip:port/` for manual entry.
@@ -79,7 +79,7 @@ class RemoteSyncQrCard extends ConsumerWidget {
         children: <Widget>[
           // The address is deliberately not printed under the code: only the QR
           // carries it, so the TV screen does not broadcast the LAN address.
-          TvQrCodeCard(qrData: snapshot.qrData),
+          TvQrCodeCard(qrData: snapshot.qrData, urlText: snapshot.qrData),
           SizedBox(height: 10.sp),
           Text(
             i18nOr(
