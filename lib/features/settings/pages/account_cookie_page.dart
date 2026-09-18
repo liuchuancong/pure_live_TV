@@ -56,9 +56,10 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
         final bool dirty = _controller.text.trim() != _baseline;
         if (dirty != _dirty) setState(() => _dirty = dirty);
       });
-    if (widget.loginPanel == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _startPhoneBridge());
-    }
+    // Every platform that has a phone page shows its QR — including Bilibili,
+    // whose own sign-in is the left block but whose phone page still accepts a
+    // pasted cookie.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startPhoneBridge());
   }
 
   @override
@@ -154,77 +155,93 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_confirmLeave());
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(theme, configured),
-          SizedBox(height: 20.h),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 4, child: widget.loginPanel ?? _buildScanPanel(theme)),
-              Container(
-                width: 2.sp,
-                height: 300.sp,
-                margin: EdgeInsets.symmetric(horizontal: 20.sp),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      theme.primaryTextColor.withValues(alpha: 0.12),
-                      Colors.transparent,
+      // Centred both ways with side margins: the two blocks floated apart
+      // before, stretched edge to edge and stuck to the top of the page.
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 56.w, vertical: 28.h),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 1180.sp),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHeader(theme, configured),
+                      SizedBox(height: 32.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Flex rather than fixed widths: the pair fills the
+                          // centred 1180sp box and never overflows a narrower
+                          // screen.
+                          Flexible(
+                            flex: 4,
+                            child: widget.loginPanel ?? _buildScanPanel(theme),
+                          ),
+                          SizedBox(width: 48.sp),
+                          Flexible(
+                            flex: 6,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Bilibili signs in from the left block, so its phone
+                                // bridge sits on top of the typed way in instead of
+                                // being a column of its own.
+                                if (widget.loginPanel != null) ...[
+                                  _buildScanPanel(theme),
+                                  SizedBox(height: 24.h),
+                                ],
+                                _buildManualPanel(theme, configured, current),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_message.isNotEmpty) ...[
+                        SizedBox(height: 18.h),
+                        Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+                      ],
                     ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
                   ),
                 ),
               ),
-              Expanded(flex: 6, child: _buildManualPanel(theme, configured, current)),
-            ],
-          ),
-          if (_message.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(left: 16.sp, top: 14.sp),
-              child: Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
             ),
-        ],
+          ),
+        ),
       ),
     );
   }
 
   /// Platform identity on top: its own logo, its name and the current state.
   Widget _buildHeader(TvThemeData theme, bool configured) {
-    return Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        SiteLogo(siteId: widget.platform.siteId, size: 52),
-        SizedBox(width: 14.sp),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.platform.name,
-                style: AppTextStyles.t28W600.copyWith(color: theme.primaryTextColor),
-              ),
-              SizedBox(height: 4.sp),
-              Text(
-                configured ? i18n('cookie_state_set', args: {'count': '${widget.platform.read(ref.read(cookieControllerProvider)).length}'}) : i18n('not_set'),
-                style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
-              ),
-            ],
-          ),
+        SiteLogo(siteId: widget.platform.siteId, size: 56),
+        SizedBox(height: 12.sp),
+        Text(widget.platform.name, style: AppTextStyles.t28W600.copyWith(color: theme.primaryTextColor)),
+        SizedBox(height: 6.sp),
+        Text(
+          configured
+              ? i18n('cookie_state_set', args: {'count': '${widget.platform.read(ref.read(cookieControllerProvider)).length}'})
+              : i18n('not_set'),
+          style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
         ),
       ],
     );
   }
 
-  /// The left column: scan the phone page of this platform.
+  /// The scan block: the phone page of this platform as a QR code.
   Widget _buildScanPanel(TvThemeData theme) {
     final bool hasPhonePage = (widget.platform.webPath ?? '').isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsGroupTitle(title: i18n('qr_login')),
+        TvSettingsGroupTitle(title: i18n('phone_sync_title')),
         TvSettingsCard(
           children: [
             if (!hasPhonePage)

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
@@ -62,7 +63,9 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
         hint: i18n('cookie_hint', args: {'name': i18n('site_bilibili')}),
         read: (model) => model.bilibiliCookie,
         apply: (value) => ref.read(cookieControllerProvider.notifier).setBilibiliCookie(value),
-        webPath: null,
+        // Both ways in: the device sign-in on the left, and this platform's
+        // phone page (paste a cookie) on top of the typed field.
+        webPath: WebRemoteRouter.cookieBilibili,
       ),
       loginPanel: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
