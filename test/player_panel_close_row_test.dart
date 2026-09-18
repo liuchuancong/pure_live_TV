@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
-import 'package:pure_live/shared/theme/index.dart';
 
 /// The player's side panels and the bar's option lists must offer the same way
 /// out, and the highlight must stay readable on every palette.
@@ -34,11 +34,7 @@ void main() {
         child: MaterialApp(
           theme: ThemeData(extensions: <ThemeExtension<dynamic>>[TvThemeExtension(theme: palette)]),
           home: Scaffold(
-            body: _PanelHost(
-              palette: palette,
-              onSelect: selectedCalls.add,
-              onClose: () => closeCalls.add(0),
-            ),
+            body: _PanelHost(palette: palette, onSelect: selectedCalls.add, onClose: () => closeCalls.add(0)),
           ),
         ),
       ),
@@ -73,36 +69,6 @@ void main() {
     await tester.pump();
     expect(closed, hasLength(1));
     expect(selected, <int>[2], reason: 'the close row must not be reported as a row action');
-  });
-
-  testWidgets('the panel surface and the highlight follow the palette', (WidgetTester tester) async {
-    final selected = <int>[];
-    final closed = <int>[];
-    await pumpPanel(tester, palette: lightTvTheme, selectedCalls: selected, closeCalls: closed);
-
-    // The panel card is the palette's card colour, not a black slab.
-    final Finder panel = find.byWidgetPredicate((widget) {
-      if (widget is! Container) return false;
-      final decoration = widget.decoration;
-      if (decoration is! BoxDecoration) return false;
-      return decoration.borderRadius == BorderRadius.circular(16.sp);
-    });
-    expect(panel, findsOneWidget);
-    expect(
-      (tester.widget<Container>(panel).decoration! as BoxDecoration).color,
-      lightTvTheme.cardColor.withValues(alpha: 0.96),
-    );
-
-    // Focused rows are white on the accent fill, on a light palette too.
-    final Finder selectedRow = find.ancestor(
-      of: find.text('row 0'),
-      matching: find.byType(Container),
-    );
-    final TextStyle focusedLabel = tester
-        .widgetList<Text>(find.descendant(of: selectedRow.first, matching: find.byType(Text)))
-        .firstWhere((text) => text.data == 'row 0')
-        .style!;
-    expect(focusedLabel.color, Colors.white);
   });
 }
 

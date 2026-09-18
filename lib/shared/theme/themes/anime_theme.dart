@@ -14,7 +14,7 @@ const animeTvTheme = TvThemeData(
 
   primaryTextColor: Colors.white,
 
-  secondaryTextColor: Color(0xffF0C2E4),
+  secondaryTextColor: Colors.white,
 
   cardColor: Color(0xff2A1830),
 

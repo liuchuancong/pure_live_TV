@@ -213,7 +213,7 @@ class TvThemeData {
       backgroundColor: _tinted(accent, 0.055),
       cardColor: _tinted(accent, 0.105),
       primaryTextColor: _tinted(accent, 0.96, 0.10),
-      secondaryTextColor: _tinted(accent, 0.72),
+      secondaryTextColor: _tinted(accent, 0.96, 0.10),
       // A lit-up rung of the ladder: clearly above the card, unmistakably the
       // preset's colour, and dark enough that [onFocusedCard] resolves to
       // white ink.
@@ -230,7 +230,7 @@ class TvThemeData {
       backgroundColor: _tinted(accent, 0.955, 0.30),
       cardColor: _tinted(accent, 0.99, 0.22),
       primaryTextColor: _tinted(accent, 0.13, 0.28),
-      secondaryTextColor: _tinted(accent, 0.42, 0.20),
+      secondaryTextColor: _tinted(accent, 0.13, 0.28),
       // A pale wash of the accent; [onFocusedCard] picks dark ink on it.
       focusedCardColor: _tinted(accent, 0.88, 0.45),
     );

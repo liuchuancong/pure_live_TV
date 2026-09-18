@@ -1,7 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/tv_focus_style.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 typedef TvSettingsTrailingBuilder = Widget Function(BuildContext context, bool focused);
@@ -49,17 +48,9 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
     final borderRadius = BorderRadius.circular(14.sp);
 
     final List<DpadEffect> effects = [
-      DpadScaleEffect(
-        scale: 1,
-        pressedScale: 0.98,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-      ),
-      tvTheme.isLight
-          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
-          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((ctx, state, _) {
         final bool focused = state.focused;
+        final bool pressed = state.pressed;
         final Color accent = tvTheme.focusColor;
         final bool hasLeading = widget.leading != null || widget.icon != null;
 
@@ -67,68 +58,86 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         final Color subtitleColor = focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
         final Color iconColor = focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
 
-        return AnimatedContainer(
-          duration: TvFocusStyle.focusDuration(focused),
-          curve: TvFocusStyle.curve,
-          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
-          decoration: BoxDecoration(
-            color: focused ? tvTheme.focusedCardColor : Colors.transparent,
-            borderRadius: borderRadius,
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final double trailingMaxWidth = constraints.maxWidth * 0.55;
-                  final double minContentHeight = 30.sp + 4.sp + 22.sp;
-                  return Container(
-                    constraints: BoxConstraints(minHeight: minContentHeight),
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        if (widget.leading != null)
-                          widget.leading!
-                        else if (widget.icon != null)
-                          Icon(widget.icon, size: 30.sp, color: iconColor),
-                        if (hasLeading) SizedBox(width: 16.sp),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                widget.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t22W600.copyWith(color: titleColor),
-                              ),
-                              if (widget.subtitle != null) ...[
-                                SizedBox(height: 4.sp),
+        final Duration animDuration = focused ? const Duration(milliseconds: 120) : Duration.zero;
+
+        final double scale = pressed ? 0.98 : 1.0;
+
+        return AnimatedScale(
+          scale: scale,
+          duration: animDuration,
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: animDuration,
+            curve: Curves.easeOutCubic,
+            padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
+            decoration: BoxDecoration(
+              color: focused ? tvTheme.focusedCardColor : Colors.transparent,
+              borderRadius: borderRadius,
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+              boxShadow: [
+                BoxShadow(
+                  color: focused
+                      ? accent.withValues(alpha: tvTheme.isLight ? 1.0 : 0.75)
+                      : accent.withValues(alpha: 0.0),
+                  blurRadius: focused ? (tvTheme.isLight ? 0 : 18.sp) : 0,
+                  spreadRadius: focused ? (tvTheme.isLight ? 2.sp : 1.5.sp) : 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double trailingMaxWidth = constraints.maxWidth * 0.55;
+                    final double minContentHeight = 30.sp + 4.sp + 22.sp;
+                    return Container(
+                      constraints: BoxConstraints(minHeight: minContentHeight),
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        children: [
+                          if (widget.leading != null)
+                            widget.leading!
+                          else if (widget.icon != null)
+                            Icon(widget.icon, size: 30.sp, color: iconColor),
+                          if (hasLeading) SizedBox(width: 16.sp),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                                 Text(
-                                  widget.subtitle!,
-                                  maxLines: 2,
+                                  widget.title,
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t16W500.copyWith(color: subtitleColor),
+                                  style: AppTextStyles.t22W600.copyWith(color: titleColor),
                                 ),
+                                if (widget.subtitle != null) ...[
+                                  SizedBox(height: 4.sp),
+                                  Text(
+                                    widget.subtitle!,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.t16W500.copyWith(color: subtitleColor),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 12.sp),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: trailingMaxWidth),
-                          child: widget.trailingBuilder?.call(context, focused) ?? const SizedBox.shrink(),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              if (widget.footer != null) ...[SizedBox(height: 10.sp), widget.footer!],
-            ],
+                          SizedBox(width: 12.sp),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: trailingMaxWidth),
+                            child: widget.trailingBuilder?.call(context, focused) ?? const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                if (widget.footer != null) ...[SizedBox(height: 10.sp), widget.footer!],
+              ],
+            ),
           ),
         );
       }),

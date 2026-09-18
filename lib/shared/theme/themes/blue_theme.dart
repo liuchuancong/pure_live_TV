@@ -17,7 +17,7 @@ const blueTvTheme = TvThemeData(
 
   primaryTextColor: Colors.white,
 
-  secondaryTextColor: Color(0xffA8D8F0),
+  secondaryTextColor: Colors.white,
 
   cardColor: Color(0xff10233D),
 

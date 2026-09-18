@@ -14,7 +14,7 @@ const darkTvTheme = TvThemeData(
 
   primaryTextColor: Colors.white,
 
-  secondaryTextColor: Color(0xffBDBDBD),
+  secondaryTextColor: Colors.white,
 
   cardColor: Color(0xff1F1F1F),
 

@@ -14,7 +14,7 @@ const cyberTvTheme = TvThemeData(
 
   primaryTextColor: Colors.white,
 
-  secondaryTextColor: Color(0xff9EE6D0),
+  secondaryTextColor: Colors.white,
 
   cardColor: Color(0xff0E2A24),
 
