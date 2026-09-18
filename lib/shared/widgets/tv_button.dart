@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/tv_focus_style.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 enum TvButtonSize { large, medium, small, mini }
@@ -47,33 +48,9 @@ class TvButton extends StatelessWidget {
     List<DpadEffect> buildEffects() {
       final list = <DpadEffect>[];
       if (!excludeFocus) {
-        list.add(
-          DpadScaleEffect(
-            scale: 1.06,
-            pressedScale: 0.98,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeOutCubic,
-          ),
-        );
-        list.add(
-          // On a light palette the soft halo reads as a fuzzy smear behind the
-          // button, so focus looks out of focus; a crisp ring keeps it sharp.
-          // Dark palettes keep the glow.
-          activeTheme.isLight
-              ? DpadGlowEffect(
-                  color: activeTheme.focusColor,
-                  opacity: 1,
-                  blurRadius: 0,
-                  spreadRadius: 2.0.w,
-                  borderRadius: borderRadius,
-                )
-              : DpadGlowEffect(
-                  color: activeTheme.focusColor.withValues(alpha: 0.35),
-                  blurRadius: 2.w,
-                  spreadRadius: 2.0.w,
-                  borderRadius: borderRadius,
-                ),
-        );
+        // The shared focus language: scale + accent ring + (dark-only) halo.
+        // See [TvFocusStyle] for why these numbers, and only these, are used.
+        list.addAll(TvFocusStyle.effects(activeTheme, borderRadius, scale: 1.06));
       }
       list.add(
         DpadCustomEffect((ctx, state, child) {

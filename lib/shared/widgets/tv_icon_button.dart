@@ -1,10 +1,18 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/widgets/tv_focus_style.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 enum TvIconButtonSize { large, medium, small, mini }
 
+/// Icon-only [TvButton].
+///
+/// Shares the button's surface/focus rules exactly — idle translucent
+/// [TvThemeData.buttonSurface], focus/selected solid accent with
+/// contrast-picked foreground — so an icon button next to a text button reads
+/// as the same control. The old version hard-coded white foregrounds, which
+/// sank into the light palettes' pale accents.
 class TvIconButton extends StatelessWidget {
   final Widget icon;
   final TvIconButtonSize size;
@@ -31,25 +39,12 @@ class TvIconButton extends StatelessWidget {
     final (boxSize, iconSize) = _getSizeConfig();
     final borderRadius = BorderRadius.circular(boxSize / 2);
 
-    Widget finalIcon = icon;
-
     return UnconstrainedBox(
       child: DpadFocusable(
         autofocus: autofocus,
         onSelect: onTap,
         effects: [
-          DpadScaleEffect(
-            scale: 1.06,
-            pressedScale: 0.98,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeOutCubic,
-          ),
-          DpadGlowEffect(
-            color: activeTheme.focusColor.withValues(alpha: 0.35),
-            blurRadius: 2.w,
-            spreadRadius: 2.0.w,
-            borderRadius: borderRadius,
-          ),
+          ...TvFocusStyle.effects(activeTheme, borderRadius, scale: 1.08),
           DpadCustomEffect((context, state, child) {
             final isFocused = state.focused;
 
@@ -58,21 +53,23 @@ class TvIconButton extends StatelessWidget {
 
             if (selected) {
               bgColor = activeTheme.focusColor;
-              foregroundColor = Colors.white;
+              foregroundColor = activeTheme.onFocusColor;
             } else if (isFocused && useFadedFocus) {
               bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-              foregroundColor = Colors.white;
+              foregroundColor = activeTheme.onFadedFocusColor;
             } else if (isFocused) {
               bgColor = activeTheme.focusColor;
-              foregroundColor = Colors.white70;
+              foregroundColor = activeTheme.onFocusColor;
             } else {
-              bgColor = isSecondary ? activeTheme.cardColor.withValues(alpha: 0.5) : activeTheme.cardColor;
+              bgColor = isSecondary
+                  ? activeTheme.buttonSurface.withValues(alpha: 0.45)
+                  : activeTheme.buttonSurface.withValues(alpha: activeTheme.isLight ? 0.85 : 0.75);
               foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
             }
 
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeInOut,
+              duration: TvFocusStyle.duration,
+              curve: TvFocusStyle.curve,
               width: boxSize,
               height: boxSize,
               decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
@@ -83,7 +80,7 @@ class TvIconButton extends StatelessWidget {
             );
           }),
         ],
-        child: Center(child: finalIcon),
+        child: Center(child: icon),
       ),
     );
   }

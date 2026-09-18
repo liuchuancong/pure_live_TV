@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/models/font_model/font_model.dart';
@@ -206,32 +205,27 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     await _activate(font, targetFileName: choice.isEmpty ? null : choice);
   }
 
-  /// 下载, behind the modal that shows the app's loading animation, then apply.
+  /// 下载, then apply. No modal: the card itself shows the loading animation
+  /// (the global [AppStatusView]) while the download runs, and the row refuses
+  /// input until it ends.
   Future<void> _downloadAndApply(FontModel font) async {
+    if (_busyFontId.isNotEmpty) return;
     setState(() => _busyFontId = font.id);
 
-    final bool ok =
-        await TvDialogUtils.show<bool>(
-          context: context,
-          builder: (_) => FontDownloadProgressDialog(
-            fontName: font.name,
-            download: () => FontDownloadManager.instance.downloadFontFamily(fontModel: font, onStateChanged: (_) {}),
-          ),
-        ) ??
-        false;
-
-    if (!mounted) return;
-    setState(() => _busyFontId = '');
-
-    if (!ok) {
-      ToastUtil.show(i18n('font_download_failed'));
-      return;
+    try {
+      final bool ok = await FontDownloadManager.instance.downloadFontFamily(fontModel: font, onStateChanged: (_) {});
+      if (!mounted) return;
+      if (!ok) {
+        ToastUtil.show(i18n('font_download_failed'));
+        return;
+      }
+      ToastUtil.show(i18n('font_downloaded'));
+      await _refresh();
+      if (!mounted) return;
+      await _applyFamily(font);
+    } finally {
+      if (mounted) setState(() => _busyFontId = '');
     }
-
-    await _refresh();
-    if (!mounted) return;
-    ToastUtil.show(i18n('font_downloaded'));
-    await _applyFamily(font);
   }
 
   Future<void> _confirmDelete(FontModel font) async {
@@ -264,7 +258,6 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     ref.watch(fontSettingsControllerProvider);
     ref.watch(danmakuSettingsControllerProvider);
 
-    final tvTheme = context.tvTheme;
     final String activeId = _activeId;
 
     return SingleChildScrollView(
@@ -302,20 +295,14 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                   subtitle: _subtitleOf(font),
                   icon: Icons.font_download_outlined,
                   trailingBuilder: (context, focused) => tvSettingsValueLabel(context, focused, _stateLabelOf(font)),
-                  onSelect: () => _openFamilyMenu(font),
+                  onSelect: _busyFontId.isEmpty ? () => _openFamilyMenu(font) : null,
                 ),
-                // The sample is drawn in the family itself, so picking one is not a
-                // guess at a name. Only for downloaded families: the family has to be
-                // registered for the text to render in it.
-                if (_isDownloaded(font))
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20.w, 2.h, 20.w, 16.h),
-                    child: Text(
-                      i18n('font_preview_sample'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontFamily: font.id, fontSize: 22.sp, color: tvTheme.primaryTextColor),
-                    ),
+                // The downloading state lives in the card itself: the global
+                // loading animation instead of a modal, like the desktop page.
+                if (_busyFontId == font.id)
+                  SizedBox(
+                    height: 120.h,
+                    child: AppStatusView(type: AppStatusType.loading, subtitle: i18n('font_downloading'), isMini: true),
                   ),
               ],
             ),
@@ -357,43 +344,3 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
   }
 }
 
-/// The modal shown while a family downloads.
-///
-/// It owns the flow: [download] starts on the first frame, the dialog pops itself with
-/// the result, and the page then decides whether to apply the family, ask for a weight,
-/// or report the failure. Waiting behind a spinner with no way back is only acceptable
-/// because it always ends — a failure pops with `false` rather than leaving it open.
-class FontDownloadProgressDialog extends StatefulWidget {
-  const FontDownloadProgressDialog({super.key, required this.fontName, required this.download});
-
-  final String fontName;
-  final Future<bool> Function() download;
-
-  @override
-  State<FontDownloadProgressDialog> createState() => _FontDownloadProgressDialogState();
-}
-
-class _FontDownloadProgressDialogState extends State<FontDownloadProgressDialog> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _run());
-  }
-
-  Future<void> _run() async {
-    final bool ok = await widget.download();
-    if (!mounted) return;
-    Navigator.of(context).pop(ok);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TvDialog(
-      title: widget.fontName,
-      child: SizedBox(
-        height: 200.sp,
-        child: AppStatusView(type: AppStatusType.loading, subtitle: i18n('font_downloading')),
-      ),
-    );
-  }
-}
