@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/services/index.dart';
-import 'package:pure_live/exports/package_export.dart';
+import 'dart:async';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:tv_textfield/tv_textfield.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:async';
+import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/player/core/playback_proxy_policy.dart';
@@ -25,7 +26,9 @@ class AppInitializer {
     if (_isInitialized) return;
 
     WidgetsFlutterBinding.ensureInitialized();
-
+    // Platform detection for tv_textfield before the first frame: Android TV gets
+    // the native EditText backend, every other platform the Flutter one.
+    await initializeTvTextField();
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight, DeviceOrientation.landscapeLeft]);
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);

@@ -1,26 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:tv_textfield/tv_textfield.dart';
 import 'package:pure_live/shared/theme/tv_theme_data.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-/// The TV text field: a plain Flutter [TextField] with the app's palette.
+/// The TV text field: [TvTextField] from `tv_textfield` wearing the app's
+/// palette.
 ///
-/// It used to wrap the `native_textfield_tv` package (a TV soft keyboard) behind
-/// a `useNativeTextField` flag that defaulted to true — but every caller passes a
+/// The field used to be a plain Flutter [TextField]. On a TV that is the wrong
+/// control: while focused it consumes the arrow keys for caret movement, so a
+/// remote could never leave the field — and after the soft keyboard was
+/// dismissed the focus was stuck, which left pages where only a mouse could
+/// press anything (flutter#147772). [TvTextField] shows a read-only display
+/// while it merely has focus, keeps the arrows for focus traversal, and only
+/// raises the keyboard once OK is pressed.
+///
+/// It used to wrap the `native_textfield_tv` package behind a
+/// `useNativeTextField` flag that defaulted to true — but every caller passes a
 /// plain [TextEditingController], and the widget cast it to the package's own
 /// controller type, so each field threw as soon as it was built. Text entry now
-/// goes through the platform IME (which every Android TV build ships) like any
-/// other Flutter field, and the package dependency is gone.
+/// goes through [TvTextField], and that dependency is gone.
 ///
 /// It also used to wrap itself in a [DpadRegion] to detect "the d-pad reached
 /// the field" — but a nested region is invisible to the dpad traversal policy's
 /// region-first search (nested-region items are only considered once the
 /// enclosing region has no candidate in that direction), so arrow navigation
 /// always skipped straight past the field. The field is now a plain focus
-/// target: dpad lands directly on the [TextField]'s own focus node, dpad's
-/// caret-aware `_directionAllowed` handles moving the caret with Left/Right and
-/// leaving the field with Up/Down, and the visual focus state is tracked with a
-/// simple [Focus.onFocusChange] listener.
+/// target, and the visual focus state is tracked with a simple
+/// [Focus.onFocusChange] listener.
 class TvInputField extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
@@ -132,13 +139,23 @@ class _TvInputFieldState extends State<TvInputField> {
       constraints: lines > 1 ? BoxConstraints(minHeight: resolvedHeight) : null,
       color: resolvedBgColor,
       alignment: Alignment.centerLeft,
-      child: TextField(
+      child: TvTextField(
         focusNode: _focusNode,
         controller: widget.controller,
         obscureText: _isObscure,
         minLines: lines > 1 ? 2 : null,
         maxLines: lines,
-        cursorColor: resolvedFocusedBorder,
+        // The Flutter backend, not the package's default. On Android `auto`
+        // picks the native EditText platform view, which would drop this app's
+        // palette (font, colours, hint) and its focus frame; the behaviour that
+        // was broken on TV — arrows being eaten by a focused field — is fixed by
+        // the Flutter backend too, and it still raises the platform keyboard
+        // once the field is activated.
+        implementation: TvTextFieldImplementation.flutter,
+        // The focus ring is drawn by the frame around the field, so the field
+        // itself only reports focus; the package's own decoration is disabled
+        // to keep one look for focused and unfocused states.
+        focusDecoration: const BoxDecoration(),
         style: TextStyle(
           color: resolvedTextColor,
           fontSize: 28.sp,

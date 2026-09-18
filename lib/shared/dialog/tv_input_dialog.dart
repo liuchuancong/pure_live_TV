@@ -1,3 +1,4 @@
+import 'package:tv_textfield/tv_textfield.dart';
 import 'tv_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
@@ -61,12 +62,14 @@ class _TvInputDialogState extends State<TvInputDialog> {
       cancelText: i18n('cancel'),
       onConfirm: _submit,
       onCancel: () => Navigator.of(context).pop(),
-      child: TextField(
+      child: TvTextField(
         controller: _controller,
         focusNode: _focusNode,
         maxLength: widget.maxLength,
         style: TextStyle(color: tvTheme.primaryTextColor, fontSize: 26.sp),
-        cursorColor: tvTheme.focusColor,
+        // Same choice as TvInputField: the Flutter backend, so the dialog keeps
+        // the app's palette instead of a native EditText platform view.
+        implementation: TvTextFieldImplementation.flutter,
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: TextStyle(color: tvTheme.secondaryTextColor.withAlpha(120), fontSize: 24.sp),

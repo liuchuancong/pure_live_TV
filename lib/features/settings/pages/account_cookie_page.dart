@@ -1,14 +1,13 @@
 import 'dart:async';
-
-import 'package:pure_live/features/remote/models/server_state.dart';
-import 'package:pure_live/features/remote/tv_remote_receiver.dart';
-import 'package:pure_live/features/settings/pages/account_settings_section.dart';
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/features/remote/tv_remote_receiver.dart';
+import 'package:pure_live/features/remote/models/server_state.dart';
+import 'package:pure_live/features/settings/pages/account_settings_section.dart';
 
 /// One platform's cookie, on a page of its own.
 ///
@@ -158,60 +157,57 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       // Centred both ways with side margins: the two blocks floated apart
       // before, stretched edge to edge and stuck to the top of the page.
       child: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 56.w, vertical: 28.h),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 1180.sp),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildHeader(theme, configured),
-                      SizedBox(height: 32.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Flex rather than fixed widths: the pair fills the
-                          // centred 1180sp box and never overflows a narrower
-                          // screen.
-                          Flexible(
-                            flex: 4,
-                            child: widget.loginPanel ?? _buildScanPanel(theme),
-                          ),
-                          SizedBox(width: 48.sp),
-                          Flexible(
-                            flex: 6,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Bilibili signs in from the left block, so its phone
-                                // bridge sits on top of the typed way in instead of
-                                // being a column of its own.
-                                if (widget.loginPanel != null) ...[
-                                  _buildScanPanel(theme),
-                                  SizedBox(height: 24.h),
+        builder: (context, constraints) {
+          final bool bounded = constraints.maxHeight.isFinite;
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 56.w, vertical: 28.h),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: bounded ? constraints.maxHeight : 0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildHeader(theme, configured),
+                        SizedBox(height: 32.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Flex rather than fixed widths: the pair fills the
+                            // centred 1180sp box and never overflows a narrower
+                            // screen.
+                            Flexible(flex: 4, child: widget.loginPanel ?? _buildScanPanel(theme)),
+                            SizedBox(width: 48.sp),
+                            Flexible(
+                              flex: 6,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Bilibili signs in from the left block, so its phone
+                                  // bridge sits on top of the typed way in instead of
+                                  // being a column of its own.
+                                  if (widget.loginPanel != null) ...[_buildScanPanel(theme), SizedBox(height: 24.h)],
+                                  _buildManualPanel(theme, configured, current),
                                 ],
-                                _buildManualPanel(theme, configured, current),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
+                        ),
+                        if (_message.isNotEmpty) ...[
+                          SizedBox(height: 18.h),
+                          Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
                         ],
-                      ),
-                      if (_message.isNotEmpty) ...[
-                        SizedBox(height: 18.h),
-                        Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -227,7 +223,10 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
         SizedBox(height: 6.sp),
         Text(
           configured
-              ? i18n('cookie_state_set', args: {'count': '${widget.platform.read(ref.read(cookieControllerProvider)).length}'})
+              ? i18n(
+                  'cookie_state_set',
+                  args: {'count': '${widget.platform.read(ref.read(cookieControllerProvider)).length}'},
+                )
               : i18n('not_set'),
           style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
         ),
@@ -290,11 +289,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: TvInputField(
-                controller: _controller,
-                hint: widget.platform.hint,
-                maxLines: 5,
-              ),
+              child: TvInputField(controller: _controller, hint: widget.platform.hint, maxLines: 5),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
