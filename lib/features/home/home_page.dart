@@ -1,21 +1,21 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/areas/areas_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/features/history/history_page.dart';
 import 'package:pure_live/features/search/tv_search_page.dart';
 import 'package:pure_live/features/favorite/favorite_page.dart';
+import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
-import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   final bool keepAlive;
@@ -51,17 +51,14 @@ class _HomePageState extends ConsumerState<HomePage> {
     // 设置刷新 → 主页缓存: on top of the widget default, the user can turn the
     // page cache off so every switch rebuilds the content fresh (and clears
     // cached tab state after nav/platform config changes).
-    final bool effectiveKeepAlive =
-        widget.keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
+    final bool effectiveKeepAlive = widget.keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
 
     // A menu entry hidden in 导航显示 while its page is on screen leaves the
     // sidebar with no selection and the old page lingering. Auto-correct once
     // per menu-list change — to 关注 when it is visible (the app's landing
     // page, whatever the menu order), otherwise to the first visible entry.
     final visibleIndexes = menuList.map((item) => item.index).toSet();
-    final currentIndexVisible =
-        currentIndex == TvMenuType.settings.value ||
-        visibleIndexes.contains(currentIndex);
+    final currentIndexVisible = currentIndex == TvMenuType.settings.value || visibleIndexes.contains(currentIndex);
     if (!currentIndexVisible && visibleIndexes.isNotEmpty) {
       final landing = visibleIndexes.contains(TvMenuType.favorite.value)
           ? TvMenuType.favorite.value
@@ -118,7 +115,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     Padding(
                       padding: EdgeInsets.only(bottom: 6.sp),
                       child: TvDigitalClock(
-                        style: AppTextStyles.t28W600.copyWith(
+                        format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
+                        style: AppTextStyles.t20W600.copyWith(
                           color: currentTvTheme.primaryTextColor,
                           height: 1,
                           letterSpacing: 1.5,
@@ -126,16 +124,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
                     if (isExpanded)
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 16.sp),
-                        child: TvDigitalClock(
-                          format: 'yyyy/MM/dd',
-                          style: AppTextStyles.t14W500.copyWith(
-                            color: currentTvTheme.secondaryTextColor,
-                            height: 1,
-                          ),
-                        ),
+                      TvDigitalClock(
+                        format: 'yyyy/MM/dd',
+                        style: AppTextStyles.t14W500.copyWith(color: currentTvTheme.secondaryTextColor, height: 1),
                       ),
+                    SizedBox(height: 15.sp),
                     Padding(
                       padding: EdgeInsets.only(bottom: 14.sp),
                       child: _buildAdaptiveItem(
@@ -165,9 +158,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           isExpanded: isExpanded,
                           isSelected: isSelected,
                           focusNode: _nodeFor(item.index),
-                          onTap: () => ref
-                              .read(sideMenuIndexProvider.notifier)
-                              .changeIndex(item.index),
+                          onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
                         ),
                       );
                     }),
@@ -183,8 +174,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                         size: TvIconButtonSize.medium,
                         isSecondary: true,
-                        onTap: () =>
-                            ref.read(isMenuExpandedProvider.notifier).toggle(),
+                        onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
                       ),
                     ),
                     _buildAdaptiveItem(
@@ -220,10 +210,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     isCurrent: isCurrent,
                                     child: _buildPageContent(context, ref, type)
                                         .animate(target: isCurrent ? 1.0 : 0.0)
-                                        .fadeIn(
-                                          duration: 200.ms,
-                                          curve: Curves.easeOutCubic,
-                                        )
+                                        .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
                                         .scale(
                                           begin: const Offset(0.95, 0.95),
                                           end: const Offset(1.0, 1.0),
@@ -237,41 +224,29 @@ class _HomePageState extends ConsumerState<HomePage> {
                             if (!isCurrentCacheable)
                               Container(
                                 key: ValueKey(currentIndex),
-                                child:
-                                    _buildPageContent(
-                                          context,
-                                          ref,
-                                          currentMenuType,
-                                        )
-                                        .animate()
-                                        .fadeIn(
-                                          duration: 200.ms,
-                                          curve: Curves.easeOutCubic,
-                                        )
-                                        .scale(
-                                          begin: const Offset(0.95, 0.95),
-                                          end: const Offset(1.0, 1.0),
-                                          duration: 250.ms,
-                                          curve: Curves.easeOutCubic,
-                                        ),
+                                child: _buildPageContent(context, ref, currentMenuType)
+                                    .animate()
+                                    .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                                    .scale(
+                                      begin: const Offset(0.95, 0.95),
+                                      end: const Offset(1.0, 1.0),
+                                      duration: 250.ms,
+                                      curve: Curves.easeOutCubic,
+                                    ),
                               ),
                           ],
                         )
                       : Container(
                           key: ValueKey(currentIndex),
-                          child:
-                              _buildPageContent(context, ref, currentMenuType)
-                                  .animate()
-                                  .fadeIn(
-                                    duration: 200.ms,
-                                    curve: Curves.easeOutCubic,
-                                  )
-                                  .scale(
-                                    begin: const Offset(0.95, 0.95),
-                                    end: const Offset(1.0, 1.0),
-                                    duration: 250.ms,
-                                    curve: Curves.easeOutCubic,
-                                  ),
+                          child: _buildPageContent(context, ref, currentMenuType)
+                              .animate()
+                              .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                              .scale(
+                                begin: const Offset(0.95, 0.95),
+                                end: const Offset(1.0, 1.0),
+                                duration: 250.ms,
+                                curve: Curves.easeOutCubic,
+                              ),
                         ),
                 ),
               ),
@@ -292,28 +267,20 @@ class _HomePageState extends ConsumerState<HomePage> {
   }) {
     if (isExpanded) {
       return Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 16.sp),
-            child: TvButton(
-              title: item.title,
-              icon: Icon(item.icon, size: 32.sp),
-              iconPosition: TvIconPosition.left,
-              size: TvButtonSize.mini,
-              isSecondary: !isSelected,
-              selected: isSelected,
-              useFadedFocus: true,
-              focusNode: focusNode,
-              onTap: onTap,
-            ),
-          )
-          .animate()
-          .fadeIn(duration: 150.ms)
-          .slideX(
-            begin: -0.05,
-            end: 0,
-            duration: 200.ms,
-            curve: Curves.easeOutCubic,
-          );
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 16.sp),
+        child: TvButton(
+          title: item.title,
+          icon: Icon(item.icon, size: 32.sp),
+          iconPosition: TvIconPosition.left,
+          size: TvButtonSize.mini,
+          isSecondary: !isSelected,
+          selected: isSelected,
+          useFadedFocus: true,
+          focusNode: focusNode,
+          onTap: onTap,
+        ),
+      ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.05, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
     }
 
     return TvIconButton(
@@ -327,11 +294,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _buildPageContent(
-    BuildContext context,
-    WidgetRef ref,
-    TvMenuType type,
-  ) {
+  Widget _buildPageContent(BuildContext context, WidgetRef ref, TvMenuType type) {
     switch (type) {
       case TvMenuType.settings:
         return const SettingsCatalogView();
