@@ -1269,7 +1269,6 @@
     "online_room_title": "Online",
     "online_update": "Online Update",
     "version_history": "Version history",
-    "version_history_desc": "Past releases",
     "version_history_load_failed": "Could not refresh the release history, showing the last list.",
     "version_history_open_release": "Open release page",
     "version_history_unnamed_file": "Unnamed file",
