@@ -145,6 +145,8 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Center(child: RemoteSyncQrCard(width: 280)),
+        SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('iptv_resource_list')),
         TvSettingsCard(children: _buildResourceRows()),
         if (_status.isNotEmpty)

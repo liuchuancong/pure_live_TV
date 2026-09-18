@@ -62,6 +62,8 @@ class _IptvSyncSectionPageState extends ConsumerState<IptvSyncSectionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Center(child: RemoteSyncQrCard(width: 280)),
+        SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('auto_sync_settings')),
         TvSettingsCard(
           children: [

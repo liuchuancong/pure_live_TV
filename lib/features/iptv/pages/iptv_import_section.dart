@@ -79,8 +79,10 @@ class _IptvImportSectionPageState extends State<IptvImportSectionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Typing a URL on a TV remote is not realistic: the phone page is the
+        // primary way in — it offers both the URL import and file upload.
         Center(child: RemoteSyncQrCard(width: 280)),
-        SizedBox(height: 20.h),
+        SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('iptv_import_url')),
         TvSettingsCard(
           children: [

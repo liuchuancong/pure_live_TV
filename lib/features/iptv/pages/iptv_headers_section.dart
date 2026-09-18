@@ -49,6 +49,10 @@ class _IptvHeadersSectionPageState extends ConsumerState<IptvHeadersSectionPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Headers are long token strings: typing them on a TV remote is not
+        // realistic, so the phone page (scan the QR) edits the same fields.
+        Center(child: RemoteSyncQrCard(width: 280)),
+        SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('iptv_headers_settings')),
         TvSettingsCard(
           children: [

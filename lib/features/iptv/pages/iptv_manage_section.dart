@@ -4,8 +4,9 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 
 /// IPTV page: the entry menu only. Every concern lives on its own screen —
-/// the resource list, import, auto-sync and request headers — so the page
-/// stays a compact jumping-off point under the QR card.
+/// the resource list, import, auto-sync and request headers — and every one of
+/// those screens carries the QR card, so anything that needs typing happens on
+/// the phone.
 class IptvManageSectionPage extends ConsumerStatefulWidget {
   const IptvManageSectionPage({super.key});
 
@@ -24,37 +25,29 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
         TvSettingsGroupTitle(title: i18n('iptv_settings')),
         TvSettingsCard(
           children: [
-            TvSettingsOptionTile(
+            TvSettingsNavTile(
               title: i18n('iptv_resource_list'),
               subtitle: i18n('iptv_resource_list_desc'),
               icon: Icons.playlist_play_rounded,
-              options: const [],
-              index: 0,
-              onChanged: (_) => context.push(AppRoutes.kIptvResources),
+              onTap: () => context.push(AppRoutes.kIptvResources),
             ),
-            TvSettingsOptionTile(
+            TvSettingsNavTile(
               title: i18n('iptv_import_source'),
               subtitle: i18n('iptv_import_source_desc'),
               icon: Icons.playlist_add_rounded,
-              options: const [],
-              index: 0,
-              onChanged: (_) => context.push(AppRoutes.kIptvImport),
+              onTap: () => context.push(AppRoutes.kIptvImport),
             ),
-            TvSettingsOptionTile(
+            TvSettingsNavTile(
               title: i18n('auto_sync_settings'),
               subtitle: i18n('iptv_sync_entry_desc'),
               icon: Icons.sync_rounded,
-              options: const [],
-              index: 0,
-              onChanged: (_) => context.push(AppRoutes.kIptvSync),
+              onTap: () => context.push(AppRoutes.kIptvSync),
             ),
-            TvSettingsOptionTile(
+            TvSettingsNavTile(
               title: i18n('iptv_headers_settings'),
               subtitle: i18n('iptv_headers_entry_desc'),
               icon: Icons.vpn_key_rounded,
-              options: const [],
-              index: 0,
-              onChanged: (_) => context.push(AppRoutes.kIptvHeaders),
+              onTap: () => context.push(AppRoutes.kIptvHeaders),
             ),
           ],
         ),

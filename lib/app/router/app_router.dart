@@ -60,8 +60,11 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsFont: (context) => const FontSettingsSectionPage(),
   AppRoutes.kSettingsFontFamily: (context) => const FontFamilyManagerSectionPage(),
   AppRoutes.kSettingsFontFamilyDanmaku: (context) => const FontFamilyManagerSectionPage(danmaku: true),
-  AppRoutes.kAppUpdate: (context) => const AppUpdatePage(),
-  AppRoutes.kUpdateHistory: (context) => const UpdateHistoryPage(),
+  // 在线更新/版本历史 are NOT in this table: both build their own
+  // TvPageScaffold + scroll view, and the shell below wraps every table entry
+  // in another scaffold + unbounded SingleChildScrollView — a Scaffold inside
+  // that gets an infinite size and the page dies on open. They are registered
+  // as standalone routes further down instead.
   AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
   AppRoutes.kSettingsAudience: (context) => const AudienceMetricSectionPage(),
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
@@ -165,6 +168,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Grid pickers own their scroll axis, so they are routes of their own
       // rather than sections inside the scrolling settings shell.
       GoRoute(path: AppRoutes.kSettingsLoadingStyle, builder: (context, state) => const LoadingStyleSectionPage()),
+      // Self-scaffolding pages: they own their app bar (with actions), scroll
+      // view and focus wiring, so they stay out of the settings shell.
+      GoRoute(path: AppRoutes.kAppUpdate, builder: (context, state) => const AppUpdatePage()),
+      GoRoute(path: AppRoutes.kUpdateHistory, builder: (context, state) => const UpdateHistoryPage()),
       GoRoute(
         path: AppRoutes.kSettingsColorPicker,
         builder: (context, state) => ColorPickerSectionPage(current: state.extra as Color?),
