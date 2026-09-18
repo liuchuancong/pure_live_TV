@@ -45,7 +45,9 @@ class AppUpdatePage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            TvSettingsGroupTitle(title: i18n('ui_pure_live_tv')),
+            _UpdateHeroHeader(version: state.currentVersion, buildNumber: state.currentBuild),
+            SizedBox(height: 24.sp),
+            TvSettingsGroupTitle(title: i18n('about')),
             TvSettingsCard(
               children: <Widget>[
                 TvSettingsRow(
@@ -381,5 +383,60 @@ class _NewVersionCard extends ConsumerWidget {
           ],
         );
     }
+  }
+}
+
+/// The 关于-style header: centred app icon, name and a version pill, matching
+/// the mobile app's about page.
+class _UpdateHeroHeader extends StatelessWidget {
+  const _UpdateHeroHeader({required this.version, required this.buildNumber});
+
+  final String version;
+  final String buildNumber;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final hasVersion = version.isNotEmpty;
+
+    return Center(
+      child: Column(
+        children: <Widget>[
+          Container(
+            width: 96.sp,
+            height: 96.sp,
+            decoration: BoxDecoration(
+              color: tvTheme.cardColor,
+              borderRadius: BorderRadius.circular(24.sp),
+              border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.sp),
+              boxShadow: [
+                BoxShadow(color: tvTheme.focusColor.withValues(alpha: 0.25), blurRadius: 18.sp, spreadRadius: 2.sp),
+              ],
+            ),
+            padding: EdgeInsets.all(14.sp),
+            child: Image.asset('assets/icons/icon.png', fit: BoxFit.contain),
+          ),
+          SizedBox(height: 14.sp),
+          Text(
+            i18n('ui_pure_live_tv'),
+            style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: tvTheme.primaryTextColor),
+          ),
+          if (hasVersion) ...<Widget>[
+            SizedBox(height: 8.sp),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 4.sp),
+              decoration: BoxDecoration(
+                color: tvTheme.focusColor.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(999.sp),
+              ),
+              child: Text(
+                'v$version+$buildNumber',
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: tvTheme.focusColor),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
