@@ -94,17 +94,24 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           children: [
             // The native sync QR: the phone app scans it (or types the address
             // below it) once, then every channel — search text included — is live.
-            SizedBox(width: _centerWidgetWidth.sp, child: const RemoteSyncQrCard(width: 320)),
-            SizedBox(height: (_itemGap * 0.8).sp),
+            // Kept compact so the platform bar below still fits the screen.
+            SizedBox(width: _centerWidgetWidth.sp, child: const RemoteSyncQrCard(width: 240)),
+            SizedBox(height: (_itemGap * 0.7).sp),
             // 搜索类型: one joined segmented control instead of two loose
             // stadium tabs — a two-item tab bar stretched across the screen was
             // the ragged "button row" this page used to show.
             _buildTypeSegmented(themeColor, searchState.searchTypeIndex),
-            SizedBox(height: (_itemGap * 0.7).sp),
-            // 平台: centered chips instead of a full-width scrolling tab bar;
-            // with ~6 platforms the bar never needed to scroll, it only spread
-            // the chips from the left edge and looked misaligned under the QR.
-            _buildSiteChips(themeColor, searchState.tabSiteIndex),
+            SizedBox(height: (_itemGap * 0.6).sp),
+            // 平台: a single scrollable row. With 22 platforms nothing static
+            // fits; the tab bar scrolls, reveals the focused tab and remembers
+            // the selected one, which chips in a Wrap could never do.
+            TvTabBar(
+              tabs: _siteTabs,
+              currentIndex: searchState.tabSiteIndex,
+              onTabChange: (index) {
+                ref.read(tvSearchNotifierProvider.notifier).changeSiteTab(index);
+              },
+            ),
             SizedBox(height: _itemGap.sp),
             SizedBox(
               width: _centerWidgetWidth.sp,
@@ -200,54 +207,6 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
               onTap: () => ref.read(tvSearchNotifierProvider.notifier).changeSearchType(i),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  /// Platform chips laid out from the centre. Selection fills the chip with the
-  /// accent; focus gets the shared ring/scale language via [TvFocusable].
-  Widget _buildSiteChips(Color themeColor, int currentIndex) {
-    final tvTheme = context.tvTheme;
-    return SizedBox(
-      width: (_centerWidgetWidth + 320).sp,
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        runAlignment: WrapAlignment.center,
-        spacing: 12.sp,
-        runSpacing: 12.sp,
-        children: [
-          for (int i = 0; i < _siteTabs.length; i++)
-            TvFocusable(
-              key: Key('search_site_${_siteTabs[i].tabId}'),
-              onSelect: () => ref.read(tvSearchNotifierProvider.notifier).changeSiteTab(i),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                height: 48.sp,
-                padding: EdgeInsets.symmetric(horizontal: 22.sp),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: currentIndex == i ? themeColor : tvTheme.cardColor,
-                  borderRadius: BorderRadius.circular(24.sp),
-                  border: Border.all(
-                    color: currentIndex == i ? themeColor : themeColor.withValues(alpha: 0.4),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_siteTabs[i].icon != null) ...[_siteTabs[i].icon!, SizedBox(width: 8.sp)],
-                    Text(
-                      _siteTabs[i].title,
-                      style: AppTextStyles.t20.copyWith(
-                        color: currentIndex == i ? Colors.white : tvTheme.primaryTextColor,
-                        fontWeight: currentIndex == i ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -356,7 +315,7 @@ class _SegmentedOption extends StatelessWidget {
     final accent = tvTheme.focusColor;
 
     return TvFocusable(
-      onSelect: onTap,
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         height: 46.sp,

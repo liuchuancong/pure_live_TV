@@ -283,16 +283,22 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   }
 
   Widget _buildSupportInfo(TvThemeData currentTvTheme) {
+    // 22 sites as mini *buttons* filled the whole right half with chunky
+    // focusable-looking controls; they are only labels, so they render as
+    // quiet text chips instead, capped in height and scrollable if they ever
+    // outgrow the box. `IgnorePointer` keeps them out of traversal entirely.
     return Container(
       width: double.infinity,
+      constraints: BoxConstraints(maxHeight: 220.sp),
       padding: EdgeInsets.all(20.sp),
       decoration: BoxDecoration(
         color: currentTvTheme.cardColor,
         borderRadius: BorderRadius.circular(16.sp),
-        border: Border.all(color: currentTvTheme.focusedCardColor.withValues(alpha: 0.25)),
+        border: Border.all(color: currentTvTheme.secondaryTextColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             i18n('movie_support_sites'),
@@ -302,22 +308,30 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               height: 1,
             ),
           ),
-          SizedBox(height: 16.sp),
-          // Display-only chips: excludeFocus keeps them out of the dpad
-          // traversal, they label the page without becoming stop points.
-          Wrap(
-            spacing: 12.sp,
-            runSpacing: 12.sp,
-            children: [
-              for (final site in Sites.supportSites)
-                TvButton(
-                  title: site.name,
-                  size: TvButtonSize.mini,
-                  isSecondary: true,
-                  excludeFocus: true,
-                  onTap: null,
+          SizedBox(height: 12.sp),
+          Flexible(
+            child: SingleChildScrollView(
+              child: IgnorePointer(
+                child: Wrap(
+                  spacing: 10.sp,
+                  runSpacing: 10.sp,
+                  children: [
+                    for (final site in Sites.supportSites)
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 6.sp),
+                        decoration: BoxDecoration(
+                          color: currentTvTheme.backgroundColor.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(10.sp),
+                        ),
+                        child: Text(
+                          site.name,
+                          style: AppTextStyles.t18W500.copyWith(color: currentTvTheme.secondaryTextColor),
+                        ),
+                      ),
+                  ],
                 ),
-            ],
+              ),
+            ),
           ),
         ],
       ),

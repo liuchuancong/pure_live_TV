@@ -79,19 +79,31 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         final Color accent = tvTheme.focusColor;
         final bool hasLeading = widget.leading != null || widget.icon != null;
 
+        // Room-card focus treatment: the focused row fills with the palette's
+        // focus surface, wears an accent ring and the same halo the room cards
+        // glow with (no blur on light palettes), and its text flips to the
+        // contrast-picked colours of that surface — instead of the old thin
+        // border plus a faint accent tint.
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
           padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
           decoration: BoxDecoration(
-            color: focused
-                ? accent.withValues(alpha: 0.22)
-                : Colors.transparent,
+            color: focused ? tvTheme.focusedCardColor : Colors.transparent,
             borderRadius: BorderRadius.circular(14.sp),
             border: Border.all(
               color: focused ? accent : Colors.transparent,
               width: 2.sp,
             ),
+            boxShadow: focused
+                ? [
+                    BoxShadow(
+                      color: accent.withValues(alpha: tvTheme.isLight ? 1.0 : 0.75),
+                      blurRadius: tvTheme.isLight ? 0 : 18.sp,
+                      spreadRadius: tvTheme.isLight ? 2.sp : 1.5.sp,
+                    ),
+                  ]
+                : const <BoxShadow>[],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -119,7 +131,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                           Icon(
                             widget.icon,
                             size: 30.sp,
-                            color: focused ? accent : tvTheme.primaryTextColor,
+                            color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                           ),
                         if (hasLeading) SizedBox(width: 16.sp),
                         Expanded(
@@ -133,7 +145,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTextStyles.t22W600.copyWith(
                                   color: focused
-                                      ? accent
+                                      ? tvTheme.onFocusedCard
                                       : tvTheme.primaryTextColor,
                                 ),
                               ),
@@ -145,7 +157,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTextStyles.t16W500.copyWith(
                                     color: focused
-                                        ? accent.withValues(alpha: 0.85)
+                                        ? tvTheme.onFocusedCardSecondary
                                         : tvTheme.secondaryTextColor,
                                   ),
                                 ),
@@ -183,7 +195,9 @@ Widget tvSettingsChevron(BuildContext context, bool focused) {
   return Icon(
     Icons.chevron_right_rounded,
     size: 30.sp,
-    color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor,
+    // The focused row fills with the palette's focus surface, so the chevron
+    // wears that surface's ink — not the accent, which sits too close to it.
+    color: focused ? tvTheme.onFocusedCard : tvTheme.secondaryTextColor,
   );
 }
 
@@ -194,7 +208,6 @@ Widget tvSettingsChevron(BuildContext context, bool focused) {
 /// traversal.
 Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
   final tvTheme = context.tvTheme;
-  final Color accent = tvTheme.focusColor;
 
   return Row(
     mainAxisSize: MainAxisSize.min,
@@ -208,7 +221,7 @@ Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
             maxLines: 1,
             softWrap: false,
             style: AppTextStyles.t20W600.copyWith(
-              color: focused ? accent : tvTheme.primaryTextColor,
+              color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
             ),
           ),
         ),
@@ -217,7 +230,7 @@ Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
       Icon(
         Icons.expand_more_rounded,
         size: 28.sp,
-        color: focused ? accent : tvTheme.secondaryTextColor,
+        color: focused ? tvTheme.onFocusedCard : tvTheme.secondaryTextColor,
       ),
     ],
   );

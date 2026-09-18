@@ -23,25 +23,30 @@ class TvQrCodeCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: tvTheme.cardColor,
             borderRadius: borderRadius,
+            // A soft elevation instead of the accent "glow frame": the solid
+            // accent border plus a spread accent shadow read as a neon box.
             boxShadow: [
-              BoxShadow(color: tvTheme.focusColor.withValues(alpha: .75), blurRadius: 4.sp, spreadRadius: 4.sp),
+              BoxShadow(color: Colors.black.withValues(alpha: .3), blurRadius: 12.sp, offset: Offset(0, 4.sp)),
             ],
-            border: Border.all(color: tvTheme.focusColor, width: 1.sp),
+            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.45), width: 1.sp),
           ),
-          padding: EdgeInsets.all(6.sp),
-          child: QrImageView(
-            data: qrData,
-            size: 240.sp,
-            padding: EdgeInsets.all(6.0.sp),
-            version: QrVersions.auto,
-            // A QR must stay a fixed dark-on-white pattern: themeing the modules
-            // painted them in focusedCardColor, which is white on every light
-            // preset — an invisible code on a white card.
-            backgroundColor: Colors.white,
-            eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF101014)),
-            dataModuleStyle: const QrDataModuleStyle(
-              dataModuleShape: QrDataModuleShape.square,
-              color: Color(0xFF101014),
+          padding: EdgeInsets.all(8.sp),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16.sp),
+            child: QrImageView(
+              data: qrData,
+              size: 240.sp,
+              padding: EdgeInsets.all(8.0.sp),
+              version: QrVersions.auto,
+              // A QR must stay a fixed dark-on-white pattern: themeing the modules
+              // painted them in focusedCardColor, which is white on every light
+              // preset — an invisible code on a white card.
+              backgroundColor: Colors.white,
+              eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF101014)),
+              dataModuleStyle: const QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square,
+                color: Color(0xFF101014),
+              ),
             ),
           ),
         ),

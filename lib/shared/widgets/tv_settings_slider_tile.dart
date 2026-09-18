@@ -51,7 +51,11 @@ class TvSettingsSliderTile extends StatelessWidget {
       trailingBuilder: (context, focused) => Text(
         displayValue,
         maxLines: 1,
-        style: AppTextStyles.t20W600.copyWith(color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor),
+        // The focused row fills with the palette's focus surface; its ink, not
+        // the accent, reads on it.
+        style: AppTextStyles.t20W600.copyWith(
+          color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+        ),
       ),
       footer: _SliderTrack(progress: progress, accent: tvTheme.focusColor, track: tvTheme.secondaryTextColor),
     );

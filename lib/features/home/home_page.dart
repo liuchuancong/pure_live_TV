@@ -35,15 +35,19 @@ class HomePage extends ConsumerWidget {
 
     // A menu entry hidden in 导航显示 while its page is on screen leaves the
     // sidebar with no selection and the old page lingering. Auto-correct once
-    // per menu-list change.
+    // per menu-list change — to 关注 when it is visible (the app's landing
+    // page, whatever the menu order), otherwise to the first visible entry.
     final visibleIndexes = menuList.map((item) => item.index).toSet();
     final currentIndexVisible =
         currentIndex == TvMenuType.profile.value ||
         currentIndex == TvMenuType.settings.value ||
         visibleIndexes.contains(currentIndex);
     if (!currentIndexVisible && visibleIndexes.isNotEmpty) {
+      final landing = visibleIndexes.contains(TvMenuType.favorite.value)
+          ? TvMenuType.favorite.value
+          : visibleIndexes.first;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(sideMenuIndexProvider.notifier).changeIndex(visibleIndexes.first);
+        ref.read(sideMenuIndexProvider.notifier).changeIndex(landing);
       });
     }
 
@@ -70,7 +74,11 @@ class HomePage extends ConsumerWidget {
               duration: const Duration(milliseconds: 150),
               curve: Curves.easeOutCubic,
               width: sidebarWidth,
-              color: currentTvTheme.cardColor,
+              // Semi-transparent on purpose: the app-wide wallpaper (TvAppBackground)
+              // lives below the navigator, and an opaque fill here is what hid it
+              // from the menu column. The scrim keeps icons readable; the
+              // background bleeds through instead of a flat card block.
+              color: currentTvTheme.backgroundColor.withValues(alpha: 0.62),
               padding: EdgeInsets.symmetric(vertical: 24.sp),
               child: Column(
                 children: [

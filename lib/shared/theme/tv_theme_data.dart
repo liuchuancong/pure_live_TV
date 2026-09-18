@@ -107,12 +107,11 @@ class TvThemeData {
 
   /// Background of an idle (unfocused, unselected) button.
   ///
-  /// [cardColor] alone reads as a white block on every light palette — the
-  /// derived light presets lift their cards to a near-white tint, so buttons
-  /// and the page behind them differed only in the page colour. A gentle pull
-  /// towards [focusColor] keeps each preset's identity on the button while
-  /// staying quiet; dark palettes keep their card colour unchanged.
-  Color get buttonSurface => isLight ? Color.lerp(cardColor, focusColor, 0.10)! : cardColor;
+  /// The seeded containers already carry the preset's tint at the right tone,
+  /// so the button simply sits on the card colour (rendered translucent by the
+  /// button itself). The old extra lerp towards the accent is what produced
+  /// the muddy grey-purple pills on desaturated presets.
+  Color get buttonSurface => cardColor;
 
   /// This preset with legacy hard-coded focus surfaces rewritten.
   ///
@@ -120,9 +119,8 @@ class TvThemeData {
   /// the focused input field or card flashed pure white regardless of the
   /// theme's accent (and the three light presets focused onto the same white
   /// their idle card already had, so focus was invisible). The white is now
-  /// blended from the card towards the accent: a dark palette focuses onto a
-  /// deep accent shade, a light one onto a pale accent wash, and
-  /// [onFocusedCard] keeps the text readable on either.
+  /// blended from the card towards the accent, and [onFocusedCard] keeps the
+  /// text readable on either.
   TvThemeData normalized() {
     if (focusedCardColor != const Color(0xFFFFFFFF)) {
       return this;
@@ -158,78 +156,70 @@ class TvThemeData {
   ///
   /// [brightness] comes from the theme-mode setting (跟随系统 already resolves
   /// to dark before this); [accent] is the dynamic-colour primary when
-  /// 动态取色 is on. The presets themselves are fixed palettes, so without
-  /// this derivation switching the theme mode only ever changed Material
-  /// dialogs while every custom widget stayed on the preset's own brightness —
-  /// the mode looked like it did nothing.
+  /// 动态取色 is on.
+  ///
+  /// A preset whose own brightness already matches the mode keeps its curated
+  /// surfaces and only re-seeds the accent; the *other* mode is derived from
+  /// Material 3's `ColorScheme.fromSeed` over the preset's accent. That tonal
+  /// system is the same one the Material ecosystem uses, so every derived
+  /// colour comes from the seed hue's tone ladder instead of ad-hoc lerps —
+  /// hand-mixed `lerp(white, accent)` surfaces were what made desaturated
+  /// presets (graphite, mint) fight themselves with muddy grey-purple cards.
   TvThemeData resolveFor({Brightness brightness = Brightness.dark, Color? accent}) {
-    final Color resolvedAccent = accent ?? focusColor;
-    if (brightness == Brightness.dark) {
-      return isLight ? _deriveDark(resolvedAccent) : copyWith(focusColor: resolvedAccent).normalized();
+    final Color seed = accent ?? focusColor;
+    final bool nativeMode = isLight == (brightness == Brightness.light);
+    if (nativeMode) {
+      return copyWith(focusColor: _focusFillOf(seed)).normalized();
     }
-    return isLight ? copyWith(focusColor: resolvedAccent).normalized() : _deriveLight(resolvedAccent);
+    return brightness == Brightness.dark ? _deriveDark(seed) : _deriveLight(seed);
   }
 
-  /// Moves [accent] towards [towards] until it contrasts with [background] by at
-  /// least [minimum].
+  /// The accent used for focus fills and rings: the seed's **tone-40 primary**.
   ///
-  /// A fixed nudge is not enough: a pale amber needs a much bigger step than a mid
-  /// blue. The loop is bounded (1/16 steps) so it always terminates and never turns a
-  /// colour into a different one.
-  static Color _accentVisibleOn(Color accent, Color background, Color towards, double minimum) {
-    Color result = accent;
-    for (int step = 0; step < 16; step++) {
-      if (_contrastOf(result, background) >= minimum) return result;
-      result = Color.lerp(result, towards, 0.12)!;
-    }
-    return result;
+  /// `fromSeed` gives a light scheme a tone-40 primary (saturated, mid-dark)
+  /// and a dark scheme a tone-80 primary (pastel). The app's house style draws
+  /// white ink on the focus fill, which sinks into a pastel — so both modes
+  /// take the tone-40 variant. It is vivid enough to read as the accent,
+  /// dark enough for white text (≈4.5:1), and light enough to ring clearly on
+  /// a dark page.
+  static Color _focusFillOf(Color seed) {
+    return ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light).primary;
   }
 
-  /// A light sibling of a dark preset: same accent identity, surfaces lifted
-  /// towards a tinted near-white, text dropped to ink.
+  /// A light sibling of a dark preset, derived from Material 3 tonal palettes.
   ///
-  /// Text colours are opaque on purpose: a translucent secondary colour composites
-  /// with whatever happens to be behind it (card, page, wallpaper), so its contrast
-  /// is not the contrast the palette promises. The accent is darkened until the focus
-  /// ring and accent-coloured labels stay visible on a light page — the raw preset
-  /// accent is tuned for a dark one and can sit at ~2.5:1 here.
+  /// Every role comes from `fromSeed(seed, light)` so background, cards, focus
+  /// surfaces and inks are hues of the same ladder — they cannot clash. The
+  /// one deliberate swap is [TvThemeData.focusColor]: it always takes the
+  /// tone-40 primary (see [_focusFillOf]) so white button ink and the focus
+  /// ring behave identically in both modes.
   TvThemeData _deriveLight(Color accent) {
-    final Color background = Color.lerp(const Color(0xFFF5F6FA), accent, 0.05)!;
-    final Color readableAccent = _accentVisibleOn(accent, background, const Color(0xFF101014), 3.0);
+    final ColorScheme scheme = ColorScheme.fromSeed(seedColor: accent, brightness: Brightness.light);
     return copyWith(
-      focusColor: readableAccent,
-      backgroundColor: background,
-      // A 0.14 lift left the card indistinguishable from the page, so every
-      // idle button read as a white block; tinting deeper gives the preset a
-      // visible surface of its own while staying clearly "light".
-      cardColor: Color.lerp(const Color(0xFFFFFFFF), accent, 0.30)!,
-      primaryTextColor: Color.lerp(const Color(0xFF15171C), accent, 0.12)!,
-      secondaryTextColor: Color.lerp(const Color(0xFF4A4E57), accent, 0.25)!,
-      // Not the accent itself: the preset's whole light sibling would then
-      // focus onto the same colour its selected buttons use, and a pale accent
-      // left the focused card nearly the same white as before. A mid blend
-      // keeps focus distinct from both the card and the filled button.
-      focusedCardColor: Color.lerp(const Color(0xFFFFFFFF), accent, 0.16)!,
+      focusColor: _focusFillOf(accent),
+      backgroundColor: scheme.surface,
+      cardColor: scheme.surfaceContainerHigh,
+      primaryTextColor: scheme.onSurface,
+      secondaryTextColor: scheme.onSurfaceVariant,
+      focusedCardColor: scheme.primaryContainer,
     );
   }
 
-  /// A dark sibling of a light preset: surfaces dropped towards ink, text lifted.
+  /// A dark sibling of a light preset, derived from Material 3 tonal palettes.
   ///
-  /// The accent is lightened for the same reason: a pale preset accent (amber, mint,
-  /// a light blue) disappears on a dark page.
+  /// Same rule as [_deriveLight]: the roles come from `fromSeed(seed, dark)`.
+  /// The focus *fill* stays tone-40 (white ink on it, per house style) while
+  /// the rest of the scheme uses the ladder's dark tones; a focused row fills
+  /// with `primaryContainer` (tone 30, tinted dark) rather than flashing white.
   TvThemeData _deriveDark(Color accent) {
-    final Color background = Color.lerp(const Color(0xFF101216), accent, 0.05)!;
-    final Color readableAccent = _accentVisibleOn(accent, background, const Color(0xFFFFFFFF), 3.0);
+    final ColorScheme scheme = ColorScheme.fromSeed(seedColor: accent, brightness: Brightness.dark);
     return copyWith(
-      focusColor: readableAccent,
-      backgroundColor: background,
-      cardColor: Color.lerp(const Color(0xFF1A1D24), accent, 0.12)!,
-      primaryTextColor: const Color(0xFFF3F4F6),
-      secondaryTextColor: Color.lerp(const Color(0xFFB9BDC6), accent, 0.2)!,
-      // Not Colors.white: that flattened every derived dark palette's focus
-      // state into a pure white flash that ignored the preset's accent. A
-      // white-accent blend keeps focus bright yet recognizably this theme.
-      focusedCardColor: Color.lerp(const Color(0xFFFFFFFF), accent, 0.18)!,
+      focusColor: _focusFillOf(accent),
+      backgroundColor: scheme.surface,
+      cardColor: scheme.surfaceContainerHigh,
+      primaryTextColor: scheme.onSurface,
+      secondaryTextColor: scheme.onSurfaceVariant,
+      focusedCardColor: scheme.primaryContainer,
     );
   }
 }
