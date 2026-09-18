@@ -15,6 +15,9 @@ class RemoteSyncProtocol {
   static const String syncType = 'pure_live_sync';
 
   static const String apiStatus = '/api/remote-sync/status';
+
+  /// Every JSON route starts with this; anything else is a web-remote file.
+  static const String apiPrefix = '/api/';
   static const String apiSettings = '/api/remote-sync/settings';
   static const String apiSetSettings = '/api/setSettings';
   static const String apiChannelPrefix = '/api/channel/';

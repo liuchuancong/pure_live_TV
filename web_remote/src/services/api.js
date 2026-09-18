@@ -148,11 +148,15 @@ export const api = {
   updateDouyinCookie(ttwid, cookieData) {
     return httpPostJson('/api/cookie/douyin', { ttwid, cookie: cookieData })
   },
-  getWebDAVList() {
-    return httpGet('/api/webdav/list')
+  async getProxy() {
+    const res = await httpGet('/api/proxy')
+    return res.isOk ? (res.data ?? null) : null
   },
-  saveWebDAVList(list) {
-    return httpPostJson('/api/webdav/save', list)
+  saveProxy(proxyData) {
+    return httpPostJson('/api/proxy', proxyData)
+  },
+  importIptv(iptvData) {
+    return httpPostJson('/api/iptv', iptvData)
   },
   exportBackup() {
     return httpGet('/api/backup/export', {}, { responseType: FILE_RESPONSE_TYPE, downloadTag: 'pure_live_backup' })

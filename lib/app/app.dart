@@ -6,6 +6,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:material_ui/material_ui.dart' as material;
 import 'package:pure_live/shared/widgets/tv_scaffold.dart';
+import 'package:pure_live/features/remote/global_room_push.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/shared/widgets/tv_locale_rebuilder.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
@@ -73,7 +74,7 @@ class App extends ConsumerWidget {
                     child: TvPaletteDefaults(
                       theme: resolvedTvTheme,
                       child: TvLocaleRebuilder(
-                        child: Stack(fit: StackFit.expand, children: [const TvAppBackground(), withDpad]),
+                        child: Stack(fit: StackFit.expand, children: [const TvAppBackground(), withDpad, const GlobalRoomPushOverlay()]),
                       ),
                     ),
                   ),

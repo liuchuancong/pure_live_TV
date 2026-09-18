@@ -10,7 +10,7 @@
       </span>
     </div>
 
-    <template v-for="group in groupList" :key="group.label">
+    <div v-for="group in groupList" :key="group.label">
       <div class="space-y-2 sm:space-y-3">
         <div class="px-1 text-[10px] sm:text-xs font-bold text-ios-text/80 uppercase tracking-wider text-left">
           {{ group.label }}
@@ -32,20 +32,20 @@
           </router-link>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Link as LinkIcon, Search as SearchIcon, Key as KeyIcon, Cloud as CloudIcon, EyeOff as EyeOffIcon, RefreshCw as RefreshIcon, ChevronRight as ChevronRightIcon, Info as InfoIcon, FileText as FileTextIcon, Heart as HeartIcon } from 'lucide-vue-next'
+import { Link as LinkIcon, Search as SearchIcon, Key as KeyIcon, Tv as TvIcon, Globe as GlobeIcon, EyeOff as EyeOffIcon, RefreshCw as RefreshIcon, ChevronRight as ChevronRightIcon, Info as InfoIcon, FileText as FileTextIcon, Heart as HeartIcon } from 'lucide-vue-next'
 import { api } from '@/services/api.js'
 
 const serverOnline = ref(false)
 const remoteVersion = ref('0.0.0')
 const cardBaseClass = `
-  flex items-center justify-between p-3 sm:p-4 no-underline bg-ios-card 
-  border border-ios-border/20 rounded-2xl shadow-[0_8px_30px_var(--color-ios-shadow)] 
+  flex items-center justify-between p-3 sm:p-4 no-underline bg-ios-card
+  border border-ios-border/20 rounded-2xl shadow-[0_8px_30px_var(--color-ios-shadow)]
   transition-all hover:scale-[1.01] active:scale-[0.98] group
 `
 const checkServerStatus = async () => {
@@ -73,7 +73,7 @@ const groupList = [
       {
         path: '/movie',
         title: '链接解析',
-        desc: '推送视频链接',
+        desc: '推送视频链接，电视直接打开直播间',
         icon: LinkIcon,
         iconBgClass: 'bg-blue-500/10 text-blue-500',
         colClass: '',
@@ -97,7 +97,7 @@ const groupList = [
       {
         path: '/cookie',
         title: '各平台 Cookie 管理',
-        desc: '全独立平台 Cookie 录入与抖音 ttwid 拦截',
+        desc: '哔哩哔哩 / 虎牙 / 抖音 / 快手 / YY / SOOP / Twitch',
         icon: KeyIcon,
         iconBgClass: 'bg-purple-500/10 text-purple-500',
         colClass: 'md:col-span-2',
@@ -106,32 +106,35 @@ const groupList = [
     ]
   },
   {
-    label: '内容过滤设置',
+    label: '电视配置',
     gridClass: 'grid grid-cols-1 md:grid-cols-2',
     menuList: [
+      {
+        path: '/iptv',
+        title: 'IPTV 直播源',
+        desc: '推送播放列表地址与请求头',
+        icon: TvIcon,
+        iconBgClass: 'bg-cyan-500/10 text-cyan-500',
+        colClass: '',
+        descShowClass: 'hidden sm:block'
+      },
+      {
+        path: '/proxy',
+        title: '网络代理',
+        desc: '接口与播放代理设置',
+        icon: GlobeIcon,
+        iconBgClass: 'bg-teal-500/10 text-teal-500',
+        colClass: '',
+        descShowClass: 'hidden sm:block'
+      },
       {
         path: '/danmaku',
         title: '弹幕关键词过滤',
         desc: '自定义黑名单屏蔽词',
         icon: EyeOffIcon,
         iconBgClass: 'bg-zinc-500/10 text-zinc-500',
-        colClass: 'md:col-span-2',
-        descShowClass: 'hidden sm:block'
-      }
-    ]
-  },
-  {
-    label: '数据同步与备份',
-    gridClass: 'grid grid-cols-1 md:grid-cols-2',
-    menuList: [
-      {
-        path: '/webdav_settings',
-        title: 'WebDAV 配置',
-        desc: '管理云端同步账户',
-        icon: CloudIcon,
-        iconBgClass: 'bg-orange-500/10 text-orange-500',
         colClass: '',
-        descShowClass: 'hidden lg:block'
+        descShowClass: 'hidden sm:block'
       },
       {
         path: '/sync',
@@ -140,7 +143,7 @@ const groupList = [
         icon: RefreshIcon,
         iconBgClass: 'bg-rose-500/10 text-rose-500',
         colClass: '',
-        descShowClass: 'hidden lg:block'
+        descShowClass: 'hidden sm:block'
       }
     ]
   },
@@ -164,7 +167,7 @@ const groupList = [
         icon: InfoIcon,
         iconBgClass: 'bg-slate-500/10 text-slate-500',
         colClass: '',
-        descShowClass: 'hidden lg:block'
+        descShowClass: 'hidden sm:block'
       }
     ]
   },

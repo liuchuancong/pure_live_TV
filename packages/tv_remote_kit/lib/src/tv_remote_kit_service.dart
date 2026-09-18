@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'remote_sync_device.dart';
 import 'remote_sync_events.dart';
 import 'remote_sync_protocol.dart';
-import 'web_remote_page.dart';
 
 /// Host-supplied state bridge. The kit never touches storage itself; every
 /// channel read/write and the settings export/import land here.
@@ -31,6 +30,12 @@ abstract class RemoteSyncDelegate {
   Future<bool> importSettings(Map<String, dynamic> settings);
 }
 
+/// Loads one web-remote file by its request path (`index.html`,
+/// `assets/index.js`, …), or null when the host has no such file. The app wires
+/// this to the bundled Vue build (`assets/web_remote/`), so the phone page the
+/// sync QR opens is the same SPA the 8888 web remote serves.
+typedef RemoteSyncAssetLoader = Future<Uint8List?> Function(String path);
+
 /// LAN remote-sync service: mDNS broadcast + discovery over bonsoir and a
 /// small HTTP server on [RemoteSyncProtocol.defaultHttpPort] (walking upwards
 /// when taken).
@@ -42,6 +47,7 @@ class TvRemoteKit {
     required String deviceId,
     required this.deviceName,
     required this.delegate,
+    this.assetLoader,
     this.port = RemoteSyncProtocol.defaultHttpPort,
     String? platform,
     String version = '1.0.0',
@@ -54,6 +60,10 @@ class TvRemoteKit {
   final String _deviceId;
   final String deviceName;
   final RemoteSyncDelegate delegate;
+
+  /// Web files served at `/` (the bundled Vue remote); null falls back to the
+  /// built-in single-file page.
+  final RemoteSyncAssetLoader? assetLoader;
   final int port;
   final String _platform;
   final String _version;
@@ -279,13 +289,27 @@ class TvRemoteKit {
     final response = request.response;
     final path = request.uri.path;
 
-    // The phone's page. It has to answer before the JSON content type below: this is HTML.
-    if (path == '/' || path == '/index.html' || path == '/remote') {
-      response.headers.contentType = ContentType('text', 'html', charset: 'utf-8');
-      response.headers.set('Cache-Control', 'no-store');
-      response.write(kWebRemotePage);
-      await response.close();
-      return;
+    // The bundled web remote (the Vue app the 8888 server serves too): the
+    // host-supplied [assetLoader] serves every non-API path from it.
+    if (!path.startsWith(RemoteSyncProtocol.apiPrefix)) {
+      final assetPath = (path == '/' || path == '/remote' || path == '/index.html') ? 'index.html' : path.substring(1);
+      if (assetLoader != null) {
+        final data = await assetLoader!(assetPath);
+        if (data != null) {
+          response.headers
+            ..contentType = _contentTypeOf(assetPath)
+            ..set('Cache-Control', 'no-store');
+          response.add(data);
+          await response.close();
+          return;
+        }
+        await _writeJson(response, HttpStatus.notFound, {'code': 404, 'msg': 'Not Found', 'data': false});
+        return;
+      }
+      if (assetPath == 'index.html') {
+        await _writeJson(response, HttpStatus.notFound, {'code': 404, 'msg': 'Web remote not provided by host', 'data': false});
+        return;
+      }
     }
 
     response.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
@@ -454,6 +478,23 @@ class TvRemoteKit {
 
   Future<void> _writeMethodNotAllowed(HttpResponse response) async {
     await _writeJson(response, HttpStatus.methodNotAllowed, {'code': 405, 'msg': 'Method Not Allowed', 'data': false});
+  }
+
+  ContentType _contentTypeOf(String path) {
+    const types = <String, String>{
+      '.html': 'text/html',
+      '.js': 'application/javascript',
+      '.css': 'text/css',
+      '.json': 'application/json',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon',
+      '.woff2': 'font/woff2',
+    };
+    final dot = path.lastIndexOf('.');
+    final ext = dot < 0 ? '' : path.substring(dot).toLowerCase();
+    return ContentType.parse('${types[ext] ?? 'application/octet-stream'}; charset=utf-8');
   }
 
   Future<void> _writeJson(HttpResponse response, int status, Map<String, dynamic> data) async {

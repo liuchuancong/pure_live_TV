@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
 import 'package:pure_live/features/remote/index.dart';
@@ -76,6 +77,16 @@ class RemoteSyncController extends _$RemoteSyncController {
       deviceId: _loadDeviceId(),
       deviceName: 'PureLive TV (${Platform.operatingSystem})',
       delegate: _AppSyncDelegate(ref),
+      // Serve the same bundled Vue web remote the 8888 server serves, so the
+      // page behind the sync QR has every feature, not the fallback form.
+      assetLoader: (path) async {
+        try {
+          final byteData = await rootBundle.load('assets/web_remote/$path');
+          return byteData.buffer.asUint8List();
+        } catch (_) {
+          return null;
+        }
+      },
     );
     _kit = kit;
     _eventSubscription = kit.events.listen(_handleEvent);
@@ -107,7 +118,7 @@ class RemoteSyncController extends _$RemoteSyncController {
           case 'streamer':
             receiver.onStreamerSearch?.call(text);
           case 'room':
-            receiver.onRoomPush?.call(text);
+            receiver.dispatchRoomPush(text);
           case 'movie':
             receiver.onMovieReceived?.call(text);
         }

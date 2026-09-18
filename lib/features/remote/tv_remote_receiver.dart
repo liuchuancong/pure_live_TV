@@ -48,6 +48,16 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   Function(String roomId)? onRoomPush;
   Function(List<String> filters)? onDanmakuFilterUpdated;
 
+  /// Room pushes that no page claimed: the search pages bind [onRoomPush] while
+  /// they are on top and unbind on dispose; the global overlay owns this slot,
+  /// so a push arriving anywhere else still asks the user whether to open the
+  /// room instead of vanishing.
+  Function(String roomId)? onRoomPushFallback;
+
+  /// Routes one room push to the page-bound callback, or to the global
+  /// fallback when no page is listening.
+  void dispatchRoomPush(String roomId) => (onRoomPush ?? onRoomPushFallback)?.call(roomId);
+
   @override
   FutureOr<ServerState> build() {
     ref.onDispose(stopServer);
@@ -253,7 +263,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       final body = await req.body;
       final roomInfo = body.toString().trim();
       _addLog('Room id push received: $roomInfo');
-      onRoomPush?.call(roomInfo);
+      dispatchRoomPush(roomInfo);
       return _ok(res);
     });
 
