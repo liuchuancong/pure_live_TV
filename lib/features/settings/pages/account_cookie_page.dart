@@ -189,31 +189,32 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _buildHeader(theme, configured),
-
                         SizedBox(height: 32.h),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(flex: 4, child: widget.loginPanel ?? _buildScanPanel(theme)),
-
+                            Flexible(
+                              flex: 4,
+                              child: Padding(
+                                padding: EdgeInsets.only(top: widget.loginPanel == null ? 100.h : 0),
+                                child: widget.loginPanel ?? _buildScanPanel(theme),
+                              ),
+                            ),
                             SizedBox(width: 48.sp),
-
                             Flexible(
                               flex: 6,
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (widget.loginPanel != null) ...[_buildScanPanel(theme), SizedBox(height: 24.h)],
+                                  if (widget.loginPanel == null) ...[SizedBox(height: 100.h)],
                                   _buildManualPanel(theme, configured),
                                 ],
                               ),
                             ),
                           ],
                         ),
-
                         if (_message.isNotEmpty) ...[
                           SizedBox(height: 18.h),
                           Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
@@ -227,38 +228,6 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildHeader(TvThemeData theme, bool configured) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SiteLogo(siteId: widget.platform.siteId, size: 56),
-
-        SizedBox(height: 12.sp),
-
-        Text(widget.platform.name, style: AppTextStyles.t28W600.copyWith(color: theme.primaryTextColor)),
-
-        SizedBox(height: 6.sp),
-
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 4.sp),
-          decoration: BoxDecoration(
-            color: (configured ? theme.focusColor : theme.secondaryTextColor).withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(999.sp),
-          ),
-          child: Text(
-            configured
-                ? i18n(
-                    'cookie_state_set',
-                    args: {'count': '${widget.platform.read(ref.read(cookieControllerProvider)).length}'},
-                  )
-                : i18n('not_set'),
-            style: AppTextStyles.t14W500.copyWith(color: configured ? theme.focusColor : theme.secondaryTextColor),
-          ),
-        ),
-      ],
     );
   }
 
@@ -303,58 +272,53 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsGroupTitle(title: i18n('cookie')),
-
         TvSettingsCard(
           children: [
             Padding(
               padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 14.h),
               child: _CookieField(controller: _controller, focusNode: _fieldFocus, hint: widget.platform.hint),
             ),
-
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
                       i18n('cookie_tip', args: {'name': widget.platform.name}),
-                      style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor),
+                      style: AppTextStyles.t18W500.copyWith(color: theme.secondaryTextColor),
                     ),
                   ),
-
                   SizedBox(width: 12.sp),
-
                   Text(
                     '${_controller.text.length}',
-                    style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor.withValues(alpha: 0.7)),
+                    style: AppTextStyles.t18W500.copyWith(color: theme.secondaryTextColor.withValues(alpha: 0.7)),
                   ),
                 ],
               ),
             ),
 
-            SizedBox(height: 10.h),
-
-            Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TvButton(
-                    title: i18n('save'),
-                    size: TvButtonSize.medium,
-                    icon: Icon(Remix.save_3_line, size: 20.sp),
-                    onTap: _dirty ? _saveManually : null,
-                  ),
-
-                  SizedBox(width: 20.sp),
-
-                  TvButton(
-                    title: i18n('clear'),
-                    size: TvButtonSize.medium,
-                    isSecondary: true,
-                    icon: Icon(Remix.delete_bin_6_line, size: 20.sp),
-                    onTap: _clear,
-                  ),
-                ],
+            Padding(
+              padding: EdgeInsets.only(top: 20.h),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TvButton(
+                      title: i18n('save'),
+                      size: TvButtonSize.medium,
+                      icon: Icon(Remix.save_3_line, size: 20.sp),
+                      onTap: _dirty ? _saveManually : null,
+                    ),
+                    SizedBox(width: 20.sp),
+                    TvButton(
+                      title: i18n('clear'),
+                      size: TvButtonSize.medium,
+                      isSecondary: true,
+                      icon: Icon(Remix.delete_bin_6_line, size: 20.sp),
+                      onTap: _clear,
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -419,30 +383,45 @@ class _CookieFieldState extends State<_CookieField> {
         borderRadius: BorderRadius.circular(14.sp),
         border: Border.all(color: borderColor, width: 2.sp),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.hint,
+            style: TextStyle(color: text.withValues(alpha: 0.4), fontSize: 22.sp, height: 1.4),
+          ),
+          SizedBox(height: 6.h),
+          Expanded(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: TvTextField(
+                controller: widget.controller,
+                focusNode: widget.focusNode,
+                implementation: TvTextFieldImplementation.flutter,
+                textAlign: TextAlign.start,
+                // Outer container owns the visual frame.
+                focusDecoration: const BoxDecoration(),
 
-      child: TvTextField(
-        controller: widget.controller,
-        focusNode: widget.focusNode,
-        implementation: TvTextFieldImplementation.flutter,
-        // Outer container owns the visual frame.
-        focusDecoration: const BoxDecoration(),
-        minLines: 4,
-        maxLines: 6,
-        style: TextStyle(color: text, fontSize: 24.sp, height: 1.4),
-        decoration: InputDecoration(
-          hintText: widget.hint,
-          hintStyle: TextStyle(color: text.withValues(alpha: 0.4), fontSize: 22.sp, height: 1.4),
-          isDense: true,
-          isCollapsed: true,
-          contentPadding: EdgeInsets.zero,
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
-          filled: false,
-        ),
+                minLines: null,
+                maxLines: null,
+
+                style: TextStyle(color: text, fontSize: 24.sp, height: 1.4),
+
+                decoration: const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  filled: false,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

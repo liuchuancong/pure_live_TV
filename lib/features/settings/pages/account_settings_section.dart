@@ -1,13 +1,13 @@
+import 'package:pure_live/services/index.dart';
 import 'package:pure_live/platforms/sites.dart';
+import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/dialog/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/app/router/web_router.dart';
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// 三方认证 — one row per platform, each opening that platform's own page.
 ///
@@ -98,7 +98,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
               title: i18n('site_bilibili'),
               subtitle: cookies.bilibiliCookie.isEmpty
                   ? i18n('not_logged_in')
-                  : (cookies.bilibiliUid <= 0 ? i18n('logined') : 'UID ${cookies.bilibiliUid}'),
+                  : (cookies.bilibiliUid <= 0 ? i18n('not_logged_in') : 'UID ${cookies.bilibiliUid}'),
               leading: SiteLogo(siteId: bilibili.siteId),
               onTap: () => settingsSectionRoutes[bilibili.route]?.push(context),
             ),
@@ -140,6 +140,8 @@ class AccountSettingsSectionPage extends ConsumerWidget {
     );
     if (confirmed != true) return;
     ref.read(cookieControllerProvider.notifier).clearAllCookies();
+    ref.read(cookieControllerProvider.notifier).setBilibiliCookie('');
+    await BilibiliAccountService.instance.logout();
   }
 }
 

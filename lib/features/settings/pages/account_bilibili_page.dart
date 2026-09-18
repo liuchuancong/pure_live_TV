@@ -1,14 +1,13 @@
 import 'dart:async';
-
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
-import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
+import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
 
 /// Bilibili: the account page, so it has more than the other platforms.
 ///
@@ -25,21 +24,6 @@ class AccountBilibiliPage extends ConsumerStatefulWidget {
 
 class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
   String _message = '';
-
-  Future<void> _logout() async {
-    final bool? confirmed = await TvDialogUtils.showConfirm(
-      context: context,
-      title: i18n('logout'),
-      message: i18n('logout_bilibili_confirm'),
-      confirmText: i18n('confirm'),
-      cancelText: i18n('cancel'),
-    );
-    if (confirmed != true) return;
-    ref.read(cookieControllerProvider.notifier).setBilibiliCookie('');
-    await BilibiliAccountService.instance.logout();
-    if (!mounted) return;
-    setState(() => _message = i18n('cookie_saved'));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,15 +64,8 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                       Expanded(
                         child: Text(
                           cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined'),
-                          style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
+                          style: AppTextStyles.t20W500.copyWith(color: theme.secondaryTextColor),
                         ),
-                      ),
-                      TvButton(
-                        title: i18n('logout'),
-                        size: TvButtonSize.small,
-                        isSecondary: true,
-                        icon: Icon(Remix.logout_box_r_line, size: 18.sp),
-                        onTap: () => unawaited(_logout()),
                       ),
                     ],
                   ),
@@ -98,7 +75,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
           if (_message.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(left: 16.sp, top: 10.sp),
-              child: Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+              child: Text(_message, style: AppTextStyles.t20W500.copyWith(color: theme.focusColor)),
             ),
         ],
       ),
@@ -217,11 +194,19 @@ class _BilibiliQrLoginViewState extends ConsumerState<BilibiliQrLoginView> {
     Widget body = SizedBox(
       height: statusHeight,
       child: switch (_status) {
-        BiliBiliQrStatus.loading => AppStatusView(type: AppStatusType.loading, subtitle: i18n('ui_loading'), isMini: true),
+        BiliBiliQrStatus.loading => AppStatusView(
+          type: AppStatusType.loading,
+          subtitle: i18n('ui_loading'),
+          isMini: true,
+        ),
         // Waiting for the phone: the QR is up, then the confirmation state
         // spins so the user knows the scan registered.
         BiliBiliQrStatus.unscanned => TvQrCodeCard(qrData: _qrUrl),
-        BiliBiliQrStatus.scanned => AppStatusView(type: AppStatusType.loading, subtitle: i18n('qr_scanned'), isMini: true),
+        BiliBiliQrStatus.scanned => AppStatusView(
+          type: AppStatusType.loading,
+          subtitle: i18n('qr_scanned'),
+          isMini: true,
+        ),
         BiliBiliQrStatus.expired => AppStatusView(
           type: AppStatusType.error,
           title: i18n('qr_expired'),
@@ -251,7 +236,7 @@ class _BilibiliQrLoginViewState extends ConsumerState<BilibiliQrLoginView> {
           Text(
             _statusText,
             textAlign: TextAlign.center,
-            style: AppTextStyles.t16W500.copyWith(color: context.tvTheme.secondaryTextColor),
+            style: AppTextStyles.t20W500.copyWith(color: context.tvTheme.secondaryTextColor),
           ),
         ],
       ],
@@ -268,9 +253,7 @@ Future<void> showBilibiliQrLoginDialog(BuildContext context, WidgetRef ref) {
       title: '${i18n('qr_login')} · ${i18n('site_bilibili')}',
       cancelText: i18n('cancel'),
       onCancel: () => Navigator.of(context).pop(),
-      child: BilibiliQrLoginView(
-        onLogined: () => Navigator.of(context).pop(),
-      ),
+      child: BilibiliQrLoginView(onLogined: () => Navigator.of(context).pop()),
     ),
   );
 }

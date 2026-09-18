@@ -1,10 +1,10 @@
 import 'cookie_model.dart';
 import 'cookie_value.dart';
 import 'bilibili/bilibili_account_service.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/settings/settings_value.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/services/settings/settings_value.dart';
 
 part 'cookie_controller.g.dart';
 
@@ -96,7 +96,7 @@ class CookieController extends _$CookieController {
   }
 
   void clearAllCookies() {
-    state = const CookieModel();
+    state = const CookieModel(bilibiliUid: 0);
     _persist(state);
   }
 
