@@ -1523,6 +1523,8 @@
     "qq_group": "QQ Group",
     "qq_group_num": "GroupNo.: {number}",
     "qr_expired": "QR code expired",
+    "unsaved_changes": "Unsaved changes",
+    "qr_refresh_tip": "Tap the button below to get a new code",
     "qr_load_failed": "Failed to load QR code",
     "qr_login": "QR Code Login",
     "qr_login_tip": "Please use the Bilibili app to scan the QR code",

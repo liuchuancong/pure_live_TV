@@ -1520,6 +1520,8 @@
     "qq_group": "QQ群",
     "qq_group_num": "群号: {number}",
     "qr_expired": "二维码已失效",
+    "unsaved_changes": "有未保存的修改",
+    "qr_refresh_tip": "请点击下方按钮重新获取二维码",
     "qr_load_failed": "二维码加载失败",
     "qr_login": "二维码登录",
     "qr_login_tip": "请使用哔哩哔哩手机客户端扫描二维码登录",

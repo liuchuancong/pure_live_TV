@@ -368,6 +368,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         fit: StackFit.expand,
         children: [
           _buildViewer(bgState, item),
+          // The mask the app applies over this wallpaper, drawn here too so the
+          // 遮罩 action shows what it does: before, the button moved a number
+          // and nothing on screen changed.
+          IgnorePointer(child: _buildMask(bgState)),
           if (widget.args.isApiMode && _apiLoading && hasPicture)
             const Positioned(
               top: 16,
@@ -413,8 +417,19 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     return categories.first;
   }
 
-  Widget _buildViewer(BackgroundConfigModel bgState, BackgroundItem item) {
-    if (widget.args.isApiMode) {
+  /// The readability wash the app puts over the wallpaper, in the preview.
+  ///
+  /// Same rule as the app-wide layer: a light palette is washed white, a dark
+  /// one black, so the preview agrees with what 设为背景 will produce.
+  Widget _buildMask(BackgroundConfigModel bgState) {
+    if (bgState.maskOpacity <= 0) return const SizedBox.shrink();
+    final bool lightSurface = context.tvTheme.backgroundColor.computeLuminance() > 0.5;
+    return ColoredBox(
+      color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: bgState.maskOpacity),
+    );
+  }
+
+  Widget _buildViewer(BackgroundConfigModel bgState, BackgroundItem item) {    if (widget.args.isApiMode) {
       final bytes = _apiBytes;
       if (bytes == null) {
         return _apiLoading

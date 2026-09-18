@@ -1,9 +1,11 @@
+import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
 /// 三方认证 — one row per platform, each opening that platform's own page.
@@ -17,6 +19,16 @@ class AccountSettingsSectionPage extends ConsumerWidget {
 
   static List<CookieSite> get sites => <CookieSite>[
     CookieSite(
+      siteId: Sites.bilibiliSite,
+      titleKey: 'site_bilibili',
+      route: AppRoutes.kSettingsAccountBilibili,
+      hintKey: 'cookie_hint',
+      read: (cookies) => cookies.bilibiliCookie,
+      apply: (controller, value) => controller.setBilibiliCookie(value),
+      webPath: WebRemoteRouter.cookieBilibili,
+    ),
+    CookieSite(
+      siteId: Sites.huyaSite,
       titleKey: 'site_huya',
       route: AppRoutes.kSettingsAccountHuya,
       hintKey: 'huya_cookie_hint',
@@ -25,6 +37,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       webPath: WebRemoteRouter.cookieHuya,
     ),
     CookieSite(
+      siteId: Sites.yySite,
       titleKey: 'site_yy',
       route: AppRoutes.kSettingsAccountYy,
       hintKey: 'cookie_hint',
@@ -32,6 +45,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       apply: (controller, value) => controller.setYyCookie(value),
     ),
     CookieSite(
+      siteId: Sites.douyinSite,
       titleKey: 'site_douyin',
       route: AppRoutes.kSettingsAccountDouyin,
       hintKey: 'douyin_cookie_hint',
@@ -40,6 +54,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       webPath: WebRemoteRouter.cookieDouyin,
     ),
     CookieSite(
+      siteId: Sites.kuaishouSite,
       titleKey: 'site_kuaishou',
       route: AppRoutes.kSettingsAccountKuaishou,
       hintKey: 'kuaishou_cookie_hint',
@@ -48,6 +63,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       webPath: WebRemoteRouter.cookieKuaishou,
     ),
     CookieSite(
+      siteId: Sites.twitchSite,
       titleKey: 'site_twitch',
       route: AppRoutes.kSettingsAccountTwitch,
       hintKey: 'twitch_cookie_hint',
@@ -55,6 +71,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       apply: (controller, value) => controller.setTwitchCookie(value),
     ),
     CookieSite(
+      siteId: Sites.soopSite,
       titleKey: 'site_soop',
       route: AppRoutes.kSettingsAccountSoop,
       hintKey: 'soop_cookie_hint',
@@ -66,6 +83,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final CookieModel cookies = ref.watch(cookieControllerProvider);
+    final CookieSite bilibili = sites.first;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,16 +98,16 @@ class AccountSettingsSectionPage extends ConsumerWidget {
               subtitle: cookies.bilibiliCookie.isEmpty
                   ? i18n('not_logged_in')
                   : (cookies.bilibiliUid <= 0 ? i18n('logined') : 'UID ${cookies.bilibiliUid}'),
-              icon: Icons.live_tv_rounded,
-              onTap: () => context.push(AppRoutes.kSettingsAccountBilibili),
+              leading: SiteLogo(siteId: bilibili.siteId),
+              onTap: () => context.push(bilibili.route),
             ),
-            for (final CookieSite site in sites)
+            for (final CookieSite site in sites.skip(1))
               TvSettingsNavTile(
                 title: i18n(site.titleKey),
                 subtitle: site.read(cookies).isEmpty
                     ? i18n('not_set')
                     : i18n('cookie_state_set', args: {'count': '${site.read(cookies).length}'}),
-                icon: Icons.cookie_outlined,
+                leading: SiteLogo(siteId: site.siteId),
                 onTap: () => context.push(site.route),
               ),
           ],
@@ -128,6 +146,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
 /// of its own page.
 class CookieSite {
   const CookieSite({
+    required this.siteId,
     required this.titleKey,
     required this.route,
     required this.hintKey,
@@ -135,6 +154,9 @@ class CookieSite {
     required this.apply,
     this.webPath,
   });
+
+  /// Platform id in [Sites], used to resolve the bundled logo.
+  final String siteId;
 
   final String titleKey;
   final String route;
@@ -144,4 +166,28 @@ class CookieSite {
 
   /// Phone page for this platform; null when the bundled phone pages have none.
   final String? webPath;
+}
+
+/// The platform's own logo from the central registry (`assets/images`), sized
+/// for a settings row's leading slot.
+class SiteLogo extends StatelessWidget {
+  const SiteLogo({super.key, required this.siteId, this.size = 34});
+
+  final String siteId;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8.sp),
+      child: Image.asset(
+        Sites.logoOf(siteId),
+        width: size.sp,
+        height: size.sp,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Icons.cookie_outlined, size: size.sp, color: context.tvTheme.secondaryTextColor),
+      ),
+    );
+  }
 }
