@@ -170,6 +170,7 @@ class SettingsCatalogView extends StatelessWidget {
 /// Titles for the pages that are reached from inside a parent page (or from
 /// the desktop app's own routes) and therefore are not menu rows.
 const Map<String, String> settingsSectionTitleKeys = <String, String>{
+  AppRoutes.kIptvResources: 'iptv_resource_list',
   AppRoutes.kIptvImport: 'iptv_import_source',
   AppRoutes.kIptvSync: 'auto_sync_settings',
   AppRoutes.kIptvHeaders: 'iptv_headers_settings',

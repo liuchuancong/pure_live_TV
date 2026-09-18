@@ -893,6 +893,7 @@
     "iptv_import_url": "从 URL 导入播放列表",
 "edit": "编辑",
 "iptv_resource_list": "资源列表",
+  "iptv_resource_list_desc": "查看已导入的直播源，支持同步与删除",
 "iptv_import_source": "导入直播源",
 "iptv_import_source_desc": "网络导入，或扫码在手机网页上传播放列表",
 "iptv_sync_entry_desc": "自动同步开关、周期与一键同步",

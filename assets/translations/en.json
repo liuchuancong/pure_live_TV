@@ -895,6 +895,7 @@
     "iptv_import_url": "Import playlist from URL",
 "edit": "Edit",
 "iptv_resource_list": "Sources",
+  "iptv_resource_list_desc": "Browse imported sources with sync and delete",
 "iptv_import_source": "Import IPTV source",
 "iptv_import_source_desc": "Import from network, or scan to upload a playlist from your phone",
 "iptv_sync_entry_desc": "Auto-sync switch, interval and batch sync",

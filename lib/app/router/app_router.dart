@@ -10,6 +10,7 @@ import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
 import 'package:pure_live/features/settings/pages/update_history_page.dart';
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_resources_section.dart';
 import 'package:pure_live/features/iptv/pages/iptv_import_section.dart';
 import 'package:pure_live/features/iptv/pages/iptv_sync_section.dart';
 import 'package:pure_live/features/iptv/pages/iptv_headers_section.dart';
@@ -66,6 +67,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
   AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),  // Pages the mobile app gives its own path.
   AppRoutes.kIptv: (context) => const IptvManageSectionPage(),
+  AppRoutes.kIptvResources: (context) => const IptvResourcesSectionPage(),
   AppRoutes.kIptvImport: (context) => const IptvImportSectionPage(),
   AppRoutes.kIptvSync: (context) => const IptvSyncSectionPage(),
   AppRoutes.kIptvHeaders: (context) => const IptvHeadersSectionPage(),

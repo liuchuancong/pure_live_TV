@@ -124,6 +124,7 @@ abstract final class AppRoutes {
 
   /// IPTV sub-pages: import, auto-sync and request headers, each its own
   /// screen instead of one long scroll.
+  static const kIptvResources = "/iptv/resources";
   static const kIptvImport = "/iptv/import";
   static const kIptvSync = "/iptv/sync";
   static const kIptvHeaders = "/iptv/headers";
