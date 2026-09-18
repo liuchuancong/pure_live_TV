@@ -32,7 +32,9 @@ import bilibiliIcon from '@/assets/bilibili.png'
 import huyaIcon from '@/assets/huya.png'
 import douyinIcon from '@/assets/douyin.png'
 import kuaishouIcon from '@/assets/kuaishou.png'
-
+import yyIcon from '@/assets/yy.png'
+import soopIcon from '@/assets/soop.png'
+import twitchIcon from '@/assets/twitch.png'
 const route = useRoute()
 
 // The TV app's own platform list: douyu/cc are gone, yy/soop/twitch are in.
@@ -43,8 +45,8 @@ const supportSites = [
   { id: 'huya', name: '虎牙', icon: huyaIcon },
   { id: 'douyin', name: '抖音', icon: douyinIcon },
   { id: 'kuaishou', name: '快手', icon: kuaishouIcon },
-  { id: 'yy', name: 'YY', badge: 'YY', badgeClass: 'bg-red-500/10 text-red-500' },
-  { id: 'soop', name: 'SOOP', badge: 'SO', badgeClass: 'bg-orange-500/10 text-orange-500' },
-  { id: 'twitch', name: 'Twitch', badge: 'TW', badgeClass: 'bg-violet-500/10 text-violet-500' }
+  { id: 'yy', name: 'YY', icon: yyIcon },
+  { id: 'soop', name: 'SOOP', icon: soopIcon },
+  { id: 'twitch', name: 'Twitch', icon: twitchIcon }
 ]
 </script>
