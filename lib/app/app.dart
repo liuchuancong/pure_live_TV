@@ -1,14 +1,15 @@
 import 'package:dpad/dpad.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:tv_textfield/tv_textfield.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:go_transitions/go_transitions.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:material_ui/material_ui.dart' as material;
 import 'package:pure_live/shared/widgets/tv_scaffold.dart';
-import 'package:pure_live/features/remote/global_room_push.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:pure_live/features/remote/global_room_push.dart';
 import 'package:pure_live/shared/widgets/tv_locale_rebuilder.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 import 'package:pure_live/services/font_settings/font_settings_model.dart';
@@ -20,13 +21,6 @@ class App extends ConsumerWidget {
   const App({super.key});
   static const double _minTextScale = 0.7;
   static const double _maxTextScale = 2.0;
-
-  /// Fade-through transition, no opaque base color — pages are transparent over the shared background.
-  static final PageTransitionsTheme _kPageTransitions = PageTransitionsTheme(
-    builders: <TargetPlatform, PageTransitionsBuilder>{
-      for (final p in TargetPlatform.values) p: const _FadePageTransitionsBuilder(),
-    },
-  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -98,7 +92,13 @@ class App extends ConsumerWidget {
                 brightness: Brightness.light,
                 fontFamily: fontFamily,
                 baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
-                pageTransitions: _kPageTransitions,
+                pageTransitions: const PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: GoTransitions.fadeUpwards,
+                    TargetPlatform.iOS: GoTransitions.cupertino,
+                    TargetPlatform.macOS: GoTransitions.cupertino,
+                  },
+                ),
                 colorScheme: _schemeFor(resolvedTvTheme, systemScheme, Brightness.light),
               ),
               darkTheme: buildTvThemeData(
@@ -106,7 +106,13 @@ class App extends ConsumerWidget {
                 brightness: Brightness.dark,
                 fontFamily: fontFamily,
                 baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
-                pageTransitions: _kPageTransitions,
+                pageTransitions: const PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: GoTransitions.fadeUpwards,
+                    TargetPlatform.iOS: GoTransitions.cupertino,
+                    TargetPlatform.macOS: GoTransitions.cupertino,
+                  },
+                ),
                 colorScheme: _schemeFor(resolvedTvTheme, systemScheme, Brightness.dark),
               ),
               themeMode: themeMode,
@@ -114,29 +120,6 @@ class App extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Fade-through: outgoing page fades out in first 35%, incoming fills last 65%.
-class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
-  const _FadePageTransitionsBuilder();
-
-  @override
-  Widget buildTransitions<T>(
-    PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) {
-    final fadeIn = CurveTween(curve: const Interval(0.35, 1.0, curve: Curves.easeOutCubic));
-    final fadeOut = CurveTween(
-      curve: const Interval(0.0, 0.35, curve: Curves.easeIn),
-    ).chain(Tween<double>(begin: 1.0, end: 0.0));
-    return FadeTransition(
-      opacity: animation.drive(fadeIn),
-      child: FadeTransition(opacity: secondaryAnimation.drive(fadeOut), child: child),
     );
   }
 }
