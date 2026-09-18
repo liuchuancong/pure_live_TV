@@ -13,6 +13,7 @@ import 'package:pure_live/features/favorite/favorite_page.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
+import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 class HomePage extends ConsumerWidget {
@@ -31,7 +32,8 @@ class HomePage extends ConsumerWidget {
     // 设置刷新 → 主页缓存: on top of the widget default, the user can turn the
     // page cache off so every switch rebuilds the content fresh (and clears
     // cached tab state after nav/platform config changes).
-    final bool effectiveKeepAlive = keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
+    final bool effectiveKeepAlive =
+        keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
 
     // A menu entry hidden in 导航显示 while its page is on screen leaves the
     // sidebar with no selection and the old page lingering. Auto-correct once
@@ -66,137 +68,166 @@ class HomePage extends ConsumerWidget {
     final isCurrentCacheable = cacheableTypes.contains(currentMenuType);
     final stackIndex = cacheableTypes.indexOf(currentMenuType);
 
-    return TvScaffold(
-      child: Row(
-        children: [
-          DpadRegion(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              curve: Curves.easeOutCubic,
-              width: sidebarWidth,
-              // Semi-transparent on purpose: the app-wide wallpaper (TvAppBackground)
-              // lives below the navigator, and an opaque fill here is what hid it
-              // from the menu column. The scrim keeps icons readable; the
-              // background bleeds through instead of a flat card block.
-              color: currentTvTheme.backgroundColor.withValues(alpha: 0.62),
-              padding: EdgeInsets.symmetric(vertical: 24.sp),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 14.sp),
-                    child: _buildAdaptiveItem(
-                      ref: ref,
-                      item: myProfileItem,
-                      isExpanded: isExpanded,
-                      isSelected: currentIndex == myProfileItem.index,
-                      onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(myProfileItem.index),
-                    ),
-                  ),
-                  const Spacer(),
-                  ...List.generate(menuList.length, (index) {
-                    final item = menuList[index];
-                    final isSelected = currentIndex == item.index;
-
-                    return Padding(
+    // The home page sits at the route root, so a back press here means the
+    // user wants out — ask before leaving, with the donation note attached.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        showExitConfirmDialog(context, ref);
+      },
+      child: TvScaffold(
+        child: Row(
+          children: [
+            DpadRegion(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeOutCubic,
+                width: sidebarWidth,
+                // Semi-transparent on purpose: the app-wide wallpaper (TvAppBackground)
+                // lives below the navigator, and an opaque fill here is what hid it
+                // from the menu column. The scrim keeps icons readable; the
+                // background bleeds through instead of a flat card block.
+                color: currentTvTheme.backgroundColor.withValues(alpha: 0.62),
+                padding: EdgeInsets.symmetric(vertical: 24.sp),
+                child: Column(
+                  children: [
+                    Padding(
                       padding: EdgeInsets.only(bottom: 14.sp),
                       child: _buildAdaptiveItem(
                         ref: ref,
-                        item: item,
+                        item: myProfileItem,
                         isExpanded: isExpanded,
-                        isSelected: isSelected,
-                        onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
+                        isSelected: currentIndex == myProfileItem.index,
+                        onTap: () => ref
+                            .read(sideMenuIndexProvider.notifier)
+                            .changeIndex(myProfileItem.index),
                       ),
-                    );
-                  }),
-                  const Spacer(),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 14.sp),
-                    child: TvIconButton(
-                      icon: AnimatedRotation(
-                        turns: isExpanded ? 0.5 : 0.0,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
-                        child: const Icon(Icons.arrow_forward_ios_rounded),
-                      ),
-                      size: TvIconButtonSize.medium,
-                      isSecondary: true,
-                      onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
                     ),
-                  ),
-                  _buildAdaptiveItem(
-                    ref: ref,
-                    item: mySettingsItem,
-                    isExpanded: isExpanded,
-                    isSelected: currentIndex == mySettingsItem.index,
-                    // Settings opens as its own page (title bar, back button
-                    // and the configuration-preview action), like the desktop
-                    // app, instead of swapping the content pane.
-                    onTap: () => context.push(AppRoutes.kSettings),
-                  ),
-                ],
+                    const Spacer(),
+                    ...List.generate(menuList.length, (index) {
+                      final item = menuList[index];
+                      final isSelected = currentIndex == item.index;
+
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 14.sp),
+                        child: _buildAdaptiveItem(
+                          ref: ref,
+                          item: item,
+                          isExpanded: isExpanded,
+                          isSelected: isSelected,
+                          onTap: () => ref
+                              .read(sideMenuIndexProvider.notifier)
+                              .changeIndex(item.index),
+                        ),
+                      );
+                    }),
+                    const Spacer(),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 14.sp),
+                      child: TvIconButton(
+                        icon: AnimatedRotation(
+                          turns: isExpanded ? 0.5 : 0.0,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                          child: const Icon(Icons.arrow_forward_ios_rounded),
+                        ),
+                        size: TvIconButtonSize.medium,
+                        isSecondary: true,
+                        onTap: () =>
+                            ref.read(isMenuExpandedProvider.notifier).toggle(),
+                      ),
+                    ),
+                    _buildAdaptiveItem(
+                      ref: ref,
+                      item: mySettingsItem,
+                      isExpanded: isExpanded,
+                      isSelected: currentIndex == mySettingsItem.index,
+                      // Settings opens as its own page (title bar, back button
+                      // and the configuration-preview action), like the desktop
+                      // app, instead of swapping the content pane.
+                      onTap: () => context.push(AppRoutes.kSettings),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: DpadRegion(
-              child: Padding(
-                padding: EdgeInsets.all(8.sp),
-                child: effectiveKeepAlive
-                    ? Stack(
-                        children: [
-                          Visibility(
-                            visible: isCurrentCacheable,
-                            maintainState: true,
-                            child: IndexedStack(
-                              index: stackIndex != -1 ? stackIndex : 0,
-                              children: cacheableTypes.map((type) {
-                                final isCurrent = currentMenuType == type;
-                                return TvLazyWrapper(
-                                  isCurrent: isCurrent,
-                                  child: _buildPageContent(context, ref, type)
-                                      .animate(target: isCurrent ? 1.0 : 0.0)
-                                      .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
-                                      .scale(
-                                        begin: const Offset(0.95, 0.95),
-                                        end: const Offset(1.0, 1.0),
-                                        duration: 250.ms,
-                                        curve: Curves.easeOutCubic,
-                                      ),
-                                );
-                              }).toList(),
+            Expanded(
+              child: DpadRegion(
+                child: Padding(
+                  padding: EdgeInsets.all(8.sp),
+                  child: effectiveKeepAlive
+                      ? Stack(
+                          children: [
+                            Visibility(
+                              visible: isCurrentCacheable,
+                              maintainState: true,
+                              child: IndexedStack(
+                                index: stackIndex != -1 ? stackIndex : 0,
+                                children: cacheableTypes.map((type) {
+                                  final isCurrent = currentMenuType == type;
+                                  return TvLazyWrapper(
+                                    isCurrent: isCurrent,
+                                    child: _buildPageContent(context, ref, type)
+                                        .animate(target: isCurrent ? 1.0 : 0.0)
+                                        .fadeIn(
+                                          duration: 200.ms,
+                                          curve: Curves.easeOutCubic,
+                                        )
+                                        .scale(
+                                          begin: const Offset(0.95, 0.95),
+                                          end: const Offset(1.0, 1.0),
+                                          duration: 250.ms,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                  );
+                                }).toList(),
+                              ),
                             ),
-                          ),
-                          if (!isCurrentCacheable)
-                            Container(
-                              key: ValueKey(currentIndex),
-                              child: _buildPageContent(context, ref, currentMenuType)
+                            if (!isCurrentCacheable)
+                              Container(
+                                key: ValueKey(currentIndex),
+                                child:
+                                    _buildPageContent(
+                                          context,
+                                          ref,
+                                          currentMenuType,
+                                        )
+                                        .animate()
+                                        .fadeIn(
+                                          duration: 200.ms,
+                                          curve: Curves.easeOutCubic,
+                                        )
+                                        .scale(
+                                          begin: const Offset(0.95, 0.95),
+                                          end: const Offset(1.0, 1.0),
+                                          duration: 250.ms,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                              ),
+                          ],
+                        )
+                      : Container(
+                          key: ValueKey(currentIndex),
+                          child:
+                              _buildPageContent(context, ref, currentMenuType)
                                   .animate()
-                                  .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                                  .fadeIn(
+                                    duration: 200.ms,
+                                    curve: Curves.easeOutCubic,
+                                  )
                                   .scale(
                                     begin: const Offset(0.95, 0.95),
                                     end: const Offset(1.0, 1.0),
                                     duration: 250.ms,
                                     curve: Curves.easeOutCubic,
                                   ),
-                            ),
-                        ],
-                      )
-                    : Container(
-                        key: ValueKey(currentIndex),
-                        child: _buildPageContent(context, ref, currentMenuType)
-                            .animate()
-                            .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
-                            .scale(
-                              begin: const Offset(0.95, 0.95),
-                              end: const Offset(1.0, 1.0),
-                              duration: 250.ms,
-                              curve: Curves.easeOutCubic,
-                            ),
-                      ),
+                        ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -210,19 +241,27 @@ class HomePage extends ConsumerWidget {
   }) {
     if (isExpanded) {
       return Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 16.sp),
-        child: TvButton(
-          title: item.title,
-          icon: Icon(item.icon, size: 32.sp),
-          iconPosition: TvIconPosition.left,
-          size: TvButtonSize.mini,
-          isSecondary: !isSelected,
-          selected: isSelected,
-          useFadedFocus: true,
-          onTap: onTap,
-        ),
-      ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.05, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 16.sp),
+            child: TvButton(
+              title: item.title,
+              icon: Icon(item.icon, size: 32.sp),
+              iconPosition: TvIconPosition.left,
+              size: TvButtonSize.mini,
+              isSecondary: !isSelected,
+              selected: isSelected,
+              useFadedFocus: true,
+              onTap: onTap,
+            ),
+          )
+          .animate()
+          .fadeIn(duration: 150.ms)
+          .slideX(
+            begin: -0.05,
+            end: 0,
+            duration: 200.ms,
+            curve: Curves.easeOutCubic,
+          );
     }
 
     return TvIconButton(
@@ -235,7 +274,11 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPageContent(BuildContext context, WidgetRef ref, TvMenuType type) {
+  Widget _buildPageContent(
+    BuildContext context,
+    WidgetRef ref,
+    TvMenuType type,
+  ) {
     final currentTvTheme = context.tvTheme;
     final myProfileItem = ref.watch(myProfileMenuItemProvider);
 
@@ -244,7 +287,9 @@ class HomePage extends ConsumerWidget {
         return Center(
           child: Text(
             myProfileItem.title,
-            style: AppTextStyles.t28W600.copyWith(color: currentTvTheme.primaryTextColor),
+            style: AppTextStyles.t28W600.copyWith(
+              color: currentTvTheme.primaryTextColor,
+            ),
           ),
         );
       case TvMenuType.settings:

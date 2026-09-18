@@ -700,6 +700,8 @@
     "exit_pip": "退出小窗播放",
     "exit_pip_subtitle": "返回主界面时是否保留悬浮窗",
     "exit_without_ask": "退出不再询问",
+    "exit_confirm_message": "感谢使用纯粹直播 TV，期待下次再见。",
+    "exit_donate_message": "项目全程开源免费，无任何付费门槛。若是本应用给您带来便利，欢迎微信扫码请开发者喝瓶牛奶，支持后续更新维护。",
     "exit_yes": "确定",
     "expand_all": "展开全部节点",
     "expand_player_window": "展开播放器",

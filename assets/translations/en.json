@@ -702,6 +702,8 @@
     "exit_pip": "Exit PiP",
     "exit_pip_subtitle": "Keep floating window when leaving",
     "exit_without_ask": "Exit Without Prompt",
+    "exit_confirm_message": "Thanks for using Pure Live TV. See you next time.",
+    "exit_donate_message": "The project is fully open source and free of charge. If it has been useful to you, scan the WeChat code to buy the developer a bottle of milk and support future updates.",
     "exit_yes": "Yes",
     "expand_all": "Expand All",
     "expand_player_window": "Expand player",
