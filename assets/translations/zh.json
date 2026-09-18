@@ -54,6 +54,7 @@
     "movie_lan_started": "局域网服务已启动",
     "movie_lan_stopped": "服务未启动",
     "movie_paste_link": "在此粘贴或输入链接地址",
+    "movie_support_sites": "支持的平台",
     "movie_wait_phone_sync": "等待手机扫码同步或点击输入...",
     "playlist_line_suffix": "{name}（线路{index}）",
     "quality_high_bitrate": "高码率",

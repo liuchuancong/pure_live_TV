@@ -2,8 +2,10 @@ import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
+import 'package:pure_live/services/app_update/app_update_service.dart';
 
 class AboutSettingsSectionPage extends ConsumerStatefulWidget {
   const AboutSettingsSectionPage({super.key});
@@ -27,6 +29,13 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
   Widget build(BuildContext context) {
     final appState = ref.watch(appSettingsControllerProvider);
     final app = ref.read(appSettingsControllerProvider.notifier);
+    // 发现新版本 hint: the startup check has already run by the time this page
+    // can be opened, so the badge is instant for a user with a pending update.
+    final updateState = ref.watch(appUpdateControllerProvider);
+    final String? newVersionHint =
+        updateState.phase == AppUpdatePhase.available && updateState.latestVersion.isNotEmpty
+        ? '${i18n('new_version_found')} v${updateState.latestVersion}'
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,8 +45,14 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
           children: [
             TvSettingsNavTile(
               title: i18nOr('online_update', 'Online update'),
-              subtitle: _version.isEmpty ? i18n('current_version') : '${i18n('current_version')} v$_version',
+              subtitle: <String>[
+                ?newVersionHint,
+                if (_version.isEmpty) i18n('current_version') else '${i18n('current_version')} v$_version',
+              ].join(' · '),
               icon: Icons.system_update_alt_rounded,
+              trailing: newVersionHint == null
+                  ? null
+                  : Text(i18n('new_version_found'), style: TextStyle(fontSize: 13.sp, color: context.tvTheme.focusColor)),
               onTap: () => context.push(AppRoutes.kAppUpdate),
             ),
           ],

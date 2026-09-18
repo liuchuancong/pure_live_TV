@@ -150,6 +150,15 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Text(
+            i18n('movie_paste_link'),
+            style: AppTextStyles.t18W500.copyWith(
+              fontSize: 30.sp,
+              fontWeight: FontWeight.bold,
+              color: currentTvTheme.primaryTextColor,
+              height: 1,
+            ),
+          ),
           Spacer(),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
@@ -159,13 +168,27 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                   : Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20.sp),
             ),
-            child: Text(
-              isServerRunning ? i18n('movie_lan_started') : i18n('movie_lan_stopped'),
-              style: TextStyle(
-                color: isServerRunning ? currentTvTheme.focusColor : Colors.redAccent,
-                fontSize: 20.sp,
-                height: 1,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10.sp,
+                  height: 10.sp,
+                  margin: EdgeInsets.only(right: 8.sp),
+                  decoration: BoxDecoration(
+                    color: isServerRunning ? currentTvTheme.focusColor : Colors.redAccent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Text(
+                  isServerRunning ? i18n('movie_lan_started') : i18n('movie_lan_stopped'),
+                  style: TextStyle(
+                    color: isServerRunning ? currentTvTheme.focusColor : Colors.redAccent,
+                    fontSize: 20.sp,
+                    height: 1,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -183,15 +206,6 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                i18n('movie_paste_link'),
-                style: AppTextStyles.t18W500.copyWith(
-                  fontSize: 28.sp,
-                  color: currentTvTheme.secondaryTextColor,
-                  height: 1,
-                ),
-              ),
-              SizedBox(height: _itemGap.sp),
               TvInputField(
                 controller: _urlController,
                 hint: i18n('movie_wait_phone_sync'),
@@ -271,30 +285,41 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   Widget _buildSupportInfo(TvThemeData currentTvTheme) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.sp),
+      padding: EdgeInsets.all(20.sp),
       decoration: BoxDecoration(
         color: currentTvTheme.cardColor,
         borderRadius: BorderRadius.circular(16.sp),
         border: Border.all(color: currentTvTheme.focusedCardColor.withValues(alpha: 0.25)),
       ),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 16.sp,
-        runSpacing: 8.sp,
-        children: Sites.supportSites
-            .map((site) => site.name)
-            .map(
-              (e) => Text(
-                e,
-                style: AppTextStyles.t18W600.copyWith(
-                  color: currentTvTheme.primaryTextColor.withValues(alpha: 0.75),
-                  fontSize: 25.sp,
-                  fontWeight: FontWeight.bold,
-                  height: 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            i18n('movie_support_sites'),
+            style: AppTextStyles.t18W500.copyWith(
+              fontSize: 20.sp,
+              color: currentTvTheme.secondaryTextColor,
+              height: 1,
+            ),
+          ),
+          SizedBox(height: 16.sp),
+          // Display-only chips: excludeFocus keeps them out of the dpad
+          // traversal, they label the page without becoming stop points.
+          Wrap(
+            spacing: 12.sp,
+            runSpacing: 12.sp,
+            children: [
+              for (final site in Sites.supportSites)
+                TvButton(
+                  title: site.name,
+                  size: TvButtonSize.mini,
+                  isSecondary: true,
+                  excludeFocus: true,
+                  onTap: null,
                 ),
-              ),
-            )
-            .toList(),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -1,7 +1,9 @@
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/theme/index.dart';
 
 /// One settings destination: its route, translation keys and icon.
 typedef SettingsEntry = ({String path, String titleKey, String? subtitleKey, IconData icon});
@@ -138,11 +140,17 @@ SettingsEntry? settingsEntryForLocation(String location) {
 }
 
 /// Grouped settings list: a heading per group, focusable rows inside a card.
-class SettingsCatalogView extends StatelessWidget {
+class SettingsCatalogView extends ConsumerWidget {
   const SettingsCatalogView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // The 关于 row trades its static subtitle for the 发现新版本 hint while an
+    // update is pending — the menu is the first screen a user looking for "what
+    // changed" lands on.
+    final updateState = ref.watch(appUpdateControllerProvider);
+    final bool hasUpdate = updateState.phase == AppUpdatePhase.available && updateState.latestVersion.isNotEmpty;
+
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
       children: [
@@ -153,8 +161,16 @@ class SettingsCatalogView extends StatelessWidget {
               for (final SettingsEntry entry in group.entries)
                 TvSettingsNavTile(
                   title: i18n(entry.titleKey),
-                  subtitle: entry.subtitleKey == null ? null : i18n(entry.subtitleKey!),
+                  subtitle: hasUpdate && entry.path == AppRoutes.kAbout
+                      ? '${i18n('new_version_found')} v${updateState.latestVersion}'
+                      : (entry.subtitleKey == null ? null : i18n(entry.subtitleKey!)),
                   icon: entry.icon,
+                  trailing: hasUpdate && entry.path == AppRoutes.kAbout
+                      ? Text(
+                          i18n('new_version_found'),
+                          style: TextStyle(fontSize: 13.sp, color: context.tvTheme.focusColor),
+                        )
+                      : null,
                   onTap: () => context.push(entry.path),
                 ),
             ],

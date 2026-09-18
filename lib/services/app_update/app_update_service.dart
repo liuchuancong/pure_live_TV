@@ -53,6 +53,37 @@ class AppUpdateRecord {
   }
 }
 
+/// One real release asset, as GitHub's releases API reports it.
+///
+/// The API is the source of truth for what to download: `version.json`'s
+/// version/build_number is only a hint and drifts from what was actually
+/// published, while the latest release's asset list carries the exact file
+/// names and urls.
+class ReleaseAssetInfo {
+  const ReleaseAssetInfo({required this.name, required this.url, required this.sizeBytes});
+
+  final String name;
+  final String url;
+  final int sizeBytes;
+
+  /// `arm64-v8a`, `armeabi-v7a` or `x86_64` when the file name carries one,
+  /// null for anything else (source zips, checksums, …).
+  String? get abi {
+    for (final candidate in const ['arm64-v8a', 'armeabi-v7a', 'x86_64']) {
+      if (name.toLowerCase().contains(candidate)) return candidate;
+    }
+    return null;
+  }
+
+  bool get isApk => name.toLowerCase().endsWith('.apk');
+
+  String get sizeText {
+    if (sizeBytes <= 0) return '';
+    if (sizeBytes < 1024 * 1024) return '${(sizeBytes / 1024).toStringAsFixed(0)} KB';
+    return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+}
+
 /// The release history payload, newest first.
 ///
 /// The manifest is a JSON array (or an object with a `releases` array) of
@@ -134,6 +165,9 @@ class AppUpdateState {
   /// 本机更新记录, newest first.
   final List<AppUpdateRecord> records;
 
+  /// The latest release's real assets (GitHub API), empty until fetched.
+  final List<ReleaseAssetInfo> latestAssets;
+
   const AppUpdateState({
     this.phase = AppUpdatePhase.idle,
     this.currentVersion = '',
@@ -151,6 +185,7 @@ class AppUpdateState {
     this.historyLoading = false,
     this.historyError,
     this.records = const [],
+    this.latestAssets = const [],
   });
 
   double get progress => totalBytes > 0 ? (receivedBytes / totalBytes).clamp(0.0, 1.0) : 0;
@@ -180,6 +215,7 @@ class AppUpdateState {
     bool? historyLoading,
     String? historyError,
     List<AppUpdateRecord>? records,
+    List<ReleaseAssetInfo>? latestAssets,
   }) {
     return AppUpdateState(
       phase: phase ?? this.phase,
@@ -198,6 +234,7 @@ class AppUpdateState {
       historyLoading: historyLoading ?? this.historyLoading,
       historyError: historyError,
       records: records ?? this.records,
+      latestAssets: latestAssets ?? this.latestAssets,
     );
   }
 }
@@ -271,11 +308,13 @@ class AppUpdateController extends _$AppUpdateController {
         selectedAbi: abis.contains(state.selectedAbi) || state.selectedAbi.isEmpty
             ? (abis.contains('arm64-v8a') ? 'arm64-v8a' : (abis.isEmpty ? '' : abis.first))
             : state.selectedAbi,
-        // Default asset URL comes from the history entry matching the version,
-        // or the manifest's own download_url as a last resort.
         history: history,
       );
       _appendRecord(AppUpdateAction.available, version: VersionUtil.latestVersion);
+      // The manifest's version/build_number is a hint; the release's real
+      // asset list is what actually downloads. Fetched in the background so
+      // the page can already render, and the rows upgrade when it lands.
+      unawaited(_fetchLatestReleaseAssets());
     } catch (error) {
       _patchState(phase: AppUpdatePhase.failed, error: '$error');
       _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
@@ -283,6 +322,78 @@ class AppUpdateController extends _$AppUpdateController {
       _checking = false;
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Latest release assets (GitHub API through the proxy list)
+  // ---------------------------------------------------------------------------
+
+  /// The latest release as GitHub reports it, asked through the origin or one
+  /// of the proxies (the same prefixes the download path uses, in front of
+  /// `api.github.com`). Returns null when no candidate answered.
+  Future<List<ReleaseAssetInfo>?> _fetchLatestReleaseAssets() async {
+    final api = 'https://api.github.com/repos/${VersionUtil.updateOwner}/${VersionUtil.updateRepository}/releases?per_page=10';
+    final candidates = <String>[
+      if (SettingsService.to.appState.useGitHubOriginForUpdates) api,
+      for (final mirror in _assetMirrors) '$mirror$api',
+      // The origin last for the mirrored list: it is the slowest path from a
+      // TV box, but a correct answer beats a fast failure.
+      if (!SettingsService.to.appState.useGitHubOriginForUpdates) api,
+    ];
+    for (final url in candidates) {
+      final dio = _dioForApi();
+      try {
+        final data = await dio.get<String>(
+          url,
+          options: Options(
+            headers: {'Accept': 'application/vnd.github+json', 'User-Agent': 'PureLiveTV'},
+            responseType: ResponseType.plain,
+          ),
+        );
+        final decoded = jsonDecode(data.data ?? '');
+        final assets = _parseLatestReleaseAssets(decoded);
+        if (assets != null) {
+          final abis = assets.map((a) => a.abi).whereType<String>().toSet().toList()..sort();
+          // Real assets win over the manifest's declared ABI list: the rows
+          // the page draws should be exactly the files that can download.
+          _patchState(latestAssets: assets, abis: abis.isNotEmpty ? abis : null);
+          return assets;
+        }
+      } catch (_) {
+        // Try the next candidate.
+      } finally {
+        dio.close();
+      }
+    }
+    return null;
+  }
+
+  /// Picks the newest non-prerelease release from the list (falling back to
+  /// the first entry) and maps its assets.
+  List<ReleaseAssetInfo>? _parseLatestReleaseAssets(Object? decoded) {
+    if (decoded is! List || decoded.isEmpty) return null;
+    Map<String, dynamic>? release;
+    for (final entry in decoded) {
+      if (entry is Map && entry['prerelease'] != true) {
+        release = Map<String, dynamic>.from(entry);
+        break;
+      }
+    }
+    release ??= Map<String, dynamic>.from(decoded.first as Map);
+    final assets = release['assets'];
+    if (assets is! List) return null;
+    final result = <ReleaseAssetInfo>[];
+    for (final asset in assets) {
+      if (asset is! Map) continue;
+      final name = '${asset['name'] ?? ''}'.trim();
+      final url = '${asset['browser_download_url'] ?? ''}'.trim();
+      if (name.isEmpty || !url.startsWith('http')) continue;
+      if (!name.toLowerCase().endsWith('.apk')) continue; // TV installs APKs only.
+      result.add(ReleaseAssetInfo(name: name, url: url, sizeBytes: (asset['size'] as num?)?.toInt() ?? 0));
+    }
+    return result;
+  }
+
+  Dio _dioForApi() => Dio(BaseOptions(connectTimeout: const Duration(seconds: 12), receiveTimeout: const Duration(seconds: 12)));
 
   // ---------------------------------------------------------------------------
   // Release history (assets/releases.json through the repo mirrors)
@@ -361,38 +472,53 @@ class AppUpdateController extends _$AppUpdateController {
     return null;
   }
 
-  /// Release asset for the selected ABI: the history entry's file list first
-  /// (it carries real urls and sizes), the manifest download_url last.
+  /// Release asset for the selected ABI: the GitHub release's real file first
+  /// (exact name and url, straight from the API), the releases.json file list
+  /// second, the manifest download_url third, and the standard asset name
+  /// assembled from the release identity last.
   String? resolveAssetUrl([String? abiOverride]) {
-    final abi = (abiOverride ?? state.selectedAbi).trim();
+    final abi = (abiOverride ?? state.selectedAbi).trim().toLowerCase();
+    for (final asset in state.latestAssets) {
+      if (asset.abi?.toLowerCase() == abi) return asset.url;
+    }
     final release = _latestRelease;
     if (release != null) {
       for (final file in release.files) {
-        if (file.name.trim().toLowerCase() == abi.toLowerCase() && file.url.startsWith('http')) {
+        if (file.name.trim().toLowerCase() == abi && file.url.startsWith('http')) {
           return file.url;
         }
       }
     }
     final direct = VersionUtil.downloadUrl;
     if (direct.toLowerCase().endsWith('.apk')) return direct;
-    return null;
+    final assembled = ReleaseAssetUrls(
+      projectUrl: VersionUtil.projectUrl,
+      version: state.latestVersion,
+      buildNumber: VersionUtil.latestBuildNumber ?? 0,
+    ).urlForAbi(abi);
+    return assembled.startsWith('http') ? assembled : null;
   }
 
   void pickAbi(String abi) => _patchState(selectedAbi: abi);
 
-  /// The size text of the asset that would be installed for the selected ABI, when the
-  /// history entry for that version carries one.
-  String? get selectedAssetSize {
+  /// The size text of the asset for one ABI: the GitHub release's real size
+  /// first, the releases.json entry second.
+  String? assetSizeFor(String abi) {
+    for (final asset in state.latestAssets) {
+      if (asset.abi?.toLowerCase() == abi.trim().toLowerCase() && asset.sizeText.isNotEmpty) return asset.sizeText;
+    }
     final ReleaseModel? release = _latestRelease;
     if (release == null) return null;
-
-    final String abi = state.selectedAbi.trim().toLowerCase();
     for (final ReleaseFileModel file in release.files) {
-      if (file.name.trim().toLowerCase() == abi && file.size.isNotEmpty) return file.size;
+      if (file.name.trim().toLowerCase() == abi.trim().toLowerCase() && file.size.isNotEmpty) return file.size;
     }
     if (release.files.length == 1 && release.files.first.size.isNotEmpty) return release.files.first.size;
     return null;
   }
+
+  /// The size text of the asset that would be installed for the selected ABI, when the
+  /// history entry for that version carries one.
+  String? get selectedAssetSize => assetSizeFor(state.selectedAbi);
 
   // ---------------------------------------------------------------------------
   // Download + install
@@ -571,6 +697,7 @@ class AppUpdateController extends _$AppUpdateController {
     bool? historyLoading,
     String? historyError,
     List<AppUpdateRecord>? records,
+    List<ReleaseAssetInfo>? latestAssets,
   }) {
     if (!ref.mounted) return;
     state = state.copyWith(
@@ -590,6 +717,7 @@ class AppUpdateController extends _$AppUpdateController {
       historyLoading: historyLoading,
       historyError: historyError,
       records: records,
+      latestAssets: latestAssets,
     );
   }
 

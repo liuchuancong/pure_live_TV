@@ -95,30 +95,17 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
             // The native sync QR: the phone app scans it (or types the address
             // below it) once, then every channel — search text included — is live.
             SizedBox(width: _centerWidgetWidth.sp, child: const RemoteSyncQrCard(width: 320)),
+            SizedBox(height: (_itemGap * 0.8).sp),
+            // 搜索类型: one joined segmented control instead of two loose
+            // stadium tabs — a two-item tab bar stretched across the screen was
+            // the ragged "button row" this page used to show.
+            _buildTypeSegmented(themeColor, searchState.searchTypeIndex),
+            SizedBox(height: (_itemGap * 0.7).sp),
+            // 平台: centered chips instead of a full-width scrolling tab bar;
+            // with ~6 platforms the bar never needed to scroll, it only spread
+            // the chips from the left edge and looked misaligned under the QR.
+            _buildSiteChips(themeColor, searchState.tabSiteIndex),
             SizedBox(height: _itemGap.sp),
-            SizedBox(height: 12.sp),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.sp),
-              child: TvTabBar(
-                tabs: _siteTabs,
-                currentIndex: searchState.tabSiteIndex,
-                onTabChange: (index) {
-                  ref.read(tvSearchNotifierProvider.notifier).changeSiteTab(index);
-                },
-              ),
-            ),
-            SizedBox(height: _itemGap.sp),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.sp),
-              child: TvTabBar(
-                tabs: _typeTabs,
-                currentIndex: searchState.searchTypeIndex,
-                onTabChange: (index) {
-                  ref.read(tvSearchNotifierProvider.notifier).changeSearchType(index);
-                },
-              ),
-            ),
-            SizedBox(height: 20.sp),
             SizedBox(
               width: _centerWidgetWidth.sp,
               child: Container(
@@ -184,6 +171,84 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// 主播 / 直播间 as one joined control: two halves sharing an outline, the
+  /// active half filled with the accent. Reads as a single switch rather than
+  /// two floating buttons.
+  Widget _buildTypeSegmented(Color themeColor, int currentIndex) {
+    final tvTheme = context.tvTheme;
+    return Container(
+      height: 56.sp,
+      padding: EdgeInsets.all(5.sp),
+      decoration: BoxDecoration(
+        color: tvTheme.cardColor.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(28.sp),
+        border: Border.all(color: themeColor.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (int i = 0; i < _typeTabs.length; i++) ...[
+            if (i > 0) SizedBox(width: 6.sp),
+            _SegmentedOption(
+              icon: i == 0 ? Icons.person_rounded : Icons.live_tv_rounded,
+              label: _typeTabs[i].title,
+              selected: currentIndex == i,
+              onTap: () => ref.read(tvSearchNotifierProvider.notifier).changeSearchType(i),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Platform chips laid out from the centre. Selection fills the chip with the
+  /// accent; focus gets the shared ring/scale language via [TvFocusable].
+  Widget _buildSiteChips(Color themeColor, int currentIndex) {
+    final tvTheme = context.tvTheme;
+    return SizedBox(
+      width: (_centerWidgetWidth + 320).sp,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        runAlignment: WrapAlignment.center,
+        spacing: 12.sp,
+        runSpacing: 12.sp,
+        children: [
+          for (int i = 0; i < _siteTabs.length; i++)
+            TvFocusable(
+              key: Key('search_site_${_siteTabs[i].tabId}'),
+              onSelect: () => ref.read(tvSearchNotifierProvider.notifier).changeSiteTab(i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                height: 48.sp,
+                padding: EdgeInsets.symmetric(horizontal: 22.sp),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: currentIndex == i ? themeColor : tvTheme.cardColor,
+                  borderRadius: BorderRadius.circular(24.sp),
+                  border: Border.all(
+                    color: currentIndex == i ? themeColor : themeColor.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_siteTabs[i].icon != null) ...[_siteTabs[i].icon!, SizedBox(width: 8.sp)],
+                    Text(
+                      _siteTabs[i].title,
+                      style: AppTextStyles.t20.copyWith(
+                        color: currentIndex == i ? Colors.white : tvTheme.primaryTextColor,
+                        fontWeight: currentIndex == i ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -268,6 +333,51 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           children: [
             if (icon != null) ...[Icon(icon, size: 24.sp, color: themeColor), SizedBox(width: 8.sp)],
             Text(label, style: AppTextStyles.t20.copyWith(color: tvTheme.primaryTextColor)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One half of the joined 搜索类型 switch. The active half carries the accent
+/// fill; the inactive half stays quiet until focused.
+class _SegmentedOption extends StatelessWidget {
+  const _SegmentedOption({required this.icon, required this.label, required this.selected, required this.onTap});
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    return TvFocusable(
+      onSelect: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        height: 46.sp,
+        padding: EdgeInsets.symmetric(horizontal: 26.sp),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? accent : Colors.transparent,
+          borderRadius: BorderRadius.circular(23.sp),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 22.sp, color: selected ? Colors.white : tvTheme.secondaryTextColor),
+            SizedBox(width: 8.sp),
+            Text(
+              label,
+              style: AppTextStyles.t20.copyWith(
+                color: selected ? Colors.white : tvTheme.secondaryTextColor,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
           ],
         ),
       ),

@@ -53,6 +53,7 @@
     "movie_lan_started": "LAN service is running",
     "movie_lan_stopped": "Service is not running",
     "movie_paste_link": "Paste or type a link here",
+    "movie_support_sites": "Supported sites",
     "movie_wait_phone_sync": "Waiting for phone sync, or tap to type...",
     "playlist_line_suffix": "{name} (line {index})",
     "quality_high_bitrate": "High bitrate",

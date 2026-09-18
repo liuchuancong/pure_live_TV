@@ -240,39 +240,111 @@ class _NewVersionCard extends ConsumerWidget {
                 ),
               ),
             ),
-            if (state.abis.length > 1) ...<Widget>[
-              SizedBox(height: 8.h),
+            // One download row per published ABI, the mobile update page's
+            // per-architecture download sections in TV form: the name, the size
+            // when the release entry carries one, and its own 下载并安装 button.
+            for (final abi in state.abis)
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
                 child: Row(
                   children: <Widget>[
-                    Text(
-                      i18n('update_abi'),
-                      style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
-                    ),
+                    Icon(Icons.memory_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
+                    SizedBox(width: 12.sp),
+                    Text(abi, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
                     SizedBox(width: 12.sp),
                     Expanded(
-                      child: Wrap(
-                        spacing: 8.sp,
-                        runSpacing: 8.sp,
-                        children: <Widget>[
-                          for (final abi in state.abis)
-                            TvButton(
-                              title: abi,
-                              size: TvButtonSize.mini,
-                              selected: state.selectedAbi == abi,
-                              onTap: state.phase == AppUpdatePhase.downloading ? null : () => controller.pickAbi(abi),
-                            ),
-                        ],
+                      child: Text(
+                        _abiSize(state, controller, abi),
+                        style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
                       ),
+                    ),
+                    TvButton(
+                      title: i18n('update_download_install'),
+                      size: TvButtonSize.small,
+                      icon: Icon(Icons.download_rounded, size: 18.sp),
+                      onTap: state.phase == AppUpdatePhase.downloading ? null : () => controller.downloadAndInstall(abi),
                     ),
                   ],
                 ),
               ),
-            ],
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-              child: _buildAction(context),
+            if (state.abis.isEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
+                child: _buildAction(context),
+              ),
+            if (state.phase == AppUpdatePhase.downloading) _buildProgress(context, state),
+            if (state.phase == AppUpdatePhase.readyToInstall)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
+                child: _buildAction(context),
+              ),
+            if (state.error.isNotEmpty && state.phase != AppUpdatePhase.failed)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                child: Text(
+                  state.error,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// The size text of one ABI's download row, from the release entry when it
+  /// has one and a plain label otherwise.
+  String _abiSize(AppUpdateState state, AppUpdateController controller, String abi) {
+    final size = controller.assetSizeFor(abi);
+    return size == null || size.isEmpty ? i18n('update_download_install') : size;
+  }
+
+  /// The download progress strip shown while any ABI's package is coming down.
+  Widget _buildProgress(BuildContext context, AppUpdateState state) {
+    final tvTheme = context.tvTheme;
+    final String done = (state.receivedBytes / 1048576).toStringAsFixed(1);
+    final String total = state.totalBytes > 0 ? ' / ${(state.totalBytes / 1048576).toStringAsFixed(1)} MB' : ' MB';
+    final String percent = state.totalBytes > 0 ? '${(state.progress * 100).toStringAsFixed(0)}%' : '';
+    final int? remaining = state.remainingSeconds;
+    final String speed = state.speedMbps > 0 ? '${state.speedMbps.toStringAsFixed(1)} MB/s' : '';
+    final String eta = remaining == null
+        ? ''
+        : '${(remaining ~/ 60).toStringAsFixed(0).padLeft(2, '0')}:${(remaining % 60).toStringAsFixed(0).padLeft(2, '0')}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(height: 8.sp),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6.sp),
+          child: LinearProgressIndicator(
+            value: state.totalBytes > 0 ? state.progress : null,
+            minHeight: 8.sp,
+            color: tvTheme.focusColor,
+            backgroundColor: tvTheme.cardColor,
+          ),
+        ),
+        SizedBox(height: 8.sp),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                <String>[
+                  '$done$total',
+                  if (percent.isNotEmpty) percent,
+                  if (speed.isNotEmpty) speed,
+                  if (eta.isNotEmpty) eta,
+                ].join(' · '),
+                style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
+              ),
+            ),
+            TvButton(
+              title: i18n('cancel'),
+              size: TvButtonSize.mini,
+              isSecondary: true,
+              onTap: controller.cancelDownload,
             ),
           ],
         ),
@@ -296,52 +368,6 @@ class _NewVersionCard extends ConsumerWidget {
     final tvTheme = context.tvTheme;
 
     switch (state.phase) {
-      case AppUpdatePhase.downloading:
-        final String done = (state.receivedBytes / 1048576).toStringAsFixed(1);
-        final String total = state.totalBytes > 0 ? ' / ${(state.totalBytes / 1048576).toStringAsFixed(1)} MB' : ' MB';
-        final String percent = state.totalBytes > 0 ? '${(state.progress * 100).toStringAsFixed(0)}%' : '';
-        final int? remaining = state.remainingSeconds;
-        final String speed = state.speedMbps > 0 ? '${state.speedMbps.toStringAsFixed(1)} MB/s' : '';
-        final String eta = remaining == null
-            ? ''
-            : '${(remaining ~/ 60).toString().padLeft(2, '0')}:${(remaining % 60).toString().padLeft(2, '0')}';
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6.sp),
-              child: LinearProgressIndicator(
-                value: state.totalBytes > 0 ? state.progress : null,
-                minHeight: 8.sp,
-                color: tvTheme.focusColor,
-                backgroundColor: tvTheme.cardColor,
-              ),
-            ),
-            SizedBox(height: 8.sp),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    <String>[
-                      '$done$total',
-                      if (percent.isNotEmpty) percent,
-                      if (speed.isNotEmpty) speed,
-                      if (eta.isNotEmpty) eta,
-                    ].join(' · '),
-                    style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
-                  ),
-                ),
-                TvButton(
-                  title: i18n('cancel'),
-                  size: TvButtonSize.mini,
-                  isSecondary: true,
-                  onTap: controller.cancelDownload,
-                ),
-              ],
-            ),
-          ],
-        );
       case AppUpdatePhase.readyToInstall:
         return Row(
           children: <Widget>[
