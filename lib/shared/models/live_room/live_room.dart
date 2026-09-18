@@ -1,6 +1,6 @@
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pure_live/player/core/live_room_volume_manager.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 part 'live_room.freezed.dart';
 part 'live_room.g.dart';
@@ -237,7 +237,24 @@ abstract class LiveRoom with _$LiveRoom {
     @JsonKey(includeFromJson: false, includeToJson: false) dynamic danmakuData,
   }) = _LiveRoom;
 
-  factory LiveRoom.fromJson(Map<String, dynamic> json) => _$LiveRoomFromJson(json);
+  factory LiveRoom.fromJson(Map<String, dynamic> json) =>
+      _$LiveRoomFromJson({...json, 'liveStatus': _normalizeLiveStatus(json['liveStatus'])});
+
+  /// The phone app (and older builds) write `liveStatus` as an int; freezed's
+  /// `@JsonEnum` only accepts the names. Both forms land on the same enum.
+  static Object? _normalizeLiveStatus(Object? value) {
+    if (value is String) return value; // 已经是 'live' / 'offline' / ...
+    if (value is int) {
+      return switch (value) {
+        0 => 'offline',
+        1 => 'live',
+        2 => 'replay',
+        3 => 'banned',
+        _ => 'unknown',
+      };
+    }
+    return 'unknown';
+  }
 
   // ---------- Identity ----------
 
@@ -270,9 +287,8 @@ abstract class LiveRoom with _$LiveRoom {
   /// Replays and timeshift are playable too.
   bool get isPlayableNow => isLiveNow || liveStatus == LiveStatus.replay || isRecord;
 
-  LiveStatus get effectiveLiveStatus => liveStatus == LiveStatus.unknown
-      ? (status ? LiveStatus.live : LiveStatus.offline)
-      : liveStatus;
+  LiveStatus get effectiveLiveStatus =>
+      liveStatus == LiveStatus.unknown ? (status ? LiveStatus.live : LiveStatus.offline) : liveStatus;
 
   // ---------- Audience values ----------
 
@@ -318,7 +334,9 @@ abstract class LiveRoom with _$LiveRoom {
     // `watching` keeps the legacy "0" sentinel; only a positive legacy value is
     // treated as a concurrent count, while a platform that genuinely reports
     // zero writes it to [onlineViewers] and stays valid.
-    return effectiveAudienceMetricType == AudienceMetricType.onlineViewers && _hasAudienceValue(watching) ? watching.trim() : '';
+    return effectiveAudienceMetricType == AudienceMetricType.onlineViewers && _hasAudienceValue(watching)
+        ? watching.trim()
+        : '';
   }
 
   /// Platform heat, falling back to the legacy audience field when the site

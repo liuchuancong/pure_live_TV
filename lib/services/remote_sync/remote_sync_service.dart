@@ -318,8 +318,10 @@ class RemoteSyncController extends _$RemoteSyncController {
   Future<bool> _applySettings(Map<String, dynamic> settings) async {
     try {
       await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings);
+      debugPrint('[sync] applySettings ok');
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[sync] applySettings failed: $e\n$st');
       return false;
     }
   }
@@ -516,21 +518,21 @@ class RemoteSyncController extends _$RemoteSyncController {
   }
 
   Future<bool> receiveFromAddress(String ip, int port) async {
+    final client = HttpClient();
     try {
-      final client = HttpClient();
-      try {
-        final request = await client.getUrl(Uri.parse('http://$ip:$port${RemoteSyncProtocol.apiSettings}'));
-        final response = await request.close();
-        final body = await utf8.decoder.bind(response).join();
-        if (response.statusCode != HttpStatus.ok) return false;
-        final result = jsonDecode(body);
-        if (result is! Map || result['code'] != 200 || result['data'] is! Map) return false;
-        return await _applySettings(Map<String, dynamic>.from(result['data'] as Map));
-      } finally {
-        client.close(force: true);
-      }
-    } catch (_) {
+      final request = await client.getUrl(Uri.parse('http://$ip:$port${RemoteSyncProtocol.apiSettings}'));
+      final response = await request.close();
+      final body = await utf8.decoder.bind(response).join();
+
+      if (response.statusCode != HttpStatus.ok) return false;
+      final result = jsonDecode(body);
+      if (result is! Map || result['code'] != 200 || result['data'] is! Map) return false;
+      return await _applySettings(Map<String, dynamic>.from(result['data'] as Map));
+    } catch (e) {
+      debugPrint('[sync] receiveFromAddress $ip:$port failed: $e');
       return false;
+    } finally {
+      client.close(force: true);
     }
   }
 
