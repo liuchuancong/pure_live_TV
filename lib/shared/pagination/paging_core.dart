@@ -218,8 +218,11 @@ class PagingCore<T> extends _$PagingCore<T> {
     final chunk = freshData.sublist(0, end);
 
     state = state.copyWith(
-      allLocalItems: freshData,
-      items: chunk,
+      // Copies: some platforms hand back List.unmodifiable results, and a
+      // later in-place mutation of the stored page then threw
+      // "Cannot modify an unmodifiable list" and blanked the UI.
+      allLocalItems: List<T>.of(freshData),
+      items: List<T>.of(chunk),
       currentPage: firstPageKey,
       canLoadMore: freshData.length > end,
       totalCount: freshData.length,
@@ -387,7 +390,7 @@ class PagingCore<T> extends _$PagingCore<T> {
       final hasMore = list.length >= state.pageSize;
 
       state = state.copyWith(
-        items: pageKey == firstPageKey ? list : [...state.items, ...list],
+        items: pageKey == firstPageKey ? List<T>.of(list) : [...state.items, ...list],
         currentPage: pageKey,
         canLoadMore: hasMore,
         controllerState: state.controllerState.copyWith(
@@ -488,7 +491,7 @@ class PagingCore<T> extends _$PagingCore<T> {
       }
 
       state = state.copyWith(
-        items: pageKey == firstPageKey ? combined : [...state.items, ...combined],
+        items: pageKey == firstPageKey ? List<T>.of(combined) : [...state.items, ...combined],
         currentPage: pageKey,
         canLoadMore: combined.length >= ps,
         controllerState: state.controllerState.copyWith(

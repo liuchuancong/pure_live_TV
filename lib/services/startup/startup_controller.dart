@@ -18,8 +18,13 @@ class StartupController extends _$StartupController {
   }
 
   void importFromJson(Map<String, dynamic> json) {
-    final isFirst = json['isFirstInApp'] ?? true;
-    setIsFirstInApp(isFirst);
+    // The agreement gate is device-local onboarding state, not a syncable
+    // setting. An import that lacks the key — or a peer reporting "fresh
+    // install" — must never bounce this TV back to the agreement page, which
+    // is exactly what happened on every remote settings import.
+    final isFirst = json['isFirstInApp'];
+    if (isFirst != false) return;
+    setIsFirstInApp(false);
   }
 
   Map<String, dynamic> toJson() {
