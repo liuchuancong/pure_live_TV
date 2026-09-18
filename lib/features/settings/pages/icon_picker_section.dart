@@ -1,9 +1,9 @@
 ﻿import 'package:dpad/dpad.dart';
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/consts/icon_catalog.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/consts/icon_catalog.dart';
 
 /// What the icon picker returns.
 ///
@@ -43,7 +43,7 @@ class IconPickerSectionPage extends StatelessWidget {
       child: GridView.builder(
         padding: EdgeInsets.all(16.sp),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 7,
+          crossAxisCount: 12,
           mainAxisSpacing: 12.sp,
           crossAxisSpacing: 12.sp,
           childAspectRatio: 1.15,
@@ -91,20 +91,14 @@ class _IconTile extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                option.icon,
-                size: 34.sp,
-                color: focused || active ? tvTheme.focusColor : tvTheme.primaryTextColor,
-              ),
+              Icon(option.icon, size: 34.sp, color: focused || active ? tvTheme.focusColor : tvTheme.primaryTextColor),
               SizedBox(height: 6.sp),
               Text(
                 option.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.t14W500.copyWith(
-                  color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor,
-                ),
+                style: AppTextStyles.t14W500.copyWith(color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor),
               ),
             ],
           ),

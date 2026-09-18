@@ -92,19 +92,10 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // The native sync QR: the phone app scans it (or types the address
-            // below it) once, then every channel — search text included — is live.
-            // Kept compact so the platform bar below still fits the screen.
             SizedBox(width: _centerWidgetWidth.sp, child: const RemoteSyncQrCard(width: 240)),
             SizedBox(height: (_itemGap * 0.7).sp),
-            // 搜索类型: one joined segmented control instead of two loose
-            // stadium tabs — a two-item tab bar stretched across the screen was
-            // the ragged "button row" this page used to show.
             _buildTypeSegmented(themeColor, searchState.searchTypeIndex),
             SizedBox(height: (_itemGap * 0.6).sp),
-            // 平台: a single scrollable row. With 22 platforms nothing static
-            // fits; the tab bar scrolls, reveals the focused tab and remembers
-            // the selected one, which chips in a Wrap could never do.
             TvTabBar(
               tabs: _siteTabs,
               currentIndex: searchState.tabSiteIndex,
@@ -142,9 +133,6 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                     ),
                   ),
                   builder: (content, isFocused) {
-                    // The focus state comes from the field itself; wrapping the
-                    // content in a bare Focus here made that wrapper the d-pad
-                    // focus target and OK could never reach the TextField.
                     return AnimatedScale(
                       scale: isFocused ? 1.04 : 1.0,
                       duration: const Duration(milliseconds: 200),
@@ -172,19 +160,13 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 ),
               ),
             ),
-            if (history.isNotEmpty) ...[
-              SizedBox(height: 24.sp),
-              _buildHistorySection(history, themeColor),
-            ],
+            if (history.isNotEmpty) ...[SizedBox(height: 24.sp), _buildHistorySection(history, themeColor)],
           ],
         ),
       ),
     );
   }
 
-  /// 主播 / 直播间 as one joined control: two halves sharing an outline, the
-  /// active half filled with the accent. Reads as a single switch rather than
-  /// two floating buttons.
   Widget _buildTypeSegmented(Color themeColor, int currentIndex) {
     final tvTheme = context.tvTheme;
     return Container(
@@ -278,29 +260,49 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
       key: Key(key),
       onTap: onTap,
       onLongPress: onLongPress,
-      child: Container(
-        height: 44.sp,
-        padding: EdgeInsets.symmetric(horizontal: 22.sp),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(22.sp),
-          border: Border.all(color: themeColor.withValues(alpha: 0.5)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[Icon(icon, size: 24.sp, color: themeColor), SizedBox(width: 8.sp)],
-            Text(label, style: AppTextStyles.t20.copyWith(color: tvTheme.primaryTextColor)),
-          ],
-        ),
-      ),
+      builder: (context, focused, child) {
+        return AnimatedScale(
+          scale: focused ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOutCubic,
+            height: 44.sp,
+            padding: EdgeInsets.symmetric(horizontal: 22.sp),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: focused ? themeColor : tvTheme.cardColor,
+              borderRadius: BorderRadius.circular(22.sp),
+              border: Border.all(color: themeColor, width: focused ? 2.5.sp : 1.5.sp),
+              boxShadow: [
+                BoxShadow(
+                  color: themeColor.withValues(alpha: focused ? 0.55 : 0.0),
+                  blurRadius: focused ? 16.sp : 0,
+                  spreadRadius: focused ? 2.sp : 0,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 24.sp, color: focused ? Colors.white : themeColor),
+                  SizedBox(width: 8.sp),
+                ],
+                Text(
+                  label,
+                  style: AppTextStyles.t20.copyWith(color: focused ? Colors.white : tvTheme.primaryTextColor),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-/// One half of the joined 搜索类型 switch. The active half carries the accent
-/// fill; the inactive half stays quiet until focused.
 class _SegmentedOption extends StatelessWidget {
   const _SegmentedOption({required this.icon, required this.label, required this.selected, required this.onTap});
 
@@ -316,30 +318,50 @@ class _SegmentedOption extends StatelessWidget {
 
     return TvFocusable(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        height: 46.sp,
-        padding: EdgeInsets.symmetric(horizontal: 26.sp),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? accent : Colors.transparent,
-          borderRadius: BorderRadius.circular(23.sp),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 22.sp, color: selected ? Colors.white : tvTheme.secondaryTextColor),
-            SizedBox(width: 8.sp),
-            Text(
-              label,
-              style: AppTextStyles.t20.copyWith(
-                color: selected ? Colors.white : tvTheme.secondaryTextColor,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              ),
+      builder: (context, focused, child) {
+        final Color fill = selected ? accent : (focused ? accent.withValues(alpha: 0.35) : Colors.transparent);
+        final Color ink = selected ? Colors.white : (focused ? Colors.white : tvTheme.secondaryTextColor);
+        final Duration animDuration = focused ? const Duration(milliseconds: 120) : Duration.zero;
+
+        return AnimatedScale(
+          scale: focused && !selected ? 1.04 : 1.0,
+          duration: animDuration,
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: animDuration,
+            curve: Curves.easeOutCubic,
+            height: 46.sp,
+            padding: EdgeInsets.symmetric(horizontal: 26.sp),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: fill,
+              borderRadius: BorderRadius.circular(23.sp),
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withValues(alpha: focused ? 0.5 : 0.0),
+                  blurRadius: focused ? 14.sp : 0,
+                  spreadRadius: focused ? 2.sp : 0,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 22.sp, color: ink),
+                SizedBox(width: 8.sp),
+                Text(
+                  label,
+                  style: AppTextStyles.t20.copyWith(
+                    color: ink,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
