@@ -21,10 +21,7 @@ enum AppUpdatePhase { idle, checking, upToDate, available, downloading, readyToI
 /// What the app did to this device's copy of itself.
 enum AppUpdateAction { checked, available, downloaded, installed, failed }
 
-/// One line of local update log.
-///
-/// Kept in Hive rather than in the state only: the point of the record is to still be
-/// there after the restart that the update itself caused.
+/// One line of local update log; kept in Hive so it survives the restart.
 class AppUpdateRecord {
   const AppUpdateRecord({required this.version, required this.action, required this.time});
 
@@ -53,12 +50,8 @@ class AppUpdateRecord {
   }
 }
 
-/// One real release asset, as GitHub's releases API reports it.
-///
-/// The API is the source of truth for what to download: `version.json`'s
-/// version/build_number is only a hint and drifts from what was actually
-/// published, while the latest release's asset list carries the exact file
-/// names and urls.
+/// One release asset from GitHub's releases API — the source of truth for
+/// downloads (version.json is only a hint).
 class ReleaseAssetInfo {
   const ReleaseAssetInfo({required this.name, required this.url, required this.sizeBytes});
 
@@ -84,11 +77,7 @@ class ReleaseAssetInfo {
   }
 }
 
-/// The release history payload, newest first.
-///
-/// The manifest is a JSON array (or an object with a `releases` array) of
-/// [ReleaseModel]s; the mobile app sorts it by date and falls back to the version when
-/// two entries share one (`version_history.dart`).
+/// The release history payload (JSON array or `releases` object), newest first.
 List<ReleaseModel> parseReleaseHistoryPayload(Object? decoded) {
   final rawList = switch (decoded) {
     final List values => values,
@@ -120,9 +109,7 @@ List<ReleaseModel> parseReleaseHistoryPayload(Object? decoded) {
   return releases;
 }
 
-/// Release notes without the markdown the TV view cannot draw.
-///
-/// The manifests embed a download table and `#` headers in the changelog; the TV shows
+/// Release notes stripped of markdown the TV view cannot draw. Manifests embed
 /// plain text, so the table rows and the `#`/`---` markers are dropped and the header
 /// text is kept.
 String cleanReleaseNotes(String raw) {

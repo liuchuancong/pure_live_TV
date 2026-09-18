@@ -1,14 +1,7 @@
-// The app's route tree, declared as typed go_router routes.
-//
-// Every destination is a `GoRouteData` class below and the tree is built from
-// the generated `$appRoutes` (see `app_router.g.dart`, written by
-// `go_router_builder`). Navigation goes through those classes —
-// `const IptvRoute().push(context)` instead of `context.push('/iptv')` — so a
-// renamed path or a missing argument is a compile error instead of a dead
-// screen at runtime.
-//
-// `AppRoutes` keeps the path strings: they are the annotation arguments here,
-// they title the settings pages, and the phone-side web router shares them.
+// Typed go_router routes. Every destination is a GoRouteData class; the tree
+// is built from the generated $appRoutes. Navigation uses those classes
+// (`const IptvRoute().push(context)`), so path/argument mistakes are compile
+// errors. AppRoutes owns the path strings shared with the web router.
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
@@ -45,18 +38,9 @@ import 'package:pure_live/features/iptv/pages/iptv_headers_section.dart';
 
 part 'app_router.g.dart';
 
-/// Every settings page, by its full path — the page table the settings routes
-/// read.
-///
-/// Absolute paths only: the app's own `/settings/...` destinations plus the ones
-/// the mobile app names (`/iptv`, `/backup`, `/settings_account`, ...). The route
-/// classes below delegate here instead of repeating each page, so a page is
-/// declared once and its typed route is four mechanical lines.
-///
-/// online update/version history are NOT in this table: both build their own TvPageScaffold
-/// and scroll view, and the shell's scaffold wraps every entry in an unbounded
-/// SingleChildScrollView — a Scaffold inside that gets an infinite size and the
-/// page dies on open. They are standalone routes further down instead.
+/// Every settings page by full path; the route classes delegate here so each
+/// page is declared once. online update/version history build their own
+/// scaffold and are standalone routes instead.
 final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsTheme: (context) => const ThemeSettingsSectionPage(),
   AppRoutes.kSettingsThemePicker: (context) => const ThemePickerSectionPage(),
@@ -106,11 +90,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
 };
 
 
-/// The same table, as typed route instances — what the data-driven callers use.
-///
-/// The settings catalog and the account rows store *paths* (for their titles and
-/// their config-preview keys), so navigation from there goes through this map
-/// instead of the string API: `settingsSectionRoutes[path]!.push(context)`.
+/// The same table as typed route instances, keyed by path.
 final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsTheme: const ThemeSettingsRoute(),
   AppRoutes.kSettingsThemePicker: const ThemePickerRoute(),

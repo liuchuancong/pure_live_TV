@@ -64,9 +64,7 @@ class MediaKitAdapter
     _nextSourceIdentity = sourceIdentity;
   }
 
-  /// Exercises the real source lifecycle and subscriptions without a renderer.
-  /// The supplied player owns its event contract; widget/native rendering is
-  /// intentionally outside this deterministic adapter-test entry point.
+  /// Runs the real source lifecycle and subscriptions without a renderer.
   @visibleForTesting
   factory MediaKitAdapter.headlessForTest(Player player, {String preferredHardwareDecoder = 'no'}) {
     return MediaKitAdapter()
@@ -75,13 +73,8 @@ class MediaKitAdapter
       .._initialized = true;
   }
 
-  /// Applies the shared low-latency live-stream mpv property set to a native
-  /// (libmpv) player platform.
-  ///
-  /// Single source of truth: the main player ([MediaKitAdapter.init]) and every
-  /// multiview tile share one property set (seek whitelist, probe duration,
-  /// LiveBufferPolicy bounds, network timeouts, audio driver, proxy, macOS
-  /// hardware decoding off) so the two never drift apart.
+  /// Applies the shared low-latency live-stream mpv property set; the main
+  /// player and every multiview tile use one property set.
   static Future<void> applyNativeLiveProperties(dynamic native) async {
     await native.setProperty('force-seekable', 'yes');
 
@@ -92,25 +85,17 @@ class MediaKitAdapter
 
     await native.setProperty('demuxer-lavf-probesize', '2097152');
 
-    // Live FLV/HLS streams need a short probe rather than a long-file
-    // analysis pass.  This reduces the black-screen interval before the
-    // first decoded frame while retaining enough data for codec detection.
+    // Short probe for live FLV/HLS: less black screen before the first frame.
     await native.setProperty('demuxer-lavf-analyzeduration', '2');
 
-    // mpv's generic defaults keep a large seek-oriented forward/backward
-    // cache. Live rooms are not meaningfully seekable, so retaining that
-    // much compressed data only makes long Windows/Android sessions appear
-    // to grow indefinitely. Keep this shared with the tested policy rather
-    // than scattering raw byte strings through the adapter.
+    // Live rooms are not seekable, so shrink mpv's large seek caches that
+    // otherwise grow unbounded on long sessions.
     await LiveBufferPolicy.apply((name, value) async => await native.setProperty(name, value));
 
     await native.setProperty('network-timeout', '15');
 
-    // Ask mpv to abandon a broken hardware decoder after the first consecutive
-    // frame failure. This preserves the low-power fast path on compatible
-    // devices while making unsupported profiles fall back to software instead
-    // of leaving a black Surface behind. mpv's larger default can skip several
-    // live packets before the fallback is attempted.
+    // Drop a failing hw decoder after one bad frame so playback falls back
+    // to software instead of leaving a black surface.
     await native.setProperty('hwdec-software-fallback', '1');
 
     final audioOutput = effectiveMpvAudioOutputDriverForPlatform(
@@ -122,8 +107,7 @@ class MediaKitAdapter
       await native.setProperty('ao', audioOutput);
     }
 
-    // Multiview also calls this shared initializer. Keep its media routing;
-    // the main adapter applies it again per source, bypassing private input.
+    // Multiview shares this initializer; the main adapter re-applies per source.
     await native.setProperty('http-proxy', PlaybackProxyPolicy.currentNativeUrl(privateInput: false));
 
     if (PlatformUtils.isMacOS) {
@@ -240,9 +224,8 @@ class MediaKitAdapter
   @override
   Future<void> init({bool audioOnly = false}) async {
     if (_initialized) return;
-    // Always create a normal video output. Audio-only is a reversible track
-    // selection on the same player; constructing a `vo=null` controller made
-    // returning to video depend on destroying and recreating the native player.
+    // Always create a video output: audio-only is a reversible track switch,
+    // while vo=null forces a native rebuild to get video back.
     _disposed = false;
 
     // This is application presentation state. On Android the attached
@@ -313,8 +296,7 @@ class MediaKitAdapter
               ),
             );
 
-      // The upstream media_kit_video build exposes no frameRevision API, so video
-      // frame progress is reported as unsupported (an optional player capability).
+      // No frameRevision API upstream; report frame progress as unsupported.
 
       await _bindListeners(sourceGeneration: _sourceFence.generation);
 

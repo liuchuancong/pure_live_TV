@@ -73,7 +73,6 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
 
   @override
   Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
     final live = _liveRooms();
     final replay = _replayRooms();
     final history = _historyRooms();
@@ -87,16 +86,27 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TabBar(
-              controller: _tabController,
-              dividerColor: Colors.transparent,
-              labelColor: tvTheme.focusColor,
-              unselectedLabelColor: tvTheme.secondaryTextColor,
+            // TvTabBar, not the Material one: its tabs are d-pad focusable and
+            // answer focus with the shared scale/ring/glow language, while a
+            // Material TabBar only tints the *selected* label, so a focused
+            // tab looked no different from an idle one on the remote.
+            TvTabBar(
               tabs: [
-                Tab(text: '${i18n('online_room_title')} (${live.length})'),
-                Tab(text: '${i18n('recording_room_title')} (${replay.length})'),
-                Tab(text: '${i18n('watch_history')} (${history.length})'),
+                TvTabItemData(
+                  id: 'live',
+                  title: '${i18n('online_room_title')} (${live.length})',
+                ),
+                TvTabItemData(
+                  id: 'replay',
+                  title: '${i18n('recording_room_title')} (${replay.length})',
+                ),
+                TvTabItemData(
+                  id: 'history',
+                  title: '${i18n('watch_history')} (${history.length})',
+                ),
               ],
+              currentIndex: _tabController.index,
+              onTabChange: (index) => setState(() => _tabController.animateTo(index)),
             ),
             SizedBox(height: 12.sp),
             Expanded(

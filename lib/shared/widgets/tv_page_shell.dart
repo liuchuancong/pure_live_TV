@@ -3,16 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 
-/// The shared plumbing under [TvScaffold] and `TvPageScaffold`.
-///
-/// It owns the transparent `Scaffold`, keeps a **covered** page out of the focus tree,
-/// hands Up at the content's top edge to a node the page names, turns Down on the
-/// page's own top bar into "enter the content", and claims the opening highlight.
-///
-/// It deliberately knows nothing about app bars or back buttons: what a page puts in
-/// [topBar] is the page's own business (its own app bar, its own back button, its own
-/// `onTap`), and the node the highlight should open on is passed in as
-/// [openingFocus].
+/// Shared focus plumbing under [TvScaffold] and `TvPageScaffold`: transparent
+/// scaffold, covered pages leave the focus tree, and the opening highlight is
+/// claimed by [openingFocus]/[openingRegion]. knows nothing about app bars.
 class TvPageShell extends StatefulWidget {
   const TvPageShell({super.key, required this.child, this.topBar, this.openingFocus, this.openingRegion});
 
@@ -22,17 +15,10 @@ class TvPageShell extends StatefulWidget {
   /// The page's own top bar, if it built one.
   final Widget? topBar;
 
-  /// The page's own back button node, when it has one. Up at the content's top edge
-  /// lands on it and the highlight opens on it; without it the keyboard opens on
-  /// the first content row and Up leaves the region.
+  /// The page's back button node, if any; the highlight opens on it.
   final FocusNode? openingFocus;
 
-  /// The sub-region the opening highlight should land in, when the page has one.
-  ///
-  /// Without it the claim picks the top-left-most node of the whole content area —
-  /// on the home page that is the sidebar's account. A page with a navigation
-  /// column passes its content pane's [DpadRegion] key here so the highlight opens
-  /// on the page body's first row instead.
+  /// Where the opening highlight lands; defaults to the content's top-left node.
   final GlobalKey<DpadRegionState>? openingRegion;
 
   @override

@@ -16,23 +16,15 @@ import 'package:pure_live/services/player_settings/player_settings_controller.da
 part 'live_play_controller.g.dart';
 
 /// Aspect ratio options, aligned with the index semantics of
-/// PlayerManager.changeVideoFit.
-///
-/// Derived from the same list the settings page stores an index into, so the
-/// playback surface and the settings page can never disagree on the option set.
+/// PlayerManager.changeVideoFit and the stored settings index.
 List<BoxFit> get kLivePlayFitList => AppConsts().videoFitList;
 
 /// Localized labels of [kLivePlayFitList] in the same order as the stored index.
 List<String> get kLivePlayFitLabels => AppConsts().videoFitType.map((e) => i18n(e['desc'] as String)).toList();
 
-/// Drives one live room: room detail, quality list and stream URLs feed
-/// [PlayerManager], while player streams are projected into UI state.
-///
-/// Responsibilities:
-/// - enter a room and start playback through PlayerManager
-/// - mirror buffering/playing/paused/error states into the page state
-/// - quality and line switching, retry, pause, volume, video fit
-/// - danmaku sessions live in [DanmakuSessionController]
+/// Drives one live room: detail/quality/URL fetching, playback state
+/// projection, quality and line switching. Danmaku sessions live in
+/// [DanmakuSessionController].
 @riverpod
 class LivePlayController extends _$LivePlayController {
   static const LivePlayRepository _repository = LivePlayRepository();
@@ -53,10 +45,8 @@ class LivePlayController extends _$LivePlayController {
       final room = state.room;
       return (room != null && room.platform == platform && room.roomId == roomId) ? room : null;
     };
-    // Deferred by a microtask on purpose: `_bootstrap` writes `state`, and while
-    // `build` is still running the provider has no state yet — calling it
-    // directly made Riverpod throw "Tried to read the state of an uninitialized
-    // provider" the moment the room opened.
+    // Microtask-deferred: build has no state yet while it runs, and reading
+    // it now throws "uninitialized provider".
     Future<void>.microtask(_bootstrap);
     return const LivePlayState(status: LivePlayStatus.loadingDetail);
   }
@@ -70,12 +60,7 @@ class LivePlayController extends _$LivePlayController {
     state = state.copyWith(status: LivePlayStatus.loadingDetail, clearDetailError: true, clearErrorMessage: true);
 
     try {
-      // Bring the service up on the kernel the user chose.
-      //
-      // Without this the first launch always pre-warmed media_kit and
-      // `PlayerManager` never consulted the stored `videoPlayerKey` (it only
-      // does so when it has no default engine), so engine switch appeared to be
-      // ignored until the row was used again in the same session.
+      // Bring the service up on the stored kernel, not a hardcoded default.
       await GlobalPlayerService.instance.initialize(
         defaultEngine: PlayerConsts.engines[SettingsService.to.playerState.videoPlayerKey] ?? PlayerEngine.mediaKit,
       );

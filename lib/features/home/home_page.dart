@@ -15,6 +15,7 @@ import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
+import 'package:pure_live/features/home/home_update_dialog.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -32,6 +33,15 @@ class _HomePageState extends ConsumerState<HomePage> {
   final Map<int, FocusNode> _menuFocusNodes = {};
 
   FocusNode _nodeFor(int index) => _menuFocusNodes.putIfAbsent(index, FocusNode.new);
+
+  @override
+  void initState() {
+    super.initState();
+    // 启动检查更新完成后，有新版本时弹出更新弹窗（每次会话仅一次）
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) HomeUpdateDialog.maybeShow(context, ref);
+    });
+  }
 
   @override
   void dispose() {

@@ -2,16 +2,9 @@ import 'package:flame_barrage/flame_barrage.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 
-/// The danmaku settings the engine can actually render, as one [BarrageConfig].
-///
-/// Pulled out of the overlay so it can be tested directly: every appearance setting the
-/// UI exposes has to show up here, and a field that is silently dropped is exactly the
-/// Why this builder exists: settings changes must reach the danmaku immediately.
-///
-/// Units matter as much as wiring. The engine's `baseSpeed` is **pixels per second**
-/// (`SpeedStrategy.calculate` divides a distance by it) and `bottomAreaDistance` is a
-/// **pixel inset**, not a ratio — feeding it 0.5% of something renders as no padding at
-/// all, which looks identical to an ignored setting.
+/// The danmaku settings the engine can render, as one [BarrageConfig]. Every
+/// appearance setting the UI exposes must map here. Units: `baseSpeed` is
+/// pixels per second, `bottomAreaDistance` a pixel inset.
 BarrageConfig buildDanmakuConfig(
   DanmakuSettingsModel settings, {
   String? fontFamily,

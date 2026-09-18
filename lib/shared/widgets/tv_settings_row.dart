@@ -47,19 +47,11 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(14.sp);
 
+    // The whole focus recipe lives in one custom effect so the unfocus
+    // transition can be instant: a fading-out decoration is driven by this
+    // subtree's ticker, which a covering page mutes — the fade then freezes
+    // mid-way and leaves a residual shadow on the last focused row.
     final List<DpadEffect> effects = [
-      // Same focus recipe as TvRoomCard: a gentle scale plus the accent glow
-      // (crisp ring on light palettes), so settings rows and room cards glow
-      // identically.
-      DpadScaleEffect(
-        scale: 1.01,
-        pressedScale: 0.98,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-      ),
-      tvTheme.isLight
-          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
-          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((ctx, state, _) {
         final bool focused = state.focused;
         final bool pressed = state.pressed;
@@ -70,7 +62,8 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         final Color subtitleColor = focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
         final Color iconColor = focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
 
-        final Duration animDuration = focused ? const Duration(milliseconds: 120) : Duration.zero;
+        // Animate focus-in; snap focus-out so nothing can freeze mid-fade.
+        final Duration animDuration = focused ? const Duration(milliseconds: 150) : Duration.zero;
 
         final double scale = pressed ? 0.98 : 1.0;
 
@@ -82,10 +75,21 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
             duration: animDuration,
             curve: Curves.easeOutCubic,
             padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
+            // Accent glow on dark palettes, crisp ring on light ones — same
+            // focus look as TvRoomCard.
             decoration: BoxDecoration(
               color: focused ? tvTheme.focusedCardColor : Colors.transparent,
               borderRadius: borderRadius,
               border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+              boxShadow: focused
+                  ? [
+                      BoxShadow(
+                        color: accent.withValues(alpha: tvTheme.isLight ? 1 : 0.75),
+                        blurRadius: tvTheme.isLight ? 0 : 18.sp,
+                        spreadRadius: tvTheme.isLight ? 2.sp : 1.5.sp,
+                      ),
+                    ]
+                  : const <BoxShadow>[],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:pure_live/player/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -34,35 +32,6 @@ class TvVideoSurface extends ConsumerStatefulWidget {
 }
 
 class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
-  /// Wall clock for the top bar, refreshed every 10s.
-  ///
-  /// A live stream has no duration, so "time" on a TV player means the current
-  /// time of day — the thing a viewer glances up for.
-  String _clockText = '';
-
-  Timer? _clockTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _tickClock();
-    _clockTimer = Timer.periodic(const Duration(seconds: 10), (_) => _tickClock());
-  }
-
-  @override
-  void dispose() {
-    _clockTimer?.cancel();
-    super.dispose();
-  }
-
-  void _tickClock() {
-    if (!mounted) return;
-    final DateTime now = DateTime.now();
-    setState(() {
-      _clockText = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    });
-  }
-
   /// The player manager, or null until [GlobalPlayerService] has finished
   /// initializing.
   ///
@@ -158,7 +127,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                   ),
                   child: Row(
                     children: [
-                      TvCommonAvatar(avatarUrl: state.room!.avatar, fallbackName: state.room!.nick, radius: 24.sp),
+                      TvCommonAvatar(avatarUrl: state.room!.avatar, fallbackName: state.room!.nick, radius: 28.sp),
                       SizedBox(width: 16.sp),
                       Expanded(
                         child: Column(
@@ -169,9 +138,9 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                               state.room!.title.trim().isNotEmpty ? state.room!.title.trim() : i18n('untitled_room'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t24W600.copyWith(color: Colors.white),
+                              style: AppTextStyles.t28W600.copyWith(color: Colors.white),
                             ),
-                            SizedBox(height: 4.sp),
+                            SizedBox(height: 6.sp),
                             Row(
                               children: [
                                 if (state.room!.nick.isNotEmpty) ...[
@@ -180,7 +149,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                                       state.room!.nick,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                                      style: AppTextStyles.t20W500.copyWith(color: Colors.white70),
                                     ),
                                   ),
                                   SizedBox(width: 10.sp),
@@ -195,7 +164,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                                     ),
                                     child: Text(
                                       state.room!.platform.toUpperCase(),
-                                      style: AppTextStyles.t14W600.copyWith(color: Colors.white),
+                                      style: AppTextStyles.t16W600.copyWith(color: Colors.white),
                                     ),
                                   ),
                               ],
@@ -209,11 +178,11 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.schedule_rounded, size: 22.sp, color: Colors.white70),
-                          SizedBox(width: 6.sp),
-                          Text(
-                            _clockText,
-                            style: AppTextStyles.t22W600.copyWith(color: Colors.white),
+                          Icon(Icons.schedule_rounded, size: 26.sp, color: Colors.white70),
+                          SizedBox(width: 8.sp),
+                          TvDigitalClock(
+                            format: 'HH:mm',
+                            style: AppTextStyles.t28W600.copyWith(color: Colors.white),
                           ),
                         ],
                       ),
@@ -231,11 +200,11 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.arrow_back_rounded, size: 20.sp, color: Colors.white),
+                            Icon(Icons.arrow_back_rounded, size: 22.sp, color: Colors.white),
                             SizedBox(width: 6.sp),
                             Text(
                               i18nOr('ui_back', '返回'),
-                              style: AppTextStyles.t16W500.copyWith(color: Colors.white),
+                              style: AppTextStyles.t18W500.copyWith(color: Colors.white),
                             ),
                           ],
                         ),
@@ -284,7 +253,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         ),
       );
     } else if (state.showControls) {
-      children.add(Positioned(left: 0, right: 0, bottom: 0, child: VideoControllerPanel(args: widget.args)));
+      children.add(Positioned(left: 0, right: 0, bottom: 28.sp, child: VideoControllerPanel(args: widget.args)));
     }
 
     // quality / line read-out on the right edge: quieter than putting them in the

@@ -46,7 +46,7 @@ enum _Zone { bar, options }
 enum _OptionsPanel { none, quality, line, fit, kernel }
 
 class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
-  static const double _barHeight = 64;
+  static const double _barHeight = 52;
   static const double _optionsWidth = 380;
 
   final FocusNode _focusNode = FocusNode(debugLabel: 'live_play/controls');
@@ -512,14 +512,14 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 
   Widget _buildBar(List<_PanelAction> actions, TvThemeData tvTheme) {
     return Container(
-      height: _barHeight.sp + 24.sp,
-      alignment: Alignment.centerLeft,
-      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+      height: _barHeight.sp + 16.sp,
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 8.sp),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemCount: actions.length,
-        separatorBuilder: (_, _) => SizedBox(width: 10.sp),
+        separatorBuilder: (_, _) => SizedBox(width: 12.sp),
         itemBuilder: (context, index) {
           final action = actions[index];
           return KeyedSubtree(
@@ -569,10 +569,10 @@ class _Pill extends StatelessWidget {
 
   // Pill geometry lives here so the bar can be retuned in one place.
   static const double _height = 52;
-  static const double _hPadding = 16;
+  static const double _hPadding = 18;
   static const double _gap = 8;
-  static const double _iconSize = 28;
-  static const double _trailingSize = 26;
+  static const double _iconSize = 24;
+  static const double _trailingSize = 22;
 
   final IconData? icon;
   final String? asset;
@@ -592,7 +592,7 @@ class _Pill extends StatelessWidget {
     // the pill.
     final TextStyle textStyle = (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
       color: foreground,
-      fontSize: 24.sp,
+      fontSize: 22.sp,
     );
 
     return AnimatedContainer(

@@ -4,19 +4,10 @@ import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'live_input_recipe.dart';
 import 'package:pure_live/shared/common/hls_source_query_policy.dart';
 
-/// The stream URLs returned for one requested quality together with the
-/// quality that the platform actually applied.
-///
-/// Some platforms advertise a quality in `accept_qn` but silently downgrade
-/// anonymous requests. Returning only the URLs made the UI commit the tapped
-/// label even though the media source was still a lower quality.
-///
-/// Adapters that can inspect the response should set [appliedQualityData]
-/// to the server's actual stable quality identifier.
-///
-/// The default implementation keeps the requested
-/// [LivePlayQuality.selectionId] for platforms whose URL response has no
-/// separate acknowledgement.
+/// URLs for one requested quality plus the quality the platform actually
+/// applied — some platforms silently downgrade guest requests, so adapters
+/// that can inspect the response set [appliedQualityData] to the server's
+/// stable quality identifier.
 class LivePlayUrlResolution {
   const LivePlayUrlResolution({required this.urls, this.appliedQualityData, this.qualityUnconfirmed = false})
     : sourceQueryPolicies = const {},
@@ -84,9 +75,8 @@ class LivePlayUrlResolution {
   final bool qualityUnconfirmed;
 }
 
-/// Keeps request identity and display evidence separate for both playback and
-/// recording. A server identifier outside a stale menu is also unconfirmed;
-/// choosing the requested option as a cursor does not confirm its visible name.
+/// Keeps request identity and display evidence separate; a stale-menu id does
+/// not confirm the visible name.
 LivePlayQuality resolveAppliedPlayQuality({
   required List<LivePlayQuality> qualities,
   required LivePlayQuality requested,
@@ -107,10 +97,8 @@ LivePlayQuality resolveAppliedPlayQuality({
   );
 }
 
-/// Removes blank and duplicate lines while preserving platform priority.
-///
-/// Scheme validation remains adapter-specific because imported IPTV sources
-/// may legitimately use non-HTTP protocols.
+/// Removes blank and duplicate lines while preserving priority; scheme
+/// validation stays adapter-specific (IPTV allows non-HTTP protocols).
 List<String> normalizeResolvedPlayUrls(Iterable<String> urls) {
   final result = <String>[];
   final seen = <String>{};
@@ -126,25 +114,14 @@ List<String> normalizeResolvedPlayUrls(Iterable<String> urls) {
   return List<String>.unmodifiable(result);
 }
 
-/// Optional capability for platforms whose play API reports the quality that
-/// was actually applied.
-///
-/// Use `resolvePlayUrlsRaw` intentionally here because `resolvePlayUrls` is
-/// the unified extension API exposed by [LiveSite].
-///
-/// Most adapters can continue using [LiveSite.getPlayUrls].
-/// Bilibili can implement this contract because guest requests may be
-/// downgraded even when a higher `qn` was requested.
+/// Optional capability for platforms whose play API reports the applied
+/// quality (bilibili guest requests can be downgraded silently).
 abstract interface class LivePlayUrlResolver {
   Future<LivePlayUrlResolution> resolvePlayUrlsRaw({required LiveRoom detail, required LivePlayQuality quality});
 }
 
-/// Optional cursor contract for adapters that must make a separate network
-/// request for every CDN line.
-///
-/// The ordinary playback API intentionally resolves all lines for an on-screen
-/// selector. Recording needs a different latency contract: obtain only the one
-/// line used by the current FFmpeg attempt and request the next line only after
+/// Optional contract for adapters that need one request per CDN line:
+/// recording resolves only the current attempt's line and fetches the next
 /// failure. Implementations return an empty URL list when [lineIndex] is beyond
 /// the platform's advertised lines.
 abstract interface class LivePlayUrlCursorResolver {

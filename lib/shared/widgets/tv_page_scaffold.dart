@@ -4,18 +4,8 @@ import 'package:pure_live/shared/widgets/tv_app_bar.dart';
 import 'package:pure_live/shared/widgets/tv_page_shell.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 
-/// A page that owns its chrome: **its own app bar and its own back button**, plus the
-/// focus wiring between them (the highlight opens on back, Down walks into the page,
-/// Up comes back).
-///
-/// This is the page-level half of what `TvScaffold` used to do for the whole app. A
-/// shared scaffold could not belong to a page: the settings shell swapped pages inside
-/// one scaffold, so its back button outlived the page it was drawn for and kept taking
-/// the highlight. Here the page builds the bar, owns the node and decides what back
-/// does.
-///
-/// Pages that need no bar use `TvScaffold`; pages that want a different bar can ignore
-/// this widget entirely and pass their own into `TvPageShell`.
+/// A page that owns its own app bar and back button, with the focus wiring
+/// between them. Pages without a bar use `TvScaffold` instead.
 class TvPageScaffold extends StatefulWidget {
   final Widget child;
   final String? title;

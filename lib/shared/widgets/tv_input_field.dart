@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tv_textfield/tv_textfield.dart';
 import 'package:pure_live/shared/theme/tv_theme_data.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/widgets/tv_icon_button.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The TV text field: [TvTextField] from `tv_textfield` wearing the app's
@@ -197,12 +198,14 @@ class _TvInputFieldState extends State<TvInputField> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (widget.showPasswordToggle) ...[
-                IconButton(
-                  icon: Icon(
-                    _isObscure ? Icons.visibility_off : Icons.visibility,
-                    color: resolvedTextColor.withValues(alpha: 0.6),
-                  ),
-                  onPressed: () => setState(() => _isObscure = !_isObscure),
+                // TvIconButton, not a Material IconButton: it is d-pad
+                // focusable and answers focus with the shared accent
+                // fill/ring, while a raw IconButton showed no visible focus
+                // state of its own.
+                TvIconButton(
+                  size: TvIconButtonSize.mini,
+                  icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                  onTap: () => setState(() => _isObscure = !_isObscure),
                 ),
                 SizedBox(width: 4.sp),
               ],

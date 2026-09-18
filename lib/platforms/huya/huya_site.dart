@@ -22,9 +22,8 @@ class HuyaSite
   @override
   LiveDanmaku getDanmaku() => HuyaDanmaku();
 
-  /// Huya's web player treats playback as a viewer session, not as an anchor-
-  /// signed static URL. Keep one anonymous identity for this site instance and
-  /// deduplicate only requests concurrently acquiring the same token.
+  /// Playback is a viewer session, not a static URL; one anonymous identity
+  /// per site instance, deduplicated per concurrently-acquired token.
   final Map<String, Future<HuyaCdnTokenLease>> _inFlightTokenRequests = <String, Future<HuyaCdnTokenLease>>{};
   final Map<String, Future<HuyaCdnTokenLease>> _nativeTokenRequests = {};
   int _lastSignatureMillis = 0;
@@ -85,11 +84,8 @@ class HuyaSite
     return first.isBefore(second) ? first : second;
   }
 
-  /// Recovers the issue time encoded by the official web player's
-  /// `seqid = viewerUid + Date.now()` contract. Huya's CDN can close a signed
-  /// transport roughly two minutes after this point while `wsTime` is still
-  /// valid, so the issue time is a stable transport-age anchor. It must not be
-  /// recomputed from the time this metadata method happens to be called.
+  /// Issue time from the official `seqid = viewerUid + Date.now()` contract;
+  /// the CDN closes a signed transport ~2 min after this point.
   @visibleForTesting
   static DateTime? getSignedSequenceIssuedAt(String url) {
     final query = Uri.tryParse(url)?.queryParameters;
@@ -120,12 +116,8 @@ class HuyaSite
   static const String fallbackPlayUserAgent = HuyaRequestParams.kUserAgent;
   static Map<String, String> requestHeaders = {'Origin': baseUrl, 'Referer': baseUrl, 'User-Agent': HYSDK_UA};
 
-  /// Huya's public room detail currently returns `userCount` and
-  /// `totalCount` as the same multi-million popularity value. Treating
-  /// `userCount` as a concurrent head count relabels heat as people online.
-  /// Current website captures show URI 8006 `iAttendeeCount` in the same
-  /// multi-million range, so it is also kept as popularity rather than a
-  /// concurrent-viewer head count.
+  /// userCount/totalCount are the same multi-million popularity value; keep
+  /// them as heat, not concurrent viewers.
   static ({String popularity, String onlineViewers}) parseRoomAudience(Map<String, dynamic>? liveData) {
     final totalCount = liveData?['totalCount']?.toString().trim() ?? '';
     final userCount = liveData?['userCount']?.toString().trim() ?? '';
@@ -227,9 +219,7 @@ class HuyaSite
     return Future.value(parsePlayQualities(data));
   }
 
-  /// Exposes only rates returned by Huya. The old fallback invented a 2000
-  /// kbps "HD" option when the room returned no rate list, so tapping it
-  /// could only reopen the same source stream while the UI claimed a change.
+  /// Only rates Huya actually returned; no invented fallback options.
   @visibleForTesting
   static List<LivePlayQuality> parsePlayQualities(HuyaUrlDataModel data) {
     final playbackLines = List<HuyaLineModel>.unmodifiable(data.lines);
@@ -266,11 +256,8 @@ class HuyaSite
     final rawLines = data['urls'];
     if (bitRate == null || rawLines is! List) return const <String>[];
     final lines = rawLines.whereType<HuyaLineModel>().toList(growable: false);
-    // Each CDN token request is independent. Resolving them serially multiplied
-    // startup time by the line count and made a normal quality switch look like
-    // a player freeze. Keep the server priority order, but also isolate a bad
-    // token/template to its own CDN. Huya can roll AntiCode material per line;
-    // one malformed or already-expired line must not discard every healthy FLV
+    // Token requests are independent; resolve them concurrently in server
+    // priority order, isolating a bad line so it cannot sink the rest.
     // and HLS alternative returned in the same room snapshot.
     final resolved = await Future.wait<String>(
       lines.map((line) async {

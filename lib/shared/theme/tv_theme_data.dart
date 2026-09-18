@@ -6,11 +6,8 @@ enum TvBackgroundType { color, image, video }
 class TvThemeData {
   final String id;
 
-  /// Translation key of the display name.
-  ///
-  /// The name is resolved on every read so the theme list follows the active
-  /// language. Storing the translated string froze whichever language was
-  /// active when the preset was first touched.
+  /// Translation key of the display name, resolved on every read so the
+  /// list follows the active language.
   final String nameKey;
 
   String get name => i18n(nameKey);
@@ -50,41 +47,26 @@ class TvThemeData {
   /// Whether this is a light palette (bright background, dark text).
   bool get isLight => backgroundColor.computeLuminance() > 0.5;
 
-  /// Text and icon colour for content drawn on [focusedCardColor].
-  ///
-  /// Most presets focus a card onto white while the coffee/amber/mint/forest/…
-  /// ones focus onto a dark shade, so the pairing cannot be hard-coded — and the
-  /// old rule (`focused ? backgroundColor : primaryTextColor`) painted near-white
-  /// text on the white focused card of every light preset.
+  /// Text/icon colour on [focusedCardColor]; varies per preset since most
+  /// focus onto white but a few onto a dark shade.
   Color get onFocusedCard => readableOn(focusedCardColor);
 
   /// Muted companion of [onFocusedCard], for subtitles on a focused card.
   Color get onFocusedCardSecondary => onFocusedCard.withValues(alpha: 0.7);
 
-  /// Text and icon colour for content drawn on an accent-filled surface
-  /// ([focusColor] background) — a focused/selected button, tab, row or player pill.
+  /// Text/icon colour on an accent-filled surface (focused/selected rows, tabs).
   Color get onFocusColor => readableOn(focusColor);
 
-  /// Text and icon colour for content on the *faded* accent fill — the
-  /// "focused but not selected" state that paints [focusColor] at 50% over the
-  /// page background.
-  ///
-  /// The text must contrast with the **blended** colour, not the accent itself:
-  /// for a mid-blue accent the blend is a darker blue where white would sink in.
+  /// Text/icon colour on the faded accent fill (focused, not selected). The
+  /// contrast target is the blended colour, not the accent itself.
   Color get onFadedFocusColor => backgroundColor;
 
   /// The two candidate inks content is drawn in: near-black and white.
   static const Color _ink = Color(0xFF101014);
   static const Color _paper = Color(0xFFFFFFFF);
 
-  /// The readable partner for content drawn on [background]: whichever of ink and
-  /// paper contrasts *more* with it.
-  ///
-  /// A luminance threshold is not the same thing as contrast, and that difference is
-  /// where unreadable content came from: dark's accent (#00A1FF) sat below the old
-  /// threshold so white was chosen, giving 2.8:1, and cyber's accent gave 1.9:1 — the
-  /// focused/selected label was washed out in **both** theme modes. Comparing contrast
-  /// ratios guarantees at least ~4.3:1 against any background.
+  /// Whichever of ink and paper contrasts more with [background]. Contrast
+  /// comparison (not a luminance threshold) guarantees ~4.3:1 on any preset.
   static Color readableOn(Color background) =>
       _contrastOf(_paper, background) >= _contrastOf(_ink, background) ? _paper : _ink;
 

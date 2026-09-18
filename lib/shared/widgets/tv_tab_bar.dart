@@ -33,7 +33,7 @@ class TvTabItemData {
       return TvTabItemData(
         id: site.id,
         title: site.name,
-        icon: Icon(Icons.apps_rounded, size: 24.sp),
+        icon: Icon(Icons.apps_rounded, size: 26.sp),
       );
     }
     return TvTabItemData(
@@ -41,10 +41,10 @@ class TvTabItemData {
       title: site.name,
       icon: Image.asset(
         site.logo,
-        width: 24.sp,
-        height: 24.sp,
+        width: 26.sp,
+        height: 26.sp,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => Icon(Icons.live_tv_rounded, size: 24.sp),
+        errorBuilder: (context, error, stackTrace) => Icon(Icons.live_tv_rounded, size: 26.sp),
       ),
     );
   }
@@ -116,14 +116,14 @@ class _TvTabBarState extends State<TvTabBar> {
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
-    final double height = 44.sp;
+    final double height = 56.sp;
     final borderRadius = BorderRadius.circular(height / 2);
 
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
       child: Container(
         width: double.infinity,
-        height: 50.sp,
+        height: 64.sp,
         alignment: Alignment.center,
         color: Colors.transparent,
         child: ListView.builder(
@@ -150,25 +150,27 @@ class _TvTabBarState extends State<TvTabBar> {
                   DpadCustomEffect((context, state, child) {
                     final isFocused = state.focused;
 
+                    // 三态各有可辨识的容器：选中=实心主题色，焦点=半透明主题色，
+                    // 未选中=低透明度底色胶囊（不再是裸图标文字）。
                     final bgColor = isSelected
                         ? currentTvTheme.focusColor
                         : isFocused
-                        ? currentTvTheme.focusColor.withValues(alpha: 0.5)
-                        : Colors.transparent;
+                        ? currentTvTheme.focusColor.withValues(alpha: 0.45)
+                        : currentTvTheme.primaryTextColor.withValues(alpha: 0.10);
 
                     // House style: tab icons and focused/selected text are
                     // always white, in every theme mode — the accent fills are
                     // strong enough to carry white in both.
                     final foregroundColor = isSelected || isFocused ? Colors.white : currentTvTheme.primaryTextColor;
 
-                    final baseStyle = isSelected || isFocused ? AppTextStyles.t20W600 : AppTextStyles.t20;
+                    final baseStyle = isSelected || isFocused ? AppTextStyles.t24W600 : AppTextStyles.t24;
 
                     return AnimatedContainer(
                       duration: TvFocusStyle.duration,
                       curve: TvFocusStyle.curve,
                       height: height,
                       alignment: Alignment.center,
-                      padding: EdgeInsets.symmetric(horizontal: 28.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 32.sp),
                       decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
                       // Icons render white in every state. `Icon` widgets pick
                       // this up through IconTheme; image logos keep their own
@@ -199,9 +201,23 @@ class _TvTabBarState extends State<TvTabBar> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (tab.icon != null) ...[tab.icon!, SizedBox(width: 10.sp)],
-                    Center(child: Text(tab.title)),
+                    // 固定尺寸的图标位：各平台 logo 实际大小不一，统一收进
+                    // 24x36 的居中槽位，保证与文字基线对齐。
+                    if (tab.icon != null) ...[
+                      SizedBox(width: 28.sp, height: 28.sp, child: Center(child: tab.icon)),
+                      SizedBox(width: 12.sp),
+                    ],
+                    // 中文标题不允许换行：超宽时省略，胶囊保持单行
+                    Center(
+                      child: Text(
+                        tab.title,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               ),
