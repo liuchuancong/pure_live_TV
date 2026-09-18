@@ -102,8 +102,8 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
         final subtitleColor = isFocused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
 
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
+          duration: TvFocusStyle.focusDuration(isFocused),
+          curve: TvFocusStyle.curve,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,

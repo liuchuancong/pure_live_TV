@@ -35,8 +35,8 @@ class TvAreaCard extends StatelessWidget {
         final iconColor = tvTheme.primaryTextColor;
 
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
+          duration: TvFocusStyle.focusDuration(isFocused),
+          curve: TvFocusStyle.curve,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,

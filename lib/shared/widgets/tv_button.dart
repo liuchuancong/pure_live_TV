@@ -101,7 +101,7 @@ class TvButton extends StatelessWidget {
           }
 
           return AnimatedContainer(
-            duration: TvFocusStyle.duration,
+            duration: TvFocusStyle.focusDuration(state.focused),
             curve: TvFocusStyle.curve,
             height: height,
             padding: padding,

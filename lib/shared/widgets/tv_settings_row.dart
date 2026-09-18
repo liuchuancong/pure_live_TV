@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/widgets/tv_focus_style.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -85,8 +86,11 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         // contrast-picked colours of that surface — instead of the old thin
         // border plus a faint accent tint.
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
+          // Focus arrives with a short fade but leaves instantly: a d-pad held
+          // down walks several rows per 120ms, and animating the *un*focus left
+          // a trail of half-highlighted rows behind the live one.
+          duration: TvFocusStyle.focusDuration(focused),
+          curve: TvFocusStyle.curve,
           padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
           decoration: BoxDecoration(
             color: focused ? tvTheme.focusedCardColor : Colors.transparent,

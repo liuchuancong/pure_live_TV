@@ -29,6 +29,14 @@ class TvFocusStyle {
   static const Duration duration = Duration(milliseconds: 120);
   static const Curve curve = Curves.easeOutCubic;
 
+  /// [duration] while gaining focus, [Duration.zero] while losing it.
+  ///
+  /// A held d-pad walks several rows per 120ms, so animating the *loss* of
+  /// focus leaves a trail of half-highlighted rows behind the live one: the
+  /// highlight has already moved on while the rows it left are still fading
+  /// back. Arriving animates, leaving snaps.
+  static Duration focusDuration(bool focused) => focused ? duration : Duration.zero;
+
   /// The standard effect stack for a focusable of the given shape.
   ///
   /// [radius] must match the widget's own corner radius, or the ring will be
