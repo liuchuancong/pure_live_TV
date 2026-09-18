@@ -2358,5 +2358,6 @@
     "xiaohongshu_directory_scope": "A public live directory is not integrated. Search a broadcast room ID or import an official /livestream/ share link. Favorites track that room, not the broadcaster across new broadcasts.",
     "xiaohongshu_display_viewers": "Platform display count: {value} (not verified concurrent viewers)",
     "xiaohongshu_restricted": "Access conditions apply or are unconfirmed. No public full-stream source is available for this room.",
-    "xiaohongshu_room_scope": "This follows the broadcast room ID. Import a new share link if the broadcaster starts in a different room."
+    "xiaohongshu_room_scope": "This follows the broadcast room ID. Import a new share link if the broadcaster starts in a different room.",
+    "remote_sync_pair_hint": "Open PureLive on your phone and scan this code to sync settings."
 }

@@ -1266,7 +1266,6 @@
     "online_room_title": "已开播",
     "online_update": "在线更新",
     "version_history": "版本历史",
-    "version_history_desc": "历史版本更新记录",
     "version_history_load_failed": "版本历史刷新失败，已保留当前列表。",
     "version_history_open_release": "打开发布页面",
     "version_history_unnamed_file": "未命名文件",
@@ -2359,5 +2358,6 @@
     "xiaohongshu_directory_scope": "暂无已接入的公开直播目录。请在搜索页输入直播房间号，或导入官网 /livestream/ 分享链接；收藏仅跟踪该直播房间，不代表跨场次跟随主播。",
     "xiaohongshu_display_viewers": "平台展示观看值：{value}（非已验证的实时在线人数）",
     "xiaohongshu_restricted": "该房间存在访问条件或访问状态待确认，当前没有可用的公开完整直播源。",
-    "xiaohongshu_room_scope": "当前以直播房间号跟踪；主播重新开播使用新房间号时，请重新导入分享链接。"
+    "xiaohongshu_room_scope": "当前以直播房间号跟踪；主播重新开播使用新房间号时，请重新导入分享链接。",
+    "remote_sync_pair_hint": "在手机上打开 PureLive 扫描此二维码以同步设置。"
 }

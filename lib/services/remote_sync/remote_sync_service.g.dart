@@ -8,30 +8,21 @@ part of 'remote_sync_service.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Bridges the storage-free [TvRemoteKit] to the app's controllers.
-///
-/// Channel reads/writes land on the real services (cookies, danmaku shield
-/// words, tags, proxy, IPTV, full settings), and phone pushes are forwarded
-/// into the same [TvRemoteReceiver] callbacks the web remote already drives —
-/// so every page that listens for phone input needs no change at all.
+/// Device sync only: mDNS broadcast + discovery over bonsoir and a small HTTP
+/// server on 39888 (walking upwards when taken). Same logic as the web side's
+/// `RemoteSyncService`, hosted in Riverpod for the TV pages.
 
 @ProviderFor(RemoteSyncController)
 final remoteSyncControllerProvider = RemoteSyncControllerProvider._();
 
-/// Bridges the storage-free [TvRemoteKit] to the app's controllers.
-///
-/// Channel reads/writes land on the real services (cookies, danmaku shield
-/// words, tags, proxy, IPTV, full settings), and phone pushes are forwarded
-/// into the same [TvRemoteReceiver] callbacks the web remote already drives —
-/// so every page that listens for phone input needs no change at all.
+/// Device sync only: mDNS broadcast + discovery over bonsoir and a small HTTP
+/// server on 39888 (walking upwards when taken). Same logic as the web side's
+/// `RemoteSyncService`, hosted in Riverpod for the TV pages.
 final class RemoteSyncControllerProvider
     extends $NotifierProvider<RemoteSyncController, RemoteSyncSnapshot> {
-  /// Bridges the storage-free [TvRemoteKit] to the app's controllers.
-  ///
-  /// Channel reads/writes land on the real services (cookies, danmaku shield
-  /// words, tags, proxy, IPTV, full settings), and phone pushes are forwarded
-  /// into the same [TvRemoteReceiver] callbacks the web remote already drives —
-  /// so every page that listens for phone input needs no change at all.
+  /// Device sync only: mDNS broadcast + discovery over bonsoir and a small HTTP
+  /// server on 39888 (walking upwards when taken). Same logic as the web side's
+  /// `RemoteSyncService`, hosted in Riverpod for the TV pages.
   RemoteSyncControllerProvider._()
     : super(
         from: null,
@@ -60,14 +51,11 @@ final class RemoteSyncControllerProvider
 }
 
 String _$remoteSyncControllerHash() =>
-    r'ae71a23b163efe7e46653a282d02c07f97ce33ec';
+    r'cd5300ef2ae69e35306f2650eb96391f17bbdc0e';
 
-/// Bridges the storage-free [TvRemoteKit] to the app's controllers.
-///
-/// Channel reads/writes land on the real services (cookies, danmaku shield
-/// words, tags, proxy, IPTV, full settings), and phone pushes are forwarded
-/// into the same [TvRemoteReceiver] callbacks the web remote already drives —
-/// so every page that listens for phone input needs no change at all.
+/// Device sync only: mDNS broadcast + discovery over bonsoir and a small HTTP
+/// server on 39888 (walking upwards when taken). Same logic as the web side's
+/// `RemoteSyncService`, hosted in Riverpod for the TV pages.
 
 abstract class _$RemoteSyncController extends $Notifier<RemoteSyncSnapshot> {
   RemoteSyncSnapshot build();

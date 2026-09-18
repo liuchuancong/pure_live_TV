@@ -1,35 +1,21 @@
-import 'dart:async';
 import 'dart:io';
-
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:path_provider/path_provider.dart';
-import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
-import 'package:pure_live/features/remote/index.dart';
-import 'package:pure_live/services/backup/backup_controller.dart';
-import 'package:pure_live/services/favorites/favorite_room_controller.dart';
-import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
-import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
-import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/tag_management/tag_management_controller.dart';
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/common/http_header_policy.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:bonsoir/bonsoir.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:tv_remote_kit/tv_remote_kit.dart';
+import 'package:pure_live/services/backup/backup_controller.dart';
+import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
+import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
 
 part 'remote_sync_service.g.dart';
 
-/// What the UI needs to know about the LAN sync service: the QR payload, the
-/// manually typeable address, and the peers currently discovered.
+/// What the UI needs to know about the LAN sync service.
 class RemoteSyncSnapshot {
   final bool started;
   final String qrData;
   final String address;
-
-  /// `http://ip:port/` — the page the phone opens.
-  final String webAddress;
   final String? error;
   final List<RemoteSyncDevice> devices;
 
@@ -37,116 +23,52 @@ class RemoteSyncSnapshot {
     this.started = false,
     this.qrData = '',
     this.address = '',
-    this.webAddress = '',
     this.error,
     this.devices = const [],
   });
 }
 
-/// Bridges the storage-free [TvRemoteKit] to the app's controllers.
-///
-/// Channel reads/writes land on the real services (cookies, danmaku shield
-/// words, tags, proxy, IPTV, full settings), and phone pushes are forwarded
-/// into the same [TvRemoteReceiver] callbacks the web remote already drives —
-/// so every page that listens for phone input needs no change at all.
+/// Device sync only: mDNS broadcast + discovery over bonsoir and a small HTTP
+/// server on 39888 (walking upwards when taken). Same logic as the web side's
+/// `RemoteSyncService`, hosted in Riverpod for the TV pages.
 @Riverpod(keepAlive: true)
 class RemoteSyncController extends _$RemoteSyncController {
-  TvRemoteKit? _kit;
-  StreamSubscription<RemoteSyncEvent>? _eventSubscription;
+  HttpServer? _server;
+  BonsoirBroadcast? _broadcast;
+  BonsoirDiscovery? _discovery;
+  StreamSubscription<BonsoirDiscoveryEvent>? _discoverySub;
+  Timer? _cleanupTimer;
 
-  TvRemoteKit? get kit => _kit;
+  final List<RemoteSyncDevice> _devices = [];
+  final Set<String> _localIps = {};
+
+  String _deviceId = '';
+  String _localIp = '';
+  int _localPort = 0;
+
+  bool _running = false;
+  bool _starting = false;
+  bool _disposed = false;
+  String? _lastError;
+
+  /// Kept so the pages that call `kit.syncToDevice` / `kit.receiveFromQrOrAddress`
+  /// keep working: this controller exposes the same methods.
+  RemoteSyncController get kit => this;
 
   @override
   RemoteSyncSnapshot build() {
+    _deviceId = _loadDeviceId();
     ref.onDispose(() {
-      _eventSubscription?.cancel();
-      unawaited(_kit?.stop());
-      _kit = null;
+      _disposed = true;
+      _cleanupTimer?.cancel();
+      unawaited(_discoverySub?.cancel());
+      unawaited(_discovery?.stop());
+      unawaited(_broadcast?.stop());
+      unawaited(_server?.close(force: true));
     });
-
-    unawaited(_boot());
+    unawaited(start());
     return const RemoteSyncSnapshot();
   }
-
-  /// Starts a kit and publishes the outcome — including a failure.
-  ///
-  /// The publish used to happen only on the success path, so a start that failed (or that
-  /// found no LAN address) left the card on "正在启动局域网同步服务器" with nothing to do.
-  Future<void> _boot() async {
-    final kit = TvRemoteKit(
-      deviceId: _loadDeviceId(),
-      deviceName: 'PureLive TV (${Platform.operatingSystem})',
-      delegate: _AppSyncDelegate(ref),
-      // Serve the same bundled Vue web remote the 8888 server serves, so the
-      // page behind the sync QR has every feature, not the fallback form.
-      assetLoader: (path) async {
-        try {
-          final byteData = await rootBundle.load('assets/web_remote/$path');
-          return byteData.buffer.asUint8List();
-        } catch (_) {
-          return null;
-        }
-      },
-    );
-    _kit = kit;
-    _eventSubscription = kit.events.listen(_handleEvent);
-    await kit.start();
-    _publish(kit);
-  }
-
-  /// Restarts the service after a failure. The kit cannot be restarted once stopped, so
-  /// this builds a fresh one.
-  Future<void> restart() async {
-    final TvRemoteKit? old = _kit;
-    await _eventSubscription?.cancel();
-    _eventSubscription = null;
-    _kit = null;
-    if (ref.mounted) state = const RemoteSyncSnapshot();
-    await old?.stop();
-    await _boot();
-  }
-
-  void _handleEvent(RemoteSyncEvent event) {
-    switch (event) {
-      case RemoteDevicesChangedEvent():
-        _publish(_kit);
-      case RemoteTextInputEvent(:final kind, :final text):
-        // Converge both transports on the callbacks the pages already bind:
-        // web-remote pushes and kit pushes reach the same place.
-        final receiver = ref.read(tvRemoteReceiverProvider.notifier);
-        switch (kind) {
-          case 'streamer':
-            receiver.onStreamerSearch?.call(text);
-          case 'room':
-            receiver.dispatchRoomPush(text);
-          case 'movie':
-            receiver.onMovieReceived?.call(text);
-        }
-      case RemoteChannelEvent(:final channel):
-        if (channel == 'danmaku_filter') {
-          final filters = ref.read(favoriteRoomControllerProvider).shieldList;
-          ref.read(tvRemoteReceiverProvider.notifier).onDanmakuFilterUpdated?.call(filters);
-        }
-      case RemoteLogEvent():
-        break;
-    }
-  }
-
-  void _publish(TvRemoteKit? kit) {
-    if (!ref.mounted || kit == null) return;
-    state = RemoteSyncSnapshot(
-      started: kit.isRunning,
-      qrData: kit.qrData,
-      address: kit.address,
-      webAddress: kit.webAddress,
-      error: kit.isRunning ? null : _startFailure(kit.lastError),
-      devices: kit.devices,
-    );
-  }
-
-  /// The message the card shows instead of an endless spinner.
-  String? _startFailure(String? reason) =>
-      reason == null ? null : '${i18n('remote_sync_start_failed')}（$reason）';
 
   static String _loadDeviceId() {
     const key = 'remote_sync_device_id';
@@ -156,225 +78,503 @@ class RemoteSyncController extends _$RemoteSyncController {
     HivePrefUtil.setString(key, id);
     return id;
   }
-}
 
-/// The app half of the delegate: every channel lands on its controller.
-class _AppSyncDelegate extends RemoteSyncDelegate {
-  const _AppSyncDelegate(this._ref);
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
 
-  final Ref _ref;
-
-  @override
-  Future<Object?> channelState(String channel) async {
-    switch (channel) {
-      case 'cookie':
-        return _cookiesBySite();
-      case 'danmaku_filter':
-        return _ref.read(favoriteRoomControllerProvider).shieldList;
-      case 'tags':
-        return [
-          for (final tag in _ref.read(tagManagementControllerProvider).tags)
-            {'name': tag.name, 'description': tag.description},
-        ];
-      case 'proxy':
-        return _ref.read(proxySettingsControllerProvider).toJson();
-      case 'iptv':
-        return _ref.read(iptvSettingsControllerProvider).toJson();
-      default:
-        return null;
-    }
-  }
-
-  @override
-  Future<bool> applyChannel(String channel, Object? data) async {
-    switch (channel) {
-      case 'cookie':
-        if (data is! Map) return false;
-        final site = (data['site'] ?? '').toString().trim().toLowerCase();
-        final value = (data['data'] ?? '').toString();
-        return _setCookieForSite(site, value);
-      case 'danmaku_filter':
-        return _replaceShieldList(_stringListFrom(data));
-      case 'tags':
-        return _applyTags(data);
-      case 'proxy':
-        if (data is! Map) return false;
-        try {
-          _ref
-              .read(proxySettingsControllerProvider.notifier)
-              .updateSettings(ProxySettingsModel.fromJson(Map<String, dynamic>.from(data)));
-          return true;
-        } catch (_) {
-          return false;
-        }
-      case 'iptv':
-        return _applyIptvLink(data);
-      default:
-        return false;
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>> exportSettings() async {
-    return _ref.read(backupControllerProvider.notifier).exportAllSettings();
-  }
-
-  @override
-  Future<bool> importSettings(Map<String, dynamic> settings) async {
-    final backup = _ref.read(backupControllerProvider.notifier);
+  Future<void> start() async {
+    if (_disposed || _running || _starting) return;
+    _starting = true;
+    _lastError = null;
     try {
-      // The document's own platform markers decide the scope: a TV peer restores
-      // everything, a phone (or the web page's flat document) only contributes
-      // favorites, history, cookies and tags — BackupController enforces it.
-      await backup.restoreAllSettings(settings);
+      await _refreshNetworkInfo();
+      if (_disposed) return;
+      if (_localIp.isEmpty) {
+        _lastError = 'no LAN address';
+        _publish();
+        return;
+      }
+      final bound = await _startServer();
+      if (_disposed) return;
+      if (!bound) {
+        _lastError = 'port unavailable';
+        _publish();
+        return;
+      }
+      _running = true;
+      await _startDiscoveryAndBroadcast();
+      _publish();
+    } catch (e) {
+      _lastError = '$e';
+      _publish();
+    } finally {
+      _starting = false;
+    }
+  }
+
+  Future<void> stop() async {
+    _running = false;
+    _cleanupTimer?.cancel();
+    _cleanupTimer = null;
+
+    await _discoverySub?.cancel();
+    _discoverySub = null;
+    try {
+      await _discovery?.stop();
+    } catch (_) {}
+    _discovery = null;
+    try {
+      await _broadcast?.stop();
+    } catch (_) {}
+    _broadcast = null;
+    try {
+      await _server?.close(force: true);
+    } catch (_) {}
+    _server = null;
+
+    _devices.clear();
+    _publish();
+  }
+
+  Future<void> restart() async {
+    await stop();
+    _disposed = false;
+    await start();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Network info
+  // ---------------------------------------------------------------------------
+
+  Future<void> _refreshNetworkInfo() async {
+    try {
+      final interfaces = await NetworkInterface.list(type: InternetAddressType.IPv4, includeLoopback: false);
+      final ips = <String>{};
+      String? privateIp;
+      String? fallbackIp;
+      for (final i in interfaces) {
+        for (final a in i.addresses) {
+          final ip = a.address.trim();
+          if (ip.isEmpty || ip.startsWith('127.') || ip.startsWith('169.254.')) continue;
+          if (!_isValidIpv4(ip)) continue;
+          ips.add(ip);
+          fallbackIp ??= ip;
+          if (_isPrivateIpv4(ip) && (privateIp == null || _ipv4Priority(ip) > _ipv4Priority(privateIp))) {
+            privateIp = ip;
+          }
+        }
+      }
+      _localIps
+        ..clear()
+        ..addAll(ips);
+      _localIp = privateIp ?? fallbackIp ?? '';
+    } catch (_) {
+      _localIps.clear();
+      _localIp = '';
+    }
+  }
+
+  bool _isValidIpv4(String ip) {
+    final p = ip.split('.');
+    if (p.length != 4) return false;
+    return p.every((e) {
+      final v = int.tryParse(e);
+      return v != null && v >= 0 && v <= 255;
+    });
+  }
+
+  bool _isPrivateIpv4(String ip) {
+    final p = ip.split('.');
+    if (p.length != 4) return false;
+    final a = int.tryParse(p[0]);
+    final b = int.tryParse(p[1]);
+    if (a == null || b == null) return false;
+    return a == 10 || (a == 172 && b >= 16 && b <= 31) || (a == 192 && b == 168);
+  }
+
+  int _ipv4Priority(String ip) {
+    if (ip.startsWith('192.168.')) return 3;
+    if (ip.startsWith('10.')) return 2;
+    final p = ip.split('.');
+    if (p.length == 4 && p[0] == '172') {
+      final s = int.tryParse(p[1]);
+      if (s != null && s >= 16 && s <= 31) return 1;
+    }
+    return 0;
+  }
+
+  String? _ipv4Prefix(String ip) {
+    final p = ip.split('.');
+    return p.length == 4 ? '${p[0]}.${p[1]}.${p[2]}' : null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // HTTP server
+  // ---------------------------------------------------------------------------
+
+  Future<bool> _startServer() async {
+    HttpServer? server;
+    var port = RemoteSyncProtocol.defaultHttpPort;
+    for (var i = 0; i < 100; i++) {
+      try {
+        server = await HttpServer.bind(InternetAddress.anyIPv4, port, shared: true);
+        break;
+      } catch (_) {
+        port++;
+      }
+    }
+    if (server == null || _disposed) {
+      try {
+        await server?.close(force: true);
+      } catch (_) {}
+      return false;
+    }
+    _server = server;
+    _localPort = port;
+    server.listen(_handleRequest, onError: (_) {}, onDone: () {});
+
+    _cleanupTimer?.cancel();
+    _cleanupTimer = Timer.periodic(const Duration(seconds: 15), (_) => _cleanupDevices());
+    return true;
+  }
+
+  Future<void> _handleRequest(HttpRequest request) async {
+    final response = request.response;
+    final path = request.uri.path;
+
+    response.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+    if (request.method == 'OPTIONS') {
+      response.statusCode = HttpStatus.ok;
+      await response.close();
+      return;
+    }
+    try {
+      if (path == RemoteSyncProtocol.apiStatus) {
+        await _handleStatus(request);
+      } else if (path == RemoteSyncProtocol.apiSettings) {
+        await _handleSettings(request);
+      } else {
+        response.statusCode = HttpStatus.notFound;
+        await _write(response, {'code': 404, 'msg': 'Not Found', 'data': false});
+      }
+    } catch (_) {
+      try {
+        response.statusCode = HttpStatus.internalServerError;
+        await _write(response, {'code': 500, 'msg': 'Internal Server Error', 'data': false});
+      } catch (_) {}
+    }
+  }
+
+  Future<void> _handleStatus(HttpRequest request) async {
+    if (request.method != 'GET') {
+      await _methodNotAllowed(request.response);
+      return;
+    }
+    await _write(request.response, {
+      'code': 200,
+      'msg': 'ok',
+      'data': {
+        'id': _deviceId,
+        'name': 'PureLive TV (${Platform.operatingSystem})',
+        'platform': Platform.operatingSystem,
+        'version': '1.0.0',
+        'ip': _localIp,
+        'port': _localPort,
+      },
+    });
+  }
+
+  Future<void> _handleSettings(HttpRequest request) async {
+    switch (request.method) {
+      case 'GET':
+        try {
+          final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
+          await _write(request.response, {'code': 200, 'msg': 'ok', 'data': settings});
+        } catch (_) {
+          await _write(request.response, {'code': 500, 'msg': 'Export settings failed', 'data': false});
+        }
+      case 'POST':
+        final body = await _readJson(request);
+        final settings = body is Map && body['settings'] is Map
+            ? Map<String, dynamic>.from(body['settings'] as Map)
+            : null;
+        if (settings == null) {
+          await _write(request.response, {'code': 400, 'msg': 'Settings is empty', 'data': false});
+          return;
+        }
+        final ok = await _applySettings(settings);
+        await _write(request.response, {
+          'code': ok ? 200 : 500,
+          'msg': ok ? 'ok' : 'apply settings failed',
+          'data': ok,
+        });
+      default:
+        await _methodNotAllowed(request.response);
+    }
+  }
+
+  Future<bool> _applySettings(Map<String, dynamic> settings) async {
+    try {
+      await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings);
       return true;
     } catch (_) {
       return false;
     }
   }
 
-  // -- cookie ------------------------------------------------------------
-
-  Map<String, String> _cookiesBySite() {
-    final cookies = SettingsService.to.cookieState;
-    return {
-      'bilibili': cookies.bilibiliCookie,
-      'huya': cookies.huyaCookie,
-      'douyin': cookies.douyinCookie,
-      'kuaishou': cookies.kuaishouCookie,
-      'yy': cookies.yyCookie,
-      'soop': cookies.soopCookie,
-      'twitch': cookies.twitchCookie,
-    };
-  }
-
-  bool _setCookieForSite(String site, String cookie) {
-    final controller = SettingsService.to.cookieManager;
-    switch (site) {
-      case 'bilibili':
-        controller.setBilibiliCookie(cookie);
-      case 'huya':
-        controller.setHuyaCookie(cookie);
-      case 'douyin':
-        controller.setDouyinCookie(cookie);
-      case 'kuaishou':
-        controller.setKuaishouCookie(cookie);
-      case 'yy':
-        controller.setYyCookie(cookie);
-      case 'soop':
-        controller.setSoopCookie(cookie);
-      case 'twitch':
-        controller.setTwitchCookie(cookie);
-      default:
-        return false;
-    }
-    return true;
-  }
-
-  // -- danmaku shield words ---------------------------------------------
-
-  List<String> _stringListFrom(Object? data) {
-    if (data is List) return data.map((e) => e.toString()).toList();
-    if (data is Map && data['filters'] is List) {
-      return (data['filters'] as List).map((e) => e.toString()).toList();
-    }
-    if (data is String) {
-      return data.split('\n').where((e) => e.trim().isNotEmpty).toList();
-    }
-    return const [];
-  }
-
-  Future<bool> _replaceShieldList(List<String> filters) async {
-    final fav = SettingsService.to.fav;
-    final current = List<String>.from(_ref.read(favoriteRoomControllerProvider).shieldList);
-    for (var i = current.length - 1; i >= 0; i--) {
-      fav.removeShieldList(i);
-    }
-    var ok = true;
-    for (final word in filters) {
-      ok = fav.addShieldList(word) && ok;
-    }
-    return ok;
-  }
-
-  // -- tags --------------------------------------------------------------
-
-  bool _applyTags(Object? data) {
-    List? entries;
-    if (data is List) {
-      entries = data;
-    } else if (data is Map && data['tags'] is List) {
-      entries = data['tags'] as List;
-    }
-    if (entries == null) return false;
-
-    final controller = SettingsService.to.tag;
-    final existing = _ref
-        .read(tagManagementControllerProvider)
-        .tags
-        .map((tag) => tag.name.trim().toLowerCase())
-        .toSet();
-    var added = false;
-    for (final entry in entries) {
-      final name = entry is Map ? (entry['name'] ?? '').toString().trim() : '';
-      if (name.isEmpty) continue;
-      if (existing.contains(name.toLowerCase())) continue;
-      final description = entry is Map ? (entry['description'] ?? '').toString() : '';
-      controller.addTag(name, description);
-      existing.add(name.toLowerCase());
-      added = true;
-    }
-    return added || entries.isEmpty;
-  }
-
-  // -- iptv link ---------------------------------------------------------
-
-  Future<bool> _applyIptvLink(Object? data) async {
-    String url;
-    String name;
-    Map<String, String> headers = const <String, String>{};
-    if (data is Map) {
-      url = (data['url'] ?? data['link'] ?? '').toString().trim();
-      name = (data['name'] ?? '').toString().trim();
-      final rawHeaders = data['headers'] ?? data['httpHeaders'];
-      if (rawHeaders is Map) headers = HttpHeaderPolicy.normalize(rawHeaders);
-      // The web page's split inputs arrive as separate fields; both forms merge
-      // with the map entries winning.
-      final separate = <String, String>{
-        if ((data['userAgent'] ?? '').toString().trim().isNotEmpty) 'user-agent': data['userAgent'].toString().trim(),
-        if ((data['referer'] ?? '').toString().trim().isNotEmpty) 'referer': data['referer'].toString().trim(),
-        if ((data['cookie'] ?? '').toString().trim().isNotEmpty) 'cookie': data['cookie'].toString().trim(),
-      };
-      headers = HttpHeaderPolicy.normalize({...separate, ...headers});
-    } else {
-      url = data.toString().trim();
-      name = '';
-    }
-    if (url.isEmpty || !url.startsWith('http')) return false;
-
+  Future<Object?> _readJson(HttpRequest request) async {
+    final content = await utf8.decoder.bind(request).join();
+    if (content.trim().isEmpty) return null;
     try {
-      final content = await HttpClient.instance.getText(
-        url,
-        header: HttpClient.iptvHeaders(headers),
-      );
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}${Platform.pathSeparator}iptv_remote_${DateTime.now().millisecondsSinceEpoch}.m3u');
-      // The headers the user typed on the phone belong to the *channels* of this source,
-      // not just to the download: `mergeIntoM3u` writes them into the playlist the parser
-      // reads, which is how a playlist encodes its own UA/Referer/Cookie.
-      await file.writeAsString(HttpHeaderPolicy.mergeIntoM3u(content, headers));
-      final providerName = name.isNotEmpty ? name : 'remote_${DateTime.now().millisecondsSinceEpoch}';
-      final ok = await IptvImportManager().importIptvFile(
-        file: file,
-        providerName: providerName,
-        url: url,
-        forceUpdate: true,
-        showTips: false,
-      );
-      await file.delete();
-      return ok;
+      return jsonDecode(content);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _methodNotAllowed(HttpResponse response) async {
+    response.statusCode = HttpStatus.methodNotAllowed;
+    await _write(response, {'code': 405, 'msg': 'Method Not Allowed', 'data': false});
+  }
+
+  Future<void> _write(HttpResponse response, Map<String, dynamic> data) async {
+    response.write(jsonEncode(data));
+    await response.close();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Bonsoir discovery + broadcast
+  // ---------------------------------------------------------------------------
+
+  Future<void> _startDiscoveryAndBroadcast() async {
+    try {
+      final discovery = BonsoirDiscovery(type: RemoteSyncProtocol.mdnsServiceType);
+      await discovery.initialize();
+      final stream = discovery.eventStream;
+      if (stream == null) return;
+      _discovery = discovery;
+      _discoverySub = stream.listen(_handleDiscovery, onError: (_) {});
+      await discovery.start();
+      await _startBroadcast();
+    } catch (e) {
+      _lastError = 'mDNS failed: $e';
+    }
+  }
+
+  Future<void> _handleDiscovery(BonsoirDiscoveryEvent event) async {
+    switch (event) {
+      case BonsoirDiscoveryServiceFoundEvent():
+        final service = event.service;
+        if (_isSelf(service)) return;
+        _addOrUpdate(service);
+        final resolver = _discovery?.serviceResolver;
+        if (resolver != null) {
+          try {
+            await service.resolve(resolver);
+          } catch (_) {}
+        }
+      case BonsoirDiscoveryServiceResolvedEvent():
+      case BonsoirDiscoveryServiceUpdatedEvent():
+        final service = event.service;
+        if (service == null || _isSelf(service)) return;
+        _addOrUpdate(service);
+      case BonsoirDiscoveryServiceLostEvent():
+        _remove(event.service);
+      default:
+        break;
+    }
+  }
+
+  bool _isSelf(BonsoirService service) {
+    final id = service.attributes['id']?.trim();
+    if (id == _deviceId) return true;
+    final ip = service.attributes['ip']?.trim();
+    return ip != null && ip.isNotEmpty && _localIps.contains(ip);
+  }
+
+  void _addOrUpdate(BonsoirService service) {
+    final attrs = service.attributes;
+    final id = attrs['id']?.trim() ?? '';
+    if (id.isEmpty || id == _deviceId) return;
+
+    final name = (attrs['name']?.trim().isNotEmpty == true) ? attrs['name']!.trim() : service.name;
+    final ip = _selectIp(service) ?? attrs['ip']?.trim();
+    if (ip == null || !_isValidIpv4(ip)) return;
+    final port = service.port > 0 ? service.port : RemoteSyncProtocol.defaultHttpPort;
+
+    final device = RemoteSyncDevice(
+      id: id,
+      name: name,
+      platform: attrs['platform'] ?? '',
+      version: attrs['version'] ?? '',
+      ip: ip,
+      port: port,
+      lastSeen: DateTime.now(),
+      bonsoirName: service.name,
+    );
+
+    final byId = _devices.indexWhere((d) => d.id == device.id);
+    if (byId >= 0) {
+      _devices[byId] = device;
+      _publish();
+      return;
+    }
+    final byIp = _devices.indexWhere((d) => d.ip == device.ip);
+    if (byIp >= 0) {
+      _devices[byIp] = device;
+      _publish();
+      return;
+    }
+    _devices.add(device);
+    _publish();
+  }
+
+  void _remove(BonsoirService service) {
+    final id = service.attributes['id']?.trim();
+    final before = _devices.length;
+    if (id != null && id.isNotEmpty) {
+      _devices.removeWhere((d) => d.id == id);
+    } else {
+      _devices.removeWhere((d) => d.bonsoirName == service.name);
+    }
+    if (_devices.length != before) _publish();
+  }
+
+  String? _selectIp(BonsoirService service) {
+    final addresses = service.hostAddresses.where(_isValidIpv4).toList();
+    if (addresses.isNotEmpty) {
+      final prefix = _ipv4Prefix(_localIp);
+      if (prefix != null) {
+        for (final ip in addresses) {
+          if (_ipv4Prefix(ip) == prefix) return ip;
+        }
+      }
+      for (final ip in addresses) {
+        if (_isPrivateIpv4(ip)) return ip;
+      }
+      return addresses.first;
+    }
+    final advertised = service.attributes['ip']?.trim();
+    return (advertised != null && _isValidIpv4(advertised)) ? advertised : null;
+  }
+
+  Future<void> _startBroadcast() async {
+    if (_localPort <= 0) return;
+    final suffix = _deviceId.length > 6 ? _deviceId.substring(_deviceId.length - 6) : _deviceId;
+    final service = BonsoirService(
+      name: 'PureLive-$suffix',
+      type: RemoteSyncProtocol.mdnsServiceType,
+      port: _localPort,
+      attributes: {
+        'id': _deviceId,
+        'name': 'PureLive TV (${Platform.operatingSystem})',
+        'platform': Platform.operatingSystem,
+        'version': '1.0.0',
+        'ip': _localIp,
+      },
+    );
+    final broadcast = BonsoirBroadcast(service: service);
+    await broadcast.initialize();
+    await broadcast.start();
+    _broadcast = broadcast;
+  }
+
+  void _cleanupDevices() {
+    final now = DateTime.now();
+    final before = _devices.length;
+    _devices.removeWhere((d) => now.difference(d.lastSeen).inSeconds > 120);
+    if (_devices.length != before) _publish();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Outgoing sync
+  // ---------------------------------------------------------------------------
+
+  Future<bool> syncToDevice(RemoteSyncDevice device) => syncToAddress(device.ip, device.port);
+
+  Future<bool> syncToAddress(String ip, int port) async {
+    try {
+      final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
+      final client = HttpClient();
+      try {
+        final request = await client.postUrl(Uri.parse('http://$ip:$port${RemoteSyncProtocol.apiSettings}'));
+        request.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
+        request.write(jsonEncode(RemoteSyncProtocol.settingsPacket(settings: settings)));
+        final response = await request.close();
+        final body = await utf8.decoder.bind(response).join();
+        if (response.statusCode != HttpStatus.ok) return false;
+        final result = jsonDecode(body);
+        return result is Map && result['data'] == true;
+      } finally {
+        client.close(force: true);
+      }
     } catch (_) {
       return false;
     }
+  }
+
+  Future<bool> receiveFromAddress(String ip, int port) async {
+    try {
+      final client = HttpClient();
+      try {
+        final request = await client.getUrl(Uri.parse('http://$ip:$port${RemoteSyncProtocol.apiSettings}'));
+        final response = await request.close();
+        final body = await utf8.decoder.bind(response).join();
+        if (response.statusCode != HttpStatus.ok) return false;
+        final result = jsonDecode(body);
+        if (result is! Map || result['code'] != 200 || result['data'] is! Map) return false;
+        return await _applySettings(Map<String, dynamic>.from(result['data'] as Map));
+      } finally {
+        client.close(force: true);
+      }
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> receiveFromQrOrAddress(String value) async {
+    final parsed = RemoteSyncProtocol.parseQr(value);
+    if (parsed == null) return false;
+    return receiveFromAddress(parsed.ip, parsed.port);
+  }
+
+  Future<bool> syncByAddress(String value) async {
+    final parsed = RemoteSyncProtocol.parseHttpAddress(value);
+    if (parsed == null) return false;
+    return syncToAddress(parsed.ip, parsed.port);
+  }
+
+  Future<bool> syncByQr(String value) async {
+    final parsed = RemoteSyncProtocol.parseQr(value);
+    if (parsed == null) return false;
+    return syncToAddress(parsed.ip, parsed.port);
+  }
+
+  Future<bool> receiveByQr(String value) async {
+    final parsed = RemoteSyncProtocol.parseQr(value);
+    if (parsed == null) return false;
+    return receiveFromAddress(parsed.ip, parsed.port);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Publish
+  // ---------------------------------------------------------------------------
+
+  void _publish() {
+    debugPrint('[sync] publish ip=$_localIp port=$_localPort running=$_running');
+    if (!ref.mounted) return;
+    state = RemoteSyncSnapshot(
+      started: _running,
+      qrData: _localIp.isEmpty || _localPort <= 0
+          ? ''
+          : RemoteSyncProtocol.createQrUri(ip: _localIp, port: _localPort).toString(),
+      address: _localIp.isEmpty ? '' : '$_localIp:$_localPort',
+      error: _running ? null : _lastError,
+      devices: List.unmodifiable(_devices),
+    );
   }
 }

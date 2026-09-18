@@ -107,10 +107,9 @@ dependencies:
   remixicon: ^4.9.3 # Remix图标库
   flutter_virtual_scroll: ^0.1.1
   marquee_list: ^1.0.0
-  tv_remote_kit:
-    path: packages/tv_remote_kit
   android_intent_plus: ^6.0.0
   tv_textfield: ^1.0.5
+  bonsoir: ^7.1.5
   flutter_inappwebview:
     git:
       url: https://github.com/guide-inc-org/guide-flutter_inappwebview.git
