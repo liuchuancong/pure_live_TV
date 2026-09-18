@@ -57,11 +57,13 @@ class TvFocusStyle {
         ),
       if (glow)
         DpadGlowEffect(
-          // Light palettes: no blur — the ring alone keeps focus crisp.
-          // Dark palettes: the classic TV halo.
-          color: theme.focusColor.withValues(alpha: theme.isLight ? 1.0 : 0.45),
-          blurRadius: theme.isLight ? 0 : 14.sp,
-          spreadRadius: 2.sp,
+          // Same halo the room cards use (opacity .75, 18sp blur): the
+          // highlight visibly *lights up* around the item. Light palettes
+          // keep no blur — a halo on white reads as a grey smear.
+          color: theme.focusColor,
+          opacity: theme.isLight ? 1.0 : 0.75,
+          blurRadius: theme.isLight ? 0 : 18.sp,
+          spreadRadius: theme.isLight ? 2.sp : 1.5.sp,
           borderRadius: radius,
           duration: duration,
         ),

@@ -51,20 +51,22 @@ class TvIconButton extends StatelessWidget {
             late Color bgColor;
             late Color foregroundColor;
 
+            // House style: icon buttons are white in every state and every
+            // theme mode, matching TvButton.
             if (selected) {
               bgColor = activeTheme.focusColor;
-              foregroundColor = activeTheme.onFocusColor;
+              foregroundColor = Colors.white;
             } else if (isFocused && useFadedFocus) {
               bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-              foregroundColor = activeTheme.onFadedFocusColor;
+              foregroundColor = Colors.white;
             } else if (isFocused) {
               bgColor = activeTheme.focusColor;
-              foregroundColor = activeTheme.onFocusColor;
+              foregroundColor = Colors.white;
             } else {
               bgColor = isSecondary
                   ? activeTheme.buttonSurface.withValues(alpha: 0.45)
                   : activeTheme.buttonSurface.withValues(alpha: activeTheme.isLight ? 0.85 : 0.75);
-              foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
+              foregroundColor = Colors.white;
             }
 
             return AnimatedContainer(

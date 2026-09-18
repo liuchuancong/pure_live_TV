@@ -59,15 +59,18 @@ class TvButton extends StatelessWidget {
           late Color bgColor;
           late Color foregroundColor;
 
+          // House style: button icons and text are white in every state and
+          // every theme mode — the accent fills (and the dark resting
+          // surfaces) are strong enough to carry white everywhere.
           if (selected) {
             bgColor = activeTheme.focusColor;
-            foregroundColor = activeTheme.onFocusColor;
+            foregroundColor = Colors.white;
           } else if (isFocused && useFadedFocus) {
             bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-            foregroundColor = activeTheme.onFadedFocusColor;
+            foregroundColor = Colors.white;
           } else if (isFocused) {
             bgColor = activeTheme.focusColor;
-            foregroundColor = activeTheme.onFocusColor;
+            foregroundColor = Colors.white;
           } else {
             // buttonSurface, not cardColor: on light palettes the card is a
             // near-white tint, so a card-colored button read as a plain white
@@ -80,7 +83,7 @@ class TvButton extends StatelessWidget {
             bgColor = isSecondary
                 ? activeTheme.buttonSurface.withValues(alpha: 0.45)
                 : activeTheme.buttonSurface.withValues(alpha: activeTheme.isLight ? 0.85 : 0.75);
-            foregroundColor = isSecondary ? activeTheme.secondaryTextColor : activeTheme.primaryTextColor;
+            foregroundColor = Colors.white;
           }
 
           if (excludeFocus) {

@@ -156,14 +156,10 @@ class _TvTabBarState extends State<TvTabBar> {
                         ? currentTvTheme.focusColor.withValues(alpha: 0.5)
                         : Colors.transparent;
 
-                    // Palette-derived contrast, not a hard-coded white: a pale
-                    // accent on a light preset would leave white text sunk
-                    // into the fill.
-                    final foregroundColor = isSelected
-                        ? currentTvTheme.onFocusColor
-                        : isFocused
-                        ? currentTvTheme.onFadedFocusColor
-                        : currentTvTheme.primaryTextColor;
+                    // House style: tab icons and focused/selected text are
+                    // always white, in every theme mode — the accent fills are
+                    // strong enough to carry white in both.
+                    final foregroundColor = isSelected || isFocused ? Colors.white : currentTvTheme.primaryTextColor;
 
                     final baseStyle = isSelected || isFocused ? AppTextStyles.t20W600 : AppTextStyles.t20;
 
@@ -174,29 +170,14 @@ class _TvTabBarState extends State<TvTabBar> {
                       alignment: Alignment.center,
                       padding: EdgeInsets.symmetric(horizontal: 28.sp),
                       decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
+                      // Icons render white in every state. `Icon` widgets pick
+                      // this up through IconTheme; image logos keep their own
+                      // artwork (a srcIn colour filter made them disappear).
                       child: IconTheme(
-                        data: IconThemeData(size: 26.sp, color: foregroundColor),
+                        data: const IconThemeData(color: Colors.white),
                         child: DefaultTextStyle(
                           style: baseStyle.copyWith(color: foregroundColor),
-                          // The icon is built here — inside the effect — rather
-                          // than in the static child, because an Image logo
-                          // cannot pick its colour up from IconTheme the way
-                          // an Icon does; it needs an explicit srcIn filter in
-                          // the focused/selected foreground colour.
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (tab.icon != null) ...[
-                                ColorFiltered(
-                                  colorFilter: ColorFilter.mode(foregroundColor, BlendMode.srcIn),
-                                  child: tab.icon,
-                                ),
-                                SizedBox(width: 10.sp),
-                              ],
-                              Center(child: child),
-                            ],
-                          ),
+                          child: child,
                         ),
                       ),
                     );
@@ -215,7 +196,14 @@ class _TvTabBarState extends State<TvTabBar> {
                     widget.onTabChange(index);
                   }
                 },
-                child: Text(tab.title),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (tab.icon != null) ...[tab.icon!, SizedBox(width: 10.sp)],
+                    Center(child: Text(tab.title)),
+                  ],
+                ),
               ),
             );
           },
