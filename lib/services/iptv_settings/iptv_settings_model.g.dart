@@ -12,6 +12,8 @@ _IptvSettingsModel _$IptvSettingsModelFromJson(Map<String, dynamic> json) =>
       autoSyncHoursInterval:
           (json['autoSyncHoursInterval'] as num?)?.toInt() ?? 24,
       customIptvUserAgent: json['customIptvUserAgent'] as String? ?? '',
+      customIptvReferer: json['customIptvReferer'] as String? ?? '',
+      customIptvCookie: json['customIptvCookie'] as String? ?? '',
       m3uDirectory: json['m3uDirectory'] as String? ?? 'm3uDirectory',
     );
 
@@ -20,5 +22,7 @@ Map<String, dynamic> _$IptvSettingsModelToJson(_IptvSettingsModel instance) =>
       'isAutoSyncEnabled': instance.isAutoSyncEnabled,
       'autoSyncHoursInterval': instance.autoSyncHoursInterval,
       'customIptvUserAgent': instance.customIptvUserAgent,
+      'customIptvReferer': instance.customIptvReferer,
+      'customIptvCookie': instance.customIptvCookie,
       'm3uDirectory': instance.m3uDirectory,
     };

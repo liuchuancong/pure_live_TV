@@ -158,6 +158,13 @@ export const api = {
   importIptv(iptvData) {
     return httpPostJson('/api/iptv', iptvData)
   },
+  async getIptvHeaders() {
+    const res = await httpGet('/api/iptv/headers')
+    return res.isOk ? (res.data ?? null) : null
+  },
+  saveIptvHeaders(headerData) {
+    return httpPostJson('/api/iptv/headers', headerData)
+  },
   exportBackup() {
     return httpGet('/api/backup/export', {}, { responseType: FILE_RESPONSE_TYPE, downloadTag: 'pure_live_backup' })
   },

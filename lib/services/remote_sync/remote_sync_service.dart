@@ -338,6 +338,14 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
       name = (data['name'] ?? '').toString().trim();
       final rawHeaders = data['headers'] ?? data['httpHeaders'];
       if (rawHeaders is Map) headers = HttpHeaderPolicy.normalize(rawHeaders);
+      // The web page's split inputs arrive as separate fields; both forms merge
+      // with the map entries winning.
+      final separate = <String, String>{
+        if ((data['userAgent'] ?? '').toString().trim().isNotEmpty) 'user-agent': data['userAgent'].toString().trim(),
+        if ((data['referer'] ?? '').toString().trim().isNotEmpty) 'referer': data['referer'].toString().trim(),
+        if ((data['cookie'] ?? '').toString().trim().isNotEmpty) 'cookie': data['cookie'].toString().trim(),
+      };
+      headers = HttpHeaderPolicy.normalize({...separate, ...headers});
     } else {
       url = data.toString().trim();
       name = '';
@@ -347,7 +355,7 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
     try {
       final content = await HttpClient.instance.getText(
         url,
-        header: <String, String>{'user-agent': HttpClient.iptvUserAgent, ...headers},
+        header: HttpClient.iptvHeaders(headers),
       );
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}${Platform.pathSeparator}iptv_remote_${DateTime.now().millisecondsSinceEpoch}.m3u');

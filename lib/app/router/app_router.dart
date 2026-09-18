@@ -10,6 +10,9 @@ import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
 import 'package:pure_live/features/settings/pages/update_history_page.dart';
 import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_import_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_sync_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_headers_section.dart';
 import 'package:pure_live/features/settings/pages/nav_order_section.dart';
 import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_section.dart';
@@ -63,6 +66,9 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
   AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),  // Pages the mobile app gives its own path.
   AppRoutes.kIptv: (context) => const IptvManageSectionPage(),
+  AppRoutes.kIptvImport: (context) => const IptvImportSectionPage(),
+  AppRoutes.kIptvSync: (context) => const IptvSyncSectionPage(),
+  AppRoutes.kIptvHeaders: (context) => const IptvHeadersSectionPage(),
   AppRoutes.kSettingsHotAreas: (context) => const PlatformDisplaySectionPage(),
   AppRoutes.kSettingsHotAreasVisibility: (context) => const PlatformDisplayVisibilitySectionPage(),
   AppRoutes.kSettingsHotAreasOrder: (context) => const PlatformDisplayOrderSectionPage(),

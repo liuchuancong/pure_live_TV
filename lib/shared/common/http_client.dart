@@ -52,6 +52,23 @@ class HttpClient {
     return custom.isEmpty ? defaultDesktopUserAgent : custom;
   }
 
+  /// The global IPTV request headers (UA + the optional Referer/Cookie the
+  /// user configured) merged with per-source [headers], which always win.
+  ///
+  /// Playlist download, sync and playback all go through this so a source that
+  /// needs a Referer/Cookie works everywhere without editing the playlist.
+  static Map<String, String> iptvHeaders([Map<String, String>? headers]) {
+    final settings = SettingsService.to.iptvState;
+    final referer = settings.customIptvReferer.trim();
+    final cookie = settings.customIptvCookie.trim();
+    return <String, String>{
+      'user-agent': iptvUserAgent,
+      if (referer.isNotEmpty) 'referer': referer,
+      if (cookie.isNotEmpty) 'cookie': cookie,
+      ...?headers,
+    };
+  }
+
   /// Injects the IPTV "custom user agent" setting into a request unless the
   /// caller asked for a specific one.
   ///

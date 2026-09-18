@@ -9,6 +9,8 @@ abstract class IptvSettingsModel with _$IptvSettingsModel {
     @Default(false) bool isAutoSyncEnabled,
     @Default(24) int autoSyncHoursInterval,
     @Default('') String customIptvUserAgent,
+    @Default('') String customIptvReferer,
+    @Default('') String customIptvCookie,
     @Default('m3uDirectory') String m3uDirectory,
   }) = _IptvSettingsModel;
 

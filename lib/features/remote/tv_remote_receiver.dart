@@ -9,6 +9,7 @@ import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
+import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/common/http_header_policy.dart';
 import 'package:pure_live/shared/utils/log.dart';
@@ -433,31 +434,31 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
     });
 
-    // IPTV 直播源 + 请求头. The phone sends a playlist address and the headers its
-    // operator requires; the headers are written onto the imported channels
-    // (`#EXTHTTP:`), exactly like the LAN-sync channel does.
+    // IPTV 直播源 + 请求头. The phone sends a playlist URL or an uploaded
+    // playlist body plus the headers its operator requires; the headers are
+    // written onto the imported channels (`#EXTHTTP:`), exactly like the
+    // LAN-sync channel does. The headers also arrive as separate
+    // userAgent/referer/cookie fields — the web page's split inputs.
     _app!.post('/api/iptv', (req, res) async {
       final body = await req.body;
       if (body is! Map) return _fail(res, msg: i18n('ui_parameter_error'));
       final String url = (body['url'] ?? body['link'] ?? '').toString().trim();
       final String name = (body['name'] ?? '').toString().trim();
-      final rawHeaders = body['headers'] ?? body['httpHeaders'];
-      final headers = rawHeaders is Map ? HttpHeaderPolicy.normalize(rawHeaders) : const <String, String>{};
-      if (!url.startsWith('http')) return _fail(res, msg: i18n('ui_parameter_error'));
+      final String content = (body['content'] ?? '').toString();
+      final headers = _iptvHeadersFromBody(body);
+      final hasContent = content.trim().startsWith('#EXTM3U') || content.contains(',#genre#');
+      if (!hasContent && !url.startsWith('http')) return _fail(res, msg: i18n('ui_parameter_error'));
       try {
-        final content = await HttpClient.instance.getText(
-          url,
-          header: <String, String>{'user-agent': HttpClient.iptvUserAgent, ...headers},
-        );
+        final playlist = hasContent ? content : await HttpClient.instance.getText(url, header: HttpClient.iptvHeaders(headers));
         final dir = await getTemporaryDirectory();
         final file = File(
           '${dir.path}${Platform.pathSeparator}iptv_remote_${DateTime.now().millisecondsSinceEpoch}.m3u',
         );
-        await file.writeAsString(HttpHeaderPolicy.mergeIntoM3u(content, headers));
+        await file.writeAsString(HttpHeaderPolicy.mergeIntoM3u(playlist, headers));
         final ok = await IptvImportManager().importIptvFile(
           file: file,
           providerName: name.isNotEmpty ? name : 'remote_${DateTime.now().millisecondsSinceEpoch}',
-          url: url,
+          url: hasContent ? '' : url,
           forceUpdate: true,
           showTips: false,
         );
@@ -467,6 +468,37 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       } catch (error) {
         _addLog('IPTV import failed: $error', color: Colors.red);
         return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
+      }
+    });
+
+    // The global IPTV request headers, so the phone page can prefill and edit
+    // the same UA/Referer/Cookie the TV itself uses.
+    _app!.get('/api/iptv/headers', (req, res) {
+      final settings = ref.read(iptvSettingsControllerProvider);
+      return _ok(res, data: {
+        'userAgent': settings.customIptvUserAgent,
+        'referer': settings.customIptvReferer,
+        'cookie': settings.customIptvCookie,
+      });
+    });
+
+    _app!.post('/api/iptv/headers', (req, res) async {
+      final body = await req.body;
+      if (body is! Map) return _fail(res, msg: i18n('ui_parameter_error'));
+      try {
+        final settings = ref.read(iptvSettingsControllerProvider);
+        ref.read(iptvSettingsControllerProvider.notifier).updateSettings(
+          settings.copyWith(
+            customIptvUserAgent: (body['userAgent'] ?? '').toString().trim(),
+            customIptvReferer: (body['referer'] ?? '').toString().trim(),
+            customIptvCookie: (body['cookie'] ?? '').toString().trim(),
+          ),
+        );
+        _addLog('IPTV request headers updated from the phone');
+        return _ok(res, msg: i18n('ui_saved'));
+      } catch (error) {
+        _addLog('IPTV header update failed: $error', color: Colors.red);
+        return _fail(res, msg: i18n('ui_parameter_error'));
       }
     });
 
@@ -580,6 +612,23 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   Map<String, dynamic> _ok(HttpResponse res, {String msg = 'ok', dynamic data}) {
     res.statusCode = HttpStatus.ok;
     return {'code': 200, 'msg': msg, 'data': data};
+  }
+
+  /// The IPTV request headers of a push body: either the `headers` map or the
+  /// web page's separate `userAgent`/`referer`/`cookie` fields, with the map
+  /// entries winning when both are present.
+  Map<String, String> _iptvHeadersFromBody(Map body) {
+    final rawHeaders = body['headers'] ?? body['httpHeaders'];
+    final headers = rawHeaders is Map
+        ? HttpHeaderPolicy.normalize(rawHeaders)
+        : <String, String>{};
+    final separate = <String, String>{
+      if ((body['userAgent'] ?? '').toString().trim().isNotEmpty)
+        'user-agent': body['userAgent'].toString().trim(),
+      if ((body['referer'] ?? '').toString().trim().isNotEmpty) 'referer': body['referer'].toString().trim(),
+      if ((body['cookie'] ?? '').toString().trim().isNotEmpty) 'cookie': body['cookie'].toString().trim(),
+    };
+    return HttpHeaderPolicy.normalize({...separate, ...headers});
   }
 
   Map<String, dynamic> _fail(HttpResponse res, {String? msg, int code = 400}) {

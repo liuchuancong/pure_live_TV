@@ -1,27 +1,16 @@
-import 'dart:io';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/data/db_service.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/iptv/data/database.dart' as database;
 import 'package:pure_live/features/iptv/services/iptv_sync_engine.dart';
-import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
-import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
+import 'package:pure_live/app/router/app_routes.dart';
 
-
-/// IPTV source management: imported playlists, the import actions (local file or
-/// URL) and the auto-sync / request-header settings.
-///
-/// The rows mirror the desktop page (`pure_live/lib/modules/iptv/iptv_page.dart`)
-/// and its manage page (`iptv_manage.dart`): the settings group carries the
-/// auto-sync switch, the interval and the custom User-Agent; the resource lists
-/// are grouped into network and local sources with per-item sync / auto-sync /
-/// delete.
+/// IPTV page: the imported-source list plus the entries to the split
+/// sub-pages (import, auto-sync, request headers). Deleting a source always
+/// asks for confirmation because the cascading delete also drops its channels.
 class IptvManageSectionPage extends ConsumerStatefulWidget {
   const IptvManageSectionPage({super.key});
 
@@ -30,11 +19,6 @@ class IptvManageSectionPage extends ConsumerStatefulWidget {
 }
 
 class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
-  /// Interval choices offered by the desktop interval dialog.
-  static const List<int> _intervalOptions = <int>[2, 6, 12, 24, 48, 72];
-
-  final _urlController = TextEditingController();
-
   List<database.Provider> _providers = const [];
   String _status = '';
   bool _busy = false;
@@ -47,15 +31,7 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
   }
 
-  @override
-  void dispose() {
-    _urlController.dispose();
-    super.dispose();
-  }
-
   database.AppDatabase get _db => DbService.to.db;
-
-  IptvSettingsController get _settings => ref.read(iptvSettingsControllerProvider.notifier);
 
   Future<void> _reload() async {
     try {
@@ -99,40 +75,7 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
     if (mounted) setState(() => _status = status);
   }
 
-  // ---------------------------------------------------------------- imports
-
-  /// Downloads a playlist URL into a temp file and imports it.
-  ///
-  /// When [name] is empty the file name in the URL is used, as the desktop
-  /// network-import dialog does.
-  Future<void> _importPlaylistUrl({String url = '', String name = ''}) async {
-    final target = url.trim().isEmpty ? _urlController.text.trim() : url.trim();
-    if (target.isEmpty) {
-      setState(() => _status = i18n('ui_parameter_error'));
-      return;
-    }
-    await _run(() async {
-      final content = await HttpClient.instance.getText(target, header: {'user-agent': HttpClient.iptvUserAgent});
-      final ext = p.extension(Uri.parse(target).path).toLowerCase();
-      final suffix = {'.m3u', '.m3u8', '.txt'}.contains(ext) ? ext : '.m3u';
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}${Platform.pathSeparator}iptv_import_${DateTime.now().millisecondsSinceEpoch}$suffix');
-      await file.writeAsString(content);
-      final urlName = p.basenameWithoutExtension(Uri.parse(target).path);
-      final providerName = name.trim().isNotEmpty ? name.trim() : (urlName.isEmpty ? 'iptv' : urlName);
-      final ok = await IptvImportManager().importIptvFile(
-        file: file,
-        providerName: providerName,
-        url: target,
-        forceUpdate: true,
-        showTips: false,
-      );
-      await file.delete();
-      await _reloadWithStatus(ok ? i18n('ui_imported') : i18n('ui_import_failed_or_file_not_found'));
-    });
-  }
-
-  // --------------------------------------------------------------- provider
+  // ---------------------------------------------------------------- actions
 
   Future<void> _syncProvider(database.Provider provider) => _run(() async {
     final ok = await IptvSyncEngine.instance.syncPlaylist(provider, showTips: false);
@@ -163,10 +106,12 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
   });
 
   Future<void> _deleteProvider(database.Provider provider) async {
+    // A source delete cascades to its channels and favourites, so it always
+    // confirms with the source name before touching the database.
     final confirmed = await TvDialogUtils.showConfirm(
       context: context,
       title: i18n('delete_confirm_title'),
-      message: i18n('delete_confirm_message'),
+      message: '"${provider.name}"\n\n${i18n('delete_confirm_message')}',
       confirmText: i18n('confirm'),
       cancelText: i18n('cancel'),
     );
@@ -177,26 +122,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
       await _db.deleteProviderCascading(provider.id);
       await _reloadWithStatus(i18n('manage_page_delete_success'));
     });
-  }
-
-  // --------------------------------------------------------------- settings
-
-  Future<void> _editUserAgent() async {
-    final value = await TvDialogUtils.showInput(
-      context: context,
-      title: i18n('edit_ua_title'),
-      hintText: 'Mozilla/5.0...',
-      initialValue: ref.read(iptvSettingsControllerProvider).customIptvUserAgent,
-      maxLength: 500,
-    );
-    if (value == null) return;
-    _settings.setCustomIptvUserAgent(value.trim());
-    setState(() => _status = i18n('settings_saved'));
-  }
-
-  void _selectInterval(int hours) {
-    _settings.setAutoSyncHoursInterval(hours);
-    setState(() => _status = i18n('settings_saved'));
   }
 
   // ----------------------------------------------------------- list helpers
@@ -217,69 +142,44 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
   @override
   Widget build(BuildContext context) {
     final theme = context.tvTheme;
-    final settings = ref.watch(iptvSettingsControllerProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Center(child: RemoteSyncQrCard(width: 280)),
         SizedBox(height: 20.h),
-        TvSettingsGroupTitle(title: i18n('iptv_manage')),
-        TvSettingsCard(children: _buildResourceRows()),
-        SizedBox(height: 20.h),
-        TvSettingsGroupTitle(title: i18n('playlist_settings')),
+        TvSettingsGroupTitle(title: i18n('iptv_settings')),
         TvSettingsCard(
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: TvInputField(controller: _urlController, hint: i18n('iptv_playlist_url_hint')),
+            TvSettingsOptionTile(
+              title: i18n('iptv_import_source'),
+              subtitle: i18n('iptv_import_source_desc'),
+              icon: Icons.playlist_add_rounded,
+              options: const [],
+              index: 0,
+              onChanged: (_) => context.push(AppRoutes.kIptvImport),
             ),
             TvSettingsOptionTile(
-              title: i18n('iptv_import_url'),
-              icon: Icons.link_rounded,
-              options: [i18n('iptv_import_url')],
-              index: 0,
-              onChanged: _busy ? null : (_) => _importPlaylistUrl(),
-            ),
-          ],
-        ),
-        SizedBox(height: 20.h),
-        TvSettingsGroupTitle(title: i18n('auto_sync_settings')),
-        TvSettingsCard(
-          children: [
-            TvSettingsSwitchTile(
-              title: i18n('auto_sync_title'),
-              subtitle: i18n('auto_sync_desc'),
+              title: i18n('auto_sync_settings'),
+              subtitle: i18n('iptv_sync_entry_desc'),
               icon: Icons.sync_rounded,
-              value: settings.isAutoSyncEnabled,
-              onChanged: _busy ? null : (value) => _settings.setAutoSyncEnabled(value),
-            ),
-            if (settings.isAutoSyncEnabled)
-              TvSettingsMenuTile<int>(
-                title: i18n('sync_interval_title'),
-                subtitle: i18n(
-                  'sync_interval_hours',
-                  args: {'hour': '${settings.autoSyncHoursInterval}'},
-                ),
-                icon: Icons.schedule_rounded,
-                value: settings.autoSyncHoursInterval,
-                valueMap: {
-                  for (final hours in _intervalOptions) hours: '$hours ${i18n('hours')}',
-                },
-                onChanged: _busy ? null : _selectInterval,
-              ),
-            TvSettingsOptionTile(
-              title: i18n('custom_ua_title'),
-              subtitle: settings.customIptvUserAgent.isEmpty
-                  ? i18n('custom_ua_desc')
-                  : settings.customIptvUserAgent,
-              icon: Icons.tv_rounded,
-              options: [i18n('custom_ua_title')],
+              options: const [],
               index: 0,
-              onChanged: _busy ? null : (_) => _editUserAgent(),
+              onChanged: (_) => context.push(AppRoutes.kIptvSync),
+            ),
+            TvSettingsOptionTile(
+              title: i18n('iptv_headers_settings'),
+              subtitle: i18n('iptv_headers_entry_desc'),
+              icon: Icons.vpn_key_rounded,
+              options: const [],
+              index: 0,
+              onChanged: (_) => context.push(AppRoutes.kIptvHeaders),
             ),
           ],
         ),
+        SizedBox(height: 20.h),
+        TvSettingsGroupTitle(title: i18n('iptv_resource_list')),
+        TvSettingsCard(children: _buildResourceRows()),
         if (_status.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.w, top: 10.h),

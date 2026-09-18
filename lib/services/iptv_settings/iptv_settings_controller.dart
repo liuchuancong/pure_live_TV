@@ -31,6 +31,8 @@ class IptvSettingsController extends _$IptvSettingsController {
         HivePrefUtil.getInt(autoSyncHoursIntervalKey) ?? iptvDefaultAutoSyncHours,
       ),
       customIptvUserAgent: HivePrefUtil.getString('customIptvUserAgent') ?? '',
+      customIptvReferer: HivePrefUtil.getString('customIptvReferer') ?? '',
+      customIptvCookie: HivePrefUtil.getString('customIptvCookie') ?? '',
       m3uDirectory: HivePrefUtil.getString('m3uDirectory') ?? 'm3uDirectory',
     );
   }
@@ -54,6 +56,14 @@ class IptvSettingsController extends _$IptvSettingsController {
     updateSettings(state.copyWith(customIptvUserAgent: userAgent));
   }
 
+  void setCustomIptvReferer(String referer) {
+    updateSettings(state.copyWith(customIptvReferer: referer));
+  }
+
+  void setCustomIptvCookie(String cookie) {
+    updateSettings(state.copyWith(customIptvCookie: cookie));
+  }
+
   int normalizeCurrentAutoSyncHours() {
     final normalized = normalizeIptvAutoSyncHours(state.autoSyncHoursInterval);
     if (normalized != state.autoSyncHoursInterval) {
@@ -67,6 +77,8 @@ class IptvSettingsController extends _$IptvSettingsController {
     HivePrefUtil.setBool('isAutoSyncEnabled', state.isAutoSyncEnabled);
     HivePrefUtil.setInt(autoSyncHoursIntervalKey, state.autoSyncHoursInterval);
     HivePrefUtil.setString('customIptvUserAgent', state.customIptvUserAgent);
+    HivePrefUtil.setString('customIptvReferer', state.customIptvReferer);
+    HivePrefUtil.setString('customIptvCookie', state.customIptvCookie);
     HivePrefUtil.setString('m3uDirectory', state.m3uDirectory);
   }
 
@@ -87,6 +99,8 @@ class IptvSettingsController extends _$IptvSettingsController {
         rawHours is int ? rawHours : iptvDefaultAutoSyncHours,
       ),
       'customIptvUserAgent': (json['customIptvUserAgent'] ?? '') as String,
+      'customIptvReferer': (json['customIptvReferer'] ?? '') as String,
+      'customIptvCookie': (json['customIptvCookie'] ?? '') as String,
       'm3uDirectory': (json['m3uDirectory'] ?? 'm3uDirectory') as String,
     };
   }

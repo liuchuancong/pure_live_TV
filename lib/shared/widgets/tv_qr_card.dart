@@ -4,11 +4,13 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvQrCodeCard extends StatelessWidget {
-  const TvQrCodeCard({super.key, required this.qrData, required this.urlText});
+  const TvQrCodeCard({super.key, required this.qrData, this.urlText});
 
   final String qrData;
 
-  final String urlText;
+  /// Plain text under the code; hidden when empty so a TV screen does not
+  /// broadcast the address.
+  final String? urlText;
 
   @override
   Widget build(BuildContext context) {
@@ -43,17 +45,19 @@ class TvQrCodeCard extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 10.sp),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.sp),
-          child: Text(
-            urlText,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.visible,
-            style: AppTextStyles.t24W600.copyWith(color: tvTheme.primaryTextColor),
+        if (urlText?.isNotEmpty ?? false) ...[
+          SizedBox(height: 10.sp),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.sp),
+            child: Text(
+              urlText!,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              style: AppTextStyles.t24W600.copyWith(color: tvTheme.primaryTextColor),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

@@ -358,6 +358,8 @@ class BackupController extends _$BackupController {
       ...favorite,
       ...history,
       'customIptvUserAgent': iptv['customIptvUserAgent'],
+      'customIptvReferer': iptv['customIptvReferer'],
+      'customIptvCookie': iptv['customIptvCookie'],
     };
     if (includeSensitiveData) {
       data.addAll(s.cookieManager.toJson());

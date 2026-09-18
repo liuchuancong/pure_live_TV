@@ -77,8 +77,9 @@ class RemoteSyncQrCard extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          // The QR is the web address, so the text under it has to read the same way.
-          TvQrCodeCard(qrData: snapshot.qrData, urlText: snapshot.webAddress),
+          // The address is deliberately not printed under the code: only the QR
+          // carries it, so the TV screen does not broadcast the LAN address.
+          TvQrCodeCard(qrData: snapshot.qrData),
           SizedBox(height: 10.sp),
           Text(
             i18nOr(

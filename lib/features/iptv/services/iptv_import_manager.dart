@@ -61,7 +61,7 @@ class IptvImportManager {
       final path = Uri.tryParse(url.trim())?.path.toLowerCase() ?? '';
       var extension = path.endsWith('.txt') ? '.txt' : '.m3u';
       var file = File(p.join(temporary.path, 'input$extension'));
-      await HttpClient.instance.download(url, file.path, header: {'user-agent': HttpClient.iptvUserAgent});
+      await HttpClient.instance.download(url, file.path, header: HttpClient.iptvHeaders());
       final content = (await _decode(await file.readAsBytes())).trim();
       if (content.startsWith('#EXTM3U')) {
         extension = '.m3u';

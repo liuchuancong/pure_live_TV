@@ -11,6 +11,22 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   String defaultAvatar =
       "https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast";
 
+  /// Global IPTV request headers under the channel's own directives: a channel
+  /// that carries its own UA/Referer/Cookie keeps them; a channel with none
+  /// still plays with the configured ones instead of bare defaults.
+  static Map<String, String> _channelHeaders(Map<String, String>? channelHeaders) {
+    final settings = SettingsService.to.iptvState;
+    final customUa = settings.customIptvUserAgent.trim();
+    final referer = settings.customIptvReferer.trim();
+    final cookie = settings.customIptvCookie.trim();
+    return Map.unmodifiable(<String, String>{
+      if (customUa.isNotEmpty) 'user-agent': customUa,
+      if (referer.isNotEmpty) 'referer': referer,
+      if (cookie.isNotEmpty) 'cookie': cookie,
+      ...?channelHeaders,
+    });
+  }
+
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
     final db = DbService.to.db;
@@ -81,7 +97,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
         catchUpSource: ch.catchupSource,
         catchUpDays: ch.catchupDays,
         catchUpCorrectionHours: ch.catchupCorrectionHours,
-        httpHeaders: HttpHeaderPolicy.decode(ch.httpHeadersJson),
+        httpHeaders: _channelHeaders(HttpHeaderPolicy.decode(ch.httpHeadersJson)),
       ),
     );
 
@@ -145,7 +161,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
       catchUpSource: channel.catchupSource,
       catchUpDays: channel.catchupDays,
       catchUpCorrectionHours: channel.catchupCorrectionHours,
-      httpHeaders: HttpHeaderPolicy.decode(channel.httpHeadersJson),
+      httpHeaders: _channelHeaders(HttpHeaderPolicy.decode(channel.httpHeadersJson)),
     );
   }
 
@@ -182,7 +198,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
           catchUpSource: ch.catchupSource,
           catchUpDays: ch.catchupDays,
           catchUpCorrectionHours: ch.catchupCorrectionHours,
-          httpHeaders: ch.httpHeaders,
+          httpHeaders: _channelHeaders(ch.httpHeaders),
         ),
       );
     }
@@ -275,7 +291,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
         catchUpSource: ch.catchupSource,
         catchUpDays: ch.catchupDays,
         catchUpCorrectionHours: ch.catchupCorrectionHours,
-        httpHeaders: HttpHeaderPolicy.decode(ch.httpHeadersJson),
+        httpHeaders: _channelHeaders(HttpHeaderPolicy.decode(ch.httpHeadersJson)),
       );
     }).toList();
     return items;
