@@ -47,7 +47,7 @@ void main() {
                                       color: Colors.black12,
                                       borderRadius: BorderRadius.circular(11),
                                     ),
-                                    padding: EdgeInsets.all(16),
+                                    padding: const EdgeInsets.all(16),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -69,7 +69,7 @@ void main() {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text('right title'),
-                                  Container(child: Text('manual $rebuilds')),
+                                  Text('manual $rebuilds'),
                                 ],
                               ),
                             ),

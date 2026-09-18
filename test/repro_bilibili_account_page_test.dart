@@ -9,7 +9,6 @@ import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/theme/tv_theme_data.dart';
 import 'package:pure_live/shared/theme/tv_theme_extension.dart';
 import 'package:pure_live/shared/theme/themes/cyber_theme.dart';
 
@@ -21,7 +20,7 @@ void main() {
 
     // Real file I/O cannot complete inside the FakeAsync zone; runAsync lifts
     // this one setup step onto the real event loop.
-    Hive.init('${Directory.systemTemp.createTempSync('hive').path}');
+    Hive.init(Directory.systemTemp.createTempSync('hive').path);
     await tester.runAsync(HivePrefUtil.init);
 
     final container = ProviderContainer();
@@ -40,7 +39,7 @@ void main() {
             builder: Dpad.wrap(),
             theme: ThemeData(
               useMaterial3: true,
-              extensions: <ThemeExtension<dynamic>>[TvThemeExtension(theme: cyberTvTheme as TvThemeData)],
+              extensions: <ThemeExtension<dynamic>>[TvThemeExtension(theme: cyberTvTheme)],
             ),
             home: const AccountBilibiliPage(),
           ),
