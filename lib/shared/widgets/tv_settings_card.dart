@@ -36,12 +36,9 @@ class TvSettingsCard extends StatelessWidget {
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: tvTheme.cardColor.withValues(alpha: tvTheme.isLight ? 0.72 : 0.62),
+            color: tvTheme.cardColor.withValues(alpha: 0.05),
             borderRadius: radius,
-            border: Border.all(
-              color: tvTheme.primaryTextColor.withValues(alpha: 0.10),
-              width: 1.sp,
-            ),
+            border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.sp),
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 4.sp, horizontal: 4.sp),
