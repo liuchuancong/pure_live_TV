@@ -47,10 +47,12 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(14.sp);
 
-    // The whole focus recipe lives in one custom effect so the unfocus
-    // transition can be instant: a fading-out decoration is driven by this
-    // subtree's ticker, which a covering page mutes — the fade then freezes
-    // mid-way and leaves a residual shadow on the last focused row.
+    // The whole focus recipe lives in one custom effect and renders strictly
+    // synchronously — no Animated* widgets. A fading-out decoration is driven
+    // by this subtree's ticker, which a covering page mutes; the fade then
+    // freezes mid-way and leaves a residual shadow on the last focused row
+    // (even a Duration.zero animation needs one tick). The text colors below
+    // were already synchronous, so the whole row now is.
     final List<DpadEffect> effects = [
       DpadCustomEffect((ctx, state, _) {
         final bool focused = state.focused;
@@ -62,18 +64,9 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         final Color subtitleColor = focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
         final Color iconColor = focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
 
-        // Animate focus-in; snap focus-out so nothing can freeze mid-fade.
-        final Duration animDuration = focused ? const Duration(milliseconds: 150) : Duration.zero;
-
-        final double scale = pressed ? 0.98 : 1.0;
-
-        return AnimatedScale(
-          scale: scale,
-          duration: animDuration,
-          curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
-            duration: animDuration,
-            curve: Curves.easeOutCubic,
+        return Transform.scale(
+          scale: pressed ? 0.98 : 1.0,
+          child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
             // Accent glow on dark palettes, crisp ring on light ones — same
             // focus look as TvRoomCard.
@@ -206,12 +199,12 @@ class TvSettingsSwitchIndicator extends StatelessWidget {
     final Color on = tvTheme.focusColor;
     final Color off = tvTheme.secondaryTextColor;
 
+    // Synchronous on purpose: implicit animations run on this subtree's
+    // ticker, which a covering page mutes — a mid-fade switch would freeze.
     return SizedBox(
       width: 62.sp,
       height: 34.sp,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
+      child: Container(
         decoration: BoxDecoration(
           color: value ? on.withValues(alpha: focused ? 0.35 : 0.22) : Colors.transparent,
           border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.sp),
@@ -220,9 +213,7 @@ class TvSettingsSwitchIndicator extends StatelessWidget {
         padding: EdgeInsets.all(3.sp),
         child: Align(
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOutCubic,
+          child: Container(
             width: 24.sp,
             decoration: BoxDecoration(
               color: value ? on : off.withValues(alpha: 0.6),
