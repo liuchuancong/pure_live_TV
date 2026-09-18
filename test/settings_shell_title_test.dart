@@ -17,13 +17,36 @@ void main() {
 
   final String routerSource = File('lib/app/router/app_router.dart').readAsStringSync();
 
-  test('there is exactly one settings shell', () {
+  test('there is exactly one settings shell, and it is a generated one', () {
+    // A hand-built `ShellRoute(` (with a builder argument) would mean a second,
+    // untyped shell: the table below is served by the one typed shell.
     expect(
-      'ShellRoute('.allMatches(routerSource).length,
-      1,
-      reason: 'a second shell means the settings pages are split across two route tables again',
+      RegExp(r'\bShellRoute\(').allMatches(routerSource).length,
+      0,
+      reason: 'the shell is declared as a TypedShellRoute and built by go_router_builder',
     );
-    expect(routerSource.contains('for (final MapEntry<String, WidgetBuilder> entry in settingsPageRoutes.entries)'), isTrue);
+    expect(
+      routerSource.contains('@TypedShellRoute<SettingsShellRoute>('),
+      isTrue,
+      reason: 'the settings shell must stay declared as a typed shell route',
+    );
+    expect(
+      routerSource.contains('TypedGoRoute<'),
+      isTrue,
+      reason: 'the pages are typed routes, not hand-built GoRoute(...) entries',
+    );
+  });
+
+  test('every shell page has a typed route', () {
+    // The route classes carry the path constants; the table maps those same
+    // paths to pages. A page without a class is unreachable from the typed API.
+    final Set<String> routedPaths = <String>{
+      ...settingsSectionRoutes.keys,
+    };
+    for (final String path in settingsPageRoutes.keys) {
+      expect(routedPaths.contains(path), isTrue, reason: '$path has a page but no typed route');
+    }
+    expect(settingsSectionRoutes.length, settingsPageRoutes.length);
   });
 
   test('the whole page table is absolute paths and covers every settings page', () {

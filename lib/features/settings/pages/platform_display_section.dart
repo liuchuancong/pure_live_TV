@@ -1,10 +1,10 @@
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// 平台显示 — the two separate concerns.
 ///
@@ -36,13 +36,13 @@ class PlatformDisplaySectionPage extends ConsumerWidget {
                 i18n('platform_visible_count', args: {'count': '$visibleCount', 'total': '$total'}),
                 style: AppTextStyles.t16W500.copyWith(color: context.tvTheme.secondaryTextColor),
               ),
-              onTap: () => context.push(AppRoutes.kSettingsHotAreasVisibility),
+              onTap: () => const PlatformDisplayVisibilityRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('platform_display_order'),
               subtitle: i18n('platform_display_order_desc'),
               icon: Icons.swap_vert_rounded,
-              onTap: () => context.push(AppRoutes.kSettingsHotAreasOrder),
+              onTap: () => const PlatformDisplayOrderRoute().push(context),
             ),
           ],
         ),

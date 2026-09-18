@@ -1,4 +1,3 @@
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/pages/navigation_menu_meta.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
@@ -6,6 +5,7 @@ import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// 导航与显示设置 — the side menu's three separate concerns.
 ///
@@ -36,19 +36,19 @@ class NavigationSectionPage extends ConsumerWidget {
                 i18n('navigation_visible_count', args: {'count': '$visibleCount', 'total': '$total'}),
                 style: AppTextStyles.t16W500.copyWith(color: context.tvTheme.secondaryTextColor),
               ),
-              onTap: () => context.push(AppRoutes.kSettingsNavVisibility),
+              onTap: () => const NavVisibilityRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('navigation_order'),
               subtitle: i18n('navigation_order_desc'),
               icon: Icons.swap_vert_rounded,
-              onTap: () => context.push(AppRoutes.kSettingsNavOrder),
+              onTap: () => const NavOrderRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('navigation_icons'),
               subtitle: i18n('navigation_icons_desc'),
               icon: Icons.palette_outlined,
-              onTap: () => context.push(AppRoutes.kSettingsNavIcons),
+              onTap: () => const NavIconsRoute().push(context),
             ),
           ],
         ),

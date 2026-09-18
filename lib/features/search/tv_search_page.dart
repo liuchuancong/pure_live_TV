@@ -68,10 +68,9 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
     final currentSite = _siteTabs[searchState.tabSiteIndex].title;
     final currentType = searchState.searchTypeIndex == 0 ? kSearchTypeStreamer : kSearchTypeRoom;
 
-    await context.push(
-      AppRoutes.kSearchResult,
-      extra: SearchResultArgs(keyword: trimmed, site: currentSite, searchType: currentType),
-    );
+    await SearchResultRoute(
+      SearchResultArgs(keyword: trimmed, site: currentSite, searchType: currentType),
+    ).push(context);
   }
 
   @override

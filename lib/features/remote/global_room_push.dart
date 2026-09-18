@@ -61,7 +61,7 @@ class _GlobalRoomPushOverlayState extends ConsumerState<GlobalRoomPushOverlay> {
         final roomId = result[0];
         final platformId = result[1];
         final room = await Sites.of(platformId).liveSite.getRoomDetail(roomId: roomId, platform: platformId);
-        if (mounted) router.push(AppRoutes.kLivePlay, extra: room);
+        if (mounted) LivePlayRoute(room).push(context);
         return;
       }
     } catch (_) {}

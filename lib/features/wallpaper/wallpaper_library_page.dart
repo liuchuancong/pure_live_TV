@@ -1,11 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// The picture library: one row per picture source.
 ///
@@ -46,7 +45,7 @@ class WallpaperLibraryPage extends ConsumerWidget {
                         )
                       : null,
                   icon: Icons.image_outlined,
-                  onTap: () => context.push(AppRoutes.kWallpaperGallery, extra: source),
+                  onTap: () => WallpaperGalleryRoute(source).push(context),
                 );
               },
             ),

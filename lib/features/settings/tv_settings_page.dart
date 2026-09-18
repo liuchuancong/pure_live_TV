@@ -4,6 +4,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// One settings destination: its route, translation keys and icon.
 typedef SettingsEntry = ({String path, String titleKey, String? subtitleKey, IconData icon});
@@ -171,7 +172,7 @@ class SettingsCatalogView extends ConsumerWidget {
                           style: TextStyle(fontSize: 13.sp, color: context.tvTheme.focusColor),
                         )
                       : null,
-                  onTap: () => context.push(entry.path),
+                  onTap: () => settingsSectionRoutes[entry.path]?.push(context),
                 ),
             ],
           ),

@@ -1,6 +1,6 @@
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -15,7 +15,6 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     final currentTheme = ref.watch(tvThemeControllerProvider);
     final themeState = ref.watch(themeSettingsControllerProvider);
     final theme = ref.read(themeSettingsControllerProvider.notifier);
-    final themeModes = AppConsts.themeModes.keys.toList(growable: false);
     final loadingStyles = AppConsts.allStyles;
     final tvTheme = context.tvTheme;
     final Color loadingColor = themeState.loadingStyleColor ?? tvTheme.focusColor;
@@ -31,24 +30,11 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           TvSettingsGroupTitle(title: i18n('theme_customization')),
           TvSettingsCard(
             children: [
-              // Mobile order: the theme mode first, then the colour, then dynamic
-              // colour, then the loading animation. The preset list replaces the
-              // mobile colour wheel with its own page.
-              TvSettingsOptionTile(
-                title: i18n('change_theme_mode'),
-                subtitle: i18n('change_theme_mode_subtitle'),
-                // Icon taken from the desktop theme page (moon), so the same row
-                // looks the same in both apps.
-                icon: Remix.moon_clear_line,
-                options: [for (final mode in themeModes) i18n(AppConsts.themeModeI18n[mode] ?? mode)],
-                index: themeModes.indexOf(themeState.themeModeName).clamp(0, themeModes.length - 1),
-                onChanged: (index) => theme.changeThemeMode(themeModes[index]),
-              ),
               TvSettingsNavTile(
                 title: i18n('ui_theme'),
                 subtitle: currentTheme.name,
                 icon: Remix.palette_line,
-                onTap: () => context.push(AppRoutes.kSettingsThemePicker),
+                onTap: () => const ThemePickerRoute().push(context),
               ),
               // Desktop order: dynamic colour belongs with the theme rows, above
               // the loading animation.
@@ -75,14 +61,14 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                   focused,
                   _currentLoadingStyleName(loadingStyles, themeState.loadingStyle),
                 ),
-                onSelect: () => context.push(AppRoutes.kSettingsLoadingStyle),
+                onSelect: () => const SettingsLoadingStyleRoute().push(context),
               ),
               SizedBox(height: 8.sp),
               TvSettingsMenuTile<void>(
                 title: i18n('ui_background_settings'),
                 subtitle: i18n('background_entry_subtitle'),
                 icon: Remix.image_line,
-                onTap: () async => context.push(AppRoutes.kWallpaperPage),
+                onTap: () async => const WallpaperPageRoute().push(context),
               ),
             ],
           ),
@@ -120,7 +106,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 title: i18n('page_settings'),
                 subtitle: i18n('page_settings_subtitle'),
                 icon: Remix.pages_line,
-                onTap: () => context.push(AppRoutes.kSettingsPage),
+                onTap: () => const PageSettingsRoute().push(context),
               ),
             ],
           ),
@@ -149,7 +135,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 title: i18n('change_font_family'),
                 subtitle: '${i18n('current_font_prefix')}: $currentFontName',
                 icon: Remix.font_color,
-                onTap: () => context.push(AppRoutes.kSettingsFontFamily),
+                onTap: () => const FontFamilyRoute().push(context),
               ),
             ],
           ),
@@ -161,7 +147,7 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 title: i18n('font_settings_title'),
                 subtitle: i18n('font_settings_desc'),
                 icon: Remix.font_size,
-                onTap: () => context.push(AppRoutes.kSettingsFont),
+                onTap: () => const FontSettingsRoute().push(context),
               ),
             ],
           ),

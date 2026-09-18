@@ -158,15 +158,19 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       // before, stretched edge to edge and stuck to the top of the page.
       child: LayoutBuilder(
         builder: (context, constraints) {
+          // The settings shell wraps this page in a scroll view, so the incoming
+          // height is *infinite*: only a bounded viewport may be asked to fill it
+          // (an infinite minHeight is a hard layout assertion).
           final bool bounded = constraints.maxHeight.isFinite;
+          final double fillHeight = bounded ? constraints.maxHeight : 0;
           return SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              constraints: BoxConstraints(minHeight: fillHeight),
               child: Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 56.w, vertical: 28.h),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: bounded ? constraints.maxHeight : 0),
+                    constraints: BoxConstraints(minHeight: fillHeight),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

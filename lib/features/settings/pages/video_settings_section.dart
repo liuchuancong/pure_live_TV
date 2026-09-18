@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/player/global_player_service.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// Video settings, grouped in the mobile page's order
 /// (`pure_live/lib/modules/settings/pages/video_settings_page.dart:81-290`):
@@ -62,7 +62,7 @@ class VideoSettingsSectionPage extends ConsumerWidget {
               title: i18n('audience_metric_settings'),
               subtitle: i18n('audience_metric_settings_desc'),
               icon: Icons.groups_2_rounded,
-              onTap: () => context.push(AppRoutes.kSettingsAudience),
+              onTap: () => const AudienceSettingsRoute().push(context),
             ),
           ],
         ),
@@ -75,7 +75,7 @@ class VideoSettingsSectionPage extends ConsumerWidget {
               title: i18n('danmaku_settings'),
               subtitle: i18n('ui_show_danmaku_inside_live_rooms'),
               icon: Remix.chat_settings_line,
-              onTap: () => context.push(AppRoutes.kSettingsDanmaku),
+              onTap: () => const DanmakuSettingsRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('change_danmaku_font_family'),
@@ -83,12 +83,12 @@ class VideoSettingsSectionPage extends ConsumerWidget {
               // Danmaku mode: the selection writes danmakuFontFamilyName and
               // the flame engine picks it up live, instead of the old path
               // that silently changed the whole app font.
-              onTap: () => context.push(AppRoutes.kSettingsFontFamilyDanmaku),
+              onTap: () => const FontFamilyDanmakuRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('danmaku_filter'),
               icon: Remix.filter_2_line,
-              onTap: () => context.push(AppRoutes.kSettingsDanmuShield),
+              onTap: () => const DanmuShieldRoute().push(context),
             ),
           ],
         ),

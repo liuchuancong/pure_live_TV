@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/settings/pages/update_history_page.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
@@ -10,6 +8,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/release_model/release_model.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// 在线更新: the running version and its check state, the pending release with its
 /// notes and assets, and a way into 版本历史.
@@ -148,7 +147,7 @@ class AppUpdatePage extends ConsumerWidget {
               ? i18n('update_view_log')
               : '${state.history.length} · ${i18n('already_latest_version')} v${state.history.first.version}',
           icon: Remix.history_line,
-          onTap: () => context.push(AppRoutes.kUpdateHistory),
+          onTap: () => const UpdateHistoryRoute().push(context),
         ),
         for (final ReleaseModel release in state.history.take(_previewCount))
           TvSettingsRow(

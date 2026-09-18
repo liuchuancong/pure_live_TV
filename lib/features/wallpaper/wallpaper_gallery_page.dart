@@ -1,12 +1,11 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_items_page.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// Entry page for one wallpaper-library source.
 ///
@@ -47,10 +46,7 @@ class WallpaperGalleryPage extends StatelessWidget {
           return TvSettingsMenuTile<void>(
             title: category.localizedName(languageCode),
             icon: Icons.photo_outlined,
-            onTap: () => context.push(
-              AppRoutes.kWallpaperItems,
-              extra: WallpaperItemsArgs(sourceId: source.id, categoryId: category.id),
-            ),
+            onTap: () => WallpaperItemsRoute(WallpaperItemsArgs(sourceId: source.id, categoryId: category.id)).push(context),
           );
         },
       ),

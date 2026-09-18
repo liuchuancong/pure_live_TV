@@ -1,9 +1,9 @@
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// Danmaku appearance and filtering settings for the main player.
 class DanmakuSettingsSectionPage extends ConsumerWidget {
@@ -39,7 +39,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
                     ? i18n('font_default_subtitle')
                     : state.danmakuFontFamilyName,
                 icon: Remix.font_size,
-                onTap: () => context.push(AppRoutes.kSettingsFontFamilyDanmaku),
+                onTap: () => const FontFamilyDanmakuRoute().push(context),
               ),
               TvSettingsSliderTile(
                 title: i18n('danmaku_font_size'),

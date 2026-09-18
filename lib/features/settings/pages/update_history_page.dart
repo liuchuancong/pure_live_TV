@@ -1,4 +1,3 @@
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/dialog/index.dart';
@@ -6,6 +5,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/release_model/release_model.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// 版本历史 — the release list the update page links to, plus 本机更新记录.
 ///
@@ -173,7 +173,7 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
     }
     // Reached directly (a widget test, or a future deep link): open the update page so the
     // download is not invisible.
-    GoRouter.maybeOf(context)?.push(AppRoutes.kAppUpdate);
+    const AppUpdateRoute().push(context);
   }
 
   Widget _hint(String label) {

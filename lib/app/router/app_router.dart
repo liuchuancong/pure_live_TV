@@ -1,3 +1,15 @@
+// The app's route tree, declared as typed go_router routes.
+//
+// Every destination is a `GoRouteData` class below and the tree is built from
+// the generated `$appRoutes` (see `app_router.g.dart`, written by
+// `go_router_builder`). Navigation goes through those classes —
+// `const IptvRoute().push(context)` instead of `context.push('/iptv')` — so a
+// renamed path or a missing argument is a compile error instead of a dead
+// screen at runtime.
+//
+// `AppRoutes` keeps the path strings: they are the annotation arguments here,
+// they title the settings pages, and the phone-side web router shares them.
+
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
@@ -9,11 +21,6 @@ import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
 import 'package:pure_live/features/settings/pages/update_history_page.dart';
-import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_resources_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_import_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_sync_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_headers_section.dart';
 import 'package:pure_live/features/settings/pages/nav_order_section.dart';
 import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_section.dart';
@@ -30,14 +37,26 @@ import 'package:pure_live/features/settings/pages/font_family_manager_section.da
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
 import 'package:pure_live/features/settings/pages/platform_display_visibility_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_resources_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_import_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_sync_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_headers_section.dart';
 
-/// Every settings page, by its full path — the one list the settings shell
-/// iterates.
+part 'app_router.g.dart';
+
+/// Every settings page, by its full path — the page table the settings routes
+/// read.
 ///
 /// Absolute paths only: the app's own `/settings/...` destinations plus the ones
-/// the mobile app names (`/iptv`, `/backup`, `/settings_account`, ...). Keeping
-/// them in one table is what makes a single shell possible, and it keeps the
-/// page list next to the paths instead of spread over two route blocks.
+/// the mobile app names (`/iptv`, `/backup`, `/settings_account`, ...). The route
+/// classes below delegate here instead of repeating each page, so a page is
+/// declared once and its typed route is four mechanical lines.
+///
+/// 在线更新/版本历史 are NOT in this table: both build their own TvPageScaffold
+/// and scroll view, and the shell's scaffold wraps every entry in an unbounded
+/// SingleChildScrollView — a Scaffold inside that gets an infinite size and the
+/// page dies on open. They are standalone routes further down instead.
 final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsTheme: (context) => const ThemeSettingsSectionPage(),
   AppRoutes.kSettingsThemePicker: (context) => const ThemePickerSectionPage(),
@@ -60,15 +79,10 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsFont: (context) => const FontSettingsSectionPage(),
   AppRoutes.kSettingsFontFamily: (context) => const FontFamilyManagerSectionPage(),
   AppRoutes.kSettingsFontFamilyDanmaku: (context) => const FontFamilyManagerSectionPage(danmaku: true),
-  // 在线更新/版本历史 are NOT in this table: both build their own
-  // TvPageScaffold + scroll view, and the shell below wraps every table entry
-  // in another scaffold + unbounded SingleChildScrollView — a Scaffold inside
-  // that gets an infinite size and the page dies on open. They are registered
-  // as standalone routes further down instead.
   AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
   AppRoutes.kSettingsAudience: (context) => const AudienceMetricSectionPage(),
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
-  AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),  // Pages the mobile app gives its own path.
+  AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),
   AppRoutes.kIptv: (context) => const IptvManageSectionPage(),
   AppRoutes.kIptvResources: (context) => const IptvResourcesSectionPage(),
   AppRoutes.kIptvImport: (context) => const IptvImportSectionPage(),
@@ -78,34 +92,714 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsHotAreasVisibility: (context) => const PlatformDisplayVisibilitySectionPage(),
   AppRoutes.kSettingsHotAreasOrder: (context) => const PlatformDisplayOrderSectionPage(),
   AppRoutes.kSettingsAccount: (context) => const AccountSettingsSectionPage(),
-  // One page per platform: the mobile app gives every platform its own cookie
-  // page, and each of these carries both ways in (扫码 + 手动输入).
   AppRoutes.kSettingsAccountBilibili: (context) => const AccountBilibiliPage(),
-  AppRoutes.kSettingsAccountHuya: (context) =>
-      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountHuya)),
-  AppRoutes.kSettingsAccountYy: (context) =>
-      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountYy)),
-  AppRoutes.kSettingsAccountDouyin: (context) =>
-      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyin)),
-  AppRoutes.kSettingsAccountKuaishou: (context) =>
-      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountKuaishou)),
-  AppRoutes.kSettingsAccountTwitch: (context) =>
-      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTwitch)),
-  AppRoutes.kSettingsAccountSoop: (context) =>
-      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
+  AppRoutes.kSettingsAccountHuya: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountHuya)),
+  AppRoutes.kSettingsAccountYy: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountYy)),
+  AppRoutes.kSettingsAccountDouyin: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyin)),
+  AppRoutes.kSettingsAccountKuaishou: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountKuaishou)),
+  AppRoutes.kSettingsAccountTwitch: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTwitch)),
+  AppRoutes.kSettingsAccountSoop: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
   AppRoutes.kSettingsTags: (context) => const TagManagementSectionPage(),
   AppRoutes.kBackup: (context) => const BackupSettingsSectionPage(),
   AppRoutes.kSettingsDanmuShield: (context) => const DanmakuShieldSectionPage(),
   AppRoutes.kAbout: (context) => const AboutSettingsSectionPage(),
 };
 
+
+/// The same table, as typed route instances — what the data-driven callers use.
+///
+/// The settings catalog and the account rows store *paths* (for their titles and
+/// their config-preview keys), so navigation from there goes through this map
+/// instead of the string API: `settingsSectionRoutes[path]!.push(context)`.
+final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
+  AppRoutes.kSettingsTheme: const ThemeSettingsRoute(),
+  AppRoutes.kSettingsThemePicker: const ThemePickerRoute(),
+  AppRoutes.kSettingsRefresh: const RefreshSettingsRoute(),
+  AppRoutes.kSettingsVideo: const VideoSettingsRoute(),
+  AppRoutes.kSettingsPlayerKernel: const PlayerKernelSettingsRoute(),
+  AppRoutes.kSettingsProxy: const ProxySettingsRoute(),
+  AppRoutes.kSettingsGeneral: const GeneralSettingsRoute(),
+  AppRoutes.kSettingsNavigation: const NavigationSettingsRoute(),
+  AppRoutes.kSettingsNavVisibility: const NavVisibilityRoute(),
+  AppRoutes.kSettingsNavOrder: const NavOrderRoute(),
+  AppRoutes.kSettingsNavIcons: const NavIconsRoute(),
+  AppRoutes.kSettingsPlatform: const PlatformSettingsRoute(),
+  AppRoutes.kSettingsCache: const CacheSettingsRoute(),
+  AppRoutes.kSettingsConfigPreview: const ConfigPreviewRoute(),
+  AppRoutes.kSettingsDecoder: const DecoderSettingsRoute(),
+  AppRoutes.kSettingsRenderer: const RendererSettingsRoute(),
+  AppRoutes.kSettingsAudioOutput: const AudioOutputSettingsRoute(),
+  AppRoutes.kSettingsDanmaku: const DanmakuSettingsRoute(),
+  AppRoutes.kSettingsFont: const FontSettingsRoute(),
+  AppRoutes.kSettingsFontFamily: const FontFamilyRoute(),
+  AppRoutes.kSettingsFontFamilyDanmaku: const FontFamilyDanmakuRoute(),
+  AppRoutes.kSettingsPage: const PageSettingsRoute(),
+  AppRoutes.kSettingsAudience: const AudienceSettingsRoute(),
+  AppRoutes.kSettingsLocalBackup: const LocalBackupRoute(),
+  AppRoutes.kSettingsDeviceSync: const DeviceSyncRoute(),
+  AppRoutes.kIptv: const IptvRoute(),
+  AppRoutes.kIptvResources: const IptvResourcesRoute(),
+  AppRoutes.kIptvImport: const IptvImportRoute(),
+  AppRoutes.kIptvSync: const IptvSyncRoute(),
+  AppRoutes.kIptvHeaders: const IptvHeadersRoute(),
+  AppRoutes.kSettingsHotAreas: const PlatformDisplayRoute(),
+  AppRoutes.kSettingsHotAreasVisibility: const PlatformDisplayVisibilityRoute(),
+  AppRoutes.kSettingsHotAreasOrder: const PlatformDisplayOrderRoute(),
+  AppRoutes.kSettingsAccount: const AccountSettingsRoute(),
+  AppRoutes.kSettingsAccountBilibili: const AccountBilibiliRoute(),
+  AppRoutes.kSettingsAccountHuya: const AccountHuyaRoute(),
+  AppRoutes.kSettingsAccountYy: const AccountYyRoute(),
+  AppRoutes.kSettingsAccountDouyin: const AccountDouyinRoute(),
+  AppRoutes.kSettingsAccountKuaishou: const AccountKuaishouRoute(),
+  AppRoutes.kSettingsAccountTwitch: const AccountTwitchRoute(),
+  AppRoutes.kSettingsAccountSoop: const AccountSoopRoute(),
+  AppRoutes.kSettingsTags: const TagsRoute(),
+  AppRoutes.kBackup: const BackupRoute(),
+  AppRoutes.kSettingsDanmuShield: const DanmuShieldRoute(),
+  AppRoutes.kAbout: const AboutRoute(),
+};
+
+/// The shell's page builder: the table entry for the route the shell is on,
+/// inside the shell's scaffold.
+///
+/// The shell contributes no chrome of its own (see [SettingsShellRoute]); the
+/// scaffold draws the page's title bar from the location it is given.
+Widget settingsSection(BuildContext context, GoRouterState state) {
+  final WidgetBuilder builder = settingsPageRoutes[state.uri.path]!;
+  return SettingsSectionScaffold(location: state.uri.path, child: builder(context));
+}
+
+/// `kSettingsTheme`.
+class ThemeSettingsRoute extends GoRouteData with $ThemeSettingsRoute {
+  const ThemeSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsThemePicker`.
+class ThemePickerRoute extends GoRouteData with $ThemePickerRoute {
+  const ThemePickerRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsRefresh`.
+class RefreshSettingsRoute extends GoRouteData with $RefreshSettingsRoute {
+  const RefreshSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsVideo`.
+class VideoSettingsRoute extends GoRouteData with $VideoSettingsRoute {
+  const VideoSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsPlayerKernel`.
+class PlayerKernelSettingsRoute extends GoRouteData with $PlayerKernelSettingsRoute {
+  const PlayerKernelSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsProxy`.
+class ProxySettingsRoute extends GoRouteData with $ProxySettingsRoute {
+  const ProxySettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsGeneral`.
+class GeneralSettingsRoute extends GoRouteData with $GeneralSettingsRoute {
+  const GeneralSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsNavigation`.
+class NavigationSettingsRoute extends GoRouteData with $NavigationSettingsRoute {
+  const NavigationSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsNavVisibility`.
+class NavVisibilityRoute extends GoRouteData with $NavVisibilityRoute {
+  const NavVisibilityRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsNavOrder`.
+class NavOrderRoute extends GoRouteData with $NavOrderRoute {
+  const NavOrderRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsNavIcons`.
+class NavIconsRoute extends GoRouteData with $NavIconsRoute {
+  const NavIconsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsPlatform`.
+class PlatformSettingsRoute extends GoRouteData with $PlatformSettingsRoute {
+  const PlatformSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsCache`.
+class CacheSettingsRoute extends GoRouteData with $CacheSettingsRoute {
+  const CacheSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsConfigPreview`.
+class ConfigPreviewRoute extends GoRouteData with $ConfigPreviewRoute {
+  const ConfigPreviewRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsDecoder`.
+class DecoderSettingsRoute extends GoRouteData with $DecoderSettingsRoute {
+  const DecoderSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsRenderer`.
+class RendererSettingsRoute extends GoRouteData with $RendererSettingsRoute {
+  const RendererSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAudioOutput`.
+class AudioOutputSettingsRoute extends GoRouteData with $AudioOutputSettingsRoute {
+  const AudioOutputSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsDanmaku`.
+class DanmakuSettingsRoute extends GoRouteData with $DanmakuSettingsRoute {
+  const DanmakuSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsFont`.
+class FontSettingsRoute extends GoRouteData with $FontSettingsRoute {
+  const FontSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsFontFamily`.
+class FontFamilyRoute extends GoRouteData with $FontFamilyRoute {
+  const FontFamilyRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsFontFamilyDanmaku`.
+class FontFamilyDanmakuRoute extends GoRouteData with $FontFamilyDanmakuRoute {
+  const FontFamilyDanmakuRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsPage`.
+class PageSettingsRoute extends GoRouteData with $PageSettingsRoute {
+  const PageSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAudience`.
+class AudienceSettingsRoute extends GoRouteData with $AudienceSettingsRoute {
+  const AudienceSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsLocalBackup`.
+class LocalBackupRoute extends GoRouteData with $LocalBackupRoute {
+  const LocalBackupRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsDeviceSync`.
+class DeviceSyncRoute extends GoRouteData with $DeviceSyncRoute {
+  const DeviceSyncRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kIptv`.
+class IptvRoute extends GoRouteData with $IptvRoute {
+  const IptvRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kIptvResources`.
+class IptvResourcesRoute extends GoRouteData with $IptvResourcesRoute {
+  const IptvResourcesRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kIptvImport`.
+class IptvImportRoute extends GoRouteData with $IptvImportRoute {
+  const IptvImportRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kIptvSync`.
+class IptvSyncRoute extends GoRouteData with $IptvSyncRoute {
+  const IptvSyncRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kIptvHeaders`.
+class IptvHeadersRoute extends GoRouteData with $IptvHeadersRoute {
+  const IptvHeadersRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsHotAreas`.
+class PlatformDisplayRoute extends GoRouteData with $PlatformDisplayRoute {
+  const PlatformDisplayRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsHotAreasVisibility`.
+class PlatformDisplayVisibilityRoute extends GoRouteData with $PlatformDisplayVisibilityRoute {
+  const PlatformDisplayVisibilityRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsHotAreasOrder`.
+class PlatformDisplayOrderRoute extends GoRouteData with $PlatformDisplayOrderRoute {
+  const PlatformDisplayOrderRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccount`.
+class AccountSettingsRoute extends GoRouteData with $AccountSettingsRoute {
+  const AccountSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccountBilibili`.
+class AccountBilibiliRoute extends GoRouteData with $AccountBilibiliRoute {
+  const AccountBilibiliRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccountHuya`.
+class AccountHuyaRoute extends GoRouteData with $AccountHuyaRoute {
+  const AccountHuyaRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccountYy`.
+class AccountYyRoute extends GoRouteData with $AccountYyRoute {
+  const AccountYyRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccountDouyin`.
+class AccountDouyinRoute extends GoRouteData with $AccountDouyinRoute {
+  const AccountDouyinRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccountKuaishou`.
+class AccountKuaishouRoute extends GoRouteData with $AccountKuaishouRoute {
+  const AccountKuaishouRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccountTwitch`.
+class AccountTwitchRoute extends GoRouteData with $AccountTwitchRoute {
+  const AccountTwitchRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsAccountSoop`.
+class AccountSoopRoute extends GoRouteData with $AccountSoopRoute {
+  const AccountSoopRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsTags`.
+class TagsRoute extends GoRouteData with $TagsRoute {
+  const TagsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kBackup`.
+class BackupRoute extends GoRouteData with $BackupRoute {
+  const BackupRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsDanmuShield`.
+class DanmuShieldRoute extends GoRouteData with $DanmuShieldRoute {
+  const DanmuShieldRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kAbout`.
+class AboutRoute extends GoRouteData with $AboutRoute {
+  const AboutRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// The settings shell: ONE shell for every settings page, and it contributes
+/// **no chrome** — each page brings its own scaffold (its own app bar, its own
+/// 返回 button and its own focus wiring), which is what keeps the bar and the
+/// highlight belonging to the page the user is looking at.
+///
+/// The shell used to hold one `TvScaffold` for all of them, so the app bar — and
+/// the 返回 button with it — belonged to the shell instead of to the page: an
+/// inner push fired no route callback for that scaffold, its back button
+/// survived every page change, and the highlight kept ending up on a screen the
+/// user was not looking at.
+@TypedShellRoute<SettingsShellRoute>(
+  routes: <TypedRoute<RouteData>>[
+    TypedGoRoute<ThemeSettingsRoute>(path: AppRoutes.kSettingsTheme),
+    TypedGoRoute<ThemePickerRoute>(path: AppRoutes.kSettingsThemePicker),
+    TypedGoRoute<RefreshSettingsRoute>(path: AppRoutes.kSettingsRefresh),
+    TypedGoRoute<VideoSettingsRoute>(path: AppRoutes.kSettingsVideo),
+    TypedGoRoute<PlayerKernelSettingsRoute>(path: AppRoutes.kSettingsPlayerKernel),
+    TypedGoRoute<ProxySettingsRoute>(path: AppRoutes.kSettingsProxy),
+    TypedGoRoute<GeneralSettingsRoute>(path: AppRoutes.kSettingsGeneral),
+    TypedGoRoute<NavigationSettingsRoute>(path: AppRoutes.kSettingsNavigation),
+    TypedGoRoute<NavVisibilityRoute>(path: AppRoutes.kSettingsNavVisibility),
+    TypedGoRoute<NavOrderRoute>(path: AppRoutes.kSettingsNavOrder),
+    TypedGoRoute<NavIconsRoute>(path: AppRoutes.kSettingsNavIcons),
+    TypedGoRoute<PlatformSettingsRoute>(path: AppRoutes.kSettingsPlatform),
+    TypedGoRoute<CacheSettingsRoute>(path: AppRoutes.kSettingsCache),
+    TypedGoRoute<ConfigPreviewRoute>(path: AppRoutes.kSettingsConfigPreview),
+    TypedGoRoute<DecoderSettingsRoute>(path: AppRoutes.kSettingsDecoder),
+    TypedGoRoute<RendererSettingsRoute>(path: AppRoutes.kSettingsRenderer),
+    TypedGoRoute<AudioOutputSettingsRoute>(path: AppRoutes.kSettingsAudioOutput),
+    TypedGoRoute<DanmakuSettingsRoute>(path: AppRoutes.kSettingsDanmaku),
+    TypedGoRoute<FontSettingsRoute>(path: AppRoutes.kSettingsFont),
+    TypedGoRoute<FontFamilyRoute>(path: AppRoutes.kSettingsFontFamily),
+    TypedGoRoute<FontFamilyDanmakuRoute>(path: AppRoutes.kSettingsFontFamilyDanmaku),
+    TypedGoRoute<PageSettingsRoute>(path: AppRoutes.kSettingsPage),
+    TypedGoRoute<AudienceSettingsRoute>(path: AppRoutes.kSettingsAudience),
+    TypedGoRoute<LocalBackupRoute>(path: AppRoutes.kSettingsLocalBackup),
+    TypedGoRoute<DeviceSyncRoute>(path: AppRoutes.kSettingsDeviceSync),
+    TypedGoRoute<IptvRoute>(path: AppRoutes.kIptv),
+    TypedGoRoute<IptvResourcesRoute>(path: AppRoutes.kIptvResources),
+    TypedGoRoute<IptvImportRoute>(path: AppRoutes.kIptvImport),
+    TypedGoRoute<IptvSyncRoute>(path: AppRoutes.kIptvSync),
+    TypedGoRoute<IptvHeadersRoute>(path: AppRoutes.kIptvHeaders),
+    TypedGoRoute<PlatformDisplayRoute>(path: AppRoutes.kSettingsHotAreas),
+    TypedGoRoute<PlatformDisplayVisibilityRoute>(path: AppRoutes.kSettingsHotAreasVisibility),
+    TypedGoRoute<PlatformDisplayOrderRoute>(path: AppRoutes.kSettingsHotAreasOrder),
+    TypedGoRoute<AccountSettingsRoute>(path: AppRoutes.kSettingsAccount),
+    TypedGoRoute<AccountBilibiliRoute>(path: AppRoutes.kSettingsAccountBilibili),
+    TypedGoRoute<AccountHuyaRoute>(path: AppRoutes.kSettingsAccountHuya),
+    TypedGoRoute<AccountYyRoute>(path: AppRoutes.kSettingsAccountYy),
+    TypedGoRoute<AccountDouyinRoute>(path: AppRoutes.kSettingsAccountDouyin),
+    TypedGoRoute<AccountKuaishouRoute>(path: AppRoutes.kSettingsAccountKuaishou),
+    TypedGoRoute<AccountTwitchRoute>(path: AppRoutes.kSettingsAccountTwitch),
+    TypedGoRoute<AccountSoopRoute>(path: AppRoutes.kSettingsAccountSoop),
+    TypedGoRoute<TagsRoute>(path: AppRoutes.kSettingsTags),
+    TypedGoRoute<BackupRoute>(path: AppRoutes.kBackup),
+    TypedGoRoute<DanmuShieldRoute>(path: AppRoutes.kSettingsDanmuShield),
+    TypedGoRoute<AboutRoute>(path: AppRoutes.kAbout),
+  ],
+)
+class SettingsShellRoute extends ShellRouteData {
+  const SettingsShellRoute();
+
+  @override
+  Widget builder(BuildContext context, GoRouterState state, Widget navigator) => navigator;
+}
+
+// --------------------------------------------------------------- home & menu
+
+/// The home shell: side menu plus the tab the user picked.
+@TypedGoRoute<HomeRoute>(path: AppRoutes.kInitial)
+class HomeRoute extends GoRouteData with $HomeRoute {
+  const HomeRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const HomePage();
+}
+
+@TypedGoRoute<AgreementPageRoute>(path: AppRoutes.kAgreementPage)
+class AgreementPageRoute extends GoRouteData with $AgreementPageRoute {
+  const AgreementPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const AgreementPage();
+}
+
+/// `/settings` — the menu itself, not a section.
+@TypedGoRoute<SettingsMenuRoute>(path: AppRoutes.kSettings)
+class SettingsMenuRoute extends GoRouteData with $SettingsMenuRoute {
+  const SettingsMenuRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const TvSettingsRoutePage();
+}
+
+// ------------------------------------------------------ pickers, with `extra`
+
+/// The icon picker owns a grid, so it is a route of its own instead of a
+/// section inside the scrolling settings shell. The row that opens it passes the
+/// icon it currently shows as `extra` and receives the choice as the pop result.
+@TypedGoRoute<SettingsIconPickerRoute>(path: AppRoutes.kSettingsIconPicker)
+class SettingsIconPickerRoute extends GoRouteData with $SettingsIconPickerRoute {
+  SettingsIconPickerRoute([this.$extra]);
+
+  final String? $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => IconPickerSectionPage(currentLabel: $extra);
+}
+
+/// The loading-animation picker (a grid of live previews) owns its scroll axis,
+/// so it is a route of its own rather than a section in the shell.
+@TypedGoRoute<SettingsLoadingStyleRoute>(path: AppRoutes.kSettingsLoadingStyle)
+class SettingsLoadingStyleRoute extends GoRouteData with $SettingsLoadingStyleRoute {
+  const SettingsLoadingStyleRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const LoadingStyleSectionPage();
+}
+
+/// The colour picker, opened with the colour in force as `extra`.
+@TypedGoRoute<SettingsColorPickerRoute>(path: AppRoutes.kSettingsColorPicker)
+class SettingsColorPickerRoute extends GoRouteData with $SettingsColorPickerRoute {
+  SettingsColorPickerRoute([this.$extra]);
+
+  final Color? $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => ColorPickerSectionPage(current: $extra);
+}
+
+// ------------------------------------------------- self-scaffolding settings
+
+/// 在线更新 — it owns its app bar (with the check action), its scroll view and
+/// its focus wiring, so it stays out of the settings shell.
+@TypedGoRoute<AppUpdateRoute>(path: AppRoutes.kAppUpdate)
+class AppUpdateRoute extends GoRouteData with $AppUpdateRoute {
+  const AppUpdateRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const AppUpdatePage();
+}
+
+@TypedGoRoute<UpdateHistoryRoute>(path: AppRoutes.kUpdateHistory)
+class UpdateHistoryRoute extends GoRouteData with $UpdateHistoryRoute {
+  const UpdateHistoryRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const UpdateHistoryPage();
+}
+
+// ------------------------------------------------------------------ browsing
+
+@TypedGoRoute<AreaRoomsRoute>(path: AppRoutes.kAreaRooms)
+class AreaRoomsRoute extends GoRouteData with $AreaRoomsRoute {
+  AreaRoomsRoute(this.$extra);
+
+  final AreaRoomsArgs $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      AreaRoomsPage(site: $extra.site, subCategory: $extra.subCategory);
+}
+
+@TypedGoRoute<SearchResultRoute>(path: AppRoutes.kSearchResult)
+class SearchResultRoute extends GoRouteData with $SearchResultRoute {
+  SearchResultRoute(this.$extra);
+
+  final SearchResultArgs $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      TvSearchResultPage(keyword: $extra.keyword, site: $extra.site, searchType: $extra.searchType);
+}
+
+// ------------------------------------------------------------------ wallpaper
+
+@TypedGoRoute<WallpaperPageRoute>(path: AppRoutes.kWallpaperPage)
+class WallpaperPageRoute extends GoRouteData with $WallpaperPageRoute {
+  const WallpaperPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const WallpaperPage();
+}
+
+@TypedGoRoute<WallpaperLibraryRoute>(path: AppRoutes.kWallpaperLibrary)
+class WallpaperLibraryRoute extends GoRouteData with $WallpaperLibraryRoute {
+  const WallpaperLibraryRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const WallpaperLibraryPage();
+}
+
+@TypedGoRoute<WallpaperApiRoute>(path: AppRoutes.kWallpaperApi)
+class WallpaperApiRoute extends GoRouteData with $WallpaperApiRoute {
+  const WallpaperApiRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const WallpaperApiPage();
+}
+
+@TypedGoRoute<WallpaperApiGroupRoute>(path: AppRoutes.kWallpaperApiGroup)
+class WallpaperApiGroupRoute extends GoRouteData with $WallpaperApiGroupRoute {
+  WallpaperApiGroupRoute(this.$extra);
+
+  final WallpaperApiGroup $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => WallpaperApiGroupPage(group: $extra);
+}
+
+@TypedGoRoute<WallpaperGalleryRoute>(path: AppRoutes.kWallpaperGallery)
+class WallpaperGalleryRoute extends GoRouteData with $WallpaperGalleryRoute {
+  WallpaperGalleryRoute(this.$extra);
+
+  final BackgroundSource $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => WallpaperGalleryPage(source: $extra);
+}
+
+@TypedGoRoute<WallpaperItemsRoute>(path: AppRoutes.kWallpaperItems)
+class WallpaperItemsRoute extends GoRouteData with $WallpaperItemsRoute {
+  WallpaperItemsRoute(this.$extra);
+
+  final WallpaperItemsArgs $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      WallpaperItemsPage(sourceId: $extra.sourceId, categoryId: $extra.categoryId);
+}
+
+@TypedGoRoute<WallpaperPreviewRoute>(path: AppRoutes.kWallpaperPreview)
+class WallpaperPreviewRoute extends GoRouteData with $WallpaperPreviewRoute {
+  WallpaperPreviewRoute(this.$extra);
+
+  final WallpaperPreviewArgs $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => WallpaperPreviewPage(args: $extra);
+}
+
+// ------------------------------------------------------------------ playback
+
+/// Playback accepts either a resolved room (the normal push) or ready-made
+/// [LivePlayArgs] (channel switching inside the player).
+@TypedGoRoute<LivePlayRoute>(path: AppRoutes.kLivePlay)
+class LivePlayRoute extends GoRouteData with $LivePlayRoute {
+  LivePlayRoute(this.$extra);
+
+  /// Non-nullable on purpose: every caller passes a room or ready-made args, and
+  /// `state.extra as Object?` is the no-op cast the analyzer flags in the
+  /// generated file.
+  final Object $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final Object extra = $extra;
+    final LivePlayArgs args = extra is LiveRoom
+        ? LivePlayArgs.fromRoom(extra)
+        : (extra is LivePlayArgs ? extra : const LivePlayArgs(platform: '', roomId: ''));
+    return LivePlayPage(args: args);
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final isFirstInApp = ref.watch(startupControllerProvider);
 
   return GoRouter(
     navigatorKey: appNavigatorKey,
-    // Lets every TvScaffold know when it is covered and uncovered again, so
-    // focus can return to the item the user acted on after a pop.
+    // Lets every page know when it is covered and uncovered again, so focus can
+    // return to the item the user acted on after a pop.
     observers: [tvRouteObserver],
     initialLocation: AppRoutes.kInitial,
     redirect: (context, state) {
@@ -121,107 +815,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       return null;
     },
-    routes: [
-      GoRoute(path: AppRoutes.kInitial, builder: (context, state) => const HomePage()),
-      GoRoute(path: AppRoutes.kAgreementPage, builder: (context, state) => const AgreementPage()),
-      // Paths, grouping and order follow the desktop app
-      // (`pure_live/lib/routes` + `lib/modules/settings`): `/settings` is the
-      // menu, every page is pushed as its own screen with a back button, and
-      // the pages the desktop app gives a named route keep that path here
-      // (IPTV, backup, about, the block list, platform display, third-party
-      // authorisation, tags).
-      GoRoute(path: AppRoutes.kSettings, builder: (context, state) => const TvSettingsRoutePage()),
-      // ONE shell for every settings page, and it contributes **no chrome**: each
-      // page brings its own scaffold (its own app bar, its own 返回 button and its
-      // own focus wiring) inside its own route of this nested navigator.
-      //
-      // The shell used to hold one `TvScaffold` for all of them, which meant the app
-      // bar — and the 返回 button with it — belonged to the shell instead of to the
-      // page: an inner push fired no route callback for that scaffold, its back
-      // button survived every page change, and the highlight kept ending up on a
-      // screen the user was not looking at. Page-local chrome removes that whole
-      // class of confusion.
-      //
-      // It used to be two shells as well (one nested inside `/settings` for the
-      // relative children, one top-level for the absolute paths); the page table
-      // below is keyed by the full path, so a single shell serves all of them, and
-      // `state.uri.path` supplies the title key.
-      ShellRoute(
-        builder: (context, state, child) => child,
-        routes: <RouteBase>[
-          for (final MapEntry<String, WidgetBuilder> entry in settingsPageRoutes.entries)
-            GoRoute(
-              path: entry.key,
-              builder: (context, state) =>
-                  SettingsSectionScaffold(location: state.uri.path, child: entry.value(context)),
-            ),
-        ],
-      ),
-      // The icon picker owns a grid, so it is a route of its own instead of a
-      // section page inside the scrolling settings shell. The row that opens it
-      // passes the icon it currently shows as `extra` and receives the choice
-      // as the pop result.
-      GoRoute(
-        path: AppRoutes.kSettingsIconPicker,
-        builder: (context, state) => IconPickerSectionPage(currentLabel: state.extra as String?),
-      ),
-      // Grid pickers own their scroll axis, so they are routes of their own
-      // rather than sections inside the scrolling settings shell.
-      GoRoute(path: AppRoutes.kSettingsLoadingStyle, builder: (context, state) => const LoadingStyleSectionPage()),
-      // Self-scaffolding pages: they own their app bar (with actions), scroll
-      // view and focus wiring, so they stay out of the settings shell.
-      GoRoute(path: AppRoutes.kAppUpdate, builder: (context, state) => const AppUpdatePage()),
-      GoRoute(path: AppRoutes.kUpdateHistory, builder: (context, state) => const UpdateHistoryPage()),
-      GoRoute(
-        path: AppRoutes.kSettingsColorPicker,
-        builder: (context, state) => ColorPickerSectionPage(current: state.extra as Color?),
-      ),
-      GoRoute(
-        path: AppRoutes.kAreaRooms,
-        builder: (context, state) {
-          final args = state.extra as AreaRoomsArgs;
-          return AreaRoomsPage(site: args.site, subCategory: args.subCategory);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.kSearchResult,
-        builder: (context, state) {
-          final args = state.extra as SearchResultArgs;
-          return TvSearchResultPage(keyword: args.keyword, site: args.site, searchType: args.searchType);
-        },
-      ),
-      GoRoute(path: AppRoutes.kWallpaperPage, builder: (context, state) => const WallpaperPage()),
-      GoRoute(path: AppRoutes.kWallpaperLibrary, builder: (context, state) => const WallpaperLibraryPage()),
-      GoRoute(path: AppRoutes.kWallpaperApi, builder: (context, state) => const WallpaperApiPage()),
-      GoRoute(
-        path: AppRoutes.kWallpaperApiGroup,
-        builder: (context, state) => WallpaperApiGroupPage(group: state.extra as WallpaperApiGroup),
-      ),
-      GoRoute(
-        path: AppRoutes.kWallpaperGallery,
-        builder: (context, state) => WallpaperGalleryPage(source: state.extra as BackgroundSource),
-      ),
-      GoRoute(
-        path: AppRoutes.kWallpaperItems,
-        builder: (context, state) {
-          final args = state.extra as WallpaperItemsArgs;
-          return WallpaperItemsPage(sourceId: args.sourceId, categoryId: args.categoryId);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.kWallpaperPreview,
-        builder: (context, state) => WallpaperPreviewPage(args: state.extra as WallpaperPreviewArgs),
-      ),
-      GoRoute(
-        path: AppRoutes.kLivePlay,
-        builder: (context, state) {
-          final extra = state.extra;
-          final args = extra is LiveRoom
-              ? LivePlayArgs.fromRoom(extra)
-              : (extra is LivePlayArgs ? extra : const LivePlayArgs(platform: '', roomId: ''));
-          return LivePlayPage(args: args);
-        },
-      ),
-    ],
+    routes: $appRoutes,
   );
 });

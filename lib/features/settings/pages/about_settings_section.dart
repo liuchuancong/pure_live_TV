@@ -1,4 +1,3 @@
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -6,6 +5,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 class AboutSettingsSectionPage extends ConsumerStatefulWidget {
   const AboutSettingsSectionPage({super.key});
@@ -53,7 +53,7 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
               trailing: newVersionHint == null
                   ? null
                   : Text(i18n('new_version_found'), style: TextStyle(fontSize: 13.sp, color: context.tvTheme.focusColor)),
-              onTap: () => context.push(AppRoutes.kAppUpdate),
+              onTap: () => const AppUpdateRoute().push(context),
             ),
           ],
         ),

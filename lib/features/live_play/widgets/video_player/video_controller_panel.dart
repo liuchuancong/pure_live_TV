@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:pure_live/player/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
@@ -13,6 +12,7 @@ import 'package:pure_live/features/live_play/dialogs/room_switch_dialog.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// The player's control layer: **no d-pad, no Flutter focus traversal**.
 ///
@@ -423,7 +423,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final selected = await showRoomSwitchDialog(context, current: room);
     if (mounted) _focusNode.requestFocus();
     if (selected == null || !mounted) return;
-    context.replace(AppRoutes.kLivePlay, extra: selected);
+    LivePlayRoute(selected).replace(context);
   }
 
   // =========================

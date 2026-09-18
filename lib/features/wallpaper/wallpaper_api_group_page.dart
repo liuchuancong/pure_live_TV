@@ -1,10 +1,9 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// The sources inside one API group.
 ///
@@ -29,7 +28,7 @@ class WallpaperApiGroupPage extends StatelessWidget {
             subtitle: source.host,
             leading: NumberLeading(index + 1),
             onTap: () =>
-                context.push(AppRoutes.kWallpaperPreview, extra: WallpaperPreviewArgs.api(source, title: source.name)),
+                WallpaperPreviewRoute(WallpaperPreviewArgs.api(source, title: source.name)).push(context),
           );
         },
       ),

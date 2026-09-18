@@ -1,9 +1,5 @@
+import 'package:pure_live/exports/exports.dart';
 import 'package:tv_textfield/tv_textfield.dart';
-import 'tv_dialog.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class TvInputDialog extends StatefulWidget {
   final String title;
@@ -35,7 +31,21 @@ class _TvInputDialogState extends State<TvInputDialog> {
     _controller = TextEditingController(text: widget.initialValue);
     _focusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
+      if (!mounted) return;
+      _focusNode.requestFocus();
+      // A dialog exists to be typed into, so the field goes straight into
+      // editing instead of waiting for another OK. `TvTextField` enters editing
+      // from its own key handler, which is also what the remote's OK reaches,
+      // so the dialog calls exactly that handler.
+      final FocusOnKeyEventCallback? onKey = _focusNode.onKeyEvent;
+      onKey?.call(
+        _focusNode,
+        const KeyDownEvent(
+          physicalKey: PhysicalKeyboardKey.select,
+          logicalKey: LogicalKeyboardKey.select,
+          timeStamp: Duration.zero,
+        ),
+      );
     });
   }
 

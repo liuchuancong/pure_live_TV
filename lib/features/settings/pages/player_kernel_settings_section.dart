@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// 播放器内核设置.
 ///
@@ -74,7 +74,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
                     color: proxyEnabled ? context.tvTheme.focusColor : context.tvTheme.secondaryTextColor,
                   ),
                 ),
-                onTap: () => context.push(AppRoutes.kSettingsProxy),
+                onTap: () => const ProxySettingsRoute().push(context),
               ),
             TvSettingsSwitchTile(
               title: i18n('enable_codec'),
@@ -142,7 +142,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
                   fallback: i18n('ui_software_decoding_only'),
                 ),
                 icon: Remix.cpu_line,
-                onTap: () => context.push(AppRoutes.kSettingsDecoder),
+                onTap: () => const DecoderSettingsRoute().push(context),
               ),
               TvSettingsNavTile(
                 title: i18n('video_output_driver'),
@@ -152,7 +152,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
                   languageCode,
                 ),
                 icon: Remix.tv_line,
-                onTap: () => context.push(AppRoutes.kSettingsRenderer),
+                onTap: () => const RendererSettingsRoute().push(context),
               ),
             ],
           ),
@@ -168,7 +168,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
                   languageCode,
                 ),
                 icon: Remix.volume_up_line,
-                onTap: () => context.push(AppRoutes.kSettingsAudioOutput),
+                onTap: () => const AudioOutputSettingsRoute().push(context),
               ),
             ],
           ),

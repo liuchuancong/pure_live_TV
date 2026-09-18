@@ -1,8 +1,6 @@
 ﻿import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/pagination/paging_core.dart';
@@ -14,6 +12,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/shared/pagination/models/paging_param.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// The wallpaper grid of one source/category.
 ///
@@ -71,16 +70,15 @@ class WallpaperItemsPage extends ConsumerWidget {
             kind: source.kind,
             current: _isCurrent(currentFile, item.file),
             onFocus: () => _pageAhead(ref, param, index),
-            onSelect: () => context.push(
-              AppRoutes.kWallpaperPreview,
-              extra: WallpaperPreviewArgs.catalog(
+            onSelect: () => WallpaperPreviewRoute(
+              WallpaperPreviewArgs.catalog(
                 sourceId: source.id,
                 categoryId: category.id,
                 kind: source.kind,
                 title: title,
                 initialIndex: index,
               ),
-            ),
+            ).push(context),
           ),
         ),
       ),

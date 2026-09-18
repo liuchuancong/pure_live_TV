@@ -1,7 +1,7 @@
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// IPTV page: the entry menu only. Every concern lives on its own screen —
 /// the resource list, import, auto-sync and request headers — and every one of
@@ -29,25 +29,25 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
               title: i18n('iptv_resource_list'),
               subtitle: i18n('iptv_resource_list_desc'),
               icon: Icons.playlist_play_rounded,
-              onTap: () => context.push(AppRoutes.kIptvResources),
+              onTap: () => const IptvResourcesRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('iptv_import_source'),
               subtitle: i18n('iptv_import_source_desc'),
               icon: Icons.playlist_add_rounded,
-              onTap: () => context.push(AppRoutes.kIptvImport),
+              onTap: () => const IptvImportRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('auto_sync_settings'),
               subtitle: i18n('iptv_sync_entry_desc'),
               icon: Icons.sync_rounded,
-              onTap: () => context.push(AppRoutes.kIptvSync),
+              onTap: () => const IptvSyncRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('iptv_headers_settings'),
               subtitle: i18n('iptv_headers_entry_desc'),
               icon: Icons.vpn_key_rounded,
-              onTap: () => context.push(AppRoutes.kIptvHeaders),
+              onTap: () => const IptvHeadersRoute().push(context),
             ),
           ],
         ),

@@ -1,4 +1,3 @@
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
@@ -7,6 +6,7 @@ import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// Playlist panel shown inside the player, as an index list of room cards.
 ///
@@ -63,10 +63,9 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
   void _openRoom(LiveRoom room, List<LiveRoom> rooms) {
     final current = ref.read(livePlayControllerProvider(widget.args)).room;
     if (current != null && room.hasSameIdentity(current)) return;
-    context.replace(
-      AppRoutes.kLivePlay,
-      extra: LivePlayArgs.fromRoom(room, playlist: rooms, showChannelBanner: true),
-    );
+    LivePlayRoute(
+      LivePlayArgs.fromRoom(room, playlist: rooms, showChannelBanner: true),
+    ).replace(context);
   }
 
   void _toggleFollow(LiveRoom room) {

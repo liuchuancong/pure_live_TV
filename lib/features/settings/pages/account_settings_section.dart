@@ -7,6 +7,7 @@ import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// 三方认证 — one row per platform, each opening that platform's own page.
 ///
@@ -99,7 +100,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
                   ? i18n('not_logged_in')
                   : (cookies.bilibiliUid <= 0 ? i18n('logined') : 'UID ${cookies.bilibiliUid}'),
               leading: SiteLogo(siteId: bilibili.siteId),
-              onTap: () => context.push(bilibili.route),
+              onTap: () => settingsSectionRoutes[bilibili.route]?.push(context),
             ),
             for (final CookieSite site in sites.skip(1))
               TvSettingsNavTile(
@@ -108,7 +109,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
                     ? i18n('not_set')
                     : i18n('cookie_state_set', args: {'count': '${site.read(cookies).length}'}),
                 leading: SiteLogo(siteId: site.siteId),
-                onTap: () => context.push(site.route),
+                onTap: () => settingsSectionRoutes[site.route]?.push(context),
               ),
           ],
         ),

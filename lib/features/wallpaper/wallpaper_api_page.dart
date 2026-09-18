@@ -1,10 +1,9 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// The random-wallpaper APIs, grouped.
 ///
@@ -30,7 +29,7 @@ class WallpaperApiPage extends StatelessWidget {
             title: group.localizedName(languageCode),
             subtitle: i18nOr('wallpaper_api_group_count', '{count} 个来源', args: {'count': '${group.sources.length}'}),
             leading: NumberLeading(index + 1),
-            onTap: () => context.push(AppRoutes.kWallpaperApiGroup, extra: group),
+            onTap: () => WallpaperApiGroupRoute(group).push(context),
           );
         },
       ),

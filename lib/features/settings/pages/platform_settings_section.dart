@@ -1,9 +1,9 @@
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 class PlatformSettingsSectionPage extends ConsumerWidget {
   const PlatformSettingsSectionPage({super.key});
@@ -28,7 +28,7 @@ class PlatformSettingsSectionPage extends ConsumerWidget {
               title: i18n('platform_display'),
               subtitle: i18n('platform_display_subtitle'),
               icon: Remix.apps_2_line,
-              onTap: () => context.push(AppRoutes.kSettingsHotAreas),
+              onTap: () => const PlatformDisplayRoute().push(context),
             ),
             TvSettingsOptionTile(
               title: i18n('prefer_platform'),
@@ -42,13 +42,13 @@ class PlatformSettingsSectionPage extends ConsumerWidget {
               title: i18n('third_party_auth'),
               subtitle: i18n('third_party_auth_subtitle'),
               icon: Remix.accessibility_line,
-              onTap: () => context.push(AppRoutes.kSettingsAccount),
+              onTap: () => const AccountSettingsRoute().push(context),
             ),
             TvSettingsNavTile(
               title: i18n('tag_management'),
               subtitle: i18n('tag_management_subtitle'),
               icon: Remix.price_tag_3_line,
-              onTap: () => context.push(AppRoutes.kSettingsTags),
+              onTap: () => const TagsRoute().push(context),
             ),
           ],
         ),

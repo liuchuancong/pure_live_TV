@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
@@ -11,6 +10,7 @@ import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// Backup and restore, in the mobile page's grouping.
 ///
@@ -138,7 +138,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               title: i18n('remote_sync'),
               subtitle: server?.isRunning == true ? server!.serverUrl : i18n('remote_sync_subtitle'),
               icon: Icons.devices_other_rounded,
-              onTap: () => context.push(AppRoutes.kSettingsDeviceSync),
+              onTap: () => const DeviceSyncRoute().push(context),
             ),
           ],
         ),
@@ -167,7 +167,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               title: i18n('local_backup'),
               subtitle: i18n('backup_settings'),
               icon: Remix.history_line,
-              onTap: () => context.push(AppRoutes.kSettingsLocalBackup),
+              onTap: () => const LocalBackupRoute().push(context),
             ),
           ],
         ),

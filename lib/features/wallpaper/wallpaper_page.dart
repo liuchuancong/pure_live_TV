@@ -1,8 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
@@ -10,6 +8,7 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 /// Background settings home.
 ///
@@ -42,31 +41,25 @@ class WallpaperPage extends ConsumerWidget {
                   title: i18nOr('wallpaper_solid_color', '纯色'),
                   subtitle: i18nOr('wallpaper_solid_color_subtitle', '纯色与渐变填充'),
                   icon: Icons.gradient_outlined,
-                  onTap: () => context.push(
-                    AppRoutes.kWallpaperItems,
-                    extra: const WallpaperItemsArgs(sourceId: 'solid-color'),
-                  ),
+                  onTap: () => WallpaperItemsRoute(const WallpaperItemsArgs(sourceId: 'solid-color')).push(context),
                 ),
                 TvSettingsNavTile(
                   title: i18nOr('wallpaper_video_wallpaper', '视频壁纸'),
                   subtitle: i18nOr('wallpaper_video_subtitle', '动态视频背景'),
                   icon: Icons.movie_outlined,
-                  onTap: () => context.push(
-                    AppRoutes.kWallpaperItems,
-                    extra: const WallpaperItemsArgs(sourceId: 'video'),
-                  ),
+                  onTap: () => WallpaperItemsRoute(const WallpaperItemsArgs(sourceId: 'video')).push(context),
                 ),
                 TvSettingsNavTile(
                   title: i18n('wallpaper_library'),
                   subtitle: i18nOr('wallpaper_library_entry_subtitle', '官方、Wallhaven、必应等图库'),
                   icon: Icons.photo_library_outlined,
-                  onTap: () => context.push(AppRoutes.kWallpaperLibrary),
+                  onTap: () => const WallpaperLibraryRoute().push(context),
                 ),
                 TvSettingsNavTile(
                   title: i18n('wallpaper_api_group'),
                   subtitle: i18nOr('wallpaper_api_entry_subtitle', '每次打开随机取一张图'),
                   icon: Icons.auto_awesome_outlined,
-                  onTap: () => context.push(AppRoutes.kWallpaperApi),
+                  onTap: () => const WallpaperApiRoute().push(context),
                 ),
               ],
             ),
