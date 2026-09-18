@@ -564,14 +564,22 @@ class RemoteSyncController extends _$RemoteSyncController {
   // Publish
   // ---------------------------------------------------------------------------
 
+  /// `purelive://ip:port/sync`, built by interpolation and validated: the QR
+  /// must carry the live address or it is useless to the phone, and a degenerate
+  /// payload (an empty host once rendered as bare `purelive://`) must not be
+  /// published as if pairing were possible.
+  String _buildQrData() {
+    if (_localIp.isEmpty || _localPort <= 0) return '';
+    final payload = 'purelive://$_localIp:$_localPort/sync';
+    return payload.contains('://$_localIp:') ? payload : '';
+  }
+
   void _publish() {
     debugPrint('[sync] publish ip=$_localIp port=$_localPort running=$_running');
     if (!ref.mounted) return;
     state = RemoteSyncSnapshot(
       started: _running,
-      qrData: _localIp.isEmpty || _localPort <= 0
-          ? ''
-          : RemoteSyncProtocol.createQrUri(ip: _localIp, port: _localPort).toString(),
+      qrData: _buildQrData(),
       address: _localIp.isEmpty ? '' : '$_localIp:$_localPort',
       error: _running ? null : _lastError,
       devices: List.unmodifiable(_devices),

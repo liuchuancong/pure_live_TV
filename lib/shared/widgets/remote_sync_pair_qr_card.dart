@@ -68,12 +68,34 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
       );
     }
 
+    // The address is the ground truth for manual entry; the QR is a convenience
+    // layer over it, so the address line always renders on its own.
+    final String address = snapshot.address;
+    final String qrPayload =
+        (snapshot.qrData.length >= 12 && snapshot.qrData.contains('://')) ? snapshot.qrData : '';
+
     return SizedBox(
       width: width.sp,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          TvQrCodeCard(qrData: snapshot.qrData, urlText: snapshot.qrData),
+          if (qrPayload.isNotEmpty)
+            TvQrCodeCard(qrData: qrPayload, urlText: address)
+          else
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 18.sp),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tvTheme.cardColor,
+                borderRadius: BorderRadius.circular(24.sp),
+                border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.45), width: 1.sp),
+              ),
+              child: Text(
+                address,
+                style: AppTextStyles.t24W600.copyWith(color: tvTheme.primaryTextColor),
+              ),
+            ),
           SizedBox(height: 10.sp),
           Text(
             i18nOr('remote_sync_pair_hint', 'Open PureLive on your phone and scan this code to sync settings.'),
