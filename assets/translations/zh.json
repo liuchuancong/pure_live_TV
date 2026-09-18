@@ -72,6 +72,7 @@
     "remote_sync_pull": "按地址拉取设置",
     "remote_sync_pull_subtitle": "输入对方地址后导入其设置",
     "remote_sync_pull_title": "从设备拉取设置",
+    "remote_sync_pull_from": "拉取设置",
     "remote_sync_starting": "正在启动局域网同步服务…",
     "remote_sync_start_failed": "局域网同步服务启动失败",
     "remote_sync_retry": "重试",

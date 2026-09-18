@@ -31,7 +31,7 @@ class RemoteSyncSnapshot {
 /// Device sync only: mDNS broadcast + discovery over bonsoir and a small HTTP
 /// server on 39888 (walking upwards when taken). Same logic as the web side's
 /// `RemoteSyncService`, hosted in Riverpod for the TV pages.
-@Riverpod(keepAlive: true)
+@Riverpod(keepAlive: false)
 class RemoteSyncController extends _$RemoteSyncController {
   HttpServer? _server;
   BonsoirBroadcast? _broadcast;
@@ -60,11 +60,7 @@ class RemoteSyncController extends _$RemoteSyncController {
     _deviceId = _loadDeviceId();
     ref.onDispose(() {
       _disposed = true;
-      _cleanupTimer?.cancel();
-      unawaited(_discoverySub?.cancel());
-      unawaited(_discovery?.stop());
-      unawaited(_broadcast?.stop());
-      unawaited(_server?.close(force: true));
+      unawaited(stop());
     });
     unawaited(start());
     return const RemoteSyncSnapshot();
@@ -114,7 +110,9 @@ class RemoteSyncController extends _$RemoteSyncController {
   }
 
   Future<void> stop() async {
+    debugPrint('[sync] stop() called, running=$_running');
     _running = false;
+
     _cleanupTimer?.cancel();
     _cleanupTimer = null;
 

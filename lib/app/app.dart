@@ -11,7 +11,6 @@ import 'package:pure_live/shared/widgets/tv_scaffold.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/features/remote/global_room_push.dart';
 import 'package:pure_live/shared/widgets/tv_locale_rebuilder.dart';
-import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
@@ -28,7 +27,6 @@ class App extends ConsumerWidget {
 
     // Keep background & remote sync alive for the whole session
     ref.watch(backgroundControllerProvider);
-    ref.watch(remoteSyncControllerProvider);
 
     final currentTvTheme = ref.watch(tvThemeControllerProvider);
     final themeSettings = ref.watch(themeSettingsControllerProvider);

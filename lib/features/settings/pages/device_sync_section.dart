@@ -24,32 +24,6 @@ class DeviceSyncSectionPage extends ConsumerStatefulWidget {
 class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
   bool _syncing = false;
 
-  @override
-  void initState() {
-    super.initState();
-    // Make sure the 39888 sync service is up while this page is on screen.
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      final snapshot = ref.read(remoteSyncControllerProvider);
-      if (snapshot.started) return;
-      await ref.read(remoteSyncControllerProvider.notifier).restart();
-    });
-  }
-
-  Future<void> _pushTo(RemoteSyncDevice device) async {
-    final kit = ref.read(remoteSyncControllerProvider.notifier).kit;
-    if (_syncing) return;
-    setState(() => _syncing = true);
-    final ok = await kit.syncToDevice(device);
-    if (!mounted) return;
-    setState(() => _syncing = false);
-    ToastUtil.show(
-      ok
-          ? i18nOr('remote_sync_push_done', 'Settings pushed to {name}', args: {'name': device.name})
-          : i18nOr('remote_sync_push_failed', 'Push to {name} failed', args: {'name': device.name}),
-    );
-  }
-
   Future<void> _pullByAddress() async {
     final kit = ref.read(remoteSyncControllerProvider.notifier).kit;
     if (_syncing) return;
@@ -67,6 +41,19 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
     if (!mounted) return;
     setState(() => _syncing = false);
     ToastUtil.show(ok ? i18n('webdav_sync_success') : i18n('ui_import_failed_or_file_not_found'));
+  }
+
+  Future<void> _pullFrom(RemoteSyncDevice device) async {
+    if (_syncing) return;
+    setState(() => _syncing = true);
+    final ok = await ref.read(remoteSyncControllerProvider.notifier).receiveFromAddress(device.ip, device.port);
+    if (!mounted) return;
+    setState(() => _syncing = false);
+    ToastUtil.show(
+      ok
+          ? i18nOr('remote_sync_pull_done', 'Settings pulled from {name}', args: {'name': device.name})
+          : i18nOr('remote_sync_pull_failed', 'Pull from {name} failed', args: {'name': device.name}),
+    );
   }
 
   IconData _platformIcon(String platform) {
@@ -111,7 +98,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
           ],
         ),
         SizedBox(height: 16.h),
-        Center(child: RemoteSyncPairQrCard(width: 280)),
+        Center(child: RemoteSyncPairQrCard(width: 400)),
         SizedBox(height: 24.h),
 
         // -- 局域网设备 -------------------------------------------------------
@@ -123,7 +110,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                 padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 14.h),
                 child: Text(
                   i18nOr('remote_sync_no_devices', 'No devices discovered yet'),
-                  style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
+                  style: AppTextStyles.t18W500.copyWith(color: theme.secondaryTextColor),
                 ),
               )
             else
@@ -141,14 +128,14 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                           children: [
                             Text(
                               device.name,
-                              style: AppTextStyles.t16W500,
+                              style: AppTextStyles.t18W500,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             SizedBox(height: 2.h),
                             Text(
                               '${device.address} · ${device.platform.isEmpty ? '—' : device.platform}',
-                              style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor),
+                              style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -157,10 +144,10 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                       ),
                       SizedBox(width: 12.w),
                       TvButton(
-                        title: _syncing ? i18n('ui_loading') : i18nOr('remote_sync_push', 'Push settings'),
+                        title: _syncing ? i18n('ui_loading') : i18nOr('remote_sync_pull_from', 'Pull settings'),
                         size: TvButtonSize.small,
                         isSecondary: true,
-                        onTap: _syncing ? null : () => unawaited(_pushTo(device)),
+                        onTap: _syncing ? null : () => unawaited(_pullFrom(device)),
                       ),
                     ],
                   ),

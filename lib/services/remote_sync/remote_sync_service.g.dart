@@ -29,7 +29,7 @@ final class RemoteSyncControllerProvider
         argument: null,
         retry: null,
         name: r'remoteSyncControllerProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -51,7 +51,7 @@ final class RemoteSyncControllerProvider
 }
 
 String _$remoteSyncControllerHash() =>
-    r'cd5300ef2ae69e35306f2650eb96391f17bbdc0e';
+    r'10e4eba3e38d77fda44a4fd26024dac387f4ba93';
 
 /// Device sync only: mDNS broadcast + discovery over bonsoir and a small HTTP
 /// server on 39888 (walking upwards when taken). Same logic as the web side's

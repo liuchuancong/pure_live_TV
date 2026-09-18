@@ -1,98 +1,68 @@
 <!--
-  No package attribute here on purpose. AGP 8 removed namespace support from the
-  manifest and AGP 9 ignores the attribute outright; the application id and the
-  namespace both come from build.gradle.kts. Adding it back only produces a
-  build warning and misleads readers into thinking it still has an effect.
+No package attribute here on purpose. AGP 8 removed namespace support from the
+manifest and AGP 9 ignores the attribute outright; the application id and the
+namespace both come from build.gradle.kts. Adding it back only produces a
+build warning and misleads readers into thinking it still has an effect.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
-
-  <uses-permission android:name="android.permission.WAKE_LOCK" />
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-  <!-- Required from Android 13 to post the foreground service notification. -->
-  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-  <uses-permission android:name="android.permission.VIBRATE" />
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.INTERNET" />
-  <!-- The app checks for updates itself and hands the downloaded APK to the
-       system package installer, which Android 8+ gates behind this permission. -->
-  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-
-  <uses-feature
-      android:name="android.hardware.touchscreen"
-      android:required="false" />
-  <uses-feature
-      android:name="android.hardware.gamepad"
-      android:required="false" />
-  <uses-feature
-      android:name="android.software.leanback"
-      android:required="true" />
-  <uses-feature
-      android:name="android.hardware.type.television"
-      android:required="true" />
-
-  <application 
-      android:label="@string/AppName" 
-      android:name="${applicationName}" 
-      android:icon="@mipmap/ic_launcher" 
-      android:banner="@drawable/app_banner"
-      android:theme="@style/Theme.App"
-      android:usesCleartextTraffic="true" 
-      android:requestLegacyExternalStorage="true" 
-      android:networkSecurityConfig="@xml/network_security_config" 
-      android:enableOnBackInvokedCallback="true"
-      android:allowNativeHeapPointerTagging="false"
-      android:allowBackup="false">
-    <activity 
-      android:name=".MainActivity" 
-      android:exported="true" 
-      android:launchMode="singleTop" 
-      android:taskAffinity=""
-      android:theme="@style/Theme.App" 
-      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-      android:hardwareAccelerated="true" 
-      android:windowSoftInputMode="adjustResize" 
-      android:screenOrientation="landscape">
-      <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/Theme.App"
-              />
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-    </activity>
-    <meta-data
-            android:name="com.google.android.gms.tv.application.banner"
-            android:resource="@drawable/app_banner" />
-    <meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false" />
-    <meta-data android:name="flutterEmbedding" android:value="2" />
-  </application>
-  <queries>
-    <intent>
-      <action android:name="android.intent.action.PROCESS_TEXT" />
-      <data android:mimeType="text/plain" />
-    </intent>
-    <!-- url_launcher cannot see any browser without these. Android 11 package
-         visibility hides them otherwise, and opening a link fails silently. -->
-    <intent>
-      <action android:name="android.intent.action.VIEW" />
-      <category android:name="android.intent.category.BROWSABLE" />
-      <data android:scheme="http" />
-    </intent>
-    <intent>
-      <action android:name="android.intent.action.VIEW" />
-      <category android:name="android.intent.category.BROWSABLE" />
-      <data android:scheme="https" />
-    </intent>
-  </queries>
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+	<!-- Required from Android 13 to post the foreground service notification. -->
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace" />
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<!--
+	The app checks for updates itself and hands the downloaded APK to the
+	system package installer, which Android 8+ gates behind this permission.
+	-->
+	<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+	<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+	<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+	<uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:usesPermissionFlags="neverForLocation" tools:targetApi="tiramisu" />
+	<uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+	<uses-feature android:name="android.hardware.gamepad" android:required="false" />
+	<uses-feature android:name="android.software.leanback" android:required="true" />
+	<uses-feature android:name="android.hardware.type.television" android:required="true" />
+	<application android:label="@string/AppName" android:name="${applicationName}" android:icon="@mipmap/ic_launcher" android:banner="@drawable/app_banner" android:theme="@style/Theme.App" android:usesCleartextTraffic="true" android:requestLegacyExternalStorage="true" android:networkSecurityConfig="@xml/network_security_config" android:enableOnBackInvokedCallback="true" android:allowNativeHeapPointerTagging="false" android:allowBackup="false">
+		<activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:taskAffinity="" android:theme="@style/Theme.App" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize" android:screenOrientation="landscape">
+			<meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/Theme.App" />
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<meta-data android:name="com.google.android.gms.tv.application.banner" android:resource="@drawable/app_banner" />
+		<meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false" />
+		<meta-data android:name="flutterEmbedding" android:value="2" />
+	</application>
+	<queries>
+		<intent>
+			<action android:name="android.intent.action.PROCESS_TEXT" />
+			<data android:mimeType="text/plain" />
+		</intent>
+		<!--
+		url_launcher cannot see any browser without these. Android 11 package
+		visibility hides them otherwise, and opening a link fails silently.
+		-->
+		<intent>
+			<action android:name="android.intent.action.VIEW" />
+			<category android:name="android.intent.category.BROWSABLE" />
+			<data android:scheme="http" />
+		</intent>
+		<intent>
+			<action android:name="android.intent.action.VIEW" />
+			<category android:name="android.intent.category.BROWSABLE" />
+			<data android:scheme="https" />
+		</intent>
+	</queries>
 </manifest>

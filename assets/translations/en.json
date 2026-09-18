@@ -73,6 +73,7 @@
     "remote_sync_pull": "Pull settings by address",
     "remote_sync_pull_subtitle": "Enter a peer address to import its settings",
     "remote_sync_pull_title": "Pull settings from a device",
+    "remote_sync_pull_from": "Pull settings",
     "remote_sync_starting": "Starting the LAN sync service...",
     "remote_sync_start_failed": "Could not start the LAN sync service",
     "remote_sync_retry": "Retry",
