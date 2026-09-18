@@ -91,7 +91,9 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
       isServerRunning = serverState.isRunning;
       if (serverState.isRunning) {
         qrCodeAddress = '${serverState.serverUrl}${WebRemoteRouter.movie}';
-        hintText = '${serverState.serverUrl}${WebRemoteRouter.movie}';
+        // A human typing the address needs the origin, not the hash route —
+        // the deep link travels in the QR itself.
+        hintText = serverState.serverUrl;
       } else if (serverState.error != null) {
         qrCodeAddress = serverState.error!;
         hintText = serverState.error!;

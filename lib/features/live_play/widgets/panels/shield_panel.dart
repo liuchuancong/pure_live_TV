@@ -112,7 +112,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                   ),
                 ],
               )
-            : TvQrCodeCard(qrData: qrData, urlText: qrData),
+            : TvQrCodeCard(qrData: qrData, urlText: serverUrl),
       ),
     );
   }

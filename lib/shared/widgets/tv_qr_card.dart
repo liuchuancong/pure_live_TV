@@ -52,14 +52,22 @@ class TvQrCodeCard extends StatelessWidget {
         ),
         if (urlText?.isNotEmpty ?? false) ...[
           SizedBox(height: 10.sp),
+          // scaleDown over the full card width: a long label (hash-route URLs
+          // ran ~40 chars at 24sp) used to overflow the line and clip off the
+          // edge of the screen, so the address and port were never visible.
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.sp),
-            child: Text(
-              urlText!,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.visible,
-              style: AppTextStyles.t24W600.copyWith(color: tvTheme.primaryTextColor),
+            child: SizedBox(
+              width: double.infinity,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  urlText!,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: AppTextStyles.t24W600.copyWith(color: tvTheme.primaryTextColor),
+                ),
+              ),
             ),
           ),
         ],
