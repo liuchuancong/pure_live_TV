@@ -157,10 +157,13 @@ class _TvTabBarState extends State<TvTabBar> {
                         ? currentTvTheme.focusColor.withValues(alpha: 0.5)
                         : Colors.transparent;
 
+                    // Palette-derived contrast, not a hard-coded white: a pale
+                    // accent on a light preset would leave white text sunk
+                    // into the fill.
                     final foregroundColor = isSelected
-                        ? Colors.white
+                        ? currentTvTheme.onFocusColor
                         : isFocused
-                        ? Colors.white70
+                        ? currentTvTheme.onFadedFocusColor
                         : currentTvTheme.primaryTextColor;
 
                     final baseStyle = isSelected || isFocused ? AppTextStyles.t20W600 : AppTextStyles.t20;
@@ -176,7 +179,25 @@ class _TvTabBarState extends State<TvTabBar> {
                         data: IconThemeData(size: 26.sp, color: foregroundColor),
                         child: DefaultTextStyle(
                           style: baseStyle.copyWith(color: foregroundColor),
-                          child: child,
+                          // The icon is built here — inside the effect — rather
+                          // than in the static child, because an Image logo
+                          // cannot pick its colour up from IconTheme the way
+                          // an Icon does; it needs an explicit srcIn filter in
+                          // the focused/selected foreground colour.
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (tab.icon != null) ...[
+                                ColorFiltered(
+                                  colorFilter: ColorFilter.mode(foregroundColor, BlendMode.srcIn),
+                                  child: tab.icon,
+                                ),
+                                SizedBox(width: 10.sp),
+                              ],
+                              Center(child: child),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -195,14 +216,7 @@ class _TvTabBarState extends State<TvTabBar> {
                     widget.onTabChange(index);
                   }
                 },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (tab.icon != null) ...[tab.icon!, SizedBox(width: 10.sp)],
-                    Center(child: Text(tab.title)),
-                  ],
-                ),
+                child: Text(tab.title),
               ),
             );
           },
