@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/shared/dialog/tv_dialog.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
@@ -26,10 +27,13 @@ void main() {
         autoRebuild: false,
         minTextAdapt: true,
         splitScreenMode: false,
-        child: MaterialApp(
+        // The catalog reads providers (menu icons, i18n-adjacent state).
+        child: ProviderScope(
+          child: MaterialApp(
           // Same d-pad root the app installs.
           builder: Dpad.wrap(),
           home: Scaffold(body: Center(child: child)),
+        ),
         ),
       ),
     );
