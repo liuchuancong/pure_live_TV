@@ -105,7 +105,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
       _hasSwitchedOnce = true;
     } else {
-      // 之后正常一次
+      // succeeds on the next attempt
       await context.setLocale(Locale(targetLocale.languageCode));
     }
   }

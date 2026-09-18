@@ -29,7 +29,7 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
   Widget build(BuildContext context) {
     final appState = ref.watch(appSettingsControllerProvider);
     final app = ref.read(appSettingsControllerProvider.notifier);
-    // 发现新版本 hint: the startup check has already run by the time this page
+    // new version found hint: the startup check has already run by the time this page
     // can be opened, so the badge is instant for a user with a pending update.
     final updateState = ref.watch(appUpdateControllerProvider);
     final String? newVersionHint =

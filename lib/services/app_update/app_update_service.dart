@@ -21,7 +21,7 @@ enum AppUpdatePhase { idle, checking, upToDate, available, downloading, readyToI
 /// What the app did to this device's copy of itself.
 enum AppUpdateAction { checked, available, downloaded, installed, failed }
 
-/// One line of 本机更新记录.
+/// One line of local update log.
 ///
 /// Kept in Hive rather than in the state only: the point of the record is to still be
 /// there after the restart that the update itself caused.
@@ -162,7 +162,7 @@ class AppUpdateState {
   final bool historyLoading;
   final String? historyError;
 
-  /// 本机更新记录, newest first.
+  /// local update log, newest first.
   final List<AppUpdateRecord> records;
 
   /// The latest release's real assets (GitHub API), empty until fetched.
@@ -282,7 +282,7 @@ class AppUpdateController extends _$AppUpdateController {
 
   /// Checks the repo manifest.
   ///
-  /// [userInitiated] adds the check itself to 本机更新记录: the startup check runs on every
+  /// [userInitiated] adds the check itself to local update log: the startup check runs on every
   /// launch, and a log full of those would bury the entries that matter (a version was
   /// found, downloaded, installed).
   Future<void> check({bool userInitiated = false}) async {
@@ -420,7 +420,7 @@ class AppUpdateController extends _$AppUpdateController {
   }
 
   // ---------------------------------------------------------------------------
-  // 本机更新记录
+  // local update log
   // ---------------------------------------------------------------------------
 
   static const String _recordsKey = 'appUpdateRecords';
@@ -449,7 +449,7 @@ class AppUpdateController extends _$AppUpdateController {
     unawaited(HivePrefUtil.setObjectList<AppUpdateRecord>(_recordsKey, next, (entry) => entry.toJson()));
   }
 
-  /// Empties 本机更新记录.
+  /// Empties local update log.
   void clearRecords() {
     _patchState(records: const <AppUpdateRecord>[]);
     unawaited(HivePrefUtil.setObjectList<AppUpdateRecord>(_recordsKey, const <AppUpdateRecord>[], (e) => e.toJson()));

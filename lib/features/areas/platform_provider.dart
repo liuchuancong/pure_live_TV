@@ -14,7 +14,7 @@ class PlatformTabState {
 class PlatformTab extends _$PlatformTab {
   @override
   PlatformTabState build() {
-    // Whole favorites state: hotAreasList (平台显示 config) feeds
+    // Whole favorites state: hotAreasList (platform display config) feeds
     // availableSites, and watching only preferPlatform left stale tabs.
     final favState = ref.watch(favoriteRoomControllerProvider);
     final sites = Sites().availableSites();

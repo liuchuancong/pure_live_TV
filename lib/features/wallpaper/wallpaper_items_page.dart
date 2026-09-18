@@ -17,7 +17,7 @@ import 'package:pure_live/app/router/app_router.dart';
 /// The wallpaper grid of one source/category.
 ///
 /// It runs on the app's shared paging component, so the iTab API is paged the
-/// same way 热门 pages its sites: the grid scrolls, the core appends the next
+/// same way hot pages its sites: the grid scrolls, the core appends the next
 /// page, and the preview keeps walking the very same list. Tapping a tile opens
 /// the fullscreen preview, which is the only place a background is applied.
 class WallpaperItemsPage extends ConsumerWidget {

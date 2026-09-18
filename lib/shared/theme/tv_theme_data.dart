@@ -81,8 +81,8 @@ class TvThemeData {
   /// paper contrasts *more* with it.
   ///
   /// A luminance threshold is not the same thing as contrast, and that difference is
-  /// where unreadable content came from: 深色's accent (#00A1FF) sat below the old
-  /// threshold so white was chosen, giving 2.8:1, and 赛博's accent gave 1.9:1 — the
+  /// where unreadable content came from: dark's accent (#00A1FF) sat below the old
+  /// threshold so white was chosen, giving 2.8:1, and cyber's accent gave 1.9:1 — the
   /// focused/selected label was washed out in **both** theme modes. Comparing contrast
   /// ratios guarantees at least ~4.3:1 against any background.
   static Color readableOn(Color background) =>
@@ -151,12 +151,12 @@ class TvThemeData {
     );
   }
 
-  /// Resolves this preset for the Material 主题模式 and the system dynamic
+  /// Resolves this preset for the Material theme mode and the system dynamic
   /// accent.
   ///
-  /// [brightness] comes from the theme-mode setting (跟随系统 already resolves
+  /// [brightness] comes from the theme-mode setting (follow system already resolves
   /// to dark before this); [accent] is the dynamic-colour primary when
-  /// 动态取色 is on.
+  /// dynamic color is on.
   ///
   /// A preset whose own brightness already matches the mode keeps its curated
   /// surfaces (those palettes were tuned by hand and look right) and only

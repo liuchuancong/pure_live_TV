@@ -15,8 +15,8 @@ part 'home_provider.g.dart';
 /// `-2`, which matched nothing and silently fell back to [favorite], so the
 /// settings button opened the followed-rooms page.
 ///
-/// `profile` is gone: the slot the mobile app spent on 我的账户 is the home
-/// sidebar's 备份 header now, which pushes the backup page instead of swapping
+/// `profile` is gone: the slot the mobile app spent on account is the home
+/// sidebar's backup header now, which pushes the backup page instead of swapping
 /// the content pane, so it never participates in the menu index.
 enum TvMenuType {
   favorite(0),

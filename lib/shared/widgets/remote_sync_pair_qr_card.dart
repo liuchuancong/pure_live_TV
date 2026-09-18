@@ -6,7 +6,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 
-/// The pairing QR of the 设备同步 page: this TV's sync endpoint, to be scanned
+/// The pairing QR of the device sync page: this TV's sync endpoint, to be scanned
 /// by the PureLive mobile app (not by a camera app).
 ///
 /// The payload is `purelive://ip:39888/sync` ([TvSyncProtocol.createQrUri]). The

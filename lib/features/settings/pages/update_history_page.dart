@@ -7,7 +7,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/models/release_model/release_model.dart';
 
-/// 版本历史 — the release list the update page links to, plus 本机更新记录.
+/// version history — the release list the update page links to, plus local update log.
 ///
 /// Mirrors the mobile app's `version_history.dart`: one row per release (version, date,
 /// APK size, pre-release mark), a detail dialog with the changelog and the release
@@ -218,8 +218,8 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
   }
 }
 
-/// `2026-09-17 · 18.4 MB · 320 ↓ · 预览版`, shared by 版本历史 and the preview rows on
-/// 在线更新 so one release never reads differently on the two pages.
+/// `2026-09-17 · 18.4 MB · 320 ↓ · preview`, shared by version history and the preview rows on
+/// online update so one release never reads differently on the two pages.
 String releaseSubtitle(ReleaseModel release) {
   final List<String> parts = <String>[];
   if (release.date.isNotEmpty) parts.add(release.date);
@@ -234,7 +234,7 @@ String releaseSubtitle(ReleaseModel release) {
 
 /// The changelog + assets dialog of one release.
 ///
-/// Shared with 在线更新's preview rows. Installing any release listed here is also the
+/// Shared with online update's preview rows. Installing any release listed here is also the
 /// rollback path: [AppUpdateController.downloadAndInstallUrl] takes an arbitrary asset
 /// url through the same mirrors and the same installer.
 Future<void> showReleaseNotesDialog({

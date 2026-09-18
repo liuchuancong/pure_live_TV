@@ -4,14 +4,14 @@ import 'package:pure_live/shared/widgets/tv_app_bar.dart';
 import 'package:pure_live/shared/widgets/tv_page_shell.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 
-/// A page that owns its chrome: **its own app bar and its own 返回 button**, plus the
-/// focus wiring between them (the highlight opens on 返回, Down walks into the page,
+/// A page that owns its chrome: **its own app bar and its own back button**, plus the
+/// focus wiring between them (the highlight opens on back, Down walks into the page,
 /// Up comes back).
 ///
 /// This is the page-level half of what `TvScaffold` used to do for the whole app. A
 /// shared scaffold could not belong to a page: the settings shell swapped pages inside
-/// one scaffold, so its 返回 button outlived the page it was drawn for and kept taking
-/// the highlight. Here the page builds the bar, owns the node and decides what 返回
+/// one scaffold, so its back button outlived the page it was drawn for and kept taking
+/// the highlight. Here the page builds the bar, owns the node and decides what back
 /// does.
 ///
 /// Pages that need no bar use `TvScaffold`; pages that want a different bar can ignore
@@ -26,7 +26,7 @@ class TvPageScaffold extends StatefulWidget {
   final bool? showBackButton;
   final Future<bool> Function()? beforeBack;
 
-  /// The page's own 返回 button node, when it wants to steer focus onto it itself.
+  /// The page's own back button node, when it wants to steer focus onto it itself.
   final FocusNode? backFocusNode;
 
   const TvPageScaffold({
@@ -47,7 +47,7 @@ class TvPageScaffold extends StatefulWidget {
 }
 
 class _TvPageScaffoldState extends State<TvPageScaffold> with RouteAware {
-  /// This page's 返回 button node. External when the caller passed one, created here
+  /// This page's back button node. External when the caller passed one, created here
   /// when this page builds the default app bar.
   FocusNode? _backNode;
   bool _ownsBackNode = false;
@@ -68,7 +68,7 @@ class _TvPageScaffoldState extends State<TvPageScaffold> with RouteAware {
 
   /// A pushed page popped back to this one. The child's focus node died with it,
   /// so the keyboard is left on a dead node and the page stops responding to the
-  /// remote. Hand the opening focus back to 返回, exactly like the first entry.
+  /// remote. Hand the opening focus back to back, exactly like the first entry.
   @override
   void didPopNext() {
     int attempts = 0;

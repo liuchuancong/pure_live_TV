@@ -75,8 +75,8 @@ class FontSettingsController extends _$FontSettingsController {
   /// Three cases, all of them the mobile app's startup lifecycle: the family's files
   /// are gone, the weight it was locked to is gone, or everything is fine. The stored
   /// weight is cleared whenever it had to be dropped, so the next start does not retry
-  /// a file that is not there. Without this a restart showed the family name in 设置
-  /// while every glyph fell back to the platform font — the "重启后字体没了" report.
+  /// a file that is not there. Without this a restart showed the family name in settings
+  /// while every glyph fell back to the platform font font missing after restart.
   Future<void> _restoreFontFamily(String id) async {
     if (id == 'Default' || id.isEmpty) return;
 

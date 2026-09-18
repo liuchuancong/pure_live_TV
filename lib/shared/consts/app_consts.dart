@@ -26,7 +26,7 @@ class AppConsts {
   static const String defaultLoadingStyleKey = 'default';
   static final List<String> supportSites = Sites.supportSites.map((e) => e.id).toList();
 
-  // 主题模式映射
+  // theme mode mapping
   static const Map<String, ThemeMode> themeModes = {
     "System": ThemeMode.system,
     "Dark": ThemeMode.dark,
@@ -38,10 +38,10 @@ class AppConsts {
     "Light": "theme_mode_light",
   };
 
-  // 语言映射
+  // language mapping
   static const Map<String, Locale> languages = {"English": Locale('en'), "简体中文": Locale('zh')};
 
-  // 视频 Fit 模式
+  // video fit modes
   List<BoxFit> videoFitList = [
     BoxFit.contain,
     BoxFit.cover,
@@ -51,7 +51,7 @@ class AppConsts {
     BoxFit.scaleDown,
   ];
 
-  /// desc 改成 key
+  /// key replaces the old desc field
   List<Map<String, dynamic>> videoFitType = [
     {'attr': BoxFit.contain, 'desc': 'video_fit_default'},
     {'attr': BoxFit.cover, 'desc': 'video_fit_crop_center'},

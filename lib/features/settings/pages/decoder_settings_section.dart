@@ -7,7 +7,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
-/// 硬件解码器(--hwdec).
+/// hardware decoder(--hwdec).
 ///
 /// Labels, order and the option set come from `PlayerConsts.hardwareDecodersList`
 /// (`pure_live/lib/player/utils/player_consts.dart` `hardwareDecodersList`, the
@@ -24,7 +24,7 @@ class DecoderSettingsSectionPage extends ConsumerWidget {
   /// Shared by every platform, in the reference's order.
   static const List<String> _common = ['auto', 'auto-safe', 'auto-copy'];
 
-  /// 纯软解. The mobile page leaves this to its 开启硬解码 switch, so the entry
+  /// software-only decode. The mobile page uses a plain switch for this, so the entry
   /// is TV-only and keeps this project's own label.
   static const String _softwareOnly = 'no';
 
@@ -109,7 +109,7 @@ class DecoderSettingsSectionPage extends ConsumerWidget {
         TvSettingsGroupTitle(title: i18n('hardware_decoder')),
         if (!playerState.customPlayerOutput)
           Padding(
-            // 自定义驱动与硬件加速 (kernel page) is what puts --hwdec on the mpv
+            // custom driver & hardware accel (kernel page) is what puts --hwdec on the mpv
             // command line; without it this choice is ignored.
             padding: EdgeInsets.only(left: 8.sp, bottom: 8.sp, right: 8.sp),
             child: Text(

@@ -364,7 +364,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       return _ok(res, msg: i18n('webdav_sync_success'));
     });
 
-    // Compatibility with the mobile app's 同步TV数据 row.
+    // Compatibility with the mobile app's TV data sync row.
     //
     // That row scans this device's QR, then posts the flat TV document as a
     // *query parameter* to `/api/setSettings`. The route did not exist, so the
@@ -414,7 +414,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       return _ok(res, data: true);
     });
 
-    // 网络代理 — the web remote had no route for it at all, so a phone could not
+    // proxy — the web remote had no route for it at all, so a phone could not
     // read or set the proxy the app actually uses.
     _app!.get('/api/proxy', (req, res) {
       return _ok(res, data: ref.read(proxySettingsControllerProvider).toJson());
@@ -434,7 +434,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
     });
 
-    // IPTV 直播源 + 请求头. The phone sends a playlist URL or an uploaded
+    // IPTV source + headers. The phone sends a playlist URL or an uploaded
     // playlist body plus the headers its operator requires; the headers are
     // written onto the imported channels (`#EXTHTTP:`), exactly like the
     // LAN-sync channel does. The headers also arrive as separate

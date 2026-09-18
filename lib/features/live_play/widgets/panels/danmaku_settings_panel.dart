@@ -6,7 +6,7 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-/// 弹幕设置, as an index panel like the reference player's settings panel:
+/// danmaku settings, as an index panel like the reference player's settings panel:
 /// Up/Down pick a row, Left/Right change its value, OK toggles a switch row.
 ///
 /// Shares one [DanmakuSettingsModel] with the settings page, so edits apply

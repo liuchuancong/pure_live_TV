@@ -189,35 +189,52 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(height: 32.h),
+                        // 平台标题 + 配置状态徽标
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              flex: 4,
-                              child: Padding(
-                                padding: EdgeInsets.only(top: widget.loginPanel == null ? 100.h : 0),
+                            Expanded(
+                              child: Text(
+                                widget.platform.name,
+                                style: AppTextStyles.t28W600.copyWith(color: theme.primaryTextColor),
+                              ),
+                            ),
+                            _CookieStatusBadge(configured: configured),
+                          ],
+                        ),
+                        SizedBox(height: 24.h),
+                        IntrinsicHeight(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Flexible(
+                                flex: 4,
                                 child: widget.loginPanel ?? _buildScanPanel(theme),
                               ),
-                            ),
-                            SizedBox(width: 48.sp),
-                            Flexible(
-                              flex: 6,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (widget.loginPanel != null) ...[_buildScanPanel(theme), SizedBox(height: 24.h)],
-                                  if (widget.loginPanel == null) ...[SizedBox(height: 100.h)],
-                                  _buildManualPanel(theme, configured),
-                                ],
+                              SizedBox(width: 48.sp),
+                              Flexible(
+                                flex: 6,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (widget.loginPanel != null) ...[_buildScanPanel(theme), SizedBox(height: 24.h)],
+                                    _buildManualPanel(theme, configured),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         if (_message.isNotEmpty) ...[
                           SizedBox(height: 18.h),
-                          Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle_outline_rounded, size: 20.sp, color: theme.focusColor),
+                              SizedBox(width: 8.sp),
+                              Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+                            ],
+                          ),
                         ],
                       ],
                     ),
@@ -468,4 +485,41 @@ CookiePlatform cookiePlatformFor(String route) {
     apply: (value) => site.apply(SettingsService.to.cookieManager, value),
     webPath: site.webPath,
   );
+}
+
+/// Cookie 配置状态徽标：已配置(绿) / 未配置(灰)。
+class _CookieStatusBadge extends StatelessWidget {
+  const _CookieStatusBadge({required this.configured});
+
+  final bool configured;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final Color color = configured ? const Color(0xFF4CAF50) : theme.secondaryTextColor;
+    final String label = configured
+        ? i18nOr('cookie_configured', 'Configured')
+        : i18nOr('cookie_not_configured', 'Not configured');
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 6.sp),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10.sp),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            configured ? Icons.verified_rounded : Icons.info_outline_rounded,
+            size: 16.sp,
+            color: color,
+          ),
+          SizedBox(width: 6.sp),
+          Text(label, style: AppTextStyles.t16W500.copyWith(color: color)),
+        ],
+      ),
+    );
+  }
 }

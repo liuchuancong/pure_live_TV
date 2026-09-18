@@ -14,8 +14,8 @@ import 'package:pure_live/app/router/app_router.dart';
 
 /// Backup and restore, in the mobile page's grouping.
 ///
-/// 云端备份 → WebDAV and device sync, 本地备份 → create and restore, 备份设置 →
-/// the backup directory, 日志管理 → the local log. The mobile Firebase row is
+/// cloud backup → WebDAV and device sync, local backup → create and restore, backup settings →
+/// the backup directory, log management → the local log. The mobile Firebase row is
 /// deliberately absent.
 class BackupSettingsSectionPage extends ConsumerStatefulWidget {
   const BackupSettingsSectionPage({super.key});
@@ -51,7 +51,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
   }
 
   /// Writes a timestamped backup into the resolved directory (the configured
-  /// 备份目录, or the app documents directory when none was chosen).
+  /// backup directory, or the app documents directory when none was chosen).
   ///
   /// `.txt`, named `purelive_<date>.txt` — the mobile app's own backup file.
   Future<void> _createBackup() async {
@@ -130,7 +130,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 云端备份 — 设备同步 is the cloud path now that WebDAV is gone.
+        // cloud backup — device sync is the cloud path now that WebDAV is gone.
         TvSettingsGroupTitle(title: i18n('cloud_backup')),
         TvSettingsCard(
           children: [
@@ -143,7 +143,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
           ],
         ),
         SizedBox(height: 16.h),
-        // 本地备份
+        // local backup
         TvSettingsGroupTitle(title: i18n('local_backup')),
         TvSettingsCard(
           children: [
@@ -172,7 +172,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
           ],
         ),
         SizedBox(height: 16.h),
-        // 备份设置
+        // backup settings
         TvSettingsGroupTitle(title: i18n('backup_settings')),
         TvSettingsCard(
           children: [
@@ -187,7 +187,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
           ],
         ),
         SizedBox(height: 16.h),
-        // 日志管理
+        // log management
         TvSettingsGroupTitle(title: i18n('log_manage')),
         TvSettingsCard(
           children: [

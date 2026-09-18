@@ -49,7 +49,7 @@ class _GlobalRoomPushOverlayState extends ConsumerState<GlobalRoomPushOverlay> {
   }
 
   /// Opens the pushed room: a link goes through the parse engine like the
-  /// 影视解析 page does; anything else lands in room search under the first
+  /// video-parse page does; anything else lands in room search under the first
   /// available site, which is where a bare room id or streamer name belongs.
   Future<void> _openRoom(String input) async {
     final router = ref.read(routerProvider);

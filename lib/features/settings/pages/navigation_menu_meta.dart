@@ -6,12 +6,12 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Labels, subtitles and default icons of the side-menu entries.
 ///
-/// Shared by the three 导航与显示设置 sub-pages (显示 / 排序 / 图标) so they can
+/// Shared by the three navigation & display sub-pages (visibility / ordering / icons) so they can
 /// never disagree about what an entry is called or which icon it uses by
 /// default.
 ///
 /// The three entries the mobile navigation page also has keep its labels
-/// (关注 / 热门 / 分区); the other four are TV-only destinations.
+/// (follows / hot / categories); the other four are TV-only destinations.
 String navigationMenuTitle(HomeMenu menu) => switch (menu) {
   HomeMenu.favorite => i18n('favorites_title'),
   HomeMenu.hot => i18n('popular_title'),

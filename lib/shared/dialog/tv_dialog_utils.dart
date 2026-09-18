@@ -58,7 +58,7 @@ class TvDialogUtils {
   /// focus tree (and its focus guard) only disposes when that animation ends,
   /// and that disposal is the moment the d-pad fallback parks on the app bar's
   /// back button. A frame-counted retry ran out inside the transition and the
-  /// fallback still won on pages like 背景 → 比例.
+  /// fallback still won on pages like background -> aspect ratio.
   static void _restoreInvokingFocus(FocusNode? node, {Duration deadline = const Duration(milliseconds: 900)}) {
     if (node == null) return;
     final DateTime stopAt = DateTime.now().add(deadline);

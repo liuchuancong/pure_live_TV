@@ -97,7 +97,7 @@ class BackupController extends _$BackupController {
 
   /// Where backups are written and listed from.
   ///
-  /// The configured 备份目录 when the user picked one, otherwise the app
+  /// The configured backup directory when the user picked one, otherwise the app
   /// documents directory. Both the create row and the backup list page resolve
   /// the directory here so they can never disagree about where the files are.
   Future<Directory> resolveBackupDirectory() async {
@@ -223,7 +223,7 @@ class BackupController extends _$BackupController {
 
     final sourceIsTv = BackupController.sourceIsTv(data);
 
-    // Non-TV source: only 关注 / 历史记录 / Cookie / 标签 may land — a phone
+    // Non-TV source: only follows / history / cookies / tags may land — a phone
     // must not rewrite the TV's own player, theme or proxy configuration.
     if (!sourceIsTv) {
       final tvParser = <String, void Function(Map<String, dynamic>)>{
@@ -283,7 +283,7 @@ class BackupController extends _$BackupController {
   /// Writes the settings document into [file].
   ///
   /// The file is the `.txt` the mobile app writes: same name shape, same indented JSON
-  /// inside — a `.txt` filled with JSON is what "备份" means on both apps, so a phone
+  /// inside — a `.txt` filled with JSON is what "backup" means on both apps, so a phone
   /// backup opens here and a TV backup opens there.
   bool backup(File file) {
     try {

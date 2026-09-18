@@ -53,7 +53,7 @@ part 'app_router.g.dart';
 /// classes below delegate here instead of repeating each page, so a page is
 /// declared once and its typed route is four mechanical lines.
 ///
-/// 在线更新/版本历史 are NOT in this table: both build their own TvPageScaffold
+/// online update/version history are NOT in this table: both build their own TvPageScaffold
 /// and scroll view, and the shell's scaffold wraps every entry in an unbounded
 /// SingleChildScrollView — a Scaffold inside that gets an infinite size and the
 /// page dies on open. They are standalone routes further down instead.
@@ -531,11 +531,11 @@ class AboutRoute extends GoRouteData with $AboutRoute {
 
 /// The settings shell: ONE shell for every settings page, and it contributes
 /// **no chrome** — each page brings its own scaffold (its own app bar, its own
-/// 返回 button and its own focus wiring), which is what keeps the bar and the
+/// back button and its own focus wiring), which is what keeps the bar and the
 /// highlight belonging to the page the user is looking at.
 ///
 /// The shell used to hold one `TvScaffold` for all of them, so the app bar — and
-/// the 返回 button with it — belonged to the shell instead of to the page: an
+/// the back button with it — belonged to the shell instead of to the page: an
 /// inner push fired no route callback for that scaffold, its back button
 /// survived every page change, and the highlight kept ending up on a screen the
 /// user was not looking at.
@@ -661,7 +661,7 @@ class SettingsColorPickerRoute extends GoRouteData with $SettingsColorPickerRout
 
 // ------------------------------------------------- self-scaffolding settings
 
-/// 在线更新 — it owns its app bar (with the check action), its scroll view and
+/// online update — it owns its app bar (with the check action), its scroll view and
 /// its focus wiring, so it stays out of the settings shell.
 @TypedGoRoute<AppUpdateRoute>(path: AppRoutes.kAppUpdate)
 class AppUpdateRoute extends GoRouteData with $AppUpdateRoute {

@@ -11,24 +11,24 @@ import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
-/// 播放器内核设置.
+/// player engine settings.
 ///
 /// Row-for-row the same as the mobile page
 /// (`pure_live/lib/modules/settings/pages/player_kernel_settings_page.dart:31-155`):
 ///
-/// 1. 核心内核设置 — 内核切换 → 网络代理设置 (hidden for the Exo kernel) →
-///    开启硬解码 → [启用 RTX VSR, Windows only, not wanted here] → 播放器强制销毁
-/// 2. MPV only — 兼容模式 (Android) → MPV 高级设置 heading → the warning/docs/reset
-///    cluster → 自定义驱动与硬件加速 → 硬件解码器(--hwdec) → 视频输出驱动(--vo)
-/// 3. 音频设置 — 音频输出驱动(--ao)
+/// 1. core — engine switch -> proxy settings (hidden for the Exo engine) ->
+///    enable hw decode -> [RTX VSR: Windows-only, not wanted here] -> force destroy
+/// 2. MPV only - compat mode (Android) -> advanced heading -> the warning/docs/reset
+///    cluster → custom driver & hardware accel → hardware decoder(--hwdec) → video output driver(--vo)
+/// 3. audio settings — audio output driver(--ao)
 ///
-/// 仅播放音频 is deliberately *not* here: the mobile app toggles audio-only from
+/// audio only is deliberately *not* here: the mobile app toggles audio-only from
 /// the player controls instead of the settings page, and a TV-only row in the
 /// middle of this list broke the order. It lives on the video page's audio group.
 class PlayerKernelSettingsSectionPage extends ConsumerWidget {
   const PlayerKernelSettingsSectionPage({super.key});
 
-  /// Where the reference page sends its 官方文档 link.
+  /// Where the reference page sends its official docs link.
   static final Uri _mpvDocsUri = Uri.parse('https://mpv.io');
 
   @override

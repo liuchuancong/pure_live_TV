@@ -6,15 +6,15 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 
-/// 平台显示 — 平台排序: the order the platform tabs appear in.
+/// platform display — platform order: the order the platform tabs appear in.
 ///
 /// The stored `hotAreasList` order is what `Sites.availableSites()` reads, so this
-/// order *is* the tab order on 热门 / 分区. Same rule as 排序 on the side menu:
+/// order *is* the tab order on hot / categories. Same rule as ordering on the side menu:
 /// **who you pick is who moves, and you say where it goes** — OK opens the list of
-/// positions ("2 · 斗鱼" is the platform sitting there now) and the picked platform
+/// positions ("2 · douyu" is the platform sitting there now) and the picked platform
 /// lands exactly on the chosen one. Left/Right nudges one step for a quick swap.
 ///
-/// Only visible platforms are listed; the ones switched off in 显示项目 are named
+/// Only visible platforms are listed; the ones switched off in visibility are named
 /// underneath, because an order for something nobody can see is not an order.
 class PlatformDisplayOrderSectionPage extends ConsumerWidget {
   const PlatformDisplayOrderSectionPage({super.key});

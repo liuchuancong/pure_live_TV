@@ -8,11 +8,11 @@ import 'package:pure_live/app/router/app_router.dart';
 
 /// Video settings, grouped in the mobile page's order
 /// (`pure_live/lib/modules/settings/pages/video_settings_page.dart:81-290`):
-/// 音频设置 → 播放行为设置 → 弹幕设置.
+/// audio settings → playback behavior → danmaku settings.
 ///
-/// 清晰度 and 线路 are *not* settings here: on a TV both are switched from the
+/// quality and line are *not* settings here: on a TV both are switched from the
 /// fullscreen control bar while watching (`VideoControllerPanel`), which is also
-/// where 画面比例 lives. The mobile page's cellular quality, background play,
+/// where aspect ratio lives. The mobile page's cellular quality, background play,
 /// ASMR, PiP/window, "fullscreen by default" and "keep the screen on" rows are
 /// absent for the same reason: they describe a phone or a desktop.
 class VideoSettingsSectionPage extends ConsumerWidget {
@@ -26,11 +26,11 @@ class VideoSettingsSectionPage extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 音频设置
+        // audio settings
         TvSettingsGroupTitle(title: i18n('audio_settings')),
         TvSettingsCard(
           children: [
-            // 全局静音 is honoured by the player core (`live_room_volume_manager`).
+            // global mute is honoured by the player core (`live_room_volume_manager`).
             TvSettingsSwitchTile(
               title: i18n('global_mute'),
               subtitle: i18n('global_mute_subtitle'),
@@ -54,7 +54,7 @@ class VideoSettingsSectionPage extends ConsumerWidget {
           ],
         ),
         SizedBox(height: 20.sp),
-        // 播放行为设置
+        // playback behavior
         TvSettingsGroupTitle(title: i18n('playback_behavior_settings')),
         TvSettingsCard(
           children: [
@@ -67,7 +67,7 @@ class VideoSettingsSectionPage extends ConsumerWidget {
           ],
         ),
         SizedBox(height: 20.sp),
-        // 弹幕设置
+        // danmaku settings
         TvSettingsGroupTitle(title: i18n('danmaku_settings')),
         TvSettingsCard(
           children: [
@@ -96,7 +96,7 @@ class VideoSettingsSectionPage extends ConsumerWidget {
     );
   }
 
-  /// Pushes 仅播放音频 into the running player instead of only storing it.
+  /// Pushes audio only into the running player instead of only storing it.
   void _applyAudioOnly(bool value) {
     final service = GlobalPlayerService.instance;
     if (!service.initialized) return;

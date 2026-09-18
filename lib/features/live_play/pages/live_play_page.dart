@@ -95,7 +95,7 @@ class _SidePanel extends ConsumerWidget {
 
     // Collapse button in the panel corner: it keeps a remote path back to the
     // video area.
-    // The panel carries its own visible 返回 row now, so the old d-pad collapse
+    // The panel carries its own visible back row now, so the old d-pad collapse
     // button is just a hint.
     final collapse = Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 /// `i18n()` reads easy_localization's current locale globally (`ez.tr`) instead of
 /// depending on the `Localizations` widget, so a language change rebuilds nothing by
 /// itself: only the widgets that happened to rebuild for some other reason picked the new
-/// strings up. That is the "更换语言有日志，但不能立即生效，要触发好几次" report — every
+/// strings up. Language switches logged but only took effect after several attempts - every
 /// label waited for an unrelated rebuild (a focus move, a page push, a settings change)
 /// before it spoke the new language.
 ///

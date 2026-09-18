@@ -9,9 +9,9 @@ import 'package:pure_live/services/app_settings/app_settings_model.dart';
 /// One room, drawn as the mobile app's *small-screen* room card
 /// (`PlayOther` → `_RoomSwitchCard._buildMobileLayout`): the avatar, the room
 /// title with its streamer underneath, then the platform badge and the current
-/// read-out (audience, or 录播/重播 for a replay) on the right.
+/// read-out (audience, or replay/replay for a replay) on the right.
 ///
-/// Used by the player's playlist panel and by 切换直播间, so both lists look the
+/// Used by the player's playlist panel and by room switcher, so both lists look the
 /// same and show more than a bare title.
 ///
 /// Colours come from the active palette — dark themes keep a light-on-dark row,

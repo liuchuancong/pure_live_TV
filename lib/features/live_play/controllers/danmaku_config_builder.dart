@@ -6,7 +6,7 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart'
 ///
 /// Pulled out of the overlay so it can be tested directly: every appearance setting the
 /// UI exposes has to show up here, and a field that is silently dropped is exactly the
-/// "设置里改了但弹幕没变化" bug this function exists to prevent.
+/// Why this builder exists: settings changes must reach the danmaku immediately.
 ///
 /// Units matter as much as wiring. The engine's `baseSpeed` is **pixels per second**
 /// (`SpeedStrategy.calculate` divides a distance by it) and `bottomAreaDistance` is a

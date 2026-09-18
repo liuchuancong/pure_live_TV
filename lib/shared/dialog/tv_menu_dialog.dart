@@ -19,7 +19,7 @@ class TvMenuItem<T> {
 /// Dialog that runs an action for the chosen entry and returns its value.
 ///
 /// Like [TvSelectDialog] the rows are rounded [TvDialogOptionTile]s and the
-/// dialog has its own 关闭 button.
+/// dialog has its own close button.
 class TvMenuDialog<T> extends StatelessWidget {
   final String title;
   final List<TvMenuItem<T>> items;

@@ -10,15 +10,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/consts/back_ground_source.dart';
 import 'package:pure_live/shared/widgets/tv_page_shell.dart';
 
-/// A page shell **without chrome**: no app bar, no 返回 button, no title.
+/// A page shell **without chrome**: no app bar, no back button, no title.
 ///
 /// This widget used to build the app bar and own the back button for every page, which
 /// is exactly what made focus unpredictable: the settings shell kept ONE of these for
-/// all of its pages, so the 返回 button belonged to the shell rather than to the page it
+/// all of its pages, so the back button belonged to the shell rather than to the page it
 /// was drawn on, survived every page change, and kept pulling the highlight back.
 ///
 /// The app bar and the back button belong to the page now — see [TvPageScaffold], where
-/// the page builds its own bar, owns its own node and decides what 返回 does. Pages that
+/// the page builds its own bar, owns its own node and decides what back does. Pages that
 /// need no bar (the home tabs, a fullscreen page) use this one and get only what is
 /// genuinely shared: the transparent page background, "a covered page offers no focus",
 /// and the opening highlight on the first row.

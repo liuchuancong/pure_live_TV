@@ -8,10 +8,10 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// 导航与显示设置 — 排序: the order of the entries in the side menu.
+/// navigation & display — ordering: the order of the entries in the side menu.
 ///
 /// **Who you pick is who moves, and you say where it goes**: OK on an entry opens
-/// the list of positions ("3 · 分区" is the entry sitting there now) and the entry
+/// the list of positions ("3 · categories" is the entry sitting there now) and the entry
 /// the user picked lands exactly on the chosen one. Left/Right still nudge an
 /// entry one step for a quick swap.
 ///
@@ -66,8 +66,8 @@ class NavOrderSectionPage extends ConsumerWidget {
 
   /// The positions the picked entry can be moved to.
   ///
-  /// Each row names the entry that currently holds that position, so "3 · 分区"
-  /// reads as "put it where 分区 is now".
+  /// Each row names the entry that currently holds that position, so "3 · categories"
+  /// reads as "put it where categories is now".
   Future<void> _pickPosition(
     BuildContext context,
     WidgetRef ref,

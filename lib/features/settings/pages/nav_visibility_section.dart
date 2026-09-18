@@ -7,7 +7,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/utils/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// 导航与显示设置 — 显示: which entries the side menu shows.
+/// navigation & display - visibility: which entries the side menu shows.
 ///
 /// One switch per entry. Hiding the last visible entry is refused: an empty
 /// stored list means "show everything" to

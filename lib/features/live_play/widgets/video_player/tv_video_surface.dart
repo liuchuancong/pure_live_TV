@@ -138,9 +138,9 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                 ],
               ),
             ),
-          // 房间信息 lives at the top of the screen, as in the reference player
+          // room info lives at the top of the screen, as in the reference player
           // — but as a proper TV top bar, not a single 16sp text line: avatar,
-          // title, streamer with a platform badge, the wall clock, and 返回.
+          // title, streamer with a platform badge, the wall clock, and back.
           if (!showError && state.room != null)
             Positioned(
               left: 0,
@@ -218,7 +218,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                         ],
                       ),
                       SizedBox(width: 16.sp),
-                      // 返回 sits at the top and is clearly labelled: Back on the
+                      // back sits at the top and is clearly labelled: Back on the
                       // remote does the same thing (it closes the option list, then
                       // the panel, then the controls).
                       Container(
@@ -287,7 +287,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
       children.add(Positioned(left: 0, right: 0, bottom: 0, child: VideoControllerPanel(args: widget.args)));
     }
 
-    // 清晰度 / 线路 read-out on the right edge: quieter than putting them in the
+    // quality / line read-out on the right edge: quieter than putting them in the
     // top bar, and it stays visible while watching.
     if (!showError && state.qualities.isNotEmpty) {
       children.add(

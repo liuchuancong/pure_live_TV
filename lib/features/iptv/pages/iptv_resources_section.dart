@@ -158,8 +158,8 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
     );
   }
 
-  /// Provider rows: empty state, load-failure state, then the 网络资源 /
-  /// 本地资源 groups. A section is omitted when it has no rows.
+  /// Provider rows: empty state, load-failure state, then the network resources /
+  /// local resources groups. A section is omitted when it has no rows.
   List<Widget> _buildResourceRows() {
     final rows = <Widget>[];
 
@@ -248,8 +248,8 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
     ];
   }
 
-  /// Per-item actions from the desktop manage page: 同步, the 自动同步 switch
-  /// and 删除, as one focusable TV button each.
+  /// Per-item actions from the desktop manage page: sync, the auto-sync switch
+  /// and delete, as one focusable TV button each.
   Widget _buildActions({
     required VoidCallback? onSync,
     required bool? autoSync,

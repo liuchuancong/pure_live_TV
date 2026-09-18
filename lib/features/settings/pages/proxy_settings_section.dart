@@ -44,8 +44,8 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
           children: [
             // The player proxy, exactly as the mobile player group labels it.
             //
-            // It used to read `ui_enable_network_proxy` / "为 API、图片与弹幕连接
-            // 启用统一代理", which describes the *app* proxy
+            // It used to read `ui_enable_network_proxy` / "unified proxy for API, image
+            // and danmaku traffic", which describes the *app* proxy
             // (`enableAppProxy`/`appProxyHost`) — a setting this app does not
             // implement at all, while the row actually stores `enableProxy`,
             // `proxyHost` and `proxyPort`, i.e. the media_kit/mpv kernel proxy.

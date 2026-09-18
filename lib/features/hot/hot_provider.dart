@@ -15,7 +15,7 @@ class HotTabsState {
 class HotTabs extends _$HotTabs {
   @override
   HotTabsState build() {
-    // Watch the whole favorites state: hotAreasList (平台显示 visibility and
+    // Watch the whole favorites state: hotAreasList (platform display visibility and
     // order) is part of it, and watching only preferPlatform left stale tabs
     // after a platform-config change.
     final favState = ref.watch(favoriteRoomControllerProvider);

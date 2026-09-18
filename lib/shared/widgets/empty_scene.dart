@@ -4,7 +4,7 @@ import 'package:pure_live/shared/widgets/app_status_view.dart';
 
 /// Business contexts an "empty" state can appear in, so every page shows an
 /// icon, copy and action that mean something for *its* data instead of the
-/// generic 暂无数据 + 重新加载 pair (a 关注 page with nothing followed has
+/// generic no data + reload pair (a follows page with nothing followed has
 /// nothing to reload — it needs a nudge towards search instead).
 enum EmptyScene { favorite, hot, history, favoriteAreas, searchResult, areaRooms, generic }
 
@@ -97,7 +97,7 @@ _EmptySceneStyle _styleFor(EmptyScene scene) {
 ///
 /// [onGoSearch]/[onGoHot] switch the home side menu; when a scene wants that
 /// navigation but the caller cannot provide it, the button falls back to
-/// [onRetry] with a plain 重新加载 label.
+/// [onRetry] with a plain reload label.
 AppStatusView sceneEmptyView(
   BuildContext context, {
   required EmptyScene scene,

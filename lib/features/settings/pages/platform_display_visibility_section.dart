@@ -5,7 +5,7 @@ import 'package:pure_live/shared/utils/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 
-/// 平台显示 — 显示项目: which platforms appear in 热门 / 分区.
+/// platform display — visibility: which platforms appear in hot / categories.
 ///
 /// One switch per supported platform, each with its logo. Turning the last one off
 /// is refused: a platform list with nothing in it leaves those pages empty, which

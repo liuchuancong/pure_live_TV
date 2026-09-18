@@ -6,7 +6,7 @@ import 'package:pure_live/services/page_settings/page_settings_controller.dart';
 
 /// Paging settings.
 ///
-/// Only 默认每页条数 survives on a TV. The three visibility switches the mobile
+/// Only default page size survives on a TV. The three visibility switches the mobile
 /// page has drive a pager bar (page-size selector, jump-to-page, back-to-top)
 /// that does not exist here: the TV lists are continuous grids that load the next
 /// page as the user scrolls, so those switches wrote values nothing could honour.

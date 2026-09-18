@@ -11,7 +11,7 @@ class PlayerPool {
   /// Returns the pooled adapter for [engine], creating it on first use.
   ///
   /// A cached adapter is reused, so [audioOnly] is re-applied to it: the mode
-  /// is reversible per player, and a caller that flips 仅播放音频 must not get
+  /// is reversible per player, and a caller that flips audio only must not get
   /// the stale mode of the instance created earlier.
   Future<UnifiedPlayer> getPlayer(PlayerEngine engine, {bool audioOnly = false}) async {
     final cached = _cache[engine];

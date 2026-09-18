@@ -10,18 +10,18 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
-/// 在线更新: the running version and its check state, the pending release with its
-/// notes and assets, and a way into 版本历史.
+/// online update: the running version and its check state, the pending release with its
+/// notes and assets, and a way into version history.
 ///
 /// The layout changed shape with the history: the full release list now lives on
-/// [UpdateHistoryPage] (mirroring the mobile app's 版本历史 page), and this page keeps the
+/// [UpdateHistoryPage] (mirroring the mobile app's version history page), and this page keeps the
 /// newest few releases as a preview. States that used to be a bare label — checking, up to
 /// date, failed — are drawn with the app's own status view, so a TV user can see whether
 /// the box is working or waiting.
 class AppUpdatePage extends ConsumerWidget {
   const AppUpdatePage({super.key});
 
-  /// How many releases the preview under 版本历史 shows.
+  /// How many releases the preview under version history shows.
   static const int _previewCount = 3;
 
   @override
@@ -77,7 +77,7 @@ class AppUpdatePage extends ConsumerWidget {
     );
   }
 
-  /// `v1.2.3+45 · 镜像加速` — where the version comes from is part of reading the state.
+  /// `v1.2.3+45 · mirror` — the mirror suffix is part of reading the state.
   String _currentVersionSubtitle(AppUpdateState state, WidgetRef ref) {
     final bool origin = ref.watch(appSettingsControllerProvider).useGitHubOriginForUpdates;
     final String source = origin ? i18n('update_source_origin') : i18n('update_source_mirror');
@@ -136,7 +136,7 @@ class AppUpdatePage extends ConsumerWidget {
     }
   }
 
-  /// The 版本历史 entry, a preview of the newest releases and its own load state.
+  /// The version history entry, a preview of the newest releases and its own load state.
   Widget _buildHistory(BuildContext context, AppUpdateState state, AppUpdateController controller) {
     final tvTheme = context.tvTheme;
     return Column(
@@ -199,7 +199,7 @@ class _NewVersionCard extends ConsumerWidget {
         TvSettingsGroupTitle(title: '${i18n('new_version_found')} v${state.latestVersion}'),
         TvSettingsCard(
           children: <Widget>[
-            // 发布 / 体积 / 预览版 in one line, so the card starts with facts rather
+            // release / size / preview in one line, so the card starts with facts rather
             // than a wall of markdown.
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
@@ -241,7 +241,7 @@ class _NewVersionCard extends ConsumerWidget {
             ),
             // One download row per published ABI, the mobile update page's
             // per-architecture download sections in TV form: the name, the size
-            // when the release entry carries one, and its own 下载并安装 button.
+            // when the release entry carries one, and its own download & install button.
             for (final abi in state.abis)
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
@@ -411,7 +411,7 @@ class _NewVersionCard extends ConsumerWidget {
   }
 }
 
-/// The 关于-style header: centred app icon, name and a version pill, matching
+/// The about-style header: centred app icon, name and a version pill, matching
 /// the mobile app's about page.
 class _UpdateHeroHeader extends StatelessWidget {
   const _UpdateHeroHeader({required this.version, required this.buildNumber});

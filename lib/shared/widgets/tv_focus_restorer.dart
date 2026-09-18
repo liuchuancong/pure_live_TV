@@ -86,7 +86,7 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
   ///
   /// The decision is deferred by one frame, because a focus that *moves* into
   /// another route's scope also reports a bare [FocusScopeNode] for an instant.
-  /// Restoring on that instant is what pulled the highlight back to 返回 on every
+  /// Restoring on that instant is what pulled the highlight back to back on every
   /// up/down round trip: the settings shell keeps one scaffold and swaps the page
   /// inside it with a nested navigator, so the keyboard crossing between the app
   /// bar and a page of that nested navigator always passes through such a scope —

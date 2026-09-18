@@ -74,7 +74,7 @@ class LivePlayController extends _$LivePlayController {
       //
       // Without this the first launch always pre-warmed media_kit and
       // `PlayerManager` never consulted the stored `videoPlayerKey` (it only
-      // does so when it has no default engine), so 内核切换 appeared to be
+      // does so when it has no default engine), so engine switch appeared to be
       // ignored until the row was used again in the same session.
       await GlobalPlayerService.instance.initialize(
         defaultEngine: PlayerConsts.engines[SettingsService.to.playerState.videoPlayerKey] ?? PlayerEngine.mediaKit,
@@ -357,7 +357,7 @@ class LivePlayController extends _$LivePlayController {
   }
 
   /// Applies and persists the aspect ratio at [index]; called from the
-  /// fullscreen control bar's 画面比例 dialog.
+  /// fullscreen control bar's aspect ratio dialog.
   void setFit(int index) {
     final options = kLivePlayFitList;
     if (index < 0 || index >= options.length || index == state.fitIndex) return;
@@ -613,8 +613,8 @@ class DanmakuSessionController extends _$DanmakuSessionController {
       return;
     }
     if (danmakuSettings.enableDanmakuSimilarityFilter) {
-      // The three sliders on the danmaku settings page (相似度阈值 / 缓存时间 /
-      // 最大缓存数量) were stored and never applied: the filter kept its
+      // The three sliders on the danmaku settings page (similarity threshold / cache duration /
+      // max cache size) were stored and never applied: the filter kept its
       // constructor defaults, so changing them did nothing.
       _similarityFilter.updateConfig(
         similarityThreshold: danmakuSettings.danmakuSimilarityThreshold,

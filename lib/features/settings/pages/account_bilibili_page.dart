@@ -11,9 +11,9 @@ import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_ser
 
 /// Bilibili: the account page, so it has more than the other platforms.
 ///
-/// 扫码登录 is the app's own device-QR sign-in: the QR is shown **directly in
+/// QR sign-in is the app's own device-QR sign-in: the QR is shown **directly in
 /// the left column** ([BilibiliQrLoginView]) and polls until the phone
-/// confirms, because that is a *login*, not a cookie to paste. 手动输入 stays
+/// confirms, because that is a *login*, not a cookie to paste. manual input stays
 /// available underneath, and a signed-in account can be logged out here.
 class AccountBilibiliPage extends ConsumerStatefulWidget {
   const AccountBilibiliPage({super.key});

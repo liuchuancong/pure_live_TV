@@ -292,7 +292,7 @@ abstract class LiveRoom with _$LiveRoom {
 
   // ---------- Audience values ----------
 
-  /// Parses audience text such as "1.2万", "3,456" or "12亿".
+  /// Parses audience text such as "1.2万" (12k), "3,456" or "12亿" (1.2B).
   static int parseAudienceNumber(String? text) {
     if (text == null) return 0;
     var cleaned = text.trim().replaceAll(',', '');

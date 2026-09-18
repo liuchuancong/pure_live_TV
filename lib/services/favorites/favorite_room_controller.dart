@@ -300,7 +300,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   /// The visible platform ids, normalized and de-duplicated, in display order.
   ///
   /// `availableSites()` reads the stored list in order, so this *is* the order of
-  /// the platform tabs on 热门 / 分区.
+  /// the platform tabs on hot / categories.
   List<String> enabledSiteIds() {
     final seen = <String>{};
     return <String>[
@@ -320,7 +320,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
 
   /// Puts [siteId] at [targetIndex] of the platform display order.
   ///
-  /// The 平台排序 page's "pick a platform, then name its position" move: the one
+  /// The platform order page's "pick a platform, then name its position" move: the one
   /// the user chose lands exactly there instead of being nudged step by step.
   void moveSiteTo(String siteId, int targetIndex) {
     final current = enabledSiteIds();

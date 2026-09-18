@@ -58,13 +58,13 @@ class PlayerIndexPanel extends StatefulWidget {
   final ValueChanged<int> onSelect;
   final VoidCallback onClose;
 
-  /// Stepper rows (弹幕设置) adjust with Left/Right instead of closing.
+  /// Stepper rows (danmaku settings) adjust with Left/Right instead of closing.
   final ValueChanged<int>? onAdjustLeft;
   final ValueChanged<int>? onAdjustRight;
 
   /// Draws one row itself instead of the default label/value row, so a room list
   /// can keep its avatars and platform badges while this panel still owns the
-  /// selection and the keys. [index] is the *real* row index; the 关闭 row is not
+  /// selection and the keys. [index] is the *real* row index; the close row is not
   /// passed here.
   final Widget Function(BuildContext context, int index, bool selected)? rowBuilder;
 
@@ -119,7 +119,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     );
   }
 
-  /// Row height, including its margins, scaled by 面板字号.
+  /// Row height, including its margins, scaled by panel font size.
   double get _rowExtent => (66 * PlayerPanelLayout.fontSize).sp;
 
   static bool _isConfirm(LogicalKeyboardKey key) =>
@@ -176,9 +176,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     return KeyEventResult.ignored;
   }
 
-  /// The rendered list: the rows, then a 关闭 row, so every panel has the same
-  /// way out as the bar's own option lists (清晰度/线路/比例/内核 all end with a
-  /// 关闭 row). It used to be a 返回 row *first*, which is the one place the bar's
+  /// The rendered list: the rows, then a close row, so every panel has the same
+  /// way out as the bar's own option lists (quality/line/aspect ratio/engine all end with a
+  /// close row). It used to be a back row *first*, which is the one place the bar's
   /// lists and the panels disagreed.
   List<PlayerPanelRow> get _renderedRows => <PlayerPanelRow>[
         ...widget.rows,
@@ -196,7 +196,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     final int selected = widget.selectedIndex.clamp(0, count - 1);
 
     return ValueListenableBuilder<int>(
-      // 面板字号/面板位置 are read from preferences, so the panel rebuilds when the
+      // panel font size/panel position are read from preferences, so the panel rebuilds when the
       // stepper inside it changes one of them.
       valueListenable: PlayerPanelLayout.revision,
       builder: (context, _, _) => Focus(
@@ -292,7 +292,7 @@ class _PanelRow extends StatelessWidget {
   Widget build(BuildContext context) {
     // The selected row keeps white content in both palettes: it sits on the
     // accent fill, where the theme's own text colours (dark on a light palette)
-    // would be unreadable — 弹幕设置 used to paint its focused row black.
+    // would be unreadable — danmaku settings used to paint its focused row black.
     final Color foreground = selected ? Colors.white : theme.primaryTextColor;
     final Color muted = selected ? Colors.white70 : theme.secondaryTextColor;
     return Container(

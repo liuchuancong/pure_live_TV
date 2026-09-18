@@ -48,14 +48,14 @@ class _HomePageState extends ConsumerState<HomePage> {
     final mySettingsItem = ref.watch(mySettingsMenuItemProvider);
     final isExpanded = ref.watch(isMenuExpandedProvider);
     final currentTvTheme = context.tvTheme;
-    // 设置刷新 → 主页缓存: on top of the widget default, the user can turn the
+    // settings refresh -> home cache: on top of the widget default, the user can turn the
     // page cache off so every switch rebuilds the content fresh (and clears
     // cached tab state after nav/platform config changes).
     final bool effectiveKeepAlive = widget.keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
 
-    // A menu entry hidden in 导航显示 while its page is on screen leaves the
+    // A menu entry hidden in navigation visibility while its page is on screen leaves the
     // sidebar with no selection and the old page lingering. Auto-correct once
-    // per menu-list change — to 关注 when it is visible (the app's landing
+    // per menu-list change — to follows when it is visible (the app's landing
     // page, whatever the menu order), otherwise to the first visible entry.
     final visibleIndexes = menuList.map((item) => item.index).toSet();
     final currentIndexVisible = currentIndex == TvMenuType.settings.value || visibleIndexes.contains(currentIndex);
@@ -91,7 +91,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         showExitConfirmDialog(context, ref);
       },
       // The opening highlight claims the selected entry's own node, so the app
-      // opens with the remote on 关注 (or whatever the menu lands on) instead of
+      // opens with the remote on follows (or whatever the menu lands on) instead of
       // on the header widgets above the list.
       child: TvScaffold(
         openingFocus: _nodeFor(currentIndex),
@@ -140,8 +140,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                         isExpanded: isExpanded,
                         isSelected: false,
-                        // The sidebar slot the mobile app spent on 我的账户 now
-                        // opens the settings page's 备份管理 directly.
+                        // The sidebar slot the mobile app spent on account now
+                        // opens the settings page's backup directly.
                         onTap: () => const BackupRoute().push(context),
                       ),
                     ),

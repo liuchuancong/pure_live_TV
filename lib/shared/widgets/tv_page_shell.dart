@@ -10,7 +10,7 @@ import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 /// page's own top bar into "enter the content", and claims the opening highlight.
 ///
 /// It deliberately knows nothing about app bars or back buttons: what a page puts in
-/// [topBar] is the page's own business (its own app bar, its own 返回 button, its own
+/// [topBar] is the page's own business (its own app bar, its own back button, its own
 /// `onTap`), and the node the highlight should open on is passed in as
 /// [openingFocus].
 class TvPageShell extends StatefulWidget {
@@ -22,7 +22,7 @@ class TvPageShell extends StatefulWidget {
   /// The page's own top bar, if it built one.
   final Widget? topBar;
 
-  /// The page's own 返回 button node, when it has one. Up at the content's top edge
+  /// The page's own back button node, when it has one. Up at the content's top edge
   /// lands on it and the highlight opens on it; without it the keyboard opens on
   /// the first content row and Up leaves the region.
   final FocusNode? openingFocus;
@@ -30,7 +30,7 @@ class TvPageShell extends StatefulWidget {
   /// The sub-region the opening highlight should land in, when the page has one.
   ///
   /// Without it the claim picks the top-left-most node of the whole content area —
-  /// on the home page that is the sidebar's 我的账户. A page with a navigation
+  /// on the home page that is the sidebar's account. A page with a navigation
   /// column passes its content pane's [DpadRegion] key here so the highlight opens
   /// on the page body's first row instead.
   final GlobalKey<DpadRegionState>? openingRegion;
@@ -139,7 +139,7 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
     above.requestFocus();
   }
 
-  /// Puts the opening highlight on the page's own 返回 button when it has one, and on
+  /// Puts the opening highlight on the page's own back button when it has one, and on
   /// the first content row otherwise.
   ///
   /// Left to itself the d-pad layer picks the node nearest the *previously* focused
@@ -157,7 +157,7 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
       return;
     }
 
-    // 1. The page's own 返回 button, when it has one.
+    // 1. The page's own back button, when it has one.
     final FocusNode? back = widget.openingFocus;
     if (back != null && _usable(back)) {
       if (!identical(FocusManager.instance.primaryFocus, back)) {
@@ -225,11 +225,11 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
     //
     // [RouteAware] alone is not enough: it only reports pushes inside *this page's*
     // navigator, and the settings shell keeps every page in a nested one. A top-level
-    // route (背景设置, 纯色, …) therefore covers the shell without pushing inside it, so
+    // route (background settings, solid color, …) therefore covers the shell without pushing inside it, so
     // `/settings/theme` never heard that it was hidden, kept a live focus tree behind
     // the visible page, and the d-pad's fallback restore landed on it — the visible page
-    // ended up with no highlight and a remote that did nothing (设置 → 主题设置 →
-    // 背景设置 → 纯色 → 返回).
+    // ended up with no highlight and a remote that did nothing (settings -> theme settings ->
+    // background settings → solid color → back).
     final bool onStage = TickerMode.valuesOf(context).enabled;
     if (onStage != _onStage) {
       _onStage = onStage;
@@ -266,7 +266,7 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
                       SafeArea(
                         bottom: false,
                         // Passive node: it never takes focus itself, it only sees the
-                        // keys the bar's buttons leave unhandled (a Down on 返回).
+                        // keys the bar's buttons leave unhandled (a Down on back).
                         child: Focus(
                           canRequestFocus: false,
                           skipTraversal: true,

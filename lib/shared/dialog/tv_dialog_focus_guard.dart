@@ -55,7 +55,7 @@ class _TvDialogFocusGuardState extends State<TvDialogFocusGuard> {
   /// Claims the keyboard, retrying across a few frames.
   ///
   /// A dialog body is often a lazy list: on the first layout the option rows
-  /// may not exist yet, and the only focusable node then is the dialog's 关闭
+  /// may not exist yet, and the only focusable node then is the dialog's close
   /// button — claiming it *did* put the keyboard inside the dialog, but on the
   /// wrong row, and the guard then defended that wrong row against every later
   /// correction. Retrying until something inside holds the keyboard lets the

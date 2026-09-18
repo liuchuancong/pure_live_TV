@@ -31,7 +31,7 @@ class App extends ConsumerWidget {
     final currentTvTheme = ref.watch(tvThemeControllerProvider);
     final themeSettings = ref.watch(themeSettingsControllerProvider);
     final selectedMode = ref.read(themeSettingsControllerProvider.notifier).themeMode;
-    // TV reports no night mode, so "跟随系统" → dark
+    // TV reports no night mode, so "follow system" → dark
     final themeMode = selectedMode == ThemeMode.system ? ThemeMode.dark : selectedMode;
     final paletteBrightness = themeMode == ThemeMode.light ? Brightness.light : Brightness.dark;
 

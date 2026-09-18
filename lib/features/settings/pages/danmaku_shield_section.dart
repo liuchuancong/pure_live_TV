@@ -50,7 +50,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
         children: [
           Center(child: RemoteSyncQrCard(width: 280)),
           SizedBox(height: 20.sp),
-          // 弹幕关键词屏蔽
+          // keyword shield
           TvSettingsGroupTitle(title: i18n('danmaku_keyword_block')),
           TvSettingsCard(
             children: [

@@ -22,8 +22,7 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 
-/// A single queued native error. It is bound to the source session that
-/// raised it, so anything from a superseded session can be dropped.
+/// A queued native error, tagged with the session that raised it.
 class _PendingPlayerError {
   const _PendingPlayerError({required this.error, required this.sessionId});
 
@@ -31,15 +30,9 @@ class _PendingPlayerError {
   final int sessionId;
 }
 
-/// Playback orchestration core for the single global player.
-///
-/// - serialized player lifecycle queue with sessionId/intentRevision guards
-/// - PlaybackSource + PlaybackSourceTransport (one input lease per player)
-/// - error-code driven recovery pipeline: line switch, software decoding,
-///   engine fallback, same-engine rebuild, bounded backoff, terminal state
-/// - watchdogs: open deadline, buffer stall, unexpected pause, frame stall
-/// - lifecycle pause/resume tokens and per-room volume restore
-/// - platform header resolution when the caller passes no headers
+/// Playback orchestration core for the single global player: a serialized
+/// lifecycle queue, error-code driven recovery (line switch, software decode,
+/// engine fallback, backoff) and playback watchdogs.
 class PlayerManager {
   final PlayerPool playerPool;
 
@@ -177,10 +170,8 @@ class PlayerManager {
 
   bool _isSwitchingDueToFallback = false;
 
-  /// Engines that failed in this session; a fallback never switches back to
-  /// them, and the mismatch check below skips them too. Without this the
-  /// fallback and the 'runtime != default' switch bounced off each other
-  /// forever (fijk -> mediaKit -> fijk -> ...) and froze the app.
+  /// Engines that failed this session; fallback and manual switch both skip
+  /// them so they cannot loop against each other.
   final Set<PlayerEngine> _enginesUnavailableThisSession = <PlayerEngine>{};
   bool _isHandlingError = false;
   _PendingPlayerError? _pendingPlayerError;
@@ -230,15 +221,11 @@ class PlayerManager {
 
   bool get isPlayingNow => _playingSubject.value;
 
-  /// 仅播放音频 (settings row 仅播放音频) as the native players need it.
-  ///
-  /// The adapters keep the mode per native player and reset it from every
-  /// `setDataSource`/`init` call, so both the pooled instance and the source
-  /// open have to receive it. Reading the setting here keeps the settings page
-  /// free of player-internal plumbing.
+  /// Adapters reset this on every setDataSource/init, so both the pooled
+  /// instance and the source open must receive it.
   bool get _audioOnlySetting => SettingsService.to.playerState.audioOnly;
 
-  /// Applies 仅播放音频 to the active player and every pooled adapter.
+  /// Applies audio only to the active player and every pooled adapter.
   Future<void> setAudioOnly(bool audioOnly) async {
     if (_disposed) return;
     await playerPool.setAudioOnly(audioOnly);
@@ -274,9 +261,8 @@ class PlayerManager {
   // suspension (lifecycle pause and resume)
   // =========================
 
-  /// A lifecycle pause is an implementation detail, not a user playback
-  /// intent. The token lets a later resume prove that neither the source nor
-  /// the user's intent changed while the application was hidden.
+  /// Pausing here is an implementation detail, not a playback intent; the
+  /// token lets resume prove source and intent are unchanged.
   Future<PlaybackLifecyclePauseToken?> pauseForLifecycle() async {
     // There is no background playback on a TV: the playback page is the app, so
     // a lifecycle pause always suspends the stream.
@@ -292,9 +278,7 @@ class PlayerManager {
     if (player == null || _disposed || _isClosing) return null;
     if (!_playbackRequested) {
       if (!isPlayingNow && !player.isPlayingNow) return null;
-      // Compatibility for an already-active adapter supplied by an explicit
-      // pre-warm/restore path. Once any public command establishes intent,
-      // native state alone never overrides that user decision.
+      // An already-active adapter from a pre-warm path still counts as intent.
       _playbackRequested = true;
     }
     final token = (sessionId: _sessionId, intentRevision: _playbackIntentRevision);
@@ -382,9 +366,8 @@ class PlayerManager {
         stackTrace: s,
       );
 
-      // Explicit pre-warm calls own their terminal error. A player allocated as
-      // part of [play] is different: its initialization failure must remain
-      // private until the orchestrator has tried the remaining engines.
+      // Pre-warm failures surface here; players allocated by [play] stay
+      // quiet until the orchestrator has tried the other engines.
       if (publishError) _publishTerminalPlayerError(exception);
 
       throw exception;
@@ -709,7 +692,7 @@ class PlayerManager {
   ///
   /// [resumeCurrentSource] re-opens the room the manager still remembers. The
   /// player page wants that (the kernel changes under the running stream);
-  /// 内核切换 in Settings does not, because restarting the last room behind the
+  /// engine switch in Settings does not, because restarting the last room behind the
   /// settings screen is a surprise, not a feature.
   Future<void> switchEngine(PlayerEngine engine, {bool isManual = false, bool resumeCurrentSource = true}) {
     return _enqueuePlayerLifecycle(

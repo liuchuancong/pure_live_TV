@@ -15,7 +15,7 @@ class TvDialog extends StatelessWidget {
 
   /// The node the keyboard should open on — a select dialog passes the row
   /// holding the value in force. Without it the focus guard settles on the
-  /// first focusable, which for a lazy list can transiently be the 关闭 button.
+  /// first focusable, which for a lazy list can transiently be the close button.
   final FocusNode? initialFocusNode;
 
   const TvDialog({

@@ -134,7 +134,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     // list it was built with: sub-categories have to be in hand when the category is
     // created. Filling `children` afterwards threw
     // `Unsupported operation: Cannot add to an unmodifiable list`, which is what the
-    // 分区 page showed as 数据加载失败 on this platform.
+    // categories page showed "load failed" on this platform.
     return Future.wait(<Future<LiveCategory>>[
       for (final item in categoryTabs)
         Future<LiveCategory>(() async {

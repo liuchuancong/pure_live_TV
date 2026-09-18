@@ -1,12 +1,12 @@
-// GENERATED FILE — 请勿手改，重新生成用：
+// GENERATED FILE - do not edit by hand. Regenerate with:
 //   node tool/gen_solid_gradients.mjs
 //
-// iTab 新标签页的纯色/渐变背景表（139 条），直接内置在代码里。
-// 之前这份数据每次进页面都要从 GitHub 镜像下载，慢且容易整体失败；
-// 纯色是固定素材，没有远端更新的必要。
+// 139 solid/gradient backgrounds taken from the iTab new-tab page, inlined here.
+// This used to be fetched from a GitHub mirror on every page visit, which was
+// slow and brittle; static assets like these never need a remote update.
 //
-// 角度遵循 CSS 约定：0deg 指向上方，顺时针为正。渲染时换算成 Flutter 的
-// begin/end 对齐点（见 solid_gradient.dart）。
+// Angles follow the CSS convention: 0deg points up, clockwise positive.
+// Converted to Flutter begin/end alignment at render time (solid_gradient.dart).
 
 /// One built-in solid/gradient background.
 class SolidGradient {

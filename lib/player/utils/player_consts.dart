@@ -61,8 +61,8 @@ class PlayerConsts {
   /// How well a platform quality label satisfies the preferred resolution.
   ///
   /// 3 means an exact alias, 2 a label that merely contains one and 0 no match.
-  /// Scoring instead of a plain `contains` keeps `蓝光8M` from being picked when
-  /// the user asked for `蓝光4M`, which shares the shorter `蓝光` alias.
+  /// Scoring instead of a plain `contains` keeps `blu-ray 8m` from being picked when
+  /// the user asked for `blu-ray 4m`, which shares the shorter `blu-ray` alias.
   static int resolutionMatchScore(String preferenceKey, String qualityLabel) {
     final key = normalizeResolutionKey(preferenceKey);
     final label = qualityLabel.trim().toLowerCase();
@@ -165,11 +165,11 @@ class PlayerConsts {
     "rkmpp": "rkmpp",
   };
 
-  /// 可选硬件解码器。
+  /// Hardware decoders available to mpv.
   ///
-  /// 键、顺序和中英文标签都取自移动端
-  /// (`pure_live/lib/player/utils/player_consts.dart` 的 `hardwareDecodersList`)，
-  /// 这样设置页显示的就不再是 mpv 的原始键。各平台只展示自己可用的子集。
+  /// Keys, order and labels mirror the mobile app
+  /// (hardwareDecodersList in pure_live's player_consts.dart),
+  /// so raw mpv keys never reach the settings page. Each platform shows its own subset.
   static const List<Map<String, String>> hardwareDecodersList = [
     {'key': 'auto', 'nameEn': 'Any Available Decoder', 'nameZh': '启用任意可用解码器'},
     {'key': 'auto-safe', 'nameEn': 'Best Decoder', 'nameZh': '启用最佳解码器'},
@@ -198,7 +198,7 @@ class PlayerConsts {
     {'key': 'rkmpp', 'nameEn': 'Rockchip MPP (Selected Rockchip SoCs)', 'nameZh': 'Rockchip MPP（仅部分 Rockchip 芯片）'},
   ];
 
-  /// 可选音频输出驱动（同移动端 `audio_output_settings_page.dart` 的列表）。
+  /// Audio output drivers available to mpv, mirroring the mobile app's list.
   static const List<Map<String, String>> audioOutputDriversList = [
     {'key': 'auto', 'nameEn': 'Auto', 'nameZh': '自动选择'},
     {'key': 'null', 'nameEn': 'Null (No Audio Output)', 'nameZh': 'Null（不输出音频）'},
@@ -221,7 +221,7 @@ class PlayerConsts {
     {'key': 'libao', 'nameEn': 'libao (Cross-Platform)', 'nameZh': 'libao（跨平台）'},
   ];
 
-  /// 可选视频渲染器（同移动端 `renderer_settings.dart` 的列表）。
+  /// Video renderers available to mpv, mirroring the mobile app's list.
   static const List<Map<String, String>> videoRenderersList = [
     {'key': 'auto', 'nameEn': 'Auto', 'nameZh': '自动选择'},
     {'key': 'gpu', 'nameEn': 'GPU', 'nameZh': 'GPU'},

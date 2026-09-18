@@ -9,12 +9,12 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-/// 三方认证 — one row per platform, each opening that platform's own page.
+/// third-party auth — one row per platform, each opening that platform's own page.
 ///
-/// The rows are the mobile account page's list, minus 斗鱼 (disabled there too:
+/// The rows are the mobile account page's list, minus douyu (disabled there too:
 /// no site implementation reads a Douyu cookie). Bilibili keeps its account row
 /// with the signed-in name, and every other platform shows whether a cookie is
-/// set. The per-platform pages carry both ways in (扫码 and 手动输入).
+/// set. The per-platform pages carry both ways in (QR sign-in and manual input).
 class AccountSettingsSectionPage extends ConsumerWidget {
   const AccountSettingsSectionPage({super.key});
 

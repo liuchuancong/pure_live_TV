@@ -18,7 +18,7 @@ class TvSelectItem<T> {
 /// Dialog that returns the chosen value, or null when it is closed.
 ///
 /// The rows are [TvDialogOptionTile]s (rounded rectangles), the value in force is
-/// marked, and the dialog carries its own 关闭 button — every dialog in the app
+/// marked, and the dialog carries its own close button — every dialog in the app
 /// has a visible way out, so closing one never depends on knowing that the
 /// remote's Back button works.
 class TvSelectDialog<T> extends StatefulWidget {

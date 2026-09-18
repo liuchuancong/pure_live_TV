@@ -10,7 +10,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// 弹幕关键词过滤, as an index list like the reference's shield panel.
+/// Keyword shield, as an index list like the reference's shield panel.
 ///
 /// Blocked words share [FavoriteRoomController.shieldList] with the phone scan
 /// page: Up/Down pick a word, OK removes it, and words added on the phone are

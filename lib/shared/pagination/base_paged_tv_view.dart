@@ -19,7 +19,7 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
   /// when [emptyBuilder] is null.
   final EmptyScene emptyScene;
 
-  /// Callbacks behind the scene's navigational action (去搜索 / 去逛热门).
+  /// Callbacks behind the scene's navigational action (go to search / browse hot).
   final VoidCallback? onEmptyGoSearch;
   final VoidCallback? onEmptyGoHot;
 

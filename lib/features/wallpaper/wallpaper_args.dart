@@ -40,7 +40,7 @@ class WallpaperPreviewArgs {
   final WallpaperApiSource? apiSource;
 
   /// Catalog mode: the paged list to walk. The preview watches the same paging
-  /// core as the grid, so 下一个 can pull the next page in.
+  /// core as the grid, so next can pull the next page in.
   final String? sourceId;
   final String? categoryId;
 

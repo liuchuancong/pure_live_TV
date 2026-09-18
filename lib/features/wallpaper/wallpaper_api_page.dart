@@ -7,7 +7,7 @@ import 'package:pure_live/app/router/app_router.dart';
 
 /// The random-wallpaper APIs, grouped.
 ///
-/// The list reached nearly thirty entries once 栗次元's categories became
+/// The list reached nearly thirty entries once alcy's categories became
 /// individual sources, which is far too long for a remote: one screenful became
 /// four. A group row opens its sources on a second-level page, and a source
 /// there opens the fullscreen preview.

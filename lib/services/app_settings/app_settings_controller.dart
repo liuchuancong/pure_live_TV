@@ -113,7 +113,7 @@ class AppSettingsController extends _$AppSettingsController {
   /// Puts [menuId] at [targetIndex] of the visible list, shifting the entries it
   /// passes.
   ///
-  /// This is the 排序 page's "pick an entry, then name its position" move: the
+  /// This is the ordering page's "pick an entry, then name its position" move: the
   /// entry the user chose lands exactly where they said, instead of being nudged
   /// there one step at a time.
   void moveMenuTo(String menuId, int targetIndex) {
@@ -130,7 +130,7 @@ class AppSettingsController extends _$AppSettingsController {
   /// [ids] with [menuId] placed at [targetIndex]; the entries it passes shift by
   /// one and nothing is dropped.
   ///
-  /// Pure (it delegates to the shared [reorderIds]) so the reorder rule the 排序
+  /// Pure (it delegates to the shared [reorderIds]) so the reorder rule the ordering
   /// page promises is testable without the preference store.
   static List<String> reorderMenuIds(List<String> ids, String menuId, int targetIndex) =>
       reorderIds(ids, menuId, targetIndex);

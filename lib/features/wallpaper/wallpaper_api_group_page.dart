@@ -8,7 +8,7 @@ import 'package:pure_live/app/router/app_router.dart';
 /// The sources inside one API group.
 ///
 /// Picking a row opens the fullscreen preview, which downloads a picture and
-/// offers 换一张 until the user commits one as the background.
+/// offers next image until the user commits one as the background.
 class WallpaperApiGroupPage extends StatelessWidget {
   const WallpaperApiGroupPage({super.key, required this.group});
 

@@ -11,7 +11,7 @@ import 'package:pure_live/shared/widgets/tv_settings_row.dart';
 /// hid the alternatives, needed one press per option, and consumed the
 /// horizontal keys that focus traversal needs.
 ///
-/// A single-option row is an *action* row (导出配置, 清除缓存, 保存代理, ...), not
+/// A single-option row is an *action* row (export config, clear cache, save proxy, ...), not
 /// a choice: opening a one-item list would show the item already selected, and
 /// the dialog reports "nothing changed", so `onChanged` never ran and every one
 /// of those rows was dead. Those rows now run their action on OK and wear a

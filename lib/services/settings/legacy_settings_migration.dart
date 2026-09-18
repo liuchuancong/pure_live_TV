@@ -117,7 +117,7 @@ class LegacySettingsMigration {
         "hotAreasList": HivePrefUtil.getStringList("hotAreasList"),
         "savedMenuIds": HivePrefUtil.getStringList("savedMenuIds"),
 
-        // 备份目录 (the WebDAV keys that used to sit here are gone with the module; a
+        // backup directory (the WebDAV keys that used to sit here are gone with the module; a
         // legacy key is simply ignored by the import below).
         "backupDirectory": HivePrefUtil.getString("backupDirectory"),
         "m3uDirectory": HivePrefUtil.getString("m3uDirectory"),

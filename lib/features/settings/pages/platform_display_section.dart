@@ -6,12 +6,12 @@ import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
-/// 平台显示 — the two separate concerns.
+/// platform display — the two separate concerns.
 ///
 /// The page used to be one list of platform switches, and the desktop app also
 /// reorders the same list by dragging. On a remote that reordering is its own
-/// page now: 显示项目 decides which platforms are listed, 平台排序 decides the order
-/// their tabs appear in on 热门 / 分区 (the stored `hotAreasList` order is what
+/// page now: visibility decides which platforms are listed, platform order decides the order
+/// their tabs appear in on hot / categories (the stored `hotAreasList` order is what
 /// `Sites.availableSites()` reads, so the order here *is* the tab order).
 class PlatformDisplaySectionPage extends ConsumerWidget {
   const PlatformDisplaySectionPage({super.key});

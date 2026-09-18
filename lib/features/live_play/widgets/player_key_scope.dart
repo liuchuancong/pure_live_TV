@@ -65,7 +65,7 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
     final key = event.logicalKey;
 
     // A panel with its own index handling consumes its keys first; what reaches
-    // here while a panel is open is Left/Escape, which closes it (房间信息 has no
+    // here while a panel is open is Left/Escape, which closes it (room info has no
     // keys of its own).
     if (state.showSidePanel) {
       if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.escape) {

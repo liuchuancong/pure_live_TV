@@ -61,7 +61,7 @@ abstract final class AppRoutes {
   /// Preferred and popular categories
   static const kSettingsHotAreas = "/hot_areas";
 
-  /// The two 平台显示 sub-pages: which platforms are listed, and in which order.
+  /// The two platform display sub-pages: which platforms are listed, and in which order.
   static const kSettingsHotAreasVisibility = "/hot_areas/visibility";
   static const kSettingsHotAreasOrder = "/hot_areas/order";
 
@@ -144,7 +144,7 @@ abstract final class AppRoutes {
   static const kSettingsGeneral = "/settings/general";
   static const kSettingsNavigation = "/settings/navigation";
 
-  /// The three 导航与显示设置 sub-pages: which entries the side menu shows, in
+  /// The three navigation & display sub-pages: which entries the side menu shows, in
   /// which order, and with which icon.
   static const kSettingsNavVisibility = "/settings/nav_visibility";
   static const kSettingsNavOrder = "/settings/nav_order";
@@ -177,7 +177,7 @@ abstract final class AppRoutes {
   static const kSettingsAudience = "/settings/audience";
   static const kSettingsLocalBackup = "/settings/backups";
 
-  /// Device sync (the TV end of the phone's 设备同步 row)
+  /// Device sync (the TV end of the phone's device sync row)
   static const kSettingsDeviceSync = "/settings/device_sync";
 
   /// Per-platform cookie pages: every platform gets its own page, with both a

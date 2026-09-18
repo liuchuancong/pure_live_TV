@@ -7,11 +7,11 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
-/// 导航与显示设置 — the side menu's three separate concerns.
+/// navigation & display — the side menu's three separate concerns.
 ///
 /// This page used to pile all of them into one long list (visibility switches,
 /// reorder rows and icon rows). Each concern is its own page now, which is also
-/// what the ordering needs: 排序 asks *which entry* and then *which position*, and
+/// what the ordering needs: ordering asks *which entry* and then *which position*, and
 /// that only reads clearly on a page of its own.
 class NavigationSectionPage extends ConsumerWidget {
   const NavigationSectionPage({super.key});

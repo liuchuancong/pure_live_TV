@@ -29,7 +29,7 @@ import 'package:pure_live/app/router/app_router.dart';
 ///   icon and, where the current value matters, its text.
 ///
 /// Volume buttons are omitted on purpose — a TV has hardware volume, and the two
-/// most reachable slots are better used by 清晰度 and 线路.
+/// most reachable slots are better used by quality and line.
 class VideoControllerPanel extends ConsumerStatefulWidget {
   final LivePlayArgs args;
 
@@ -208,7 +208,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       case _OptionsPanel.kernel:
         // The kernels are a list like every other value picker: the bar used to
         // open a modal dialog here, which was the one list in the player without
-        // a 关闭 row (and the only one that did not live next to the bar).
+        // a close row (and the only one that did not live next to the bar).
         final String activeKey = _activeEngineKey();
         return <({String label, VoidCallback apply, bool active})>[
           for (final String key in PlayerConsts.engines.keys)
@@ -223,7 +223,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     }
   }
 
-  /// The options with a 关闭 row last: the list is a selectable index list, so
+  /// The options with a close row last: the list is a selectable index list, so
   /// its way out is a row like any other — at the bottom, where the eye ends up
   /// after walking the list.
   List<({String label, VoidCallback apply, bool active})> _optionsWithClose(LivePlayState state) =>
@@ -286,10 +286,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     _zone = _Zone.bar;
   });
 
-  /// Bottom bar: the transport, the danmaku group (开关/设置/过滤 together), the
+  /// Bottom bar: the transport, the danmaku group (toggle/settings/filter), the
   /// three value pickers, then the channel actions.
   ///
-  /// 背景设置 was dropped — it is a settings-page concern, and the bar had grown
+  /// background settings was dropped — it is a settings-page concern, and the bar had grown
   /// to fourteen buttons, so related items drifted apart.
   List<_PanelAction> _barActions(LivePlayState state) {
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
@@ -321,7 +321,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         onSelect: controller.togglePlayPause,
       ),
       _PanelAction(icon: Icons.refresh_rounded, label: i18n('retry'), onSelect: controller.retry),
-      // 弹幕开关 / 弹幕设置 / 弹幕过滤 stay adjacent.
+      // danmaku toggle / danmaku settings / danmaku filter stay adjacent.
       _PanelAction(
         asset: danmakuOn ? 'assets/images/video/danmu_open.svg' : 'assets/images/video/danmu_close.svg',
         label: danmakuOn ? i18n('ui_danmaku_on') : i18n('ui_danmaku_off'),
@@ -392,9 +392,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   /// Switches the kernel from the bar's index list.
   ///
   /// The list closes first: taking a kernel restarts the stream, so leaving the
-  /// list open over a reloading player helps nobody — unlike 清晰度/线路/比例,
+  /// list open over a reloading player helps nobody — unlike quality/line/aspect ratio,
   /// where staying in the list is how you compare the options. The list still
-  /// carries a 关闭 row at the bottom, like the others.
+  /// carries a close row at the bottom, like the others.
   ///
   /// Every pick is a real switch: PlayerManager hard-disposes the player that is
   /// running (`hardDispose()` on the current adapter, then the pool is asked for
@@ -545,7 +545,7 @@ class _PanelAction {
 
   final IconData? icon;
 
-  /// SVG asset, for the buttons the reference ships as artwork (弹幕开关/弹幕设置).
+  /// SVG asset, for the buttons the reference ships as artwork (danmaku toggle/danmaku settings).
   final String? asset;
   final String label;
   final VoidCallback onSelect;

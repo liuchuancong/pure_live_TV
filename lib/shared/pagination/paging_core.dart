@@ -28,7 +28,7 @@ class PagingCore<T> extends _$PagingCore<T> {
   final Set<int> _loadedPageSet = {};
   static const int firstPageKey = 1;
 
-  // Kept lazy so the 列间距/行间距 sliders are read when the controller is first
+  // Kept lazy so the column/row spacing sliders are read when the controller is first
   // used. The controller cannot be rebuilt in place, so a slider moved while a
   // grid is mounted applies on the next rebuild; the grid's real gap comes from
   // the `gridDelegate` its page passes to `VirtualGridView`, which does follow
@@ -75,7 +75,7 @@ class PagingCore<T> extends _$PagingCore<T> {
     );
   }
 
-  /// 默认每页条数 from the page settings.
+  /// default page size from the page settings.
   ///
   /// The paged lists used to hardcode 12 while the settings page wrote a value
   /// nothing read. The setting wins (its default is also 12, so nothing changes

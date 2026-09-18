@@ -71,7 +71,7 @@ class WallpaperApiSource {
 /// One row on the random-API page: a family of random-image sources.
 ///
 /// The picker is two levels because the flat list reached nearly thirty entries
-/// once 栗次元's categories became individual sources. A group row opens
+/// once alcy's categories became individual sources. A group row opens
 /// [sources] on a page of its own.
 class WallpaperApiGroup {
   const WallpaperApiGroup({required this.id, required this.name, required this.nameEn, required this.sources});

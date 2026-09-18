@@ -111,7 +111,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
        icon: Icons.settings_backup_restore_rounded),
     ],
   ),
-  // The desktop app reaches 关于 from its overflow menu; this app has no such
+  // The desktop app reaches about from its overflow menu; this app has no such
   // menu, so the row stays here to keep the page reachable.
   (
     titleKey: 'about',
@@ -147,7 +147,7 @@ class SettingsCatalogView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // The 关于 row trades its static subtitle for the 发现新版本 hint while an
+    // The about row trades its static subtitle for the new-version hint while an
     // update is pending — the menu is the first screen a user looking for "what
     // changed" lands on.
     final updateState = ref.watch(appUpdateControllerProvider);
@@ -200,9 +200,9 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsFont: 'font_settings_title',
   AppRoutes.kSettingsFontFamily: 'font_family_settings',
   // The danmaku-only font manager is the same page in its danmaku scope; without
-  // its own entry it falls back to the generic 系统设置 title.
+  // its own entry it falls back to the generic system settings title.
   AppRoutes.kSettingsFontFamilyDanmaku: 'font_family_settings',
-  // The page's own title (`online_update`), or the shell would call it 系统设置.
+  // The page's own title (`online_update`), or the shell would call it system settings.
   AppRoutes.kAppUpdate: 'online_update',
   AppRoutes.kUpdateHistory: 'version_history',
   AppRoutes.kSettingsDecoder: 'hardware_decoder',
@@ -224,17 +224,17 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsAccountTwitch: 'site_twitch',
   AppRoutes.kSettingsAccountSoop: 'site_soop',
   AppRoutes.kSettingsTags: 'tag_management',
-  // The three 导航与显示设置 sub-pages are titled like the rows that open them.
+  // The three navigation & display sub-pages are titled like the rows that open them.
   AppRoutes.kSettingsNavVisibility: 'navigation_visibility',
   AppRoutes.kSettingsNavOrder: 'navigation_order',
   AppRoutes.kSettingsNavIcons: 'navigation_icons',
-  // Same for the two 平台显示 sub-pages.
+  // Same for the two platform display sub-pages.
   AppRoutes.kSettingsHotAreasVisibility: 'platform_display_visibility',
   AppRoutes.kSettingsHotAreasOrder: 'platform_display_order',
   // Pages whose *menu row* has a different label from their page title.
   //
-  // The mobile app's menu says 视频 / 播放器内核 / 自定义网络代理 while the pages
-  // themselves are titled 视频设置 / 播放内核设置 / 网络与代理设置; taking the
+  // The mobile app's menu says video / player engine / proxy while the pages
+  // themselves are titled video settings / player engine / network & proxy; taking the
   // title from the menu row made the TV app bars disagree with the phone's.
   AppRoutes.kSettingsVideo: 'video_settings',
   AppRoutes.kSettingsPlayerKernel: 'player_kernel_settings',
@@ -272,9 +272,9 @@ class TvSettingsRoutePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // The bar belongs to the page's chrome, not to its list: inside the list it would
-    // scroll away, and `TvAppBar` draws a 返回 of its own — two back buttons under the
+    // scroll away, and `TvAppBar` draws a back of its own — two back buttons under the
     // one `TvPageScaffold` also builds. Passing the title keeps `TvPageScaffold` in
-    // charge of the bar and of the focus node that makes 返回 selectable.
+    // charge of the bar and of the focus node that makes back selectable.
     return TvPageScaffold(
       title: i18n('settings_title'),
       child: const SettingsCatalogView(),
@@ -296,10 +296,10 @@ class SettingsSectionScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return TvPageScaffold(
       title: i18n(settingsSectionTitleKey(location)),
-      // Each settings page carries its own scaffold — its own app bar, its own 返回
+      // Each settings page carries its own scaffold — its own app bar, its own back
       // button and its own focus wiring — inside its own route of the shell's nested
       // navigator. The shell deliberately contributes no chrome (see the route
-      // table): a scaffold shared by every page never saw an inner push, so its 返回
+      // table): a scaffold shared by every page never saw an inner push, so its back
       // button outlived the page it belonged to and stole the highlight.
       child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),
     );

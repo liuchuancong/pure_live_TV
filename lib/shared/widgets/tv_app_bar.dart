@@ -13,11 +13,11 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 /// and — for a page that lives inside a nested navigator (every settings section page
 /// is) — the *outer* navigator counts too. Such a page can be the first page of its own
 /// navigator while the settings shell above it can still be popped, and without that
-/// check 返回 simply did not appear on it.
+/// check back simply did not appear on it.
 ///
 /// A page underneath a pushed route is rebuilt while the pop is still running — at
 /// that moment `canPop()` is still true, so the page drew a back button and nothing
-/// recomputed it afterwards. That is the stale "返回" the user saw on the home and
+/// recomputed it afterwards. That is the stale "back" the user saw on the home and
 /// favorites pages until an unrelated rebuild fixed it.
 bool tvShowsBackButton(BuildContext context) {
   final bool isCurrent = ModalRoute.of(context)?.isCurrent ?? true;

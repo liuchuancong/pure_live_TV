@@ -39,7 +39,7 @@ Map<String, String> _labels = {
   'xiaohongshu_display_viewers': '平台展示观看值：{value}（非已验证的实时在线人数）',
   'xiaohongshu_restricted': '该房间存在访问条件或访问状态待确认，当前没有可用的公开完整直播源。',
   'xiaohongshu_room_scope': '当前以直播房间号跟踪；主播重新开播使用新房间号时，请重新导入分享链接。',
-  // —— 通用 ——
+  // common
   'cancel': '取消',
   'clear_search_history': '清空',
   'confirm': '确定',
@@ -78,7 +78,7 @@ Map<String, String> _labels = {
   'remote_sync_pull_subtitle': '输入对方地址后导入其设置',
   'remote_sync_pull_title': '从设备拉取设置',
   'remote_sync_starting': '正在启动局域网同步服务…',
-  // —— 背景设置 ——
+  // background settings
   'ui_background_settings': '背景设置',
   'background_apply_failed': '设置失败：{msg}',
   'background_catalog_empty': '远端目录为空',
@@ -132,7 +132,7 @@ Map<String, String> _labels = {
   'provider_name_exists_tip': '该名称已存在，是否覆盖？',
   'subscription_download_or_parse_failed': '订阅下载或解析失败',
 
-  // —— 站点名称 ——
+  // site names
   'site_all': '全部',
   'site_bilibili': '哔哩哔哩',
   'site_douyu': '斗鱼',
@@ -152,7 +152,7 @@ Map<String, String> _labels = {
   'site_tting': 'TtingLive',
   'site_iptv': 'IPTV',
 
-  // —— Niconico 目录 ——
+  // niconico directory
   'niconico_category_common': '一般',
   'niconico_category_try': '尝试',
   'niconico_category_live': '实况',
@@ -161,7 +161,7 @@ Map<String, String> _labels = {
   'niconico_category_totu': '凸待',
   'niconico_category_vtuber': 'VTuber',
 
-  // —— HTTP 错误 ——
+  // http errors
   'http_error_400': '请求错误(400)',
   'http_error_401': '未授权(401)',
   'http_error_403': '禁止访问(403)',
@@ -198,7 +198,7 @@ bool _hasTranslation(String key) {
   try {
     return ez.trExists(key);
   } catch (_) {
-    // EasyLocalization 尚未初始化时只依赖静态表。
+    // Fall back to the static table until EasyLocalization is ready.
     return false;
   }
 }

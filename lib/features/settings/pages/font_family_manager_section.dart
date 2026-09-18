@@ -13,10 +13,10 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.
 /// The actions the manager offers for one family.
 enum FontFamilyAction { download, apply, delete }
 
-/// Cloud-font manager: 出厂默认 on top, one card per family under 云字体.
+/// Cloud-font manager: factory default on top, one card per family under cloud fonts.
 ///
 /// Follows the mobile page (`font_family_manager_page.dart`) rather than doing the work
-/// inline in the rows: picking a family opens a menu (下载 / 应用 / 删除), deleting asks
+/// inline in the rows: picking a family opens a menu (download/apply/delete), deleting asks
 /// first, a download runs behind a modal [AppStatusView], and a family made of several
 /// weight files asks which weight to lock — or applies all of them. The family in force
 /// is re-registered on startup (see `FontSettingsController`), with a fallback to the
@@ -24,7 +24,7 @@ enum FontFamilyAction { download, apply, delete }
 class FontFamilyManagerSectionPage extends ConsumerStatefulWidget {
   const FontFamilyManagerSectionPage({super.key, this.danmaku = false});
 
-  /// 弹幕字体 instead of the app font.
+  /// danmaku font instead of the app font.
   final bool danmaku;
 
   @override
@@ -92,7 +92,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     }
   }
 
-  /// 出厂默认.
+  /// factory default.
   Future<void> _resetFamily() async {
     if (_danmakuMode) {
       await ref.read(danmakuSettingsControllerProvider.notifier).resetDanmakuFontFamily();
@@ -149,7 +149,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     }
   }
 
-  /// 应用: a single-file family goes straight on; several weights ask which one.
+  /// apply: a single-file family goes straight on; several weights ask which one.
   Future<void> _applyFamily(FontModel font) async {
     if (font.files.length <= 1) {
       await _activate(font);
@@ -169,7 +169,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     if (ok && mounted) setState(() {});
   }
 
-  /// The weight picker of a multi-weight family, with 自动 (all files) on top.
+  /// The weight picker of a multi-weight family, with auto (all files) on top.
   Future<void> _chooseWeight(FontModel font) async {
     final List<File> files = await FontDownloadManager.instance.listDownloadedFontFiles(font.id);
     if (!mounted) return;
@@ -205,7 +205,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     await _activate(font, targetFileName: choice.isEmpty ? null : choice);
   }
 
-  /// 下载, then apply. No modal: the card itself shows the loading animation
+  /// download, then apply. No modal: the card itself shows the loading animation
   /// (the global [AppStatusView]) while the download runs, and the row refuses
   /// input until it ends.
   Future<void> _downloadAndApply(FontModel font) async {
@@ -254,7 +254,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
   Widget build(BuildContext context) {
     // Watch both controllers: the manifest arrives from an async provider (the list is
     // otherwise empty until something else rebuilds) and an activation from anywhere has
-    // to move the 当前使用中 mark.
+    // to move the in use mark.
     ref.watch(fontSettingsControllerProvider);
     ref.watch(danmakuSettingsControllerProvider);
 

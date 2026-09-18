@@ -42,7 +42,7 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
     super.dispose();
   }
 
-  /// Followed rooms that are live now; a replay is not "已开播".
+  /// Followed rooms that are live now; a replay is not "is live".
   List<LiveRoom> _liveRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
     return [
@@ -53,7 +53,7 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
   }
 
   /// Followed rooms that are replaying or recorded, matching the mobile page's
-  /// 录播 tab (`effectiveLiveStatus == LiveStatus.replay`).
+  /// replay tab (`effectiveLiveStatus == LiveStatus.replay`).
   List<LiveRoom> _replayRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
     return [

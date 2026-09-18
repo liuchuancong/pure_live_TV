@@ -46,7 +46,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
 
   /// Cover cache key for the current cache epoch.
   ///
-  /// 刷新直播缩略图 clears the encoded-image cache and bumps the epoch; folding
+  /// refresh live thumbnails clears the encoded-image cache and bumps the epoch; folding
   /// it into the key is what makes the visible covers reload instead of keeping
   /// the bitmaps they already decoded.
   String get coverCacheKey {
@@ -122,7 +122,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                       child: CachedNetworkImage(
                         imageUrl: widget.room.cover,
                         cacheManager: CustomImageCacheManager.instance,
-                        // Rolling the cache epoch (缓存与数据管理 → 刷新直播缩略图)
+                        // Rolling the cache epoch (cache & data → refresh live thumbnails)
                         // re-keys the covers, so the refresh is visible instead of
                         // only freeing disk space.
                         cacheKey: coverCacheKey,

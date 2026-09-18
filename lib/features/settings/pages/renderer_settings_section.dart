@@ -5,12 +5,12 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
-/// 视频输出驱动(--vo).
+/// video output driver(--vo).
 ///
 /// The option list is `PlayerConsts.videoRenderersList`, i.e. exactly the list
 /// the mobile renderer page renders
 /// (`pure_live/lib/modules/settings/pages/renderer_settings.dart`), labels
-/// included (`VA-API（仅 Linux）`, `CACA（macOS / Linux）`, ...). The Windows,
+/// included (`VA-API (Linux)`, `CACA (macOS/Linux)`, ...). The Windows,
 /// Linux and macOS drivers are kept because the app's own platform contract
 /// (`PlayerConsts.videoOutputDrivers` / `mpvVideoOutputDriversForPlatform`)
 /// accepts them on every platform but iOS.

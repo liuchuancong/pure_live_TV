@@ -5,7 +5,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
-/// 音频输出驱动(--ao).
+/// audio output driver(--ao).
 ///
 /// The option list is `PlayerConsts.audioOutputDriversList`, i.e. exactly the
 /// list the mobile audio page renders

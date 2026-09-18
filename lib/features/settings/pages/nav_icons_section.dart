@@ -8,7 +8,7 @@ import 'package:pure_live/shared/consts/icon_catalog.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// 导航与显示设置 — 图标: which icon each side-menu entry shows.
+/// navigation & display — icons: which icon each side-menu entry shows.
 ///
 /// One row per entry (hidden ones included: the icon is remembered for whenever
 /// the entry comes back), with the icon picker opened on OK. A null result from

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
-/// 自动刷新设置, in the mobile page's shape: one group, the interval hidden while
+/// auto-refresh, in the mobile page's shape: one group, the interval hidden while
 /// auto refresh is off, then the concurrency.
 class RefreshSettingsSectionPage extends ConsumerWidget {
   const RefreshSettingsSectionPage({super.key});
@@ -18,7 +18,7 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
   /// The stored interval is always offered.
   ///
   /// It used to be mapped through a five-entry table, so a value migrated from
-  /// the mobile app (60, say) was displayed as 30 分钟 while still storing 60 —
+  /// the mobile app (60, say) was displayed as 30 min while still storing 60 -
   /// the row showed something other than what the app used.
   static List<int> _intervalsFor(int stored) {
     if (_intervalChoices.contains(stored)) return _intervalChoices;

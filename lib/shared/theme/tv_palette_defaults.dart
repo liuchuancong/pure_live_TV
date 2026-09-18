@@ -5,7 +5,7 @@ import 'package:pure_live/shared/theme/index.dart';
 /// letting the Material layer decide.
 ///
 /// A `Text` or `Icon` with no colour of its own inherits from the Material theme,
-/// whose foreground in 浅色 mode is black — while the surfaces around it (cards,
+/// whose foreground in light mode is black — while the surfaces around it (cards,
 /// panels, the wallpaper wash) come from the palette. That mismatch is what left the
 /// shared widgets with unreadable black text and black icons in light mode.
 ///

@@ -38,7 +38,7 @@ class CCCatalog {
     final config = _map(_envelope(configPayload)['result']);
     if (config['id'] != configurationId) throw const FormatException('Mismatched CC configuration');
     if (_hidden(config)) return [];
-    // '直播入口列表' is the Chinese key CC returns for the live entry list.
+    // '直播入口列表' is the literal Chinese key CC returns for the live entry list.
     final groups = _list(config['itemList'], 256)
         .map(_map)
         .where((row) => row['name'] == '直播入口列表')

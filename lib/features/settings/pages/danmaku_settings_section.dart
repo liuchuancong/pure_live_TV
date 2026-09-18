@@ -111,7 +111,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
                 displayValue: '${(state.danmakuArea * 100).toStringAsFixed(0)}%',
                 onChanged: (v) => update((s) => s.copyWith(danmakuArea: v)),
               ),
-              // 顶部/底部距离 are pixel insets in the engine (`topAreaDistance` /
+              // top/bottom inset are pixel insets in the engine (`topAreaDistance` /
               // `bottomAreaDistance`), not ratios: the page used to hand 0.0-0.8 to a
               // field measured in pixels, so the slider rendered as "no change".
               TvSettingsSliderTile(

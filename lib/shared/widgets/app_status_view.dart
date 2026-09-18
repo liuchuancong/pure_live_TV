@@ -121,7 +121,7 @@ class _TvDefaultLoadingRingState extends State<TvDefaultLoadingRing> with Single
 /// `RRect.fromRectAndRadius`, which asserts `radius >= 0`: below 25 logical pixels the
 /// value is negative and painting throws out of `dart:ui/geometry.dart`
 /// (`assert(tlRadiusX >= 0)`). The loading-style picker previews at `44.w`/`30.w`,
-/// which is under that on a small TV, so opening 主题设置 → 加载动画 crashed the page.
+/// which is under that on a small TV, so opening theme settings -> loading animation crashed the page.
 /// The preview scales whatever it is given with a `FittedBox`, so clamping the square
 /// here keeps the animation visible inside its tile at any size.
 const double _minWaveSpinnerSize = 30;
