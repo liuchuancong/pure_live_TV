@@ -8,48 +8,6 @@ part of 'home_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-
-@ProviderFor(myProfileMenuItem)
-final myProfileMenuItemProvider = MyProfileMenuItemProvider._();
-
-final class MyProfileMenuItemProvider
-    extends $FunctionalProvider<AppMenuItem, AppMenuItem, AppMenuItem>
-    with $Provider<AppMenuItem> {
-  MyProfileMenuItemProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'myProfileMenuItemProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$myProfileMenuItemHash();
-
-  @$internal
-  @override
-  $ProviderElement<AppMenuItem> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  AppMenuItem create(Ref ref) {
-    return myProfileMenuItem(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AppMenuItem value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AppMenuItem>(value),
-    );
-  }
-}
-
-String _$myProfileMenuItemHash() => r'71abac647355c41ad2874b5cc802553bce6efab0';
-
 /// Side menu entries in the order configured in settings, limited to the
 /// visible ones. An empty configuration shows every entry in default order.
 

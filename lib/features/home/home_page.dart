@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -16,16 +17,34 @@ import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   final bool keepAlive;
 
   const HomePage({super.key, this.keepAlive = true});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  /// One stable node per side-menu entry, so the opening highlight can be aimed
+  /// at the *selected* entry instead of whichever widget sits top-left.
+  final Map<int, FocusNode> _menuFocusNodes = {};
+
+  FocusNode _nodeFor(int index) => _menuFocusNodes.putIfAbsent(index, FocusNode.new);
+
+  @override
+  void dispose() {
+    for (final node in _menuFocusNodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentIndex = ref.watch(sideMenuIndexProvider);
     final menuList = ref.watch(sideMenuListProvider);
-    final myProfileItem = ref.watch(myProfileMenuItemProvider);
     final mySettingsItem = ref.watch(mySettingsMenuItemProvider);
     final isExpanded = ref.watch(isMenuExpandedProvider);
     final currentTvTheme = context.tvTheme;
@@ -33,7 +52,7 @@ class HomePage extends ConsumerWidget {
     // page cache off so every switch rebuilds the content fresh (and clears
     // cached tab state after nav/platform config changes).
     final bool effectiveKeepAlive =
-        keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
+        widget.keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
 
     // A menu entry hidden in 导航显示 while its page is on screen leaves the
     // sidebar with no selection and the old page lingering. Auto-correct once
@@ -41,7 +60,6 @@ class HomePage extends ConsumerWidget {
     // page, whatever the menu order), otherwise to the first visible entry.
     final visibleIndexes = menuList.map((item) => item.index).toSet();
     final currentIndexVisible =
-        currentIndex == TvMenuType.profile.value ||
         currentIndex == TvMenuType.settings.value ||
         visibleIndexes.contains(currentIndex);
     if (!currentIndexVisible && visibleIndexes.isNotEmpty) {
@@ -56,7 +74,6 @@ class HomePage extends ConsumerWidget {
     final sidebarWidth = isExpanded ? 200.sp : 110.sp;
 
     final cacheableTypes = [
-      TvMenuType.profile,
       TvMenuType.favorite,
       TvMenuType.hot,
       TvMenuType.areas,
@@ -76,7 +93,11 @@ class HomePage extends ConsumerWidget {
         if (didPop) return;
         showExitConfirmDialog(context, ref);
       },
+      // The opening highlight claims the selected entry's own node, so the app
+      // opens with the remote on 关注 (or whatever the menu lands on) instead of
+      // on the header widgets above the list.
       child: TvScaffold(
+        openingFocus: _nodeFor(currentIndex),
         child: Row(
           children: [
             DpadRegion(
@@ -92,16 +113,43 @@ class HomePage extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: 24.sp),
                 child: Column(
                   children: [
+                    // The clock sits above the backup entry, as the sidebar's
+                    // header: a TV left on the home screen is a wall clock too.
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 6.sp),
+                      child: TvDigitalClock(
+                        style: AppTextStyles.t28W600.copyWith(
+                          color: currentTvTheme.primaryTextColor,
+                          height: 1,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                    if (isExpanded)
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 16.sp),
+                        child: TvDigitalClock(
+                          format: 'yyyy/MM/dd',
+                          style: AppTextStyles.t14W500.copyWith(
+                            color: currentTvTheme.secondaryTextColor,
+                            height: 1,
+                          ),
+                        ),
+                      ),
                     Padding(
                       padding: EdgeInsets.only(bottom: 14.sp),
                       child: _buildAdaptiveItem(
                         ref: ref,
-                        item: myProfileItem,
+                        item: AppMenuItem(
+                          index: TvMenuType.settings.value,
+                          title: i18n('backup_manage'),
+                          icon: Icons.backup_outlined,
+                        ),
                         isExpanded: isExpanded,
-                        isSelected: currentIndex == myProfileItem.index,
-                        onTap: () => ref
-                            .read(sideMenuIndexProvider.notifier)
-                            .changeIndex(myProfileItem.index),
+                        isSelected: false,
+                        // The sidebar slot the mobile app spent on 我的账户 now
+                        // opens the settings page's 备份管理 directly.
+                        onTap: () => const BackupRoute().push(context),
                       ),
                     ),
                     const Spacer(),
@@ -116,6 +164,7 @@ class HomePage extends ConsumerWidget {
                           item: item,
                           isExpanded: isExpanded,
                           isSelected: isSelected,
+                          focusNode: _nodeFor(item.index),
                           onTap: () => ref
                               .read(sideMenuIndexProvider.notifier)
                               .changeIndex(item.index),
@@ -143,6 +192,7 @@ class HomePage extends ConsumerWidget {
                       item: mySettingsItem,
                       isExpanded: isExpanded,
                       isSelected: currentIndex == mySettingsItem.index,
+                      focusNode: _nodeFor(mySettingsItem.index),
                       // Settings opens as its own page (title bar, back button
                       // and the configuration-preview action), like the desktop
                       // app, instead of swapping the content pane.
@@ -238,6 +288,7 @@ class HomePage extends ConsumerWidget {
     required bool isExpanded,
     required bool isSelected,
     required VoidCallback onTap,
+    FocusNode? focusNode,
   }) {
     if (isExpanded) {
       return Container(
@@ -251,6 +302,7 @@ class HomePage extends ConsumerWidget {
               isSecondary: !isSelected,
               selected: isSelected,
               useFadedFocus: true,
+              focusNode: focusNode,
               onTap: onTap,
             ),
           )
@@ -270,6 +322,7 @@ class HomePage extends ConsumerWidget {
       size: TvIconButtonSize.medium,
       useFadedFocus: true,
       isSecondary: !isSelected,
+      focusNode: focusNode,
       onTap: onTap,
     );
   }
@@ -279,19 +332,7 @@ class HomePage extends ConsumerWidget {
     WidgetRef ref,
     TvMenuType type,
   ) {
-    final currentTvTheme = context.tvTheme;
-    final myProfileItem = ref.watch(myProfileMenuItemProvider);
-
     switch (type) {
-      case TvMenuType.profile:
-        return Center(
-          child: Text(
-            myProfileItem.title,
-            style: AppTextStyles.t28W600.copyWith(
-              color: currentTvTheme.primaryTextColor,
-            ),
-          ),
-        );
       case TvMenuType.settings:
         return const SettingsCatalogView();
       case TvMenuType.favorite:

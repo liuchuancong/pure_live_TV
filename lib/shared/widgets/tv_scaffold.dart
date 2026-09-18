@@ -23,15 +23,20 @@ import 'package:pure_live/shared/widgets/tv_page_shell.dart';
 /// genuinely shared: the transparent page background, "a covered page offers no focus",
 /// and the opening highlight on the first row.
 class TvScaffold extends StatelessWidget {
-  const TvScaffold({super.key, required this.child, this.openingRegion});
+  const TvScaffold({super.key, required this.child, this.openingRegion, this.openingFocus});
 
   final Widget child;
 
   /// See [TvPageShell.openingRegion] — the region the opening highlight claims.
   final GlobalKey<DpadRegionState>? openingRegion;
 
+  /// See [TvPageShell.openingFocus] — an exact node the opening highlight
+  /// claims (the home page aims it at the selected side-menu entry).
+  final FocusNode? openingFocus;
+
   @override
-  Widget build(BuildContext context) => TvPageShell(openingRegion: openingRegion, child: child);
+  Widget build(BuildContext context) =>
+      TvPageShell(openingRegion: openingRegion, openingFocus: openingFocus, child: child);
 }
 
 /// The background for the entire app: one instance, mounted below the Navigator.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:pure_live/player/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -32,6 +34,35 @@ class TvVideoSurface extends ConsumerStatefulWidget {
 }
 
 class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
+  /// Wall clock for the top bar, refreshed every 10s.
+  ///
+  /// A live stream has no duration, so "time" on a TV player means the current
+  /// time of day — the thing a viewer glances up for.
+  String _clockText = '';
+
+  Timer? _clockTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _tickClock();
+    _clockTimer = Timer.periodic(const Duration(seconds: 10), (_) => _tickClock());
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
+
+  void _tickClock() {
+    if (!mounted) return;
+    final DateTime now = DateTime.now();
+    setState(() {
+      _clockText = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    });
+  }
+
   /// The player manager, or null until [GlobalPlayerService] has finished
   /// initializing.
   ///
@@ -107,10 +138,9 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                 ],
               ),
             ),
-          // 房间信息 lives at the top of the screen, as in the reference player:
-          // channel, streamer, platform, quality and line. The danmaku list that
-          // used to sit in a side panel is gone — the danmaku are on the screen
-          // already.
+          // 房间信息 lives at the top of the screen, as in the reference player
+          // — but as a proper TV top bar, not a single 16sp text line: avatar,
+          // title, streamer with a platform badge, the wall clock, and 返回.
           if (!showError && state.room != null)
             Positioned(
               left: 0,
@@ -118,24 +148,76 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
               top: 0,
               child: IgnorePointer(
                 child: Container(
-                  height: 48.sp,
-                  padding: EdgeInsets.symmetric(horizontal: 24.sp),
-                  color: Colors.black.withValues(alpha: 0.45),
+                  padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 10.sp),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.black.withValues(alpha: 0.75), Colors.black.withValues(alpha: 0.0)],
+                    ),
+                  ),
                   child: Row(
                     children: [
+                      TvCommonAvatar(avatarUrl: state.room!.avatar, fallbackName: state.room!.nick, radius: 24.sp),
+                      SizedBox(width: 16.sp),
                       Expanded(
-                        child: Text(
-                          <String>[
-                            state.room!.title,
-                            if (state.room!.nick.isNotEmpty) state.room!.nick,
-                            if (state.room!.platform.isNotEmpty) state.room!.platform,
-                            if (state.qualities.isNotEmpty) state.room!.platform.isEmpty ? '' : '',
-                          ].where((part) => part.isNotEmpty).join('  ·  '),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t16W500.copyWith(color: Colors.white),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              state.room!.title.trim().isNotEmpty ? state.room!.title.trim() : i18n('untitled_room'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.t24W600.copyWith(color: Colors.white),
+                            ),
+                            SizedBox(height: 4.sp),
+                            Row(
+                              children: [
+                                if (state.room!.nick.isNotEmpty) ...[
+                                  Flexible(
+                                    child: Text(
+                                      state.room!.nick,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                                    ),
+                                  ),
+                                  SizedBox(width: 10.sp),
+                                ],
+                                if (state.room!.platform.isNotEmpty)
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 2.sp),
+                                    decoration: BoxDecoration(
+                                      color: tvTheme.focusColor.withValues(alpha: 0.25),
+                                      borderRadius: BorderRadius.circular(6.sp),
+                                      border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.8)),
+                                    ),
+                                    child: Text(
+                                      state.room!.platform.toUpperCase(),
+                                      style: AppTextStyles.t14W600.copyWith(color: Colors.white),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
+                      SizedBox(width: 16.sp),
+                      // Wall clock: a live stream has no duration, so the time a
+                      // viewer glances up for is the time of day.
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.schedule_rounded, size: 22.sp, color: Colors.white70),
+                          SizedBox(width: 6.sp),
+                          Text(
+                            _clockText,
+                            style: AppTextStyles.t22W600.copyWith(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 16.sp),
                       // 返回 sits at the top and is clearly labelled: Back on the
                       // remote does the same thing (it closes the option list, then
                       // the panel, then the controls).
@@ -157,7 +239,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                             ),
                           ],
                         ),
-                      ),                    ],
+                      ),
+                    ],
                   ),
                 ),
               ),

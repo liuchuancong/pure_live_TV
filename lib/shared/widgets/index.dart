@@ -33,3 +33,4 @@ export 'tv_tab_bar.dart';
 export 'tv_tab_view.dart';
 export 'widget_extensions.dart';
 export 'number_leading.dart';
+export 'tv_digital_clock.dart';

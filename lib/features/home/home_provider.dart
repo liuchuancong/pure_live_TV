@@ -14,8 +14,11 @@ part 'home_provider.g.dart';
 /// value of its own entry. A mismatch used to make the settings entry select
 /// `-2`, which matched nothing and silently fell back to [favorite], so the
 /// settings button opened the followed-rooms page.
+///
+/// `profile` is gone: the slot the mobile app spent on 我的账户 is the home
+/// sidebar's 备份 header now, which pushes the backup page instead of swapping
+/// the content pane, so it never participates in the menu index.
 enum TvMenuType {
-  profile(-1),
   favorite(0),
   hot(1),
   areas(2),
@@ -45,16 +48,6 @@ class AppMenuItem {
   final IconData icon;
 
   AppMenuItem({required this.index, required this.title, required this.icon});
-}
-
-@riverpod
-AppMenuItem myProfileMenuItem(Ref ref) {
-  return AppMenuItem(
-    index: TvMenuType.profile.value,
-    title: i18n('ui_my_account'),
-    // The icon picker may have re-pointed this entry at another icon.
-    icon: ref.watch(menuIconOverridesProvider)['profile'] ?? Icons.account_circle_outlined,
-  );
 }
 
 /// Side menu entries in the order configured in settings, limited to the

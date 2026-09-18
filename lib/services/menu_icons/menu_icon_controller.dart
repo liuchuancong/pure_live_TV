@@ -6,7 +6,6 @@ import 'package:pure_live/shared/utils/hive_pref_util.dart';
 
 /// Menu entries whose icon the user may replace from the icon picker.
 List<String> iconCustomisableMenuIds() => <String>[
-  'profile',
   for (final HomeMenu menu in HomeMenu.values) menu.id,
   'settings',
 ];

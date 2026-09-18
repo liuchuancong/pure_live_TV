@@ -107,7 +107,8 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   (
     titleKey: 'backup_manage',
     entries: <SettingsEntry>[
-      (path: AppRoutes.kBackup, titleKey: 'backup_recover', subtitleKey: 'backup_recover_desc', icon: Remix.cloud_line),
+      (path: AppRoutes.kBackup, titleKey: 'backup_recover', subtitleKey: 'backup_recover_desc',
+       icon: Icons.settings_backup_restore_rounded),
     ],
   ),
   // The desktop app reaches 关于 from its overflow menu; this app has no such

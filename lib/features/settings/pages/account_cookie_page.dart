@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:tv_textfield/tv_textfield.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
@@ -15,13 +17,12 @@ import 'package:pure_live/features/settings/pages/account_settings_section.dart'
 /// then two columns — the code-scanning way in on the left, the typed way in on
 /// the right — so both are visible at once and either works with a remote.
 ///
-/// * **扫码** — for every platform with a bundled phone page: the TV starts its
-///   LAN remote and shows that platform's phone page as a QR. The phone opens
-///   it, pastes the cookie, and the push lands in this page's own state.
+/// * **扫码** — every platform has a phone page now: the bundled web remote has
+///   a per-platform cookie route (`/#/cookie/<site>`), so the QR opens it on the
+///   phone, the cookie is pasted there, and the push lands in this page's own
+///   state. Bilibili's left column is its native device-QR sign-in instead (see
+///   [AccountBilibiliPage]).
 /// * **手动输入** — a multiline field for a cookie pasted with any other remote.
-/// * Bilibili replaces the left column with its native device-QR sign-in (see
-///   [AccountBilibiliPage]); scanning there logs the account in rather than
-///   pasting a cookie.
 class AccountCookiePage extends ConsumerStatefulWidget {
   const AccountCookiePage({super.key, required this.platform, this.loginPanel});
 
@@ -36,13 +37,13 @@ class AccountCookiePage extends ConsumerStatefulWidget {
 
 class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
   late final TextEditingController _controller;
+  late final FocusNode _fieldFocus;
 
   String _baseline = '';
   String _message = '';
   bool _dirty = false;
 
-  /// The platform's phone page, empty until the LAN remote is up (or when this
-  /// platform has no phone page at all).
+  /// The platform's phone page, empty until the LAN remote is up.
   String _phoneUrl = '';
   bool _phoneStarting = false;
 
@@ -55,14 +56,13 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
         final bool dirty = _controller.text.trim() != _baseline;
         if (dirty != _dirty) setState(() => _dirty = dirty);
       });
-    // Every platform that has a phone page shows its QR — including Bilibili,
-    // whose own sign-in is the left block but whose phone page still accepts a
-    // pasted cookie.
+    _fieldFocus = FocusNode(debugLabel: 'CookieField');
     WidgetsBinding.instance.addPostFrameCallback((_) => _startPhoneBridge());
   }
 
   @override
   void dispose() {
+    _fieldFocus.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -72,8 +72,6 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     if (!mounted) return;
     setState(() => _phoneStarting = true);
     try {
-      final String path = widget.platform.webPath ?? '';
-      if (path.isEmpty) return;
       final notifier = ref.read(tvRemoteReceiverProvider.notifier);
       ServerState? server = ref.read(tvRemoteReceiverProvider).value;
       if (server?.isRunning != true) {
@@ -83,7 +81,10 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       }
       if (!mounted) return;
       if (server?.isRunning == true) {
-        setState(() => _phoneUrl = '${server!.serverUrl}$path');
+        // The web remote's per-platform cookie route: it exists for every
+        // platform the app carries a cookie for, so no site is left without a
+        // phone-side way in.
+        setState(() => _phoneUrl = '${server!.serverUrl}/#/cookie/${widget.platform.siteId}');
       } else {
         setState(() => _message = i18n('remote_service_unavailable'));
       }
@@ -194,7 +195,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                                   // bridge sits on top of the typed way in instead of
                                   // being a column of its own.
                                   if (widget.loginPanel != null) ...[_buildScanPanel(theme), SizedBox(height: 24.h)],
-                                  _buildManualPanel(theme, configured, current),
+                                  _buildManualPanel(theme, configured),
                                 ],
                               ),
                             ),
@@ -225,14 +226,21 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
         SizedBox(height: 12.sp),
         Text(widget.platform.name, style: AppTextStyles.t28W600.copyWith(color: theme.primaryTextColor)),
         SizedBox(height: 6.sp),
-        Text(
-          configured
-              ? i18n(
-                  'cookie_state_set',
-                  args: {'count': '${widget.platform.read(ref.read(cookieControllerProvider)).length}'},
-                )
-              : i18n('not_set'),
-          style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 4.sp),
+          decoration: BoxDecoration(
+            color: (configured ? theme.focusColor : theme.secondaryTextColor).withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(999.sp),
+          ),
+          child: Text(
+            configured
+                ? i18n(
+                    'cookie_state_set',
+                    args: {'count': '${widget.platform.read(ref.read(cookieControllerProvider)).length}'},
+                  )
+                : i18n('not_set'),
+            style: AppTextStyles.t14W500.copyWith(color: configured ? theme.focusColor : theme.secondaryTextColor),
+          ),
         ),
       ],
     );
@@ -240,20 +248,13 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
 
   /// The scan block: the phone page of this platform as a QR code.
   Widget _buildScanPanel(TvThemeData theme) {
-    final bool hasPhonePage = (widget.platform.webPath ?? '').isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TvSettingsGroupTitle(title: i18n('phone_sync_title')),
         TvSettingsCard(
           children: [
-            if (!hasPhonePage)
-              TvSettingsRow(
-                title: i18n('set_cookie'),
-                subtitle: i18n('cookie_no_phone_page'),
-                icon: Icons.qr_code_2_rounded,
-              )
-            else if (_phoneUrl.isEmpty)
+            if (_phoneUrl.isEmpty)
               SizedBox(
                 height: 220.h,
                 child: AppStatusView(
@@ -283,8 +284,8 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     );
   }
 
-  /// The right column: type or paste the cookie.
-  Widget _buildManualPanel(TvThemeData theme, bool configured, String current) {
+  /// The right column: type or paste the cookie, then save or clear.
+  Widget _buildManualPanel(TvThemeData theme, bool configured) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -292,35 +293,139 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
         TvSettingsCard(
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: TvInputField(controller: _controller, hint: widget.platform.hint, maxLines: 5),
+              padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 4.h),
+              child: _CookieField(
+                controller: _controller,
+                focusNode: _fieldFocus,
+                hint: widget.platform.hint,
+              ),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Text(
-                i18n('cookie_tip', args: {'name': widget.platform.name}),
-                style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      i18n('cookie_tip', args: {'name': widget.platform.name}),
+                      style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor),
+                    ),
+                  ),
+                  SizedBox(width: 12.sp),
+                  Text(
+                    '${_controller.text.length}',
+                    style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor.withValues(alpha: 0.7)),
+                  ),
+                ],
               ),
             ),
-            TvSettingsOptionTile(
-              title: i18n('save'),
-              subtitle: _dirty ? i18n('unsaved_changes') : null,
-              icon: Remix.save_3_line,
-              options: [i18n('save')],
-              index: 0,
-              onChanged: (_) => _saveManually(),
-            ),
-            if (configured)
-              TvSettingsOptionTile(
-                title: i18n('clear'),
-                icon: Remix.delete_bin_6_line,
-                options: [i18n('clear')],
-                index: 0,
-                onChanged: (_) => _clear(),
+            SizedBox(height: 10.h),
+            // 保存 / 清空 as real buttons, centred under the field: the rows
+            // they replaced read as settings entries, not as the actions of the
+            // text above them.
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TvButton(
+                    title: i18n('save'),
+                    size: TvButtonSize.medium,
+                    icon: Icon(Remix.save_3_line, size: 20.sp),
+                    onTap: _dirty ? _saveManually : null,
+                  ),
+                  SizedBox(width: 20.sp),
+                  if (configured)
+                    TvButton(
+                      title: i18n('clear'),
+                      size: TvButtonSize.medium,
+                      isSecondary: true,
+                      icon: Icon(Remix.delete_bin_6_line, size: 20.sp),
+                      onTap: _clear,
+                    ),
+                ],
               ),
+            ),
+            SizedBox(height: 6.h),
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The cookie editor: [TvTextField] (flutter backend) inside one single frame.
+///
+/// The field it replaces stacked an app frame around a filled [InputDecorator]
+/// around another container — three boxes with their own edges, which read as a
+/// doubled ("ghosted") field on TV. Here the package's decoration is fully
+/// transparent (no border, no fill) and the one [AnimatedContainer] owns the
+/// background, the radius and the focus ring, so exactly one box is drawn.
+class _CookieField extends StatefulWidget {
+  const _CookieField({required this.controller, required this.focusNode, required this.hint});
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final String hint;
+
+  @override
+  State<_CookieField> createState() => _CookieFieldState();
+}
+
+class _CookieFieldState extends State<_CookieField> {
+  bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_handleFocus);
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_handleFocus);
+    super.dispose();
+  }
+
+  void _handleFocus() {
+    if (mounted) setState(() => _focused = widget.focusNode.hasFocus);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final Color fill = _focused ? theme.focusedCardColor : theme.backgroundColor;
+    final Color text = TvThemeData.readableOn(fill);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOutCubic,
+      padding: EdgeInsets.symmetric(horizontal: 18.sp, vertical: 14.sp),
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(14.sp),
+        border: Border.all(color: _focused ? theme.focusColor : theme.secondaryTextColor.withValues(alpha: 0.25), width: 2.sp),
+      ),
+      child: TvTextField(
+        controller: widget.controller,
+        focusNode: widget.focusNode,
+        implementation: TvTextFieldImplementation.flutter,
+        // The frame above is the only decoration; anything the package draws
+        // here would be the second, "ghost" one.
+        focusDecoration: const BoxDecoration(),
+        minLines: 4,
+        maxLines: 6,
+        style: TextStyle(color: text, fontSize: 24.sp, height: 1.4),
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          hintStyle: TextStyle(color: text.withValues(alpha: 0.4), fontSize: 22.sp),
+          isDense: true,
+          isCollapsed: true,
+          contentPadding: EdgeInsets.zero,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          filled: false,
+        ),
+      ),
     );
   }
 }
@@ -344,8 +449,8 @@ class CookiePlatform {
   final String Function(CookieModel) read;
   final ValueChanged<String> apply;
 
-  /// Phone-remote page for this platform, or null when the bundled phone pages
-  /// have none — the page then offers manual input only.
+  /// Phone-remote page for this platform. Kept for the router's descriptor;
+  /// the page itself builds the per-platform phone route from [siteId].
   final String? webPath;
 }
 

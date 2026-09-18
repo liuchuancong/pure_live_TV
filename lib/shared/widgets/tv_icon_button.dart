@@ -22,6 +22,10 @@ class TvIconButton extends StatelessWidget {
   final bool selected;
   final bool useFadedFocus;
 
+  /// The node the button focuses by; owned by the caller when given (the home
+  /// sidebar names its items' nodes so the opening highlight can pick one).
+  final FocusNode? focusNode;
+
   const TvIconButton({
     super.key,
     required this.icon,
@@ -31,6 +35,7 @@ class TvIconButton extends StatelessWidget {
     this.isSecondary = false,
     this.selected = false,
     this.useFadedFocus = false,
+    this.focusNode,
   });
 
   @override
@@ -42,6 +47,7 @@ class TvIconButton extends StatelessWidget {
     return UnconstrainedBox(
       child: DpadFocusable(
         autofocus: autofocus,
+        focusNode: focusNode,
         onSelect: onTap,
         effects: [
           ...TvFocusStyle.effects(activeTheme, borderRadius, scale: 1.08),
