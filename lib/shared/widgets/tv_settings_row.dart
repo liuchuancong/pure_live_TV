@@ -48,6 +48,18 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
     final borderRadius = BorderRadius.circular(14.sp);
 
     final List<DpadEffect> effects = [
+      // Same focus recipe as TvRoomCard: a gentle scale plus the accent glow
+      // (crisp ring on light palettes), so settings rows and room cards glow
+      // identically.
+      DpadScaleEffect(
+        scale: 1.01,
+        pressedScale: 0.98,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+      ),
+      tvTheme.isLight
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
+          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((ctx, state, _) {
         final bool focused = state.focused;
         final bool pressed = state.pressed;
@@ -74,15 +86,6 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
               color: focused ? tvTheme.focusedCardColor : Colors.transparent,
               borderRadius: borderRadius,
               border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-              boxShadow: [
-                BoxShadow(
-                  color: focused
-                      ? accent.withValues(alpha: tvTheme.isLight ? 1.0 : 0.75)
-                      : accent.withValues(alpha: 0.0),
-                  blurRadius: focused ? (tvTheme.isLight ? 0 : 18.sp) : 0,
-                  spreadRadius: focused ? (tvTheme.isLight ? 2.sp : 1.5.sp) : 0,
-                ),
-              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

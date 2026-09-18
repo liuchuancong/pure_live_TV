@@ -26,22 +26,23 @@ class TvSettingsCard extends StatelessWidget {
     final validChildren = children.where((w) => w is! SizedBox || w.child != null).toList();
     final BorderRadius radius = BorderRadius.circular(20.sp);
 
-    return ClipRRect(
-      borderRadius: radius,
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: tvTheme.cardColor.withValues(alpha: 0.05),
-          borderRadius: radius,
-          border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.sp),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.sp, horizontal: 4.sp),
-          child: Column(
-            children: List.generate(validChildren.length, (index) {
-              return Column(children: [validChildren[index]]);
-            }),
-          ),
+    // No clipping: the antiAlias clip cut off every row's d-pad focus glow
+    // (the glow is painted outside the row's bounds, the card clipped it back
+    // to the card edge — visibly "this button has no effect"). The rows keep
+    // their own 14sp radius inset by the 4sp padding, which sits inside the
+    // card's 20sp corner curve, so nothing needs clipping to look right.
+    return Container(
+      decoration: BoxDecoration(
+        color: tvTheme.cardColor.withValues(alpha: 0.05),
+        borderRadius: radius,
+        border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.sp),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 4.sp, horizontal: 4.sp),
+        child: Column(
+          children: List.generate(validChildren.length, (index) {
+            return Column(children: [validChildren[index]]);
+          }),
         ),
       ),
     );
