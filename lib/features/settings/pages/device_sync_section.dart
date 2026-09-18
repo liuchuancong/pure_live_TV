@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:pure_live/features/remote/models/server_state.dart';
-import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -11,12 +10,12 @@ import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:tv_remote_kit/tv_remote_kit.dart';
 
-/// 设备同步 — the TV end of the LAN sync.
+/// 设备同步 — the TV end of the LAN sync, and nothing else.
 ///
-/// Two halves live here. The 8888 web-remote row is unchanged. Below it, the
-/// [TvRemoteKit] service (bonsoir broadcast + discovery, HTTP on 39888) shows
-/// its own pairing QR, lists the peers discovered on the LAN, and pushes/pulls
-/// full settings documents between devices.
+/// One job per group: 连接 (the pairing QR and this TV's address), 局域网设备
+/// (the peers discovered on the LAN, each with its own push action), 导入 (pull
+/// by address). The old 8888 web-remote restart row lived here too; that
+/// service is started with the page and is not part of this page's UI.
 class DeviceSyncSectionPage extends ConsumerStatefulWidget {
   const DeviceSyncSectionPage({super.key});
 
@@ -25,28 +24,18 @@ class DeviceSyncSectionPage extends ConsumerStatefulWidget {
 }
 
 class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
-  bool _starting = false;
   bool _syncing = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureRunning());
-  }
-
-  Future<void> _ensureRunning() async {
-    final ServerState? server = ref.read(tvRemoteReceiverProvider).value;
-    if (server?.isRunning == true || _starting) return;
-    await _restart();
-  }
-
-  Future<void> _restart() async {
-    setState(() => _starting = true);
-    final notifier = ref.read(tvRemoteReceiverProvider.notifier);
-    await notifier.stopServer();
-    await notifier.startServer();
-    if (!mounted) return;
-    setState(() => _starting = false);
+    // The 8888 web-remote carries the search/room/movie pushes from the phone
+    // app; make sure it is up while a sync page is on screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final server = ref.read(tvRemoteReceiverProvider).value;
+      if (server?.isRunning == true) return;
+      await ref.read(tvRemoteReceiverProvider.notifier).startServer();
+    });
   }
 
   Future<void> _pushTo(RemoteSyncDevice device) async {
@@ -80,43 +69,53 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
     ToastUtil.show(ok ? i18n('webdav_sync_success') : i18n('ui_import_failed_or_file_not_found'));
   }
 
+  IconData _platformIcon(String platform) {
+    switch (platform.toLowerCase()) {
+      case 'android':
+      case 'ios':
+        return Icons.smartphone_rounded;
+      case 'windows':
+      case 'macos':
+      case 'linux':
+        return Icons.computer_rounded;
+      default:
+        return Icons.tv_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final ServerState? server = ref.watch(tvRemoteReceiverProvider).value;
-    final bool running = server?.isRunning == true;
-    final String url = running ? (server?.serverUrl ?? '') : '';
+    final snapshot = ref.watch(remoteSyncControllerProvider);
+    final devices = snapshot.devices;
     final theme = context.tvTheme;
-    final syncSnapshot = ref.watch(remoteSyncControllerProvider);
-    final devices = syncSnapshot.devices;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TvSettingsGroupTitle(title: i18n('remote_sync')),
+        // -- 连接 -----------------------------------------------------------
+        TvSettingsGroupTitle(title: i18nOr('remote_sync_connect', 'Connect a phone')),
         TvSettingsCard(
           children: [
             TvSettingsRow(
-              title: i18n('remote_sync'),
-              subtitle: running
-                  ? url
-                  : (_starting ? i18n('ui_loading') : (server?.error ?? i18n('remote_service_unavailable'))),
+              title: i18nOr('remote_sync_service', 'LAN sync service'),
+              subtitle: snapshot.started
+                  ? snapshot.webAddress
+                  : (snapshot.error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...')),
               icon: Icons.wifi_tethering_rounded,
-              trailingBuilder: (context, focused) =>
-                  tvSettingsValueLabel(context, focused, running ? i18n('ui_running') : i18n('ui_stopped')),
-              onSelect: _starting ? null : () => unawaited(_restart()),
+              trailingBuilder: (context, focused) => tvSettingsValueLabel(
+                context,
+                focused,
+                snapshot.started ? i18n('ui_running') : i18n('ui_stopped'),
+              ),
+              onSelect: snapshot.started ? null : () => unawaited(ref.read(remoteSyncControllerProvider.notifier).restart()),
             ),
           ],
         ),
         SizedBox(height: 16.h),
-        Text(
-          i18n('remote_sync_subtitle'),
-          style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
-        ),
-        SizedBox(height: 16.h),
-        // The native pairing QR: the phone app scans it, or types the address.
         Center(child: RemoteSyncQrCard(width: 280)),
         SizedBox(height: 24.h),
-        // Discovered peers: selecting a row pushes this device's settings to it.
+
+        // -- 局域网设备 -------------------------------------------------------
         TvSettingsGroupTitle(title: i18nOr('remote_sync_devices', 'Devices on this network')),
         TvSettingsCard(
           children: [
@@ -129,18 +128,50 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                 ),
               )
             else
+              // Device rows are plain information — no focus, no selection. The
+              // only focusable thing per device is its push button, so a device
+              // list that refreshes can never steal the d-pad highlight.
               for (final device in devices)
-                TvSettingsRow(
-                  title: device.name,
-                  subtitle: '${device.address} · ${device.platform}',
-                  icon: Icons.devices_rounded,
-                  trailingBuilder: (context, focused) => tvSettingsValueLabel(
-                    context,
-                    focused,
-                    _syncing ? i18n('ui_loading') : i18nOr('remote_sync_push', 'Push settings'),
+                Padding(
+                  key: ValueKey(device.id),
+                  padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 10.h),
+                  child: Row(
+                    children: [
+                      Icon(_platformIcon(device.platform), size: 22.sp, color: theme.secondaryTextColor),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(device.name, style: AppTextStyles.t16W500, maxLines: 1, overflow: TextOverflow.ellipsis),
+                            SizedBox(height: 2.h),
+                            Text(
+                              '${device.address} · ${device.platform.isEmpty ? '—' : device.platform}',
+                              style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      TvButton(
+                        title: _syncing ? i18n('ui_loading') : i18nOr('remote_sync_push', 'Push settings'),
+                        size: TvButtonSize.small,
+                        isSecondary: true,
+                        onTap: _syncing ? null : () => unawaited(_pushTo(device)),
+                      ),
+                    ],
                   ),
-                  onSelect: _syncing ? null : () => unawaited(_pushTo(device)),
                 ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+
+        // -- 导入 -----------------------------------------------------------
+        TvSettingsGroupTitle(title: i18nOr('remote_sync_import', 'Import')),
+        TvSettingsCard(
+          children: [
             TvSettingsRow(
               title: i18nOr('remote_sync_pull', 'Pull settings by address'),
               subtitle: i18nOr('remote_sync_pull_subtitle', 'Enter a peer address to import its settings'),

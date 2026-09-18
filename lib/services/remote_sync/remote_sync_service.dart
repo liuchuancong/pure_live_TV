@@ -212,25 +212,13 @@ class _AppSyncDelegate extends RemoteSyncDelegate {
   Future<bool> importSettings(Map<String, dynamic> settings) async {
     final backup = _ref.read(backupControllerProvider.notifier);
     try {
+      // The document's own platform markers decide the scope: a TV peer restores
+      // everything, a phone (or the web page's flat document) only contributes
+      // favorites, history, cookies and tags — BackupController enforces it.
       await backup.restoreAllSettings(settings);
       return true;
     } catch (_) {
-      // The phone's 同步TV数据 row posts a flat document rather than a
-      // sectioned backup; hand every section the whole map so each parser
-      // picks its own keys out of it.
-      try {
-        await backup.restoreAllSettings(<String, dynamic>{
-          'backupVersion': 1,
-          'danmaku': settings,
-          'favorite': settings,
-          'history': settings,
-          'cookie': settings,
-          'iptv': settings,
-        });
-        return true;
-      } catch (_) {
-        return false;
-      }
+      return false;
     }
   }
 

@@ -34,6 +34,28 @@ class BackupController extends _$BackupController {
     'tags',
   ];
 
+  /// Sections a document from a non-TV device (the phone app, the LAN web page)
+  /// is allowed to touch. A phone cannot know better than the TV about player
+  /// kernels, themes or proxy ports, so only user data travels.
+  static const List<String> nonTvAcceptedSections = <String>[
+    'favorite',
+    'history',
+    'cookie',
+    'tags',
+  ];
+
+  /// Whether [data] was produced by a TV build.
+  ///
+  /// The TV's own exports carry `platformIsTv: true`. Older TV builds only wrote
+  /// the sectioned format (`backupVersion`), which the phone app does not, so a
+  /// sectioned document without the marker is still trusted as a TV backup. A
+  /// flat document — the mobile app's format — is always a non-TV source.
+  static bool sourceIsTv(Map<String, dynamic> data) {
+    final marker = data['platformIsTv'];
+    if (marker is bool) return marker;
+    return data['backupVersion'] != null;
+  }
+
   /// The name a backup is written under, e.g. `purelive_2026-09-17T20_15_03.txt`.
   ///
   /// The mobile app's own name and extension (`BackupRecoveryService`), so the same file
@@ -98,6 +120,10 @@ class BackupController extends _$BackupController {
     final s = SettingsService.to;
     final data = <String, dynamic>{
       'backupVersion': backupVersion,
+      // Lets the receiver of this document tell a TV from a phone: a TV-to-TV
+      // transfer restores everything, anything else only the user-data sections.
+      'platform': Platform.operatingSystem,
+      'platformIsTv': true,
       'sensitiveDataIncluded': includeSensitiveData,
       'app': s.app.toJson(),
       'theme': s.theme.toJson(),
@@ -194,6 +220,41 @@ class BackupController extends _$BackupController {
       'page': s.page.importFromJson,
       'cookie': s.cookieManager.importFromJson,
     };
+
+    final sourceIsTv = BackupController.sourceIsTv(data);
+
+    // Non-TV source: only 关注 / 历史记录 / Cookie / 标签 may land — a phone
+    // must not rewrite the TV's own player, theme or proxy configuration.
+    if (!sourceIsTv) {
+      final tvParser = <String, void Function(Map<String, dynamic>)>{
+        'favorite': s.fav.importFromJson,
+        'history': s.history.importFromJson,
+        'cookie': s.cookieManager.importFromJson,
+      };
+      if (version == null) {
+        // Flat (mobile app) document: the accepted controllers read the whole map
+        // and pick their own keys; the tags live under the legacy key.
+        for (final parser in tvParser.values) {
+          parser(data);
+        }
+        final legacyTags = data['custom_tags_data'];
+        if (legacyTags is Map) {
+          s.tag.importFromJson(Map<String, dynamic>.from(legacyTags));
+        }
+        return;
+      }
+      // Sectioned document from a non-TV build.
+      for (final entry in tvParser.entries) {
+        if (data.containsKey(entry.key)) {
+          entry.value(Map<String, dynamic>.from(data[entry.key] ?? {}));
+        }
+      }
+      final tags = data['tags'];
+      if (tags is Map) {
+        s.tag.importFromJson(Map<String, dynamic>.from(tags));
+      }
+      return;
+    }
 
     if (version == null) {
       // Legacy flat backup: every controller reads the whole payload directly and
