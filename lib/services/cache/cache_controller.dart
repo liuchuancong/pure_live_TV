@@ -135,12 +135,12 @@ class CacheController extends _$CacheController {
     final clearing = _cacheClearOperation;
     if (clearing != null) {
       await clearing;
-      return state.cacheSizeMB;
+      return ref.mounted ? state.cacheSizeMB : 0;
     }
     final refreshing = _imageRefreshOperation;
     if (refreshing != null) {
       await refreshing;
-      return state.cacheSizeMB;
+      return ref.mounted ? state.cacheSizeMB : 0;
     }
 
     final active = _cacheSizeScan;
@@ -151,7 +151,9 @@ class CacheController extends _$CacheController {
     operation = _scanCacheSize().whenComplete(() {
       if (identical(_cacheSizeScan, operation)) {
         _cacheSizeScan = null;
-        state = state.copyWith(isScanning: false);
+        if (ref.mounted) {
+          state = state.copyWith(isScanning: false);
+        }
       }
     });
     _cacheSizeScan = operation;
@@ -180,7 +182,9 @@ class CacheController extends _$CacheController {
     operation = _clearCache().whenComplete(() {
       if (identical(_cacheClearOperation, operation)) {
         _cacheClearOperation = null;
-        state = state.copyWith(isClearing: false);
+        if (ref.mounted) {
+          state = state.copyWith(isClearing: false);
+        }
       }
     });
     _cacheClearOperation = operation;
@@ -245,7 +249,7 @@ class CacheController extends _$CacheController {
     }
 
     // 4) Re-scan the remaining size.
-    var remainingSizeMB = state.cacheSizeMB;
+    var remainingSizeMB = ref.mounted ? state.cacheSizeMB : 0.0;
     if (directories != null) {
       try {
         remainingSizeMB = await _scanCacheSize(directories: directories);
@@ -271,7 +275,9 @@ class CacheController extends _$CacheController {
     operation = _refreshImageCache(refreshVisible: refreshVisible).whenComplete(() {
       if (identical(_imageRefreshOperation, operation)) {
         _imageRefreshOperation = null;
-        state = state.copyWith(isRefreshingImages: false);
+        if (ref.mounted) {
+          state = state.copyWith(isRefreshingImages: false);
+        }
       }
     });
     _imageRefreshOperation = operation;
