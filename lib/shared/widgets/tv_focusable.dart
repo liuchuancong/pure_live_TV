@@ -36,7 +36,13 @@ class TvFocusable extends StatelessWidget {
             .scale(begin: const Offset(1, 1), end: const Offset(1, 1.05), duration: 120.ms, curve: Curves.easeOutCubic)
             .boxShadow(
               begin: const BoxShadow(color: Colors.transparent),
-              end: BoxShadow(blurRadius: 24, spreadRadius: 1, color: activeTheme.focusColor.withValues(alpha: 0.4)),
+              // Same rule as [TvFocusStyle]: a 24-blur halo smears on a light
+              // palette, so focus there is a crisp accent edge instead.
+              end: BoxShadow(
+                blurRadius: activeTheme.isLight ? 0 : 24,
+                spreadRadius: 1,
+                color: activeTheme.focusColor.withValues(alpha: activeTheme.isLight ? 1.0 : 0.4),
+              ),
               borderRadius: BorderRadius.circular(20.sp),
             );
       },

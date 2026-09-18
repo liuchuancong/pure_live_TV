@@ -54,7 +54,6 @@ class TvFocusStyle {
           width: 2.5.sp,
           borderRadius: radius,
           duration: duration,
-          curve: curve,
         ),
       if (glow)
         DpadGlowEffect(
@@ -65,7 +64,6 @@ class TvFocusStyle {
           spreadRadius: 2.sp,
           borderRadius: radius,
           duration: duration,
-          curve: curve,
         ),
     ];
   }

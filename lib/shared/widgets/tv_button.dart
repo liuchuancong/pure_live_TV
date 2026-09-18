@@ -98,8 +98,8 @@ class TvButton extends StatelessWidget {
           }
 
           return AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeInOut,
+            duration: TvFocusStyle.duration,
+            curve: TvFocusStyle.curve,
             height: height,
             padding: padding,
             decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),

@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/tv_focus_style.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvTabItemData {
@@ -142,12 +143,10 @@ class _TvTabBarState extends State<TvTabBar> {
             final dynamicEffects =
                 widget.effects ??
                 [
-                  DpadScaleEffect(
-                    scale: 1.05,
-                    pressedScale: 0.98,
-                    duration: const Duration(milliseconds: 100),
-                    curve: Curves.easeOutCubic,
-                  ),
+                  // The shared focus language (scale + ring + halo); the fill
+                  // itself is the custom effect below, because a tab tints
+                  // instead of filling solid.
+                  ...TvFocusStyle.effects(currentTvTheme, borderRadius),
                   DpadCustomEffect((context, state, child) {
                     final isFocused = state.focused;
 
@@ -169,8 +168,8 @@ class _TvTabBarState extends State<TvTabBar> {
                     final baseStyle = isSelected || isFocused ? AppTextStyles.t20W600 : AppTextStyles.t20;
 
                     return AnimatedContainer(
-                      duration: const Duration(milliseconds: 100),
-                      curve: Curves.easeInOut,
+                      duration: TvFocusStyle.duration,
+                      curve: TvFocusStyle.curve,
                       height: height,
                       alignment: Alignment.center,
                       padding: EdgeInsets.symmetric(horizontal: 28.sp),
