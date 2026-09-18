@@ -14,7 +14,7 @@ import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 /// `onTap`), and the node the highlight should open on is passed in as
 /// [openingFocus].
 class TvPageShell extends StatefulWidget {
-  const TvPageShell({super.key, required this.child, this.topBar, this.openingFocus});
+  const TvPageShell({super.key, required this.child, this.topBar, this.openingFocus, this.openingRegion});
 
   /// The page's content.
   final Widget child;
@@ -23,9 +23,17 @@ class TvPageShell extends StatefulWidget {
   final Widget? topBar;
 
   /// The page's own 返回 button node, when it has one. Up at the content's top edge
-  /// lands on it and the highlight opens on it; without it the keyboard opens on the
-  /// first content row and Up leaves the region.
+  /// lands on it and the highlight opens on it; without it the keyboard opens on
+  /// the first content row and Up leaves the region.
   final FocusNode? openingFocus;
+
+  /// The sub-region the opening highlight should land in, when the page has one.
+  ///
+  /// Without it the claim picks the top-left-most node of the whole content area —
+  /// on the home page that is the sidebar's 我的账户. A page with a navigation
+  /// column passes its content pane's [DpadRegion] key here so the highlight opens
+  /// on the page body's first row instead.
+  final GlobalKey<DpadRegionState>? openingRegion;
 
   @override
   State<TvPageShell> createState() => _TvPageShellState();
@@ -160,9 +168,10 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
       return;
     }
 
-    // 2. No bar: the top-left-most row, which is the first one visually.
-    final DpadRegionState? region = _contentRegionKey.currentState;
-    final FocusNode? first = _topLeftMost(region?.focusNodes.where(_usable) ?? const <FocusNode>[]);
+    // 2. No bar: the top-left-most row, which is the first one visually — of the
+    // page-named opening region when there is one, otherwise of the whole content.
+    final DpadRegionState? region = widget.openingRegion?.currentState ?? _contentRegionKey.currentState;
+    final FocusNode? first = _topLeftMost((region?.focusNodes ?? const <FocusNode>[]).where(_usable));
     if (first != null) {
       region!.noteFocus(first);
       first.requestFocus();

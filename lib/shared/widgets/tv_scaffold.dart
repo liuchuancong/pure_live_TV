@@ -1,5 +1,6 @@
 ﻿import 'dart:ui' show ImageFilter;
 
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
@@ -22,12 +23,15 @@ import 'package:pure_live/shared/widgets/tv_page_shell.dart';
 /// genuinely shared: the transparent page background, "a covered page offers no focus",
 /// and the opening highlight on the first row.
 class TvScaffold extends StatelessWidget {
-  const TvScaffold({super.key, required this.child});
+  const TvScaffold({super.key, required this.child, this.openingRegion});
 
   final Widget child;
 
+  /// See [TvPageShell.openingRegion] — the region the opening highlight claims.
+  final GlobalKey<DpadRegionState>? openingRegion;
+
   @override
-  Widget build(BuildContext context) => TvPageShell(child: child);
+  Widget build(BuildContext context) => TvPageShell(openingRegion: openingRegion, child: child);
 }
 
 /// The background for the entire app: one instance, mounted below the Navigator.
