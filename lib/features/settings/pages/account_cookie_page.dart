@@ -202,28 +202,30 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                           ],
                         ),
                         SizedBox(height: 24.h),
-                        IntrinsicHeight(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Flexible(
-                                flex: 4,
-                                child: widget.loginPanel ?? _buildScanPanel(theme),
+                        // No IntrinsicHeight here: the panels contain
+                        // LayoutBuilders (settings rows, QR card), and
+                        // measuring intrinsic dimensions through one is
+                        // unsupported and throws. The columns size naturally.
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              flex: 4,
+                              child: widget.loginPanel ?? _buildScanPanel(theme),
+                            ),
+                            SizedBox(width: 48.sp),
+                            Flexible(
+                              flex: 6,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (widget.loginPanel != null) ...[_buildScanPanel(theme), SizedBox(height: 24.h)],
+                                  _buildManualPanel(theme, configured),
+                                ],
                               ),
-                              SizedBox(width: 48.sp),
-                              Flexible(
-                                flex: 6,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (widget.loginPanel != null) ...[_buildScanPanel(theme), SizedBox(height: 24.h)],
-                                    _buildManualPanel(theme, configured),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                         if (_message.isNotEmpty) ...[
                           SizedBox(height: 18.h),
