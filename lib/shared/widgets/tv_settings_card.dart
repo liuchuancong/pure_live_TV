@@ -1,4 +1,3 @@
-import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -29,36 +28,19 @@ class TvSettingsCard extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: radius,
-      child: BackdropFilter(
-        // Frosted glass: blur whatever wallpaper shows through the translucent
-        // fill, so text on the card stays readable over a busy picture.
-        filter: ImageFilter.blur(sigmaX: 10.sp, sigmaY: 10.sp),
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: tvTheme.cardColor.withValues(alpha: 0.05),
-            borderRadius: radius,
-            border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.sp),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 4.sp, horizontal: 4.sp),
-            child: Column(
-              children: List.generate(validChildren.length, (index) {
-                return Column(
-                  children: [
-                    validChildren[index],
-                    if (index != validChildren.length - 1)
-                      Divider(
-                        height: 1.sp,
-                        thickness: 1.sp,
-                        indent: 16.sp,
-                        endIndent: 16.sp,
-                        color: tvTheme.secondaryTextColor.withValues(alpha: 0.12),
-                      ),
-                  ],
-                );
-              }),
-            ),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: tvTheme.cardColor.withValues(alpha: 0.05),
+          borderRadius: radius,
+          border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.sp),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 4.sp, horizontal: 4.sp),
+          child: Column(
+            children: List.generate(validChildren.length, (index) {
+              return Column(children: [validChildren[index]]);
+            }),
           ),
         ),
       ),
