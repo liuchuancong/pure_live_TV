@@ -37,10 +37,6 @@ _LiveRoom _$LiveRoomFromJson(Map<String, dynamic> json) => _LiveRoom(
         json['audienceMetricType'],
       ) ??
       AudienceMetricType.unknown,
-  epgId: json['epgId'] as String? ?? '',
-  currentProgramme: json['currentProgramme'] as String? ?? '',
-  currentProgrammeDescription:
-      json['currentProgrammeDescription'] as String? ?? '',
   catchUpUrl: json['catchUpUrl'] as String?,
   isCatchUp: json['isCatchUp'] as bool? ?? false,
   catchUpStart: (json['catchUpStart'] as num?)?.toInt(),
@@ -79,9 +75,6 @@ Map<String, dynamic> _$LiveRoomToJson(_LiveRoom instance) => <String, dynamic>{
   'liveStatus': _$LiveStatusEnumMap[instance.liveStatus]!,
   'audienceMetricType':
       _$AudienceMetricTypeEnumMap[instance.audienceMetricType]!,
-  'epgId': instance.epgId,
-  'currentProgramme': instance.currentProgramme,
-  'currentProgrammeDescription': instance.currentProgrammeDescription,
   'catchUpUrl': instance.catchUpUrl,
   'isCatchUp': instance.isCatchUp,
   'catchUpStart': instance.catchUpStart,

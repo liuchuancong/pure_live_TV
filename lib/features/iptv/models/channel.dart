@@ -9,7 +9,6 @@ class IptvChannel extends Equatable {
   final String? tvgName;
   final String? tvgLogo;
   final String? groupTitle;
-  final String? epgChannelId;
   final int? channelNumber;
   final String streamUrl;
   final StreamType streamType;
@@ -28,7 +27,6 @@ class IptvChannel extends Equatable {
     this.tvgName,
     this.tvgLogo,
     this.groupTitle,
-    this.epgChannelId,
     this.channelNumber,
     required this.streamUrl,
     this.streamType = StreamType.live,
@@ -43,7 +41,7 @@ class IptvChannel extends Equatable {
   /// The best display name available.
   String get displayName => tvgName ?? name;
 
-  IptvChannel copyWith({String? epgChannelId, bool? isFavorite, int? channelNumber}) {
+  IptvChannel copyWith({bool? isFavorite, int? channelNumber}) {
     return IptvChannel(
       id: id,
       providerId: providerId,
@@ -52,7 +50,6 @@ class IptvChannel extends Equatable {
       tvgName: tvgName,
       tvgLogo: tvgLogo,
       groupTitle: groupTitle,
-      epgChannelId: epgChannelId ?? this.epgChannelId,
       channelNumber: channelNumber ?? this.channelNumber,
       streamUrl: streamUrl,
       streamType: streamType,
@@ -110,7 +107,6 @@ enum IptvProviderStatus { unknown, online, offline, error }
 class UnifiedChannel extends Equatable {
   final String id;
   final String displayName;
-  final String? epgChannelId;
   final String? logoUrl;
   final int? channelNumber;
   final List<StreamSource> sources;
@@ -118,7 +114,6 @@ class UnifiedChannel extends Equatable {
   const UnifiedChannel({
     required this.id,
     required this.displayName,
-    this.epgChannelId,
     this.logoUrl,
     this.channelNumber,
     this.sources = const [],

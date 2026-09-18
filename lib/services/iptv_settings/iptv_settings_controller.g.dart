@@ -8,15 +8,15 @@ part of 'iptv_settings_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// IPTV source selection and auto-sync configuration.
+/// IPTV auto-sync configuration.
 
 @ProviderFor(IptvSettingsController)
 final iptvSettingsControllerProvider = IptvSettingsControllerProvider._();
 
-/// IPTV source selection and auto-sync configuration.
+/// IPTV auto-sync configuration.
 final class IptvSettingsControllerProvider
     extends $NotifierProvider<IptvSettingsController, IptvSettingsModel> {
-  /// IPTV source selection and auto-sync configuration.
+  /// IPTV auto-sync configuration.
   IptvSettingsControllerProvider._()
     : super(
         from: null,
@@ -45,9 +45,9 @@ final class IptvSettingsControllerProvider
 }
 
 String _$iptvSettingsControllerHash() =>
-    r'44447c4e62b219d9ecfade9583030c05c5e23985';
+    r'26a79b714f1daa6f87150f6600c06e005fbbe4ed';
 
-/// IPTV source selection and auto-sync configuration.
+/// IPTV auto-sync configuration.
 
 abstract class _$IptvSettingsController extends $Notifier<IptvSettingsModel> {
   IptvSettingsModel build();

@@ -44,7 +44,7 @@ final class CacheControllerProvider
   }
 }
 
-String _$cacheControllerHash() => r'c77ab99ca0369c83f9324e5ae3bdab92e04acfe1';
+String _$cacheControllerHash() => r'837b4773b720899c25725c58b96285e6046b97c0';
 
 /// Cache maintenance: scan partitions, purge entries, refresh thumbnails.
 

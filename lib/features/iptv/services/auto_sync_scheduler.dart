@@ -2,10 +2,7 @@ import 'dart:developer';
 
 import 'package:pure_live/shared/platform/index.dart';
 import 'package:pure_live/app/bootstrap/index.dart';
-import 'package:pure_live/features/iptv/data/database.dart';
-import 'package:pure_live/features/iptv/services/epg_sync_engine.dart';
 import 'package:pure_live/features/iptv/services/iptv_sync_engine.dart';
-import 'package:pure_live/features/iptv/services/epg_import_manager.dart';
 import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
 
 import 'package:meta/meta.dart';
@@ -15,7 +12,6 @@ class AutoSyncScheduler {
   AutoSyncScheduler._internal();
 
   final IptvResourceLoadGate _hotResourcesGate = IptvResourceLoadGate();
-  final IptvResourceLoadGate _defaultEpgResourcesGate = IptvResourceLoadGate();
 
   Future<void> checkAndExecuteAutoSync() async {
     if (!SettingsService.to.iptv.isAutoSyncEnabled.v) return;
@@ -28,10 +24,6 @@ class AutoSyncScheduler {
       final expiredPlaylists = await db.getExpiredNetworkProviders(checkInterval);
       for (var playlist in expiredPlaylists) {
         await IptvSyncEngine.instance.syncPlaylist(playlist);
-      }
-      final expiredEpgs = await db.getExpiredEpgSources(checkInterval);
-      for (var epg in expiredEpgs) {
-        await EpgSyncEngine.instance.updateEpgCache(epg, forceUpdate: true, showTips: false);
       }
     } catch (e) {
       log("Auto sync background task working failed: $e");
@@ -49,27 +41,6 @@ class AutoSyncScheduler {
       showTips: false,
       isHot: true,
     );
-  }
-
-  Future<void> loadDefaultEpgResources() => _defaultEpgResourcesGate.run(_loadDefaultEpgResources);
-
-  Future<void> _loadDefaultEpgResources() async {
-    final epgSource = 'https://epg.zsdc.eu.org/t.xml.gz';
-    await EpgImportManager().importFromNetworkUrl(
-      epgSource,
-      AppPathManager.iptvHotFile,
-      forceUpdate: true,
-      showTips: false,
-    );
-    if (SettingsService.to.iptv.selectedSourceId.v.isEmpty) {
-      final db = DbService.to.db;
-      List<EpgSource> epgSources = await db.getAllEpgSources();
-      if (epgSources.isNotEmpty && SettingsService.to.iptv.selectedSourceId.v.isEmpty) {
-        final activeSource = epgSources.first;
-        SettingsService.to.iptv.selectedSourceId.v = activeSource.id;
-        SettingsService.to.iptv.selectedSourceName.v = activeSource.name;
-      }
-    }
   }
 }
 

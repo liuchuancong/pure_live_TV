@@ -28,8 +28,6 @@ class M3uParser {
     'icy_metadata_packet',
   };
 
-  static String? lastEpgUrl;
-
   static final _header = RegExp(r'^#EXTM3U(?:\s|$)');
 
   PlaylistParseResult parse(String content, {required String providerId}) {

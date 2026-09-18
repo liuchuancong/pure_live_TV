@@ -44,62 +44,6 @@ class Channels extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// EPG data sources (XMLTV feeds).
-class EpgSources extends Table {
-  TextColumn get id => text()();
-  TextColumn get name => text()();
-  TextColumn get url => text()();
-  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
-  IntColumn get refreshIntervalHours => integer().withDefault(const Constant(12))();
-  DateTimeColumn get lastRefresh => dateTime().nullable()();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  BoolColumn get isAutoUpdate => boolean().withDefault(const Constant(true))();
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// EPG channels from XMLTV feeds.
-class EpgChannels extends Table {
-  TextColumn get id => text()(); // compound: sourceId_channelId
-  TextColumn get sourceId => text().references(EpgSources, #id)();
-  TextColumn get channelId => text()(); // Original channel ID from XMLTV
-  TextColumn get displayName => text()();
-  TextColumn get iconUrl => text().nullable()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-/// EPG programmes (TV listings).
-class EpgProgrammes extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get epgChannelId => text()();
-  TextColumn get sourceId => text().references(EpgSources, #id)();
-  TextColumn get title => text()();
-  TextColumn get description => text().nullable()();
-  TextColumn get subtitle => text().nullable()();
-  TextColumn get episodeNum => text().nullable()();
-  TextColumn get category => text().nullable()();
-  TextColumn get catchupId => text().nullable()();
-  DateTimeColumn get start => dateTime()();
-  DateTimeColumn get stop => dateTime()();
-}
-
-/// Channel ↔ EPG mapping table.
-class EpgMappings extends Table {
-  TextColumn get channelId => text().references(Channels, #id)();
-  TextColumn get providerId => text()();
-  TextColumn get epgChannelId => text()();
-  TextColumn get epgSourceId => text().references(EpgSources, #id)();
-  RealColumn get confidence => real().withDefault(const Constant(0.0))();
-  TextColumn get source => text().withDefault(const Constant('auto'))(); // auto, manual, suggested
-  BoolColumn get locked => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  Set<Column> get primaryKey => {channelId, providerId};
-}
-
 /// User-defined channel groups.
 class ChannelGroups extends Table {
   TextColumn get id => text()();
@@ -134,22 +78,6 @@ class FavoriteListChannels extends Table {
   Set<Column> get primaryKey => {listId, channelId};
 }
 
-/// EPG reminders — notify user before a programme starts.
-class EpgReminders extends Table {
-  TextColumn get id => text()();
-  TextColumn get epgChannelId => text()();
-  TextColumn get channelId => text().nullable()(); // link to Channels table
-  TextColumn get programmeTitle => text()();
-  DateTimeColumn get programmeStart => dateTime()();
-  DateTimeColumn get programmeStop => dateTime()();
-  IntColumn get minutesBefore => integer().withDefault(const Constant(5))();
-  BoolColumn get fired => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
 /// User-defined failover groups — manually curated sets of interchangeable channels.
 class FailoverGroups extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -165,20 +93,4 @@ class FailoverGroupChannels extends Table {
 
   @override
   Set<Column> get primaryKey => {groupId, channelId};
-}
-
-/// Scheduled recordings — record a programme when it airs.
-class ScheduledRecordings extends Table {
-  TextColumn get id => text()();
-  TextColumn get epgChannelId => text()();
-  TextColumn get channelId => text().nullable()();
-  TextColumn get programmeTitle => text()();
-  DateTimeColumn get programmeStart => dateTime()();
-  DateTimeColumn get programmeStop => dateTime()();
-  TextColumn get status => text().withDefault(const Constant('scheduled'))(); // scheduled, recording, completed, failed
-  TextColumn get outputPath => text().nullable()();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  Set<Column> get primaryKey => {id};
 }

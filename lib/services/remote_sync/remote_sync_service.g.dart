@@ -60,7 +60,7 @@ final class RemoteSyncControllerProvider
 }
 
 String _$remoteSyncControllerHash() =>
-    r'0274cce3c3ffc842ceedc143eb2913b44d539577';
+    r'ae71a23b163efe7e46653a282d02c07f97ce33ec';
 
 /// Bridges the storage-free [TvRemoteKit] to the app's controllers.
 ///

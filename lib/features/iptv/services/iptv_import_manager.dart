@@ -330,13 +330,11 @@ class IptvImportManager {
           final retained = entries.map((e) => e.id.value).toSet();
           await db.batch((batch) {
             for (final old in previous.where((e) => !retained.contains(e.id))) {
-              batch.deleteWhere(db.epgMappings, (t) => t.channelId.equals(old.id) & t.providerId.equals(providerId));
               batch.deleteWhere(db.favoriteListChannels, (t) => t.channelId.equals(old.id));
               batch.deleteWhere(db.failoverGroupChannels, (t) => t.channelId.equals(old.id));
               batch.deleteWhere(db.channels, (t) => t.id.equals(old.id) & t.providerId.equals(providerId));
             }
           });
-          await _rebuildEpgMappings(providerId: providerId);
         }),
       );
       committed = true;
@@ -396,113 +394,5 @@ class IptvImportManager {
       }
       await File(candidate).delete();
     });
-  }
-
-  Future<void> runAutoEpgMapping({required String providerId}) =>
-      _mappingLock.synchronized(() => _rebuildEpgMappings(providerId: providerId));
-
-  Future<void> _rebuildEpgMappings({required String providerId}) async {
-    final db = DbService.to.db;
-    final selected = SettingsService.to.iptv.selectedSourceId;
-    final sourceId = selected.value;
-    if (sourceId.isEmpty) return;
-    // The TV SettingsValue is a pull-based view without GetX addListener, so the
-    // source revision counter is used instead: it also changes across an A to B
-    // to A round trip.
-    final sourceRevision = SettingsService.to.iptv.sourceRevision;
-    void checkSource() {
-      if (SettingsService.to.iptv.sourceRevision != sourceRevision || selected.value != sourceId) {
-        throw const _MappingSourceChanged();
-      }
-    }
-
-    try {
-      await db.transaction(() async {
-        if (await db.getProviderById(providerId) == null) return;
-        final channels = await db.getChannelsForProvider(providerId);
-        final epgChannels = await db.getEpgChannelsForSource(sourceId);
-        checkSource();
-        // Missing data is not an instruction to remove saved user mappings.
-        if (channels.isEmpty || epgChannels.isEmpty) return;
-        final previous = await (db.select(db.epgMappings)..where((t) => t.providerId.equals(providerId))).get();
-        final byChannel = {for (final mapping in previous) mapping.channelId: mapping};
-        final index = _ImportEpgIndex(epgChannels);
-        final matched = <String>{};
-        final updates = <database.EpgMappingsCompanion>[];
-        for (final channel in channels) {
-          final old = byChannel[channel.id];
-          if (old != null && (old.locked || old.source != 'auto')) continue;
-          final epgId = index.match(channel);
-          if (epgId == null) continue;
-          matched.add(channel.id);
-          // Do not reset confidence or timestamps for an unchanged mapping.
-          if (old?.epgChannelId == epgId && old?.epgSourceId == sourceId) continue;
-          updates.add(
-            database.EpgMappingsCompanion.insert(
-              channelId: channel.id,
-              providerId: providerId,
-              epgChannelId: epgId,
-              epgSourceId: sourceId,
-              source: const drift.Value('auto'),
-            ),
-          );
-        }
-        checkSource();
-        for (final old in previous) {
-          if (!old.locked && old.source == 'auto' && !matched.contains(old.channelId)) {
-            await db.deleteMapping(old.channelId, providerId);
-          }
-        }
-        if (updates.isNotEmpty) await db.upsertMappings(updates);
-        // Includes changes while SQLite was writing the candidate snapshot.
-        checkSource();
-      }, requireNew: true);
-    } on _MappingSourceChanged {
-      // Transaction rollback retains the last committed mapping snapshot.
-    }
-  }
-}
-
-class _MappingSourceChanged implements Exception {
-  const _MappingSourceChanged();
-}
-
-/// Build exact indices once; ambiguous evidence never depends on row order.
-class _ImportEpgIndex {
-  _ImportEpgIndex(List<database.EpgChannel> channels) {
-    for (final channel in channels) {
-      final id = channel.channelId.trim().toLowerCase();
-      if (id.isNotEmpty) (_byId[id] ??= []).add(channel.id);
-      final name = _name(channel.displayName);
-      if (name.isNotEmpty) (_byName[name] ??= []).add(channel.id);
-    }
-  }
-
-  static final _clean = RegExp(r'[^a-zA-Z0-9\u4e00-\u9fa5]');
-  static String _name(String value) => value.toLowerCase().replaceAll(_clean, '');
-  final _byId = <String, List<String>>{};
-  final _byName = <String, List<String>>{};
-  final _nameMatches = <String, String?>{};
-  String? _unique(List<String> matches) => matches.length == 1 ? matches.single : null;
-
-  String? match(database.Channel channel) {
-    final tvgId = channel.tvgId?.trim().toLowerCase();
-    final byTvg = tvgId == null ? null : _byId[tvgId];
-    if (byTvg != null) return _unique(byTvg);
-    final byLegacyId = _byId[channel.id.trim().toLowerCase()];
-    if (byLegacyId != null) return _unique(byLegacyId);
-    final name = _name(channel.name);
-    if (name.isEmpty) return null;
-    if (_nameMatches.containsKey(name)) return _nameMatches[name];
-    final exact = _byName[name];
-    if (exact != null) return _nameMatches[name] = _unique(exact);
-    String? match;
-    for (final entry in _byName.entries) {
-      if (name.contains(entry.key) || entry.key.contains(name)) {
-        if (match != null || entry.value.length != 1) return _nameMatches[name] = null;
-        match = entry.value.single;
-      }
-    }
-    return _nameMatches[name] = match;
   }
 }

@@ -13,7 +13,7 @@ const int iptvMaxAutoSyncHours = 72;
 
 int normalizeIptvAutoSyncHours(int hours) => hours.clamp(iptvMinAutoSyncHours, iptvMaxAutoSyncHours);
 
-/// IPTV source selection and auto-sync configuration.
+/// IPTV auto-sync configuration.
 @riverpod
 class IptvSettingsController extends _$IptvSettingsController {
   static IptvSettingsController get to => SettingsService.to.iptv;
@@ -21,26 +21,11 @@ class IptvSettingsController extends _$IptvSettingsController {
   static const String autoSyncHoursIntervalKey = 'autoSyncHoursInterval';
 
   // Exposed as a reactive value for non-widget code such as the player core.
-  SettingsValue<String> get selectedSourceId => SettingsValue(() => state.selectedSourceId, selectSourceId);
-  SettingsValue<String> get selectedSourceName => SettingsValue(() => state.selectedSourceName, selectSourceName);
   SettingsValue<bool> get isAutoSyncEnabled => SettingsValue(() => state.isAutoSyncEnabled, setAutoSyncEnabled);
-
-  int _sourceRevision = 0;
-
-  /// Source selection revision. Long-running work such as EPG remapping uses it
-  /// to notice a mid-session source switch, including A to B to A changes that
-  /// comparing current values would miss.
-  int get sourceRevision => _sourceRevision;
-
-  void selectSourceId(String id) => selectSource(state.selectedSourceName, id);
-
-  void selectSourceName(String name) => selectSource(name, state.selectedSourceId);
 
   @override
   IptvSettingsModel build() {
     return IptvSettingsModel(
-      selectedSourceName: HivePrefUtil.getString('selectedSourceName') ?? '',
-      selectedSourceId: HivePrefUtil.getString('selectedSourceId') ?? '',
       isAutoSyncEnabled: HivePrefUtil.getBool('isAutoSyncEnabled') ?? false,
       autoSyncHoursInterval: normalizeIptvAutoSyncHours(
         HivePrefUtil.getInt(autoSyncHoursIntervalKey) ?? iptvDefaultAutoSyncHours,
@@ -55,11 +40,6 @@ class IptvSettingsController extends _$IptvSettingsController {
       autoSyncHoursInterval: normalizeIptvAutoSyncHours(newModel.autoSyncHoursInterval),
     );
     _persist();
-  }
-
-  void selectSource(String sourceName, String sourceId) {
-    _sourceRevision++;
-    updateSettings(state.copyWith(selectedSourceName: sourceName, selectedSourceId: sourceId));
   }
 
   void setAutoSyncEnabled(bool enabled) {
@@ -84,8 +64,6 @@ class IptvSettingsController extends _$IptvSettingsController {
   }
 
   void _persist() {
-    HivePrefUtil.setString('selectedSourceName', state.selectedSourceName);
-    HivePrefUtil.setString('selectedSourceId', state.selectedSourceId);
     HivePrefUtil.setBool('isAutoSyncEnabled', state.isAutoSyncEnabled);
     HivePrefUtil.setInt(autoSyncHoursIntervalKey, state.autoSyncHoursInterval);
     HivePrefUtil.setString('customIptvUserAgent', state.customIptvUserAgent);
@@ -104,8 +82,6 @@ class IptvSettingsController extends _$IptvSettingsController {
   static Map<String, dynamic> parseConfig(Map<String, dynamic> json) {
     final rawHours = json['autoSyncHoursInterval'];
     return {
-      'selectedSourceName': (json['selectedSourceName'] ?? '') as String,
-      'selectedSourceId': (json['selectedSourceId'] ?? '') as String,
       'isAutoSyncEnabled': (json['isAutoSyncEnabled'] ?? false) as bool,
       'autoSyncHoursInterval': normalizeIptvAutoSyncHours(
         rawHours is int ? rawHours : iptvDefaultAutoSyncHours,

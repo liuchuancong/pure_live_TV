@@ -6,8 +6,6 @@ part 'iptv_settings_model.g.dart';
 @freezed
 abstract class IptvSettingsModel with _$IptvSettingsModel {
   const factory IptvSettingsModel({
-    @Default('') String selectedSourceName,
-    @Default('') String selectedSourceId,
     @Default(false) bool isAutoSyncEnabled,
     @Default(24) int autoSyncHoursInterval,
     @Default('') String customIptvUserAgent,

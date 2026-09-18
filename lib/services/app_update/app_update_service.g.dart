@@ -51,7 +51,7 @@ final class AppUpdateControllerProvider
 }
 
 String _$appUpdateControllerHash() =>
-    r'38e1869a5a53c4aaf1305ecbcab0649b4fd7907d';
+    r'0a64746ee57fbdf1eede6269d08ca1c3836f8c59';
 
 /// Online update for the TV build: version check through the existing
 /// [VersionUtil] mirror race, release history from `assets/releases.json`,

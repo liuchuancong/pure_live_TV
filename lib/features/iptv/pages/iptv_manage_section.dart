@@ -8,16 +8,14 @@ import 'package:pure_live/shared/data/db_service.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/features/iptv/services/epg_sync_engine.dart';
 import 'package:pure_live/features/iptv/data/database.dart' as database;
 import 'package:pure_live/features/iptv/services/iptv_sync_engine.dart';
-import 'package:pure_live/features/iptv/services/epg_import_manager.dart';
 import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 
 
-/// IPTV source management: imported playlists, EPG sources, the import actions
-/// for both (local file or URL) and the auto-sync / request-header settings.
+/// IPTV source management: imported playlists, the import actions (local file or
+/// URL) and the auto-sync / request-header settings.
 ///
 /// The rows mirror the desktop page (`pure_live/lib/modules/iptv/iptv_page.dart`)
 /// and its manage page (`iptv_manage.dart`): the settings group carries the
@@ -38,7 +36,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
   final _urlController = TextEditingController();
 
   List<database.Provider> _providers = const [];
-  List<database.EpgSource> _epgSources = const [];
   String _status = '';
   bool _busy = false;
   bool _loading = true;
@@ -63,11 +60,9 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
   Future<void> _reload() async {
     try {
       final providers = await _db.getAllProviders();
-      final epgSources = await _db.getAllEpgSources();
       if (!mounted) return;
       setState(() {
         _providers = providers;
-        _epgSources = epgSources;
         _loading = false;
         _loadFailed = false;
       });
@@ -137,35 +132,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
     });
   }
 
-  Future<void> _importEpgUrl(String url, String name) => _run(() async {
-    final ok = await EpgImportManager().importFromNetworkUrl(
-      url.trim(),
-      name.trim().isEmpty ? p.basename(Uri.parse(url.trim()).path) : name.trim(),
-      forceUpdate: true,
-      showTips: false,
-    );
-    await _reloadWithStatus(ok ? i18n('ui_imported') : i18n('epg_import_failed'));
-  });
-
-  /// 网络导入 dialog shared by the playlist and EPG import rows.
-  Future<void> _showNetworkImportDialog({required bool isEpg}) async {
-    if (_busy) return;
-    await TvDialogUtils.show<bool>(
-      context: context,
-      builder: (_) => _NetworkImportDialog(
-        title: i18n('enter_download_url'),
-        onImport: (url, name) async {
-          if (isEpg) {
-            await _importEpgUrl(url, name);
-            return !_loadFailed;
-          }
-          await _importPlaylistUrl(url: url, name: name);
-          return true;
-        },
-      ),
-    );
-  }
-
   // --------------------------------------------------------------- provider
 
   Future<void> _syncProvider(database.Provider provider) => _run(() async {
@@ -205,52 +171,10 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
       cancelText: i18n('cancel'),
     );
     if (confirmed != true) return;
-    // One cascading delete: channels, EPG mappings and favourites go together,
-    // so a mapping can never outlive the channel it points at.
+    // One cascading delete: channels and their favourites/failover rows go
+    // together, so nothing can outlive the channel it points at.
     await _run(() async {
       await _db.deleteProviderCascading(provider.id);
-      if (provider.url != null && _settings.selectedSourceId.v == provider.id) {
-        _settings.selectSource('', '');
-      }
-      await _reloadWithStatus(i18n('manage_page_delete_success'));
-    });
-  }
-
-  // -------------------------------------------------------------------- EPG
-
-  Future<void> _selectEpgSource(String sourceId) async {
-    final source = _epgSources.where((candidate) => candidate.id == sourceId).firstOrNull;
-    if (source == null) return;
-    _settings.selectSource(source.name, source.id);
-    setState(() => _status = i18n('epg_source_switched'));
-  }
-
-  Future<void> _refreshEpg(database.EpgSource source) => _run(() async {
-    final ok = await EpgSyncEngine.instance.updateEpgCache(source, forceUpdate: true, showTips: false);
-    await _reloadWithStatus(ok ? i18n('epg_source_updated') : i18n('epg_import_failed'));
-  });
-
-  Future<void> _toggleEpgAutoUpdate(database.EpgSource source, bool value) => _run(() async {
-    await _db.updateEpgSourceUpdateStatus(source.id, value);
-    await _reloadWithStatus(i18n(value ? 'auto_sync_tag' : 'auto_sync_disabled'));
-  });
-
-  Future<void> _deleteEpg(database.EpgSource source) async {
-    final confirmed = await TvDialogUtils.showConfirm(
-      context: context,
-      title: i18n('delete_confirm_title'),
-      message: i18n('delete_confirm_message'),
-      confirmText: i18n('confirm'),
-      cancelText: i18n('cancel'),
-    );
-    if (confirmed != true) return;
-    await _run(() async {
-      await _db.deleteEpgSourceCascading(source.id);
-      if (_settings.selectedSourceId.v == source.id) {
-        // The EPG lookup path reads this id; keeping a deleted id would leave
-        // the guide permanently empty.
-        _settings.selectSource('', '');
-      }
       await _reloadWithStatus(i18n('manage_page_delete_success'));
     });
   }
@@ -288,16 +212,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
   List<database.Provider> get _localProviders =>
       _providers.where((provider) => !_isNetworkSource(provider.url)).toList(growable: false);
 
-  List<database.EpgSource> get _networkEpgSources =>
-      _epgSources.where((source) => _isNetworkSource(source.url)).toList(growable: false);
-
-  List<database.EpgSource> get _localEpgSources =>
-      _epgSources.where((source) => !_isNetworkSource(source.url)).toList(growable: false);
-
-  String _selectedSourceName() => ref.read(iptvSettingsControllerProvider).selectedSourceName;
-
-  String _selectedSourceId() => ref.read(iptvSettingsControllerProvider).selectedSourceId;
-
   // ------------------------------------------------------------------ build
 
   @override
@@ -326,28 +240,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
               options: [i18n('iptv_import_url')],
               index: 0,
               onChanged: _busy ? null : (_) => _importPlaylistUrl(),
-            ),
-          ],
-        ),
-        SizedBox(height: 20.h),
-        TvSettingsGroupTitle(title: i18n('epg_settings')),
-        TvSettingsCard(
-          children: [
-            TvSettingsOptionTile(
-              title: i18n('network_import'),
-              subtitle: i18n('epg_file_type'),
-              icon: Icons.cloud_download_outlined,
-              options: [i18n('network_import')],
-              index: 0,
-              onChanged: _busy ? null : (_) => _showNetworkImportDialog(isEpg: true),
-            ),
-            TvSettingsMenuTile<String>(
-              title: i18n('active_epg_source'),
-              subtitle: settings.selectedSourceId.isEmpty ? i18n('please_select_epg_source') : settings.selectedSourceName,
-              icon: Icons.calendar_month_outlined,
-              value: settings.selectedSourceId,
-              valueMap: {for (final source in _epgSources) source.id: source.name},
-              onChanged: _busy ? null : (sourceId) => _selectEpgSource(sourceId),
             ),
           ],
         ),
@@ -397,8 +289,8 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
     );
   }
 
-  /// Provider and EPG-source rows: empty state, load-failure state, then the
-  /// 网络资源 / 本地资源 groups. A section is omitted when it has no rows.
+  /// Provider rows: empty state, load-failure state, then the 网络资源 /
+  /// 本地资源 groups. A section is omitted when it has no rows.
   List<Widget> _buildResourceRows() {
     final rows = <Widget>[];
 
@@ -427,7 +319,7 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
       return rows;
     }
 
-    if (_providers.isEmpty && _epgSources.isEmpty) {
+    if (_providers.isEmpty) {
       rows.add(
         TvSettingsOptionTile(
           title: i18n('manage_page_empty_title'),
@@ -447,13 +339,8 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
 
     final networkProviders = _networkProviders;
     final localProviders = _localProviders;
-    final networkEpg = _networkEpgSources;
-    final localEpg = _localEpgSources;
 
-    final networkCount = networkProviders.length + networkEpg.length;
-    final localCount = localProviders.length + localEpg.length;
-
-    if (networkCount > 0) {
+    if (networkProviders.isNotEmpty) {
       addGroupTitle(i18n('network_resource'));
       if (networkProviders.length > 1) {
         rows.add(
@@ -469,17 +356,11 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
       for (final provider in networkProviders) {
         rows.addAll(_buildProviderRows(provider));
       }
-      for (final source in networkEpg) {
-        rows.addAll(_buildEpgRows(source));
-      }
     }
-    if (localCount > 0) {
+    if (localProviders.isNotEmpty) {
       addGroupTitle(i18n('local_resource'));
       for (final provider in localProviders) {
         rows.addAll(_buildProviderRows(provider));
-      }
-      for (final source in localEpg) {
-        rows.addAll(_buildEpgRows(source));
       }
     }
     return rows;
@@ -487,35 +368,16 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
 
   List<Widget> _buildProviderRows(database.Provider provider) {
     final network = _isNetworkSource(provider.url);
-    final active = _selectedSourceName().isNotEmpty && _selectedSourceName() == provider.name;
     return [
       TvSettingsRow(
         title: provider.name,
-        subtitle: '${provider.type}${active ? " · ${i18n('logined')}" : ""}',
+        subtitle: provider.type,
         icon: Icons.playlist_play_rounded,
         trailingBuilder: (context, focused) => _buildActions(
           onSync: _busy || !network ? null : () => _syncProvider(provider),
           autoSync: _busy || !network ? null : provider.isAutoUpdate,
           onAutoSync: _busy || !network ? null : (value) => _toggleAutoUpdate(provider, value),
           onDelete: _busy ? null : () => _deleteProvider(provider),
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> _buildEpgRows(database.EpgSource source) {
-    final network = _isNetworkSource(source.url);
-    final active = _selectedSourceId() == source.id;
-    return [
-      TvSettingsRow(
-        title: source.name,
-        subtitle: '${source.url}${active ? " · ${i18n('logined')}" : ""}',
-        icon: Icons.calendar_month_outlined,
-        trailingBuilder: (context, focused) => _buildActions(
-          onSync: _busy || !network ? null : () => _refreshEpg(source),
-          autoSync: _busy || !network ? null : source.isAutoUpdate,
-          onAutoSync: _busy || !network ? null : (value) => _toggleEpgAutoUpdate(source, value),
-          onDelete: _busy ? null : () => _deleteEpg(source),
         ),
       ),
     ];
@@ -557,121 +419,6 @@ class IptvManageSectionPageState extends ConsumerState<IptvManageSectionPage> {
           onTap: onDelete,
         ),
       ],
-    );
-  }
-}
-
-/// 网络导入 dialog: a download URL and the source name, matching the desktop
-/// `_NetworkImportDialog` (including the inline validation messages).
-class _NetworkImportDialog extends StatefulWidget {
-  const _NetworkImportDialog({required this.title, required this.onImport});
-
-  final String title;
-  final Future<bool> Function(String url, String name) onImport;
-
-  @override
-  State<_NetworkImportDialog> createState() => _NetworkImportDialogState();
-}
-
-class _NetworkImportDialogState extends State<_NetworkImportDialog> {
-  final _url = TextEditingController();
-  final _name = TextEditingController();
-  final _urlFocus = FocusNode();
-  bool _submitting = false;
-  String? _errorKey;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _urlFocus.requestFocus();
-    });
-  }
-
-  @override
-  void dispose() {
-    _url.dispose();
-    _name.dispose();
-    _urlFocus.dispose();
-    super.dispose();
-  }
-
-  bool _isHttpUrl(String value) {
-    final uri = Uri.tryParse(value);
-    return uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && uri.host.isNotEmpty;
-  }
-
-  Future<void> _submit() async {
-    if (_submitting) return;
-    final url = _url.text.trim();
-    final name = _name.text.trim();
-    final validation = url.isEmpty
-        ? 'enter_download_link'
-        : !_isHttpUrl(url)
-        ? 'invalid_download_link'
-        : name.isEmpty
-        ? 'enter_file_name'
-        : null;
-    if (validation != null) {
-      setState(() => _errorKey = validation);
-      return;
-    }
-    setState(() {
-      _submitting = true;
-      _errorKey = null;
-    });
-    final navigator = Navigator.of(context);
-    var succeeded = false;
-    try {
-      succeeded = await widget.onImport(url, name);
-    } catch (error) {
-      debugPrint('IPTV network import failure: $error');
-    }
-    if (!mounted) return;
-    if (succeeded) {
-      navigator.pop(true);
-    } else {
-      setState(() {
-        _submitting = false;
-        _errorKey = 'network_import_failed';
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    return TvDialog(
-      title: widget.title,
-      confirmText: i18n('confirm'),
-      cancelText: i18n('cancel'),
-      onConfirm: _submitting ? null : _submit,
-      onCancel: _submitting ? null : () => Navigator.of(context).pop(false),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TvInputField(controller: _url, focusNode: _urlFocus, hint: i18n('download_url')),
-          SizedBox(height: 12.h),
-          TvInputField(controller: _name, hint: i18n('file_name')),
-          if (_errorKey != null) ...[
-            SizedBox(height: 12.h),
-            Text(i18n(_errorKey!), style: TextStyle(fontSize: 16.sp, color: tvTheme.focusColor)),
-          ],
-          if (_submitting) ...[
-            SizedBox(height: 12.h),
-            SizedBox(
-              height: 4.h,
-              child: LinearProgressIndicator(color: tvTheme.focusColor, backgroundColor: tvTheme.cardColor),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              i18n('iptv_import_close_hint'),
-              style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
-            ),
-          ],
-        ],
-      ),
     );
   }
 }

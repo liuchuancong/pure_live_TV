@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'tables.dart';
-import 'epg_channel_identity.dart';
 
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
@@ -17,15 +16,9 @@ const _uuid = Uuid();
   tables: [
     Providers,
     Channels,
-    EpgSources,
-    EpgChannels,
-    EpgProgrammes,
-    EpgMappings,
     ChannelGroups,
     FavoriteLists,
     FavoriteListChannels,
-    EpgReminders,
-    ScheduledRecordings,
     FailoverGroups,
     FailoverGroupChannels,
   ],
@@ -36,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -49,24 +42,12 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(favoriteLists);
         await m.createTable(favoriteListChannels);
       }
-      if (from < 3) {
-        await m.createTable(epgReminders);
-        await m.createTable(scheduledRecordings);
-      }
-      if (from < 4) {
-        await m.addColumn(epgProgrammes, epgProgrammes.subtitle);
-        await m.addColumn(epgProgrammes, epgProgrammes.episodeNum);
-      }
       if (from < 5) {
         await m.createTable(failoverGroups);
         await m.createTable(failoverGroupChannels);
       }
       if (from < 6) {
         await m.addColumn(providers, providers.isAutoUpdate);
-        await m.addColumn(epgSources, epgSources.isAutoUpdate);
-      }
-      if (from < 7) {
-        await _migrateEpgChannelIdentities();
       }
       if (from < 8) {
         final channelColumns = (await customSelect(
@@ -78,12 +59,6 @@ class AppDatabase extends _$AppDatabase {
         if (!channelColumns.contains(channels.catchupCorrectionHours.$name)) {
           await m.addColumn(channels, channels.catchupCorrectionHours);
         }
-        final programmeColumns = (await customSelect(
-          'PRAGMA table_info(epg_programmes)',
-        ).get()).map((row) => row.read<String>('name')).toSet();
-        if (!programmeColumns.contains(epgProgrammes.catchupId.$name)) {
-          await m.addColumn(epgProgrammes, epgProgrammes.catchupId);
-        }
       }
       if (from < 9) {
         final channelColumns = (await customSelect(
@@ -93,105 +68,26 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(channels, channels.httpHeadersJson);
         }
       }
+      if (from < 10) {
+        // The EPG feature is gone: drop the tables it owned, along with the reminder and
+        // scheduled-recording tables that only existed to point at its programmes, so an
+        // upgraded install does not keep the listings forever.
+        for (final table in const <String>[
+          'epg_programmes',
+          'epg_mappings',
+          'epg_channels',
+          'epg_sources',
+          'epg_reminders',
+          'scheduled_recordings',
+        ]) {
+          await customStatement('DROP TABLE IF EXISTS $table');
+        }
+      }
       // Commit the version with the data, before Drift repeats its version write.
       // Otherwise an interrupted open could replay conversion of orphaned IDs.
       await customStatement('PRAGMA user_version = $to');
     }),
   );
-  Future<void> _migrateEpgChannelIdentities() async {
-    final oldChannels = await select(epgChannels).get();
-    final aliases = <(String, String), String>{};
-    for (final channel in oldChannels) {
-      aliases[(channel.sourceId, channel.id)] = epgChannelKey(channel.sourceId, channel.channelId);
-    }
-    for (final channel in oldChannels) {
-      aliases.putIfAbsent((
-        channel.sourceId,
-        channel.channelId,
-      ), () => epgChannelKey(channel.sourceId, channel.channelId));
-    }
-    // Old imports may already have overwritten a channel from another source.
-    // Keep that source's programmes and mappings even if its channel row is gone.
-    final references = await customSelect(
-      'SELECT source_id, epg_channel_id FROM epg_programmes '
-      'UNION SELECT epg_source_id, epg_channel_id FROM epg_mappings',
-    ).get();
-    for (final row in references) {
-      final source = row.read<String>('source_id');
-      final oldId = row.read<String>('epg_channel_id');
-      aliases.putIfAbsent((source, oldId), () => epgChannelKey(source, oldId));
-    }
-    // A snapshot lookup prevents one rewritten ID being rewritten again when an
-    // old feed ID happens to equal another channel's new framed ID.
-    await customStatement(
-      'CREATE TEMP TABLE epg_identity_v7 ('
-      'source_id TEXT NOT NULL, old_id TEXT NOT NULL, new_id TEXT NOT NULL, '
-      'PRIMARY KEY (source_id, old_id))',
-    );
-    await batch((b) {
-      for (final entry in aliases.entries) {
-        b.customStatement('INSERT INTO epg_identity_v7 VALUES (?, ?, ?)', [entry.key.$1, entry.key.$2, entry.value]);
-      }
-    });
-    await customStatement(
-      'UPDATE epg_programmes SET epg_channel_id = '
-      '(SELECT new_id FROM epg_identity_v7 WHERE source_id = epg_programmes.source_id '
-      'AND old_id = epg_programmes.epg_channel_id)',
-    );
-    await customStatement(
-      'UPDATE epg_mappings SET epg_channel_id = '
-      '(SELECT new_id FROM epg_identity_v7 WHERE source_id = epg_mappings.epg_source_id '
-      'AND old_id = epg_mappings.epg_channel_id)',
-    );
-
-    final globalAliases = <String, Set<String>>{};
-    for (final entry in aliases.entries) {
-      globalAliases.putIfAbsent(entry.key.$2, () => <String>{}).add(entry.value);
-    }
-    final mappings = await getAllMappings();
-    String? resolveScheduledReference(String oldId, String? playlistChannelId) {
-      final linked = mappings
-          .where((m) => m.channelId == playlistChannelId && aliases[(m.epgSourceId, oldId)] == m.epgChannelId)
-          .map((m) => m.epgChannelId)
-          .toSet();
-      if (linked.length == 1) return linked.single;
-      final global = globalAliases[oldId];
-      // A reminder has no source column. Keep an ambiguous legacy reference,
-      // rather than attaching an existing user action to an arbitrary source.
-      if (global != null && global.length == 1) return global.single;
-      return null;
-    }
-
-    for (final reminder in await select(epgReminders).get()) {
-      final id = resolveScheduledReference(reminder.epgChannelId, reminder.channelId);
-      if (id != null) {
-        await (update(
-          epgReminders,
-        )..where((t) => t.id.equals(reminder.id))).write(EpgRemindersCompanion(epgChannelId: Value(id)));
-      }
-    }
-    for (final recording in await select(scheduledRecordings).get()) {
-      final id = resolveScheduledReference(recording.epgChannelId, recording.channelId);
-      if (id != null) {
-        await (update(
-          scheduledRecordings,
-        )..where((t) => t.id.equals(recording.id))).write(ScheduledRecordingsCompanion(epgChannelId: Value(id)));
-      }
-    }
-    await delete(epgChannels).go();
-    await upsertEpgChannels(
-      oldChannels
-          .map((channel) => channel.copyWith(id: epgChannelKey(channel.sourceId, channel.channelId)).toCompanion(false))
-          .toList(),
-    );
-    await customStatement('DROP TABLE epg_identity_v7');
-  }
-
-  Future<EpgMapping?> getMappingByChannelId(String channelId, {required String providerId}) {
-    return (select(
-      epgMappings,
-    )..where((t) => t.channelId.equals(channelId) & t.providerId.equals(providerId))).getSingleOrNull();
-  }
 
   // --- Provider queries ---
 
@@ -214,14 +110,12 @@ class AppDatabase extends _$AppDatabase {
 
   /// Deletes a provider with everything that belongs to its channels.
   ///
-  /// The whole delete is one transaction: removing the channel rows first
-  /// without their EPG mappings would leave mappings pointing at channels that
-  /// no longer exist, and a later failure would strand them for good.
+  /// The whole delete is one transaction: removing the channel rows first without
+  /// their favourite/failover references would strand rows pointing at channels that
+  /// no longer exist, and a later failure would keep them for good.
   Future<void> deleteProviderAndChannels(String providerId) => deleteProviderCascading(providerId);
 
   // --- Channel queries ---
-  Future<void> deleteMappingsByProviderId(String providerId) =>
-      (delete(epgMappings)..where((t) => t.providerId.equals(providerId))).go();
   Future<List<Channel>> getChannelsForProvider(String providerId) =>
       (select(channels)..where((t) => t.providerId.equals(providerId))).get();
 
@@ -292,84 +186,7 @@ class AppDatabase extends _$AppDatabase {
     )..where((t) => t.id.equals(channelId))).write(ChannelsCompanion(favorite: Value(!channel.favorite)));
   }
 
-  // --- EPG Source queries ---
-
-  Future<List<EpgSource>> getAllEpgSources() => select(epgSources).get();
-
-  Future<void> upsertEpgSource(EpgSourcesCompanion entry) => into(epgSources).insertOnConflictUpdate(entry);
-
-  // --- EPG Channel queries ---
-
-  Future<List<EpgChannel>> getEpgChannelsForSource(String sourceId) =>
-      (select(epgChannels)..where((t) => t.sourceId.equals(sourceId))).get();
-
-  /// Resolve a stored mapping or old room reference only inside its source.
-  Future<String?> resolveEpgChannelId(String sourceId, String reference) async {
-    final matches = await (select(
-      epgChannels,
-    )..where((t) => t.sourceId.equals(sourceId) & (t.id.equals(reference) | t.channelId.equals(reference)))).get();
-    for (final channel in matches) {
-      if (channel.id == reference) return channel.id;
-    }
-    return matches.length == 1 ? matches.single.id : null;
-  }
-
-  Future<void> upsertEpgChannels(List<EpgChannelsCompanion> entries) async {
-    await batch((b) {
-      b.insertAllOnConflictUpdate(epgChannels, entries);
-    });
-  }
-
-  // --- EPG Programme queries ---
-
-  Future<List<EpgProgramme>> getProgrammes({
-    required String epgChannelId,
-    required DateTime start,
-    required DateTime end,
-  }) =>
-      (select(epgProgrammes)
-            ..where(
-              (t) =>
-                  t.epgChannelId.equals(epgChannelId) &
-                  t.start.isBiggerOrEqualValue(start) &
-                  t.stop.isSmallerOrEqualValue(end),
-            )
-            ..orderBy([(t) => OrderingTerm.asc(t.start)]))
-          .get();
-
-  /// Get what's on now for a list of EPG channel IDs.
-  Future<List<EpgProgramme>> getNowPlaying(List<String> epgChannelIds) {
-    final now = DateTime.now();
-    return (select(epgProgrammes)..where(
-          (t) =>
-              t.epgChannelId.isIn(epgChannelIds) &
-              t.start.isSmallerOrEqualValue(now) &
-              t.stop.isBiggerOrEqualValue(now),
-        ))
-        .get();
-  }
-
-  Future<List<EpgProgramme>> getNowPlayingWindow(List<String> epgChannelIds, DateTime from, DateTime to) {
-    return (select(epgProgrammes)..where(
-          (t) =>
-              t.epgChannelId.isIn(epgChannelIds) &
-              t.start.isSmallerOrEqualValue(to) &
-              t.stop.isBiggerOrEqualValue(from),
-        ))
-        .get();
-  }
-
-  Future<void> insertProgrammes(List<EpgProgrammesCompanion> entries) async {
-    await batch((b) {
-      b.insertAll(epgProgrammes, entries, mode: InsertMode.insertOrReplace);
-    });
-  }
-
-  Future<void> deleteEpgSourceCascading(String sourceId) async {
-    await (delete(epgProgrammes)..where((t) => t.sourceId.equals(sourceId))).go();
-    await (delete(epgChannels)..where((t) => t.sourceId.equals(sourceId))).go();
-    await (delete(epgSources)..where((t) => t.id.equals(sourceId))).go();
-  }
+  // --- EPG queries removed with the feature ---
 
   Future<List<Provider>> getNetworkProviders() {
     return (select(providers)..where((t) => t.url.like('http%') | t.url.like('https%'))).get();
@@ -377,20 +194,16 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteProviderCascading(String providerId) async {
     await transaction(() async {
-      // Mappings and favourites reference channel rows, never the provider row,
+      // Favourites and failover rows reference channel rows, never the provider row,
       // so they must be collected before the channels disappear.
-      await (delete(epgMappings)..where((t) => t.providerId.equals(providerId))).go();
       final channelIds = (await (select(channels)
                 ..where((t) => t.providerId.equals(providerId)))
               .get())
           .map((channel) => channel.id)
           .toList(growable: false);
       if (channelIds.isNotEmpty) {
-        await (delete(epgMappings)..where((t) => t.channelId.isIn(channelIds))).go();
         await (delete(favoriteListChannels)..where((t) => t.channelId.isIn(channelIds))).go();
         await (delete(failoverGroupChannels)..where((t) => t.channelId.isIn(channelIds))).go();
-        await (delete(epgReminders)..where((t) => t.channelId.isIn(channelIds))).go();
-        await (delete(scheduledRecordings)..where((t) => t.channelId.isIn(channelIds))).go();
       }
       await (delete(channels)..where((t) => t.providerId.equals(providerId))).go();
       await (delete(providers)..where((t) => t.id.equals(providerId))).go();
@@ -401,12 +214,6 @@ class AppDatabase extends _$AppDatabase {
     await (update(
       providers,
     )..where((t) => t.id.equals(providerId))).write(ProvidersCompanion(isAutoUpdate: Value(status)));
-  }
-
-  Future<void> updateEpgSourceUpdateStatus(String sourceId, bool status) async {
-    await (update(
-      epgSources,
-    )..where((t) => t.id.equals(sourceId))).write(EpgSourcesCompanion(isAutoUpdate: Value(status))); // must be wrapped in Value
   }
 
   // Precise lookup: only sources that are both overdue and have auto-update
@@ -420,71 +227,7 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
-  Future<List<EpgSource>> getExpiredEpgSources(Duration checkInterval) {
-    final threshold = DateTime.now().subtract(checkInterval);
-    return (select(epgSources)..where(
-          (t) => t.url.like('http%') & t.lastRefresh.isSmallerThan(Variable(threshold)) & t.isAutoUpdate.equals(true),
-        ))
-        .get();
-  }
-
-  Future<void> deleteEpgProgrammesForSource(String sourceId) =>
-      (delete(epgProgrammes)..where((t) => t.sourceId.equals(sourceId))).go();
-
-  Future<void> insertEpgProgrammes(List<EpgProgrammesCompanion> entries) async {
-    await batch((b) {
-      b.insertAll(epgProgrammes, entries);
-    });
-  }
-
-  Future<void> updateEpgSourceRefreshTime(String id) => (update(
-    epgSources,
-  )..where((t) => t.id.equals(id))).write(EpgSourcesCompanion(lastRefresh: Value(DateTime.now())));
-
-  Future<void> deleteEpgSource(String id) async {
-    await deleteEpgProgrammesForSource(id);
-    await (delete(epgChannels)..where((t) => t.sourceId.equals(id))).go();
-    await (delete(epgSources)..where((t) => t.id.equals(id))).go();
-  }
-
   Future<List<Channel>> getAllChannels() => select(channels).get();
-
-  /// Delete old programmes to keep DB size manageable.
-  Future<void> pruneOldProgrammes({Duration maxAge = const Duration(days: 7)}) {
-    final cutoff = DateTime.now().subtract(maxAge);
-    return (delete(epgProgrammes)..where((t) => t.stop.isSmallerThanValue(cutoff))).go();
-  }
-
-  // --- EPG Mapping queries ---
-
-  Future<List<EpgMapping>> getAllMappings() => select(epgMappings).get();
-
-  Future<void> upsertMapping(EpgMappingsCompanion entry) => into(epgMappings).insertOnConflictUpdate(entry);
-
-  Future<void> upsertMappings(List<EpgMappingsCompanion> entries) async {
-    await batch((b) {
-      b.insertAllOnConflictUpdate(epgMappings, entries);
-    });
-  }
-
-  Future<void> deleteMapping(String channelId, String providerId) =>
-      (delete(epgMappings)..where((t) => t.channelId.equals(channelId) & t.providerId.equals(providerId))).go();
-
-  Future<void> deleteAllMappings() => delete(epgMappings).go();
-
-  /// Get mapping stats.
-  Future<Map<String, int>> getMappingStats() async {
-    final all = await select(epgMappings).get();
-    int mapped = 0, suggested = 0;
-    for (final m in all) {
-      if (m.source == 'auto' || m.source == 'manual') {
-        mapped++;
-      } else {
-        suggested++;
-      }
-    }
-    return {'mapped': mapped, 'suggested': suggested};
-  }
 
   // --- Favorite List queries ---
 
@@ -543,38 +286,6 @@ class AppDatabase extends _$AppDatabase {
     final rows = await select(favoriteListChannels).get();
     return rows.map((r) => r.channelId).toSet();
   }
-
-  // --- Reminder queries ---
-
-  Future<void> addReminder(EpgRemindersCompanion entry) => into(epgReminders).insertOnConflictUpdate(entry);
-
-  Future<void> deleteReminder(String id) => (delete(epgReminders)..where((t) => t.id.equals(id))).go();
-
-  Future<List<EpgReminder>> getActiveReminders() => (select(epgReminders)..where((t) => t.fired.equals(false))).get();
-
-  Future<List<EpgReminder>> getRemindersForTimeRange(DateTime start, DateTime end) => (select(
-    epgReminders,
-  )..where((t) => t.programmeStart.isBiggerOrEqualValue(start) & t.programmeStart.isSmallerOrEqualValue(end))).get();
-
-  Future<void> markReminderFired(String id) =>
-      (update(epgReminders)..where((t) => t.id.equals(id))).write(const EpgRemindersCompanion(fired: Value(true)));
-
-  // --- Scheduled Recording queries ---
-
-  Future<void> addScheduledRecording(ScheduledRecordingsCompanion entry) =>
-      into(scheduledRecordings).insertOnConflictUpdate(entry);
-
-  Future<void> deleteScheduledRecording(String id) => (delete(scheduledRecordings)..where((t) => t.id.equals(id))).go();
-
-  Future<List<ScheduledRecording>> getAllScheduledRecordings() => select(scheduledRecordings).get();
-
-  Future<List<ScheduledRecording>> getScheduledRecordingsForTimeRange(DateTime start, DateTime end) => (select(
-    scheduledRecordings,
-  )..where((t) => t.programmeStart.isBiggerOrEqualValue(start) & t.programmeStart.isSmallerOrEqualValue(end))).get();
-
-  Future<void> updateRecordingStatus(String id, String status) => (update(
-    scheduledRecordings,
-  )..where((t) => t.id.equals(id))).write(ScheduledRecordingsCompanion(status: Value(status)));
 
   // --- Failover Group queries ---
 

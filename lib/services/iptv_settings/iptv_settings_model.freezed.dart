@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$IptvSettingsModel {
 
- String get selectedSourceName; String get selectedSourceId; bool get isAutoSyncEnabled; int get autoSyncHoursInterval; String get customIptvUserAgent; String get m3uDirectory;
+ bool get isAutoSyncEnabled; int get autoSyncHoursInterval; String get customIptvUserAgent; String get m3uDirectory;
 /// Create a copy of IptvSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $IptvSettingsModelCopyWith<IptvSettingsModel> get copyWith => _$IptvSettingsMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IptvSettingsModel&&(identical(other.selectedSourceName, selectedSourceName) || other.selectedSourceName == selectedSourceName)&&(identical(other.selectedSourceId, selectedSourceId) || other.selectedSourceId == selectedSourceId)&&(identical(other.isAutoSyncEnabled, isAutoSyncEnabled) || other.isAutoSyncEnabled == isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, autoSyncHoursInterval) || other.autoSyncHoursInterval == autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, customIptvUserAgent) || other.customIptvUserAgent == customIptvUserAgent)&&(identical(other.m3uDirectory, m3uDirectory) || other.m3uDirectory == m3uDirectory));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IptvSettingsModel&&(identical(other.isAutoSyncEnabled, isAutoSyncEnabled) || other.isAutoSyncEnabled == isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, autoSyncHoursInterval) || other.autoSyncHoursInterval == autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, customIptvUserAgent) || other.customIptvUserAgent == customIptvUserAgent)&&(identical(other.m3uDirectory, m3uDirectory) || other.m3uDirectory == m3uDirectory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,selectedSourceName,selectedSourceId,isAutoSyncEnabled,autoSyncHoursInterval,customIptvUserAgent,m3uDirectory);
+int get hashCode => Object.hash(runtimeType,isAutoSyncEnabled,autoSyncHoursInterval,customIptvUserAgent,m3uDirectory);
 
 @override
 String toString() {
-  return 'IptvSettingsModel(selectedSourceName: $selectedSourceName, selectedSourceId: $selectedSourceId, isAutoSyncEnabled: $isAutoSyncEnabled, autoSyncHoursInterval: $autoSyncHoursInterval, customIptvUserAgent: $customIptvUserAgent, m3uDirectory: $m3uDirectory)';
+  return 'IptvSettingsModel(isAutoSyncEnabled: $isAutoSyncEnabled, autoSyncHoursInterval: $autoSyncHoursInterval, customIptvUserAgent: $customIptvUserAgent, m3uDirectory: $m3uDirectory)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $IptvSettingsModelCopyWith<$Res>  {
   factory $IptvSettingsModelCopyWith(IptvSettingsModel value, $Res Function(IptvSettingsModel) _then) = _$IptvSettingsModelCopyWithImpl;
 @useResult
 $Res call({
- String selectedSourceName, String selectedSourceId, bool isAutoSyncEnabled, int autoSyncHoursInterval, String customIptvUserAgent, String m3uDirectory
+ bool isAutoSyncEnabled, int autoSyncHoursInterval, String customIptvUserAgent, String m3uDirectory
 });
 
 
@@ -65,11 +65,9 @@ class _$IptvSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of IptvSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? selectedSourceName = null,Object? selectedSourceId = null,Object? isAutoSyncEnabled = null,Object? autoSyncHoursInterval = null,Object? customIptvUserAgent = null,Object? m3uDirectory = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isAutoSyncEnabled = null,Object? autoSyncHoursInterval = null,Object? customIptvUserAgent = null,Object? m3uDirectory = null,}) {
   return _then(_self.copyWith(
-selectedSourceName: null == selectedSourceName ? _self.selectedSourceName : selectedSourceName // ignore: cast_nullable_to_non_nullable
-as String,selectedSourceId: null == selectedSourceId ? _self.selectedSourceId : selectedSourceId // ignore: cast_nullable_to_non_nullable
-as String,isAutoSyncEnabled: null == isAutoSyncEnabled ? _self.isAutoSyncEnabled : isAutoSyncEnabled // ignore: cast_nullable_to_non_nullable
+isAutoSyncEnabled: null == isAutoSyncEnabled ? _self.isAutoSyncEnabled : isAutoSyncEnabled // ignore: cast_nullable_to_non_nullable
 as bool,autoSyncHoursInterval: null == autoSyncHoursInterval ? _self.autoSyncHoursInterval : autoSyncHoursInterval // ignore: cast_nullable_to_non_nullable
 as int,customIptvUserAgent: null == customIptvUserAgent ? _self.customIptvUserAgent : customIptvUserAgent // ignore: cast_nullable_to_non_nullable
 as String,m3uDirectory: null == m3uDirectory ? _self.m3uDirectory : m3uDirectory // ignore: cast_nullable_to_non_nullable
@@ -158,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String selectedSourceName,  String selectedSourceId,  bool isAutoSyncEnabled,  int autoSyncHoursInterval,  String customIptvUserAgent,  String m3uDirectory)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isAutoSyncEnabled,  int autoSyncHoursInterval,  String customIptvUserAgent,  String m3uDirectory)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _IptvSettingsModel() when $default != null:
-return $default(_that.selectedSourceName,_that.selectedSourceId,_that.isAutoSyncEnabled,_that.autoSyncHoursInterval,_that.customIptvUserAgent,_that.m3uDirectory);case _:
+return $default(_that.isAutoSyncEnabled,_that.autoSyncHoursInterval,_that.customIptvUserAgent,_that.m3uDirectory);case _:
   return orElse();
 
 }
@@ -179,10 +177,10 @@ return $default(_that.selectedSourceName,_that.selectedSourceId,_that.isAutoSync
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String selectedSourceName,  String selectedSourceId,  bool isAutoSyncEnabled,  int autoSyncHoursInterval,  String customIptvUserAgent,  String m3uDirectory)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isAutoSyncEnabled,  int autoSyncHoursInterval,  String customIptvUserAgent,  String m3uDirectory)  $default,) {final _that = this;
 switch (_that) {
 case _IptvSettingsModel():
-return $default(_that.selectedSourceName,_that.selectedSourceId,_that.isAutoSyncEnabled,_that.autoSyncHoursInterval,_that.customIptvUserAgent,_that.m3uDirectory);case _:
+return $default(_that.isAutoSyncEnabled,_that.autoSyncHoursInterval,_that.customIptvUserAgent,_that.m3uDirectory);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +197,10 @@ return $default(_that.selectedSourceName,_that.selectedSourceId,_that.isAutoSync
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String selectedSourceName,  String selectedSourceId,  bool isAutoSyncEnabled,  int autoSyncHoursInterval,  String customIptvUserAgent,  String m3uDirectory)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isAutoSyncEnabled,  int autoSyncHoursInterval,  String customIptvUserAgent,  String m3uDirectory)?  $default,) {final _that = this;
 switch (_that) {
 case _IptvSettingsModel() when $default != null:
-return $default(_that.selectedSourceName,_that.selectedSourceId,_that.isAutoSyncEnabled,_that.autoSyncHoursInterval,_that.customIptvUserAgent,_that.m3uDirectory);case _:
+return $default(_that.isAutoSyncEnabled,_that.autoSyncHoursInterval,_that.customIptvUserAgent,_that.m3uDirectory);case _:
   return null;
 
 }
@@ -214,11 +212,9 @@ return $default(_that.selectedSourceName,_that.selectedSourceId,_that.isAutoSync
 @JsonSerializable()
 
 class _IptvSettingsModel implements IptvSettingsModel {
-  const _IptvSettingsModel({this.selectedSourceName = '', this.selectedSourceId = '', this.isAutoSyncEnabled = false, this.autoSyncHoursInterval = 24, this.customIptvUserAgent = '', this.m3uDirectory = 'm3uDirectory'});
+  const _IptvSettingsModel({this.isAutoSyncEnabled = false, this.autoSyncHoursInterval = 24, this.customIptvUserAgent = '', this.m3uDirectory = 'm3uDirectory'});
   factory _IptvSettingsModel.fromJson(Map<String, dynamic> json) => _$IptvSettingsModelFromJson(json);
 
-@override@JsonKey() final  String selectedSourceName;
-@override@JsonKey() final  String selectedSourceId;
 @override@JsonKey() final  bool isAutoSyncEnabled;
 @override@JsonKey() final  int autoSyncHoursInterval;
 @override@JsonKey() final  String customIptvUserAgent;
@@ -237,16 +233,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IptvSettingsModel&&(identical(other.selectedSourceName, selectedSourceName) || other.selectedSourceName == selectedSourceName)&&(identical(other.selectedSourceId, selectedSourceId) || other.selectedSourceId == selectedSourceId)&&(identical(other.isAutoSyncEnabled, isAutoSyncEnabled) || other.isAutoSyncEnabled == isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, autoSyncHoursInterval) || other.autoSyncHoursInterval == autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, customIptvUserAgent) || other.customIptvUserAgent == customIptvUserAgent)&&(identical(other.m3uDirectory, m3uDirectory) || other.m3uDirectory == m3uDirectory));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IptvSettingsModel&&(identical(other.isAutoSyncEnabled, isAutoSyncEnabled) || other.isAutoSyncEnabled == isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, autoSyncHoursInterval) || other.autoSyncHoursInterval == autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, customIptvUserAgent) || other.customIptvUserAgent == customIptvUserAgent)&&(identical(other.m3uDirectory, m3uDirectory) || other.m3uDirectory == m3uDirectory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,selectedSourceName,selectedSourceId,isAutoSyncEnabled,autoSyncHoursInterval,customIptvUserAgent,m3uDirectory);
+int get hashCode => Object.hash(runtimeType,isAutoSyncEnabled,autoSyncHoursInterval,customIptvUserAgent,m3uDirectory);
 
 @override
 String toString() {
-  return 'IptvSettingsModel(selectedSourceName: $selectedSourceName, selectedSourceId: $selectedSourceId, isAutoSyncEnabled: $isAutoSyncEnabled, autoSyncHoursInterval: $autoSyncHoursInterval, customIptvUserAgent: $customIptvUserAgent, m3uDirectory: $m3uDirectory)';
+  return 'IptvSettingsModel(isAutoSyncEnabled: $isAutoSyncEnabled, autoSyncHoursInterval: $autoSyncHoursInterval, customIptvUserAgent: $customIptvUserAgent, m3uDirectory: $m3uDirectory)';
 }
 
 
@@ -257,7 +253,7 @@ abstract mixin class _$IptvSettingsModelCopyWith<$Res> implements $IptvSettingsM
   factory _$IptvSettingsModelCopyWith(_IptvSettingsModel value, $Res Function(_IptvSettingsModel) _then) = __$IptvSettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
- String selectedSourceName, String selectedSourceId, bool isAutoSyncEnabled, int autoSyncHoursInterval, String customIptvUserAgent, String m3uDirectory
+ bool isAutoSyncEnabled, int autoSyncHoursInterval, String customIptvUserAgent, String m3uDirectory
 });
 
 
@@ -274,11 +270,9 @@ class __$IptvSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of IptvSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? selectedSourceName = null,Object? selectedSourceId = null,Object? isAutoSyncEnabled = null,Object? autoSyncHoursInterval = null,Object? customIptvUserAgent = null,Object? m3uDirectory = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isAutoSyncEnabled = null,Object? autoSyncHoursInterval = null,Object? customIptvUserAgent = null,Object? m3uDirectory = null,}) {
   return _then(_IptvSettingsModel(
-selectedSourceName: null == selectedSourceName ? _self.selectedSourceName : selectedSourceName // ignore: cast_nullable_to_non_nullable
-as String,selectedSourceId: null == selectedSourceId ? _self.selectedSourceId : selectedSourceId // ignore: cast_nullable_to_non_nullable
-as String,isAutoSyncEnabled: null == isAutoSyncEnabled ? _self.isAutoSyncEnabled : isAutoSyncEnabled // ignore: cast_nullable_to_non_nullable
+isAutoSyncEnabled: null == isAutoSyncEnabled ? _self.isAutoSyncEnabled : isAutoSyncEnabled // ignore: cast_nullable_to_non_nullable
 as bool,autoSyncHoursInterval: null == autoSyncHoursInterval ? _self.autoSyncHoursInterval : autoSyncHoursInterval // ignore: cast_nullable_to_non_nullable
 as int,customIptvUserAgent: null == customIptvUserAgent ? _self.customIptvUserAgent : customIptvUserAgent // ignore: cast_nullable_to_non_nullable
 as String,m3uDirectory: null == m3uDirectory ? _self.m3uDirectory : m3uDirectory // ignore: cast_nullable_to_non_nullable
