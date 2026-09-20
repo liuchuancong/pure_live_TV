@@ -34,10 +34,14 @@ class RemoteSyncQrCard extends ConsumerWidget {
 
     if (!ready) {
       // Idle (never started, not loading, no failure): kick the server off.
-      // startServer re-checks running/loading internally, so rebuilds here
-      // cannot double-start it.
+      // Deferred to a microtask — a provider must not be modified while the
+      // widget tree is building. startServer re-checks running/in-flight
+      // internally, so repeated builds cannot double-start it.
       if (error == null && !server.isLoading && !server.isRefreshing) {
-        unawaited(ref.read(tvRemoteReceiverProvider.notifier).startServer());
+        Future.microtask(() {
+          if (!ref.mounted) return;
+          unawaited(ref.read(tvRemoteReceiverProvider.notifier).startServer());
+        });
       }
       return Container(
         width: width.sp,
