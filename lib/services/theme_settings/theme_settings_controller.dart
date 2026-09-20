@@ -15,7 +15,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   static const String defaultLanguageName = '简体中文';
   /// The grid gap is stored directly in design pixels; 32 reproduces the
   /// historical look (the old model stored 6 behind a hidden 26 offset).
-  static const double defaultSpacing = 32;
+  static const double defaultSpacing = 6;
   static const double _legacySpacingBase = 26;
   static const double minSpacing = 0;
   static const double maxSpacing = 64;
@@ -46,10 +46,13 @@ class ThemeSettingsController extends _$ThemeSettingsController {
       'theme_settings',
       (json) => json as Map<String, dynamic>,
     );
+    // A fresh install has no stored legacy value to migrate: its defaults are
+    // already direct spacing, otherwise the +26 legacy shift would inflate
+    // them. Only reads of stored data go through the one-time conversion.
     final model = savedJson != null
-        ? ThemeSettingsModel.fromJson(savedJson)
-        : const ThemeSettingsModel();
-    return _normalize(_migrateSpacing(model));
+        ? _migrateSpacing(ThemeSettingsModel.fromJson(savedJson))
+        : const ThemeSettingsModel(spacingDirectV2: true);
+    return _normalize(model);
   }
 
   /// One-time conversion from the old offset semantics: what used to render

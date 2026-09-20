@@ -218,7 +218,7 @@ return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_t
 @JsonSerializable()
 
 class _ThemeSettingsModel implements ThemeSettingsModel {
-  const _ThemeSettingsModel({this.themeModeName = "System", this.enableDynamicTheme = false, @HexColorConverter() this.themeColor = Colors.blue, this.languageName = "简体中文", this.crossAxisSpacing = 32.0, this.mainAxisSpacing = 32.0, this.spacingDirectV2 = false, this.loadingStyle = "default", @HexColorConverter() this.loadingStyleColor, this.denseRoomLayout = 4});
+  const _ThemeSettingsModel({this.themeModeName = "System", this.enableDynamicTheme = false, @HexColorConverter() this.themeColor = Colors.blue, this.languageName = "简体中文", this.crossAxisSpacing = 6.0, this.mainAxisSpacing = 6.0, this.spacingDirectV2 = false, this.loadingStyle = "default", @HexColorConverter() this.loadingStyleColor, this.denseRoomLayout = 4});
   factory _ThemeSettingsModel.fromJson(Map<String, dynamic> json) => _$ThemeSettingsModelFromJson(json);
 
 @override@JsonKey() final  String themeModeName;
