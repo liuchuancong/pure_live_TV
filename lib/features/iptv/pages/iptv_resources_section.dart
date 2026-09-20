@@ -1,5 +1,7 @@
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/data/db_service.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
@@ -148,6 +150,9 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
       children: [
         Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.sync)),
         SizedBox(height: 24.h),
+        TvSettingsGroupTitle(title: i18n('hot_resource_url')),
+        TvSettingsCard(children: [_buildHotResourceRow()]),
+        SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('iptv_resource_list')),
         TvSettingsCard(children: _buildResourceRows()),
         if (_status.isNotEmpty)
@@ -157,6 +162,40 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
           ),
       ],
     );
+  }
+
+  /// The built-in 热门 list's subscription URL, editable in place. An empty
+  /// override means the scheduler uses the built-in iptv-org default.
+  Widget _buildHotResourceRow() {
+    final settings = SettingsService.to.iptv;
+    final String override = settings.hotResourceUrl.v.trim();
+    return TvSettingsRow(
+      title: i18n('hot_resource_url'),
+      subtitle: override.isNotEmpty
+          ? override
+          : '${i18n('hot_resource_url_hint')}\n${IptvSettingsController.defaultHotResourceUrl}',
+      icon: Icons.live_tv_rounded,
+      trailingBuilder: (context, focused) => TvButton(
+        title: i18n('edit'),
+        size: TvButtonSize.mini,
+        onTap: _editHotResourceUrl,
+      ),
+      onSelect: _editHotResourceUrl,
+    );
+  }
+
+  Future<void> _editHotResourceUrl() async {
+    final settings = SettingsService.to.iptv;
+    final result = await TvDialogUtils.showInput(
+      context: context,
+      title: i18n('hot_resource_url'),
+      hintText: i18n('hot_resource_url_hint'),
+      initialValue: settings.hotResourceUrl.v.trim(),
+    );
+    if (result == null) return;
+    settings.setHotResourceUrl(result);
+    if (!mounted) return;
+    setState(() {});
   }
 
   /// Provider rows: empty state, load-failure state, then the network resources /

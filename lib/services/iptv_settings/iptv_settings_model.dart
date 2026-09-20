@@ -12,6 +12,10 @@ abstract class IptvSettingsModel with _$IptvSettingsModel {
     @Default('') String customIptvReferer,
     @Default('') String customIptvCookie,
     @Default('m3uDirectory') String m3uDirectory,
+
+    /// Subscription URL of the built-in "热门" channel list. Empty falls back
+    /// to the controller's [defaultHotResourceUrl].
+    @Default('') String hotResourceUrl,
   }) = _IptvSettingsModel;
 
   factory IptvSettingsModel.fromJson(Map<String, dynamic> json) => _$IptvSettingsModelFromJson(json);

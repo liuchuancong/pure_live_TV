@@ -20,8 +20,22 @@ class IptvSettingsController extends _$IptvSettingsController {
 
   static const String autoSyncHoursIntervalKey = 'autoSyncHoursInterval';
 
+  /// The built-in "热门" subscription, imported into the fixed system hot
+  /// provider when the recommendation list runs empty.
+  static const String defaultHotResourceUrl = 'https://iptv-org.github.io/iptv/countries/cn.m3u';
+
   // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<bool> get isAutoSyncEnabled => SettingsValue(() => state.isAutoSyncEnabled, setAutoSyncEnabled);
+
+  /// The URL the hot import actually uses — the user's override, or the
+  /// built-in default when the override is blank.
+  String get effectiveHotResourceUrl {
+    final url = state.hotResourceUrl.trim();
+    return url.isEmpty ? defaultHotResourceUrl : url;
+  }
+
+  /// The raw override; empty means the built-in default applies.
+  SettingsValue<String> get hotResourceUrl => SettingsValue(() => state.hotResourceUrl, setHotResourceUrl);
 
   @override
   IptvSettingsModel build() {
@@ -34,7 +48,12 @@ class IptvSettingsController extends _$IptvSettingsController {
       customIptvReferer: HivePrefUtil.getString('customIptvReferer') ?? '',
       customIptvCookie: HivePrefUtil.getString('customIptvCookie') ?? '',
       m3uDirectory: HivePrefUtil.getString('m3uDirectory') ?? 'm3uDirectory',
+      hotResourceUrl: HivePrefUtil.getString('hotResourceUrl') ?? '',
     );
+  }
+
+  void setHotResourceUrl(String url) {
+    updateSettings(state.copyWith(hotResourceUrl: url.trim()));
   }
 
   void updateSettings(IptvSettingsModel newModel) {
@@ -80,6 +99,7 @@ class IptvSettingsController extends _$IptvSettingsController {
     HivePrefUtil.setString('customIptvReferer', state.customIptvReferer);
     HivePrefUtil.setString('customIptvCookie', state.customIptvCookie);
     HivePrefUtil.setString('m3uDirectory', state.m3uDirectory);
+    HivePrefUtil.setString('hotResourceUrl', state.hotResourceUrl);
   }
 
   Map<String, dynamic> toJson() => state.toJson();
@@ -102,6 +122,7 @@ class IptvSettingsController extends _$IptvSettingsController {
       'customIptvReferer': (json['customIptvReferer'] ?? '') as String,
       'customIptvCookie': (json['customIptvCookie'] ?? '') as String,
       'm3uDirectory': (json['m3uDirectory'] ?? 'm3uDirectory') as String,
+      'hotResourceUrl': (json['hotResourceUrl'] ?? '') as String,
     };
   }
 

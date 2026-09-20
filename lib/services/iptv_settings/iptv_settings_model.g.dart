@@ -15,6 +15,7 @@ _IptvSettingsModel _$IptvSettingsModelFromJson(Map<String, dynamic> json) =>
       customIptvReferer: json['customIptvReferer'] as String? ?? '',
       customIptvCookie: json['customIptvCookie'] as String? ?? '',
       m3uDirectory: json['m3uDirectory'] as String? ?? 'm3uDirectory',
+      hotResourceUrl: json['hotResourceUrl'] as String? ?? '',
     );
 
 Map<String, dynamic> _$IptvSettingsModelToJson(_IptvSettingsModel instance) =>
@@ -25,4 +26,5 @@ Map<String, dynamic> _$IptvSettingsModelToJson(_IptvSettingsModel instance) =>
       'customIptvReferer': instance.customIptvReferer,
       'customIptvCookie': instance.customIptvCookie,
       'm3uDirectory': instance.m3uDirectory,
+      'hotResourceUrl': instance.hotResourceUrl,
     };

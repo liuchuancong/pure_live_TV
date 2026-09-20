@@ -33,7 +33,9 @@ class AutoSyncScheduler {
   Future<void> loadHotResources() => _hotResourcesGate.run(_loadHotResources);
 
   Future<void> _loadHotResources() async {
-    final iptvUrl = 'https://iptv-org.github.io/iptv/countries/cn.m3u';
+    // The hot list's subscription URL is user-manageable in 设置 → IPTV; this
+    // falls back to the built-in iptv-org default when no override is set.
+    final iptvUrl = SettingsService.to.iptv.effectiveHotResourceUrl;
     await IptvImportManager().importFromNetworkUrl(
       iptvUrl,
       AppPathManager.iptvHotFile,
