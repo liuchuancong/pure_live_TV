@@ -191,6 +191,12 @@ export const api = {
   updateDanmakuFilter(filters) {
     return httpPostText('/api/danmaku_filter', filters)
   },
+  getTags() {
+    return httpGet('/api/tags')
+  },
+  tagAction(payload) {
+    return httpPostJson('/api/tags', payload)
+  },
   clearLog() {
     return httpPostJson('/api/log/clear', {})
   },

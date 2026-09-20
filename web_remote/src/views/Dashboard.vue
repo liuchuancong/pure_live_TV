@@ -38,7 +38,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Link as LinkIcon, Search as SearchIcon, Key as KeyIcon, Tv as TvIcon, Globe as GlobeIcon, EyeOff as EyeOffIcon, RefreshCw as RefreshIcon, ChevronRight as ChevronRightIcon, Info as InfoIcon, FileText as FileTextIcon, Heart as HeartIcon } from 'lucide-vue-next'
+import { Link as LinkIcon, Search as SearchIcon, Key as KeyIcon, Tv as TvIcon, Globe as GlobeIcon, EyeOff as EyeOffIcon, RefreshCw as RefreshIcon, ChevronRight as ChevronRightIcon, Info as InfoIcon, FileText as FileTextIcon, Heart as HeartIcon, Tag as TagIcon } from 'lucide-vue-next'
 import { api } from '@/services/api.js'
 
 const serverOnline = ref(false)
@@ -124,6 +124,15 @@ const groupList = [
         desc: '接口与播放代理设置',
         icon: GlobeIcon,
         iconBgClass: 'bg-teal-500/10 text-teal-500',
+        colClass: '',
+        descShowClass: 'hidden sm:block'
+      },
+      {
+        path: '/tags',
+        title: '标签管理',
+        desc: '添加、编辑与删除标签',
+        icon: TagIcon,
+        iconBgClass: 'bg-amber-500/10 text-amber-500',
         colClass: '',
         descShowClass: 'hidden sm:block'
       },

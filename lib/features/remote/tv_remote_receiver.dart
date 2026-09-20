@@ -7,6 +7,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
+import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
@@ -318,6 +319,40 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       if (cookie.isNotEmpty) _setCookieForSite('douyin', cookie);
       _addLog('Douyin cookie updated');
       _broadcastWs({'type': 'cookie_push', 'site': 'douyin'});
+      return _ok(res, msg: i18n('ui_saved'));
+    });
+
+    // Tag management bridge for the phone pages: list + add/update/delete.
+    _app!.get('/api/tags', (req, res) {
+      final tags = ref.read(tagManagementControllerProvider).tags;
+      return _ok(
+        res,
+        data: [
+          for (final tag in tags) {'id': tag.id, 'name': tag.name, 'description': tag.description, 'order': tag.order},
+        ],
+      );
+    });
+
+    _app!.post('/api/tags', (req, res) async {
+      final body = await req.body as Map<String, dynamic>?;
+      if (body == null) return _fail(res, msg: i18n('remote_bad_request'));
+      final action = (body['action'] ?? '').toString();
+      final id = (body['id'] ?? '').toString();
+      final name = (body['name'] ?? '').toString();
+      final description = (body['description'] ?? '').toString();
+      final controller = ref.read(tagManagementControllerProvider.notifier);
+      final bool ok = switch (action) {
+        'add' => controller.addTag(name, description),
+        'update' => id.isNotEmpty && controller.updateTag(id, name, description),
+        'delete' => id.isNotEmpty && controller.deleteTagById(id),
+        _ => false,
+      };
+      if (!ok) {
+        _addLog('Tag action rejected: $action');
+        return _fail(res, msg: i18n('remote_bad_request'));
+      }
+      _addLog('Tags updated from the phone: $action');
+      _broadcastWs({'type': 'tags_updated', 'action': action});
       return _ok(res, msg: i18n('ui_saved'));
     });
 

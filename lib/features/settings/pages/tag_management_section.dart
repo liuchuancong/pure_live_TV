@@ -53,6 +53,7 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
           TvSettingsGroupTitle(title: i18n('tag_management')),
           TvSettingsCard(
             children: [
+              TvSettingsNavTile(title: i18n('ui_add'), icon: Icons.add_rounded, onTap: _addTag),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 child: state.tags.isEmpty
@@ -80,7 +81,6 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
                         ],
                       ),
               ),
-              TvSettingsNavTile(title: i18n('ui_add'), icon: Icons.add_rounded, onTap: _addTag),
             ],
           ),
           if (_result.isNotEmpty)

@@ -27,8 +27,10 @@ class TagManagementController extends _$TagManagementController {
     return TagManagementModel(tags: tags..sort((a, b) => a.order.compareTo(b.order)), roomTagsMap: mapping);
   }
 
-  void addTag(String name, String description) {
-    if (name.trim().isEmpty || state.tags.any((t) => t.name.toLowerCase() == name.trim().toLowerCase())) return;
+  bool addTag(String name, String description) {
+    if (name.trim().isEmpty || state.tags.any((t) => t.name.toLowerCase() == name.trim().toLowerCase())) {
+      return false;
+    }
 
     final newTag = LiveTag(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -38,6 +40,28 @@ class TagManagementController extends _$TagManagementController {
     );
     state = state.copyWith(tags: [...state.tags, newTag]);
     _persist();
+    return true;
+  }
+
+  /// Renames / re-describes a tag by id; the name must stay unique.
+  bool updateTag(String id, String name, String description) {
+    final cleanName = name.trim();
+    if (cleanName.isEmpty) return false;
+    if (state.tags.any((t) => t.id != id && t.name.toLowerCase() == cleanName.toLowerCase())) return false;
+    final index = state.tags.indexWhere((t) => t.id == id);
+    if (index < 0) return false;
+    final updated = List<LiveTag>.from(state.tags);
+    updated[index] = updated[index].copyWith(name: cleanName, description: description.trim());
+    state = state.copyWith(tags: updated);
+    _persist();
+    return true;
+  }
+
+  bool deleteTagById(String id) {
+    final index = state.tags.indexWhere((t) => t.id == id);
+    if (index < 0) return false;
+    deleteTag(index);
+    return true;
   }
 
   void deleteTag(int index) {

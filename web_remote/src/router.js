@@ -13,6 +13,7 @@ const AboutRemoteView = () => import('./views/AboutRemote.vue')
 const DanmakuFilterView = () => import('./views/DanmakuFilter.vue')
 const IptvRemoteView = () => import('./views/IptvRemote.vue')
 const ProxyRemoteView = () => import('./views/ProxyRemote.vue')
+const TagRemoteView = () => import('./views/TagRemote.vue')
 const DonateView = () => import('./views/Donate.vue')
 const routes = [
   {
@@ -59,6 +60,11 @@ const routes = [
     path: '/proxy',
     component: ProxyRemoteView,
     meta: { title: '网络代理' }
+  },
+  {
+    path: '/tags',
+    component: TagRemoteView,
+    meta: { title: '标签管理' }
   },
   {
     path: '/sync',
