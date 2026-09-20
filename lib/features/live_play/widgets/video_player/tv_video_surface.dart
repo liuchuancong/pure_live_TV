@@ -107,7 +107,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
           // room info lives at the top of the screen, as in the reference player
           // — but as a proper TV top bar, not a single 16sp text line: avatar,
           // title, streamer with a platform badge, the wall clock, and back.
-          if (!showError && state.room != null)
+          if (!showError && state.room != null && state.showControls)
             Positioned(
               left: 0,
               right: 0,
