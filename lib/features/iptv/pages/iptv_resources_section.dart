@@ -7,6 +7,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/iptv/data/database.dart' as database;
 import 'package:pure_live/features/iptv/services/iptv_sync_engine.dart';
 
+import 'package:pure_live/app/router/web_router.dart';
 /// IPTV resource list page: the imported sources with per-item sync /
 /// auto-sync / delete. Deleting a source always asks for confirmation because
 /// the cascading delete also drops its channels.
@@ -145,7 +146,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(child: RemoteSyncQrCard(width: 280)),
+        Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.sync)),
         SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('iptv_resource_list')),
         TvSettingsCard(children: _buildResourceRows()),

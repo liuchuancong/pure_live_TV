@@ -3,17 +3,25 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
+import 'dart:async';
 
 /// The "open the web form" card: a QR carrying the web remote's
-/// `http://ip:port/` address, served by the alfred web server. A phone camera
-/// scan opens the page directly.
+/// `http://ip:port/#/route` address, served by the alfred web server. A phone
+/// camera scan opens the Vue hash route directly.
+///
+/// The card also boots the web server itself: it is often the first remote
+/// surface the user opens after launch, and nothing else guarantees a start.
 class RemoteSyncQrCard extends ConsumerWidget {
-  const RemoteSyncQrCard({super.key, this.width = 260});
+  const RemoteSyncQrCard({super.key, this.width = 260, this.route = WebRemoteRouter.dashboard});
 
   /// Card width in design pixels; the player panel passes a smaller value.
   final double width;
+
+  /// Hash route the QR opens on the phone, e.g. [WebRemoteRouter.sync].
+  final String route;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,10 +29,16 @@ class RemoteSyncQrCard extends ConsumerWidget {
     final tvTheme = context.tvTheme;
 
     final String? error = server.value?.error;
-    final String url = server.value?.serverUrl ?? '';
-    final bool ready = server.value?.isRunning == true && url.isNotEmpty;
+    final String serverUrl = server.value?.serverUrl ?? '';
+    final bool ready = server.value?.isRunning == true && serverUrl.isNotEmpty;
 
     if (!ready) {
+      // Idle (never started, not loading, no failure): kick the server off.
+      // startServer re-checks running/loading internally, so rebuilds here
+      // cannot double-start it.
+      if (error == null && !server.isLoading && !server.isRefreshing) {
+        unawaited(ref.read(tvRemoteReceiverProvider.notifier).startServer());
+      }
       return Container(
         width: width.sp,
         padding: EdgeInsets.all(16.sp),
@@ -54,6 +68,7 @@ class RemoteSyncQrCard extends ConsumerWidget {
       );
     }
 
+    final String url = '$serverUrl$route';
     return SizedBox(
       width: width.sp,
       child: TvQrCodeCard(qrData: url, urlText: url),

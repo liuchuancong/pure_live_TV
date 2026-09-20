@@ -274,7 +274,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TvQrCodeCard(qrData: _phoneUrl, urlText: _phoneUrl.split('/#/').first),
+                    TvQrCodeCard(qrData: _phoneUrl, urlText: _phoneUrl),
                     SizedBox(height: 12.h),
                   ],
                 ),

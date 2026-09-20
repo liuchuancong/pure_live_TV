@@ -91,7 +91,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(width: _centerWidgetWidth.sp, child: const RemoteSyncQrCard(width: 240)),
+            SizedBox(width: _centerWidgetWidth.sp, child: const RemoteSyncQrCard(width: 240, route: WebRemoteRouter.search)),
             SizedBox(height: (_itemGap * 0.7).sp),
             _buildTypeSegmented(themeColor, searchState.searchTypeIndex),
             SizedBox(height: (_itemGap * 0.6).sp),

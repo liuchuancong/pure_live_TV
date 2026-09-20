@@ -65,12 +65,25 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     return ServerState(isRunning: false, serverUrl: '', port: 8888);
   }
 
+  /// The in-flight start, so concurrent callers await the same attempt
+  /// instead of racing the bind (a lost race would retry onto port+1 while
+  /// every QR still prints `port`).
+  Future<void>? _pendingStart;
+
   Future<void> startServer({int port = 8888}) async {
     // Already listening: starting again would bind a second port and leave two
     // servers racing for the same state.
     if (state.value?.isRunning == true) return;
+    return _pendingStart ??= _startServer(port);
+  }
+
+  Future<void> _startServer(int port) async {
     state = const AsyncLoading();
-    await _startServerWithRetry(port: port);
+    try {
+      await _startServerWithRetry(port: port);
+    } finally {
+      _pendingStart = null;
+    }
   }
 
   /// The cookie the phone asks for, by the site id the web remote uses.

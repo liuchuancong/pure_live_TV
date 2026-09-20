@@ -6,6 +6,7 @@ import 'package:pure_live/features/iptv/services/iptv_sync_engine.dart';
 import 'package:pure_live/shared/data/db_service.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 
+import 'package:pure_live/app/router/web_router.dart';
 /// IPTV auto-sync page: the global switch, the interval and the batch sync of
 /// every source whose per-item auto-sync is on.
 class IptvSyncSectionPage extends ConsumerStatefulWidget {
@@ -62,7 +63,7 @@ class _IptvSyncSectionPageState extends ConsumerState<IptvSyncSectionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(child: RemoteSyncQrCard(width: 280)),
+        Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.sync)),
         SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('auto_sync_settings')),
         TvSettingsCard(

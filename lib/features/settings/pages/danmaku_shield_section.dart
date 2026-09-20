@@ -4,6 +4,7 @@ import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 
+import 'package:pure_live/app/router/web_router.dart';
 /// Danmaku block list: keywords and blocked users. Both lists live in the
 /// favorites controller so playback and settings read the same state.
 class DanmakuShieldSectionPage extends ConsumerStatefulWidget {
@@ -48,7 +49,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(child: RemoteSyncQrCard(width: 280)),
+          Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.danmakuFilter)),
           SizedBox(height: 20.sp),
           // keyword shield
           TvSettingsGroupTitle(title: i18n('danmaku_keyword_block')),

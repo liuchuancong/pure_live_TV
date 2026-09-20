@@ -8,6 +8,7 @@ import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
 
+import 'package:pure_live/app/router/web_router.dart';
 /// IPTV import page: network playlist URLs only.
 ///
 /// Local file picking is gone — a playlist file is uploaded through the web
@@ -81,7 +82,7 @@ class _IptvImportSectionPageState extends State<IptvImportSectionPage> {
       children: [
         // Typing a URL on a TV remote is not realistic: the phone page is the
         // primary way in — it offers both the URL import and file upload.
-        Center(child: RemoteSyncQrCard(width: 280)),
+        Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.sync)),
         SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('iptv_import_url')),
         TvSettingsCard(

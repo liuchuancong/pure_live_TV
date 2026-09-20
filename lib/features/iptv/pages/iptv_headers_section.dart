@@ -5,6 +5,7 @@ import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 
+import 'package:pure_live/app/router/web_router.dart';
 /// IPTV request-header page: User-Agent, Referer and Cookie, each its own
 /// field. These headers are sent with every playlist download/sync and used as
 /// the playback fallback for channels without their own directives; the phone
@@ -51,7 +52,7 @@ class _IptvHeadersSectionPageState extends ConsumerState<IptvHeadersSectionPage>
       children: [
         // Headers are long token strings: typing them on a TV remote is not
         // realistic, so the phone page (scan the QR) edits the same fields.
-        Center(child: RemoteSyncQrCard(width: 280)),
+        Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.sync)),
         SizedBox(height: 24.h),
         TvSettingsGroupTitle(title: i18n('iptv_headers_settings')),
         TvSettingsCard(
