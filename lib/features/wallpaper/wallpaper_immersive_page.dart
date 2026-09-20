@@ -228,8 +228,9 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
 
   /// Returns to the preview page, carrying the final position back.
   ///
-  /// Idempotent: the remote's back key can arrive through both the key event
-  /// and the system pop, and popping twice would drop the preview as well.
+  /// Idempotent: the pop callback can fire more than once for a single press
+  /// (predictive back, repeated delivery); popping twice would drop the
+  /// preview page as well and leave the user on the wallpaper list.
   void _pop() {
     if (_popping) return;
     _popping = true;
