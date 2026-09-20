@@ -13,6 +13,26 @@ class FavoritePage extends ConsumerStatefulWidget {
 }
 
 class _FavoritePageState extends ConsumerState<FavoritePage> {
+  /// PagingParam identity is the paging family key: constructing a fresh one
+  /// per build (closures compare by identity) tore down the PagingCore,
+  /// refetched and reset the grid to page 1 on every unrelated rebuild — the
+  /// spacing sliders, any settings toggle, every favourite emission.
+  final Map<String, PagingParam<LiveRoom>> _pagingParamsCache = {};
+
+  PagingParam<LiveRoom> _getOrCreateParam(String key) {
+    return _pagingParamsCache.putIfAbsent(key, () {
+      return PagingParam<LiveRoom>(
+        mode: PagingMode.localReactive,
+        pageSize: 12,
+        keepAlive: false,
+        fetchAll: () async {
+          return ref.read(favoriteProvider.notifier).getFilteredRooms();
+        },
+        localRefresh: () async {},
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final favoriteState = ref.watch(favoriteProvider);
@@ -24,14 +44,8 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
 
     final currentRooms = ref.read(favoriteProvider.notifier).getFilteredRooms();
 
-    final currentParam = PagingParam<LiveRoom>(
-      mode: PagingMode.localReactive,
-      pageSize: 12,
-      keepAlive: false,
-      fetchAll: () async {
-        return ref.read(favoriteProvider.notifier).getFilteredRooms();
-      },
-      localRefresh: () async {},
+    final currentParam = _getOrCreateParam(
+      'fav_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}',
     );
 
     final List<TvTabItemData> statusTabs = [

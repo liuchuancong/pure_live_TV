@@ -204,6 +204,36 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     return true;
   }
 
+  /// Applies a whole refresh batch with ONE state write and ONE persist:
+  /// updateRoom per room re-encoded the entire favourite list to JSON on the
+  /// main isolate per room (N × O(N) = O(N²)) and emitted N provider updates.
+  void updateRooms(List<LiveRoom> rooms) {
+    if (rooms.isEmpty) return;
+    var current = state.favoriteRooms;
+    var changed = false;
+    for (final room in rooms) {
+      final normalized = _normalizedIdentityCopy(room);
+      if (!_isValidFavoriteRoom(normalized)) continue;
+      final index = current.indexWhere((e) => e.hasSameIdentity(normalized));
+      if (index < 0) continue;
+      current = List<LiveRoom>.from(current);
+      current[index] = current[index]
+          .withAudienceFallbackFrom(normalized)
+          .copyWith(
+            title: normalized.title,
+            nick: normalized.nick,
+            avatar: normalized.avatar,
+            cover: normalized.cover,
+            area: normalized.area,
+            introduction: normalized.introduction,
+            status: normalized.status,
+            liveStatus: normalized.liveStatus,
+          );
+      changed = true;
+    }
+    if (changed) _update(state.copyWith(favoriteRooms: current));
+  }
+
   bool updateRoom(LiveRoom room) {
     final normalized = _normalizedIdentityCopy(room);
     if (!_isValidFavoriteRoom(normalized)) return false;

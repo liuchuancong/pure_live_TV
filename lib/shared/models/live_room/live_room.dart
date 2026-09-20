@@ -196,9 +196,11 @@ abstract class LiveRoom with _$LiveRoom {
     return text.isNotEmpty && text != 'null' && parseAudienceNumber(text) > 0;
   }
 
+  static final RegExp _digitPattern = RegExp(r'[0-9]');
+
   static bool _hasExplicitAudienceValue(String? value) {
     final text = value?.trim() ?? '';
-    return text.isNotEmpty && text != 'null' && RegExp(r'[0-9]').hasMatch(text);
+    return text.isNotEmpty && text != 'null' && _digitPattern.hasMatch(text);
   }
 
   const factory LiveRoom({

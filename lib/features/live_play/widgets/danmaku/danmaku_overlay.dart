@@ -40,7 +40,11 @@ class _DanmakuOverlayState extends ConsumerState<DanmakuOverlay> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(danmakuSettingsControllerProvider);
-    final session = ref.watch(danmakuSessionControllerProvider(widget.args));
+    // Only the controller instance matters here; watching the whole session
+    // rebuilt the overlay (config alloc + compare) for every danmaku message.
+    final session = ref.watch(
+      danmakuSessionControllerProvider(widget.args).select((s) => s.barrageController),
+    );
 
     if (settings.hideDanmaku || !settings.enableDanmakuDisplay) {
       return const SizedBox.shrink();
@@ -50,7 +54,7 @@ class _DanmakuOverlayState extends ConsumerState<DanmakuOverlay> {
       child: FlameBarrageWidget(
         config: _buildConfig(settings),
         emojiAtlas: EmojiAtlas.instance,
-        controller: session.barrageController,
+        controller: session,
       ),
     );
   }

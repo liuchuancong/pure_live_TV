@@ -99,22 +99,41 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       return highest;
     }
 
-    int byAudience(LiveRoom a, LiveRoom b) => LiveRoom.compareAudienceRanking(
-      a,
-      b,
-      preferRealOnline: appState.preferRealOnlineCounts,
-      // Capability-aware: a platform that only publishes heat must keep ranking
-      // by that value even when concurrent mode is on.
-      platformEnabled: (platform) => LiveRoom.audienceCapabilityFor(platform).supportsConcurrentOnline &&
-          appState.realOnlinePlatforms.contains(platform),
-    );
+    // Decorate-sort-undecorate: the comparators below used to recompute the
+    // tag score and the audience rank key for both rooms on EVERY comparison
+    // (n·log n × ~15 string parses + RegExp allocations per key); memoizing
+    // per room turns the sort into plain integer/enum comparisons.
+    final tagScoreMemo = <String, int>{};
+    int tagScoreOf(LiveRoom room) => tagScoreMemo[room.identityKey] ??= getRoomTagScore(room);
+
+    final audienceKeyMemo = <String, AudienceRankKey>{};
+    AudienceRankKey audienceKeyOf(LiveRoom room) =>
+        audienceKeyMemo[room.identityKey] ??=
+        room.audienceRankKey(
+          preferRealOnline: appState.preferRealOnlineCounts,
+          // Capability-aware: a platform that only publishes heat must keep
+          // ranking by that value even when concurrent mode is on.
+          platformEnabled:
+              LiveRoom.audienceCapabilityFor(room.normalizedPlatformId).supportsConcurrentOnline &&
+              appState.realOnlinePlatforms.contains(room.normalizedPlatformId),
+        );
+
+    int byAudience(LiveRoom a, LiveRoom b) {
+      final left = audienceKeyOf(a);
+      final right = audienceKeyOf(b);
+      final metricOrder = right.metricPriority.compareTo(left.metricPriority);
+      if (metricOrder != 0) return metricOrder;
+      final valueOrder = right.value.compareTo(left.value);
+      if (valueOrder != 0) return valueOrder;
+      return a.identityKey.compareTo(b.identityKey);
+    }
 
     int sortRooms(LiveRoom a, LiveRoom b) {
       if (currentState.selectedTagId == 'all') {
         return byAudience(a, b);
       }
-      final int sa = getRoomTagScore(a);
-      final int sb = getRoomTagScore(b);
+      final int sa = tagScoreOf(a);
+      final int sb = tagScoreOf(b);
       if (sa != sb) return sb.compareTo(sa);
       return byAudience(a, b);
     }
@@ -232,9 +251,9 @@ class FavoriteNotifier extends _$FavoriteNotifier {
             .toList();
         final results = await Future.wait(futures);
 
-        for (var updated in results) {
-          ref.read(favoriteRoomControllerProvider.notifier).updateRoom(updated);
-        }
+        ref.read(favoriteRoomControllerProvider.notifier).updateRooms(
+              results.whereType<LiveRoom>().toList(),
+            );
       } catch (e) {
         developer.log('Error refreshing room details in riverpod: $e');
       }

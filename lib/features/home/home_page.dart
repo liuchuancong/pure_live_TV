@@ -61,7 +61,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     // settings refresh -> home cache: on top of the widget default, the user can turn the
     // page cache off so every switch rebuilds the content fresh (and clears
     // cached tab state after nav/platform config changes).
-    final bool effectiveKeepAlive = widget.keepAlive && ref.watch(refreshConfigControllerProvider).homeKeepAlive;
+    final bool effectiveKeepAlive =
+        widget.keepAlive && ref.watch(refreshConfigControllerProvider.select((s) => s.homeKeepAlive));
 
     // A menu entry hidden in navigation visibility while its page is on screen leaves the
     // sidebar with no selection and the old page lingering. Auto-correct once

@@ -162,17 +162,14 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
             itemBuilder: (context, index) => widget.itemBuilder(context, state.items[index], index),
           ),
         ),
-        AppStatusView(type: AppStatusType.loading, isMini: true)
-            .animate(target: state.controllerState.loading ? 1.0 : 0.0)
-            .custom(
-              duration: 350.ms,
-              curve: Curves.fastOutSlowIn,
-              builder: (context, value, child) {
-                return SizedBox(height: value * 64.sp, child: child);
-              },
-            )
-            .fade(begin: 0.0, end: 1.0, duration: 250.ms)
-            .move(begin: Offset(0, 15.sp), end: const Offset(0, 0), duration: 350.ms, curve: Curves.easeOutCubic),
+        // Mounted only while loading: an always-mounted loader kept a repeating
+        // AnimationController (or SpinKit) ticking at 60 fps even collapsed to
+        // height 0, pinning the UI/raster threads awake on every paged page.
+        if (state.controllerState.loading)
+          AppStatusView(type: AppStatusType.loading, isMini: true)
+              .animate()
+              .fade(begin: 0.0, end: 1.0, duration: 250.ms)
+              .move(begin: Offset(0, 15.sp), end: const Offset(0, 0), duration: 350.ms, curve: Curves.easeOutCubic),
       ],
     );
   }

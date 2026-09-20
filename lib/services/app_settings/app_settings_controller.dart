@@ -84,7 +84,20 @@ class AppSettingsController extends _$AppSettingsController {
   }
 
   /// Selected platforms after dropping entries this build no longer supports.
-  List<String> get resolvedRealOnlinePlatforms => normalizeRealOnlinePlatforms(state.realOnlinePlatforms);
+  List<String>? _resolvedSource;
+  List<String> _resolvedCache = const [];
+
+  /// Normalized once per list identity: every room card calls this per build,
+  /// and re-normalizing (trim/toSet/toList) each time was pure churn. The
+  /// platform count is ~7, so contains() on the list is fine.
+  List<String> get resolvedRealOnlinePlatforms {
+    final source = state.realOnlinePlatforms;
+    if (!identical(_resolvedSource, source)) {
+      _resolvedSource = source;
+      _resolvedCache = normalizeRealOnlinePlatforms(source);
+    }
+    return _resolvedCache;
+  }
 
   bool isRealOnlineEnabledFor(String? platform) =>
       resolvedRealOnlinePlatforms.contains(platform?.trim().toLowerCase());

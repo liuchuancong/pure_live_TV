@@ -251,10 +251,12 @@ class Sites {
   static Site of(String id) {
     final normalizedId = id.trim().toLowerCase();
 
-    // Do not construct every platform adapter for a single lookup. Favourite
-    // verification performs this operation for every saved room; the previous
-    // list scan allocated nine adapters per card and also discarded platform
-    // session caches immediately afterwards.
+    // Reuse the cached adapter: constructing a fresh one per call (favourite
+    // verification does this per room per refresh) discarded platform session
+    // caches and allocated an adapter each time.
+    for (final site in _supportedSites) {
+      if (site.id == normalizedId) return site;
+    }
     return _createSite(normalizedId);
   }
 

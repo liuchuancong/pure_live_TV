@@ -50,7 +50,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   /// it into the key is what makes the visible covers reload instead of keeping
   /// the bitmaps they already decoded.
   String get coverCacheKey {
-    final int epoch = ref.watch(cacheControllerProvider).imageCacheEpoch;
+    final int epoch = ref.watch(cacheControllerProvider.select((m) => m.imageCacheEpoch));
     return epoch == 0 ? widget.room.cover : '${widget.room.cover}#$epoch';
   }
 
@@ -58,11 +58,17 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   /// prefers it and this platform really publishes it, otherwise the platform's
   /// native heat, cumulative or legacy value.
   String get _audienceText {
-    final settings = ref.watch(appSettingsControllerProvider);
-    final app = ref.read(appSettingsControllerProvider.notifier);
+    // Narrow selects: watching the whole models rebuilt every mounted card
+    // whenever any unrelated setting (cache scan, any toggle) changed.
+    final preferRealOnline = ref.watch(
+      appSettingsControllerProvider.select((s) => s.preferRealOnlineCounts),
+    );
+    ref.watch(appSettingsControllerProvider.select((s) => s.realOnlinePlatforms));
     final value = widget.room.audienceValue(
-      preferRealOnline: settings.preferRealOnlineCounts,
-      platformEnabled: app.isRealOnlineEnabledFor(widget.room.platform),
+      preferRealOnline: preferRealOnline,
+      platformEnabled: ref
+          .read(appSettingsControllerProvider.notifier)
+          .isRealOnlineEnabledFor(widget.room.platform),
     );
     return readableCount(value);
   }

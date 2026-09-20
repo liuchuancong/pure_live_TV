@@ -55,7 +55,10 @@ class CustomImageCacheManager {
       Config(
         _cacheKey,
         stalePeriod: const Duration(days: 7),
-        maxNrOfCacheObjects: 200,
+        // 200 objects thrashed on deep scrolls (12-per-page grids exceed it by
+        // page ~17); covers are disk-capped at 1280px so the memory cost stays
+        // bounded.
+        maxNrOfCacheObjects: 600,
         fileSystem: customFileSystem,
         fileService: HttpFileServiceWithRetry(),
       ),

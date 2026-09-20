@@ -106,7 +106,14 @@ class TagManagementController extends _$TagManagementController {
   ///
   /// A legacy tag is copied to every matching platform room before the old key
   /// is removed, so existing assignments survive while later edits diverge.
+  /// One pass per session: this ran inside every favourite _syncAndFilter
+  /// (per tab switch, per tag change, N times per auto-refresh) although it
+  /// is a one-time data migration.
+  bool _legacyMigrationDone = false;
+
   void migrateLegacyRoomTagKeys(Iterable<LiveRoom> rooms) {
+    if (_legacyMigrationDone) return;
+    _legacyMigrationDone = true;
     final newMap = Map<String, List<String>>.from(state.roomTagsMap);
     final migratedLegacyKeys = <String>{};
     var changed = false;
