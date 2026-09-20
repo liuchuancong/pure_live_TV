@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/services/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// General settings, in the desktop app's order: update checking, the shutdown
@@ -47,16 +47,6 @@ class GeneralSettingsSectionPage extends ConsumerWidget {
               index: _shutDownIndex(exitState),
               onChanged: (i) => exit.updateConfig(_shutDownConfig(exitState, i)),
             ),
-            TvSettingsSwitchTile(
-              title: i18n('ui_exit_without_confirmation'),
-              subtitle: i18n('ui_back_key_exits_the_app_directly_without_confirma'),
-              icon: Remix.error_warning_line,
-              value: exitState.dontAskExit,
-              onChanged: (v) => exit.setDontAskExit(v),
-            ),
-            // The old favourites-only dense-layout switch used to sit here; the
-            // room-card column count on the theme page's grid-spacing page
-            // replaced it and applies to every room-card grid.
           ],
         ),
       ],

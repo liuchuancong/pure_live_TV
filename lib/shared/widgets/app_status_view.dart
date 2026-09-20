@@ -350,7 +350,7 @@ class _AppStatusViewState extends State<AppStatusView> {
               color: widget.iconColor ?? tvTheme.focusColor,
             ),
           ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
-
+          if (!widget.isMini) SizedBox(height: 12.h),
           if (!widget.isMini || finalTitle.isNotEmpty) ...[
             Text(
               finalTitle,
