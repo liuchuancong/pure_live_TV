@@ -151,12 +151,15 @@ class TvButton extends StatelessWidget {
     if (title.isEmpty && icon != null) {
       return Center(child: icon!);
     }
+    // The text is the flexible part: a button squeezed by its parent (a tight
+    // cell, a narrow bar) ellipsizes its label instead of overflowing the
+    // fixed icon + gap.
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: switch (iconPosition) {
-        TvIconPosition.left => [icon!, SizedBox(width: space), textWidget],
-        TvIconPosition.right => [textWidget, SizedBox(width: space), icon!],
+        TvIconPosition.left => [icon!, SizedBox(width: space), Flexible(child: textWidget)],
+        TvIconPosition.right => [Flexible(child: textWidget), SizedBox(width: space), icon!],
         TvIconPosition.top => [
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -164,7 +167,7 @@ class TvButton extends StatelessWidget {
             children: [
               icon!,
               SizedBox(height: space),
-              textWidget,
+              Flexible(child: textWidget),
             ],
           ),
         ],
@@ -173,7 +176,7 @@ class TvButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              textWidget,
+              Flexible(child: textWidget),
               SizedBox(height: space),
               icon!,
             ],

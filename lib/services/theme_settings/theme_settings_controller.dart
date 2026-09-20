@@ -17,7 +17,20 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   static const double minSpacing = 0;
   static const double maxSpacing = 64;
   static const int defaultRoomCardColumns = 4;
-  static const List<int> roomCardColumnsOptions = <int>[3, 4, 5, 6, 8];
+
+  /// Dense-room-layout levels, as grid columns: standard / dense.
+  static const List<int> roomCardColumnsOptions = <int>[4, 5];
+
+  /// Grid cell aspect (width / height) for the room-card grids at [columns].
+  ///
+  /// Denser levels make every cell narrower; a fixed ratio would then leave too
+  /// little height under the 16:9 cover for the info row (a bottom overflow),
+  /// so the cell relatively heightens as the density grows.
+  static double roomCardAspectRatio(int columns) => switch (columns) {
+    5 => 1.25,
+    _ => 1.3,
+  };
+
   static bool _hasSwitchedOnce = false;
   static final Set<String> _loadingStyleKeys = AppConsts.allStyles
       .map((item) => item['key'] ?? '')
@@ -26,8 +39,13 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
   @override
   ThemeSettingsModel build() {
-    final savedJson = HivePrefUtil.getObject('theme_settings', (json) => json as Map<String, dynamic>);
-    final model = savedJson != null ? ThemeSettingsModel.fromJson(savedJson) : const ThemeSettingsModel();
+    final savedJson = HivePrefUtil.getObject(
+      'theme_settings',
+      (json) => json as Map<String, dynamic>,
+    );
+    final model = savedJson != null
+        ? ThemeSettingsModel.fromJson(savedJson)
+        : const ThemeSettingsModel();
     return _normalize(model);
   }
 
@@ -43,7 +61,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
       loadingStyle: normalizeLoadingStyle(model.loadingStyle),
       crossAxisSpacing: normalizeSpacing(model.crossAxisSpacing),
       mainAxisSpacing: normalizeSpacing(model.mainAxisSpacing),
-      roomCardColumns: normalizeRoomCardColumns(model.roomCardColumns),
+      denseRoomLayout: normalizeRoomCardColumns(model.denseRoomLayout),
     );
   }
 
@@ -67,7 +85,9 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
   static String normalizeLoadingStyle(String value) {
     final normalized = value.trim();
-    return _loadingStyleKeys.contains(normalized) ? normalized : AppConsts.defaultLoadingStyleKey;
+    return _loadingStyleKeys.contains(normalized)
+        ? normalized
+        : AppConsts.defaultLoadingStyleKey;
   }
 
   static double normalizeSpacing(num value) {
@@ -98,7 +118,10 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     updateSettings(state.copyWith(themeColor: color));
   }
 
-  Future<void> changeLanguageWithRetry(BuildContext context, {required String languageName}) async {
+  Future<void> changeLanguageWithRetry(
+    BuildContext context, {
+    required String languageName,
+  }) async {
     changeLanguage(languageName);
 
     final targetLocale = AppConsts.languages[languageName];
@@ -140,8 +163,10 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   }
 
   // Accessor helpers
-  ThemeMode get themeMode => AppConsts.themeModes[state.themeModeName] ?? ThemeMode.system;
-  Locale get locale => AppConsts.languages[state.languageName] ?? const Locale('zh', 'CN');
+  ThemeMode get themeMode =>
+      AppConsts.themeModes[state.themeModeName] ?? ThemeMode.system;
+  Locale get locale =>
+      AppConsts.languages[state.languageName] ?? const Locale('zh', 'CN');
 
   // Backup and restore
   Map<String, dynamic> toJson() => state.toJson();

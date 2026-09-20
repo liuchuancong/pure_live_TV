@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ThemeSettingsModel {
 
- String get themeModeName; bool get enableDynamicTheme;@HexColorConverter() Color get themeColor; String get languageName; double get crossAxisSpacing; double get mainAxisSpacing; String get loadingStyle;@HexColorConverter() Color? get loadingStyleColor; int get roomCardColumns;
+ String get themeModeName; bool get enableDynamicTheme;@HexColorConverter() Color get themeColor; String get languageName; double get crossAxisSpacing; double get mainAxisSpacing; String get loadingStyle;@HexColorConverter() Color? get loadingStyleColor; int get denseRoomLayout;
 /// Create a copy of ThemeSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ThemeSettingsModelCopyWith<ThemeSettingsModel> get copyWith => _$ThemeSettingsM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeSettingsModel&&(identical(other.themeModeName, themeModeName) || other.themeModeName == themeModeName)&&(identical(other.enableDynamicTheme, enableDynamicTheme) || other.enableDynamicTheme == enableDynamicTheme)&&(identical(other.themeColor, themeColor) || other.themeColor == themeColor)&&(identical(other.languageName, languageName) || other.languageName == languageName)&&(identical(other.crossAxisSpacing, crossAxisSpacing) || other.crossAxisSpacing == crossAxisSpacing)&&(identical(other.mainAxisSpacing, mainAxisSpacing) || other.mainAxisSpacing == mainAxisSpacing)&&(identical(other.loadingStyle, loadingStyle) || other.loadingStyle == loadingStyle)&&(identical(other.loadingStyleColor, loadingStyleColor) || other.loadingStyleColor == loadingStyleColor)&&(identical(other.roomCardColumns, roomCardColumns) || other.roomCardColumns == roomCardColumns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeSettingsModel&&(identical(other.themeModeName, themeModeName) || other.themeModeName == themeModeName)&&(identical(other.enableDynamicTheme, enableDynamicTheme) || other.enableDynamicTheme == enableDynamicTheme)&&(identical(other.themeColor, themeColor) || other.themeColor == themeColor)&&(identical(other.languageName, languageName) || other.languageName == languageName)&&(identical(other.crossAxisSpacing, crossAxisSpacing) || other.crossAxisSpacing == crossAxisSpacing)&&(identical(other.mainAxisSpacing, mainAxisSpacing) || other.mainAxisSpacing == mainAxisSpacing)&&(identical(other.loadingStyle, loadingStyle) || other.loadingStyle == loadingStyle)&&(identical(other.loadingStyleColor, loadingStyleColor) || other.loadingStyleColor == loadingStyleColor)&&(identical(other.denseRoomLayout, denseRoomLayout) || other.denseRoomLayout == denseRoomLayout));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,themeModeName,enableDynamicTheme,themeColor,languageName,crossAxisSpacing,mainAxisSpacing,loadingStyle,loadingStyleColor,roomCardColumns);
+int get hashCode => Object.hash(runtimeType,themeModeName,enableDynamicTheme,themeColor,languageName,crossAxisSpacing,mainAxisSpacing,loadingStyle,loadingStyleColor,denseRoomLayout);
 
 @override
 String toString() {
-  return 'ThemeSettingsModel(themeModeName: $themeModeName, enableDynamicTheme: $enableDynamicTheme, themeColor: $themeColor, languageName: $languageName, crossAxisSpacing: $crossAxisSpacing, mainAxisSpacing: $mainAxisSpacing, loadingStyle: $loadingStyle, loadingStyleColor: $loadingStyleColor, roomCardColumns: $roomCardColumns)';
+  return 'ThemeSettingsModel(themeModeName: $themeModeName, enableDynamicTheme: $enableDynamicTheme, themeColor: $themeColor, languageName: $languageName, crossAxisSpacing: $crossAxisSpacing, mainAxisSpacing: $mainAxisSpacing, loadingStyle: $loadingStyle, loadingStyleColor: $loadingStyleColor, denseRoomLayout: $denseRoomLayout)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ThemeSettingsModelCopyWith<$Res>  {
   factory $ThemeSettingsModelCopyWith(ThemeSettingsModel value, $Res Function(ThemeSettingsModel) _then) = _$ThemeSettingsModelCopyWithImpl;
 @useResult
 $Res call({
- String themeModeName, bool enableDynamicTheme,@HexColorConverter() Color themeColor, String languageName, double crossAxisSpacing, double mainAxisSpacing, String loadingStyle,@HexColorConverter() Color? loadingStyleColor, int roomCardColumns
+ String themeModeName, bool enableDynamicTheme,@HexColorConverter() Color themeColor, String languageName, double crossAxisSpacing, double mainAxisSpacing, String loadingStyle,@HexColorConverter() Color? loadingStyleColor, int denseRoomLayout
 });
 
 
@@ -65,7 +65,7 @@ class _$ThemeSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of ThemeSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? themeModeName = null,Object? enableDynamicTheme = null,Object? themeColor = null,Object? languageName = null,Object? crossAxisSpacing = null,Object? mainAxisSpacing = null,Object? loadingStyle = null,Object? loadingStyleColor = freezed,Object? roomCardColumns = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? themeModeName = null,Object? enableDynamicTheme = null,Object? themeColor = null,Object? languageName = null,Object? crossAxisSpacing = null,Object? mainAxisSpacing = null,Object? loadingStyle = null,Object? loadingStyleColor = freezed,Object? denseRoomLayout = null,}) {
   return _then(_self.copyWith(
 themeModeName: null == themeModeName ? _self.themeModeName : themeModeName // ignore: cast_nullable_to_non_nullable
 as String,enableDynamicTheme: null == enableDynamicTheme ? _self.enableDynamicTheme : enableDynamicTheme // ignore: cast_nullable_to_non_nullable
@@ -75,7 +75,7 @@ as String,crossAxisSpacing: null == crossAxisSpacing ? _self.crossAxisSpacing : 
 as double,mainAxisSpacing: null == mainAxisSpacing ? _self.mainAxisSpacing : mainAxisSpacing // ignore: cast_nullable_to_non_nullable
 as double,loadingStyle: null == loadingStyle ? _self.loadingStyle : loadingStyle // ignore: cast_nullable_to_non_nullable
 as String,loadingStyleColor: freezed == loadingStyleColor ? _self.loadingStyleColor : loadingStyleColor // ignore: cast_nullable_to_non_nullable
-as Color?,roomCardColumns: null == roomCardColumns ? _self.roomCardColumns : roomCardColumns // ignore: cast_nullable_to_non_nullable
+as Color?,denseRoomLayout: null == denseRoomLayout ? _self.denseRoomLayout : denseRoomLayout // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -161,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String themeModeName,  bool enableDynamicTheme, @HexColorConverter()  Color themeColor,  String languageName,  double crossAxisSpacing,  double mainAxisSpacing,  String loadingStyle, @HexColorConverter()  Color? loadingStyleColor,  int roomCardColumns)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String themeModeName,  bool enableDynamicTheme, @HexColorConverter()  Color themeColor,  String languageName,  double crossAxisSpacing,  double mainAxisSpacing,  String loadingStyle, @HexColorConverter()  Color? loadingStyleColor,  int denseRoomLayout)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ThemeSettingsModel() when $default != null:
-return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_that.languageName,_that.crossAxisSpacing,_that.mainAxisSpacing,_that.loadingStyle,_that.loadingStyleColor,_that.roomCardColumns);case _:
+return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_that.languageName,_that.crossAxisSpacing,_that.mainAxisSpacing,_that.loadingStyle,_that.loadingStyleColor,_that.denseRoomLayout);case _:
   return orElse();
 
 }
@@ -182,10 +182,10 @@ return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String themeModeName,  bool enableDynamicTheme, @HexColorConverter()  Color themeColor,  String languageName,  double crossAxisSpacing,  double mainAxisSpacing,  String loadingStyle, @HexColorConverter()  Color? loadingStyleColor,  int roomCardColumns)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String themeModeName,  bool enableDynamicTheme, @HexColorConverter()  Color themeColor,  String languageName,  double crossAxisSpacing,  double mainAxisSpacing,  String loadingStyle, @HexColorConverter()  Color? loadingStyleColor,  int denseRoomLayout)  $default,) {final _that = this;
 switch (_that) {
 case _ThemeSettingsModel():
-return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_that.languageName,_that.crossAxisSpacing,_that.mainAxisSpacing,_that.loadingStyle,_that.loadingStyleColor,_that.roomCardColumns);case _:
+return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_that.languageName,_that.crossAxisSpacing,_that.mainAxisSpacing,_that.loadingStyle,_that.loadingStyleColor,_that.denseRoomLayout);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +202,10 @@ return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String themeModeName,  bool enableDynamicTheme, @HexColorConverter()  Color themeColor,  String languageName,  double crossAxisSpacing,  double mainAxisSpacing,  String loadingStyle, @HexColorConverter()  Color? loadingStyleColor,  int roomCardColumns)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String themeModeName,  bool enableDynamicTheme, @HexColorConverter()  Color themeColor,  String languageName,  double crossAxisSpacing,  double mainAxisSpacing,  String loadingStyle, @HexColorConverter()  Color? loadingStyleColor,  int denseRoomLayout)?  $default,) {final _that = this;
 switch (_that) {
 case _ThemeSettingsModel() when $default != null:
-return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_that.languageName,_that.crossAxisSpacing,_that.mainAxisSpacing,_that.loadingStyle,_that.loadingStyleColor,_that.roomCardColumns);case _:
+return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_that.languageName,_that.crossAxisSpacing,_that.mainAxisSpacing,_that.loadingStyle,_that.loadingStyleColor,_that.denseRoomLayout);case _:
   return null;
 
 }
@@ -217,7 +217,7 @@ return $default(_that.themeModeName,_that.enableDynamicTheme,_that.themeColor,_t
 @JsonSerializable()
 
 class _ThemeSettingsModel implements ThemeSettingsModel {
-  const _ThemeSettingsModel({this.themeModeName = "System", this.enableDynamicTheme = false, @HexColorConverter() this.themeColor = Colors.blue, this.languageName = "简体中文", this.crossAxisSpacing = 6.0, this.mainAxisSpacing = 6.0, this.loadingStyle = "default", @HexColorConverter() this.loadingStyleColor, this.roomCardColumns = 4});
+  const _ThemeSettingsModel({this.themeModeName = "System", this.enableDynamicTheme = false, @HexColorConverter() this.themeColor = Colors.blue, this.languageName = "简体中文", this.crossAxisSpacing = 6.0, this.mainAxisSpacing = 6.0, this.loadingStyle = "default", @HexColorConverter() this.loadingStyleColor, this.denseRoomLayout = 4});
   factory _ThemeSettingsModel.fromJson(Map<String, dynamic> json) => _$ThemeSettingsModelFromJson(json);
 
 @override@JsonKey() final  String themeModeName;
@@ -228,7 +228,7 @@ class _ThemeSettingsModel implements ThemeSettingsModel {
 @override@JsonKey() final  double mainAxisSpacing;
 @override@JsonKey() final  String loadingStyle;
 @override@HexColorConverter() final  Color? loadingStyleColor;
-@override@JsonKey() final  int roomCardColumns;
+@override@JsonKey() final  int denseRoomLayout;
 
 /// Create a copy of ThemeSettingsModel
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +243,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeSettingsModel&&(identical(other.themeModeName, themeModeName) || other.themeModeName == themeModeName)&&(identical(other.enableDynamicTheme, enableDynamicTheme) || other.enableDynamicTheme == enableDynamicTheme)&&(identical(other.themeColor, themeColor) || other.themeColor == themeColor)&&(identical(other.languageName, languageName) || other.languageName == languageName)&&(identical(other.crossAxisSpacing, crossAxisSpacing) || other.crossAxisSpacing == crossAxisSpacing)&&(identical(other.mainAxisSpacing, mainAxisSpacing) || other.mainAxisSpacing == mainAxisSpacing)&&(identical(other.loadingStyle, loadingStyle) || other.loadingStyle == loadingStyle)&&(identical(other.loadingStyleColor, loadingStyleColor) || other.loadingStyleColor == loadingStyleColor)&&(identical(other.roomCardColumns, roomCardColumns) || other.roomCardColumns == roomCardColumns));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeSettingsModel&&(identical(other.themeModeName, themeModeName) || other.themeModeName == themeModeName)&&(identical(other.enableDynamicTheme, enableDynamicTheme) || other.enableDynamicTheme == enableDynamicTheme)&&(identical(other.themeColor, themeColor) || other.themeColor == themeColor)&&(identical(other.languageName, languageName) || other.languageName == languageName)&&(identical(other.crossAxisSpacing, crossAxisSpacing) || other.crossAxisSpacing == crossAxisSpacing)&&(identical(other.mainAxisSpacing, mainAxisSpacing) || other.mainAxisSpacing == mainAxisSpacing)&&(identical(other.loadingStyle, loadingStyle) || other.loadingStyle == loadingStyle)&&(identical(other.loadingStyleColor, loadingStyleColor) || other.loadingStyleColor == loadingStyleColor)&&(identical(other.denseRoomLayout, denseRoomLayout) || other.denseRoomLayout == denseRoomLayout));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,themeModeName,enableDynamicTheme,themeColor,languageName,crossAxisSpacing,mainAxisSpacing,loadingStyle,loadingStyleColor,roomCardColumns);
+int get hashCode => Object.hash(runtimeType,themeModeName,enableDynamicTheme,themeColor,languageName,crossAxisSpacing,mainAxisSpacing,loadingStyle,loadingStyleColor,denseRoomLayout);
 
 @override
 String toString() {
-  return 'ThemeSettingsModel(themeModeName: $themeModeName, enableDynamicTheme: $enableDynamicTheme, themeColor: $themeColor, languageName: $languageName, crossAxisSpacing: $crossAxisSpacing, mainAxisSpacing: $mainAxisSpacing, loadingStyle: $loadingStyle, loadingStyleColor: $loadingStyleColor, roomCardColumns: $roomCardColumns)';
+  return 'ThemeSettingsModel(themeModeName: $themeModeName, enableDynamicTheme: $enableDynamicTheme, themeColor: $themeColor, languageName: $languageName, crossAxisSpacing: $crossAxisSpacing, mainAxisSpacing: $mainAxisSpacing, loadingStyle: $loadingStyle, loadingStyleColor: $loadingStyleColor, denseRoomLayout: $denseRoomLayout)';
 }
 
 
@@ -263,7 +263,7 @@ abstract mixin class _$ThemeSettingsModelCopyWith<$Res> implements $ThemeSetting
   factory _$ThemeSettingsModelCopyWith(_ThemeSettingsModel value, $Res Function(_ThemeSettingsModel) _then) = __$ThemeSettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
- String themeModeName, bool enableDynamicTheme,@HexColorConverter() Color themeColor, String languageName, double crossAxisSpacing, double mainAxisSpacing, String loadingStyle,@HexColorConverter() Color? loadingStyleColor, int roomCardColumns
+ String themeModeName, bool enableDynamicTheme,@HexColorConverter() Color themeColor, String languageName, double crossAxisSpacing, double mainAxisSpacing, String loadingStyle,@HexColorConverter() Color? loadingStyleColor, int denseRoomLayout
 });
 
 
@@ -280,7 +280,7 @@ class __$ThemeSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of ThemeSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? themeModeName = null,Object? enableDynamicTheme = null,Object? themeColor = null,Object? languageName = null,Object? crossAxisSpacing = null,Object? mainAxisSpacing = null,Object? loadingStyle = null,Object? loadingStyleColor = freezed,Object? roomCardColumns = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? themeModeName = null,Object? enableDynamicTheme = null,Object? themeColor = null,Object? languageName = null,Object? crossAxisSpacing = null,Object? mainAxisSpacing = null,Object? loadingStyle = null,Object? loadingStyleColor = freezed,Object? denseRoomLayout = null,}) {
   return _then(_ThemeSettingsModel(
 themeModeName: null == themeModeName ? _self.themeModeName : themeModeName // ignore: cast_nullable_to_non_nullable
 as String,enableDynamicTheme: null == enableDynamicTheme ? _self.enableDynamicTheme : enableDynamicTheme // ignore: cast_nullable_to_non_nullable
@@ -290,7 +290,7 @@ as String,crossAxisSpacing: null == crossAxisSpacing ? _self.crossAxisSpacing : 
 as double,mainAxisSpacing: null == mainAxisSpacing ? _self.mainAxisSpacing : mainAxisSpacing // ignore: cast_nullable_to_non_nullable
 as double,loadingStyle: null == loadingStyle ? _self.loadingStyle : loadingStyle // ignore: cast_nullable_to_non_nullable
 as String,loadingStyleColor: freezed == loadingStyleColor ? _self.loadingStyleColor : loadingStyleColor // ignore: cast_nullable_to_non_nullable
-as Color?,roomCardColumns: null == roomCardColumns ? _self.roomCardColumns : roomCardColumns // ignore: cast_nullable_to_non_nullable
+as Color?,denseRoomLayout: null == denseRoomLayout ? _self.denseRoomLayout : denseRoomLayout // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

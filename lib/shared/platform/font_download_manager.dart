@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io' hide HttpClient;
+import 'package:dio/dio.dart' show CancelToken;
 import 'package:path/path.dart' as p;
 import 'package:flutter/services.dart';
 import 'package:pure_live/shared/platform/race_http.dart';
@@ -7,6 +8,14 @@ import 'package:pure_live/shared/models/index.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/utils/githup_mirror.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
+
+/// Thrown out of [FontDownloadManager.downloadFontFamily] when the download was
+/// cancelled through [FontDownloadManager.cancelDownload], so the caller can
+/// tell "cancelled" from "failed" (a failure wipes the family's folder; a
+/// cancellation keeps the weights that finished).
+class FontDownloadCancelled implements Exception {
+  const FontDownloadCancelled();
+}
 
 /// Downloads and registers the cloud font families.
 ///
@@ -25,6 +34,16 @@ class FontDownloadManager {
     final String lower = path.toLowerCase();
     return supportedExtensions.any(lower.endsWith);
   }
+
+  /// The in-flight download per family; its presence *is* "downloading".
+  final Map<String, CancelToken> _cancelTokens = <String, CancelToken>{};
+
+  bool isDownloading(String fontId) => _cancelTokens.containsKey(fontId);
+
+  /// Cancels the running download of [fontId], mid-file included (the token
+  /// reaches the HTTP layer). Finished weight files stay on disk; only the
+  /// partial `.part` file is dropped, so a later download resumes.
+  void cancelDownload(String fontId) => _cancelTokens[fontId]?.cancel('cancelled by user');
 
   /// The file name of one weight, e.g. `SourceHanSans-700.ttf`.
   static String fileNameOf(String filePath) => p.basename(filePath);
@@ -113,6 +132,9 @@ class FontDownloadManager {
       await fontDir.create(recursive: true);
     }
 
+    final cancelToken = CancelToken();
+    _cancelTokens[fontId] = cancelToken;
+
     onStateChanged(DownloadState.downloading);
     log('Starting block download pipeline for font family: $fontId');
 
@@ -120,6 +142,7 @@ class FontDownloadManager {
       final mirror = GitHubMirror(owner: 'liuchuancong', repo: 'fonts', branch: 'master');
 
       for (final filePath in fontModel.files) {
+        if (cancelToken.isCancelled) throw const FontDownloadCancelled();
         final fileName = p.basename(filePath);
         final file = File(p.join(fontDir.path, fileName));
 
@@ -138,10 +161,12 @@ class FontDownloadManager {
         const maxRetries = 3;
 
         while (retryCount < maxRetries) {
+          if (cancelToken.isCancelled) throw const FontDownloadCancelled();
           try {
             await HttpClient.instance.download(
               fastestUrl!,
               file.path,
+              cancel: cancelToken,
               header: {
                 'User-Agent':
                     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -153,6 +178,7 @@ class FontDownloadManager {
             }
             throw Exception('File is empty or corrupted');
           } catch (e) {
+            if (cancelToken.isCancelled) throw const FontDownloadCancelled();
             retryCount++;
             if (file.existsSync()) {
               try {
@@ -169,6 +195,21 @@ class FontDownloadManager {
 
       onStateChanged(DownloadState.downloaded);
       return true;
+    } on FontDownloadCancelled {
+      // A cancelled download keeps the weights that already finished (so a retry
+      // skips them); only the partial `.part` temp file goes.
+      if (await fontDir.exists()) {
+        await for (final entity in fontDir.list()) {
+          if (entity is File && entity.path.endsWith('.part')) {
+            try {
+              await entity.delete();
+            } catch (_) {}
+          }
+        }
+      }
+      onStateChanged(DownloadState.notDownloaded);
+      // The caller distinguishes "cancelled" from "failed" by this exception.
+      throw const FontDownloadCancelled();
     } catch (e, s) {
       log('Font bundle sync sequence aborted: $e, retry count exceeded $s');
       onStateChanged(DownloadState.notDownloaded);
@@ -179,6 +220,8 @@ class FontDownloadManager {
         } catch (_) {}
       }
       return false;
+    } finally {
+      _cancelTokens.remove(fontId);
     }
   }
 

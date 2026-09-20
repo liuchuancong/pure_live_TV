@@ -124,10 +124,10 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         emptyScene: EmptyScene.favorite,
                         onEmptyGoSearch: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: themeState.roomCardColumns,
+                          crossAxisCount: themeState.denseRoomLayout,
                           mainAxisSpacing: mainSpacing.w,
                           crossAxisSpacing: crossSpacing.w,
-                          childAspectRatio: 1.3,
+                          childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,

@@ -10,6 +10,10 @@ import 'package:pure_live/services/theme_settings/theme_settings_controller.dart
 class GridSpacingSectionPage extends ConsumerWidget {
   const GridSpacingSectionPage({super.key});
 
+  /// The dense-layout level labels, aligned with
+  /// [ThemeSettingsController.roomCardColumnsOptions].
+  static const List<String> _denseLayoutLabels = <String>['4', '5'];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeSettingsControllerProvider);
@@ -21,16 +25,16 @@ class GridSpacingSectionPage extends ConsumerWidget {
         TvSettingsGroupTitle(title: i18n('grid_spacing_settings')),
         TvSettingsCard(
           children: [
-            // Landscape room-card grids show this many cards per row; it
-            // replaces the old favourites-only dense-layout switch.
+            // Dense room layout: every room-card grid (favourites, history, hot,
+            // search, area rooms) follows the picked level.
             TvSettingsOptionTile(
-              title: i18n('room_card_columns'),
-              subtitle: i18n('room_card_columns_subtitle'),
+              title: i18n('dense_room_layout'),
+              subtitle: i18n('dense_room_layout_subtitle'),
               icon: Remix.layout_grid_line,
-              options: ThemeSettingsController.roomCardColumnsOptions.map((n) => '$n').toList(),
-              index: ThemeSettingsController.roomCardColumnsOptions.indexOf(themeState.roomCardColumns),
+              options: _denseLayoutLabels,
+              index: ThemeSettingsController.roomCardColumnsOptions.indexOf(themeState.denseRoomLayout),
               onChanged: (i) => theme.updateSettings(
-                themeState.copyWith(roomCardColumns: ThemeSettingsController.roomCardColumnsOptions[i]),
+                themeState.copyWith(denseRoomLayout: ThemeSettingsController.roomCardColumnsOptions[i]),
               ),
             ),
             TvSettingsSliderTile(

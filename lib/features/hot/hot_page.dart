@@ -98,10 +98,10 @@ class _HotPageState extends ConsumerState<HotPage> {
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         emptyScene: EmptyScene.hot,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: themeState.roomCardColumns,
+                          crossAxisCount: themeState.denseRoomLayout,
                           mainAxisSpacing: mainSpacing.w,
                           crossAxisSpacing: crossSpacing.w,
-                          childAspectRatio: 1.3,
+                          childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,

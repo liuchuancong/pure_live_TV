@@ -8,19 +8,20 @@ import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/models/font_model/font_model.dart';
 import 'package:pure_live/shared/platform/font_download_manager.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
+import 'package:pure_live/services/font_settings/font_download_controller.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
-
-/// The actions the manager offers for one family.
-enum FontFamilyAction { download, apply, delete }
 
 /// Cloud-font manager: factory default on top, one card per family under cloud fonts.
 ///
-/// Follows the mobile page (`font_family_manager_page.dart`) rather than doing the work
-/// inline in the rows: picking a family opens a menu (download/apply/delete), deleting asks
-/// first, a download runs behind a modal [AppStatusView], and a family made of several
-/// weight files asks which weight to lock — or applies all of them. The family in force
-/// is re-registered on startup (see `FontSettingsController`), with a fallback to the
-/// bundled font when its files are gone.
+/// One row per family does everything by direct clicks — no pre-action menu:
+/// an un-downloaded family starts its download right away, a downloading one
+/// cancels it, and a downloaded one applies itself (multi-weight families ask
+/// which weight to lock, or apply all). Downloads live in the global
+/// [FontDownloadController], so they continue — and apply the font — after the
+/// user leaves this page; while one runs, the row's trailing side shows a mini
+/// [AppStatusView] loading button. The family in force is re-registered on
+/// startup (see `FontSettingsController`), with a fallback to the bundled font
+/// when its files are gone.
 class FontFamilyManagerSectionPage extends ConsumerStatefulWidget {
   const FontFamilyManagerSectionPage({super.key, this.danmaku = false});
 
@@ -34,9 +35,6 @@ class FontFamilyManagerSectionPage extends ConsumerStatefulWidget {
 class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerSectionPage> {
   /// Family id → disk usage, for the families that are actually on disk.
   final Map<String, String> _sizes = <String, String>{};
-
-  /// The family a download dialog is currently open for.
-  String _busyFontId = '';
 
   bool get _danmakuMode => widget.danmaku;
 
@@ -103,54 +101,24 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     ToastUtil.show(i18n('font_reset_default'));
   }
 
-  /// The menu behind one family row.
-  Future<void> _openFamilyMenu(FontModel font) async {
-    if (_busyFontId.isNotEmpty) return;
+  /// What one click on a family row does: download → cancel download → apply.
+  Future<void> _onSelectFamily(FontModel font) async {
+    final downloads = ref.read(fontDownloadControllerProvider.notifier);
 
-    final bool downloaded = _isDownloaded(font);
-    final List<TvMenuItem<FontFamilyAction>> items = <TvMenuItem<FontFamilyAction>>[
-      if (!downloaded)
-        TvMenuItem(
-          title: i18n('download'),
-          subtitle: i18nOr('font_download_entry_subtitle', '下载后即可应用'),
-          value: FontFamilyAction.download,
-          leading: Icon(Remix.download_cloud_2_line, size: 26.sp),
-        )
-      else ...[
-        TvMenuItem(
-          title: i18n('apply'),
-          subtitle: font.files.length > 1 ? i18n('font_selector_subtitle') : null,
-          value: FontFamilyAction.apply,
-          leading: Icon(Icons.check_rounded, size: 26.sp),
-        ),
-        TvMenuItem(
-          title: i18n('delete'),
-          value: FontFamilyAction.delete,
-          leading: Icon(Remix.delete_bin_6_line, size: 26.sp),
-        ),
-      ],
-    ];
-
-    final FontFamilyAction? action = await TvDialogUtils.showMenu<FontFamilyAction>(
-      context: context,
-      title: font.name,
-      items: items,
-      selectedValue: downloaded ? FontFamilyAction.apply : FontFamilyAction.download,
-    );
-    if (!mounted || action == null) return;
-
-    switch (action) {
-      case FontFamilyAction.download:
-        await _downloadAndApply(font);
-      case FontFamilyAction.apply:
-        await _applyFamily(font);
-      case FontFamilyAction.delete:
-        await _confirmDelete(font);
+    // Downloading: the same click that started it cancels it.
+    if (downloads.isDownloading(font.id)) {
+      downloads.cancel(font.id);
+      return;
     }
-  }
 
-  /// apply: a single-file family goes straight on; several weights ask which one.
-  Future<void> _applyFamily(FontModel font) async {
+    // Not on disk yet: download in the background, apply when it lands.
+    if (!_isDownloaded(font)) {
+      await downloads.startDownload(font, danmaku: _danmakuMode);
+      if (mounted) await _refresh();
+      return;
+    }
+
+    // Downloaded: apply — several weights ask which one to lock.
     if (font.files.length <= 1) {
       await _activate(font);
       return;
@@ -205,29 +173,6 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     await _activate(font, targetFileName: choice.isEmpty ? null : choice);
   }
 
-  /// download, then apply. No modal: the card itself shows the loading animation
-  /// (the global [AppStatusView]) while the download runs, and the row refuses
-  /// input until it ends.
-  Future<void> _downloadAndApply(FontModel font) async {
-    if (_busyFontId.isNotEmpty) return;
-    setState(() => _busyFontId = font.id);
-
-    try {
-      final bool ok = await FontDownloadManager.instance.downloadFontFamily(fontModel: font, onStateChanged: (_) {});
-      if (!mounted) return;
-      if (!ok) {
-        ToastUtil.show(i18n('font_download_failed'));
-        return;
-      }
-      ToastUtil.show(i18n('font_downloaded'));
-      await _refresh();
-      if (!mounted) return;
-      await _applyFamily(font);
-    } finally {
-      if (mounted) setState(() => _busyFontId = '');
-    }
-  }
-
   Future<void> _confirmDelete(FontModel font) async {
     await TvDialogUtils.showConfirm(
       context: context,
@@ -252,11 +197,12 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
 
   @override
   Widget build(BuildContext context) {
-    // Watch both controllers: the manifest arrives from an async provider (the list is
-    // otherwise empty until something else rebuilds) and an activation from anywhere has
-    // to move the in use mark.
+    // Watch all three: the manifest arrives from an async provider (the list is
+    // otherwise empty until something else rebuilds), an activation from anywhere has
+    // to move the in use mark, and the download phases drive the trailing button.
     ref.watch(fontSettingsControllerProvider);
     ref.watch(danmakuSettingsControllerProvider);
+    final downloadState = ref.watch(fontDownloadControllerProvider);
 
     final String activeId = _activeId;
 
@@ -294,16 +240,22 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                   title: font.name,
                   subtitle: _subtitleOf(font),
                   icon: Icons.font_download_outlined,
-                  trailingBuilder: (context, focused) => tvSettingsValueLabel(context, focused, _stateLabelOf(font)),
-                  onSelect: _busyFontId.isEmpty ? () => _openFamilyMenu(font) : null,
+                  trailingBuilder: (context, focused) => _trailingOf(font, downloadState, focused),
+                  onSelect: () => _onSelectFamily(font),
+                  // Delete keeps its own affordance below the row: the click
+                  // itself now applies the family.
+                  footer: _isDownloaded(font) && downloadState[font.id] != FontDownloadPhase.downloading
+                      ? Padding(
+                          padding: EdgeInsets.only(top: 8.h),
+                          child: TvButton(
+                            title: i18n('delete'),
+                            size: TvButtonSize.mini,
+                            isSecondary: true,
+                            onTap: () => _confirmDelete(font),
+                          ),
+                        )
+                      : null,
                 ),
-                // The downloading state lives in the card itself: the global
-                // loading animation instead of a modal, like the desktop page.
-                if (_busyFontId == font.id)
-                  SizedBox(
-                    height: 120.h,
-                    child: AppStatusView(type: AppStatusType.loading, subtitle: i18n('font_downloading'), isMini: true),
-                  ),
               ],
             ),
             SizedBox(height: 12.h),
@@ -311,6 +263,29 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
         ],
       ),
     );
+  }
+
+  /// The right-hand status: a mini [AppStatusView] loading button while the
+  /// family downloads (the row's click cancels it), the state label otherwise.
+  Widget _trailingOf(FontModel font, Map<String, FontDownloadPhase> downloadState, bool focused) {
+    if (downloadState[font.id] == FontDownloadPhase.downloading) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 28.w,
+            height: 28.w,
+            child: const AppStatusView(type: AppStatusType.loading, isMini: true),
+          ),
+          SizedBox(width: 10.w),
+          tvSettingsValueLabel(context, focused, i18n('cancel')),
+        ],
+      );
+    }
+    if (downloadState[font.id] == FontDownloadPhase.failed) {
+      return tvSettingsValueLabel(context, focused, i18n('font_download_failed'));
+    }
+    return tvSettingsValueLabel(context, focused, _stateLabelOf(font));
   }
 
   /// Description · weight count · licence · disk usage, plus the locked weight.
@@ -330,7 +305,6 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
   }
 
   String _stateLabelOf(FontModel font) {
-    if (_busyFontId == font.id) return i18n('font_downloading');
     if (_activeId == font.id) return i18n('font_currently_active');
     if (_isDownloaded(font)) return i18n('font_downloaded');
     return i18n('download');
@@ -343,4 +317,3 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     return id == 'Default' ? i18n('font_default') : id;
   }
 }
-

@@ -18,6 +18,10 @@ class TvDialog extends StatelessWidget {
   /// first focusable, which for a lazy list can transiently be the close button.
   final FocusNode? initialFocusNode;
 
+  /// Frame width; the default fits a plain form, wide lists (the room
+  /// switcher) pass more.
+  final double? width;
+
   const TvDialog({
     super.key,
     this.title,
@@ -27,6 +31,7 @@ class TvDialog extends StatelessWidget {
     this.onConfirm,
     this.onCancel,
     this.initialFocusNode,
+    this.width,
   });
 
   @override
@@ -46,7 +51,7 @@ class TvDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       child: Container(
-        width: 800.sp,
+        width: width ?? 800.sp,
         padding: EdgeInsets.all(32.sp),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,

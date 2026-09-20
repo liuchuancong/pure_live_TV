@@ -20,9 +20,9 @@ abstract class ThemeSettingsModel with _$ThemeSettingsModel {
     @Default("default") String loadingStyle,
     @HexColorConverter() Color? loadingStyleColor,
 
-    // Room-card grids (favorites, history, hot, search, area rooms) show this
-    // many cards per row in the landscape TV layout.
-    @Default(4) int roomCardColumns,
+    // Dense room layout: how many room-card grid columns the landscape layout
+    // shows — 4 = standard, 6 = dense, 8 = extra dense.
+    @Default(4) int denseRoomLayout,
   }) = _ThemeSettingsModel;
 
   factory ThemeSettingsModel.fromJson(Map<String, dynamic> json) => _$ThemeSettingsModelFromJson(json);

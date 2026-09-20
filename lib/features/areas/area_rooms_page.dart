@@ -89,10 +89,10 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
           emptyScene: EmptyScene.areaRooms,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: themeState.roomCardColumns,
+            crossAxisCount: themeState.denseRoomLayout,
             mainAxisSpacing: mainSpacing.w,
             crossAxisSpacing: crossSpacing.w,
-            childAspectRatio: 1.3,
+            childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
           ),
           itemBuilder: (context, room, index) =>
               TvRoomCard(room: room, onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room)),

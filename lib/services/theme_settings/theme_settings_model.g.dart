@@ -21,7 +21,7 @@ _ThemeSettingsModel _$ThemeSettingsModelFromJson(Map<String, dynamic> json) =>
         json['loadingStyleColor'],
         const HexColorConverter().fromJson,
       ),
-      roomCardColumns: (json['roomCardColumns'] as num?)?.toInt() ?? 4,
+      denseRoomLayout: (json['denseRoomLayout'] as num?)?.toInt() ?? 4,
     );
 
 Map<String, dynamic> _$ThemeSettingsModelToJson(_ThemeSettingsModel instance) =>
@@ -37,7 +37,7 @@ Map<String, dynamic> _$ThemeSettingsModelToJson(_ThemeSettingsModel instance) =>
         instance.loadingStyleColor,
         const HexColorConverter().toJson,
       ),
-      'roomCardColumns': instance.roomCardColumns,
+      'denseRoomLayout': instance.denseRoomLayout,
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(
