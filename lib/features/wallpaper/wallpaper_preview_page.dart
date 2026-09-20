@@ -1,4 +1,7 @@
 ﻿import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
@@ -6,6 +9,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/services/wallpaper/system_wallpaper.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -25,7 +29,7 @@ import 'package:pure_live/services/background_config/background_config_model.dar
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
 /// What one button in the preview's action bar does.
-enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause, immersive }
+enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause, immersive, systemWallpaper }
 
 /// One entry of the preview's action bar.
 class _PreviewAction {
@@ -61,6 +65,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   Uint8List? _apiBytes;
   bool _apiLoading = false;
   bool _applying = false;
+  bool _settingSystem = false;
 
   /// Immersive mode: all chrome hidden; ↑/↓ switch entries, OK applies the
   /// entry as the background, back returns to the button bar.
@@ -138,6 +143,14 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   }
 
   static const BackgroundItem _emptyItem = BackgroundItem(file: '');
+
+  /// Android only, and only for things that are actually pictures: catalog
+  /// images and downloaded random-API images.
+  bool get _canSetSystemWallpaper {
+    if (!Platform.isAndroid) return false;
+    if (widget.args.isApiMode) return _apiBytes != null;
+    return widget.args.kind == BackgroundKind.image;
+  }
 
   BackgroundItem _itemAt(List<BackgroundItem> items) {
     if (items.isEmpty) return _emptyItem;
@@ -244,6 +257,36 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
+  /// Writes the current picture to the Android launcher wallpaper. Catalog
+  /// images are downloaded first; API pictures already hold their bytes.
+  Future<void> _setSystemWallpaper(List<BackgroundItem> items) async {
+    if (_settingSystem) return;
+    setState(() => _settingSystem = true);
+    try {
+      Uint8List? bytes;
+      if (widget.args.isApiMode) {
+        bytes = _apiBytes;
+      } else {
+        // Catalog items carry absolute URLs (see WallpaperNetworkImage).
+        final url = _itemAt(items).file;
+        final response = await Dio(
+          BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 5)),
+        ).get<List<int>>(url, options: Options(responseType: ResponseType.bytes));
+        bytes = response.data == null ? null : Uint8List.fromList(response.data!);
+      }
+      if (bytes == null) throw StateError('no image bytes');
+      final ok = await SystemWallpaper.setImage(bytes);
+      if (!mounted) return;
+      ToastUtil.show(
+        ok ? i18nOr('wallpaper_system_set_done', 'System wallpaper updated') : i18nOr('wallpaper_system_set_failed', 'Failed to set the system wallpaper'),
+      );
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18nOr('wallpaper_system_set_failed', 'Failed to set the system wallpaper'));
+    } finally {
+      if (mounted) setState(() => _settingSystem = false);
+    }
+  }
+
   Future<void> _applyVideo(BackgroundItem item) async {
     final bg = SettingsService.to.bg;
     try {
@@ -321,6 +364,13 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         label: i18nOr('wallpaper_set_background', 'Set as background'),
         busy: _applying,
       ),
+      if (_canSetSystemWallpaper)
+        _PreviewAction(
+          kind: _PreviewActionKind.systemWallpaper,
+          icon: Icons.wallpaper_rounded,
+          label: i18nOr('wallpaper_set_system', 'Set as system wallpaper'),
+          busy: _settingSystem,
+        ),
       _PreviewAction(
         kind: _PreviewActionKind.immersive,
         icon: Icons.fullscreen_rounded,
@@ -385,6 +435,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         unawaited(_togglePlay());
       case _PreviewActionKind.immersive:
         _enterImmersive();
+      case _PreviewActionKind.systemWallpaper:
+        unawaited(_setSystemWallpaper(items));
     }
   }
 
