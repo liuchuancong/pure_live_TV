@@ -37,7 +37,7 @@
   "category_online_games": "网游",
   "category_single_player": "单机",
   "danmaku_anonymous_user": "匿名观众",
-  "danmaku_area_top": "画面顶部距离",
+  "danmaku_area_top": "顶部安全距离",
   "danmaku_info_updating": "弹幕连接信息仍在更新，请稍后刷新房间",
   "danmaku_reconnect_exhausted": "弹幕重连次数已达上限",
   "danmaku_reconnecting": "与弹幕服务器断开连接，正在尝试重连",
@@ -471,7 +471,7 @@
   "custom_ua_title": "自定义直播源请求头",
   "danmaku": "弹幕",
   "danmaku_area": "画面顶部占用高度",
-  "danmaku_area_bottom": "画面底部占用高度",
+  "danmaku_area_bottom": "底部占用高度",
   "danmaku_auto_fps": "自动帧率",
   "danmaku_best_preset_desc": "最佳观看：弹幕只占画面顶部约 20%，速度与密度适中，避免遮挡主体内容。",
   "danmaku_connected": "弹幕服务器连接正常",
@@ -983,6 +983,7 @@
   "loading_group_spinkit": "经典特效 (SpinKit)",
   "loading_style_default": "默认圆环",
   "local_backup": "本地备份",
+  "backup_manage_subtitle": "备份列表 · 恢复或删除",
   "local_backup_config": "本地备份配置",
   "local_badge_bilibili": "舰队等级",
   "local_badge_cc": "CC 勋章",
@@ -2423,5 +2424,7 @@
   "kick_mature_notice": "该直播已被 Kick 标记为成人内容。",
   "delete_backup": "删除备份",
   "delete_backup_subtitle": "选择一个本地备份文件并删除",
-  "backup_list_empty": "没有找到本地备份"
+  "backup_list_empty": "没有找到本地备份",
+  "danmaku_emoji_display": "表情显示",
+  "danmaku_display_area": "显示区域"
 }

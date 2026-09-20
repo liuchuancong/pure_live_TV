@@ -116,7 +116,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
         select: null,
       ),
       (
-        label: i18n('danmaku_area'),
+        label: i18nOr('danmaku_display_area', '显示区域'),
         icon: Icons.vertical_align_top_rounded,
         value: DanmakuOptionSteps.percent(settings.danmakuArea),
         prev: () => update(
@@ -128,7 +128,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
         select: null,
       ),
       (
-        label: i18nOr('danmaku_area_top', 'Top offset'),
+        label: i18nOr('danmaku_area_top', '顶部安全距离'),
         icon: Icons.vertical_align_center_rounded,
         value: DanmakuOptionSteps.pixelLabel(settings.danmakuTopArea),
         prev: () => update(
@@ -144,7 +144,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
         select: null,
       ),
       (
-        label: i18n('danmaku_area_bottom'),
+        label: i18nOr('danmaku_area_bottom', '底部占用高度'),
         icon: Icons.vertical_align_bottom_rounded,
         value: DanmakuOptionSteps.pixelLabel(settings.danmakuBottomArea),
         prev: () => update(
@@ -164,9 +164,11 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
         select: null,
       ),
       (
-        label: i18n('danmaku_no_emoji'),
+        // Labelled as *display*, so 开 means emoji are visible — the stored
+        // noEmojiMode is the inverse and is inverted here, not in the label.
+        label: i18nOr('danmaku_emoji_display', '表情显示'),
         icon: Icons.emoji_emotions_outlined,
-        value: settings.noEmojiMode ? i18n('ui_danmaku_on') : i18n('ui_danmaku_off'),
+        value: settings.noEmojiMode ? i18n('ui_danmaku_off') : i18n('ui_danmaku_on'),
         prev: toggleEmoji,
         next: toggleEmoji,
         select: toggleEmoji,

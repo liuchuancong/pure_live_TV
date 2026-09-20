@@ -1,19 +1,12 @@
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/live_play/player_panel_layout.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/features/live_play/player_panel_layout.dart';
 
 /// One row of an index panel.
 class PlayerPanelRow {
-  const PlayerPanelRow({
-    required this.label,
-    this.subtitle,
-    this.value,
-    this.active = false,
-    this.asset,
-    this.icon,
-  });
+  const PlayerPanelRow({required this.label, this.subtitle, this.value, this.active = false, this.asset, this.icon});
 
   final String label;
   final String? subtitle;
@@ -67,8 +60,7 @@ class PlayerIndexPanel extends StatefulWidget {
   /// can keep its avatars and platform badges while this panel still owns the
   /// selection and the keys. [index] is the *real* row index; the close row is not
   /// passed here.
-  final Widget Function(BuildContext context, int index, bool selected)?
-  rowBuilder;
+  final Widget Function(BuildContext context, int index, bool selected)? rowBuilder;
 
   /// Widget between the title and the list — the shield panel's phone QR
   /// lives here so it stays visible whatever the list length is.
@@ -83,9 +75,7 @@ class PlayerIndexPanel extends StatefulWidget {
 }
 
 class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
-  final FocusNode _focusNode = FocusNode(
-    debugLabel: 'live_play/side-panel-index',
-  );
+  final FocusNode _focusNode = FocusNode(debugLabel: 'live_play/side-panel-index');
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -145,9 +135,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     final LogicalKeyboardKey key = event.logicalKey;
 
     if (count == 0) {
-      if (key == LogicalKeyboardKey.arrowLeft ||
-          key == LogicalKeyboardKey.escape)
+      if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.escape) {
         widget.onClose();
+      }
       return KeyEventResult.handled;
     }
 
@@ -180,8 +170,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     }
     if (key == LogicalKeyboardKey.arrowRight) {
       final int index = widget.selectedIndex.clamp(0, count - 1);
-      if (widget.onAdjustRight != null && !_isCloseRow(index))
+      if (widget.onAdjustRight != null && !_isCloseRow(index)) {
         widget.onAdjustRight!(index);
+      }
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -214,17 +205,11 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
         focusNode: _focusNode,
         autofocus: true,
         onKeyEvent: _onKeyEvent,
-        child: Container(
+        child: SizedBox(
           width: widget.width.sp,
-          decoration: BoxDecoration(
-            // Theme-driven, like every other surface: on a light palette the
-            // panel is a light card with dark text instead of a black slab.
-            color: tvTheme.cardColor.withValues(alpha: 0.96),
-            borderRadius: BorderRadius.circular(16.sp),
-            border: Border.all(
-              color: tvTheme.focusColor.withValues(alpha: 0.35),
-            ),
-          ),
+          // No decoration of its own: the host container (live_play page's
+          // side-panel frame) paints the surface and the single border. A
+          // border here too drew two frames one inside the other.
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -232,10 +217,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                 padding: EdgeInsets.fromLTRB(20.sp, 14.sp, 20.sp, 6.sp),
                 child: Text(
                   widget.title,
-                  style: AppTextStyles.t20W600.copyWith(
-                    color: tvTheme.primaryTextColor,
-                    fontSize: 20.sp * scale,
-                  ),
+                  style: AppTextStyles.t20W600.copyWith(color: tvTheme.primaryTextColor, fontSize: 20.sp * scale),
                 ),
               ),
               if (widget.header != null) widget.header!,
@@ -244,26 +226,17 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                     ? Center(
                         child: Text(
                           widget.emptyHint ?? i18nOr('ui_empty', 'Empty'),
-                          style: AppTextStyles.t16W500.copyWith(
-                            color: tvTheme.secondaryTextColor,
-                          ),
+                          style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
                         ),
                       )
                     : ListView.builder(
                         controller: _scrollController,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12.sp,
-                          vertical: 4.sp,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
                         itemCount: rows.length,
                         itemBuilder: (context, index) {
                           final bool isSelected = index == selected;
                           final Widget? custom = index < widget.rows.length
-                              ? widget.rowBuilder?.call(
-                                  context,
-                                  index,
-                                  isSelected,
-                                )
+                              ? widget.rowBuilder?.call(context, index, isSelected)
                               : null;
                           return custom ??
                               _PanelRow(
@@ -283,10 +256,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                   widget.onAdjustLeft != null
                       ? i18nOr('ui_panel_keys_adjust', '↑↓ 选择 · ←→ 调整 · OK 确认')
                       : i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
-                  style: AppTextStyles.t14W500.copyWith(
-                    color: tvTheme.secondaryTextColor,
-                    fontSize: 14.sp * scale,
-                  ),
+                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor, fontSize: 14.sp * scale),
                 ),
               ),
             ],
@@ -324,11 +294,7 @@ class _PanelRow extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: (3 * scale).sp),
       padding: EdgeInsets.symmetric(horizontal: 16.sp),
       decoration: BoxDecoration(
-        color: selected
-            ? accent
-            : (row.active
-                  ? accent.withValues(alpha: 0.22)
-                  : theme.subtleRowFill),
+        color: selected ? accent : (row.active ? accent.withValues(alpha: 0.22) : theme.subtleRowFill),
         borderRadius: BorderRadius.circular(10.sp),
       ),
       child: Row(
@@ -336,12 +302,7 @@ class _PanelRow extends StatelessWidget {
           if (row.asset != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: SvgOrIcon(
-                asset: row.asset,
-                icon: row.icon,
-                color: foreground,
-                size: 24.sp * scale,
-              ),
+              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.sp * scale),
             )
           else if (row.icon != null)
             Padding(
@@ -368,10 +329,7 @@ class _PanelRow extends StatelessWidget {
                     row.subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(
-                      color: muted,
-                      fontSize: 14.sp * scale,
-                    ),
+                    style: AppTextStyles.t14W500.copyWith(color: muted, fontSize: 14.sp * scale),
                   ),
               ],
             ),
@@ -380,10 +338,7 @@ class _PanelRow extends StatelessWidget {
             SizedBox(width: 12.sp),
             Text(
               row.value!,
-              style: AppTextStyles.t16W500.copyWith(
-                color: foreground,
-                fontSize: 16.sp * scale,
-              ),
+              style: AppTextStyles.t16W500.copyWith(color: foreground, fontSize: 16.sp * scale),
             ),
           ],
         ],
@@ -394,13 +349,7 @@ class _PanelRow extends StatelessWidget {
 
 /// Small helper so a row can use either an SVG asset or a Material icon.
 class SvgOrIcon extends StatelessWidget {
-  const SvgOrIcon({
-    super.key,
-    this.asset,
-    this.icon,
-    required this.color,
-    required this.size,
-  });
+  const SvgOrIcon({super.key, this.asset, this.icon, required this.color, required this.size});
 
   final String? asset;
   final IconData? icon;
@@ -410,12 +359,7 @@ class SvgOrIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (asset != null) {
-      return SvgPicture.asset(
-        asset!,
-        width: size,
-        height: size,
-        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-      );
+      return SvgPicture.asset(asset!, width: size, height: size, colorFilter: ColorFilter.mode(color, BlendMode.srcIn));
     }
     return Icon(icon, size: size, color: color);
   }

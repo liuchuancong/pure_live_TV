@@ -148,11 +148,11 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog>
       title: i18n('switch_live_room'),
       // Wide enough that the room rows read as full-width list entries instead
       // of a squeezed column.
-      width: 1000.sp,
+      width: 1080.sp,
       cancelText: i18n('close'),
       onCancel: () => Navigator.of(context).pop(),
       child: SizedBox(
-        height: 520.sp,
+        height: 640.sp,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

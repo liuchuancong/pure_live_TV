@@ -63,7 +63,6 @@ class PlayerRoomRow extends ConsumerWidget {
             ? tvTheme.focusColor
             : (active ? tvTheme.focusColor.withValues(alpha: 0.22) : tvTheme.subtleRowFill),
         borderRadius: BorderRadius.circular(10.sp),
-        border: Border.all(color: selected ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [

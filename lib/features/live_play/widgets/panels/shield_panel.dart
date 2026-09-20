@@ -130,7 +130,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                 ],
               )
             else ...[
-              Center(child: TvQrCodeCard(qrData: qrData, qrSize: 150)),
+              Center(child: TvQrCodeCard(qrData: qrData, qrSize: 150, urlText: qrData)),
               SizedBox(height: 6.sp),
               Center(
                 child: Text(

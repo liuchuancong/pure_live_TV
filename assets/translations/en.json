@@ -37,7 +37,7 @@
   "category_online_games": "Online games",
   "category_single_player": "Single-player",
   "danmaku_anonymous_user": "Anonymous viewer",
-  "danmaku_area_top": "Top offset",
+  "danmaku_area_top": "Top padding",
   "danmaku_info_updating": "Danmaku connection info is still updating, refresh the room later",
   "danmaku_reconnect_exhausted": "Danmaku reconnection attempts exhausted",
   "danmaku_reconnecting": "Disconnected from the danmaku server, reconnecting",
@@ -475,7 +475,7 @@
   "custom_ua_title": "Custom Live-Source User-Agent",
   "danmaku": "Danmaku",
   "danmaku_area": "Top-screen height used",
-  "danmaku_area_bottom": "Bottom-screen height used",
+  "danmaku_area_bottom": "Bottom padding",
   "danmaku_auto_fps": "Automatic frame rate",
   "danmaku_best_preset_desc": "Best viewing uses about the top 20% of the picture with moderate speed and density.",
   "danmaku_connected": "Danmaku server connected",
@@ -988,6 +988,7 @@
   "loading_group_spinkit": "Classic Styles (SpinKit)",
   "loading_style_default": "Default Ring",
   "local_backup": "Local Backup",
+  "backup_manage_subtitle": "Backup list · restore or delete",
   "local_backup_config": "Local Backup Config",
   "local_badge_bilibili": "Fleet level",
   "local_badge_cc": "CC medal",
@@ -2423,5 +2424,7 @@
   "kick_mature_notice": "This stream is marked as mature content by Kick.",
   "delete_backup": "Delete backup",
   "delete_backup_subtitle": "Pick a local backup file and delete it",
-  "backup_list_empty": "No local backup found"
+  "backup_list_empty": "No local backup found",
+  "danmaku_emoji_display": "Emoji display",
+  "danmaku_display_area": "Display area"
 }

@@ -454,13 +454,13 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       onKeyEvent: _onKeyEvent,
       child: Container(
         decoration: BoxDecoration(
-          // A light scrim only: a near-opaque black read as a solid black
-          // band under the buttons over the video.
+          // A black gradient so the pills never fight the live picture: solid
+          // enough at the bar itself, fading out over the options area above.
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withValues(alpha: 0.55), Colors.black.withValues(alpha: 0.0)],
-            stops: const [0.0, 0.85],
+            colors: [Colors.black.withValues(alpha: 0.82), Colors.black.withValues(alpha: 0.0)],
+            stops: const [0.0, 0.72],
           ),
         ),
         child: Column(
@@ -485,7 +485,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(16.sp),
-            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 18.sp, offset: Offset(0, 4.sp)),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -526,6 +528,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     return Container(
       height: _barHeight.sp + 16.sp,
       alignment: Alignment.center,
+      // The band under the pills: live content above it stays clean, the
+      // buttons always sit on black.
+      color: Colors.black.withValues(alpha: 0.55),
       padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 8.sp),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
