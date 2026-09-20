@@ -38,8 +38,9 @@ class RemoteSyncQrCard extends ConsumerWidget {
       // widget tree is building. startServer re-checks running/in-flight
       // internally, so repeated builds cannot double-start it.
       if (error == null && !server.isLoading && !server.isRefreshing) {
+        final ctx = context;
         Future.microtask(() {
-          if (!ref.mounted) return;
+          if (!ctx.mounted) return;
           unawaited(ref.read(tvRemoteReceiverProvider.notifier).startServer());
         });
       }
