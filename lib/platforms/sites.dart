@@ -103,6 +103,9 @@ class Sites {
     xiaohongshuSite: '$_assetRoot/xiaohongshu.png',
     niconicoSite: '$_assetRoot/niconico.png',
     weiboSite: '$_assetRoot/weibo.png',
+    showroomSite: '$_assetRoot/showroom.png',
+    chzzkSite: '$_assetRoot/chzzk.png',
+    kickSite: '$_assetRoot/kick.png',
   };
 
   /// Resolve a logo path from the central logo registry.
