@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
+import 'package:pure_live/exports/app_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 part 'home_provider.g.dart';
@@ -57,10 +58,7 @@ List<AppMenuItem> sideMenuList(Ref ref) {
   final saved = ref.watch(appSettingsControllerProvider).savedMenuIds;
   final overrides = ref.watch(menuIconOverridesProvider);
   final ids = saved.isEmpty ? HomeMenu.defaultOrder : AppSettingsController.normalizeMenuIds(saved);
-  return [
-    for (final id in ids)
-      ?_sideMenuItem(id, overrides),
-  ];
+  return [for (final id in ids) ?_sideMenuItem(id, overrides)];
 }
 
 AppMenuItem? _sideMenuItem(String id, Map<String, IconData> overrides) {
@@ -82,7 +80,7 @@ AppMenuItem? _sideMenuItem(String id, Map<String, IconData> overrides) {
     HomeMenu.areas => AppMenuItem(
       index: TvMenuType.areas.value,
       title: i18n('ui_category'),
-      icon: withOverride(Icons.category_rounded),
+      icon: withOverride(RemixIcons.function_line),
     ),
     HomeMenu.favoriteAreas => AppMenuItem(
       index: TvMenuType.favoriteAreas.value,

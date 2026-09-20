@@ -119,9 +119,13 @@ dependencies:
   # Git私有仓库自定义库
   flv_lzc:
     path: plugins/flv_lzc # 本地补丁：16 KB 页大小构建 + fijkview 黑屏修复
+  async_wallpaper:
+    path: plugins/built_in_kotlin/async_wallpaper # 本地 AGP 9 内建 Kotlin 补丁
 
 # 依赖覆盖（强制指定版本）
 dependency_overrides:
+  async_wallpaper:
+    path: plugins/built_in_kotlin/async_wallpaper # 本地 AGP 9 内建 Kotlin 补丁
   flutter_inappwebview_android:
     path: plugins/built_in_kotlin/flutter_inappwebview_android # 上游网页内核 Android 子包 ProGuard 兼容补丁
   wakelock_plus: ^1.4.0 # media_kit 声明的版本覆盖

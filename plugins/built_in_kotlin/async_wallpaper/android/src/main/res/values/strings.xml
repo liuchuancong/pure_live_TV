@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="async_wallpaper_video_live_wallpaper_label">Video live wallpaper</string>
+    <string name="async_wallpaper_opengl_live_wallpaper_label">OpenGL live wallpaper</string>
+    <string name="async_wallpaper_live_wallpaper_description">Async Wallpaper live wallpaper</string>
+</resources>

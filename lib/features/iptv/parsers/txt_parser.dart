@@ -19,7 +19,7 @@ class TxtParser {
 
       if (_genreRegex.hasMatch(line)) {
         final group = line.split(',').first.trim();
-        // '更新时间' is the Chinese marker txt playlists use for the update group.
+        // The literal marker txt playlists use for the update group.
         if (group.isNotEmpty && !group.contains('更新时间') && !group.contains(i18n('tip'))) {
           currentGroup = group;
         }

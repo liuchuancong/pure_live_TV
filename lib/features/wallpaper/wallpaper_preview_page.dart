@@ -1,7 +1,6 @@
 ﻿import 'dart:async';
 import 'dart:io' show Platform;
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
@@ -9,7 +8,6 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/services/wallpaper/system_wallpaper.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -17,6 +15,8 @@ import 'package:pure_live/shared/pagination/paging_core.dart';
 import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_immersive_page.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_sequence.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -58,6 +58,14 @@ class WallpaperPreviewPage extends ConsumerStatefulWidget {
 }
 
 class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
+  /// Only for the system-wallpaper step; the immersive page shares the same
+  /// source and failure handling.
+  late final WallpaperSequence _sequenceForSystem = WallpaperSequence(
+    args: widget.args,
+    ref: ref,
+    initialIndex: widget.args.initialIndex,
+  );
+
   /// Catalog mode: position in the paged list.
   int _index = 0;
 
@@ -67,10 +75,9 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   bool _applying = false;
   bool _settingSystem = false;
 
-  /// Immersive mode: all chrome hidden; ↑/↓ switch entries, OK applies the
-  /// entry as the background, back returns to the button bar.
-  bool _immersive = false;
-  late final FocusNode _immersiveNode = FocusNode(debugLabel: 'wallpaper-immersive', skipTraversal: true);
+  /// Focus nodes for the button bar, held by the page so a rebuild (video vs
+  /// image mode changes the button set) cannot drift the highlight.
+  final List<FocusNode> _actionNodes = <FocusNode>[];
 
   /// Set when the user asked for the next entry while the next page was still
   /// being fetched; the advance happens as soon as the list grows.
@@ -106,10 +113,29 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
   @override
   void dispose() {
-    _immersiveNode.dispose();
+    for (final node in _actionNodes) {
+      node.dispose();
+    }
     _playingSubscription?.cancel();
     _videoPlayer?.dispose();
     super.dispose();
+  }
+
+  /// Keeps the node count in step with the bar. Surplus nodes are disposed at
+  /// the end of the frame: they may still be attached this frame.
+  void _syncActionNodes(int length) {
+    while (_actionNodes.length < length) {
+      _actionNodes.add(FocusNode(debugLabel: 'preview-action'));
+    }
+    if (_actionNodes.length > length) {
+      final extra = _actionNodes.sublist(length);
+      _actionNodes.removeRange(length, _actionNodes.length);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        for (final node in extra) {
+          node.dispose();
+        }
+      });
+    }
   }
 
   void _createVideoPlayer() {
@@ -144,12 +170,13 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
   static const BackgroundItem _emptyItem = BackgroundItem(file: '');
 
-  /// Android only, and only for things that are actually pictures: catalog
-  /// images and downloaded random-API images.
+  /// Android only, and only for things that are actually media: catalog
+  /// images, downloaded random-API images, and catalog videos (as a live
+  /// wallpaper).
   bool get _canSetSystemWallpaper {
     if (!Platform.isAndroid) return false;
     if (widget.args.isApiMode) return _apiBytes != null;
-    return widget.args.kind == BackgroundKind.image;
+    return widget.args.kind == BackgroundKind.image || widget.args.kind == BackgroundKind.video;
   }
 
   BackgroundItem _itemAt(List<BackgroundItem> items) {
@@ -257,31 +284,32 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  /// Writes the current picture to the Android launcher wallpaper. Catalog
-  /// images are downloaded first; API pictures already hold their bytes.
+  /// Writes the system wallpaper (image) or live wallpaper (video) through
+  /// [WallpaperSequence.applyToSystemWallpaper], which the immersive page
+  /// shares.
   Future<void> _setSystemWallpaper(List<BackgroundItem> items) async {
     if (_settingSystem) return;
     setState(() => _settingSystem = true);
     try {
-      Uint8List? bytes;
-      if (widget.args.isApiMode) {
-        bytes = _apiBytes;
-      } else {
-        // Catalog items carry absolute URLs (see WallpaperNetworkImage).
-        final url = _itemAt(items).file;
-        final response = await Dio(
-          BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 5)),
-        ).get<List<int>>(url, options: Options(responseType: ResponseType.bytes));
-        bytes = response.data == null ? null : Uint8List.fromList(response.data!);
-      }
-      if (bytes == null) throw StateError('no image bytes');
-      final ok = await SystemWallpaper.setImage(bytes);
+      final bool needsConfirmation = await _sequenceForSystem.applyToSystemWallpaper();
       if (!mounted) return;
       ToastUtil.show(
-        ok ? i18nOr('wallpaper_system_set_done', 'System wallpaper updated') : i18nOr('wallpaper_system_set_failed', 'Failed to set the system wallpaper'),
+        needsConfirmation
+            ? i18nOr('wallpaper_live_confirm_hint', 'Confirm in the system dialog to apply the live wallpaper')
+            : i18nOr('wallpaper_system_set_done', 'System wallpaper updated'),
       );
-    } catch (_) {
-      if (mounted) ToastUtil.show(i18nOr('wallpaper_system_set_failed', 'Failed to set the system wallpaper'));
+    } on StateError catch (error) {
+      if (mounted) {
+        ToastUtil.show(
+          i18nOr('wallpaper_system_set_failed_reason', 'Failed to set the system wallpaper: {msg}', args: {'msg': error.message}),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ToastUtil.show(
+          i18nOr('wallpaper_system_set_failed_reason', 'Failed to set the system wallpaper: {msg}', args: {'msg': '$error'}),
+        );
+      }
     } finally {
       if (mounted) setState(() => _settingSystem = false);
     }
@@ -368,7 +396,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         _PreviewAction(
           kind: _PreviewActionKind.systemWallpaper,
           icon: Icons.wallpaper_rounded,
-          label: i18nOr('wallpaper_set_system', 'Set as system wallpaper'),
+          // Video goes through the live-wallpaper path; the copy says so.
+          label: _isVideo
+              ? i18nOr('wallpaper_set_system_video', 'Set as live wallpaper')
+              : i18nOr('wallpaper_set_system', 'Set as system wallpaper'),
           busy: _settingSystem,
         ),
       _PreviewAction(
@@ -379,49 +410,40 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     ];
   }
 
-  void _enterImmersive() {
-    setState(() => _immersive = true);
-    ToastUtil.show(i18nOr('wallpaper_immersive_hint', '↑↓ 切换 · OK 设为壁纸 · 返回退出'));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _immersive) _immersiveNode.requestFocus();
-    });
-  }
+  /// Opens the immersive route. It used to be a state of this page, whose
+  /// always-mounted Focus stole the bar's key events and dropped focus on
+  /// exit; as its own route the keyboard belongs to that page.
+  Future<void> _openImmersive(List<BackgroundItem> items) async {
+    // This page's player stays mounted under the pushed route; pause it so
+    // the two do not play at once.
+    final player = _videoPlayer;
+    final bool wasPlaying = _videoPlaying;
+    if (wasPlaying) await player?.pause();
 
-  void _exitImmersive() {
-    if (!_immersive) return;
-    setState(() => _immersive = false);
-  }
+    if (!mounted) return;
+    // The two modes build their own args: an API random image has no
+    // directory, and forcing one crashes on sourceId!.
+    final WallpaperPreviewArgs immersiveArgs = widget.args.isApiMode
+        ? WallpaperPreviewArgs.api(widget.args.apiSource!, title: widget.args.title)
+        : WallpaperPreviewArgs.catalog(
+            sourceId: widget.args.sourceId!,
+            categoryId: widget.args.categoryId!,
+            kind: widget.args.kind!,
+            title: widget.args.title,
+            initialIndex: _index,
+          );
 
-  KeyEventResult _handleImmersiveKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    final items = _resolveItems(ref);
-    if (key == LogicalKeyboardKey.arrowUp) {
-      _prev(items);
-      return KeyEventResult.handled;
+    final int? finalIndex = await Navigator.of(context).push<int>(
+      MaterialPageRoute(builder: (_) => WallpaperImmersivePage(args: immersiveArgs)),
+    );
+
+    if (!mounted) return;
+    // The immersive page may have moved on; take its position back so both
+    // show the same item.
+    if (finalIndex != null && finalIndex != _index && finalIndex >= 0 && finalIndex < items.length) {
+      setState(() => _index = finalIndex);
     }
-    if (key == LogicalKeyboardKey.arrowDown) {
-      _next(items);
-      return KeyEventResult.handled;
-    }
-    // ←/→ stay reserved for the button bar's focus traversal; consuming them
-    // as no-ops keeps the hidden (but mounted) buttons out of reach while
-    // immersive, without redefining the keys outside it.
-    if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.arrowRight) {
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.select ||
-        key == LogicalKeyboardKey.enter ||
-        key == LogicalKeyboardKey.gameButtonA ||
-        key == LogicalKeyboardKey.space) {
-      unawaited(_apply(_itemAt(items)));
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.goBack || key == LogicalKeyboardKey.escape) {
-      _exitImmersive();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
+    if (wasPlaying) await player?.play();
   }
 
   void _run(_PreviewAction action, List<BackgroundItem> items) {
@@ -440,7 +462,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       case _PreviewActionKind.playPause:
         unawaited(_togglePlay());
       case _PreviewActionKind.immersive:
-        _enterImmersive();
+        unawaited(_openImmersive(items));
       case _PreviewActionKind.systemWallpaper:
         unawaited(_setSystemWallpaper(items));
     }
@@ -460,6 +482,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
     final BackgroundItem item = _itemAt(items);
     final actions = _buildActions();
+    _syncActionNodes(actions.length);
     final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
 
     if (_isVideo && item.file.isNotEmpty && item.file != _openedVideoUrl) {
@@ -470,22 +493,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       });
     }
 
-    // No page-level Focus wrapper in button mode: the bottom bar owns the
-    // focusable nodes. In immersive mode this node takes the keyboard — it is
-    // only focusable then, so it never interferes with normal traversal.
-    return PopScope(
-      canPop: !_immersive,
-      onPopInvokedWithResult: (didPop, _) {
-        // System back exits immersive first instead of leaving the page.
-        if (!didPop) _exitImmersive();
-      },
-      child: TvPageScaffold(
+    // The page body holds no focus node: the bar owns the keyboard and
+    // Left/Right go to framework traversal.
+    return TvPageScaffold(
       showAppBar: false,
-      child: Focus(
-        focusNode: _immersiveNode,
-        canRequestFocus: _immersive,
-        onKeyEvent: _handleImmersiveKey,
-        child: Stack(
+      child: Stack(
         fit: StackFit.expand,
         children: [
           _buildViewer(bgState, item),
@@ -493,21 +505,20 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           // mask action shows what it does: before, the button moved a number
           // and nothing on screen changed.
           IgnorePointer(child: _buildMask(bgState)),
+          // Centred loading indicator, not tucked under the title bar.
           if (widget.args.isApiMode && _apiLoading && hasPicture)
-            const Positioned(
-              top: 16,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: SizedBox(height: 28, width: 28, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: Center(
+                  child: SizedBox(height: 44, width: 44, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
+                ),
               ),
             ),
           _buildTopBar(items, item),
+          // Bar pinned to the bottom (gradient + bottom padding).
           _buildBottomBar(actions, items),
         ],
       ),
-      ),
-    ),
     );
   }
 
@@ -584,10 +595,20 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         return WallpaperNetworkImage(
           url: item.file,
           fit: bgState.boxFit,
-          placeholder: const ColoredBox(color: Colors.black),
+          placeholder: _centeredLoading(),
           fallback: const ColoredBox(color: Colors.black),
         );
     }
+  }
+
+  /// Full-screen spinner, centred.
+  Widget _centeredLoading() {
+    return const ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: SizedBox(height: 44, width: 44, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
+      ),
+    );
   }
 
   Widget _buildTopBar(List<BackgroundItem> items, BackgroundItem item) {
@@ -595,8 +616,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       top: 0,
       left: 0,
       right: 0,
-      child: _barFade(
-        child: IgnorePointer(
+      child: IgnorePointer(
           child: Container(
           padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 40.sp),
           decoration: BoxDecoration(
@@ -628,7 +648,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             ],
           ),
         ),
-        ),
       ),
     );
   }
@@ -638,8 +657,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       left: 0,
       right: 0,
       bottom: 0,
-      child: _barFade(
-        child: Container(
+      child: Container(
         padding: EdgeInsets.fromLTRB(24.sp, 40.sp, 24.sp, 20.sp),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -671,6 +689,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                   for (int i = 0; i < actions.length; i++)
                     _PreviewActionButton(
                       action: actions[i],
+                      focusNode: _actionNodes[i],
                       autofocus: i == 0,
                       onActivate: () => _run(actions[i], items),
                     ),
@@ -679,21 +698,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             ),
           ],
         ),
-        ),
       ),
-    );
-  }
-
-  /// Bars stay mounted (their focus nodes survive the round trip) but fade
-  /// out and stop taking input while immersive. Applied INSIDE each
-  /// Positioned: wrapping the Positioned itself in AnimatedOpacity breaks the
-  /// Stack parent-data contract.
-  Widget _barFade({required Widget child}) {
-    return AnimatedOpacity(
-      opacity: _immersive ? 0.0 : 1.0,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOutCubic,
-      child: IgnorePointer(ignoring: _immersive, child: child),
     );
   }
 
@@ -714,10 +719,19 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 /// framework move the highlight with ←/→. Nothing here talks to the page or
 /// manipulates the focus tree, so the route can pop cleanly.
 class _PreviewActionButton extends StatefulWidget {
-  const _PreviewActionButton({required this.action, required this.onActivate, this.autofocus = false});
+  const _PreviewActionButton({
+    required this.action,
+    required this.onActivate,
+    this.focusNode,
+    this.autofocus = false,
+  });
 
   final _PreviewAction action;
   final VoidCallback onActivate;
+
+  /// Page-owned nodes, so leaving immersive mode restores focus to the exact
+  /// button.
+  final FocusNode? focusNode;
   final bool autofocus;
 
   @override
@@ -725,7 +739,8 @@ class _PreviewActionButton extends StatefulWidget {
 }
 
 class _PreviewActionButtonState extends State<_PreviewActionButton> {
-  late final FocusNode _focusNode = FocusNode(debugLabel: 'preview-action');
+  late final FocusNode _focusNode = widget.focusNode ?? FocusNode(debugLabel: 'preview-action');
+  late final bool _ownsNode = widget.focusNode == null;
   bool _focused = false;
 
   @override
@@ -737,7 +752,8 @@ class _PreviewActionButtonState extends State<_PreviewActionButton> {
   @override
   void dispose() {
     _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
+    // Caller-supplied nodes are disposed by the caller; only own ones here.
+    if (_ownsNode) _focusNode.dispose();
     super.dispose();
   }
 
