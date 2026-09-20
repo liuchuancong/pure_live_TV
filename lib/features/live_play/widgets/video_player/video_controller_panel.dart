@@ -87,6 +87,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 
   KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
+    // The focus system can still route a key here after this panel left the
+    // tree (unmount races the dispatch); running actions then mutates
+    // providers with a defunct listener and throws.
+    if (!mounted) return KeyEventResult.ignored;
     final state = ref.read(livePlayControllerProvider(widget.args));
     final key = event.logicalKey;
 
