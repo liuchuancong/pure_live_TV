@@ -44,6 +44,7 @@ class PlayerIndexPanel extends StatefulWidget {
     this.onAdjustLeft,
     this.onAdjustRight,
     this.rowBuilder,
+    this.header,
     this.footer,
     this.emptyHint,
     this.width = 400,
@@ -66,7 +67,12 @@ class PlayerIndexPanel extends StatefulWidget {
   /// can keep its avatars and platform badges while this panel still owns the
   /// selection and the keys. [index] is the *real* row index; the close row is not
   /// passed here.
-  final Widget Function(BuildContext context, int index, bool selected)? rowBuilder;
+  final Widget Function(BuildContext context, int index, bool selected)?
+  rowBuilder;
+
+  /// Widget between the title and the list — the shield panel's phone QR
+  /// lives here so it stays visible whatever the list length is.
+  final Widget? header;
 
   final Widget? footer;
   final String? emptyHint;
@@ -77,7 +83,9 @@ class PlayerIndexPanel extends StatefulWidget {
 }
 
 class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
-  final FocusNode _focusNode = FocusNode(debugLabel: 'live_play/side-panel-index');
+  final FocusNode _focusNode = FocusNode(
+    debugLabel: 'live_play/side-panel-index',
+  );
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -137,7 +145,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     final LogicalKeyboardKey key = event.logicalKey;
 
     if (count == 0) {
-      if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.escape) widget.onClose();
+      if (key == LogicalKeyboardKey.arrowLeft ||
+          key == LogicalKeyboardKey.escape)
+        widget.onClose();
       return KeyEventResult.handled;
     }
 
@@ -170,7 +180,8 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     }
     if (key == LogicalKeyboardKey.arrowRight) {
       final int index = widget.selectedIndex.clamp(0, count - 1);
-      if (widget.onAdjustRight != null && !_isCloseRow(index)) widget.onAdjustRight!(index);
+      if (widget.onAdjustRight != null && !_isCloseRow(index))
+        widget.onAdjustRight!(index);
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -181,9 +192,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
   /// close row). It used to be a back row *first*, which is the one place the bar's
   /// lists and the panels disagreed.
   List<PlayerPanelRow> get _renderedRows => <PlayerPanelRow>[
-        ...widget.rows,
-        PlayerPanelRow(label: i18nOr('close', '关闭'), icon: Icons.close_rounded),
-      ];
+    ...widget.rows,
+    PlayerPanelRow(label: i18nOr('close', '关闭'), icon: Icons.close_rounded),
+  ];
 
   bool _isCloseRow(int index) => index == widget.rows.length;
 
@@ -210,7 +221,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
             // panel is a light card with dark text instead of a black slab.
             color: tvTheme.cardColor.withValues(alpha: 0.96),
             borderRadius: BorderRadius.circular(16.sp),
-            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
+            border: Border.all(
+              color: tvTheme.focusColor.withValues(alpha: 0.35),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -225,22 +238,33 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                   ),
                 ),
               ),
+              if (widget.header != null) widget.header!,
               Expanded(
                 child: rows.isEmpty
                     ? Center(
                         child: Text(
                           widget.emptyHint ?? i18nOr('ui_empty', 'Empty'),
-                          style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t16W500.copyWith(
+                            color: tvTheme.secondaryTextColor,
+                          ),
                         ),
                       )
                     : ListView.builder(
                         controller: _scrollController,
-                        padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.sp,
+                          vertical: 4.sp,
+                        ),
                         itemCount: rows.length,
                         itemBuilder: (context, index) {
                           final bool isSelected = index == selected;
-                          final Widget? custom =
-                              index < widget.rows.length ? widget.rowBuilder?.call(context, index, isSelected) : null;
+                          final Widget? custom = index < widget.rows.length
+                              ? widget.rowBuilder?.call(
+                                  context,
+                                  index,
+                                  isSelected,
+                                )
+                              : null;
                           return custom ??
                               _PanelRow(
                                 row: rows[index],
@@ -302,7 +326,9 @@ class _PanelRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: selected
             ? accent
-            : (row.active ? accent.withValues(alpha: 0.22) : theme.subtleRowFill),
+            : (row.active
+                  ? accent.withValues(alpha: 0.22)
+                  : theme.subtleRowFill),
         borderRadius: BorderRadius.circular(10.sp),
       ),
       child: Row(
@@ -310,7 +336,12 @@ class _PanelRow extends StatelessWidget {
           if (row.asset != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.sp * scale),
+              child: SvgOrIcon(
+                asset: row.asset,
+                icon: row.icon,
+                color: foreground,
+                size: 24.sp * scale,
+              ),
             )
           else if (row.icon != null)
             Padding(
@@ -337,7 +368,10 @@ class _PanelRow extends StatelessWidget {
                     row.subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(color: muted, fontSize: 14.sp * scale),
+                    style: AppTextStyles.t14W500.copyWith(
+                      color: muted,
+                      fontSize: 14.sp * scale,
+                    ),
                   ),
               ],
             ),
@@ -346,7 +380,10 @@ class _PanelRow extends StatelessWidget {
             SizedBox(width: 12.sp),
             Text(
               row.value!,
-              style: AppTextStyles.t16W500.copyWith(color: foreground, fontSize: 16.sp * scale),
+              style: AppTextStyles.t16W500.copyWith(
+                color: foreground,
+                fontSize: 16.sp * scale,
+              ),
             ),
           ],
         ],
@@ -357,7 +394,13 @@ class _PanelRow extends StatelessWidget {
 
 /// Small helper so a row can use either an SVG asset or a Material icon.
 class SvgOrIcon extends StatelessWidget {
-  const SvgOrIcon({super.key, this.asset, this.icon, required this.color, required this.size});
+  const SvgOrIcon({
+    super.key,
+    this.asset,
+    this.icon,
+    required this.color,
+    required this.size,
+  });
 
   final String? asset;
   final IconData? icon;
@@ -367,7 +410,12 @@ class SvgOrIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (asset != null) {
-      return SvgPicture.asset(asset!, width: size, height: size, colorFilter: ColorFilter.mode(color, BlendMode.srcIn));
+      return SvgPicture.asset(
+        asset!,
+        width: size,
+        height: size,
+        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      );
     }
     return Icon(icon, size: size, color: color);
   }

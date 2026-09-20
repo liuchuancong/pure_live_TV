@@ -12,7 +12,6 @@ import 'package:pure_live/shared/pagination/models/paging_model.dart';
 import 'package:pure_live/shared/pagination/models/paging_param.dart';
 import 'package:pure_live/shared/pagination/models/base_paged_state.dart';
 import 'package:pure_live/shared/pagination/models/base_controller_state.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 part 'paging_core.g.dart';
 
@@ -35,10 +34,9 @@ class PagingCore<T> extends _$PagingCore<T> {
   // the sliders live.
   late final ScrollController scrollController = VirtualScrollController(
     crossAxisCount: 4,
-    // The setting is an offset from the 6.0 design default, so the untouched
-    // default reproduces the original 16 design-pixel gap.
-    mainAxisSpacing: 16 + SettingsService.to.themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing,
-    crossAxisSpacing: 16 + SettingsService.to.themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing,
+    // The setting IS the gap in design pixels (see ThemeSettingsController).
+    mainAxisSpacing: SettingsService.to.themeState.mainAxisSpacing,
+    crossAxisSpacing: SettingsService.to.themeState.crossAxisSpacing,
     childAspectRatio: 1.3,
   );
 

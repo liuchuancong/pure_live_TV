@@ -625,10 +625,10 @@ class _Pill extends StatelessWidget {
         decoration: BoxDecoration(
           color: background,
           borderRadius: radius,
-          border: Border.all(color: selected ? accent : Colors.transparent, width: 2.5.sp),
-          // No extra halo: the solid accent fill plus the ring already say
-          // "selected", and an additional BoxShadow read as a second shadow
-          // layer smeared under the pill over the video.
+          // No ring and no halo: a BoxDecoration border insets the fill by its
+          // width, so even a transparent 2.5sp ring showed the dark bar through
+          // as a black edge around the selected pill. The solid accent fill
+          // plus the scale lift is the whole selected treatment.
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

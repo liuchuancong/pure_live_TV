@@ -125,6 +125,19 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
         ),
         SizedBox(height: 24.h),
 
+        // -- multi-NIC correction: pick which address to advertise ---------------
+        if (snapshot.localIps.length > 1) ...[
+          TvSettingsMenuTile<String>(
+            title: i18nOr('remote_sync_local_ip', 'This device address'),
+            subtitle: i18nOr('remote_sync_local_ip_desc', 'Multiple networks detected; pick the one your phone can reach'),
+            icon: Icons.lan_rounded,
+            value: snapshot.address.split(':').first,
+            valueMap: {for (final ip in snapshot.localIps) ip: ip},
+            onChanged: (ip) => unawaited(ref.read(remoteSyncControllerProvider.notifier).selectLocalIp(ip)),
+          ),
+          SizedBox(height: 16.h),
+        ],
+
         // -- LAN devices ----------------------------------------------------------
         TvSettingsGroupTitle(title: i18nOr('remote_sync_devices', 'Devices on this network')),
         TvSettingsCard(

@@ -1704,6 +1704,8 @@
   "remote_sync_description": "请确保两台设备连接到同一个局域网",
   "remote_sync_device_info": "设备信息",
   "remote_sync_device_unreachable": "无法连接到目标设备",
+  "remote_sync_local_ip": "本机地址",
+  "remote_sync_local_ip_desc": "检测到多个网络，选择手机能访问的那个",
   "remote_sync_devices": "发现的设备",
   "remote_sync_input_address": "输入设备地址",
   "remote_sync_input_address_hint": "例如：192.168.1.100:8888",
@@ -2299,7 +2301,7 @@
   "video_delete_temp_files": "处理完成删掉.ts以及txt文件",
   "video_desc": "调整解码器、弹幕、屏幕比例与亮度性能",
   "video_dir_not_exist": "目录不存在",
-  "video_ffmpeg_failed": "FFmpeg merge failed",
+  "video_ffmpeg_failed": "FFmpeg 合并失败",
   "video_fit_crop_center": "居中裁剪",
   "video_fit_default": "默认比例",
   "video_fit_fill_screen": "填充屏幕",
@@ -2418,5 +2420,8 @@
   "site_kick": "Kick",
   "kick_directory_scope": "官方公开直播目录，保留原生页码；原生搜索在当前有界结果窗口内返回直播匹配及未开播频道。",
   "kick_public_directory": "公开直播目录",
-  "kick_mature_notice": "该直播已被 Kick 标记为成人内容。"
+  "kick_mature_notice": "该直播已被 Kick 标记为成人内容。",
+  "delete_backup": "删除备份",
+  "delete_backup_subtitle": "选择一个本地备份文件并删除",
+  "backup_list_empty": "没有找到本地备份"
 }

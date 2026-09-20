@@ -83,6 +83,8 @@ Map<String, String> _labels = {
   'font_default_subtitle': '使用应用内置默认字体',
   'font_in_use': '使用中',
   'font_preview_sample': '字体预览：永东体 Aa 123',
+  'remote_sync_local_ip': '本机地址',
+  'remote_sync_local_ip_desc': '检测到多个网络，选择手机能访问的那个',
   'remote_sync_devices': '局域网设备',
   'remote_sync_no_devices': '尚未发现设备',
   'remote_sync_push': '推送设置',

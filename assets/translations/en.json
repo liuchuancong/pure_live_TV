@@ -65,6 +65,8 @@
   "remote_bad_request": "Invalid parameters",
   "remote_clear_success": "Cleared",
   "remote_no_lan_ip": "No usable LAN address found, check the Wi-Fi connection",
+  "remote_sync_local_ip": "This device address",
+  "remote_sync_local_ip_desc": "Multiple networks detected; pick the one your phone can reach",
   "remote_sync_devices": "Devices on this network",
   "remote_sync_no_devices": "No devices discovered yet",
   "remote_sync_push": "Push settings",
@@ -2418,5 +2420,8 @@
   "site_kick": "Kick",
   "kick_directory_scope": "Official public live directory with native page links. Native search returns live matches and offline channels from the current bounded result window.",
   "kick_public_directory": "Public live directory",
-  "kick_mature_notice": "This stream is marked as mature content by Kick."
+  "kick_mature_notice": "This stream is marked as mature content by Kick.",
+  "delete_backup": "Delete backup",
+  "delete_backup_subtitle": "Pick a local backup file and delete it",
+  "backup_list_empty": "No local backup found"
 }

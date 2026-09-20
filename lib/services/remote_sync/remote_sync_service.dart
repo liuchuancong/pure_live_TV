@@ -19,12 +19,19 @@ class RemoteSyncSnapshot {
   final String? error;
   final List<RemoteSyncDevice> devices;
 
+  /// Every usable IPv4 this device owns, best-guess order. More than one
+  /// means multiple NICs (ethernet + Wi-Fi, virtual adapters) and the auto
+  /// pick may advertise an address the phone cannot reach — the page then
+  /// offers a manual choice.
+  final List<String> localIps;
+
   const RemoteSyncSnapshot({
     this.started = false,
     this.qrData = '',
     this.address = '',
     this.error,
     this.devices = const [],
+    this.localIps = const [],
   });
 }
 
@@ -166,11 +173,44 @@ class RemoteSyncController extends _$RemoteSyncController {
       _localIps
         ..clear()
         ..addAll(ips);
-      _localIp = privateIp ?? fallbackIp ?? '';
+
+      // A manual pick (multi-NIC boxes) wins while its interface still exists;
+      // otherwise fall back to the priority guess.
+      final manual = HivePrefUtil.getString('syncSelectedIp');
+      if (manual != null && manual.isNotEmpty && ips.contains(manual)) {
+        _localIp = manual;
+      } else {
+        _localIp = privateIp ?? fallbackIp ?? '';
+      }
     } catch (_) {
       _localIps.clear();
       _localIp = '';
     }
+  }
+
+  /// Candidates best-first, for the page's manual selector.
+  List<String> get localIpCandidates {
+    final list = _localIps.toList();
+    list.sort((a, b) {
+      final pri = _ipv4Priority(b).compareTo(_ipv4Priority(a));
+      return pri != 0 ? pri : a.compareTo(b);
+    });
+    return list;
+  }
+
+  /// Advertises [ip] instead of the auto-picked one. The server binds
+  /// 0.0.0.0, so only the advertised address, QR and mDNS TXT change.
+  Future<void> selectLocalIp(String ip) async {
+    if (!_localIps.contains(ip) || ip == _localIp) return;
+    HivePrefUtil.setString('syncSelectedIp', ip);
+    _localIp = ip;
+    _publish();
+    // Re-advertise the new address over mDNS.
+    try {
+      await _broadcast?.stop();
+      _broadcast = null;
+      await _startBroadcast();
+    } catch (_) {}
   }
 
   bool _isValidIpv4(String ip) {
@@ -583,6 +623,7 @@ class RemoteSyncController extends _$RemoteSyncController {
       address: _localIp.isEmpty ? '' : '$_localIp:$_localPort',
       error: _running ? null : _lastError,
       devices: List.unmodifiable(_devices),
+      localIps: localIpCandidates,
     );
   }
 }

@@ -40,7 +40,8 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
     notifier.onDanmakuFilterUpdated = _syncFromRemote;
     notifier.seedDanmakuFilters(SettingsService.to.favState.shieldList);
     final remoteState = ref.read(tvRemoteReceiverProvider);
-    final running = remoteState is AsyncData && (remoteState.value?.isRunning ?? false);
+    final running =
+        remoteState is AsyncData && (remoteState.value?.isRunning ?? false);
     if (!running) unawaited(notifier.startServer());
   }
 
@@ -77,13 +78,19 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
       final value = remoteState.value;
       if (value != null && value.isRunning) serverUrl = value.serverUrl;
     }
-    final String qrData = serverUrl.isEmpty ? '' : '$serverUrl${WebRemoteRouter.danmakuFilter}';
+    final String qrData = serverUrl.isEmpty
+        ? ''
+        : '$serverUrl${WebRemoteRouter.danmakuFilter}';
 
     return PlayerIndexPanel(
       title: '${i18n('danmaku_filter')} · ${words.length}',
       rows: <PlayerPanelRow>[
         for (final String word in words)
-          PlayerPanelRow(label: word, icon: Icons.block_rounded, value: i18n('delete')),
+          PlayerPanelRow(
+            label: word,
+            icon: Icons.block_rounded,
+            value: i18n('delete'),
+          ),
       ],
       selectedIndex: words.isEmpty ? 0 : _index.clamp(0, words.length - 1),
       emptyHint: i18nOr('empty_shield_title', i18n('ui_none')),
@@ -93,33 +100,47 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
         fav.removeShieldList(i.clamp(0, words.length - 1));
       },
       onClose: widget.onClose ?? () {},
-      // The phone-editing entry: caption above a compact QR — the full-width
-      // 240sp code left the word list no room in a 400sp panel.
-      footer: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
+      // The phone-editing entry at the top: the code is the first thing the
+      // viewer reaches for, and a footer QR scrolled off-screen as soon as the
+      // word list grew.
+      header: Padding(
+        padding: EdgeInsets.fromLTRB(12.sp, 4.sp, 12.sp, 8.sp),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              i18nOr('danmaku_shield_qr_hint', '手机扫码编辑屏蔽词'),
-              style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
-            ),
-            SizedBox(height: 8.sp),
             if (qrData.isEmpty)
               Row(
                 children: [
-                  SizedBox(width: 18.sp, height: 18.sp, child: tvInlineLoading(context, size: 18.sp)),
+                  SizedBox(
+                    width: 18.sp,
+                    height: 18.sp,
+                    child: tvInlineLoading(context, size: 18.sp),
+                  ),
                   SizedBox(width: 12.sp),
                   Expanded(
                     child: Text(
-                      i18nOr('ui_remote_starting', 'Starting the phone remote service...'),
-                      style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
+                      i18nOr(
+                        'ui_remote_starting',
+                        'Starting the phone remote service...',
+                      ),
+                      style: AppTextStyles.t14W500.copyWith(
+                        color: context.tvTheme.secondaryTextColor,
+                      ),
                     ),
                   ),
                 ],
               )
-            else
-              TvQrCodeCard(qrData: qrData, urlText: qrData, qrSize: 150),
+            else ...[
+              Center(child: TvQrCodeCard(qrData: qrData, qrSize: 150)),
+              SizedBox(height: 6.sp),
+              Center(
+                child: Text(
+                  i18nOr('danmaku_shield_qr_hint', '手机扫码编辑屏蔽词'),
+                  style: AppTextStyles.t14W500.copyWith(
+                    color: context.tvTheme.secondaryTextColor,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

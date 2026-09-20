@@ -64,7 +64,7 @@ final class PagingCoreProvider<T>
   }
 }
 
-String _$pagingCoreHash() => r'ba87d805907263faccd115bfb67ea392c2b67116';
+String _$pagingCoreHash() => r'c6e36b5a0e5c7e52172b72ee9b4688c4891bff0d';
 
 final class PagingCoreFamily extends $Family {
   PagingCoreFamily._()

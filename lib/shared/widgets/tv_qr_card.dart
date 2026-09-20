@@ -27,12 +27,12 @@ class TvQrCodeCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: tvTheme.cardColor,
             borderRadius: borderRadius,
-            // A soft elevation instead of the accent "glow frame": the solid
-            // accent border plus a spread accent shadow read as a neon box.
+            // Shadow only, no border: this card is usually embedded in another
+            // framed surface (settings card, player panel), and its own accent
+            // outline read as a second border stacked inside the first.
             boxShadow: [
               BoxShadow(color: Colors.black.withValues(alpha: .3), blurRadius: 12.sp, offset: Offset(0, 4.sp)),
             ],
-            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.45), width: 1.sp),
           ),
           padding: EdgeInsets.all(8.sp),
           child: ClipRRect(

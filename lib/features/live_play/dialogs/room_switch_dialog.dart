@@ -27,7 +27,8 @@ class RoomSwitchDialog extends ConsumerStatefulWidget {
   ConsumerState<RoomSwitchDialog> createState() => _RoomSwitchDialogState();
 }
 
-class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with SingleTickerProviderStateMixin {
+class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   /// First-row focus nodes, one per tab, so a tab change can hand the keyboard
@@ -52,17 +53,25 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
 
   /// Switches the shown list; the keyboard stays where it is.
   void _switchTab(int index) {
+    // Focus inside the old page dies with the page's ExcludeFocus below —
+    // claim the new list's first row so the keyboard never falls out of the
+    // dialog for the d-pad layer to "restore" geometrically.
+    final bool focusInsidePage =
+        FocusManager.instance.primaryFocus?.context
+            ?.findAncestorWidgetOfExactType<_RoomList>() !=
+        null;
     setState(() => _tabController.animateTo(index));
+    if (focusInsidePage) _claimFirstRow(index);
   }
 
-  /// OK on a tab: switch, then move the keyboard onto the new tab's first row
-  /// once its page has built — TabBarView materialises the destination page
-  /// during the transition, so the claim retries across a few frames.
-  void _onTabChange(int index) {
-    _switchTab(index);
-
+  /// Puts the keyboard on a tab's first row once its page has built —
+  /// TabBarView materialises the destination page during the transition, so
+  /// the claim retries across a few frames.
+  void _claimFirstRow(int index) {
     if (_firstRowNodes[index] == null) {
-      _firstRowNodes[index] = FocusNode(debugLabel: 'room-switch/tab$index-first');
+      _firstRowNodes[index] = FocusNode(
+        debugLabel: 'room-switch/tab$index-first',
+      );
     }
     void claim(int attempts) {
       if (!mounted) return;
@@ -70,7 +79,9 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
       final BuildContext? nodeContext = node?.context;
       if (node == null || nodeContext == null || !nodeContext.mounted) {
         if (attempts < 8) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => claim(attempts + 1));
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => claim(attempts + 1),
+          );
         }
         return;
       }
@@ -81,12 +92,29 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
     WidgetsBinding.instance.addPostFrameCallback((_) => claim(0));
   }
 
+  /// OK on a tab: switch, then move the keyboard onto the new tab's first row.
+  void _onTabChange(int index) {
+    _switchTab(index);
+    _claimFirstRow(index);
+  }
+
+  /// Only the shown page may hold or receive focus. TabBarView keeps the
+  /// neighbouring pages mounted next to the viewport, and their rows otherwise
+  /// stay in the focus tree: a Left off the tab bar let the d-pad's geometric
+  /// search land on a row of an invisible page — the list showed one tab while
+  /// the highlight sat on another.
+  Widget _page(int index, Widget child) {
+    return ExcludeFocus(excluding: _tabController.index != index, child: child);
+  }
+
   /// Followed rooms that are live now; a replay is not "is live".
   List<LiveRoom> _liveRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
     return [
       for (final room in rooms)
-        if (room.isLiveNow && room.effectiveLiveStatus != LiveStatus.replay && !room.hasSameIdentity(widget.current))
+        if (room.isLiveNow &&
+            room.effectiveLiveStatus != LiveStatus.replay &&
+            !room.hasSameIdentity(widget.current))
           room,
     ];
   }
@@ -161,27 +189,30 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _RoomList(
-                    rooms: live,
-                    emptyHint: i18n('no_followed_room_live'),
-                    // Only the active tab's first row claims the opening focus:
-                    // TabBarView pre-builds the neighbouring pages, and three
-                    // competing autofocus rows put the highlight on a page the
-                    // viewer cannot see.
-                    autofocusFirst: _tabController.index == 0,
-                    firstRowNode: _firstRowNodes[0],
+                  _page(
+                    0,
+                    _RoomList(
+                      rooms: live,
+                      emptyHint: i18n('no_followed_room_live'),
+                      autofocusFirst: true,
+                      firstRowNode: _firstRowNodes[0],
+                    ),
                   ),
-                  _RoomList(
-                    rooms: replay,
-                    emptyHint: i18n('no_followed_room_live'),
-                    autofocusFirst: _tabController.index == 1,
-                    firstRowNode: _firstRowNodes[1],
+                  _page(
+                    1,
+                    _RoomList(
+                      rooms: replay,
+                      emptyHint: i18n('no_followed_room_live'),
+                      firstRowNode: _firstRowNodes[1],
+                    ),
                   ),
-                  _RoomList(
-                    rooms: history,
-                    emptyHint: i18n('history_empty'),
-                    autofocusFirst: _tabController.index == 2,
-                    firstRowNode: _firstRowNodes[2],
+                  _page(
+                    2,
+                    _RoomList(
+                      rooms: history,
+                      emptyHint: i18n('history_empty'),
+                      firstRowNode: _firstRowNodes[2],
+                    ),
                   ),
                 ],
               ),
@@ -194,7 +225,12 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
 }
 
 class _RoomList extends StatelessWidget {
-  const _RoomList({required this.rooms, required this.emptyHint, this.autofocusFirst = false, this.firstRowNode});
+  const _RoomList({
+    required this.rooms,
+    required this.emptyHint,
+    this.autofocusFirst = false,
+    this.firstRowNode,
+  });
 
   final List<LiveRoom> rooms;
   final String emptyHint;
@@ -232,7 +268,8 @@ class _RoomList extends StatelessWidget {
           autofocus: autofocusFirst && index == 0,
           focusNode: index == 0 ? firstRowNode : null,
           onSelect: () => Navigator.of(context).pop(room),
-          builder: (context, state, child) => PlayerRoomRow(room: room, selected: state.focused),
+          builder: (context, state, child) =>
+              PlayerRoomRow(room: room, selected: state.focused),
           child: const SizedBox.shrink(),
         );
       },
@@ -241,7 +278,10 @@ class _RoomList extends StatelessWidget {
 }
 
 /// Opens the room switch dialog and returns the chosen room, if any.
-Future<LiveRoom?> showRoomSwitchDialog(BuildContext context, {required LiveRoom current}) {
+Future<LiveRoom?> showRoomSwitchDialog(
+  BuildContext context, {
+  required LiveRoom current,
+}) {
   return TvDialogUtils.show<LiveRoom>(
     context: context,
     builder: (dialogContext) => RoomSwitchDialog(current: current),

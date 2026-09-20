@@ -65,8 +65,8 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
     // column/row spacing are an offset from the 6.0 design default, so the untouched
     // default reproduces the original 32 design-pixel gap.
     final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
-    final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double crossSpacing = themeState.crossAxisSpacing;
+    final double mainSpacing = themeState.mainAxisSpacing;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

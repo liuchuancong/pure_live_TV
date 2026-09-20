@@ -18,8 +18,8 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
     // column/row spacing are an offset from the 6.0 design default, so the untouched
     // default reproduces the original 32 design-pixel gap.
     final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = 32 + themeState.crossAxisSpacing - ThemeSettingsController.defaultSpacing;
-    final double mainSpacing = 32 + themeState.mainAxisSpacing - ThemeSettingsController.defaultSpacing;
+    final double crossSpacing = themeState.crossAxisSpacing;
+    final double mainSpacing = themeState.mainAxisSpacing;
 
     final currentParam = PagingParam<LiveArea>(
       mode: PagingMode.localReactive,
