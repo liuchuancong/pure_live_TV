@@ -202,7 +202,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     final double scale = PlayerPanelLayout.fontSize;
     final List<PlayerPanelRow> rows = _renderedRows;
     final int count = rows.length;
-    final int selected = widget.selectedIndex.clamp(0, count - 1);
+    // count can be 0 now that panels may hide the close row (an empty shield
+    // word list, for one) — clamp only against a real range.
+    final int selected = count == 0 ? 0 : widget.selectedIndex.clamp(0, count - 1);
 
     return ValueListenableBuilder<int>(
       // panel font size/panel position are read from preferences, so the panel rebuilds when the

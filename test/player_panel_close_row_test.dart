@@ -70,6 +70,38 @@ void main() {
     expect(closed, hasLength(1));
     expect(selected, <int>[2], reason: 'the close row must not be reported as a row action');
   });
+
+  testWidgets('no close row plus an empty row list builds without throwing', (WidgetTester tester) async {
+    // The shield panel with an empty word list: showCloseRow off leaves zero
+    // rows, and the build-time selectedIndex clamp used to throw
+    // "Invalid argument(s): 0" against the empty range.
+    await tester.pumpWidget(
+      ScreenUtilPlusInit(
+        designSize: const Size(1920, 1080),
+        autoRebuild: false,
+        minTextAdapt: true,
+        splitScreenMode: false,
+        child: MaterialApp(
+          theme: ThemeData(extensions: <ThemeExtension<dynamic>>[TvThemeExtension(theme: darkTvTheme)]),
+          home: Scaffold(
+            body: PlayerIndexPanel(
+              title: 'panel',
+              rows: const <PlayerPanelRow>[],
+              selectedIndex: 0,
+              showCloseRow: false,
+              onSelectionChanged: (_) {},
+              onSelect: (_) {},
+              onClose: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull, reason: 'an empty panel must build, showing its empty hint');
+    expect(find.text('关闭'), findsNothing, reason: 'no close row is appended either');
+  });
 }
 
 class _PanelHost extends StatefulWidget {
