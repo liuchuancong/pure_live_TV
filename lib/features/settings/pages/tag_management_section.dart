@@ -16,15 +16,22 @@ class TagManagementSectionPage extends ConsumerStatefulWidget {
   const TagManagementSectionPage({super.key});
 
   @override
-  ConsumerState<TagManagementSectionPage> createState() => TagManagementSectionPageState();
+  ConsumerState<TagManagementSectionPage> createState() =>
+      TagManagementSectionPageState();
 }
 
-class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPage> {
+class TagManagementSectionPageState
+    extends ConsumerState<TagManagementSectionPage> {
   String _result = '';
 
   Future<void> _addTag() async {
-    final added = await TvDialogUtils.show<bool>(context: context, builder: (_) => const _AddTagDialog());
-    if (added == true && mounted) setState(() => _result = i18n('save_success'));
+    final added = await TvDialogUtils.show<bool>(
+      context: context,
+      builder: (_) => const _AddTagDialog(),
+    );
+    if (added == true && mounted) {
+      setState(() => _result = i18n('save_success'));
+    }
   }
 
   Future<void> _showTagDetail(LiveTag tag, int index) async {
@@ -53,7 +60,11 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
           TvSettingsGroupTitle(title: i18n('tag_management')),
           TvSettingsCard(
             children: [
-              TvSettingsNavTile(title: i18n('ui_add'), icon: Icons.add_rounded, onTap: _addTag),
+              TvSettingsNavTile(
+                title: i18n('ui_add'),
+                icon: Icons.add_rounded,
+                onTap: _addTag,
+              ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 child: state.tags.isEmpty
@@ -67,20 +78,25 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
                           icon: Icons.sell_outlined,
                         ),
                       )
-                    : Wrap(
-                        // Wrap centers by default; the cloud reads left-aligned.
-                        alignment: WrapAlignment.start,
-                        spacing: 12.sp,
-                        runSpacing: 12.sp,
-                        children: [
-                          for (var i = 0; i < state.tags.length; i++)
-                            TvButton(
-                              title: state.tags[i].name,
-                              icon: const Icon(Icons.sell_outlined),
-                              size: TvButtonSize.small,
-                              onTap: () => _showTagDetail(state.tags[i], i),
-                            ),
-                        ],
+                    : SizedBox(
+                        // TvSettingsCard's column centers children, so a
+                        // content-sized Wrap floated mid-card; full width keeps
+                        // the cloud left-aligned like every other row.
+                        width: double.infinity,
+                        child: Wrap(
+                          alignment: WrapAlignment.start,
+                          spacing: 12.sp,
+                          runSpacing: 12.sp,
+                          children: [
+                            for (var i = 0; i < state.tags.length; i++)
+                              TvButton(
+                                title: state.tags[i].name,
+                                icon: const Icon(Icons.sell_outlined),
+                                size: TvButtonSize.small,
+                                onTap: () => _showTagDetail(state.tags[i], i),
+                              ),
+                          ],
+                        ),
                       ),
               ),
             ],
@@ -90,7 +106,10 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
               child: Text(
                 _result,
-                style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: context.tvTheme.focusColor,
+                ),
               ),
             ),
         ],
@@ -160,7 +179,9 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
       setState(() => _error = i18n('tag_invalid_or_duplicate'));
       return;
     }
-    container.read(tagManagementControllerProvider.notifier).addTag(name, _description.text.trim());
+    container
+        .read(tagManagementControllerProvider.notifier)
+        .addTag(name, _description.text.trim());
     Navigator.of(context).pop(true);
   }
 
@@ -178,7 +199,11 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TvInputField(controller: _name, focusNode: _nameFocus, hint: i18n('tag_input_hint')),
+            TvInputField(
+              controller: _name,
+              focusNode: _nameFocus,
+              hint: i18n('tag_input_hint'),
+            ),
             SizedBox(height: 12.sp),
             TvInputField(controller: _description, hint: i18n('tag_desc_hint')),
             if (_error.isNotEmpty)
@@ -223,13 +248,19 @@ class _TagDetailDialog extends StatelessWidget {
               SizedBox(height: 8.sp),
               Text(
                 tag.description,
-                style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  color: tvTheme.secondaryTextColor,
+                ),
               ),
             ],
             SizedBox(height: 16.sp),
             Text(
               i18n('delete_tag_confirm_msg'),
-              style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: tvTheme.secondaryTextColor,
+              ),
             ),
           ],
         ),
