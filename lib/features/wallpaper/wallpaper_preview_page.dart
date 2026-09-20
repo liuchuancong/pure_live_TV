@@ -396,12 +396,18 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
     final key = event.logicalKey;
     final items = _resolveItems(ref);
-    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.arrowLeft) {
+    if (key == LogicalKeyboardKey.arrowUp) {
       _prev(items);
       return KeyEventResult.handled;
     }
-    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.arrowRight) {
+    if (key == LogicalKeyboardKey.arrowDown) {
       _next(items);
+      return KeyEventResult.handled;
+    }
+    // ←/→ stay reserved for the button bar's focus traversal; consuming them
+    // as no-ops keeps the hidden (but mounted) buttons out of reach while
+    // immersive, without redefining the keys outside it.
+    if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.arrowRight) {
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.select ||
@@ -496,8 +502,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                 child: SizedBox(height: 28, width: 28, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
               ),
             ),
-          _chrome(child: _buildTopBar(items, item)),
-          _chrome(child: _buildBottomBar(actions, items)),
+          _buildTopBar(items, item),
+          _buildBottomBar(actions, items),
         ],
       ),
       ),
@@ -505,16 +511,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     );
   }
 
-  /// Bars stay mounted (their focus nodes survive) but fade out and stop
-  /// taking input while immersive.
-  Widget _chrome({required Widget child}) {
-    return AnimatedOpacity(
-      opacity: _immersive ? 0.0 : 1.0,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOutCubic,
-      child: IgnorePointer(ignoring: _immersive, child: child),
-    );
-  }
 
   List<BackgroundItem> _resolveItems(WidgetRef ref) {
     if (widget.args.isApiMode) return const <BackgroundItem>[];
@@ -599,8 +595,9 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       top: 0,
       left: 0,
       right: 0,
-      child: IgnorePointer(
-        child: Container(
+      child: _barFade(
+        child: IgnorePointer(
+          child: Container(
           padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 40.sp),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -631,6 +628,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             ],
           ),
         ),
+        ),
       ),
     );
   }
@@ -640,7 +638,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       left: 0,
       right: 0,
       bottom: 0,
-      child: Container(
+      child: _barFade(
+        child: Container(
         padding: EdgeInsets.fromLTRB(24.sp, 40.sp, 24.sp, 20.sp),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -680,7 +679,21 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             ),
           ],
         ),
+        ),
       ),
+    );
+  }
+
+  /// Bars stay mounted (their focus nodes survive the round trip) but fade
+  /// out and stop taking input while immersive. Applied INSIDE each
+  /// Positioned: wrapping the Positioned itself in AnimatedOpacity breaks the
+  /// Stack parent-data contract.
+  Widget _barFade({required Widget child}) {
+    return AnimatedOpacity(
+      opacity: _immersive ? 0.0 : 1.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      child: IgnorePointer(ignoring: _immersive, child: child),
     );
   }
 
