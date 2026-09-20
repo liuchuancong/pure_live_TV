@@ -21,7 +21,12 @@ class _TvMarqueerTextState extends State<TvMarqueeText> {
           ? MarqueeList(
               scrollDirection: Axis.horizontal,
               scrollDuration: const Duration(seconds: 2),
-              children: [Text(widget.text, style: widget.style, maxLines: 1)],
+              // Trailing spacer: one gap per loop, so the end of the text and
+              // its next repetition do not butt together.
+              children: [
+                Text(widget.text, style: widget.style, maxLines: 1),
+                SizedBox(width: widget.style.fontSize! * 3),
+              ],
             )
           : Text(widget.text, style: widget.style, maxLines: 1, overflow: TextOverflow.ellipsis),
     );

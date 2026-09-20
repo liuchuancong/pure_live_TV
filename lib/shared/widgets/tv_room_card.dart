@@ -226,7 +226,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                     child: Padding(
                       padding: EdgeInsets.only(
                         left: 10.sp,
-                        top: compact ? 8.sp : 16.sp,
+                        top: compact ? 6.sp : 16.sp,
                         right: compact ? 10.sp : 16.sp,
                       ),
                       child: Row(
@@ -242,22 +242,22 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Flexible, not fixed: with a dense layout and
-                                // a text scale above 1.0 the two lines together
-                                // can exceed the height the cover leaves, and a
-                                // fixed Column overflowed the cell by a pixel.
-                                Flexible(
-                                  child: TvMarqueeText(
-                                    text: widget.room.title,
-                                    isFocused: isFocused,
-                                    style:
-                                        (compact
-                                                ? AppTextStyles.t18W700
-                                                : AppTextStyles.t22W700)
-                                            .copyWith(color: titleColor),
-                                  ),
+                                // Dense cells are short, so compact runs one
+                                // step smaller on both lines. The title keeps
+                                // its natural height (its focused marquee needs
+                                // it) and the nick is the flexible one: when
+                                // the cell cannot fit both lines the nick
+                                // compresses first instead of overflowing.
+                                TvMarqueeText(
+                                  text: widget.room.title,
+                                  isFocused: isFocused,
+                                  style:
+                                      (compact
+                                              ? AppTextStyles.t14W700
+                                              : AppTextStyles.t22W700)
+                                          .copyWith(color: titleColor),
                                 ),
-                                SizedBox(height: 4.sp),
+                                SizedBox(height: compact ? 2.sp : 4.sp),
                                 Flexible(
                                   child: Text(
                                     widget.room.nick,
