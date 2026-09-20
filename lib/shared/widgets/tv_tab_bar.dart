@@ -167,27 +167,28 @@ class _TvTabBarState extends State<TvTabBar> {
                   // The shared focus language (scale + ring + halo); the fill
                   // itself is the custom effect below, because a tab tints
                   // instead of filling solid.
-                  ...TvFocusStyle.effects(currentTvTheme, borderRadius),
+                  // TvButton.medium runs 1.06; the bar matches it.
+                  ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06),
                   DpadCustomEffect((context, state, child) {
                     final isFocused = state.focused;
 
-                    // 按钮三态对齐搜索页"主播/直播间"开关：选中=实心主题色，
-                    // 焦点=半透明主题色微染（描边/光晕来自 TvFocusStyle），
-                    // 未选中=无底色。
-                    final bgColor = isSelected
-                        ? currentTvTheme.focusColor
-                        : isFocused
-                        ? currentTvTheme.focusColor.withValues(alpha: 0.45)
-                        : Colors.transparent;
-
-                    // 选中/焦点态文字图标一律白色；未选中态墨色调暗，让实心
-                    // 胶囊更突出。图标字形跟随墨色，图片 logo 保留原样。
-                    final foregroundColor = isSelected || isFocused ? Colors.white : currentTvTheme.secondaryTextColor;
-
-                    final baseStyle = isSelected || isFocused ? AppTextStyles.t26W600 : AppTextStyles.t26;
+                    // 与 TvButton 逐项同款：selected=实心主题色，focused=实心
+                    // 主题色，其余=半透明 buttonSurface（不是全透明，静置时
+                    // 也要是一颗可读的胶囊）。文字图标三态全白，样式 t26W500，
+                    // 都取自 TvButton 的 house style。
+                    final Color bgColor;
+                    if (isSelected || isFocused) {
+                      bgColor = currentTvTheme.focusColor;
+                    } else {
+                      bgColor = currentTvTheme.buttonSurface.withValues(
+                        alpha: currentTvTheme.isLight ? 0.85 : 0.75,
+                      );
+                    }
+                    const Color foregroundColor = Colors.white;
+                    final TextStyle baseStyle = AppTextStyles.t26W500;
 
                     return AnimatedContainer(
-                      duration: TvFocusStyle.duration,
+                      duration: TvFocusStyle.focusDuration(isFocused),
                       curve: TvFocusStyle.curve,
                       height: height,
                       alignment: Alignment.center,
