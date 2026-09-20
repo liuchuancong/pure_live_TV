@@ -14,8 +14,9 @@ _ThemeSettingsModel _$ThemeSettingsModelFromJson(Map<String, dynamic> json) =>
           ? Colors.blue
           : const HexColorConverter().fromJson(json['themeColor'] as String),
       languageName: json['languageName'] as String? ?? "简体中文",
-      crossAxisSpacing: (json['crossAxisSpacing'] as num?)?.toDouble() ?? 6.0,
-      mainAxisSpacing: (json['mainAxisSpacing'] as num?)?.toDouble() ?? 6.0,
+      crossAxisSpacing: (json['crossAxisSpacing'] as num?)?.toDouble() ?? 32.0,
+      mainAxisSpacing: (json['mainAxisSpacing'] as num?)?.toDouble() ?? 32.0,
+      spacingDirectV2: json['spacingDirectV2'] as bool? ?? false,
       loadingStyle: json['loadingStyle'] as String? ?? "default",
       loadingStyleColor: _$JsonConverterFromJson<String, Color>(
         json['loadingStyleColor'],
@@ -32,6 +33,7 @@ Map<String, dynamic> _$ThemeSettingsModelToJson(_ThemeSettingsModel instance) =>
       'languageName': instance.languageName,
       'crossAxisSpacing': instance.crossAxisSpacing,
       'mainAxisSpacing': instance.mainAxisSpacing,
+      'spacingDirectV2': instance.spacingDirectV2,
       'loadingStyle': instance.loadingStyle,
       'loadingStyleColor': _$JsonConverterToJson<String, Color>(
         instance.loadingStyleColor,

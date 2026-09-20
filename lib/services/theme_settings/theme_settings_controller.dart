@@ -13,7 +13,10 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
   static const String defaultThemeModeName = 'System';
   static const String defaultLanguageName = '简体中文';
-  static const double defaultSpacing = 6;
+  /// The grid gap is stored directly in design pixels; 32 reproduces the
+  /// historical look (the old model stored 6 behind a hidden 26 offset).
+  static const double defaultSpacing = 32;
+  static const double _legacySpacingBase = 26;
   static const double minSpacing = 0;
   static const double maxSpacing = 64;
   static const int defaultRoomCardColumns = 4;
@@ -46,7 +49,21 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     final model = savedJson != null
         ? ThemeSettingsModel.fromJson(savedJson)
         : const ThemeSettingsModel();
-    return _normalize(model);
+    return _normalize(_migrateSpacing(model));
+  }
+
+  /// One-time conversion from the old offset semantics: what used to render
+  /// was `32 + stored - 6`, so the stored value carries that exact number over
+  /// and the setting means the actual gap from now on. Untouched installs
+  /// (stored 6 → 32) keep their look; a user-set 1 stops hiding a 27 gap.
+  static ThemeSettingsModel _migrateSpacing(ThemeSettingsModel model) {
+    if (model.spacingDirectV2) return model;
+    double convert(num v) => (v + _legacySpacingBase).clamp(minSpacing, maxSpacing).toDouble();
+    return model.copyWith(
+      crossAxisSpacing: convert(model.crossAxisSpacing),
+      mainAxisSpacing: convert(model.mainAxisSpacing),
+      spacingDirectV2: true,
+    );
   }
 
   /// Repairs stored visual settings that another build or an imported backup

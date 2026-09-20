@@ -79,6 +79,7 @@ Map<String, String> _labels = {
   'empty_search_subtitle': '换个关键词，或切换平台/搜索类型再试试',
   'empty_search_title': '没有找到相关直播',
   'font_danmaku_group': '弹幕字体',
+  'font_app_group': 'App 字体',
   'font_default_subtitle': '使用应用内置默认字体',
   'font_in_use': '使用中',
   'font_preview_sample': '字体预览：永东体 Aa 123',

@@ -779,6 +779,7 @@
   "font_in_use": "使用中",
   "font_preview_sample": "字体预览：永东体 Aa 123",
   "font_danmaku_group": "弹幕字体",
+  "font_app_group": "App 字体",
   "font_default_subtitle": "使用应用内置默认字体",
   "font_downloading": "正在下载",
   "font_download_cancelled": "下载已取消",

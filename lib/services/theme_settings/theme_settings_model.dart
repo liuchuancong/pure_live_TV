@@ -15,8 +15,12 @@ abstract class ThemeSettingsModel with _$ThemeSettingsModel {
     @HexColorConverter() @Default(Colors.blue) Color themeColor,
 
     @Default("简体中文") String languageName,
-    @Default(6.0) double crossAxisSpacing,
-    @Default(6.0) double mainAxisSpacing,
+    // Grid gaps are stored directly in design pixels (32 = the historical
+    // default look); `spacingDirectV2` marks a value already migrated from the
+    // old offset semantics (stored 6 + a hidden 26 base).
+    @Default(32.0) double crossAxisSpacing,
+    @Default(32.0) double mainAxisSpacing,
+    @Default(false) bool spacingDirectV2,
     @Default("default") String loadingStyle,
     @HexColorConverter() Color? loadingStyleColor,
 

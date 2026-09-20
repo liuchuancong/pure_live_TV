@@ -782,6 +782,7 @@
   "font_in_use": "In use",
   "font_preview_sample": "Font preview: Aa 123",
   "font_danmaku_group": "Danmaku font",
+  "font_app_group": "App font",
   "font_default_subtitle": "Use the app's built-in default font",
   "font_downloading": "Downloading",
   "font_download_cancelled": "Download cancelled",

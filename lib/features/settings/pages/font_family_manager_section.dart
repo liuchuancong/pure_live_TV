@@ -29,7 +29,8 @@ enum FontFamilyAction { apply, delete }
 class FontFamilyManagerSectionPage extends ConsumerStatefulWidget {
   const FontFamilyManagerSectionPage({super.key, this.danmaku = false});
 
-  /// danmaku font instead of the app font.
+  /// Which target the page opens on (App 字体 or 弹幕字体); the in-page toggle
+  /// can switch to the other at any time — both entries share one page.
   final bool danmaku;
 
   @override
@@ -40,7 +41,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
   /// Family id → disk usage, for the families that are actually on disk.
   final Map<String, String> _sizes = <String, String>{};
 
-  bool get _danmakuMode => widget.danmaku;
+  late bool _danmakuMode = widget.danmaku;
 
   @override
   void initState() {
@@ -247,6 +248,31 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // One shared page, two clearly separated targets: the toggle decides
+          // whether the rows below set the whole app's font or only the danmaku
+          // layer's. The entry route only picks where you land.
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.h),
+            child: Row(
+              children: [
+                TvButton(
+                  title: i18n('font_app_group'),
+                  icon: Icon(Icons.smartphone_rounded, size: 22.sp),
+                  size: TvButtonSize.small,
+                  selected: !_danmakuMode,
+                  onTap: () => setState(() => _danmakuMode = false),
+                ),
+                SizedBox(width: 12.w),
+                TvButton(
+                  title: i18n('font_danmaku_group'),
+                  icon: Icon(Icons.subtitles_outlined, size: 22.sp),
+                  size: TvButtonSize.small,
+                  selected: _danmakuMode,
+                  onTap: () => setState(() => _danmakuMode = true),
+                ),
+              ],
+            ),
+          ),
           TvSettingsGroupTitle(title: i18n('factory_default_group')),
           TvSettingsCard(
             children: [
