@@ -94,7 +94,9 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
       (
         label: i18n('danmaku_stroke'),
         icon: Icons.border_color_outlined,
-        value: settings.enableDanmakuStroke ? i18n('ui_danmaku_on') : i18n('ui_danmaku_off'),
+        // Plain 开/关: the ui_danmaku_* strings read "弹幕开/弹幕关", which only
+        // fits the first (danmaku switch) row.
+        value: settings.enableDanmakuStroke ? i18n('ui_on') : i18n('ui_off'),
         prev: toggleStroke,
         next: toggleStroke,
         select: toggleStroke,
@@ -114,6 +116,62 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
           ),
         ),
         select: null,
+      ),
+      (
+        label: i18n('danmaku_font_weight'),
+        icon: Icons.format_bold_rounded,
+        value: '${settings.danmakuFontWeight}',
+        prev: () => update(
+          (s) => s.copyWith(
+            danmakuFontWeight: DanmakuOptionSteps.step(
+              DanmakuOptionSteps.fontWeight,
+              s.danmakuFontWeight.toDouble(),
+              forward: false,
+            ).round(),
+          ),
+        ),
+        next: () => update(
+          (s) => s.copyWith(
+            danmakuFontWeight: DanmakuOptionSteps.step(
+              DanmakuOptionSteps.fontWeight,
+              s.danmakuFontWeight.toDouble(),
+              forward: true,
+            ).round(),
+          ),
+        ),
+        select: null,
+      ),
+      (
+        label: i18n('danmaku_fps'),
+        icon: Icons.motion_photos_on_rounded,
+        value: '${settings.danmakuFps} fps',
+        prev: () => update(
+          (s) => s.copyWith(
+            danmakuFps: DanmakuOptionSteps.step(
+              DanmakuOptionSteps.fps,
+              s.danmakuFps.toDouble(),
+              forward: false,
+            ).round(),
+          ),
+        ),
+        next: () => update(
+          (s) => s.copyWith(
+            danmakuFps: DanmakuOptionSteps.step(
+              DanmakuOptionSteps.fps,
+              s.danmakuFps.toDouble(),
+              forward: true,
+            ).round(),
+          ),
+        ),
+        select: null,
+      ),
+      (
+        label: i18n('danmaku_auto_fps'),
+        icon: Icons.auto_mode_rounded,
+        value: settings.danmakuAutoFps ? i18n('ui_on') : i18n('ui_off'),
+        prev: () => update((s) => s.copyWith(danmakuAutoFps: !s.danmakuAutoFps)),
+        next: () => update((s) => s.copyWith(danmakuAutoFps: !s.danmakuAutoFps)),
+        select: () => update((s) => s.copyWith(danmakuAutoFps: !s.danmakuAutoFps)),
       ),
       (
         label: i18nOr('danmaku_display_area', '显示区域'),
@@ -168,7 +226,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
         // noEmojiMode is the inverse and is inverted here, not in the label.
         label: i18nOr('danmaku_emoji_display', '表情显示'),
         icon: Icons.emoji_emotions_outlined,
-        value: settings.noEmojiMode ? i18n('ui_danmaku_off') : i18n('ui_danmaku_on'),
+        value: settings.noEmojiMode ? i18n('ui_off') : i18n('ui_on'),
         prev: toggleEmoji,
         next: toggleEmoji,
         select: toggleEmoji,
@@ -201,6 +259,9 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
 
     return PlayerIndexPanel(
       title: i18n('danmaku_settings'),
+      // No close row: Escape / the panel key close it, and Left is reserved for
+      // adjusting values on this panel.
+      showCloseRow: false,
       rows: <PlayerPanelRow>[
         for (final row in rows) PlayerPanelRow(label: row.label, value: row.value, icon: row.icon),
       ],

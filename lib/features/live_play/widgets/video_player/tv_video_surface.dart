@@ -253,7 +253,9 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         ),
       );
     } else if (state.showControls) {
-      children.add(Positioned(left: 0, right: 0, bottom: 28.sp, child: VideoControllerPanel(args: widget.args)));
+      // Flush to the bottom edge: the bar's own black band is the anchor, and
+      // floating it above the edge left a strip of live picture under it.
+      children.add(Positioned(left: 0, right: 0, bottom: 0, child: VideoControllerPanel(args: widget.args)));
     }
 
     // quality / line read-out on the right edge: quieter than putting them in the

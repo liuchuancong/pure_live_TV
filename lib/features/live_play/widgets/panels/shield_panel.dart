@@ -84,6 +84,9 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
 
     return PlayerIndexPanel(
       title: '${i18n('danmaku_filter')} · ${words.length}',
+      // No close row: Escape / the panel key close it, and Left walks back out
+      // of the word list.
+      showCloseRow: false,
       rows: <PlayerPanelRow>[
         for (final String word in words)
           PlayerPanelRow(

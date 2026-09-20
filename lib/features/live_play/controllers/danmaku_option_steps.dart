@@ -24,6 +24,12 @@ class DanmakuOptionSteps {
   /// Stroke width, in logical pixels (0 - 8).
   static const List<double> stroke = <double>[0, 1, 2, 3, 4, 5, 6, 7, 8];
 
+  /// Render frame rate. The controller clamps stored values into 30-240.
+  static const List<double> fps = <double>[30, 60, 90, 120, 144, 240];
+
+  /// Font weight, snapped to the hundreds (the variable fonts' instances).
+  static const List<double> fontWeight = <double>[100, 200, 300, 400, 500, 600, 700, 800, 900];
+
   /// Steps through [values] in the [forward] direction, wrapping at the ends and
   /// snapping to the nearest entry when an exact match is missing.
   static double step(List<double> values, double current, {required bool forward}) {

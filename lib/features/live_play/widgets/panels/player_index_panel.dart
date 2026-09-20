@@ -41,6 +41,7 @@ class PlayerIndexPanel extends StatefulWidget {
     this.footer,
     this.emptyHint,
     this.width = 400,
+    this.showCloseRow = true,
   });
 
   final String title;
@@ -69,6 +70,11 @@ class PlayerIndexPanel extends StatefulWidget {
   final Widget? footer;
   final String? emptyHint;
   final double width;
+
+  /// Appends the trailing 关闭 row. The danmaku-settings and shield panels turn
+  /// this off — they are exited with Escape / the panel key instead, which the
+  /// key scope routes to the same close action.
+  final bool showCloseRow;
 
   @override
   State<PlayerIndexPanel> createState() => _PlayerIndexPanelState();
@@ -178,13 +184,14 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     return KeyEventResult.ignored;
   }
 
-  /// The rendered list: the rows, then a close row, so every panel has the same
-  /// way out as the bar's own option lists (quality/line/aspect ratio/engine all end with a
-  /// close row). It used to be a back row *first*, which is the one place the bar's
-  /// lists and the panels disagreed.
+  /// The rendered list: the rows, then a close row unless [PlayerIndexPanel.showCloseRow]
+  /// is off, so every panel has the same way out as the bar's own option lists
+  /// (quality/line/aspect ratio/engine all end with a close row). It used to be
+  /// a back row *first*, which is the one place the bar's lists and the panels
+  /// disagreed.
   List<PlayerPanelRow> get _renderedRows => <PlayerPanelRow>[
     ...widget.rows,
-    PlayerPanelRow(label: i18nOr('close', '关闭'), icon: Icons.close_rounded),
+    if (widget.showCloseRow) PlayerPanelRow(label: i18nOr('close', '关闭'), icon: Icons.close_rounded),
   ];
 
   bool _isCloseRow(int index) => index == widget.rows.length;

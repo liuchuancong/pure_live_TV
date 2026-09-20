@@ -526,7 +526,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 
   Widget _buildBar(List<_PanelAction> actions, TvThemeData tvTheme) {
     return Container(
-      height: _barHeight.sp + 16.sp,
+      // A touch taller than the pills need, so the black band reads as the
+      // bar's own ground rather than a tight box around the pills.
+      height: _barHeight.sp + 32.sp,
       alignment: Alignment.center,
       // The band under the pills: live content above it stays clean, the
       // buttons always sit on black.
