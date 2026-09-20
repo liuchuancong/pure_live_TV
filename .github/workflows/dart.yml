@@ -6,25 +6,32 @@ on:
       tag_name:
         description: 'Tag name for the release'
         required: false
-        default: 'v1.0.0'
+        default: 'v3.0.0'
+      ref:
+        description: 'Branch or tag to build (leave empty to use the triggering ref)'
+        required: false
+        default: ''
   push:
     tags:
       - "v*"
+
+# One release per tag: a second run for the same tag waits instead of racing
+# the first one's APK upload against the same GitHub release.
+concurrency:
+  group: android-tv-release-${{ github.event.inputs.tag_name || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   build-android:
     runs-on: macos-latest
     permissions:
       contents: write
-    strategy:
-      matrix:
-        branch: [main, without-exo]
-    
+
     steps:
       - name: 签出代码
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.branch }}
+          ref: ${{ github.event.inputs.ref || github.ref }}
 
       - name: 下载Android keystore
         id: android_keystore
@@ -65,15 +72,14 @@ jobs:
       - name: 重命名 APK 文件
         run: |
           cd build/app/outputs/flutter-apk/
-          branch_suffix=""
-          if [ "${{ matrix.branch }}" = "without-exo" ]; then
-            branch_suffix="-without-exo"
-          fi
           for f in app-*release.apk; do
+            [ -e "$f" ] || continue
             abi=$(echo "$f" | grep -oE 'arm64-v8a|armeabi-v7a|x86_64' | head -1)
             if echo "$f" | grep -q 'skia'; then renderer='skia'; else renderer='impeller'; fi
-            mv "$f" "PureLive-TV-${abi}-${renderer}${branch_suffix}.apk"
+            mv "$f" "PureLive-TV-${abi}-${renderer}.apk"
           done
+          echo "==== 本次产物 ===="
+          ls -lh PureLive-TV-*.apk
 
       - name: 读取版本信息
         id: version
@@ -87,15 +93,14 @@ jobs:
           tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           name: ${{ github.event.inputs.tag_name || github.ref_name }}
           body: |
-            📦 纯粹直播 ${{ github.ref_name }}
+            📦 纯粹直播 ${{ github.event.inputs.tag_name || github.ref_name }}
             本次更新内容：
             ${{ fromJson(steps.version.outputs.content).version_desc }}
             📺 版本说明：
-            • 标准版：包含完整播放器内核 (来自 main 分支)
-            • 精简版：不含 Exo 内核，文件名带 -without-exo (来自 without-exo 分支)
             • Impeller 版：新渲染器，文件名带 -impeller，推荐优先尝试
             • Skia 版：旧渲染器，文件名带 -skia，画面异常/黑屏时改用此版
-            
+            • 每个渲染器均按 ABI 拆分：arm64-v8a（绝大多数设备）、armeabi-v7a（老设备）、x86_64（模拟器）
+
             本软件为开源项目,无广告，无病毒，若安装时出现病毒误报，可自行斟酌。
           prerelease: false
           files: build/app/outputs/flutter-apk/PureLive-TV-*.apk
@@ -104,4 +109,4 @@ jobs:
 
       - name: 输出任务状态
         if: always()
-        run: echo "🍏 Branch ${{ matrix.branch }} build status is ${{ job.status }}."
+        run: echo "🍏 Build status is ${{ job.status }}."

@@ -1,7 +1,7 @@
 {
-  "version": "2.0.20",
-  "version_num": 12020,
-  "version_desc": "-Fixed:优化弹幕",
+  "version": "3.0.0",
+  "version_num": 13000,
+  "version_desc": "-Fixed:同步android各种直播平台。\n-Feature:重新打造纯粹直播TV版。\n-Feature:已修改包名为com.mystyle.purelive.tv。",
   "prerelease":false,
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
