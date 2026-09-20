@@ -11,13 +11,13 @@ import 'package:pure_live/shared/models/release_model/release_model.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 
-/// The download page behind 在线更新's 当前版本 row — the TV twin of the mobile
+/// The download page behind the update page's current-version row - the TV twin of the mobile
 /// app's version update page: a platform card with one section per ABI, every
 /// section offering the release package through each mirror as a pickable
-/// 下载源 button, and the release notes rendered as markdown at the bottom.
+/// source buttons, and the release notes rendered as markdown at the bottom.
 ///
-/// Unlike the plain 下载安装 row on the update page (which races the mirrors
-/// itself), a source picked here is tried first — "下载源 3" really means
+/// Unlike the plain download row on the update page (which races the mirrors
+/// itself), a source picked here is tried first: "source 3" really means
 /// source 3 — with the remaining mirrors kept as fallback.
 class AppDownloadPage extends ConsumerWidget {
   const AppDownloadPage({super.key});
@@ -69,7 +69,7 @@ class AppDownloadPage extends ConsumerWidget {
                 ),
                 // Renderer variant picker: the dual-variant releases publish
                 // Impeller and Skia APKs per ABI; the choice persists and the
-                // 下载源 buttons below resolve to the selected variant.
+                // The source buttons below resolve to the selected variant.
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
                   child: Row(

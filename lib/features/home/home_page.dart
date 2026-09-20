@@ -37,7 +37,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    // 启动检查更新完成后，有新版本时弹出更新弹窗（每次会话仅一次）
+    // Shows the update dialog once per session, after the startup check.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) HomeUpdateDialog.maybeShow(context, ref);
     });

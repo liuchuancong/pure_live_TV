@@ -294,7 +294,7 @@ abstract class LiveRoom with _$LiveRoom {
 
   // ---------- Audience values ----------
 
-  /// Parses audience text such as "1.2万" (12k), "3,456" or "12亿" (1.2B).
+  /// Parses audience text with 10^4/10^8 unit suffixes or comma separators.
   static int parseAudienceNumber(String? text) {
     if (text == null) return 0;
     var cleaned = text.trim().replaceAll(',', '');

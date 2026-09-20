@@ -54,7 +54,7 @@ class AppUpdatePage extends ConsumerWidget {
                   subtitle: _currentVersionSubtitle(state, ref),
                   icon: Icons.info_outline_rounded,
                   trailingBuilder: (context, focused) => tvSettingsValueLabel(context, focused, _statusLabel(state)),
-                  // Enters the download page (per-ABI 下载源 + markdown 更新日志);
+                  // Enters the download page (per-ABI sources + markdown changelog);
                   // checking stays on the app bar button and the status view.
                   onSelect: state.phase == AppUpdatePhase.checking
                       ? null
@@ -63,8 +63,8 @@ class AppUpdatePage extends ConsumerWidget {
                 _buildStatus(state, controller),
               ],
             ),
-            // 发现新版本时页面不再内联展示卡片:下载源与更新日志都由"当前版本"
-            // 行进入的下载页承担,这里只保留行尾的"发现新版本 x.y.z"提示。
+            // A new version is no longer an inline card: the download page
+            // behind the current-version row carries it, this row keeps the hint.
             SizedBox(height: 24.sp),
             TvSettingsGroupTitle(title: i18n('update_history')),
             TvSettingsCard(children: <Widget>[_buildHistory(context, state, controller)]),

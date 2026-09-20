@@ -164,7 +164,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
     );
   }
 
-  /// The built-in 热门 list's subscription URL, editable in place. An empty
+  /// The built-in hot list's subscription URL, editable in place. An empty
   /// override means the scheduler uses the built-in iptv-org default.
   Widget _buildHotResourceRow() {
     final settings = SettingsService.to.iptv;

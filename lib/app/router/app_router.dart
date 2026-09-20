@@ -675,7 +675,7 @@ class AppUpdateRoute extends GoRouteData with $AppUpdateRoute {
   Widget build(BuildContext context, GoRouterState state) => const AppUpdatePage();
 }
 
-/// The download page behind 在线更新's 当前版本 row: per-ABI download sources
+/// The download page behind the update page's current-version row: per-ABI sources
 /// and the release notes as markdown. Owns its scaffold like [AppUpdateRoute].
 @TypedGoRoute<AppDownloadRoute>(path: AppRoutes.kAppDownload)
 class AppDownloadRoute extends GoRouteData with $AppDownloadRoute {

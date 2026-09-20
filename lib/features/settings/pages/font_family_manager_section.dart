@@ -29,7 +29,7 @@ enum FontFamilyAction { apply, delete }
 class FontFamilyManagerSectionPage extends ConsumerStatefulWidget {
   const FontFamilyManagerSectionPage({super.key, this.danmaku = false});
 
-  /// Which target the page opens on (App 字体 or 弹幕字体); the in-page toggle
+  /// Which target the page opens on (app font or danmaku font); the toggle
   /// can switch to the other at any time — both entries share one page.
   final bool danmaku;
 

@@ -20,7 +20,7 @@ class IptvSettingsController extends _$IptvSettingsController {
 
   static const String autoSyncHoursIntervalKey = 'autoSyncHoursInterval';
 
-  /// The built-in "热门" subscription, imported into the fixed system hot
+  /// The built-in hot-list subscription, imported into the fixed system hot
   /// provider when the recommendation list runs empty.
   static const String defaultHotResourceUrl = 'https://iptv-org.github.io/iptv/countries/cn.m3u';
 

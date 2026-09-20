@@ -189,7 +189,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 平台标题 + 配置状态徽标
+                        // Platform title and configured badge.
                         Row(
                           children: [
                             Expanded(
@@ -490,7 +490,7 @@ CookiePlatform cookiePlatformFor(String route) {
   );
 }
 
-/// Cookie 配置状态徽标：已配置(绿) / 未配置(灰)。
+/// Configured badge: green when a cookie is stored, grey otherwise.
 class _CookieStatusBadge extends StatelessWidget {
   const _CookieStatusBadge({required this.configured});
 

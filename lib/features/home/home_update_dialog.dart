@@ -8,10 +8,8 @@ import 'package:pure_live/shared/utils/version_util.dart';
 import 'package:pure_live/shared/platform/file_utils.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
-/// 首页版本更新弹窗。
-///
-/// 启动检查（AppInitializer 已跑过 checkUpdate）之后，首页首帧延迟弹出：
-/// 有新版本时展示 版本号/更新日志/下载入口，仅提醒一次。
+/// Home-page update dialog: shown once per session, after the startup check,
+/// with the version, changelog and a download entry.
 class HomeUpdateDialog {
   static bool _shownThisSession = false;
 
@@ -19,7 +17,7 @@ class HomeUpdateDialog {
     if (_shownThisSession) return;
     _shownThisSession = true;
 
-    // 首页首帧后稍等片刻，避免盖住启动过渡动画
+    // Waits a beat after the first frame so it does not cover the startup transition.
     await Future<void>.delayed(const Duration(milliseconds: 1200));
     if (!context.mounted) return;
     if (!VersionUtil.isHasNewVersion) return;
@@ -45,7 +43,7 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
     final url = VersionUtil.downloadUrl.trim();
 
     if (url.isEmpty) {
-      // 发布源没有直接下载地址时，退到项目发布页
+      // Falls back to the releases page when a source has no direct URL.
       final ok = await FileUtils.openFileOrUrl(VersionUtil.releaseUrl);
       if (!ok && mounted) {
         ToastUtil.show(i18nOr('update_open_failed', 'Unable to open the download page'));
@@ -80,7 +78,7 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 版本对比行
+          // Version comparison row.
           Row(
             children: [
               Icon(Icons.system_update_alt_rounded, size: 28.sp, color: theme.focusColor),
@@ -111,7 +109,7 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
             ],
           ),
           SizedBox(height: 16.sp),
-          // 更新日志卡片
+          // Changelog card.
           if (VersionUtil.latestUpdateLog.isNotEmpty) ...[
             Text(
               i18nOr('update_changelog', 'What is new'),

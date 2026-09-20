@@ -56,7 +56,7 @@ class AreaImageMatcher {
   }
 
   /// Category names compared loosely: case, spaces and separators ignored, and
-  /// as a fallback a containment check (`英雄联盟手游` matches `英雄联盟：手游`).
+  /// as a fallback a containment check (a dotted title still matches its base name).
   static String normalize(String name) =>
       name.toLowerCase().replaceAll(RegExp(r'[\s·・_\-—‐:：,，。.（）()【】\[\]]+'), '');
 

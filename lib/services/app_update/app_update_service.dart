@@ -260,7 +260,7 @@ class AppUpdateController extends _$AppUpdateController {
 
   /// Proxies tried in order for release assets hosted on github.com; the plain
   /// origin is always appended last. Public: the download page renders one
-  /// pickable 下载源 button per entry, in this order.
+  /// pickable source button per entry, in this order.
   static const List<String> assetMirrors = [
     'https://gh-proxy.org/',
     'https://ghfast.top/',
@@ -596,7 +596,7 @@ class AppUpdateController extends _$AppUpdateController {
     }
     final fileName = _safeFileName(url);
     // The download page hands over an explicitly picked source: it goes first
-    // so "下载源 3" really downloads from source 3, with the remaining mirrors
+    // so "source 3" really downloads from source 3, with the remaining mirrors
     // kept as fallback. The plain path keeps mirror-first ordering.
     final mirrorCandidates = <String>[for (final mirror in assetMirrors) '$mirror$url'];
     final candidates = preferGivenUrl

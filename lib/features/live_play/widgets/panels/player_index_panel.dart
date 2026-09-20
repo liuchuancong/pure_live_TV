@@ -71,7 +71,7 @@ class PlayerIndexPanel extends StatefulWidget {
   final String? emptyHint;
   final double width;
 
-  /// Appends the trailing 关闭 row. The danmaku-settings and shield panels turn
+  /// Appends the trailing close row. The danmaku-settings and shield panels turn
   /// this off — they are exited with Escape / the panel key instead, which the
   /// key scope routes to the same close action.
   final bool showCloseRow;

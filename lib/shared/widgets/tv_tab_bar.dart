@@ -132,8 +132,8 @@ class _TvTabBarState extends State<TvTabBar> {
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
-    // 与 TvButton.medium 同规格（64.w 高胶囊、t26 文字、24.w 图标），侧栏菜单
-    // 按钮就是这个尺寸，两处控件因此读作同一套大小。
+    // TvButton.medium's geometry (64.w pill, t26 label, 24.w icon), the same
+    // size the sidebar's menu buttons use.
     final double height = 64.0.w;
     final borderRadius = BorderRadius.circular(height / 2);
 
@@ -148,9 +148,9 @@ class _TvTabBarState extends State<TvTabBar> {
           scrollDirection: Axis.horizontal,
           shrinkWrap: true,
           physics: const ClampingScrollPhysics(),
-          // 视口必须裁剪：Clip.none 在窄容器（播放器、弹窗）里会把整条标签
-          // 画到容器外面。聚焦的描边/光晕靠下面的内容 padding 保住——首尾
-          // 标签在滚动边界内留出余量，1.05 缩放不会被切平。
+          // The viewport must clip: Clip.none paints the whole bar outside a
+          // narrow container. The content padding keeps the first/last tab
+          // inside the scroll bounds so the focus scale is not sheared.
           // Content padding instead of container padding: it scrolls with
           // the items, so at min/max scroll extent the first/last tab keeps
           // a margin inside the viewport and the focus scale (1.05) is not
@@ -172,10 +172,9 @@ class _TvTabBarState extends State<TvTabBar> {
                   DpadCustomEffect((context, state, child) {
                     final isFocused = state.focused;
 
-                    // 与 TvButton 逐项同款：selected=实心主题色，focused=实心
-                    // 主题色，其余=半透明 buttonSurface（不是全透明，静置时
-                    // 也要是一颗可读的胶囊）。文字图标三态全白，样式 t26W500，
-                    // 都取自 TvButton 的 house style。
+                    // TvButton's states exactly: selected and focused fill
+                    // solid accent, idle keeps a translucent buttonSurface
+                    // pill, and the label is white t26W500 in every state.
                     final Color bgColor;
                     if (isSelected || isFocused) {
                       bgColor = currentTvTheme.focusColor;
@@ -226,14 +225,13 @@ class _TvTabBarState extends State<TvTabBar> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 固定尺寸的图标位：各平台 logo 实际大小不一，统一收进
-                    // 24x24 的居中槽位（与 TvButton.medium 的图标一致），保证
-                    // 与文字基线对齐。
+                    // Fixed 24x24 icon slot (TvButton.medium's size): platform
+                    // logos differ in size and must align with the label.
                     if (tab.icon != null) ...[
                       SizedBox(width: 24.w, height: 24.w, child: Center(child: tab.icon)),
                       SizedBox(width: 10.w),
                     ],
-                    // 中文标题不允许换行：超宽时省略，胶囊保持单行
+                    // Never wrap: ellipsize instead, so the pill stays one line.
                     Center(
                       child: Text(
                         tab.title,

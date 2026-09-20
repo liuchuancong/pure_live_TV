@@ -94,7 +94,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
       (
         label: i18n('danmaku_stroke'),
         icon: Icons.border_color_outlined,
-        // Plain 开/关: the ui_danmaku_* strings read "弹幕开/弹幕关", which only
+        // Plain on/off: the ui_danmaku_* strings read "danmaku on/off", which
         // fits the first (danmaku switch) row.
         value: settings.enableDanmakuStroke ? i18n('ui_on') : i18n('ui_off'),
         prev: toggleStroke,
@@ -222,7 +222,7 @@ class _DanmakuSettingsPanelState extends ConsumerState<DanmakuSettingsPanel> {
         select: null,
       ),
       (
-        // Labelled as *display*, so 开 means emoji are visible — the stored
+        // Labelled as *display*, so on means emoji are visible - the stored
         // noEmojiMode is the inverse and is inverted here, not in the label.
         label: i18nOr('danmaku_emoji_display', '表情显示'),
         icon: Icons.emoji_emotions_outlined,

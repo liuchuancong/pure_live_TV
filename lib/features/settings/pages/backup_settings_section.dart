@@ -116,7 +116,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               index: 0,
               onChanged: (_) => _createBackup(),
             ),
-            // Restore and delete live in the backup list (备份管理): one row
+            // Restore and delete live in the backup list: one row
             // per file, its tap opens the restore/delete menu.
             TvSettingsNavTile(
               title: i18n('local_backup'),
