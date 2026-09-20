@@ -28,6 +28,9 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
   @override
   Widget build(BuildContext context) {
     final CookieModel cookies = ref.watch(cookieControllerProvider);
+    // The nickname loads right after a cookie exists; until it lands the UID
+    // stays as the fallback label.
+    final BilibiliAccountModel account = ref.watch(bilibiliAccountControllerProvider);
     final theme = context.tvTheme;
     final bool logined = cookies.bilibiliCookie.isNotEmpty;
 
@@ -63,7 +66,9 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined'),
+                          account.name.isNotEmpty
+                              ? account.name
+                              : (cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined')),
                           style: AppTextStyles.t20W500.copyWith(color: theme.secondaryTextColor),
                         ),
                       ),

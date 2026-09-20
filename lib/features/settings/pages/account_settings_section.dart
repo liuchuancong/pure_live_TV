@@ -84,6 +84,8 @@ class AccountSettingsSectionPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final CookieModel cookies = ref.watch(cookieControllerProvider);
+    // Nickname first (loaded from the account endpoint), UID as the fallback.
+    final BilibiliAccountModel account = ref.watch(bilibiliAccountControllerProvider);
     final CookieSite bilibili = sites.first;
 
     return Column(
@@ -98,7 +100,9 @@ class AccountSettingsSectionPage extends ConsumerWidget {
               title: i18n('site_bilibili'),
               subtitle: cookies.bilibiliCookie.isEmpty
                   ? i18n('not_logged_in')
-                  : (cookies.bilibiliUid <= 0 ? i18n('not_logged_in') : 'UID ${cookies.bilibiliUid}'),
+                  : (account.name.isNotEmpty
+                        ? account.name
+                        : (cookies.bilibiliUid <= 0 ? i18n('not_logged_in') : 'UID ${cookies.bilibiliUid}')),
               leading: SiteLogo(siteId: bilibili.siteId),
               onTap: () => settingsSectionRoutes[bilibili.route]?.push(context),
             ),
