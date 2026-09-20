@@ -41,6 +41,10 @@ class App extends ConsumerWidget {
     final fontSettings = ref.watch(fontSettingsControllerProvider).value;
     final textScale = (fontSettings?.textScaleFactor ?? 1.0).clamp(_minTextScale, _maxTextScale);
     final fontFamily = _fontFamilyOf(fontSettings);
+    // AppTextStyles carry the family statically: the widgets that install one
+    // of its styles as a DefaultTextStyle (TvButton, TvTabBar) replace the
+    // inherited style and would otherwise lose the applied font.
+    AppTextStyles.fontFamily = fontFamily;
 
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
