@@ -19,6 +19,11 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   /// spacing sliders, any settings toggle, every favourite emission.
   final Map<String, PagingParam<LiveRoom>> _pagingParamsCache = {};
 
+  /// The param the grid is currently built from. Following a room pushes fresh
+  /// data into this param's core (see [_listenToFavoriteChanges]).
+  PagingParam<LiveRoom>? _activeParam;
+  bool _poolPushScheduled = false;
+
   PagingParam<LiveRoom> _getOrCreateParam(String key) {
     return _pagingParamsCache.putIfAbsent(key, () {
       return PagingParam<LiveRoom>(
@@ -30,6 +35,33 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
         },
         localRefresh: () async {},
       );
+    });
+  }
+
+  /// Keeps the grid in step with the followed rooms.
+  ///
+  /// The grid's data lives in the PagingCore, and a favourite change
+  /// deliberately does NOT rebuild the view — its identity is only the
+  /// tab/tag selection, so that following a room no longer throws away the
+  /// focus and the scroll position. That also meant nothing told the core the
+  /// list had changed, so a room followed in the player only showed up after a
+  /// tab switch or a restart. Pushing the fresh pool into the live core keeps
+  /// both: the grid updates, the view is never torn down.
+  void _listenToFavoriteChanges() {
+    ref.listen(favoriteProvider, (previous, next) {
+      final param = _activeParam;
+      if (param == null || _poolPushScheduled) return;
+      _poolPushScheduled = true;
+      // Provider writes during a build phase throw, so the push lands on the
+      // next frame; the identity guard drops it if the user switched tabs in
+      // the meantime.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _poolPushScheduled = false;
+        if (!mounted || !identical(_activeParam, param)) return;
+        ref.read(pagingCoreProvider(param).notifier).updateLocalPool(
+          ref.read(favoriteProvider.notifier).getFilteredRooms(),
+        );
+      });
     });
   }
 
@@ -47,6 +79,8 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     final currentParam = _getOrCreateParam(
       'fav_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}',
     );
+    _activeParam = currentParam;
+    _listenToFavoriteChanges();
 
     final List<TvTabItemData> statusTabs = [
       TvTabItemData(title: i18n('live')),
