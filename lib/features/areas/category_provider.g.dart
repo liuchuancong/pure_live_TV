@@ -117,7 +117,7 @@ final class GetSiteCategoriesProvider
   }
 }
 
-String _$getSiteCategoriesHash() => r'2dc333d8208d5d3ed1c86d4c5ff558a0bdf6ff20';
+String _$getSiteCategoriesHash() => r'74016d72dfbc6870bb6d390e886c393ad1081ab0';
 
 final class GetSiteCategoriesFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<List<LiveCategory>>, String> {

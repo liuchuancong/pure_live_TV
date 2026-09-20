@@ -26,7 +26,12 @@ ThemeData buildTvThemeData({
     useMaterial3: true,
     brightness: brightness,
     fontFamily: fontFamily,
+    // apply() must carry the fontFamily explicitly: an explicit textTheme
+    // overrides ThemeData's fontFamily parameter, and without it every style
+    // keeps the platform default font — a downloaded font registered fine but
+    // never rendered (the reference project's theme does the same apply()).
     textTheme: baseTextTheme.apply(
+      fontFamily: fontFamily,
       bodyColor: palette.primaryTextColor,
       displayColor: palette.primaryTextColor,
     ),

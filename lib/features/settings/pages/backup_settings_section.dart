@@ -1,16 +1,14 @@
-import 'dart:async';
 import 'dart:io';
-
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/remote/models/server_state.dart';
-import 'package:pure_live/features/remote/tv_remote_receiver.dart';
-import 'package:pure_live/services/backup/backup_controller.dart';
-import 'package:pure_live/services/log_settings/log_settings_controller.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'dart:async';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/backup/backup_controller.dart';
+import 'package:pure_live/features/remote/tv_remote_receiver.dart';
+import 'package:pure_live/features/remote/models/server_state.dart';
+import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 
 /// Backup and restore, in the mobile page's grouping.
 ///
@@ -66,82 +64,6 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     });
   }
 
-  /// Lists the backup files of the default/configured directory, newest first.
-  Future<List<File>> _listBackups() async {
-    final directory = await ref.read(backupControllerProvider.notifier).resolveBackupDirectory();
-    final files = <File>[];
-    if (directory.existsSync()) {
-      for (final entity in directory.listSync()) {
-        if (entity is! File) continue;
-        if (!BackupController.isBackupFileName(entity.uri.pathSegments.last.toLowerCase())) continue;
-        files.add(entity);
-      }
-    }
-    files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
-    return files;
-  }
-
-  static String _describe(File file) {
-    final stat = file.statSync();
-    final name = file.uri.pathSegments.last;
-    final size = stat.size;
-    final sizeText = size < 1024
-        ? '$size B'
-        : size < 1024 * 1024
-        ? '${(size / 1024).toStringAsFixed(1)} KB'
-        : '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
-    final modified = stat.modified;
-    String two(int value) => value.toString().padLeft(2, '0');
-    final timeText =
-        '${modified.year}-${two(modified.month)}-${two(modified.day)} ${two(modified.hour)}:${two(modified.minute)}';
-    return '$name · $sizeText · $timeText';
-  }
-
-  /// One dialog per action: the user picks a backup file, the action runs on it.
-  Future<void> _pickBackup({required bool restore}) async {
-    if (_busy) return;
-    final files = await _listBackups();
-    if (!mounted) return;
-    if (files.isEmpty) {
-      setState(() => _result = i18nOr('backup_list_empty', 'No local backup found'));
-      return;
-    }
-    final picked = await TvDialogUtils.showSelect<File>(
-      context: context,
-      title: restore ? i18n('recover_backup') : i18n('delete'),
-      items: [for (final file in files) TvSelectItem(value: file, title: _describe(file))],
-    );
-    if (picked == null || !mounted) return;
-
-    setState(() {
-      _busy = true;
-      _result = i18n('ui_loading');
-    });
-    if (restore) {
-      final ok = await ref.read(backupControllerProvider.notifier).recover(picked);
-      if (!mounted) return;
-      setState(() {
-        _busy = false;
-        _result = ok ? i18n('recover_backup_success') : i18n('recover_backup_failed');
-      });
-    } else {
-      try {
-        if (picked.existsSync()) picked.deleteSync();
-        if (!mounted) return;
-        setState(() {
-          _busy = false;
-          _result = i18n('delete_success');
-        });
-      } catch (error) {
-        if (!mounted) return;
-        setState(() {
-          _busy = false;
-          _result = '$error';
-        });
-      }
-    }
-  }
-
   /// The log is served by the LAN remote; a TV has no browser, so the row shows
   /// the address to open on a phone or a PC.
   Future<void> _showLogUrl() async {
@@ -163,7 +85,6 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
 
   @override
   Widget build(BuildContext context) {
-    final ServerState? server = ref.watch(tvRemoteReceiverProvider).value;
     final logState = ref.watch(logSettingsControllerProvider);
     final theme = context.tvTheme;
 
@@ -176,7 +97,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
           children: [
             TvSettingsNavTile(
               title: i18n('remote_sync'),
-              subtitle: server?.isRunning == true ? server!.serverUrl : i18n('remote_sync_subtitle'),
+              subtitle: i18n('remote_sync_subtitle'),
               icon: Icons.devices_other_rounded,
               onTap: () => const DeviceSyncRoute().push(context),
             ),
@@ -195,21 +116,13 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               index: 0,
               onChanged: (_) => _createBackup(),
             ),
-            TvSettingsOptionTile(
-              title: i18n('recover_backup'),
-              subtitle: i18n('recover_backup_subtitle'),
-              icon: Remix.file_upload_line,
-              options: [i18n('ui_choose')],
-              index: 0,
-              onChanged: (_) => _pickBackup(restore: true),
-            ),
-            TvSettingsOptionTile(
-              title: i18nOr('delete_backup', 'Delete backup'),
-              subtitle: i18nOr('delete_backup_subtitle', 'Pick a local backup file and delete it'),
-              icon: Remix.delete_bin_line,
-              options: [i18n('ui_choose')],
-              index: 0,
-              onChanged: (_) => _pickBackup(restore: false),
+            // Restore and delete live in the backup list (备份管理): one row
+            // per file, its tap opens the restore/delete menu.
+            TvSettingsNavTile(
+              title: i18n('local_backup'),
+              subtitle: i18nOr('backup_manage_subtitle', '备份列表 · 恢复或删除'),
+              icon: Icons.folder_outlined,
+              onTap: () => const LocalBackupRoute().push(context),
             ),
           ],
         ),

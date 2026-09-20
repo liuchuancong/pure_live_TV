@@ -40,7 +40,7 @@ final class HotTabsProvider extends $NotifierProvider<HotTabs, HotTabsState> {
   }
 }
 
-String _$hotTabsHash() => r'02e4962790e8ea513f498819c6a098f169e53e9d';
+String _$hotTabsHash() => r'ae896b19f204d981b446bd7b808097f5807fe153';
 
 abstract class _$HotTabs extends $Notifier<HotTabsState> {
   HotTabsState build();

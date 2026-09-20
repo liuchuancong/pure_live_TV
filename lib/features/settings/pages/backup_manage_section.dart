@@ -1,10 +1,15 @@
 import 'dart:io';
+
 import 'package:pure_live/services/index.dart';
+import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
+
+/// The menu one backup row opens.
+enum BackupAction { restore, delete }
 
 /// Local backup management: create timestamped backups in the app documents
 /// directory and restore or delete any of them.
@@ -72,6 +77,36 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
       await _refresh();
       if (mounted) setState(() => _result = ok ? i18n('save_success') : i18n('ui_export_failed'));
     });
+  }
+
+  /// The menu one backup row opens: restore, delete, or close.
+  Future<void> _openBackupMenu(File file) async {
+    final BackupAction? action = await TvDialogUtils.showMenu<BackupAction>(
+      context: context,
+      title: file.uri.pathSegments.last,
+      selectedValue: BackupAction.restore,
+      items: [
+        TvMenuItem(
+          title: i18n('recover_backup'),
+          subtitle: i18n('recover_backup_subtitle'),
+          value: BackupAction.restore,
+          leading: Icon(Remix.file_upload_line, size: 26.sp),
+        ),
+        TvMenuItem(
+          title: i18n('delete'),
+          subtitle: i18nOr('delete_backup_subtitle', 'Pick a local backup file and delete it'),
+          value: BackupAction.delete,
+          leading: Icon(Remix.delete_bin_line, size: 26.sp),
+        ),
+      ],
+    );
+    if (!mounted || action == null) return; // closed
+    switch (action) {
+      case BackupAction.restore:
+        await _restore(file);
+      case BackupAction.delete:
+        await _delete(file);
+    }
   }
 
   Future<void> _restore(File file) async {
@@ -146,22 +181,13 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
           else
             TvSettingsCard(
               children: [
-                for (final file in _files) ...[
-                  TvSettingsOptionTile(
+                // One row per backup; the row opens the restore/delete menu.
+                for (final file in _files)
+                  TvSettingsNavTile(
                     title: _describe(file),
-                    icon: Icons.restore_rounded,
-                    options: [i18n('recover_backup')],
-                    index: 0,
-                    onChanged: (_) => _restore(file),
+                    icon: Icons.history_rounded,
+                    onTap: () => _openBackupMenu(file),
                   ),
-                  TvSettingsOptionTile(
-                    title: '${file.uri.pathSegments.last}  ${i18n('delete')}',
-                    icon: Icons.delete_outline_rounded,
-                    options: [i18n('delete')],
-                    index: 0,
-                    onChanged: (_) => _delete(file),
-                  ),
-                ],
               ],
             ),
           if (_result.isNotEmpty)

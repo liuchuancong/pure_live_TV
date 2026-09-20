@@ -1,5 +1,6 @@
 import 'platform_provider.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/services/area_images/area_image_matcher.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'category_provider.g.dart';
@@ -19,5 +20,8 @@ class CategoryTab extends _$CategoryTab {
 Future<List<LiveCategory>> getSiteCategories(Ref ref, String siteId) async {
   ref.keepAlive();
   final site = Sites.of(siteId).liveSite;
-  return site.getCategores(1, 1000);
+  final categories = await site.getCategores(1, 1000);
+  // Platforms whose API returns no artwork (douyin) borrow it from a platform
+  // that has it; matches persist in Hive (see [AreaImageMatcher]).
+  return AreaImageMatcher.instance.fill(siteId, categories);
 }

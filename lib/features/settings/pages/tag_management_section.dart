@@ -68,6 +68,8 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
                         ),
                       )
                     : Wrap(
+                        // Wrap centers by default; the cloud reads left-aligned.
+                        alignment: WrapAlignment.start,
                         spacing: 12.sp,
                         runSpacing: 12.sp,
                         children: [

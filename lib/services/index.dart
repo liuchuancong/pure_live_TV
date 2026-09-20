@@ -23,6 +23,7 @@ export 'exit_settings/exit_settings_controller.dart';
 export 'exit_settings/exit_settings_model.dart';
 export 'favorites/favorite_room_controller.dart';
 export 'favorites/favorite_settings_model.dart';
+export 'area_images/area_image_matcher.dart';
 export 'font_settings/font_download_controller.dart';
 export 'font_settings/font_settings_controller.dart';
 export 'font_settings/font_settings_model.dart';

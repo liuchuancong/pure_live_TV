@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/services/area_images/area_image_matcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -62,8 +63,13 @@ class TvAreaCard extends StatelessWidget {
                         fit: BoxFit.fill,
                         placeholder: (context, url) =>
                             AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
-                        errorWidget: (context, url, error) =>
-                            AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true),
+                        errorWidget: (context, url, error) {
+                          // A dead/expired picture (borrowed matches included)
+                          // is dropped from the match cache; the next category
+                          // refresh picks another one.
+                          AreaImageMatcher.instance.reportBroken(url);
+                          return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
+                        },
                       )
                     : Center(
                         child: Icon(Icons.live_tv_rounded, size: 50.sp, color: iconColor),
