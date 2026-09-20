@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
@@ -9,8 +8,9 @@ import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/shared/dialog/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 
 /// Backup and restore, in the mobile page's grouping.
 ///
@@ -45,11 +45,6 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     });
   }
 
-  String get _directoryLabel {
-    final configured = ref.read(backupControllerProvider.notifier).backupDirectory;
-    return configured.isEmpty ? i18n('please_set_backup_directory') : configured;
-  }
-
   /// Writes a timestamped backup into the resolved directory (the configured
   /// backup directory, or the app documents directory when none was chosen).
   ///
@@ -71,35 +66,80 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     });
   }
 
-  /// Restores a backup file the user picks, the way the mobile page does.
-  Future<void> _recoverFromFile() async {
+  /// Lists the backup files of the default/configured directory, newest first.
+  Future<List<File>> _listBackups() async {
+    final directory = await ref.read(backupControllerProvider.notifier).resolveBackupDirectory();
+    final files = <File>[];
+    if (directory.existsSync()) {
+      for (final entity in directory.listSync()) {
+        if (entity is! File) continue;
+        if (!BackupController.isBackupFileName(entity.uri.pathSegments.last.toLowerCase())) continue;
+        files.add(entity);
+      }
+    }
+    files.sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+    return files;
+  }
+
+  static String _describe(File file) {
+    final stat = file.statSync();
+    final name = file.uri.pathSegments.last;
+    final size = stat.size;
+    final sizeText = size < 1024
+        ? '$size B'
+        : size < 1024 * 1024
+        ? '${(size / 1024).toStringAsFixed(1)} KB'
+        : '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
+    final modified = stat.modified;
+    String two(int value) => value.toString().padLeft(2, '0');
+    final timeText =
+        '${modified.year}-${two(modified.month)}-${two(modified.day)} ${two(modified.hour)}:${two(modified.minute)}';
+    return '$name · $sizeText · $timeText';
+  }
+
+  /// One dialog per action: the user picks a backup file, the action runs on it.
+  Future<void> _pickBackup({required bool restore}) async {
     if (_busy) return;
-    final result = await FilePicker.pickFile(
-      dialogTitle: i18n('select_recover_file'),
-      type: FileType.custom,
-      allowedExtensions: BackupController.backupExtensions,
+    final files = await _listBackups();
+    if (!mounted) return;
+    if (files.isEmpty) {
+      setState(() => _result = i18nOr('backup_list_empty', 'No local backup found'));
+      return;
+    }
+    final picked = await TvDialogUtils.showSelect<File>(
+      context: context,
+      title: restore ? i18n('recover_backup') : i18n('delete'),
+      items: [for (final file in files) TvSelectItem(value: file, title: _describe(file))],
     );
-    final path = result?.path;
-    if (path == null || path.isEmpty) return;
+    if (picked == null || !mounted) return;
 
     setState(() {
       _busy = true;
       _result = i18n('ui_loading');
     });
-    final ok = await ref.read(backupControllerProvider.notifier).recover(File(path));
-    if (!mounted) return;
-    setState(() {
-      _busy = false;
-      _result = ok ? i18n('recover_backup_success') : i18n('recover_backup_failed');
-    });
-  }
-
-  Future<void> _chooseDirectory() async {
-    final String? path = await FilePicker.getDirectoryPath();
-    if (path == null || path.isEmpty) return;
-    await ref.read(backupControllerProvider.notifier).setBackupDirectory(path);
-    if (!mounted) return;
-    setState(() => _result = '${i18n('backup_directory')}: $path');
+    if (restore) {
+      final ok = await ref.read(backupControllerProvider.notifier).recover(picked);
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _result = ok ? i18n('recover_backup_success') : i18n('recover_backup_failed');
+      });
+    } else {
+      try {
+        if (picked.existsSync()) picked.deleteSync();
+        if (!mounted) return;
+        setState(() {
+          _busy = false;
+          _result = i18n('delete_success');
+        });
+      } catch (error) {
+        if (!mounted) return;
+        setState(() {
+          _busy = false;
+          _result = '$error';
+        });
+      }
+    }
   }
 
   /// The log is served by the LAN remote; a TV has no browser, so the row shows
@@ -143,7 +183,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
           ],
         ),
         SizedBox(height: 16.h),
-        // local backup
+        // local backup: create, then restore/delete through a file picker dialog
         TvSettingsGroupTitle(title: i18n('local_backup')),
         TvSettingsCard(
           children: [
@@ -161,28 +201,15 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               icon: Remix.file_upload_line,
               options: [i18n('ui_choose')],
               index: 0,
-              onChanged: (_) => _recoverFromFile(),
+              onChanged: (_) => _pickBackup(restore: true),
             ),
-            TvSettingsNavTile(
-              title: i18n('local_backup'),
-              subtitle: i18n('backup_settings'),
-              icon: Remix.history_line,
-              onTap: () => const LocalBackupRoute().push(context),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        // backup settings
-        TvSettingsGroupTitle(title: i18n('backup_settings')),
-        TvSettingsCard(
-          children: [
             TvSettingsOptionTile(
-              title: i18n('backup_directory'),
-              subtitle: _directoryLabel,
-              icon: Remix.folder_open_line,
+              title: i18nOr('delete_backup', 'Delete backup'),
+              subtitle: i18nOr('delete_backup_subtitle', 'Pick a local backup file and delete it'),
+              icon: Remix.delete_bin_line,
               options: [i18n('ui_choose')],
               index: 0,
-              onChanged: (_) => _chooseDirectory(),
+              onChanged: (_) => _pickBackup(restore: false),
             ),
           ],
         ),

@@ -13,6 +13,7 @@ class AppPathManager {
   static const String fontDirectoryName = 'fonts';
   static const String dirLogs = 'LOGS';
   static const String dirHiveDB = 'HIVE_DB';
+  static const String dirBackup = 'BACKUP';
   static const String dirImageCache = 'IMAGE_CACHE';
   static const String dirRecords = 'RECORDS';
   static const String iptvCategoryFile = 'categories.json';
@@ -38,6 +39,16 @@ class AppPathManager {
   Future<Directory> getDir(String segment) async {
     final String base = (segment == dirHiveDB) ? secureBasePath : cacheBasePath;
     final Directory directory = Directory(p.join(base, segment));
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+    return directory;
+  }
+
+  /// `BACKUP` under the persistent support directory — the TV's default save
+  /// location for local backups (survives cache clears, unlike DOWNLOADS).
+  Future<Directory> get backupDir async {
+    final Directory directory = Directory(p.join(secureBasePath, dirBackup));
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }
