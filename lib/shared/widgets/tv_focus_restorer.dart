@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 
 /// Shared with the app's [GoRouter]-based navigator so every page using
@@ -146,10 +145,15 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
       if (!usable) return;
       node.requestFocus();
 
-      WidgetsBinding.instance.addPostFrameCallback((_) => scheduleMicrotask(attempt));
+      // Post-frame, never a microtask: a microtask can run *between* the build
+      // and layout phases of one frame (the frame pipeline awaits between
+      // phases), and requesting focus there setStates widgets in an open layout
+      // build scope — the "Tried to build dirty widget in the wrong build
+      // scope" / relayout-boundary assertion cascade.
+      WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => scheduleMicrotask(attempt));
+    WidgetsBinding.instance.addPostFrameCallback((_) => attempt());
   }
 
   @override

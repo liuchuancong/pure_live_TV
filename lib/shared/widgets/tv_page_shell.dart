@@ -222,7 +222,14 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
       // On screen again: whatever covered this page is gone, so take the highlight
       // back. Until the overlay puts the page back on stage its nodes cannot be
       // focused (they are ExcludeFocus'ed below), so the claim has to wait for this.
-      if (onStage) _reclaim();
+      // Deferred to after the frame: _reclaim schedules focus claims, and a focus
+      // request that lands while this build's layout phase is still open setStates
+      // widgets in the wrong build scope.
+      if (onStage) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _reclaim();
+        });
+      }
     }
 
     // Content region: its top edge hands focus to the page's bar when there is one;
