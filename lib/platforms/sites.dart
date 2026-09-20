@@ -42,6 +42,9 @@ class Sites {
   static const String openrecSite = 'openrec';
   static const String ttingSite = 'ttinglive';
   static const String xiaohongshuSite = 'xiaohongshu';
+  static const String showroomSite = 'showroom';
+  static const String chzzkSite = 'chzzk';
+  static const String kickSite = 'kick';
 
   static const Set<String> supportedSiteIds = {
     weiboSite,
@@ -65,6 +68,9 @@ class Sites {
     openrecSite,
     ttingSite,
     xiaohongshuSite,
+    showroomSite,
+    chzzkSite,
+    kickSite,
     iptvSite,
   };
 
@@ -183,6 +189,19 @@ class Sites {
         logo: logoOf(xiaohongshuSite),
         liveSite: XiaohongshuSite(),
       ),
+      showroomSite => Site(
+        id: showroomSite,
+        name: i18n('site_showroom'),
+        logo: logoOf(showroomSite),
+        liveSite: ShowroomSite(),
+      ),
+      chzzkSite => Site(
+        id: chzzkSite,
+        name: i18n('site_chzzk'),
+        logo: logoOf(chzzkSite),
+        liveSite: ChzzkSite(),
+      ),
+      kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoOf(kickSite), liveSite: KickSite()),
       iptvSite => Site(id: iptvSite, name: i18n('site_iptv'), logo: logoOf(iptvSite), liveSite: IptvSite()),
       _ => throw StateError('Unsupported live site: $normalizedId'),
     };
@@ -214,6 +233,9 @@ class Sites {
       openrecSite,
       ttingSite,
       xiaohongshuSite,
+      showroomSite,
+      chzzkSite,
+      kickSite,
       niconicoSite,
       weiboSite,
       iptvSite,
