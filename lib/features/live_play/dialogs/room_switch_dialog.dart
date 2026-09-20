@@ -50,11 +50,16 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
     super.dispose();
   }
 
-  /// Moves the keyboard onto the new tab's first row once its page has built —
-  /// TabBarView materialises the destination page during the transition, so the
-  /// claim retries across a few frames.
-  void _onTabChange(int index) {
+  /// Switches the shown list; the keyboard stays where it is.
+  void _switchTab(int index) {
     setState(() => _tabController.animateTo(index));
+  }
+
+  /// OK on a tab: switch, then move the keyboard onto the new tab's first row
+  /// once its page has built — TabBarView materialises the destination page
+  /// during the transition, so the claim retries across a few frames.
+  void _onTabChange(int index) {
+    _switchTab(index);
 
     if (_firstRowNodes[index] == null) {
       _firstRowNodes[index] = FocusNode(debugLabel: 'room-switch/tab$index-first');
@@ -113,6 +118,9 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
 
     return TvDialog(
       title: i18n('switch_live_room'),
+      // Wide enough that the room rows read as full-width list entries instead
+      // of a squeezed column.
+      width: 1000.sp,
       cancelText: i18n('close'),
       onCancel: () => Navigator.of(context).pop(),
       child: SizedBox(
@@ -125,6 +133,12 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
             // Material TabBar only tints the *selected* label, so a focused
             // tab looked no different from an idle one on the remote.
             TvTabBar(
+              // Content follows the focused tab: a focus move on the remote is
+              // the intent here, so highlight and list can never disagree.
+              switchOnFocus: true,
+              // A focus move only switches the content; the keyboard stays on
+              // the tabs so left/right keeps walking them (down enters the list).
+              onTabFocused: _switchTab,
               tabs: [
                 TvTabItemData(
                   id: 'live',
@@ -195,10 +209,12 @@ class _RoomList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
     if (rooms.isEmpty) {
       return Center(
-        child: Text(emptyHint, style: AppTextStyles.t22W500.copyWith(color: tvTheme.secondaryTextColor)),
+        child: SizedBox(
+          height: 360.sp,
+          child: AppStatusView(type: AppStatusType.empty, title: '', subtitle: emptyHint),
+        ),
       );
     }
 

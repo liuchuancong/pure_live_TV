@@ -15,6 +15,7 @@ List<RouteBase> get $appRoutes => [
   $settingsLoadingStyleRoute,
   $settingsColorPickerRoute,
   $appUpdateRoute,
+  $appDownloadRoute,
   $updateHistoryRoute,
   $areaRoomsRoute,
   $searchResultRoute,
@@ -1409,6 +1410,33 @@ mixin $AppUpdateRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/app_update');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $appDownloadRoute => GoRouteData.$route(
+  path: '/app_update/download',
+  hasOverriddenOnExit: false,
+  factory: $AppDownloadRoute._fromState,
+);
+
+mixin $AppDownloadRoute on GoRouteData {
+  static AppDownloadRoute _fromState(GoRouterState state) =>
+      const AppDownloadRoute();
+
+  @override
+  String get location => GoRouteData.$location('/app_update/download');
 
   @override
   void go(BuildContext context) => context.go(location);

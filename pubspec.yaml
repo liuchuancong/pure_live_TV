@@ -68,6 +68,7 @@ dependencies:
   # 弹窗、提示、Markdown、二维码
   flutter_smart_dialog: ^5.1.0        # 全局弹窗、Toast、对话框
   qr_flutter: ^4.1.0                  # 生成二维码图片
+  markdown_widget: ^2.3.2+8           # 更新页更新日志的 Markdown 渲染
 
   # 视频播放、流媒体、弹幕
   media_kit:

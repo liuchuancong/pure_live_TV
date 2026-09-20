@@ -12,6 +12,7 @@ import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
+import 'package:pure_live/features/settings/pages/app_download_page.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
 import 'package:pure_live/features/settings/pages/update_history_page.dart';
 import 'package:pure_live/features/settings/pages/nav_order_section.dart';
@@ -660,6 +661,16 @@ class AppUpdateRoute extends GoRouteData with $AppUpdateRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) => const AppUpdatePage();
+}
+
+/// The download page behind 在线更新's 当前版本 row: per-ABI download sources
+/// and the release notes as markdown. Owns its scaffold like [AppUpdateRoute].
+@TypedGoRoute<AppDownloadRoute>(path: AppRoutes.kAppDownload)
+class AppDownloadRoute extends GoRouteData with $AppDownloadRoute {
+  const AppDownloadRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const AppDownloadPage();
 }
 
 @TypedGoRoute<UpdateHistoryRoute>(path: AppRoutes.kUpdateHistory)

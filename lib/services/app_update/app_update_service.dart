@@ -135,6 +135,11 @@ class AppUpdateState {
   final String currentBuild;
   final String latestVersion;
   final String changelog;
+
+  /// The manifest's update log as the author wrote it — markdown kept, unlike
+  /// [changelog] which is stripped for the plain-text preview. The download
+  /// page renders this through markdown_widget.
+  final String changelogMarkdown;
   final bool prerelease;
   final List<String> abis;
   final String selectedAbi;
@@ -161,6 +166,7 @@ class AppUpdateState {
     this.currentBuild = '',
     this.latestVersion = '',
     this.changelog = '',
+    this.changelogMarkdown = '',
     this.prerelease = false,
     this.abis = const [],
     this.selectedAbi = '',
@@ -191,6 +197,7 @@ class AppUpdateState {
     String? currentBuild,
     String? latestVersion,
     String? changelog,
+    String? changelogMarkdown,
     bool? prerelease,
     List<String>? abis,
     String? selectedAbi,
@@ -210,6 +217,7 @@ class AppUpdateState {
       currentBuild: currentBuild ?? this.currentBuild,
       latestVersion: latestVersion ?? this.latestVersion,
       changelog: changelog ?? this.changelog,
+      changelogMarkdown: changelogMarkdown ?? this.changelogMarkdown,
       prerelease: prerelease ?? this.prerelease,
       abis: abis ?? this.abis,
       selectedAbi: selectedAbi ?? this.selectedAbi,
@@ -236,8 +244,9 @@ class AppUpdateController extends _$AppUpdateController {
   bool _checking = false;
 
   /// Proxies tried in order for release assets hosted on github.com; the plain
-  /// origin is always appended last.
-  static const List<String> _assetMirrors = [
+  /// origin is always appended last. Public: the download page renders one
+  /// pickable 下载源 button per entry, in this order.
+  static const List<String> assetMirrors = [
     'https://gh-proxy.org/',
     'https://ghfast.top/',
     'https://ghproxy.net/',
@@ -290,6 +299,7 @@ class AppUpdateController extends _$AppUpdateController {
         phase: AppUpdatePhase.available,
         latestVersion: VersionUtil.latestVersion,
         changelog: cleanReleaseNotes(VersionUtil.latestUpdateLog),
+        changelogMarkdown: VersionUtil.latestUpdateLog.trim(),
         prerelease: VersionUtil.prerelease,
         abis: abis,
         selectedAbi: abis.contains(state.selectedAbi) || state.selectedAbi.isEmpty
@@ -321,7 +331,7 @@ class AppUpdateController extends _$AppUpdateController {
     final api = 'https://api.github.com/repos/${VersionUtil.updateOwner}/${VersionUtil.updateRepository}/releases?per_page=10';
     final candidates = <String>[
       if (SettingsService.to.appState.useGitHubOriginForUpdates) api,
-      for (final mirror in _assetMirrors) '$mirror$api',
+      for (final mirror in assetMirrors) '$mirror$api',
       // The origin last for the mirrored list: it is the slowest path from a
       // TV box, but a correct answer beats a fast failure.
       if (!SettingsService.to.appState.useGitHubOriginForUpdates) api,
@@ -523,18 +533,20 @@ class AppUpdateController extends _$AppUpdateController {
 
   /// Downloads an arbitrary release asset (a history version for rollback)
   /// through the same mirror list and installs it.
-  Future<void> downloadAndInstallUrl(String url) async {
+  Future<void> downloadAndInstallUrl(String url, {bool preferGivenUrl = false}) async {
     if (state.phase == AppUpdatePhase.downloading) return;
     if (!url.startsWith('http')) {
       _patchState(phase: AppUpdatePhase.failed, error: 'no download url');
       return;
     }
     final fileName = _safeFileName(url);
-    final candidates = [
-      for (final mirror in _assetMirrors)
-        if (!url.startsWith('https://github.com/') || mirror != '') '$mirror$url',
-      url,
-    ];
+    // The download page hands over an explicitly picked source: it goes first
+    // so "下载源 3" really downloads from source 3, with the remaining mirrors
+    // kept as fallback. The plain path keeps mirror-first ordering.
+    final mirrorCandidates = <String>[for (final mirror in assetMirrors) '$mirror$url'];
+    final candidates = preferGivenUrl
+        ? <String>[url, ...mirrorCandidates, url]
+        : <String>[...mirrorCandidates, url];
 
     _cancelToken = CancelToken();
     _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 30)));
@@ -673,6 +685,7 @@ class AppUpdateController extends _$AppUpdateController {
     String? currentBuild,
     String? latestVersion,
     String? changelog,
+    String? changelogMarkdown,
     bool? prerelease,
     List<String>? abis,
     String? selectedAbi,
@@ -693,6 +706,7 @@ class AppUpdateController extends _$AppUpdateController {
       currentBuild: currentBuild,
       latestVersion: latestVersion,
       changelog: changelog,
+      changelogMarkdown: changelogMarkdown,
       prerelease: prerelease,
       abis: abis,
       selectedAbi: selectedAbi,

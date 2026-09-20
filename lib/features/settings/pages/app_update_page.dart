@@ -54,9 +54,11 @@ class AppUpdatePage extends ConsumerWidget {
                   subtitle: _currentVersionSubtitle(state, ref),
                   icon: Icons.info_outline_rounded,
                   trailingBuilder: (context, focused) => tvSettingsValueLabel(context, focused, _statusLabel(state)),
+                  // Enters the download page (per-ABI 下载源 + markdown 更新日志);
+                  // checking stays on the app bar button and the status view.
                   onSelect: state.phase == AppUpdatePhase.checking
                       ? null
-                      : () => controller.check(userInitiated: true),
+                      : () => const AppDownloadRoute().push(context),
                 ),
                 _buildStatus(state, controller),
               ],

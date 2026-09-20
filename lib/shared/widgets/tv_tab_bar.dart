@@ -57,6 +57,20 @@ class TvTabBar extends StatefulWidget {
   final void Function(int index)? onTabRefresh;
   final List<DpadEffect>? effects;
 
+  /// Switch the tab as soon as focus lands on it, not only on OK.
+  ///
+  /// Modal dialogs (the room switcher) want this: there the highlight and the
+  /// shown content must never disagree, and a focus move *is* the intent. Page
+  /// tab bars keep the default (false) so merely walking across tabs does not
+  /// reload their content.
+  final bool switchOnFocus;
+
+  /// Focus-driven tab switch ([switchOnFocus]), customised: when set, a focus
+  /// move calls this instead of [onTabChange], so the caller can switch the
+  /// content while the keyboard stays on the tab bar (left/right keeps walking
+  /// tabs; down enters the list).
+  final void Function(int index)? onTabFocused;
+
   const TvTabBar({
     super.key,
     required this.tabs,
@@ -64,6 +78,8 @@ class TvTabBar extends StatefulWidget {
     required this.onTabChange,
     this.effects,
     this.onTabRefresh,
+    this.switchOnFocus = false,
+    this.onTabFocused,
   });
 
   @override
@@ -116,20 +132,25 @@ class _TvTabBarState extends State<TvTabBar> {
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
-    final double height = 56.sp;
+    // 与 TvButton.medium 同规格（64.w 高胶囊、t26 文字、24.w 图标），侧栏菜单
+    // 按钮就是这个尺寸，两处控件因此读作同一套大小。
+    final double height = 64.0.w;
     final borderRadius = BorderRadius.circular(height / 2);
 
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
       child: Container(
         width: double.infinity,
-        height: 64.sp,
+        height: height,
         alignment: Alignment.center,
         color: Colors.transparent,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           shrinkWrap: true,
           physics: const ClampingScrollPhysics(),
+          // 不裁剪：条目比视口不留余量时，聚焦的描边/光晕/1.05 缩放会在
+          // 视口边界被切平（之前"快手"聚焦时光晕被拦腰截断就是这个原因）。
+          clipBehavior: Clip.none,
           // Content padding instead of container padding: it scrolls with
           // the items, so at min/max scroll extent the first/last tab keeps
           // a margin inside the viewport and the focus scale (1.05) is not
@@ -150,33 +171,30 @@ class _TvTabBarState extends State<TvTabBar> {
                   DpadCustomEffect((context, state, child) {
                     final isFocused = state.focused;
 
-                    // 三态各有可辨识的容器：选中=实心主题色，焦点=半透明主题色，
-                    // 未选中=低透明度底色胶囊（不再是裸图标文字）。
+                    // 按钮三态对齐搜索页"主播/直播间"开关：选中=实心主题色，
+                    // 焦点=半透明主题色微染（描边/光晕来自 TvFocusStyle），
+                    // 未选中=无底色。
                     final bgColor = isSelected
                         ? currentTvTheme.focusColor
                         : isFocused
                         ? currentTvTheme.focusColor.withValues(alpha: 0.45)
-                        : currentTvTheme.primaryTextColor.withValues(alpha: 0.10);
+                        : Colors.transparent;
 
-                    // House style: tab icons and focused/selected text are
-                    // always white, in every theme mode — the accent fills are
-                    // strong enough to carry white in both.
-                    final foregroundColor = isSelected || isFocused ? Colors.white : currentTvTheme.primaryTextColor;
+                    // 选中/焦点态文字图标一律白色；未选中态墨色调暗，让实心
+                    // 胶囊更突出。图标字形跟随墨色，图片 logo 保留原样。
+                    final foregroundColor = isSelected || isFocused ? Colors.white : currentTvTheme.secondaryTextColor;
 
-                    final baseStyle = isSelected || isFocused ? AppTextStyles.t24W600 : AppTextStyles.t24;
+                    final baseStyle = isSelected || isFocused ? AppTextStyles.t26W600 : AppTextStyles.t26;
 
                     return AnimatedContainer(
                       duration: TvFocusStyle.duration,
                       curve: TvFocusStyle.curve,
                       height: height,
                       alignment: Alignment.center,
-                      padding: EdgeInsets.symmetric(horizontal: 32.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 28.w),
                       decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
-                      // Icons render white in every state. `Icon` widgets pick
-                      // this up through IconTheme; image logos keep their own
-                      // artwork (a srcIn colour filter made them disappear).
                       child: IconTheme(
-                        data: const IconThemeData(color: Colors.white),
+                        data: IconThemeData(color: foregroundColor),
                         child: DefaultTextStyle(
                           style: baseStyle.copyWith(color: foregroundColor),
                           child: child,
@@ -191,6 +209,10 @@ class _TvTabBarState extends State<TvTabBar> {
               padding: EdgeInsets.symmetric(horizontal: 6.sp),
               child: DpadFocusable(
                 effects: dynamicEffects,
+                onFocusChange: (focused) {
+                  if (!focused || !widget.switchOnFocus || index == widget.currentIndex) return;
+                  (widget.onTabFocused ?? widget.onTabChange)(index);
+                },
                 onSelect: () {
                   if (index == widget.currentIndex) {
                     widget.onTabRefresh?.call(index);
@@ -204,10 +226,11 @@ class _TvTabBarState extends State<TvTabBar> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // 固定尺寸的图标位：各平台 logo 实际大小不一，统一收进
-                    // 24x36 的居中槽位，保证与文字基线对齐。
+                    // 24x24 的居中槽位（与 TvButton.medium 的图标一致），保证
+                    // 与文字基线对齐。
                     if (tab.icon != null) ...[
-                      SizedBox(width: 28.sp, height: 28.sp, child: Center(child: tab.icon)),
-                      SizedBox(width: 12.sp),
+                      SizedBox(width: 24.w, height: 24.w, child: Center(child: tab.icon)),
+                      SizedBox(width: 10.w),
                     ],
                     // 中文标题不允许换行：超宽时省略，胶囊保持单行
                     Center(

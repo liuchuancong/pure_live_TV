@@ -29,7 +29,8 @@ class _FakeUpdateController extends AppUpdateController {
   Future<void> loadHistory() async => loadHistoryCalls++;
 
   @override
-  Future<void> downloadAndInstallUrl(String url) async => installedUrl = url;
+  Future<void> downloadAndInstallUrl(String url, {bool preferGivenUrl = false}) async =>
+      installedUrl = url;
 }
 
 ReleaseModel _release({
