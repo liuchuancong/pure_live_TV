@@ -93,16 +93,22 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
         fav.removeShieldList(i.clamp(0, words.length - 1));
       },
       onClose: widget.onClose ?? () {},
+      // The phone-editing entry: caption above a compact QR — the full-width
+      // 240sp code left the word list no room in a 400sp panel.
       footer: Padding(
         padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 8.sp),
-        child: qrData.isEmpty
-            ? Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              i18nOr('danmaku_shield_qr_hint', '手机扫码编辑屏蔽词'),
+              style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
+            ),
+            SizedBox(height: 8.sp),
+            if (qrData.isEmpty)
+              Row(
                 children: [
-                  SizedBox(
-                    width: 18.sp,
-                    height: 18.sp,
-                    child: tvInlineLoading(context, size: 18.sp),
-                  ),
+                  SizedBox(width: 18.sp, height: 18.sp, child: tvInlineLoading(context, size: 18.sp)),
                   SizedBox(width: 12.sp),
                   Expanded(
                     child: Text(
@@ -112,7 +118,10 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                   ),
                 ],
               )
-            : TvQrCodeCard(qrData: qrData, urlText: qrData),
+            else
+              TvQrCodeCard(qrData: qrData, urlText: qrData, qrSize: 150),
+          ],
+        ),
       ),
     );
   }

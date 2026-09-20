@@ -213,7 +213,13 @@ class _RoomList extends StatelessWidget {
       return Center(
         child: SizedBox(
           height: 360.sp,
-          child: AppStatusView(type: AppStatusType.empty, title: '', subtitle: emptyHint),
+          child: AppStatusView(
+            type: AppStatusType.empty,
+            title: '',
+            subtitle: emptyHint,
+            isMini: true,
+            icon: Remix.tv_2_line,
+          ),
         ),
       );
     }

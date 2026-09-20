@@ -478,6 +478,7 @@
   "danmaku_connection_timeout": "弹幕服务器连接超时，已自动释放并可重新连接",
   "danmaku_display_disabled_hint": "全局弹幕显示已关闭；仍可切换到“弹幕设置”调整主播放器和小窗弹幕。",
   "danmaku_filter": "弹幕关键词过滤",
+  "danmaku_shield_qr_hint": "手机扫码编辑屏蔽词",
   "danmaku_filter_bot": "过滤疑似机器人弹幕",
   "danmaku_font_size": "弹幕字号",
   "danmaku_font_weight": "弹幕字重",

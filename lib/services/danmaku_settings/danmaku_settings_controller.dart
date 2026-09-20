@@ -91,17 +91,28 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
   /// (or the weight it was locked to) are gone.
   Future<void> _restoreFontFamily(String family) async {
     try {
-      if (!await FontDownloadManager.instance.checkFontDownloaded(family)) {
+      // A locked family stores its derived id (`X::700`); the folder is `X`.
+      final String baseId = FontDownloadManager.baseFamilyId(family);
+      if (!await FontDownloadManager.instance.checkFontDownloaded(baseId)) {
         await resetDanmakuFontFamily();
         return;
       }
 
       final String storedFile = danmakuFontFamilyFileName;
-      bool loaded = await FontDownloadManager.instance.loadFont(family, fileName: storedFile);
+      if (baseId != family && storedFile.isEmpty) {
+        // A derived id without its weight file is unusable.
+        await resetDanmakuFontFamily();
+        return;
+      }
+
+      bool loaded = await FontDownloadManager.instance.loadFont(baseId, fileName: storedFile);
       if (!loaded && storedFile.isNotEmpty) {
         // The locked weight was removed but the family is still usable.
-        loaded = await FontDownloadManager.instance.loadFont(family);
-        if (loaded) await HivePrefUtil.setString(_fileNameKey, '');
+        loaded = await FontDownloadManager.instance.loadFont(baseId);
+        if (loaded) {
+          await HivePrefUtil.setString(_fileNameKey, '');
+          await HivePrefUtil.setString(_familyKey, baseId);
+        }
       }
       if (!loaded) await resetDanmakuFontFamily();
     } catch (_) {
@@ -115,12 +126,19 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
   /// Registration is verified first, so a family whose files are gone leaves the current
   /// danmaku font alone and only reports why.
   Future<bool> activateDanmakuFontFamily(FontModel font, {String? targetFileName}) async {
+    final bool locked = targetFileName != null && targetFileName.isNotEmpty;
     final bool loaded = await FontDownloadManager.instance.loadFont(font.id, fileName: targetFileName ?? '');
     if (!loaded) {
       ToastUtil.show(i18n('font_not_downloaded_or_corrupted'));
       return false;
     }
-    updateSettings(state.copyWith(danmakuFontFamilyName: font.id));
+    // The locked weight registers under its derived family, so the stored name
+    // must match what the engine actually registered.
+    updateSettings(
+      state.copyWith(
+        danmakuFontFamilyName: locked ? FontDownloadManager.lockedFamilyId(font.id, targetFileName) : font.id,
+      ),
+    );
     await HivePrefUtil.setString(_fileNameKey, targetFileName ?? '');
     return true;
   }
@@ -133,7 +151,9 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
 
   /// Drops the danmaku selection when [fontId] is the family in force.
   Future<void> resetIfActive(String fontId) async {
-    if (state.danmakuFontFamilyName == fontId) await resetDanmakuFontFamily();
+    if (FontDownloadManager.baseFamilyId(state.danmakuFontFamilyName) == fontId) {
+      await resetDanmakuFontFamily();
+    }
   }
 
   void updateSettings(DanmakuSettingsModel newSettings) {

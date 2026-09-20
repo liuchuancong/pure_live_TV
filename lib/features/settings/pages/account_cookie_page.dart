@@ -266,6 +266,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                   type: _phoneStarting ? AppStatusType.loading : AppStatusType.empty,
                   subtitle: _phoneStarting ? i18n('ui_loading') : i18n('remote_service_unavailable'),
                   isMini: true,
+                  icon: Remix.smartphone_line,
                 ),
               )
             else

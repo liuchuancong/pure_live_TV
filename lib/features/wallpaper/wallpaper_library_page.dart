@@ -24,7 +24,8 @@ class WallpaperLibraryPage extends ConsumerWidget {
       child: sources.isEmpty
           ? AppStatusView(
               type: AppStatusType.empty,
-              subtitle: i18nOr('background_catalog_empty', '远端目录为空'),
+              title: i18nOr('background_catalog_empty', '远端目录为空'),
+              icon: Remix.folder_image_line,
             )
           : ListView.builder(
               padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),

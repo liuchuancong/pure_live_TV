@@ -454,10 +454,13 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       onKeyEvent: _onKeyEvent,
       child: Container(
         decoration: BoxDecoration(
+          // A light scrim only: a near-opaque black read as a solid black
+          // band under the buttons over the video.
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.0)],
+            colors: [Colors.black.withValues(alpha: 0.55), Colors.black.withValues(alpha: 0.0)],
+            stops: const [0.0, 0.85],
           ),
         ),
         child: Column(

@@ -85,12 +85,15 @@ class AreasPlatformGridBridgeState extends ConsumerState<AreasPlatformGridBridge
       ),
       data: (categories) {
         if (categories.isEmpty) {
+          // Same copy and refresh action as the mobile app's areas empty state.
           return Center(
             child: AppStatusView(
               type: AppStatusType.empty,
-              title: i18n('area_no_category_data'),
-              subtitle: "",
+              title: i18n('empty_areas_title'),
+              subtitle: i18n('empty_areas_subtitle'),
               icon: Remix.apps_2_line,
+              buttonText: i18n('refresh'),
+              onTap: () => ref.invalidate(getSiteCategoriesProvider(widget.site.id)),
             ),
           );
         }

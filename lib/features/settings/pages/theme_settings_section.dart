@@ -5,6 +5,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
+import 'package:pure_live/shared/platform/font_download_manager.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class ThemeSettingsSectionPage extends ConsumerWidget {
@@ -20,8 +21,12 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     final Color loadingColor = themeState.loadingStyleColor ?? tvTheme.focusColor;
     // The mobile row shows which family is active, so the row is not just a
     // blind entry point into the font manager.
-    final String currentFontName =
-        ref.watch(fontSettingsControllerProvider).value?.fontFamilyName ?? i18n('font_default');
+    final String currentFontName = () {
+      // A locked weight stores a derived family id (`X::700`); display the base.
+      final String id = ref.watch(fontSettingsControllerProvider).value?.fontFamilyName ?? 'Default';
+      if (id == 'Default' || id.isEmpty) return i18n('font_default');
+      return FontDownloadManager.baseFamilyId(id);
+    }();
 
     return SingleChildScrollView(
       child: Column(

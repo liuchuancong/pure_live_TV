@@ -480,6 +480,7 @@
   "danmaku_connection_timeout": "Danmaku connection timed out; the stalled session was released for reconnection",
   "danmaku_display_disabled_hint": "Global danmaku display is disabled. Open Danmaku Settings to configure the player and PiP danmaku.",
   "danmaku_filter": "Danmaku Filter",
+  "danmaku_shield_qr_hint": "Scan with your phone to edit blocked words",
   "danmaku_filter_bot": "Filter suspected bot danmaku",
   "danmaku_font_size": "Danmaku font size",
   "danmaku_font_weight": "Danmaku font weight",

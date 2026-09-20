@@ -41,7 +41,11 @@ class WallpaperItemsPage extends ConsumerWidget {
     if (source == null || category == null) {
       return TvPageScaffold(
         title: i18nOr('wallpaper', '壁纸'),
-        child: AppStatusView(type: AppStatusType.empty, subtitle: i18nOr('background_no_category', '该来源暂无数据')),
+        child: AppStatusView(
+          type: AppStatusType.empty,
+          title: i18nOr('background_no_category', '该来源暂无数据'),
+          icon: Remix.image_2_line,
+        ),
       );
     }
 

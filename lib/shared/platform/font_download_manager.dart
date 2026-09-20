@@ -48,6 +48,18 @@ class FontDownloadManager {
   /// The file name of one weight, e.g. `SourceHanSans-700.ttf`.
   static String fileNameOf(String filePath) => p.basename(filePath);
 
+  /// The family a *locked weight* registers under, e.g. `SourceHanSans::700`.
+  ///
+  /// The engine's per-family registrations only accumulate: once the whole
+  /// family is registered (previews, auto-apply), re-registering one weight
+  /// under the same id cannot win the engine's weight matching, and a lock
+  /// only took effect after a restart. A unique per-lock id makes the switch
+  /// immediate; [baseFamilyId] maps it back to the folder id.
+  static String lockedFamilyId(String fontId, String fileName) => '$fontId::${weightLabelOf(fileName)}';
+
+  /// The folder id behind a stored family name (`X::700` → `X`).
+  static String baseFamilyId(String family) => family.split('::').first;
+
   /// The label the weight picker shows for one file.
   ///
   /// `SourceHanSans-700.ttf` → `700`: the mobile app's rule
@@ -84,6 +96,10 @@ class FontDownloadManager {
 
   /// Registers the family with the engine, optionally only [fileName].
   ///
+  /// A locked weight registers under its own derived family (see
+  /// [lockedFamilyId]) so it cannot be shadowed by an earlier whole-family
+  /// registration; the caller must persist that same id as the active family.
+  ///
   /// Returns whether anything was registered. The caller needs that answer: the family
   /// may have been deleted behind the setting's back, or the weight it was locked to may
   /// be missing, and both mean "fall back" rather than "applied" — the mobile app's
@@ -93,7 +109,8 @@ class FontDownloadManager {
       final List<File> files = await listDownloadedFontFiles(fontId);
       if (files.isEmpty) return false;
 
-      final loader = FontLoader(fontId);
+      final String family = fileName.isEmpty ? fontId : lockedFamilyId(fontId, fileName);
+      final loader = FontLoader(family);
       bool registered = false;
 
       for (final File file in files) {

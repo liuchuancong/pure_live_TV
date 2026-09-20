@@ -80,18 +80,29 @@ class FontSettingsController extends _$FontSettingsController {
   Future<void> _restoreFontFamily(String id) async {
     if (id == 'Default' || id.isEmpty) return;
 
+    // A locked family stores its derived id (`X::700`); the folder is `X`.
+    final String baseId = FontDownloadManager.baseFamilyId(id);
     final String storedFile = fontFamilyFileName;
-    if (!await FontDownloadManager.instance.checkFontDownloaded(id)) {
+    if (!await FontDownloadManager.instance.checkFontDownloaded(baseId)) {
+      await _clearFamily();
+      return;
+    }
+    // A derived id without its weight file is unusable: the whole-family
+    // registration lives under the base id, which the theme never reads.
+    if (baseId != id && storedFile.isEmpty) {
       await _clearFamily();
       return;
     }
 
-    bool loaded = await FontDownloadManager.instance.loadFont(id, fileName: storedFile);
+    bool loaded = await FontDownloadManager.instance.loadFont(baseId, fileName: storedFile);
     if (!loaded && storedFile.isNotEmpty) {
       // The locked weight was removed but the family is still usable: keep the family
       // and drop the lock.
-      loaded = await FontDownloadManager.instance.loadFont(id);
-      if (loaded) await HivePrefUtil.setString(_fileNameKey, '');
+      loaded = await FontDownloadManager.instance.loadFont(baseId);
+      if (loaded) {
+        await HivePrefUtil.setString(_fileNameKey, '');
+        await HivePrefUtil.setString(_familyKey, baseId);
+      }
     }
     if (!loaded) await _clearFamily();
   }
@@ -118,21 +129,28 @@ class FontSettingsController extends _$FontSettingsController {
   /// are gone — or a weight that is missing — leaves the current selection alone and
   /// only says why (the mobile app's `activateFontFamily`).
   Future<bool> activateFontFamily(FontModel fontModel, {String? targetFileName}) async {
+    final bool locked = targetFileName != null && targetFileName.isNotEmpty;
     final bool loaded = await FontDownloadManager.instance.loadFont(fontModel.id, fileName: targetFileName ?? '');
     if (!loaded) {
       ToastUtil.show(i18n('font_not_downloaded_or_corrupted'));
       return false;
     }
 
+    // The theme reads the family the engine actually registered: the base id
+    // for the whole family, the derived id for a locked weight.
+    final String familyName = locked
+        ? FontDownloadManager.lockedFamilyId(fontModel.id, targetFileName)
+        : fontModel.id;
+
     final FontSettingsModel? current = state.value;
     if (current != null) {
-      await updateSettings(current.copyWith(fontFamilyName: fontModel.id));
+      await updateSettings(current.copyWith(fontFamilyName: familyName));
     } else {
-      await HivePrefUtil.setString(_familyKey, fontModel.id);
+      await HivePrefUtil.setString(_familyKey, familyName);
     }
     await HivePrefUtil.setString(_fileNameKey, targetFileName ?? '');
 
-    if (targetFileName != null) {
+    if (locked) {
       ToastUtil.show(
         i18n(
           'font_toast_exclusive',
@@ -160,7 +178,10 @@ class FontSettingsController extends _$FontSettingsController {
   /// in force. The danmaku family is handled by its own controller.
   Future<void> uninstallFontFamily(FontModel font) async {
     await FontDownloadManager.instance.deleteFontFamily(font, (_) {});
-    if (state.value?.fontFamilyName == font.id) await resetAppFontFamily();
+    final String? active = state.value?.fontFamilyName;
+    if (active != null && FontDownloadManager.baseFamilyId(active) == font.id) {
+      await resetAppFontFamily();
+    }
     await refreshFontDiskSizes(force: true);
   }
 

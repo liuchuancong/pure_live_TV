@@ -27,7 +27,8 @@ class WallpaperGalleryPage extends StatelessWidget {
         title: source.localizedName(languageCode),
         child: AppStatusView(
           type: AppStatusType.empty,
-          subtitle: i18nOr('background_no_category', '该来源暂无数据'),
+          title: i18nOr('background_no_category', '该来源暂无数据'),
+          icon: Remix.image_line,
         ),
       );
     }

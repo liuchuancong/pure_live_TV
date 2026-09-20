@@ -173,8 +173,6 @@ flutter:
   # 静态资源目录
   assets:
     - assets/
-    - assets/js/
-    - assets/certificates/
     - assets/images/
     - assets/images/video/
     - assets/icons/
@@ -191,9 +189,6 @@ flutter:
     - assets/fonts/fonts-manifest.json
   # 自定义字体
   fonts:
-    - family: CustomIcons
-      fonts:
-        - asset: assets/icons/CustomIcons.ttf
     - family: PingFang
       fonts:
         - asset: assets/MiSans-Regular.ttf

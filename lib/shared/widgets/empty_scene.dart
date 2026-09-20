@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/app_status_view.dart';
 
@@ -64,7 +65,8 @@ _EmptySceneStyle _styleFor(EmptyScene scene) {
       );
     case EmptyScene.favoriteAreas:
       return _EmptySceneStyle(
-        icon: Icons.folder_special_outlined,
+        // The mobile app's own favorite-areas empty icon (apps_2_line).
+        icon: Remix.apps_2_line,
         title: i18nOr('empty_favorite_areas_title', 'No favorite folders yet'),
         subtitle: i18nOr('empty_favorite_areas_subtitle', 'Add categories to a folder to collect whole groups of rooms'),
         action: EmptySceneAction.retry,

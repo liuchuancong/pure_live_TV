@@ -148,9 +148,9 @@ class _TvTabBarState extends State<TvTabBar> {
           scrollDirection: Axis.horizontal,
           shrinkWrap: true,
           physics: const ClampingScrollPhysics(),
-          // 不裁剪：条目比视口不留余量时，聚焦的描边/光晕/1.05 缩放会在
-          // 视口边界被切平（之前"快手"聚焦时光晕被拦腰截断就是这个原因）。
-          clipBehavior: Clip.none,
+          // 视口必须裁剪：Clip.none 在窄容器（播放器、弹窗）里会把整条标签
+          // 画到容器外面。聚焦的描边/光晕靠下面的内容 padding 保住——首尾
+          // 标签在滚动边界内留出余量，1.05 缩放不会被切平。
           // Content padding instead of container padding: it scrolls with
           // the items, so at min/max scroll extent the first/last tab keeps
           // a margin inside the viewport and the focus scale (1.05) is not

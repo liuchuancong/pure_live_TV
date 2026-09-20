@@ -1,5 +1,6 @@
 import 'dart:io';
 
+
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -22,6 +23,9 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.
 /// [AppStatusView] loading button. The family in force is re-registered on
 /// startup (see `FontSettingsController`), with a fallback to the bundled font
 /// when its files are gone.
+/// The actions the downloaded-family menu offers.
+enum FontFamilyAction { apply, delete }
+
 class FontFamilyManagerSectionPage extends ConsumerStatefulWidget {
   const FontFamilyManagerSectionPage({super.key, this.danmaku = false});
 
@@ -60,6 +64,10 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
 
   bool _isDownloaded(FontModel font) => _sizes.containsKey(font.id);
 
+  /// Whether this family (any of its weights) is the one in force. A locked
+  /// weight stores a derived id (`X::700`), so compare the base id.
+  bool _isFamilyActive(FontModel font) => FontDownloadManager.baseFamilyId(_activeId) == font.id;
+
   /// Re-reads the disk and re-registers every downloaded family.
   ///
   /// Registering more than the active family is what lets each card preview itself in
@@ -81,7 +89,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
       if (!sizes.containsKey(font.id)) continue;
       // The active family is already registered with the weight it is locked to;
       // registering all of its files here would undo that lock.
-      if (font.id == _activeId) continue;
+      if (_isFamilyActive(font)) continue;
       try {
         await FontDownloadManager.instance.loadFont(font.id);
       } catch (_) {
@@ -101,7 +109,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     ToastUtil.show(i18n('font_reset_default'));
   }
 
-  /// What one click on a family row does: download → cancel download → apply.
+  /// What one click on a family row does: download → cancel download → menu.
   Future<void> _onSelectFamily(FontModel font) async {
     final downloads = ref.read(fontDownloadControllerProvider.notifier);
 
@@ -118,12 +126,40 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
       return;
     }
 
-    // Downloaded: apply — several weights ask which one to lock.
-    if (font.files.length <= 1) {
-      await _activate(font);
-      return;
+    // Downloaded: a menu with apply and delete; the row in force is marked.
+    final FontFamilyAction? action = await TvDialogUtils.showMenu<FontFamilyAction>(
+      context: context,
+      title: font.name,
+      selectedValue: FontFamilyAction.apply,
+      items: [
+        TvMenuItem(
+          title: i18n('apply'),
+          subtitle: _isFamilyActive(font)
+              ? i18n('font_currently_active')
+              : (font.files.length > 1 ? i18n('font_selector_subtitle') : null),
+          value: FontFamilyAction.apply,
+          leading: Icon(Icons.check_rounded, size: 26.sp),
+        ),
+        TvMenuItem(
+          title: i18n('delete'),
+          value: FontFamilyAction.delete,
+          leading: Icon(Remix.delete_bin_6_line, size: 26.sp),
+        ),
+      ],
+    );
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case FontFamilyAction.apply:
+        // Several weights ask which one to lock.
+        if (font.files.length > 1) {
+          await _chooseWeight(font);
+        } else {
+          await _activate(font);
+        }
+      case FontFamilyAction.delete:
+        await _confirmDelete(font);
     }
-    await _chooseWeight(font);
   }
 
   Future<void> _activate(FontModel font, {String? targetFileName}) async {
@@ -146,7 +182,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
       return;
     }
 
-    final String activeFile = _activeId == font.id ? _activeFileName : '';
+    final String activeFile = _isFamilyActive(font) ? _activeFileName : '';
     final List<TvSelectItem<String>> items = <TvSelectItem<String>>[
       TvSelectItem(
         title: i18n('font_auto_weight'),
@@ -239,22 +275,11 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                 TvSettingsRow(
                   title: font.name,
                   subtitle: _subtitleOf(font),
-                  icon: Icons.font_download_outlined,
+                  // Numbered leading: every family used the same glyph, so
+                  // the list read as N identical rows.
+                  leading: NumberLeading(_fonts.indexOf(font) + 1, size: 26.sp),
                   trailingBuilder: (context, focused) => _trailingOf(font, downloadState, focused),
                   onSelect: () => _onSelectFamily(font),
-                  // Delete keeps its own affordance below the row: the click
-                  // itself now applies the family.
-                  footer: _isDownloaded(font) && downloadState[font.id] != FontDownloadPhase.downloading
-                      ? Padding(
-                          padding: EdgeInsets.only(top: 8.h),
-                          child: TvButton(
-                            title: i18n('delete'),
-                            size: TvButtonSize.mini,
-                            isSecondary: true,
-                            onTap: () => _confirmDelete(font),
-                          ),
-                        )
-                      : null,
                 ),
               ],
             ),
@@ -297,7 +322,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
     if (license.isNotEmpty) parts.add(license);
     final String? size = _sizes[font.id];
     if (size != null) parts.add(size);
-    if (_activeId == font.id) {
+    if (_isFamilyActive(font)) {
       final String locked = _activeFileName;
       if (locked.isNotEmpty) parts.add(FontDownloadManager.weightLabelOf(locked));
     }
@@ -305,15 +330,18 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
   }
 
   String _stateLabelOf(FontModel font) {
-    if (_activeId == font.id) return i18n('font_currently_active');
+    if (_isFamilyActive(font)) return i18n('font_currently_active');
     if (_isDownloaded(font)) return i18n('font_downloaded');
     return i18n('download');
   }
 
   String _fontNameOf(String id) {
+    final String base = FontDownloadManager.baseFamilyId(id);
     for (final font in _fonts) {
-      if (font.id == id) return font.name;
+      if (font.id == base) {
+        return base == id ? font.name : '${font.name} · ${FontDownloadManager.weightLabelOf(_activeFileName)}';
+      }
     }
-    return id == 'Default' ? i18n('font_default') : id;
+    return base == id ? id : base;
   }
 }
