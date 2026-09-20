@@ -71,7 +71,9 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   /// as the channel list.
   void _openLivePlay() {
     if (!mounted) return;
-    LivePlayRoute(LivePlayArgs.fromRoom(widget.room, playlist: widget.playlist)).push(context);
+    LivePlayRoute(
+      LivePlayArgs.fromRoom(widget.room, playlist: widget.playlist),
+    ).push(context);
   }
 
   @override
@@ -88,17 +90,33 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       ),
       // Light palette: the 18px glow is a grey smear on white; crisp ring.
       tvTheme.isLight
-          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
-          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
+          ? DpadGlowEffect(
+              color: tvTheme.focusColor,
+              opacity: 1,
+              spreadRadius: 2.sp,
+              blurRadius: 0,
+            )
+          : DpadGlowEffect(
+              color: tvTheme.focusColor,
+              opacity: 0.75,
+              blurRadius: 18.sp,
+              spreadRadius: 1.5.sp,
+            ),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
-        final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
+        final bgColor = isFocused
+            ? tvTheme.focusedCardColor
+            : tvTheme.cardColor;
         // Contrast with the card that is actually behind the text. The previous
         // rule (`focused ? backgroundColor : primaryTextColor`) worked only while
         // every focused card was white; on a light palette `backgroundColor` is
         // near-white, so a focused card showed near-white text on white.
-        final titleColor = isFocused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
-        final subtitleColor = isFocused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
+        final titleColor = isFocused
+            ? tvTheme.onFocusedCard
+            : tvTheme.primaryTextColor;
+        final subtitleColor = isFocused
+            ? tvTheme.onFocusedCardSecondary
+            : tvTheme.secondaryTextColor;
 
         return AnimatedContainer(
           duration: TvFocusStyle.focusDuration(isFocused),
@@ -106,111 +124,172 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,
-            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+            border: Border.all(
+              color: isFocused ? tvTheme.focusColor : Colors.transparent,
+              width: 2.sp,
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Dense layouts hand the card a much narrower cell; below this
+              // width the info row runs in its compact form so it still fits
+              // the height the grid allots.
+              final bool compact = constraints.maxWidth < 190.sp;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24.sp), color: tvTheme.cardColor),
-                      child: CachedNetworkImage(
-                        imageUrl: widget.room.cover,
-                        cacheManager: CustomImageCacheManager.instance,
-                        // Rolling the cache epoch (cache & data → refresh live thumbnails)
-                        // re-keys the covers, so the refresh is visible instead of
-                        // only freeing disk space.
-                        cacheKey: coverCacheKey,
-                        fit: BoxFit.cover,
-                        // Decode covers at grid size and reuse the shared disk
-                        // cache so scrolling back does not download again.
-                        memCacheWidth: 640,
-                        maxWidthDiskCache: 1280,
-                        placeholder: (context, url) => Container(
-                          color: tvTheme.cardColor,
-                          child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
+                  Stack(
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Container(
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24.sp),
+                            color: tvTheme.cardColor,
+                          ),
+                          child: CachedNetworkImage(
+                            imageUrl: widget.room.cover,
+                            cacheManager: CustomImageCacheManager.instance,
+                            // Rolling the cache epoch (cache & data → refresh live thumbnails)
+                            // re-keys the covers, so the refresh is visible instead of
+                            // only freeing disk space.
+                            cacheKey: coverCacheKey,
+                            fit: BoxFit.cover,
+                            // Decode covers at grid size and reuse the shared disk
+                            // cache so scrolling back does not download again.
+                            memCacheWidth: 640,
+                            maxWidthDiskCache: 1280,
+                            placeholder: (context, url) => Container(
+                              color: tvTheme.cardColor,
+                              child: AppStatusView(
+                                type: AppStatusType.loading,
+                                title: "",
+                                subtitle: "",
+                                isMini: true,
+                              ),
+                            ),
+                            errorWidget: (context, url, error) {
+                              debugPrint(error.toString());
+                              return AppStatusView(
+                                type: AppStatusType.error,
+                                title: "",
+                                subtitle: "",
+                                isMini: true,
+                              );
+                            },
+                          ),
                         ),
-                        errorWidget: (context, url, error) {
-                          debugPrint(error.toString());
-                          return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
-                        },
                       ),
-                    ),
+
+                      if (widget.showFollowedMark && _followed)
+                        Positioned(
+                          left: 12.sp,
+                          top: 12.sp,
+                          child: TvButton(
+                            excludeFocus: true,
+                            title: i18n('followed'),
+                            size: TvButtonSize.mini,
+                            icon: Icon(Icons.favorite, size: 18.sp),
+                          ),
+                        ),
+
+                      if (widget.room.isRecord == true)
+                        Positioned(
+                          right: 12.sp,
+                          top: 12.sp,
+                          child: TvButton(
+                            title: i18n('ui_replay'),
+                            excludeFocus: true,
+                            size: TvButtonSize.mini,
+                            icon: Icon(Icons.videocam_rounded, size: 20.sp),
+                          ),
+                        ),
+                      if (widget.room.isRecord == false &&
+                          widget.room.liveStatus == LiveStatus.live)
+                        Positioned(
+                          right: 12.sp,
+                          bottom: 12.sp,
+                          child: TvButton(
+                            excludeFocus: true,
+                            title: _audienceText,
+                            size: TvButtonSize.mini,
+                            icon: Icon(Icons.whatshot_rounded, size: 20.sp),
+                          ),
+                        ),
+                    ],
                   ),
-
-                  if (widget.showFollowedMark && _followed)
-                    Positioned(
-                      left: 12.sp,
-                      top: 12.sp,
-                      child: TvButton(
-                        excludeFocus: true,
-                        title: i18n('followed'),
-                        size: TvButtonSize.mini,
-                        icon: Icon(Icons.favorite, size: 18.sp),
+                  // The info row takes whatever height the cover leaves: it can
+                  // never overflow the cell, and the dense aspect ratios keep this
+                  // area tall enough for its contents.
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 10.sp,
+                        top: compact ? 8.sp : 16.sp,
+                        right: compact ? 10.sp : 16.sp,
                       ),
-                    ),
-
-                  if (widget.room.isRecord == true)
-                    Positioned(
-                      right: 12.sp,
-                      top: 12.sp,
-                      child: TvButton(
-                        title: i18n('ui_replay'),
-                        excludeFocus: true,
-                        size: TvButtonSize.mini,
-                        icon: Icon(Icons.videocam_rounded, size: 20.sp),
-                      ),
-                    ),
-                  if (widget.room.isRecord == false && widget.room.liveStatus == LiveStatus.live)
-                    Positioned(
-                      right: 12.sp,
-                      bottom: 12.sp,
-                      child: TvButton(
-                        excludeFocus: true,
-                        title: _audienceText,
-                        size: TvButtonSize.mini,
-                        icon: Icon(Icons.whatshot_rounded, size: 20.sp),
-                      ),
-                    ),
-                ],
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 10.sp, top: 16.sp, right: 16.sp),
-                child: Row(
-                  children: [
-                    TvCommonAvatar(avatarUrl: widget.room.avatar, fallbackName: widget.room.nick),
-                    SizedBox(width: 16.sp),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                      child: Row(
                         children: [
-                          TvMarqueeText(
-                            text: widget.room.title,
-                            isFocused: isFocused,
-                            style: AppTextStyles.t22W700.copyWith(color: titleColor),
+                          TvCommonAvatar(
+                            avatarUrl: widget.room.avatar,
+                            fallbackName: widget.room.nick,
+                            radius: compact ? 10.sp : null,
                           ),
-                          SizedBox(height: 4.sp),
-                          Text(
-                            widget.room.nick,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t18W500.copyWith(color: subtitleColor),
+                          SizedBox(width: compact ? 8.sp : 16.sp),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Flexible, not fixed: with a dense layout and
+                                // a text scale above 1.0 the two lines together
+                                // can exceed the height the cover leaves, and a
+                                // fixed Column overflowed the cell by a pixel.
+                                Flexible(
+                                  child: TvMarqueeText(
+                                    text: widget.room.title,
+                                    isFocused: isFocused,
+                                    style:
+                                        (compact
+                                                ? AppTextStyles.t18W700
+                                                : AppTextStyles.t22W700)
+                                            .copyWith(color: titleColor),
+                                  ),
+                                ),
+                                SizedBox(height: 4.sp),
+                                Flexible(
+                                  child: Text(
+                                    widget.room.nick,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        (compact
+                                                ? AppTextStyles.t14W500
+                                                : AppTextStyles.t18W500)
+                                            .copyWith(color: subtitleColor),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                          // The platform chip is the first casualty of a narrow
+                          // card: the title keeps its space instead.
+                          if (!compact) ...[
+                            SizedBox(width: 12.sp),
+                            TvButton(
+                              excludeFocus: true,
+                              title: widget.room.platform.toUpperCase(),
+                              size: TvButtonSize.mini,
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                    SizedBox(width: 12.sp),
-                    TvButton(excludeFocus: true, title: widget.room.platform.toUpperCase(), size: TvButtonSize.mini),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           ),
         );
       }),
@@ -224,7 +303,8 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       // ancestor). The extra `Scrollable.ensureVisible` here animated to a
       // second, different offset and made the grid jitter while moving.
       onSelect: () {
-        final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
+        final isLocked =
+            SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
         if (isLocked) return;
         final onTap = widget.onTap;
         if (onTap != null) {
@@ -234,7 +314,8 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
         _openLivePlay();
       },
       onLongSelect: () {
-        final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
+        final isLocked =
+            SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
         if (isLocked) return;
         widget.onLongPress?.call();
       },
