@@ -104,6 +104,8 @@ Map<String, String> _labels = {
   'background_load_failed': '背景目录加载失败',
   'background_no_category': '该来源暂无数据',
   'background_no_item': '这个分类还没有资源',
+  'wallpaper_immersive': '沉浸式',
+  'wallpaper_immersive_hint': '↑↓ 切换 · OK 设为壁纸 · 返回退出',
   'wallpaper': '壁纸',
   'wallpaper_api_entry_subtitle': '每次打开随机取一张图',
   'wallpaper_api_group': '随机壁纸 API',

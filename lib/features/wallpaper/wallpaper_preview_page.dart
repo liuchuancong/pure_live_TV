@@ -25,7 +25,7 @@ import 'package:pure_live/services/background_config/background_config_model.dar
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
 /// What one button in the preview's action bar does.
-enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause }
+enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause, immersive }
 
 /// One entry of the preview's action bar.
 class _PreviewAction {
@@ -62,6 +62,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   bool _apiLoading = false;
   bool _applying = false;
 
+  /// Immersive mode: all chrome hidden; ↑/↓ switch entries, OK applies the
+  /// entry as the background, back returns to the button bar.
+  bool _immersive = false;
+  late final FocusNode _immersiveNode = FocusNode(debugLabel: 'wallpaper-immersive', skipTraversal: true);
+
   /// Set when the user asked for the next entry while the next page was still
   /// being fetched; the advance happens as soon as the list grows.
   bool _waitingForPage = false;
@@ -96,6 +101,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 
   @override
   void dispose() {
+    _immersiveNode.dispose();
     _playingSubscription?.cancel();
     _videoPlayer?.dispose();
     super.dispose();
@@ -315,7 +321,51 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         label: i18nOr('wallpaper_set_background', 'Set as background'),
         busy: _applying,
       ),
+      _PreviewAction(
+        kind: _PreviewActionKind.immersive,
+        icon: Icons.fullscreen_rounded,
+        label: i18nOr('wallpaper_immersive', 'Immersive'),
+      ),
     ];
+  }
+
+  void _enterImmersive() {
+    setState(() => _immersive = true);
+    ToastUtil.show(i18nOr('wallpaper_immersive_hint', '↑↓ 切换 · OK 设为壁纸 · 返回退出'));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _immersive) _immersiveNode.requestFocus();
+    });
+  }
+
+  void _exitImmersive() {
+    if (!_immersive) return;
+    setState(() => _immersive = false);
+  }
+
+  KeyEventResult _handleImmersiveKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    final items = _resolveItems(ref);
+    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.arrowLeft) {
+      _prev(items);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowDown || key == LogicalKeyboardKey.arrowRight) {
+      _next(items);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.select ||
+        key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.gameButtonA ||
+        key == LogicalKeyboardKey.space) {
+      unawaited(_apply(_itemAt(items)));
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.goBack || key == LogicalKeyboardKey.escape) {
+      _exitImmersive();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   void _run(_PreviewAction action, List<BackgroundItem> items) {
@@ -333,6 +383,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         _apply(_itemAt(items));
       case _PreviewActionKind.playPause:
         unawaited(_togglePlay());
+      case _PreviewActionKind.immersive:
+        _enterImmersive();
     }
   }
 
@@ -360,11 +412,22 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       });
     }
 
-    // No page-level Focus wrapper anymore: the bottom bar owns the only
-    // focusable nodes and the framework does the traversal + restoration.
-    return TvPageScaffold(
+    // No page-level Focus wrapper in button mode: the bottom bar owns the
+    // focusable nodes. In immersive mode this node takes the keyboard — it is
+    // only focusable then, so it never interferes with normal traversal.
+    return PopScope(
+      canPop: !_immersive,
+      onPopInvokedWithResult: (didPop, _) {
+        // System back exits immersive first instead of leaving the page.
+        if (!didPop) _exitImmersive();
+      },
+      child: TvPageScaffold(
       showAppBar: false,
-      child: Stack(
+      child: Focus(
+        focusNode: _immersiveNode,
+        canRequestFocus: _immersive,
+        onKeyEvent: _handleImmersiveKey,
+        child: Stack(
         fit: StackFit.expand,
         children: [
           _buildViewer(bgState, item),
@@ -381,10 +444,23 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                 child: SizedBox(height: 28, width: 28, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
               ),
             ),
-          _buildTopBar(items, item),
-          _buildBottomBar(actions, items),
+          _chrome(child: _buildTopBar(items, item)),
+          _chrome(child: _buildBottomBar(actions, items)),
         ],
       ),
+      ),
+    ),
+    );
+  }
+
+  /// Bars stay mounted (their focus nodes survive) but fade out and stop
+  /// taking input while immersive.
+  Widget _chrome({required Widget child}) {
+    return AnimatedOpacity(
+      opacity: _immersive ? 0.0 : 1.0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      child: IgnorePointer(ignoring: _immersive, child: child),
     );
   }
 
