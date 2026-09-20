@@ -1,14 +1,14 @@
 import 'package:pure_live/player/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dart';
-import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
+import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
 
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
 /// overlay, loading/error overlays and an auto-hiding D-pad control panel.
@@ -44,9 +44,6 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
   /// field without this check.
   PlayerManager? get _playerManagerOrNull =>
       GlobalPlayerService.instance.initialized ? GlobalPlayerService.instance.playerManager : null;
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +175,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.schedule_rounded, size: 26.sp, color: Colors.white70),
+                          Icon(RemixIcons.time_line, size: 26.sp, color: Colors.white70),
                           SizedBox(width: 8.sp),
                           TvDigitalClock(
                             format: 'HH:mm',
@@ -187,59 +184,37 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                         ],
                       ),
                       SizedBox(width: 16.sp),
-                      // back sits at the top and is clearly labelled: Back on the
-                      // remote does the same thing (it closes the option list, then
-                      // the panel, then the controls).
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 6.sp),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(18.sp),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.arrow_back_rounded, size: 22.sp, color: Colors.white),
-                            SizedBox(width: 6.sp),
-                            Text(
-                              i18nOr('ui_back', '返回'),
-                              style: AppTextStyles.t18W500.copyWith(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
-            ),            // Channel name toast shown after an up/down switch.
-            if (state.showChannelBanner)
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 64.sp,
-                child: IgnorePointer(
-                  child: Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(12.sp),
-                        border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.6)),
-                      ),
-                      child: Text(
-                        state.channelBanner!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t24W600.copyWith(color: Colors.white),
-                      ),
+            ), // Channel name toast shown after an up/down switch.
+          if (state.showChannelBanner)
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 64.sp,
+              child: IgnorePointer(
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(12.sp),
+                      border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.6)),
+                    ),
+                    child: Text(
+                      state.channelBanner!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t24W600.copyWith(color: Colors.white),
                     ),
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
+      ),
     ];
 
     if (showError) {

@@ -533,7 +533,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       // The band under the pills: live content above it stays clean, the
       // buttons always sit on black.
       color: Colors.black.withValues(alpha: 0.55),
-      padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 8.sp),
+      padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 16.sp),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
@@ -617,7 +617,7 @@ class _Pill extends StatelessWidget {
     // The same focus recipe the app's standard controls use (TvFocusStyle):
     // a lift, an accent ring and a soft accent halo, so the bar's buttons glow
     // like the home page's back/menu buttons instead of only changing fill.
-    final BorderRadius radius = BorderRadius.circular((_height / 2).sp);
+    final BorderRadius radius = BorderRadius.circular((_height / 3).sp);
 
     return AnimatedScale(
       scale: selected ? 1.05 : 1.0,
