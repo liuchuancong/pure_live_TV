@@ -269,7 +269,7 @@ void main() {
       expect(find.text('v1.1.0'), findsOneWidget, reason: 'the newest releases are previewed');
     });
 
-    testWidgets('a pending release shows its notes, its assets and the install action', (WidgetTester tester) async {
+    testWidgets('a pending release is a row hint; the content lives on the download page', (WidgetTester tester) async {
       await pumpUpdate(
         tester,
         AppUpdateState(
@@ -284,13 +284,15 @@ void main() {
         ),
       );
 
+      // The row carries the hint; entering it (the download page) is the way
+      // to the sources and notes.
       expect(find.textContaining('new_version_found'), findsWidgets);
-      expect(find.textContaining('2026-05-05'), findsWidgets, reason: 'release date and size');
-      expect(find.text('修复了 A'), findsOneWidget);
-      expect(find.text('arm64-v8a'), findsWidgets);
-      expect(find.text('armeabi-v7a'), findsOneWidget);
-      // One 下载并安装 button per published ABI row.
-      expect(find.text('update_download_install'), findsWidgets);
+      // No inline card anymore: no per-ABI rows, no download buttons, no notes
+      // on this page. (The release date still shows in the history preview.)
+      expect(find.text('arm64-v8a'), findsNothing);
+      expect(find.text('armeabi-v7a'), findsNothing);
+      expect(find.text('update_download_install'), findsNothing);
+      expect(find.text('修复了 A'), findsNothing);
       expect(find.byType(AppStatusView), findsNothing, reason: 'an available update is not a status card');
     });
   });
