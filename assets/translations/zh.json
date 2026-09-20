@@ -1979,6 +1979,7 @@
   "tag_desc_label": "备注描述",
   "tag_description_label": "标签描述（可选）",
   "tag_detail": "标签详情",
+  "tag_empty_title": "暂无标签",
   "tag_input_hint": "请输入标签名称...",
   "tag_invalid_or_duplicate": "名称无效或该标签已存在",
   "tag_management": "标签管理",

@@ -23,6 +23,7 @@ import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
 import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
 import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
 import 'package:pure_live/features/settings/pages/danmaku_shield_section.dart';
+import 'package:pure_live/features/settings/pages/danmaku_user_shield_section.dart';
 import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/features/settings/pages/nav_visibility_section.dart';
 import 'package:pure_live/features/settings/pages/audience_metric_section.dart';
@@ -88,6 +89,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsTags: (context) => const TagManagementSectionPage(),
   AppRoutes.kBackup: (context) => const BackupSettingsSectionPage(),
   AppRoutes.kSettingsDanmuShield: (context) => const DanmakuShieldSectionPage(),
+  AppRoutes.kSettingsDanmuUsers: (context) => const DanmakuUserShieldSectionPage(),
   AppRoutes.kAbout: (context) => const AboutSettingsSectionPage(),
 };
 
@@ -139,6 +141,7 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsTags: const TagsRoute(),
   AppRoutes.kBackup: const BackupRoute(),
   AppRoutes.kSettingsDanmuShield: const DanmuShieldRoute(),
+  AppRoutes.kSettingsDanmuUsers: const DanmuUsersRoute(),
   AppRoutes.kAbout: const AboutRoute(),
 };
 
@@ -512,6 +515,14 @@ class DanmuShieldRoute extends GoRouteData with $DanmuShieldRoute {
   Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
 }
 
+/// `kSettingsDanmuUsers`.
+class DanmuUsersRoute extends GoRouteData with $DanmuUsersRoute {
+  const DanmuUsersRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
 /// `kAbout`.
 class AboutRoute extends GoRouteData with $AboutRoute {
   const AboutRoute();
@@ -577,6 +588,7 @@ class AboutRoute extends GoRouteData with $AboutRoute {
     TypedGoRoute<TagsRoute>(path: AppRoutes.kSettingsTags),
     TypedGoRoute<BackupRoute>(path: AppRoutes.kBackup),
     TypedGoRoute<DanmuShieldRoute>(path: AppRoutes.kSettingsDanmuShield),
+    TypedGoRoute<DanmuUsersRoute>(path: AppRoutes.kSettingsDanmuUsers),
     TypedGoRoute<AboutRoute>(path: AppRoutes.kAbout),
   ],
 )

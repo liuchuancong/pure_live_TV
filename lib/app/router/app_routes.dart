@@ -58,6 +58,9 @@ abstract final class AppRoutes {
   /// Danmaku blocklist
   static const kSettingsDanmuShield = "/shield";
 
+  /// Blocked danmaku users
+  static const kSettingsDanmuUsers = "/shield_users";
+
   /// Preferred and popular categories
   static const kSettingsHotAreas = "/hot_areas";
 

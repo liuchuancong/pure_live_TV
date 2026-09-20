@@ -7,6 +7,7 @@ import 'package:pure_live/shared/theme/styles/styles.dart';
 import 'package:pure_live/services/tag_management/live_tag.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 
+import 'package:pure_live/app/router/web_router.dart';
 /// Tag management: tags are created through an add dialog (name + optional
 /// description) and shown as a chip cloud — a Wrap of buttons, one per tag.
 /// Pressing a chip opens the tag detail dialog, which is where deletion
@@ -16,19 +17,14 @@ class TagManagementSectionPage extends ConsumerStatefulWidget {
   const TagManagementSectionPage({super.key});
 
   @override
-  ConsumerState<TagManagementSectionPage> createState() =>
-      TagManagementSectionPageState();
+  ConsumerState<TagManagementSectionPage> createState() => TagManagementSectionPageState();
 }
 
-class TagManagementSectionPageState
-    extends ConsumerState<TagManagementSectionPage> {
+class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPage> {
   String _result = '';
 
   Future<void> _addTag() async {
-    final added = await TvDialogUtils.show<bool>(
-      context: context,
-      builder: (_) => const _AddTagDialog(),
-    );
+    final added = await TvDialogUtils.show<bool>(context: context, builder: (_) => const _AddTagDialog());
     if (added == true && mounted) {
       setState(() => _result = i18n('save_success'));
     }
@@ -55,16 +51,12 @@ class TagManagementSectionPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Center(child: RemoteSyncQrCard(width: 280)),
+          const Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.tags)),
           SizedBox(height: 20.sp),
           TvSettingsGroupTitle(title: i18n('tag_management')),
           TvSettingsCard(
             children: [
-              TvSettingsNavTile(
-                title: i18n('ui_add'),
-                icon: Icons.add_rounded,
-                onTap: _addTag,
-              ),
+              TvSettingsNavTile(title: i18n('ui_add'), icon: Icons.add_rounded, onTap: _addTag),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 child: state.tags.isEmpty
@@ -106,10 +98,7 @@ class TagManagementSectionPageState
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
               child: Text(
                 _result,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: context.tvTheme.focusColor,
-                ),
+                style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor),
               ),
             ),
         ],
@@ -179,9 +168,7 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
       setState(() => _error = i18n('tag_invalid_or_duplicate'));
       return;
     }
-    container
-        .read(tagManagementControllerProvider.notifier)
-        .addTag(name, _description.text.trim());
+    container.read(tagManagementControllerProvider.notifier).addTag(name, _description.text.trim());
     Navigator.of(context).pop(true);
   }
 
@@ -199,11 +186,7 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TvInputField(
-              controller: _name,
-              focusNode: _nameFocus,
-              hint: i18n('tag_input_hint'),
-            ),
+            TvInputField(controller: _name, focusNode: _nameFocus, hint: i18n('tag_input_hint')),
             SizedBox(height: 12.sp),
             TvInputField(controller: _description, hint: i18n('tag_desc_hint')),
             if (_error.isNotEmpty)
@@ -248,20 +231,9 @@ class _TagDetailDialog extends StatelessWidget {
               SizedBox(height: 8.sp),
               Text(
                 tag.description,
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  color: tvTheme.secondaryTextColor,
-                ),
+                style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
               ),
             ],
-            SizedBox(height: 16.sp),
-            Text(
-              i18n('delete_tag_confirm_msg'),
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: tvTheme.secondaryTextColor,
-              ),
-            ),
           ],
         ),
       ),

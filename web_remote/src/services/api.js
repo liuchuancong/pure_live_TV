@@ -191,6 +191,13 @@ export const api = {
   updateDanmakuFilter(filters) {
     return httpPostText('/api/danmaku_filter', filters)
   },
+  async getDanmakuUsers() {
+    const res = await httpGet('/api/danmaku_users')
+    return res.isOk ? (res.data ?? []) : []
+  },
+  updateDanmakuUsers(users) {
+    return httpPostText('/api/danmaku_users', users)
+  },
   getTags() {
     return httpGet('/api/tags')
   },

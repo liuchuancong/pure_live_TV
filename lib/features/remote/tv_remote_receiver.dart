@@ -129,11 +129,21 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
   /// Seeds the danmaku filter cache.
   ///
+  /// Phone pushes for the blocked-user list land here, like the keyword
+  /// filter's [onDanmakuFilterUpdated].
+  Function(List<String> users)? onDanmakuUsersUpdated;
+
   /// The phone scan page reads this cache through `GET /api/danmaku_filter`.
   /// Opening the filter panel on TV writes the current words in first, so the
   /// phone shows them straight away.
   void seedDanmakuFilters(List<String> filters) {
     _configCache['danmaku_filter'] = List<String>.from(filters);
+  }
+
+  /// Seeds the blocked-user cache the same way [seedDanmakuFilters] seeds the
+  /// keyword one, so `GET /api/danmaku_users` starts from current state.
+  void seedDanmakuUsers(List<String> users) {
+    _configCache['danmaku_users'] = List<String>.from(users);
   }
 
   Future<void> _startServerWithRetry({required int port, int retry = 0}) async {
@@ -371,6 +381,28 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       _configCache['danmaku_filter'] = filters;
       _addLog('Danmaku filter rules updated: ${filters.length} entries');
       onDanmakuFilterUpdated?.call(filters);
+      return _ok(res, msg: i18n('ui_saved'));
+    });
+
+    _app!.get('/api/danmaku_users', (req, res) {
+      return _ok(res, data: _configCache['danmaku_users']);
+    });
+
+    _app!.post('/api/danmaku_users', (req, res) async {
+      final body = await req.body;
+      List<String> users;
+      if (body is List) {
+        users = body.map((e) => e.toString()).toList();
+      } else {
+        users = body
+            .toString()
+            .split('\n')
+            .where((e) => e.trim().isNotEmpty)
+            .toList();
+      }
+      _configCache['danmaku_users'] = users;
+      _addLog('Danmaku blocked users updated: ${users.length} entries');
+      onDanmakuUsersUpdated?.call(users);
       return _ok(res, msg: i18n('ui_saved'));
     });
 

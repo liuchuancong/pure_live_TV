@@ -1981,6 +1981,7 @@
   "tag_desc_label": "Description",
   "tag_description_label": "Tag description (optional)",
   "tag_detail": "Tag Details",
+  "tag_empty_title": "No tags yet",
   "tag_input_hint": "Please enter tag name...",
   "tag_invalid_or_duplicate": "Invalid name or tag already exists",
   "tag_management": "Tag Management",

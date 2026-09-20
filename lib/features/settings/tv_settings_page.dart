@@ -215,6 +215,7 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsDeviceSync: 'remote_sync_receive',
   AppRoutes.kSettingsConfigPreview: 'config_preview',
   AppRoutes.kSettingsDanmuShield: 'danmaku_keyword_block',
+  AppRoutes.kSettingsDanmuUsers: 'blocked_users_title',
   AppRoutes.kSettingsHotAreas: 'platform_display',
   AppRoutes.kSettingsAccount: 'third_party_auth',
   AppRoutes.kSettingsAccountBilibili: 'site_bilibili',

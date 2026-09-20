@@ -133,7 +133,46 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                 ],
               )
             else ...[
-              Center(child: TvQrCodeCard(qrData: qrData, qrSize: 150, urlText: qrData)),
+              // Both lists get a code: the phone edits keywords on one page
+              // and blocked users on the other, so the panel offers both.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          i18n('danmaku_keyword_block'),
+                          style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
+                        ),
+                        SizedBox(height: 4.sp),
+                        TvQrCodeCard(qrData: qrData, qrSize: 120, urlText: qrData),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          i18nOr('blocked_users_title', '用户屏蔽'),
+                          style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
+                        ),
+                        SizedBox(height: 4.sp),
+                        Builder(
+                          builder: (context) {
+                            final usersUrl = serverUrl.isEmpty
+                                ? ''
+                                : '$serverUrl${WebRemoteRouter.danmakuUsers}';
+                            return usersUrl.isEmpty
+                                ? SizedBox(height: 120.sp, child: tvInlineLoading(context, size: 18.sp))
+                                : TvQrCodeCard(qrData: usersUrl, qrSize: 120, urlText: usersUrl);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: 6.sp),
               Center(
                 child: Text(
