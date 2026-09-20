@@ -152,7 +152,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
           emptyScene: EmptyScene.searchResult,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
+            crossAxisCount: themeState.roomCardColumns,
             mainAxisSpacing: mainSpacing.w,
             crossAxisSpacing: crossSpacing.w,
             childAspectRatio: 1.3,

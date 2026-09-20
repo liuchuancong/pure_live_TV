@@ -89,7 +89,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
           emptyScene: EmptyScene.areaRooms,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
+            crossAxisCount: themeState.roomCardColumns,
             mainAxisSpacing: mainSpacing.w,
             crossAxisSpacing: crossSpacing.w,
             childAspectRatio: 1.3,

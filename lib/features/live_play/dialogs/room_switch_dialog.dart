@@ -30,16 +30,50 @@ class RoomSwitchDialog extends ConsumerStatefulWidget {
 class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
+  /// First-row focus nodes, one per tab, so a tab change can hand the keyboard
+  /// straight into the newly shown list.
+  final List<FocusNode?> _firstRowNodes = List<FocusNode?>.filled(3, null);
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _firstRowNodes[0] = FocusNode(debugLabel: 'room-switch/tab0-first');
   }
 
   @override
   void dispose() {
+    for (final node in _firstRowNodes) {
+      node?.dispose();
+    }
     _tabController.dispose();
     super.dispose();
+  }
+
+  /// Moves the keyboard onto the new tab's first row once its page has built —
+  /// TabBarView materialises the destination page during the transition, so the
+  /// claim retries across a few frames.
+  void _onTabChange(int index) {
+    setState(() => _tabController.animateTo(index));
+
+    if (_firstRowNodes[index] == null) {
+      _firstRowNodes[index] = FocusNode(debugLabel: 'room-switch/tab$index-first');
+    }
+    void claim(int attempts) {
+      if (!mounted) return;
+      final node = _firstRowNodes[index];
+      final BuildContext? nodeContext = node?.context;
+      if (node == null || nodeContext == null || !nodeContext.mounted) {
+        if (attempts < 8) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => claim(attempts + 1));
+        }
+        return;
+      }
+      DpadRegion.ofNode(node)?.noteFocus(node);
+      node.requestFocus();
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => claim(0));
   }
 
   /// Followed rooms that are live now; a replay is not "is live".
@@ -106,16 +140,35 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
                 ),
               ],
               currentIndex: _tabController.index,
-              onTabChange: (index) => setState(() => _tabController.animateTo(index)),
+              onTabChange: _onTabChange,
             ),
             SizedBox(height: 12.sp),
             Expanded(
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _RoomList(rooms: live, emptyHint: i18n('no_followed_room_live')),
-                  _RoomList(rooms: replay, emptyHint: i18n('no_followed_room_live')),
-                  _RoomList(rooms: history, emptyHint: i18n('history_empty')),
+                  _RoomList(
+                    rooms: live,
+                    emptyHint: i18n('no_followed_room_live'),
+                    // Only the active tab's first row claims the opening focus:
+                    // TabBarView pre-builds the neighbouring pages, and three
+                    // competing autofocus rows put the highlight on a page the
+                    // viewer cannot see.
+                    autofocusFirst: _tabController.index == 0,
+                    firstRowNode: _firstRowNodes[0],
+                  ),
+                  _RoomList(
+                    rooms: replay,
+                    emptyHint: i18n('no_followed_room_live'),
+                    autofocusFirst: _tabController.index == 1,
+                    firstRowNode: _firstRowNodes[1],
+                  ),
+                  _RoomList(
+                    rooms: history,
+                    emptyHint: i18n('history_empty'),
+                    autofocusFirst: _tabController.index == 2,
+                    firstRowNode: _firstRowNodes[2],
+                  ),
                 ],
               ),
             ),
@@ -127,10 +180,18 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog> with Single
 }
 
 class _RoomList extends StatelessWidget {
-  const _RoomList({required this.rooms, required this.emptyHint});
+  const _RoomList({required this.rooms, required this.emptyHint, this.autofocusFirst = false, this.firstRowNode});
 
   final List<LiveRoom> rooms;
   final String emptyHint;
+
+  /// Whether this list's first row should claim the dialog's opening focus —
+  /// true only for the tab the dialog is actually showing.
+  final bool autofocusFirst;
+
+  /// Focus node of the first row, shared with the dialog so a tab change can
+  /// focus it. May be null for a tab that has not been opened yet.
+  final FocusNode? firstRowNode;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +207,8 @@ class _RoomList extends StatelessWidget {
       itemBuilder: (context, index) {
         final room = rooms[index];
         return DpadFocusable(
-          autofocus: index == 0,
+          autofocus: autofocusFirst && index == 0,
+          focusNode: index == 0 ? firstRowNode : null,
           onSelect: () => Navigator.of(context).pop(room),
           builder: (context, state, child) => PlayerRoomRow(room: room, selected: state.focused),
           child: const SizedBox.shrink(),

@@ -16,6 +16,8 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   static const double defaultSpacing = 6;
   static const double minSpacing = 0;
   static const double maxSpacing = 64;
+  static const int defaultRoomCardColumns = 4;
+  static const List<int> roomCardColumnsOptions = <int>[3, 4, 5, 6, 8];
   static bool _hasSwitchedOnce = false;
   static final Set<String> _loadingStyleKeys = AppConsts.allStyles
       .map((item) => item['key'] ?? '')
@@ -41,6 +43,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
       loadingStyle: normalizeLoadingStyle(model.loadingStyle),
       crossAxisSpacing: normalizeSpacing(model.crossAxisSpacing),
       mainAxisSpacing: normalizeSpacing(model.mainAxisSpacing),
+      roomCardColumns: normalizeRoomCardColumns(model.roomCardColumns),
     );
   }
 
@@ -71,6 +74,15 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     final converted = value.toDouble();
     if (!converted.isFinite) return defaultSpacing;
     return converted.clamp(minSpacing, maxSpacing).toDouble();
+  }
+
+  /// Stored/imported column counts snap to the nearest offered option.
+  static int normalizeRoomCardColumns(num value) {
+    final converted = value.toDouble();
+    if (!converted.isFinite) return defaultRoomCardColumns;
+    return roomCardColumnsOptions.reduce(
+      (a, b) => (converted - a).abs() <= (converted - b).abs() ? a : b,
+    );
   }
 
   void updateSettings(ThemeSettingsModel newModel) {

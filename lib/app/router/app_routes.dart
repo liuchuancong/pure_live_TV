@@ -135,6 +135,7 @@ abstract final class AppRoutes {
   /// Settings sub-pages that the desktop app pushes without a named route.
   static const kSettingsTheme = "/settings/theme";
   static const kSettingsThemePicker = "/settings/theme_picker";
+  static const kSettingsGridSpacing = "/settings/grid_spacing";
   static const kSettingsRefresh = "/settings/refresh";
   static const kSettingsVideo = "/settings/video";
   static const kSettingsPipDanmaku = "/settings/pip_danmaku";

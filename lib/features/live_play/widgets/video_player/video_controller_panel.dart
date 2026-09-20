@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:pure_live/player/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/tv_focus_style.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
@@ -36,7 +37,8 @@ class VideoControllerPanel extends ConsumerStatefulWidget {
   const VideoControllerPanel({super.key, required this.args});
 
   @override
-  ConsumerState<VideoControllerPanel> createState() => _VideoControllerPanelState();
+  ConsumerState<VideoControllerPanel> createState() =>
+      _VideoControllerPanelState();
 }
 
 /// Which side of the layer the remote is steering.
@@ -113,7 +115,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     if (barCount == 0) return;
 
     // Any key keeps the controls on screen while the user is working them.
-    ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
+    ref
+        .read(livePlayControllerProvider(widget.args).notifier)
+        .keepControlsAlive();
 
     switch (_zone) {
       case _Zone.bar:
@@ -138,7 +142,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         }
         switch (direction) {
           case TraversalDirection.up:
-            setState(() => _optionIndex = (_optionIndex - 1 + optionCount) % optionCount);
+            setState(
+              () =>
+                  _optionIndex = (_optionIndex - 1 + optionCount) % optionCount,
+            );
           case TraversalDirection.down:
             setState(() => _optionIndex = (_optionIndex + 1) % optionCount);
           case TraversalDirection.left:
@@ -150,7 +157,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   }
 
   void _onSelect(LivePlayState state) {
-    ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
+    ref
+        .read(livePlayControllerProvider(widget.args).notifier)
+        .keepControlsAlive();
 
     if (_zone == _Zone.options) {
       final options = _optionsWithClose(state);
@@ -170,17 +179,29 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 
   String _qualityLabel(LivePlayState state) {
     if (state.qualities.isEmpty) return '-';
-    return state.qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)].quality;
+    return state
+        .qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)]
+        .quality;
   }
 
-  String _fitLabel(LivePlayState state) => kLivePlayFitLabels[state.fitIndex.clamp(0, kLivePlayFitLabels.length - 1)];
+  String _fitLabel(LivePlayState state) =>
+      kLivePlayFitLabels[state.fitIndex.clamp(
+        0,
+        kLivePlayFitLabels.length - 1,
+      )];
 
   String _engineLabel() {
     final key = ref.read(playerSettingsControllerProvider).videoPlayerKey;
-    return i18n(PlayerConsts.names[key] ?? PlayerConsts.names[PlayerConsts.defaultKey] ?? key);
+    return i18n(
+      PlayerConsts.names[key] ??
+          PlayerConsts.names[PlayerConsts.defaultKey] ??
+          key,
+    );
   }
 
-  List<({String label, VoidCallback apply, bool active})> _panelOptions(LivePlayState state) {
+  List<({String label, VoidCallback apply, bool active})> _panelOptions(
+    LivePlayState state,
+  ) {
     switch (_panel) {
       case _OptionsPanel.quality:
         return <({String label, VoidCallback apply, bool active})>[
@@ -203,7 +224,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       case _OptionsPanel.fit:
         return <({String label, VoidCallback apply, bool active})>[
           for (int i = 0; i < kLivePlayFitLabels.length; i++)
-            (label: kLivePlayFitLabels[i], active: i == state.fitIndex, apply: () => _setFit(i)),
+            (
+              label: kLivePlayFitLabels[i],
+              active: i == state.fitIndex,
+              apply: () => _setFit(i),
+            ),
         ];
       case _OptionsPanel.kernel:
         // The kernels are a list like every other value picker: the bar used to
@@ -226,11 +251,12 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   /// The options with a close row last: the list is a selectable index list, so
   /// its way out is a row like any other — at the bottom, where the eye ends up
   /// after walking the list.
-  List<({String label, VoidCallback apply, bool active})> _optionsWithClose(LivePlayState state) =>
-      <({String label, VoidCallback apply, bool active})>[
-        ..._panelOptions(state),
-        (label: i18nOr('close', '关闭'), apply: _closePanel, active: false),
-      ];
+  List<({String label, VoidCallback apply, bool active})> _optionsWithClose(
+    LivePlayState state,
+  ) => <({String label, VoidCallback apply, bool active})>[
+    ..._panelOptions(state),
+    (label: i18nOr('close', '关闭'), apply: _closePanel, active: false),
+  ];
 
   String get _panelTitle => switch (_panel) {
     _OptionsPanel.quality => i18n('recorder_stage_quality'),
@@ -241,19 +267,25 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   };
 
   Future<void> _changeQuality(int index) async {
-    final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
+    final controller = ref.read(
+      livePlayControllerProvider(widget.args).notifier,
+    );
     controller.keepControlsAlive();
     await controller.changeQuality(index);
   }
 
   Future<void> _changeLine(int index) async {
-    final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
+    final controller = ref.read(
+      livePlayControllerProvider(widget.args).notifier,
+    );
     controller.keepControlsAlive();
     await controller.changeLine(index);
   }
 
   void _setFit(int index) {
-    final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
+    final controller = ref.read(
+      livePlayControllerProvider(widget.args).notifier,
+    );
     controller.keepControlsAlive();
     controller.setFit(index);
   }
@@ -268,7 +300,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         _OptionsPanel.fit => state.fitIndex,
         // Open on the kernel that is in use, so OK on the row the list opens on
         // is the reset the user is looking for.
-        _OptionsPanel.kernel => PlayerConsts.engines.keys.toList(growable: false).indexOf(_activeEngineKey()),
+        _OptionsPanel.kernel =>
+          PlayerConsts.engines.keys
+              .toList(growable: false)
+              .indexOf(_activeEngineKey()),
         _OptionsPanel.none => 0,
       };
     });
@@ -277,8 +312,12 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   /// The kernel key actually in force: the stored one, or the default when the
   /// stored key is unknown to this build.
   String _activeEngineKey() {
-    final String stored = ref.read(playerSettingsControllerProvider).videoPlayerKey;
-    return PlayerConsts.engines.containsKey(stored) ? stored : PlayerConsts.defaultKey;
+    final String stored = ref
+        .read(playerSettingsControllerProvider)
+        .videoPlayerKey;
+    return PlayerConsts.engines.containsKey(stored)
+        ? stored
+        : PlayerConsts.defaultKey;
   }
 
   void _closePanel() => setState(() {
@@ -292,14 +331,24 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   /// background settings was dropped — it is a settings-page concern, and the bar had grown
   /// to fourteen buttons, so related items drifted apart.
   List<_PanelAction> _barActions(LivePlayState state) {
-    final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
+    final controller = ref.read(
+      livePlayControllerProvider(widget.args).notifier,
+    );
     final danmakuSettings = ref.watch(danmakuSettingsControllerProvider);
-    final danmakuNotifier = ref.read(danmakuSettingsControllerProvider.notifier);
-    final favoriteRooms = ref.watch(favoriteRoomControllerProvider).favoriteRooms;
+    final danmakuNotifier = ref.read(
+      danmakuSettingsControllerProvider.notifier,
+    );
+    final favoriteRooms = ref
+        .watch(favoriteRoomControllerProvider)
+        .favoriteRooms;
     final room = state.room;
-    final bool playing = state.status == LivePlayStatus.playing || state.status == LivePlayStatus.buffering;
-    final bool isFavorite = room != null && favoriteRooms.any((item) => item.hasSameIdentity(room));
-    final bool danmakuOn = danmakuSettings.enableDanmakuDisplay && !danmakuSettings.hideDanmaku;
+    final bool playing =
+        state.status == LivePlayStatus.playing ||
+        state.status == LivePlayStatus.buffering;
+    final bool isFavorite =
+        room != null && favoriteRooms.any((item) => item.hasSameIdentity(room));
+    final bool danmakuOn =
+        danmakuSettings.enableDanmakuDisplay && !danmakuSettings.hideDanmaku;
 
     return <_PanelAction>[
       _PanelAction(
@@ -320,19 +369,29 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         label: playing ? i18n('multiview_pause') : i18n('multiview_play'),
         onSelect: controller.togglePlayPause,
       ),
-      _PanelAction(icon: Icons.refresh_rounded, label: i18n('retry'), onSelect: controller.retry),
+      _PanelAction(
+        icon: Icons.refresh_rounded,
+        label: i18n('retry'),
+        onSelect: controller.retry,
+      ),
       // danmaku toggle / danmaku settings / danmaku filter stay adjacent.
       _PanelAction(
-        asset: danmakuOn ? 'assets/images/video/danmu_open.svg' : 'assets/images/video/danmu_close.svg',
+        asset: danmakuOn
+            ? 'assets/images/video/danmu_open.svg'
+            : 'assets/images/video/danmu_close.svg',
         label: danmakuOn ? i18n('ui_danmaku_on') : i18n('ui_danmaku_off'),
         onSelect: () => danmakuNotifier.updateSettings(
-          danmakuSettings.copyWith(enableDanmakuDisplay: !danmakuOn, hideDanmaku: danmakuOn),
+          danmakuSettings.copyWith(
+            enableDanmakuDisplay: !danmakuOn,
+            hideDanmaku: danmakuOn,
+          ),
         ),
       ),
       _PanelAction(
         asset: 'assets/images/video/danmu_setting.svg',
         label: i18n('danmaku_settings'),
-        active: state.showSidePanel && state.panel == LivePlayPanel.danmakuSettings,
+        active:
+            state.showSidePanel && state.panel == LivePlayPanel.danmakuSettings,
         onSelect: () => controller.togglePanel(LivePlayPanel.danmakuSettings),
       ),
       _PanelAction(
@@ -349,7 +408,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       ),
       _PanelAction(
         icon: Icons.density_small_rounded,
-        label: i18n('multiview_line', args: {'index': '${state.lineIndex + 1}'}),
+        label: i18n(
+          'multiview_line',
+          args: {'index': '${state.lineIndex + 1}'},
+        ),
         active: _panel == _OptionsPanel.line,
         onSelect: () => _openPanel(_OptionsPanel.line, state),
       ),
@@ -376,7 +438,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   /// GlobalKeys so the highlighted button can be revealed while the index walks
   /// the bar (the bar scrolls horizontally and the remote never scrolls it).
   final Map<int, GlobalKey> _barKeys = <int, GlobalKey>{};
-  GlobalKey _barKey(int index) => _barKeys.putIfAbsent(index, () => GlobalKey());
+  GlobalKey _barKey(int index) =>
+      _barKeys.putIfAbsent(index, () => GlobalKey());
 
   void _revealBarSelection() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -403,8 +466,12 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   Future<void> _switchKernel(String key) async {
     _closePanel();
     final playerSettings = ref.read(playerSettingsControllerProvider);
-    ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
-    ref.read(playerSettingsControllerProvider.notifier).updateSettings(playerSettings.copyWith(videoPlayerKey: key));
+    ref
+        .read(livePlayControllerProvider(widget.args).notifier)
+        .keepControlsAlive();
+    ref
+        .read(playerSettingsControllerProvider.notifier)
+        .updateSettings(playerSettings.copyWith(videoPlayerKey: key));
 
     final engine = PlayerConsts.engines[key];
     final service = GlobalPlayerService.instance;
@@ -436,8 +503,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final tvTheme = context.tvTheme;
     final actions = _barActions(state);
     final options = _optionsWithClose(state);
-    if (_barIndex >= actions.length) _barIndex = actions.isEmpty ? 0 : actions.length - 1;
-    if (options.isNotEmpty && _optionIndex >= options.length) _optionIndex = options.length - 1;
+    if (_barIndex >= actions.length)
+      _barIndex = actions.isEmpty ? 0 : actions.length - 1;
+    if (options.isNotEmpty && _optionIndex >= options.length)
+      _optionIndex = options.length - 1;
 
     return Focus(
       focusNode: _focusNode,
@@ -448,14 +517,18 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withValues(alpha: 0.9), Colors.black.withValues(alpha: 0.0)],
+            colors: [
+              Colors.black.withValues(alpha: 0.9),
+              Colors.black.withValues(alpha: 0.0),
+            ],
           ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (_panel != _OptionsPanel.none && options.isNotEmpty) _buildOptionsPanel(options, tvTheme),
+            if (_panel != _OptionsPanel.none && options.isNotEmpty)
+              _buildOptionsPanel(options, tvTheme),
             _buildBar(actions, tvTheme),
           ],
         ),
@@ -463,7 +536,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     );
   }
 
-  Widget _buildOptionsPanel(List<({String label, VoidCallback apply, bool active})> options, TvThemeData tvTheme) {
+  Widget _buildOptionsPanel(
+    List<({String label, VoidCallback apply, bool active})> options,
+    TvThemeData tvTheme,
+  ) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.sp),
       child: Center(
@@ -473,7 +549,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(16.sp),
-            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
+            border: Border.all(
+              color: tvTheme.focusColor.withValues(alpha: 0.35),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -481,7 +559,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
             children: [
               Padding(
                 padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
-                child: Text(_panelTitle, style: AppTextStyles.t20W600.copyWith(color: Colors.white)),
+                child: Text(
+                  _panelTitle,
+                  style: AppTextStyles.t20W600.copyWith(color: Colors.white),
+                ),
               ),
               Flexible(
                 child: ListView.builder(
@@ -492,7 +573,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
                     final bool selected = index == _optionIndex;
                     final option = options[index];
                     return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.sp,
+                        vertical: 4.sp,
+                      ),
                       child: _Pill(
                         label: option.label,
                         selected: selected,
@@ -540,8 +624,16 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 }
 
 class _PanelAction {
-  const _PanelAction({this.icon, this.asset, required this.label, required this.onSelect, this.active = false})
-    : assert(icon != null || asset != null, 'A bar button needs an icon or an asset');
+  const _PanelAction({
+    this.icon,
+    this.asset,
+    required this.label,
+    required this.onSelect,
+    this.active = false,
+  }) : assert(
+         icon != null || asset != null,
+         'A bar button needs an icon or an asset',
+       );
 
   final IconData? icon;
 
@@ -590,41 +682,77 @@ class _Pill extends StatelessWidget {
     // Bigger than the t20 the bar started with — the label is what the viewer
     // actually reads from the couch, so it should not be the smallest thing on
     // the pill.
-    final TextStyle textStyle = (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
-      color: foreground,
-      fontSize: 22.sp,
-    );
+    final TextStyle textStyle =
+        (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
+          color: foreground,
+          fontSize: 22.sp,
+        );
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 100),
-      curve: Curves.easeInOut,
-      height: _height.sp,
-      alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(horizontal: _hPadding.sp),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular((_height / 2).sp)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (asset != null)
-            SvgPicture.asset(
-              asset!,
-              width: _iconSize.sp,
-              height: _iconSize.sp,
-              colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
-            )
-          else if (icon != null)
-            Icon(icon, size: _iconSize.sp, color: foreground),
-          if (asset != null || icon != null) SizedBox(width: _gap.sp),
-          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
-          if (trailing != null) ...[
-            SizedBox(width: _gap.sp),
-            Icon(trailing, size: _trailingSize.sp, color: foreground),
+    // The same focus recipe the app's standard controls use (TvFocusStyle):
+    // a lift, an accent ring and a soft accent halo, so the bar's buttons glow
+    // like the home page's back/menu buttons instead of only changing fill.
+    final bool isLight = context.tvTheme.isLight;
+    final BorderRadius radius = BorderRadius.circular((_height / 2).sp);
+
+    return AnimatedScale(
+      scale: selected ? 1.05 : 1.0,
+      duration: TvFocusStyle.focusDuration(selected),
+      curve: TvFocusStyle.curve,
+      child: AnimatedContainer(
+        duration: TvFocusStyle.focusDuration(selected),
+        curve: TvFocusStyle.curve,
+        height: _height.sp,
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: _hPadding.sp),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: radius,
+          border: Border.all(
+            color: selected ? accent : Colors.transparent,
+            width: 2.5.sp,
+          ),
+          boxShadow: selected
+              ? [
+                  // Same halo TvFocusStyle paints: a light palette gets a crisp
+                  // ring with no blur, a dark one a soft accent glow.
+                  BoxShadow(
+                    color: accent.withValues(alpha: isLight ? 1.0 : 0.75),
+                    blurRadius: isLight ? 0 : 18.sp,
+                    spreadRadius: isLight ? 2.sp : 1.5.sp,
+                  ),
+                ]
+              : const <BoxShadow>[],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (asset != null)
+              SvgPicture.asset(
+                asset!,
+                width: _iconSize.sp,
+                height: _iconSize.sp,
+                colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
+              )
+            else if (icon != null)
+              Icon(icon, size: _iconSize.sp, color: foreground),
+            if (asset != null || icon != null) SizedBox(width: _gap.sp),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textStyle,
+            ),
+            if (trailing != null) ...[
+              SizedBox(width: _gap.sp),
+              Icon(trailing, size: _trailingSize.sp, color: foreground),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 }
 
 /// Content colour on a filled accent pill, matching TvTabBar.
-Color tvThemeFocusedCard(BuildContext context) => Theme.of(context).colorScheme.onPrimary;
+Color tvThemeFocusedCard(BuildContext context) =>
+    Theme.of(context).colorScheme.onPrimary;

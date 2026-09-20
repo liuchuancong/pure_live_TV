@@ -193,6 +193,7 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kIptvSync: 'auto_sync_settings',
   AppRoutes.kIptvHeaders: 'iptv_headers_settings',
   AppRoutes.kSettingsThemePicker: 'ui_theme',
+  AppRoutes.kSettingsGridSpacing: 'grid_spacing_settings',
   AppRoutes.kSettingsLoadingStyle: 'change_loading_style',
   AppRoutes.kSettingsColorPicker: 'ui_choose_color',
   AppRoutes.kSettingsIconPicker: 'ui_choose_icon',

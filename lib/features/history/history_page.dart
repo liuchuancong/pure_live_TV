@@ -72,7 +72,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         emptyScene: EmptyScene.history,
                         onEmptyGoHot: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.hot.value),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
+                          crossAxisCount: themeState.roomCardColumns,
                           mainAxisSpacing: mainSpacing.w,
                           crossAxisSpacing: crossSpacing.w,
                           childAspectRatio: 1.3,

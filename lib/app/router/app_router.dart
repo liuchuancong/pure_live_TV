@@ -44,6 +44,7 @@ part 'app_router.g.dart';
 final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsTheme: (context) => const ThemeSettingsSectionPage(),
   AppRoutes.kSettingsThemePicker: (context) => const ThemePickerSectionPage(),
+  AppRoutes.kSettingsGridSpacing: (context) => const GridSpacingSectionPage(),
   AppRoutes.kSettingsRefresh: (context) => const RefreshSettingsSectionPage(),
   AppRoutes.kSettingsVideo: (context) => const VideoSettingsSectionPage(),
   AppRoutes.kSettingsPlayerKernel: (context) => const PlayerKernelSettingsSectionPage(),
@@ -94,6 +95,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
 final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsTheme: const ThemeSettingsRoute(),
   AppRoutes.kSettingsThemePicker: const ThemePickerRoute(),
+  AppRoutes.kSettingsGridSpacing: const GridSpacingRoute(),
   AppRoutes.kSettingsRefresh: const RefreshSettingsRoute(),
   AppRoutes.kSettingsVideo: const VideoSettingsRoute(),
   AppRoutes.kSettingsPlayerKernel: const PlayerKernelSettingsRoute(),
@@ -160,6 +162,14 @@ class ThemeSettingsRoute extends GoRouteData with $ThemeSettingsRoute {
 /// `kSettingsThemePicker`.
 class ThemePickerRoute extends GoRouteData with $ThemePickerRoute {
   const ThemePickerRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
+/// `kSettingsGridSpacing`.
+class GridSpacingRoute extends GoRouteData with $GridSpacingRoute {
+  const GridSpacingRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
@@ -523,6 +533,7 @@ class AboutRoute extends GoRouteData with $AboutRoute {
   routes: <TypedRoute<RouteData>>[
     TypedGoRoute<ThemeSettingsRoute>(path: AppRoutes.kSettingsTheme),
     TypedGoRoute<ThemePickerRoute>(path: AppRoutes.kSettingsThemePicker),
+    TypedGoRoute<GridSpacingRoute>(path: AppRoutes.kSettingsGridSpacing),
     TypedGoRoute<RefreshSettingsRoute>(path: AppRoutes.kSettingsRefresh),
     TypedGoRoute<VideoSettingsRoute>(path: AppRoutes.kSettingsVideo),
     TypedGoRoute<PlayerKernelSettingsRoute>(path: AppRoutes.kSettingsPlayerKernel),

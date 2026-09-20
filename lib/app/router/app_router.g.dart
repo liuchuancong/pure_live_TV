@@ -42,6 +42,11 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
       factory: $ThemePickerRoute._fromState,
     ),
     GoRouteData.$route(
+      path: '/settings/grid_spacing',
+      hasOverriddenOnExit: false,
+      factory: $GridSpacingRoute._fromState,
+    ),
+    GoRouteData.$route(
       path: '/settings/refresh',
       hasOverriddenOnExit: false,
       factory: $RefreshSettingsRoute._fromState,
@@ -291,6 +296,27 @@ mixin $ThemePickerRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/settings/theme_picker');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $GridSpacingRoute on GoRouteData {
+  static GridSpacingRoute _fromState(GoRouterState state) =>
+      const GridSpacingRoute();
+
+  @override
+  String get location => GoRouteData.$location('/settings/grid_spacing');
 
   @override
   void go(BuildContext context) => context.go(location);

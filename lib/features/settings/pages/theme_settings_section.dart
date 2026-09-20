@@ -76,23 +76,11 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
           TvSettingsGroupTitle(title: i18n('grid_spacing_settings')),
           TvSettingsCard(
             children: [
-              TvSettingsSliderTile(
-                title: i18n('cross_axis_spacing'),
-                icon: Remix.arrow_left_right_line,
-                value: themeState.crossAxisSpacing,
-                min: 0,
-                max: 24,
-                displayValue: themeState.crossAxisSpacing.toStringAsFixed(0),
-                onChanged: (v) => theme.updateSettings(themeState.copyWith(crossAxisSpacing: v)),
-              ),
-              TvSettingsSliderTile(
-                title: i18n('main_axis_spacing'),
-                icon: Remix.arrow_up_down_line,
-                value: themeState.mainAxisSpacing,
-                min: 0,
-                max: 24,
-                displayValue: themeState.mainAxisSpacing.toStringAsFixed(0),
-                onChanged: (v) => theme.updateSettings(themeState.copyWith(mainAxisSpacing: v)),
+              TvSettingsNavTile(
+                title: i18n('grid_spacing_settings'),
+                subtitle: i18n('grid_spacing_entry_subtitle'),
+                icon: Remix.grid_line,
+                onTap: () => const GridSpacingRoute().push(context),
               ),
             ],
           ),

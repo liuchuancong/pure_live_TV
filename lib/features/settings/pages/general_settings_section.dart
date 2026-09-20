@@ -54,15 +54,9 @@ class GeneralSettingsSectionPage extends ConsumerWidget {
               value: exitState.dontAskExit,
               onChanged: (v) => exit.setDontAskExit(v),
             ),
-            // Not present in the desktop app; kept because the TV card layout uses
-            // it.
-            TvSettingsSwitchTile(
-              title: i18n('ui_dense_favorites_layout'),
-              subtitle: i18n('ui_use_a_denser_card_layout_on_the_favorites_page'),
-              icon: Icons.view_comfy_rounded,
-              value: appState.enableDenseFavorites,
-              onChanged: (v) => app.update(appState.copyWith(enableDenseFavorites: v)),
-            ),
+            // The old favourites-only dense-layout switch used to sit here; the
+            // room-card column count on the theme page's grid-spacing page
+            // replaced it and applies to every room-card grid.
           ],
         ),
       ],

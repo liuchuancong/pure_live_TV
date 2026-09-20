@@ -8,36 +8,21 @@ part of 'live_play_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Drives one live room: room detail, quality list and stream URLs feed
-/// [PlayerManager], while player streams are projected into UI state.
-///
-/// Responsibilities:
-/// - enter a room and start playback through PlayerManager
-/// - mirror buffering/playing/paused/error states into the page state
-/// - quality and line switching, retry, pause, volume, video fit
-/// - danmaku sessions live in [DanmakuSessionController]
+/// Drives one live room: detail/quality/URL fetching, playback state
+/// projection, quality and line switching. Danmaku sessions live in
+/// [DanmakuSessionController].
 
 @ProviderFor(LivePlayController)
 final livePlayControllerProvider = LivePlayControllerFamily._();
 
-/// Drives one live room: room detail, quality list and stream URLs feed
-/// [PlayerManager], while player streams are projected into UI state.
-///
-/// Responsibilities:
-/// - enter a room and start playback through PlayerManager
-/// - mirror buffering/playing/paused/error states into the page state
-/// - quality and line switching, retry, pause, volume, video fit
-/// - danmaku sessions live in [DanmakuSessionController]
+/// Drives one live room: detail/quality/URL fetching, playback state
+/// projection, quality and line switching. Danmaku sessions live in
+/// [DanmakuSessionController].
 final class LivePlayControllerProvider
     extends $NotifierProvider<LivePlayController, LivePlayState> {
-  /// Drives one live room: room detail, quality list and stream URLs feed
-  /// [PlayerManager], while player streams are projected into UI state.
-  ///
-  /// Responsibilities:
-  /// - enter a room and start playback through PlayerManager
-  /// - mirror buffering/playing/paused/error states into the page state
-  /// - quality and line switching, retry, pause, volume, video fit
-  /// - danmaku sessions live in [DanmakuSessionController]
+  /// Drives one live room: detail/quality/URL fetching, playback state
+  /// projection, quality and line switching. Danmaku sessions live in
+  /// [DanmakuSessionController].
   LivePlayControllerProvider._({
     required LivePlayControllerFamily super.from,
     required LivePlayArgs super.argument,
@@ -85,14 +70,9 @@ final class LivePlayControllerProvider
 String _$livePlayControllerHash() =>
     r'017b13ae7667181e596de5fa172bc2150c90d343';
 
-/// Drives one live room: room detail, quality list and stream URLs feed
-/// [PlayerManager], while player streams are projected into UI state.
-///
-/// Responsibilities:
-/// - enter a room and start playback through PlayerManager
-/// - mirror buffering/playing/paused/error states into the page state
-/// - quality and line switching, retry, pause, volume, video fit
-/// - danmaku sessions live in [DanmakuSessionController]
+/// Drives one live room: detail/quality/URL fetching, playback state
+/// projection, quality and line switching. Danmaku sessions live in
+/// [DanmakuSessionController].
 
 final class LivePlayControllerFamily extends $Family
     with
@@ -112,14 +92,9 @@ final class LivePlayControllerFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Drives one live room: room detail, quality list and stream URLs feed
-  /// [PlayerManager], while player streams are projected into UI state.
-  ///
-  /// Responsibilities:
-  /// - enter a room and start playback through PlayerManager
-  /// - mirror buffering/playing/paused/error states into the page state
-  /// - quality and line switching, retry, pause, volume, video fit
-  /// - danmaku sessions live in [DanmakuSessionController]
+  /// Drives one live room: detail/quality/URL fetching, playback state
+  /// projection, quality and line switching. Danmaku sessions live in
+  /// [DanmakuSessionController].
 
   LivePlayControllerProvider call(LivePlayArgs args) =>
       LivePlayControllerProvider._(argument: args, from: this);
@@ -128,14 +103,9 @@ final class LivePlayControllerFamily extends $Family
   String toString() => r'livePlayControllerProvider';
 }
 
-/// Drives one live room: room detail, quality list and stream URLs feed
-/// [PlayerManager], while player streams are projected into UI state.
-///
-/// Responsibilities:
-/// - enter a room and start playback through PlayerManager
-/// - mirror buffering/playing/paused/error states into the page state
-/// - quality and line switching, retry, pause, volume, video fit
-/// - danmaku sessions live in [DanmakuSessionController]
+/// Drives one live room: detail/quality/URL fetching, playback state
+/// projection, quality and line switching. Danmaku sessions live in
+/// [DanmakuSessionController].
 
 abstract class _$LivePlayController extends $Notifier<LivePlayState> {
   late final _$args = ref.$arg as LivePlayArgs;
