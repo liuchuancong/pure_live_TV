@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Merged only into the skia variant: opts the app out of Impeller so the
+         legacy renderer runs on boxes where Impeller misbehaves. Flutter logs
+         a deprecation notice for this entry; that is inherent to the variant. -->
+    <application>
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
+    </application>
+</manifest>

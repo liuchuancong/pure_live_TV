@@ -43,7 +43,6 @@ build warning and misleads readers into thinking it still has an effect.
 			</intent-filter>
 		</activity>
 		<meta-data android:name="com.google.android.gms.tv.application.banner" android:resource="@drawable/app_banner" />
-		<meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false" />
 		<meta-data android:name="flutterEmbedding" android:value="2" />
 	</application>
 	<queries>

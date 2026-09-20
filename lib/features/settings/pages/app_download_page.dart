@@ -67,6 +67,42 @@ class AppDownloadPage extends ConsumerWidget {
                     ],
                   ),
                 ),
+                // Renderer variant picker: the dual-variant releases publish
+                // Impeller and Skia APKs per ABI; the choice persists and the
+                // 下载源 buttons below resolve to the selected variant.
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.layers_rounded, size: 20.sp, color: context.tvTheme.secondaryTextColor),
+                      SizedBox(width: 10.sp),
+                      Text(i18n('update_renderer'), style: AppTextStyles.t18W600),
+                      SizedBox(width: 16.sp),
+                      TvButton(
+                        title: i18n('update_renderer_impeller'),
+                        size: TvButtonSize.small,
+                        selected: state.rendererVariant != 'skia',
+                        icon: Icon(Icons.bolt_rounded, size: 18.sp),
+                        onTap: () => controller.pickRenderer('impeller'),
+                      ),
+                      SizedBox(width: 12.sp),
+                      TvButton(
+                        title: i18n('update_renderer_skia'),
+                        size: TvButtonSize.small,
+                        selected: state.rendererVariant == 'skia',
+                        icon: Icon(Icons.memory_rounded, size: 18.sp),
+                        onTap: () => controller.pickRenderer('skia'),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 2.h, 20.w, 4.h),
+                  child: Text(
+                    i18n('update_renderer_desc'),
+                    style: TextStyle(fontSize: 13.sp, color: context.tvTheme.secondaryTextColor),
+                  ),
+                ),
                 // One section per published ABI, the mobile update page's
                 // per-architecture download groups.
                 for (final String abi in state.abis)

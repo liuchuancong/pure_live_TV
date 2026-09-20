@@ -61,6 +61,18 @@ android {
         }
     }
 
+    // Two renderer variants share one applicationId, so a device treats them
+    // as the same app and the user simply picks which APK to install:
+    //   impeller — engine default renderer, no manifest override
+    //   skia     — legacy renderer for boxes where Impeller misbehaves
+    //   (the EnableImpeller opt-out lives in src/skia/AndroidManifest.xml and
+    //   only merges into the skia variant)
+    flavorDimensions += "renderer"
+    productFlavors {
+        create("impeller") { dimension = "renderer" }
+        create("skia") { dimension = "renderer" }
+    }
+
     buildTypes {
         // Debug builds reuse the release key when it is available, so a debug
         // APK can replace an installed release build without uninstalling first.

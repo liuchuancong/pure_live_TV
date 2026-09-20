@@ -56,17 +56,24 @@ jobs:
       - name: 更新Flutter的packages
         run: flutter pub get
 
-      - name: 打包APK
-        run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64 --android-skip-build-dependency-validation
-      
+      - name: 打包APK（Impeller 渲染器）
+        run: flutter build apk --release --flavor impeller --split-per-abi --target-platform android-arm,android-arm64,android-x64 --android-skip-build-dependency-validation
+
+      - name: 打包APK（Skia 渲染器）
+        run: flutter build apk --release --flavor skia --split-per-abi --target-platform android-arm,android-arm64,android-x64 --android-skip-build-dependency-validation
+
       - name: 重命名 APK 文件
         run: |
           cd build/app/outputs/flutter-apk/
+          branch_suffix=""
           if [ "${{ matrix.branch }}" = "without-exo" ]; then
-            for f in app-*-release.apk; do
-              mv "$f" "${f%-release.apk}-without-exo.apk"
-            done
+            branch_suffix="-without-exo"
           fi
+          for f in app-*release.apk; do
+            abi=$(echo "$f" | grep -oE 'arm64-v8a|armeabi-v7a|x86_64' | head -1)
+            if echo "$f" | grep -q 'skia'; then renderer='skia'; else renderer='impeller'; fi
+            mv "$f" "PureLive-TV-${abi}-${renderer}${branch_suffix}.apk"
+          done
 
       - name: 读取版本信息
         id: version
@@ -86,10 +93,12 @@ jobs:
             📺 版本说明：
             • 标准版：包含完整播放器内核 (来自 main 分支)
             • 精简版：不含 Exo 内核，文件名带 -without-exo (来自 without-exo 分支)
+            • Impeller 版：新渲染器，文件名带 -impeller，推荐优先尝试
+            • Skia 版：旧渲染器，文件名带 -skia，画面异常/黑屏时改用此版
             
             本软件为开源项目,无广告，无病毒，若安装时出现病毒误报，可自行斟酌。
           prerelease: false
-          files: build/app/outputs/flutter-apk/app-*.apk
+          files: build/app/outputs/flutter-apk/PureLive-TV-*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

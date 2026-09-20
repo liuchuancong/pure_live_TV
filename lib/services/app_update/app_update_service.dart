@@ -70,6 +70,15 @@ class ReleaseAssetInfo {
 
   bool get isApk => name.toLowerCase().endsWith('.apk');
 
+  /// `impeller` / `skia` when the file name carries the renderer tag, '' for
+  /// the pre-variant asset naming.
+  String get renderer {
+    final lower = name.toLowerCase();
+    if (lower.contains('skia')) return 'skia';
+    if (lower.contains('impeller')) return 'impeller';
+    return '';
+  }
+
   String get sizeText {
     if (sizeBytes <= 0) return '';
     if (sizeBytes < 1024 * 1024) return '${(sizeBytes / 1024).toStringAsFixed(0)} KB';
@@ -143,6 +152,9 @@ class AppUpdateState {
   final bool prerelease;
   final List<String> abis;
   final String selectedAbi;
+
+  /// 'impeller' (default) or 'skia' — which renderer variant to download.
+  final String rendererVariant;
   final String error;
 
   /// Download progress; [totalBytes] <= 0 means the server sent no length.
@@ -170,6 +182,7 @@ class AppUpdateState {
     this.prerelease = false,
     this.abis = const [],
     this.selectedAbi = '',
+    this.rendererVariant = 'impeller',
     this.error = '',
     this.receivedBytes = 0,
     this.totalBytes = 0,
@@ -201,6 +214,7 @@ class AppUpdateState {
     bool? prerelease,
     List<String>? abis,
     String? selectedAbi,
+    String? rendererVariant,
     String? error,
     int? receivedBytes,
     int? totalBytes,
@@ -221,6 +235,7 @@ class AppUpdateState {
       prerelease: prerelease ?? this.prerelease,
       abis: abis ?? this.abis,
       selectedAbi: selectedAbi ?? this.selectedAbi,
+      rendererVariant: rendererVariant ?? this.rendererVariant,
       error: error ?? this.error,
       receivedBytes: receivedBytes ?? this.receivedBytes,
       totalBytes: totalBytes ?? this.totalBytes,
@@ -258,7 +273,12 @@ class AppUpdateController extends _$AppUpdateController {
   AppUpdateState build() {
     ref.onDispose(_cancelDownload);
     unawaited(_bootstrap());
-    return AppUpdateState(phase: AppUpdatePhase.checking, records: _readRecords());
+    final savedRenderer = HivePrefUtil.getString('updateRendererVariant');
+    return AppUpdateState(
+      phase: AppUpdatePhase.checking,
+      records: _readRecords(),
+      rendererVariant: savedRenderer == 'skia' ? 'skia' : 'impeller',
+    );
   }
 
   Future<void> _bootstrap() async {
@@ -475,17 +495,42 @@ class AppUpdateController extends _$AppUpdateController {
   /// assembled from the release identity last.
   String? resolveAssetUrl([String? abiOverride]) {
     final abi = (abiOverride ?? state.selectedAbi).trim().toLowerCase();
+    final renderer = state.rendererVariant;
+
+    // Release assets carry the renderer tag since the dual-variant builds;
+    // prefer the exact variant, fall back to the legacy untagged naming for
+    // releases published before the split.
+    String? exact;
+    String? untagged;
     for (final asset in state.latestAssets) {
-      if (asset.abi?.toLowerCase() == abi) return asset.url;
+      if (asset.abi?.toLowerCase() != abi || !asset.isApk) continue;
+      if (asset.renderer == renderer) {
+        exact = asset.url;
+        break;
+      }
+      if (asset.renderer.isEmpty) untagged ??= asset.url;
     }
+    if (exact != null) return exact;
+
     final release = _latestRelease;
     if (release != null) {
       for (final file in release.files) {
+        final lower = file.name.trim().toLowerCase();
+        if (!lower.startsWith(abi) || !file.url.startsWith('http')) continue;
+        if (lower.contains(renderer)) return file.url;
+      }
+    }
+    if (untagged != null) return untagged;
+
+    final release2 = _latestRelease;
+    if (release2 != null) {
+      for (final file in release2.files) {
         if (file.name.trim().toLowerCase() == abi && file.url.startsWith('http')) {
           return file.url;
         }
       }
     }
+
     final direct = VersionUtil.downloadUrl;
     if (direct.toLowerCase().endsWith('.apk')) return direct;
     final assembled = ReleaseAssetUrls(
@@ -498,11 +543,21 @@ class AppUpdateController extends _$AppUpdateController {
 
   void pickAbi(String abi) => _patchState(selectedAbi: abi);
 
+  void pickRenderer(String renderer) {
+    final value = renderer == 'skia' ? 'skia' : 'impeller';
+    HivePrefUtil.setString('updateRendererVariant', value);
+    _patchState(rendererVariant: value);
+  }
+
   /// The size text of the asset for one ABI: the GitHub release's real size
   /// first, the releases.json entry second.
   String? assetSizeFor(String abi) {
+    final renderer = state.rendererVariant;
     for (final asset in state.latestAssets) {
-      if (asset.abi?.toLowerCase() == abi.trim().toLowerCase() && asset.sizeText.isNotEmpty) return asset.sizeText;
+      if (asset.abi?.toLowerCase() != abi.trim().toLowerCase()) continue;
+      if (asset.sizeText.isEmpty) continue;
+      // Variant-tagged assets first; untagged ones answer for both variants.
+      if (asset.renderer.isEmpty || asset.renderer == renderer) return asset.sizeText;
     }
     final ReleaseModel? release = _latestRelease;
     if (release == null) return null;
@@ -689,6 +744,7 @@ class AppUpdateController extends _$AppUpdateController {
     bool? prerelease,
     List<String>? abis,
     String? selectedAbi,
+    String? rendererVariant,
     String? error,
     int? receivedBytes,
     int? totalBytes,
@@ -710,6 +766,7 @@ class AppUpdateController extends _$AppUpdateController {
       prerelease: prerelease,
       abis: abis,
       selectedAbi: selectedAbi,
+      rendererVariant: rendererVariant,
       error: error,
       receivedBytes: receivedBytes,
       totalBytes: totalBytes,
