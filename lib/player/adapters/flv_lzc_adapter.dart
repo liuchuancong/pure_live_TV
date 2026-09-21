@@ -4,6 +4,7 @@ import '../utils/fijk_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flv_lzc/fijkplayer.dart';
 import 'package:media_core/media_core.dart';
+import '../../services/settings/settings.dart';
 import '../core/playback_proxy_policy.dart';
 
 
@@ -115,6 +116,7 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
       );
       await FijkHelper.setFijkOption(
         _player,
+        enableCodec: SettingsService.to.playerState.enableCodec,
         disableAudioOutput: false,
         headers: source.hasHeaders ? Map<String, String>.from(source.headers!.values) : null,
       );

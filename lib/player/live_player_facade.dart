@@ -10,6 +10,8 @@ import 'models/player_error_type.dart';
 import '../shared/consts/app_consts.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'core/live_room_volume_manager.dart';
+import 'core/playback_header_resolver.dart';
+import '../services/settings/settings.dart';
 import 'adapters/media_kit_core_adapter.dart';
 import '../shared/models/live_room/live_room.dart';
 import 'package:media_core/media_core.dart' hide PlayerState, PlayerException;
@@ -144,13 +146,30 @@ final class LivePlayerFacade {
       throw ArgumentError('Remote playback source is empty');
     }
     _bind();
+
+    // With no explicit headers, resolve them per platform (UA /
+    // referer the live site requires).
+    Map<String, String> effectiveHeaders = headers;
+    if (headers.isEmpty && room != null && room.platform.isNotEmpty) {
+      effectiveHeaders = await PlaybackHeaderResolver.resolve(
+        platform: room.platform,
+        roomId: room.roomId,
+        roomHeaders: room.httpHeaders,
+      );
+    }
+
     await _controller.play(
       LiveSourceRequest(
         urls: playUrls.isEmpty ? [url] : [url, ...playUrls.where((u) => u != url)],
-        headers: headers,
+        headers: effectiveHeaders,
         title: room?.title,
       ),
     );
+
+    // Apply the audio-only preference to the freshly bound adapter.
+    if (SettingsService.to.playerState.audioOnly) {
+      await setAudioOnly(true);
+    }
 
     if (room != null) {
       final volume = LiveRoomVolumeManager.getRoomVolume(room.platform, room.roomId).clamp(0.0, 1.0);
@@ -170,8 +189,18 @@ final class LivePlayerFacade {
   /// Resumes playback.
   Future<void> resume() => _controller.resume();
 
-  /// Stops and releases the player.
-  Future<void> close() => _controller.close();
+  /// Stops playback.
+  ///
+  /// With `useHardStopOnExit` the player is released; the default
+  /// soft stop only pauses so the next room reuses the warm
+  /// instance.
+  Future<void> close() async {
+    if (SettingsService.to.playerState.useHardStopOnExit) {
+      await _controller.close();
+      return;
+    }
+    await _controller.pause();
+  }
 
   /// Sets the volume (0.0–1.0).
   Future<void> setVolume(double volume) => _controller.setVolume(volume);

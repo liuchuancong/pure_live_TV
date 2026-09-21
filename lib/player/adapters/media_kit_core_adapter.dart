@@ -1,10 +1,17 @@
 import 'dart:async';
-import 'media_kit_view_holder.dart';
+
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:media_core/media_core.dart';
-import '../core/playback_proxy_policy.dart';
+import 'package:media_core/media_core.dart' hide PlatformUtils;
 import 'package:media_kit/media_kit.dart' as mk;
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
+
+import '../../services/settings/settings.dart';
+import '../../shared/utils/platform_utils.dart';
+import '../core/playback_proxy_policy.dart';
+import '../utils/live_buffer_policy.dart';
+import '../utils/mpv_platform_profile.dart';
+import 'media_kit_view_holder.dart';
 
 
 
@@ -104,13 +111,132 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
     if (_initialized) return;
 
     _player = _injectedPlayer ?? mk.Player();
-    _videoController = mkv.VideoController(player);
+    _resolvePreferredHardwareDecoder();
+    _videoController = _buildVideoController();
     _state = PlayerState.idle.initializingState().readyState();
 
     _subscribeStreams();
     _observeDecodedFrames();
+    await _applyNativeLiveProperties();
     _initialized = true;
   }
+
+  /// Resolves the hardware decoder preference from settings.
+  ///
+  /// Three tiers, mirroring the legacy adapter:
+  /// - macOS: always software (`no`) — VideoToolbox was unstable.
+  /// - Android compat mode: force `mediacodec`.
+  /// - Expert output configured: the user-picked decoder.
+  /// - Default: `enableCodec ? auto-safe : no`.
+  void _resolvePreferredHardwareDecoder() {
+    final settings = SettingsService.to.playerState;
+    final androidCompatMode = PlatformUtils.isAndroid && settings.playerCompatMode;
+    final hardwareDecoder = normalizeMpvHardwareDecoderForPlatform(settings.videoHardwareDecoder, defaultTargetPlatform);
+
+    _preferredHardwareDecoder = PlatformUtils.isMacOS
+        ? 'no'
+        : androidCompatMode
+        ? 'mediacodec'
+        : settings.customPlayerOutput
+        ? hardwareDecoder
+        : settings.enableCodec
+        ? 'auto-safe'
+        : 'no';
+  }
+
+  /// Builds the video controller with the settings-appropriate
+  /// output configuration.
+  mkv.VideoController _buildVideoController() {
+    final settings = SettingsService.to.playerState;
+    final platform = defaultTargetPlatform;
+    final androidCompatMode = PlatformUtils.isAndroid && settings.playerCompatMode;
+    final videoOutputDriver = normalizeMpvVideoOutputDriverForPlatform(settings.videoOutputDriver, platform);
+
+    if (androidCompatMode) {
+      return mkv.VideoController(
+        player,
+        configuration: const mkv.VideoControllerConfiguration(vo: 'mediacodec_embed', hwdec: 'mediacodec'),
+      );
+    }
+    if (settings.customPlayerOutput) {
+      return mkv.VideoController(
+        player,
+        configuration: mkv.VideoControllerConfiguration(
+          vo: videoOutputDriver,
+          hwdec: PlatformUtils.isMacOS ? 'no' : normalizeMpvHardwareDecoderForPlatform(settings.videoHardwareDecoder, platform),
+          enableHardwareAcceleration: !PlatformUtils.isMacOS,
+        ),
+      );
+    }
+    return mkv.VideoController(
+      player,
+      configuration: mkv.VideoControllerConfiguration(
+        enableHardwareAcceleration: PlatformUtils.isMacOS ? false : settings.enableCodec,
+        hwdec: PlatformUtils.isMacOS ? 'no' : null,
+      ),
+    );
+  }
+
+  /// Applies the native live-stream property contract to mpv.
+  ///
+  /// Fast live probing, a bounded buffer budget (see
+  /// [LiveBufferPolicy]), direct surface rendering on Android and
+  /// the configured audio output driver.
+  Future<void> _applyNativeLiveProperties() async {
+    final native = _player?.platform;
+    if (native == null) return;
+
+    Future<void> setProp(String name, String value) async {
+      try {
+        // ignore: avoid_dynamic_calls
+        await (native as dynamic).setProperty(name, value);
+      } catch (_) {
+        // Property support varies across builds; each is
+        // best-effort.
+      }
+    }
+
+    await setProp('protocol_whitelist', 'httpproxy,udp,rtp,tcp,tls,data,file,http,https,crypto,rtmp,rtmps,rtsp,srt');
+    await setProp('demuxer-lavf-probesize', '2097152');
+    // Short probe for live FLV/HLS: less black screen before the
+    // first frame.
+    await setProp('demuxer-lavf-analyzeduration', '2');
+    await LiveBufferPolicy.apply(setProp);
+    await setProp('network-timeout', '15');
+    // Drop a failing hw decoder after one bad frame so playback
+    // falls back to software instead of a black surface.
+    await setProp('hwdec-software-fallback', '1');
+
+    if (PlatformUtils.isAndroid) {
+      // mediacodec surface direct rendering: frames go straight
+      // from the decoder to the display surface, skipping both
+      // the copy to RAM and the Flutter texture round-trip.
+      await setProp('mediacodec-surface-iostream', 'yes');
+      await setProp('mediacodec-embed-surface-landscape', 'yes');
+    }
+
+    final audioOutput = effectiveMpvAudioOutputDriverForPlatform(
+      customOutput: SettingsService.to.playerState.customPlayerOutput,
+      configuredDriver: SettingsService.to.playerState.audioOutputDriver,
+      platform: defaultTargetPlatform,
+    );
+    if (audioOutput != null) {
+      await setProp('ao', audioOutput);
+    }
+
+    if (PlatformUtils.isMacOS) {
+      await setProp('hwdec', 'no');
+    }
+
+    if (PlatformUtils.isWindows && SettingsService.to.playerState.enableRtxVsr) {
+      await setProp('hwdec', 'd3d11va');
+      await setProp('vf', 'd3d11vpp=scale=2:scaling-mode=nvidia');
+    }
+  }
+
+  /// The resolved hardware decoder preference.
+  String get preferredHardwareDecoder => _preferredHardwareDecoder;
+  String _preferredHardwareDecoder = 'auto';
 
   @override
   Future<void> open(PlayerSource source) async {
@@ -381,7 +507,7 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
     if (native == null) return;
     try {
       // ignore: avoid_dynamic_calls
-      await (native as dynamic).setProperty('hwdec', _softwareDecoderNextOpen ? 'no' : 'auto');
+      await (native as dynamic).setProperty('hwdec', _softwareDecoderNextOpen ? 'no' : _preferredHardwareDecoder);
       _softwareDecoderNextOpen = false;
     } catch (_) {
       // Property setting is best-effort across media_kit builds.
