@@ -129,6 +129,8 @@ dependency_overrides:
     path: plugins/built_in_kotlin/async_wallpaper # 本地 AGP 9 内建 Kotlin 补丁
   flutter_inappwebview_android:
     path: plugins/built_in_kotlin/flutter_inappwebview_android # 上游网页内核 Android 子包 ProGuard 兼容补丁
+  android_tv_text_field:
+    path: plugins/built_in_kotlin/android_tv_text_field # 本地 AGP 9 内建 Kotlin 补丁（原生 TV 输入框）
   wakelock_plus: ^1.4.0 # media_kit 声明的版本覆盖
 dev_dependencies:
   flutter_test:

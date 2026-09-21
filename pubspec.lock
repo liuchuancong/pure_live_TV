@@ -52,10 +52,9 @@ packages:
   android_tv_text_field:
     dependency: "direct main"
     description:
-      name: android_tv_text_field
-      sha256: "2c9ae221a54d9b70437c3960e0270754af10b8258edc06c6bc2f526fa5a6b4c5"
-      url: "https://pub.dev"
-    source: hosted
+      path: "plugins/built_in_kotlin/android_tv_text_field"
+      relative: true
+    source: path
     version: "1.0.0"
   archive:
     dependency: transitive
