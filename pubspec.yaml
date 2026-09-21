@@ -137,6 +137,14 @@ dependency_overrides:
   android_tv_text_field:
     path: plugins/built_in_kotlin/android_tv_text_field # 本地 AGP 9 内建 Kotlin 补丁（原生 TV 输入框）
   wakelock_plus: ^1.4.0 # media_kit 声明的版本覆盖
+  # riverpod_annotation 4.0.3 把运行时核心 riverpod 锁死在 3.3.2，而 3.3.2 在
+  # TickerMode（路由被覆盖/恢复）重新激活被暂停的订阅时会 flush 依赖链并在 build
+  # 阶段调度刷新，触发 “setState() or markNeedsBuild() called during build”。
+  # 3.4.3 的 element.dart 增加了 _isFlushing 判断修掉了这条路径（见 3.4.0 变更日志
+  # “Fix markNeedsBuild exception when flushing a provider inside Widget lifecycle”）。
+  # 升级到允许 3.4.x 的 annotation/generator 会要求 analyzer ≥13，从而牵出
+  # freezed 4 大版本迁移，所以这里只覆盖运行时核心包。
+  riverpod: 3.4.3
 dev_dependencies:
   flutter_test:
     sdk: flutter # Flutter单元测试框架
