@@ -204,6 +204,37 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     return true;
   }
 
+  /// Applies one refresh snapshot on top of the stored favourite entry.
+  ///
+  /// Server-owned fields (status, title, cover, audience…) come from [refreshed];
+  /// everything a refresh payload does not carry (tags, the record flag, the
+  /// local identity) stays as the user's entry had it.
+  ///
+  /// The audience values need the merge direction spelled out: the stored entry
+  /// used to be the base of [LiveRoom.withAudienceFallbackFrom], which only
+  /// fills *empty* fields, so every refreshed viewer count was discarded as soon
+  /// as the stored card already had one. A card therefore kept a stale count and
+  /// the 在线 ordering never moved after a refresh.
+  static LiveRoom mergeRefreshedRoom(LiveRoom stored, LiveRoom refreshed) {
+    final fresh = refreshed.withAudienceFallbackFrom(stored);
+
+    return stored.copyWith(
+      title: fresh.title,
+      nick: fresh.nick,
+      avatar: fresh.avatar,
+      cover: fresh.cover,
+      area: fresh.area,
+      introduction: fresh.introduction,
+      status: fresh.status,
+      liveStatus: fresh.liveStatus,
+      watching: fresh.watching,
+      popularity: fresh.popularity,
+      onlineViewers: fresh.onlineViewers,
+      totalViewers: fresh.totalViewers,
+      audienceMetricType: fresh.audienceMetricType,
+    );
+  }
+
   /// Applies a whole refresh batch with ONE state write and ONE persist:
   /// updateRoom per room re-encoded the entire favourite list to JSON on the
   /// main isolate per room (N × O(N) = O(N²)) and emitted N provider updates.
@@ -217,18 +248,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
       final index = current.indexWhere((e) => e.hasSameIdentity(normalized));
       if (index < 0) continue;
       current = List<LiveRoom>.from(current);
-      current[index] = current[index]
-          .withAudienceFallbackFrom(normalized)
-          .copyWith(
-            title: normalized.title,
-            nick: normalized.nick,
-            avatar: normalized.avatar,
-            cover: normalized.cover,
-            area: normalized.area,
-            introduction: normalized.introduction,
-            status: normalized.status,
-            liveStatus: normalized.liveStatus,
-          );
+      current[index] = mergeRefreshedRoom(current[index], normalized);
       changed = true;
     }
     if (changed) _update(state.copyWith(favoriteRooms: current));
@@ -242,18 +262,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     final updated = List<LiveRoom>.from(state.favoriteRooms);
     // Locate by identity key, then overwrite with the refresh snapshot. Keeping
     // the favourite refresh metadata in step is the caller's responsibility.
-    updated[index] = updated[index]
-        .withAudienceFallbackFrom(normalized)
-        .copyWith(
-          title: normalized.title,
-          nick: normalized.nick,
-          avatar: normalized.avatar,
-          cover: normalized.cover,
-          area: normalized.area,
-          introduction: normalized.introduction,
-          status: normalized.status,
-          liveStatus: normalized.liveStatus,
-        );
+    updated[index] = mergeRefreshedRoom(updated[index], normalized);
     _update(state.copyWith(favoriteRooms: updated));
     return true;
   }

@@ -283,6 +283,32 @@ abstract interface class LiveSiteRoomRefresher {
   Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform});
 }
 
+/// Fetches the snapshot a favourite/history card refresh should use.
+///
+/// [LiveSiteRoomRefresher] is preferred whenever the adapter provides it: the
+/// ordinary [LiveSite.getRoomDetail] is a *presentation* contract, and several
+/// adapters answer a transport or response-shape failure with an
+/// offline-looking fallback room (see [LiveSiteRoomRefresher]'s note above).
+/// Calling that from a card refresh silently turned a network hiccup into an
+/// authoritative 离线 card, which is the "followed room status is wrong"
+/// defect this dispatch fixes.
+///
+/// Adapters without the fast path keep the old call and are expected to
+/// propagate their failures to the caller.
+Future<LiveRoom> fetchRoomDetailForRefresh({
+  required LiveSite site,
+  required String roomId,
+  required String platform,
+}) {
+  final refresher = site;
+
+  if (refresher is LiveSiteRoomRefresher) {
+    return (refresher as LiveSiteRoomRefresher).getRoomDetailForRefresh(roomId: roomId, platform: platform);
+  }
+
+  return site.getRoomDetail(roomId: roomId, platform: platform);
+}
+
 /// Strict, playback-complete room lookup used before a recording starts.
 ///
 /// The ordinary [LiveSite.getRoomDetail] contract is UI-oriented. Several

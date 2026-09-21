@@ -9,6 +9,7 @@ import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import '../../services/settings/settings.dart';
 import '../../shared/utils/platform_utils.dart';
 import '../core/playback_proxy_policy.dart';
+import '../utils/device_playback_profile.dart';
 import '../utils/live_buffer_policy.dart';
 import '../utils/mpv_platform_profile.dart';
 import 'media_kit_view_holder.dart';
@@ -102,6 +103,17 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
   bool get hasDecodedVideoFrame => _hasDecodedVideoFrame;
   bool _hasDecodedVideoFrame = false;
 
+  /// Minimum spacing between published decoded-frame heartbeats.
+  ///
+  /// libmpv reports every decoded frame; the live watchdog only needs proof
+  /// that frames are still arriving, so publishing at most one heartbeat per
+  /// interval keeps a 60 fps stream from pushing 60 notifications per second
+  /// through the isolate without adding any information.
+  static const int frameHeartbeatIntervalMs = 250;
+
+  final Stopwatch _frameHeartbeatClock = Stopwatch();
+  int _lastFrameHeartbeatMs = -frameHeartbeatIntervalMs;
+
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
@@ -111,6 +123,9 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
     if (_initialized) return;
 
     _player = _injectedPlayer ?? mk.Player();
+    // The device budget must be known before the video controller and the
+    // native property contract are built, because both branch on it.
+    await DevicePlaybackProfile.ensureLoaded();
     _resolvePreferredHardwareDecoder();
     _videoController = _buildVideoController();
     _state = PlayerState.idle.initializingState().readyState();
@@ -179,40 +194,53 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
 
   /// Applies the native live-stream property contract to mpv.
   ///
-  /// Fast live probing, a bounded buffer budget (see
-  /// [LiveBufferPolicy]), direct surface rendering on Android and
-  /// the configured audio output driver.
+  /// Fast live probing, a bounded buffer budget (see [LiveBufferPolicy]),
+  /// direct surface rendering on Android, the decode-cost budget of the
+  /// current device (see [DevicePlaybackProfile]) and the configured audio
+  /// output driver.
   Future<void> _applyNativeLiveProperties() async {
-    final native = _player?.platform;
-    if (native == null) return;
+    if (_player?.platform == null) return;
+    final profile = DevicePlaybackProfile.current;
 
-    Future<void> setProp(String name, String value) async {
-      try {
-        // ignore: avoid_dynamic_calls
-        await (native as dynamic).setProperty(name, value);
-      } catch (_) {
-        // Property support varies across builds; each is
-        // best-effort.
-      }
-    }
-
-    await setProp('protocol_whitelist', 'httpproxy,udp,rtp,tcp,tls,data,file,http,https,crypto,rtmp,rtmps,rtsp,srt');
-    await setProp('demuxer-lavf-probesize', '2097152');
+    await _setNativeProperty('protocol_whitelist', 'httpproxy,udp,rtp,tcp,tls,data,file,http,https,crypto,rtmp,rtmps,rtsp,srt');
+    await _setNativeProperty('demuxer-lavf-probesize', '2097152');
     // Short probe for live FLV/HLS: less black screen before the
     // first frame.
-    await setProp('demuxer-lavf-analyzeduration', '2');
-    await LiveBufferPolicy.apply(setProp);
-    await setProp('network-timeout', '15');
+    await _setNativeProperty('demuxer-lavf-analyzeduration', '2');
+    await LiveBufferPolicy.apply(_setNativeProperty, profile: profile);
+    await _setNativeProperty('network-timeout', '15');
     // Drop a failing hw decoder after one bad frame so playback
     // falls back to software instead of a black surface.
-    await setProp('hwdec-software-fallback', '1');
+    await _setNativeProperty('hwdec-software-fallback', '1');
+    // The decoder is not chosen until the first open, so this is the
+    // preference the first open will use.
+    await _applyDecodeCostPolicy(profile, software: _preferredHardwareDecoder == 'no');
+
+    if (profile.lowEnd) {
+      // Absorb audio-device jitter. `video-sync=audio` (mpv's default) paces
+      // video against the audio clock, so an underrun on a weak Android audio
+      // HAL surfaces as a dropped video frame; the larger buffer is the
+      // cheapest way to keep that clock steady.
+      await _setNativeProperty('audio-buffer', '0.4');
+      // Recover a short Wi-Fi/CDN interruption inside libavformat instead of
+      // letting the transport die. This is deliberately limited to a low-end
+      // device: there, the app's own recovery costs a full re-open and
+      // re-probe of the stream, while a capable device would rather fail fast
+      // and let the line fallback move on. `reconnect_delay_max` keeps the
+      // retry bounded, so mpv's `network-timeout` and the live watchdogs still
+      // end a genuinely dead transport.
+      await _setNativeProperty(
+        'stream-lavf-o',
+        'reconnect=1,reconnect_streamed=1,reconnect_on_network_error=1,reconnect_delay_max=2',
+      );
+    }
 
     if (PlatformUtils.isAndroid) {
       // mediacodec surface direct rendering: frames go straight
       // from the decoder to the display surface, skipping both
       // the copy to RAM and the Flutter texture round-trip.
-      await setProp('mediacodec-surface-iostream', 'yes');
-      await setProp('mediacodec-embed-surface-landscape', 'yes');
+      await _setNativeProperty('mediacodec-surface-iostream', 'yes');
+      await _setNativeProperty('mediacodec-embed-surface-landscape', 'yes');
     }
 
     final audioOutput = effectiveMpvAudioOutputDriverForPlatform(
@@ -221,16 +249,61 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
       platform: defaultTargetPlatform,
     );
     if (audioOutput != null) {
-      await setProp('ao', audioOutput);
+      await _setNativeProperty('ao', audioOutput);
     }
 
     if (PlatformUtils.isMacOS) {
-      await setProp('hwdec', 'no');
+      await _setNativeProperty('hwdec', 'no');
     }
 
     if (PlatformUtils.isWindows && SettingsService.to.playerState.enableRtxVsr) {
-      await setProp('hwdec', 'd3d11va');
-      await setProp('vf', 'd3d11vpp=scale=2:scaling-mode=nvidia');
+      await _setNativeProperty('hwdec', 'd3d11va');
+      await _setNativeProperty('vf', 'd3d11vpp=scale=2:scaling-mode=nvidia');
+    }
+  }
+
+  /// Keeps software decoding inside what the device can afford.
+  ///
+  /// Every option here is ignored by a hardware decoder, so the contract only
+  /// means anything while mpv decodes in software — the case a low-end TV box
+  /// lands in when its SoC has no decoder for the room's codec, or when the
+  /// user turned hardware decoding off. Full-resolution 1080p in software is
+  /// beyond such a box, so it decodes at a reduced resolution and skips
+  /// deblocking of non-reference frames, the most expensive optional step of
+  /// an H.264/HEVC decode. Both trade picture detail for frames that arrive on
+  /// time, which is the right way round on a device that would otherwise
+  /// stutter.
+  ///
+  /// This libmpv build has no `vd-lavc-downscale` option; the low-resolution
+  /// request therefore travels as a libavcodec AVOption through `vd-lavc-o`.
+  /// Codecs without low-resolution support ignore it, and `vd-lavc-o` is
+  /// restored on a hardware decoder so a software episode cannot leak into the
+  /// next open.
+  Future<void> _applyDecodeCostPolicy(DevicePlaybackProfile profile, {required bool software}) async {
+    if (!profile.lowEnd) return;
+
+    if (software) {
+      await _setNativeProperty('vd-lavc-threads', profile.softwareDecodeThreads.toString());
+      await _setNativeProperty('vd-lavc-o', 'lowres=1');
+      await _setNativeProperty('vd-lavc-skiploopfilter', 'nonref');
+      return;
+    }
+    await _setNativeProperty('vd-lavc-o', 'lowres=0');
+    await _setNativeProperty('vd-lavc-skiploopfilter', 'default');
+  }
+
+  /// Sets one mpv property on the active player, best-effort.
+  ///
+  /// Property support varies across media_kit and libmpv builds, and a
+  /// rejected property is never a reason to fail playback.
+  Future<void> _setNativeProperty(String name, String value) async {
+    final native = _player?.platform;
+    if (native == null) return;
+    try {
+      // ignore: avoid_dynamic_calls
+      await (native as dynamic).setProperty(name, value);
+    } catch (_) {
+      // Best-effort.
     }
   }
 
@@ -245,11 +318,18 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
     final url = source.uri.toString();
     final headers = source.hasHeaders ? source.headers!.values : null;
 
+    // A prepared software fallback belongs to the source it was prepared for.
+    // `_currentUrl` is overwritten here, so the comparison has to happen first:
+    // the previous form compared the URL against itself and was therefore
+    // always true, which would have forced every later room through the
+    // software decoder after a single codec failure — exactly the workload a
+    // low-end box cannot afford.
+    final bool sameSource = _softwareDecoderNextOpen && url == _currentUrl;
     _currentUrl = url;
     _hasDecodedVideoFrame = false;
-    _softwareDecoderNextOpen = _softwareDecoderNextOpen && url == _currentUrl;
+    _softwareDecoderNextOpen = sameSource;
 
-    await _applyDecoderPolicy(url);
+    await _applyDecoderPolicy();
     await _applyProxy();
 
     await player.open(mk.Media(url, httpHeaders: headers), play: true);
@@ -405,21 +485,61 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
 
   void _observeDecodedFrames() {
     // Decoded-frame heartbeats: any observed frame proves the
-    // decoder is alive. The live watchdog uses this to detect a
-    // wedged decoder that still reports playing=true.
-    try {
-      final native = player.platform;
-      // ignore: avoid_dynamic_calls
-      (native as dynamic).observeProperty?.call('decoded-picture-type', (String value) {
-        final type = value.trim().toUpperCase();
-        if (type == 'I' || type == 'P' || type == 'B') {
-          _hasDecodedVideoFrame = true;
-          _viewHolder.notifyFrameProgress();
-        }
-      });
-    } catch (_) {
-      // observeProperty is a NativePlayer extension; platforms
-      // without it simply fall back to size-based progress.
+    // decoder is alive even while mpv still reports playing=true,
+    // which is what lets the live watchdog tell a wedged decoder
+    // from a healthy one.
+    //
+    // `video-frame-info/picture-type` is the property mpv actually
+    // publishes for the frame being decoded. The probe used to read
+    // `decoded-picture-type`, which is not an mpv property at all, so this
+    // heartbeat never fired and the watchdog could only ever be fed by
+    // geometry changes. `estimated-vf-fps` is the second, independent signal:
+    // it keeps moving while frames are decoded, so a codec that publishes no
+    // picture type still reports liveness.
+    _frameHeartbeatClock.start();
+    for (final String property in const <String>['video-frame-info/picture-type', 'estimated-vf-fps']) {
+      try {
+        final native = player.platform;
+        // ignore: avoid_dynamic_calls
+        (native as dynamic).observeProperty?.call(property, (String value) {
+          _onNativeFrameSignal(property, value);
+        });
+      } catch (_) {
+        // observeProperty is a NativePlayer extension; a build without it
+        // simply keeps the geometry-driven heartbeat.
+      }
+    }
+  }
+
+  /// Turns one raw mpv frame probe into a throttled frame heartbeat.
+  void _onNativeFrameSignal(String property, String value) {
+    if (_disposed) return;
+
+    final signal = value.trim();
+    if (property == 'video-frame-info/picture-type') {
+      final type = signal.toUpperCase();
+      if (type != 'I' && type != 'P' && type != 'B') return;
+    } else {
+      final fps = double.tryParse(signal);
+      if (fps == null || !fps.isFinite || fps <= 0) return;
+    }
+
+    _hasDecodedVideoFrame = true;
+
+    final now = _frameHeartbeatClock.elapsedMilliseconds;
+    if (now - _lastFrameHeartbeatMs < frameHeartbeatIntervalMs) return;
+    _lastFrameHeartbeatMs = now;
+
+    _viewHolder.notifyFrameProgress();
+    // media_core maps a geometry event to the live watchdog's frame-progress
+    // witness, and only a decoded frame is authoritative proof of that. Emit
+    // it as the same event the surface already publishes once the geometry is
+    // known; before that, the size event that follows the first decoded frame
+    // carries the heartbeat instead.
+    final width = _width;
+    final height = _height;
+    if (width != null && height != null && width > 0 && height > 0) {
+      _emit(PlayerAdapterEvent.videoSizeChanged(width: width, height: height));
     }
   }
 
@@ -502,16 +622,18 @@ final class PureLiveMediaKitAdapter implements PlayerAdapter {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  Future<void> _applyDecoderPolicy(String url) async {
-    final native = _player?.platform;
-    if (native == null) return;
-    try {
-      // ignore: avoid_dynamic_calls
-      await (native as dynamic).setProperty('hwdec', _softwareDecoderNextOpen ? 'no' : _preferredHardwareDecoder);
-      _softwareDecoderNextOpen = false;
-    } catch (_) {
-      // Property setting is best-effort across media_kit builds.
-    }
+  /// Applies the decoder contract for the open that is about to happen.
+  ///
+  /// A software fallback prepared by recovery applies to the next open only;
+  /// mutating `hwdec` while the failing source is still open can re-enter the
+  /// error path. The decode-cost policy follows the decoder that will actually
+  /// run, so a source that fell back to software also stops paying for
+  /// full-resolution decoding.
+  Future<void> _applyDecoderPolicy() async {
+    final decoder = _softwareDecoderNextOpen ? 'no' : _preferredHardwareDecoder;
+    _softwareDecoderNextOpen = false;
+    await _setNativeProperty('hwdec', decoder);
+    await _applyDecodeCostPolicy(DevicePlaybackProfile.current, software: decoder == 'no');
   }
 
   Future<void> _applyProxy() async {

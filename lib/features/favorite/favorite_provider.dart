@@ -68,9 +68,19 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     final appState = ref.read(appSettingsControllerProvider);
     final List<LiveRoom> roomsBase = List<LiveRoom>.from(favState.favoriteRooms);
 
-    final onlineSrc = roomsBase.where((r) => r.liveStatus == LiveStatus.live && r.isRecord == false).toList();
-    final offline = roomsBase.where((r) => r.liveStatus != LiveStatus.live).toList();
-    final replaySrc = roomsBase.where((r) => r.liveStatus == LiveStatus.live && r.isRecord == true).toList();
+    // The buckets follow the model's own predicates instead of comparing
+    // `liveStatus == live` by hand:
+    //
+    // * a platform that has not answered yet persists `unknown` together with
+    //   `status`, and `isLiveNow` is what treats that as 在线 — reading the enum
+    //   directly filed such a followed room under 离线;
+    // * a replay (`isRecord`, or a platform-reported `LiveStatus.replay` such as
+    //   Huya's REPLAY and Weibo's replay state) belongs to 回放, not 离线;
+    // * 离线 therefore only holds cards that are not playable at all, which is
+    //   exactly the mobile reference's `!isPlayableNow` bucket.
+    final onlineSrc = roomsBase.where((r) => r.isLiveNow && r.isRecord == false).toList();
+    final replaySrc = roomsBase.where((r) => r.isRecord || r.effectiveLiveStatus == LiveStatus.replay).toList();
+    final offline = roomsBase.where((r) => !r.isPlayableNow).toList();
 
     final List<LiveRoom> online = onlineSrc.map((room) {
       return room.copyWith(watching: int.tryParse(room.watching)?.toString() ?? '0');
@@ -207,6 +217,36 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     }).toList();
   }
 
+  /// One card refresh may not hold a whole batch hostage.
+  static const Duration _roomRefreshTimeout = Duration(seconds: 10);
+
+  /// Refreshes one followed room, or returns `null` when the platform could not
+  /// be asked.
+  ///
+  /// [fetchRoomDetailForRefresh] prefers the adapter's cheap metadata path and
+  /// lets its failures propagate, which is what this guard needs: the
+  /// presentation-oriented `LiveSite.getRoomDetail` answers an error with an
+  /// offline-looking fallback room, so a single hiccup used to rewrite a live
+  /// followed room as 离线. Returning `null` keeps the stored snapshot (status
+  /// included) instead of publishing a guess.
+  Future<LiveRoom?> _refreshRoom(LiveRoom room) async {
+    try {
+      final refreshed = await fetchRoomDetailForRefresh(
+        site: Sites.of(room.platform).liveSite,
+        roomId: room.roomId,
+        platform: room.platform,
+      ).timeout(_roomRefreshTimeout);
+
+      // Some platforms answer with a different canonical id (Douyin reports the
+      // web rid, for example). Re-binding keeps the identity that the merge
+      // target and the local tags are keyed by.
+      return refreshed.copyWith(roomId: room.roomId, platform: room.platform);
+    } catch (e) {
+      developer.log('Favorite room refresh failed for ${room.identityKey}: $e');
+      return null;
+    }
+  }
+
   Future<void> refreshData() async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true);
@@ -245,21 +285,16 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       final end = i + batch > validRooms.length ? validRooms.length : i + batch;
       final batchRooms = validRooms.sublist(i, end);
 
-      try {
-        final futures = batchRooms
-            .map((room) => Sites.of(room.platform).liveSite.getRoomDetail(roomId: room.roomId, platform: room.platform))
-            .toList();
-        final results = await Future.wait(futures);
+      final futures = batchRooms.map(_refreshRoom).toList();
+      final results = await Future.wait(futures);
 
-        ref.read(favoriteRoomControllerProvider.notifier).updateRooms(
-              results.whereType<LiveRoom>().toList(),
-            );
-      } catch (e) {
-        developer.log('Error refreshing room details in riverpod: $e');
-      }
+      ref.read(favoriteRoomControllerProvider.notifier).updateRooms(
+            results.whereType<LiveRoom>().toList(),
+          );
     }
 
     final finalFavState = ref.read(favoriteRoomControllerProvider);
     state = _syncAndFilter(state.copyWith(isLoading: false), finalFavState);
+    EventBus.instance.emit('refresh_favorite_finish', true);
   }
 }
