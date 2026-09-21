@@ -9,8 +9,45 @@
       "avatar": "https://avatars.githubusercontent.com/u/36957912?v=4",
       "profile": "https://github.com/liuchuancong"
     },
-    "changelog": "",
-    "files": []
+    "changelog": "📦 纯粹直播 v3.0.1\n本次更新内容：\n-Fixed:优化播放器以及修复输入.\n📺 版本说明：\n• Impeller 版：新渲染器，文件名带 -impeller，推荐优先尝试\n• Skia 版：旧渲染器，文件名带 -skia，画面异常/黑屏时改用此版\n• 每个渲染器均按 ABI 拆分：arm64-v8a（绝大多数设备）、armeabi-v7a（老设备）、x86_64（模拟器）\n\n本软件为开源项目,无广告，无病毒，若安装时出现病毒误报，可自行斟酌。",
+    "files": [
+      {
+        "name": "PureLive-TV-arm64-v8a-impeller",
+        "size": "85.78mb",
+        "downloads": 0,
+        "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.1/PureLive-TV-arm64-v8a-impeller.apk"
+      },
+      {
+        "name": "PureLive-TV-arm64-v8a-skia",
+        "size": "85.78mb",
+        "downloads": 0,
+        "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.1/PureLive-TV-arm64-v8a-skia.apk"
+      },
+      {
+        "name": "PureLive-TV-armeabi-v7a-impeller",
+        "size": "73.03mb",
+        "downloads": 0,
+        "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.1/PureLive-TV-armeabi-v7a-impeller.apk"
+      },
+      {
+        "name": "PureLive-TV-armeabi-v7a-skia",
+        "size": "73.03mb",
+        "downloads": 0,
+        "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.1/PureLive-TV-armeabi-v7a-skia.apk"
+      },
+      {
+        "name": "PureLive-TV-x86_64-impeller",
+        "size": "87.53mb",
+        "downloads": 0,
+        "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.1/PureLive-TV-x86_64-impeller.apk"
+      },
+      {
+        "name": "PureLive-TV-x86_64-skia",
+        "size": "87.53mb",
+        "downloads": 0,
+        "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.1/PureLive-TV-x86_64-skia.apk"
+      }
+    ]
   },
   {
     "version": "3.0.0",
