@@ -65,6 +65,13 @@ class TvTabBar extends StatefulWidget {
   /// reload their content.
   final bool switchOnFocus;
 
+  /// Focus node for the first tab.
+  ///
+  /// A dialog that opens on the bar hands this in as its initial focus, so the
+  /// keyboard lands on a tab rather than on whatever the focus guard finds
+  /// first (which for a tabbed dialog body is the close button at the bottom).
+  final FocusNode? firstTabFocusNode;
+
   /// Focus-driven tab switch ([switchOnFocus]), customised: when set, a focus
   /// move calls this instead of [onTabChange], so the caller can switch the
   /// content while the keyboard stays on the tab bar (left/right keeps walking
@@ -80,6 +87,7 @@ class TvTabBar extends StatefulWidget {
     this.onTabRefresh,
     this.switchOnFocus = false,
     this.onTabFocused,
+    this.firstTabFocusNode,
   });
 
   @override
@@ -209,6 +217,7 @@ class _TvTabBarState extends State<TvTabBar> {
               padding: EdgeInsets.symmetric(horizontal: 6.sp),
               child: DpadFocusable(
                 effects: dynamicEffects,
+                focusNode: index == 0 ? widget.firstTabFocusNode : null,
                 onFocusChange: (focused) {
                   if (!focused || !widget.switchOnFocus || index == widget.currentIndex) return;
                   (widget.onTabFocused ?? widget.onTabChange)(index);

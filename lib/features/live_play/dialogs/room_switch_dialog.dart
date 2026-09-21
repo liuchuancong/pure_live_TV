@@ -35,6 +35,14 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog>
   /// straight into the newly shown list.
   final List<FocusNode?> _firstRowNodes = List<FocusNode?>.filled(3, null);
 
+  /// The tab bar's first tab: the dialog's opening focus.
+  ///
+  /// Without a node of our own the focus guard settled on whatever it found
+  /// first in the body — and with the close button inside the dialog that is
+  /// where the keyboard went, so the dialog opened with the highlight on
+  /// "close" instead of on the tabs.
+  final FocusNode _firstTabNode = FocusNode(debugLabel: 'room-switch/tab-first');
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +55,7 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog>
     for (final node in _firstRowNodes) {
       node?.dispose();
     }
+    _firstTabNode.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -151,6 +160,8 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog>
       width: 1080.sp,
       cancelText: i18n('close'),
       onCancel: () => Navigator.of(context).pop(),
+      // Open on the tabs: left/right walks them, Down enters the list.
+      initialFocusNode: _firstTabNode,
       child: SizedBox(
         height: 640.sp,
         child: Column(
@@ -161,6 +172,7 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog>
             // Material TabBar only tints the *selected* label, so a focused
             // tab looked no different from an idle one on the remote.
             TvTabBar(
+              firstTabFocusNode: _firstTabNode,
               // Content follows the focused tab: a focus move on the remote is
               // the intent here, so highlight and list can never disagree.
               switchOnFocus: true,
@@ -194,7 +206,6 @@ class _RoomSwitchDialogState extends ConsumerState<RoomSwitchDialog>
                     _RoomList(
                       rooms: live,
                       emptyHint: i18n('no_followed_room_live'),
-                      autofocusFirst: true,
                       firstRowNode: _firstRowNodes[0],
                     ),
                   ),
@@ -228,16 +239,11 @@ class _RoomList extends StatelessWidget {
   const _RoomList({
     required this.rooms,
     required this.emptyHint,
-    this.autofocusFirst = false,
     this.firstRowNode,
   });
 
   final List<LiveRoom> rooms;
   final String emptyHint;
-
-  /// Whether this list's first row should claim the dialog's opening focus —
-  /// true only for the tab the dialog is actually showing.
-  final bool autofocusFirst;
 
   /// Focus node of the first row, shared with the dialog so a tab change can
   /// focus it. May be null for a tab that has not been opened yet.
@@ -265,7 +271,6 @@ class _RoomList extends StatelessWidget {
       itemBuilder: (context, index) {
         final room = rooms[index];
         return DpadFocusable(
-          autofocus: autofocusFirst && index == 0,
           focusNode: index == 0 ? firstRowNode : null,
           onSelect: () => Navigator.of(context).pop(room),
           builder: (context, state, child) =>

@@ -1,4 +1,6 @@
 import 'package:pure_live/player/index.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
+import 'package:pure_live/shared/utils/text_util.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -22,6 +24,56 @@ import 'package:pure_live/features/live_play/widgets/video_player/playback_failu
 ///
 /// Every direction key is consumed here so focus cannot escape the player and
 /// leave the remote apparently dead.
+
+/// The audience read-out of the info bar.
+///
+/// Plain [LiveRoom.watching] rather than the settings-driven policy: this is a
+/// glanceable badge next to the streamer's name, and a missing value must simply
+/// not render instead of saying "unknown".
+String _audienceText(LiveRoom room) {
+  final String raw = room.watching.trim().isNotEmpty ? room.watching.trim() : room.onlineViewers.trim();
+  if (raw.isEmpty) return '';
+  final String readable = readableCount(raw);
+  return readable.isEmpty ? '' : readable;
+}
+
+/// A small label pill for the room-info bar: the platform badge (accent filled)
+/// and the audience read-out (plain).
+class _InfoPill extends StatelessWidget {
+  const _InfoPill({required this.label, this.icon, this.accent, this.filled = false});
+
+  final String label;
+  final IconData? icon;
+  final Color? accent;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = accent ?? Colors.white;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 3.sp),
+      decoration: BoxDecoration(
+        color: filled ? color.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8.sp),
+        border: Border.all(color: filled ? color.withValues(alpha: 0.75) : Colors.white.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 16.sp, color: Colors.white70),
+            SizedBox(width: 4.sp),
+          ],
+          Text(
+            label,
+            style: AppTextStyles.t16W600.copyWith(color: filled ? Colors.white : Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class TvVideoSurface extends ConsumerStatefulWidget {
   final LivePlayArgs args;
 
@@ -104,9 +156,10 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                 ],
               ),
             ),
-          // room info lives at the top of the screen, as in the reference player
-          // — but as a proper TV top bar, not a single 16sp text line: avatar,
-          // title, streamer with a platform badge, the wall clock, and back.
+          // Room info as one floating panel over the picture: avatar, title and
+          // a metadata line (streamer, platform, audience) on the left, the wall
+          // clock on the right. A gradient alone left the text floating on the
+          // video, which read as stray labels rather than as a bar.
           if (!showError && state.room != null && state.showControls)
             Positioned(
               left: 0,
@@ -114,76 +167,102 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
               top: 0,
               child: IgnorePointer(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 10.sp),
+                  padding: EdgeInsets.fromLTRB(20.sp, 12.sp, 20.sp, 18.sp),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.black.withValues(alpha: 0.75), Colors.black.withValues(alpha: 0.0)],
+                      colors: [Colors.black.withValues(alpha: 0.72), Colors.black.withValues(alpha: 0.0)],
                     ),
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TvCommonAvatar(avatarUrl: state.room!.avatar, fallbackName: state.room!.nick, radius: 28.sp),
-                      SizedBox(width: 16.sp),
                       Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              state.room!.title.trim().isNotEmpty ? state.room!.title.trim() : i18n('untitled_room'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t28W600.copyWith(color: Colors.white),
-                            ),
-                            SizedBox(height: 6.sp),
-                            Row(
-                              children: [
-                                if (state.room!.nick.isNotEmpty) ...[
-                                  Flexible(
-                                    child: Text(
-                                      state.room!.nick,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.42),
+                            borderRadius: BorderRadius.circular(18.sp),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+                          ),
+                          child: Row(
+                            children: [
+                              TvCommonAvatar(
+                                avatarUrl: state.room!.avatar,
+                                fallbackName: state.room!.nick,
+                                radius: 30.sp,
+                              ),
+                              SizedBox(width: 14.sp),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      state.room!.title.trim().isNotEmpty
+                                          ? state.room!.title.trim()
+                                          : i18n('untitled_room'),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.t20W500.copyWith(color: Colors.white70),
+                                      style: AppTextStyles.t28W600.copyWith(color: Colors.white),
                                     ),
-                                  ),
-                                  SizedBox(width: 10.sp),
-                                ],
-                                if (state.room!.platform.isNotEmpty)
-                                  Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 2.sp),
-                                    decoration: BoxDecoration(
-                                      color: tvTheme.focusColor.withValues(alpha: 0.25),
-                                      borderRadius: BorderRadius.circular(6.sp),
-                                      border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.8)),
+                                    SizedBox(height: 8.sp),
+                                    Row(
+                                      children: [
+                                        if (state.room!.platform.isNotEmpty) ...[
+                                          _InfoPill(
+                                            label: state.room!.platform.toUpperCase(),
+                                            accent: tvTheme.focusColor,
+                                            filled: true,
+                                          ),
+                                          SizedBox(width: 10.sp),
+                                        ],
+                                        if (state.room!.nick.isNotEmpty)
+                                          Flexible(
+                                            child: Text(
+                                              state.room!.nick,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                                            ),
+                                          ),
+                                        if (state.room!.nick.isNotEmpty &&
+                                            _audienceText(state.room!).isNotEmpty)
+                                          SizedBox(width: 10.sp),
+                                        if (_audienceText(state.room!).isNotEmpty)
+                                          _InfoPill(label: _audienceText(state.room!), icon: Icons.whatshot_rounded),
+                                      ],
                                     ),
-                                    child: Text(
-                                      state.room!.platform.toUpperCase(),
-                                      style: AppTextStyles.t16W600.copyWith(color: Colors.white),
-                                    ),
-                                  ),
-                              ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 14.sp),
+                      // Wall clock: a live stream has no duration, so the time a
+                      // viewer glances up for is the time of day.
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.42),
+                          borderRadius: BorderRadius.circular(18.sp),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(RemixIcons.time_line, size: 24.sp, color: Colors.white70),
+                            SizedBox(width: 8.sp),
+                            TvDigitalClock(
+                              format: 'HH:mm',
+                              style: AppTextStyles.t28W600.copyWith(color: Colors.white),
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(width: 16.sp),
-                      // Wall clock: a live stream has no duration, so the time a
-                      // viewer glances up for is the time of day.
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(RemixIcons.time_line, size: 26.sp, color: Colors.white70),
-                          SizedBox(width: 8.sp),
-                          TvDigitalClock(
-                            format: 'HH:mm',
-                            style: AppTextStyles.t28W600.copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      SizedBox(width: 16.sp),
                     ],
                   ),
                 ),
