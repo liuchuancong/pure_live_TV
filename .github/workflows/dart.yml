@@ -6,7 +6,7 @@ on:
       tag_name:
         description: 'Tag name for the release'
         required: false
-        default: 'v3.0.0'
+        default: 'v3.0.1'
       ref:
         description: 'Branch or tag to build (leave empty to use the triggering ref)'
         required: false

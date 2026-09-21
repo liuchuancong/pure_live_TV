@@ -3,7 +3,7 @@ import 'dart:math' as math;
 
 import 'package:pure_live/exports/exports.dart';
 
-class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
+class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRefresher {
   @override
   String id = Sites.douyinSite;
 
@@ -371,12 +371,24 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
   }
 
   @override
-  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) async {
-    if (roomId.length <= 16) {
-      return await getRoomDetailByWebRid(roomId);
-    }
-    return await getRoomDetailByRoomId(roomId);
-  }
+  Future<LiveRoom> getRoomDetail({required String platform, required String roomId}) =>
+      _roomDetail(roomId, includeEntryExtras: true);
+
+  /// Cheap metadata path used by favourite-card refreshes.
+  ///
+  /// Same room lookup as [getRoomDetail], minus everything only an entry into
+  /// the room needs: no anonymous-cookie request (`getRequestHeaders` issues a
+  /// whole HTTP call to `live.douyin.com/` when the user has no cookie stored)
+  /// and no danmaku credentials. A card refresh reads status, title, cover and
+  /// audience, and the favourite merge keeps the stored danmaku and playback
+  /// fields untouched, so nothing observable is lost.
+  ///
+  /// Failures propagate. The favourite refresh treats a thrown lookup as "the
+  /// platform could not be asked" and keeps the stored snapshot, whereas an
+  /// offline-looking fallback room would rewrite a live followed room as 离线.
+  @override
+  Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
+      _roomDetail(roomId, includeEntryExtras: false);
 
   @override
   Future<LiveRoom> getRoomDetailForRecording({required String platform, required String roomId}) {
@@ -385,7 +397,16 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     return getRoomDetail(platform: platform, roomId: roomId);
   }
 
-  Future<LiveRoom> getRoomDetailByRoomId(String roomId) async {
+  /// Resolves [roomId], which the platform stores either as a short web rid or
+  /// as a 19-digit room id.
+  Future<LiveRoom> _roomDetail(String roomId, {required bool includeEntryExtras}) async {
+    if (roomId.length <= 16) {
+      return await getRoomDetailByWebRid(roomId, includeEntryExtras: includeEntryExtras);
+    }
+    return await getRoomDetailByRoomId(roomId, includeEntryExtras: includeEntryExtras);
+  }
+
+  Future<LiveRoom> getRoomDetailByRoomId(String roomId, {bool includeEntryExtras = true}) async {
     // Read the room info.
     var roomData = await _getRoomDataByRoomId(roomId);
 
@@ -404,7 +425,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     // roomId is single use: every new broadcast gets a fresh one, so fall back
     // to the web rid whenever the room behind a roomId is no longer live.
     if (status == 4) {
-      var result = await getRoomDetailByWebRid(webRid);
+      var result = await getRoomDetailByWebRid(webRid, includeEntryExtras: includeEntryExtras);
       return result;
     }
 
@@ -412,8 +433,11 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     final totalViewers = roomStatus ? douyinTotalViewers(room) : '';
     final onlineViewers = roomStatus ? douyinOnlineViewers(room) : '';
     final nativeAudience = totalViewers.isNotEmpty ? totalViewers : onlineViewers;
-    // Mainly here to collect the cookie the danmaku WebSocket needs.
-    var headers = await getRequestHeaders();
+    // Mainly here to collect the cookie the danmaku WebSocket needs, so a
+    // refresh — which does not build danmaku credentials — skips the request.
+    final danmakuCookie = includeEntryExtras
+        ? (await getRequestHeaders())["cookie"]?.toString() ?? ""
+        : "";
 
     return LiveRoom(
       roomId: webRid,
@@ -432,33 +456,39 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
       liveStatus: roomStatus ? LiveStatus.live : LiveStatus.offline,
       introduction: owner["signature"].toString(),
       notice: "",
-      danmakuData: DouyinDanmakuArgs(
-        webRid: webRid,
-        roomId: roomId,
-        userId: userUniqueId,
-        cookie: headers["cookie"]?.toString() ?? "",
-      ),
+      danmakuData: includeEntryExtras
+          ? DouyinDanmakuArgs(
+              webRid: webRid,
+              roomId: roomId,
+              userId: userUniqueId,
+              cookie: danmakuCookie,
+            )
+          : null,
       data: room["stream_url"],
     );
   }
 
   /// Loads room info through a web rid.
   /// - [webRid] room rid
+  /// - [includeEntryExtras] false for a card refresh: see
+  ///   [getRoomDetailForRefresh].
   /// - Returns the room info.
-  Future<LiveRoom> getRoomDetailByWebRid(String webRid) async {
+  Future<LiveRoom> getRoomDetailByWebRid(String webRid, {bool includeEntryExtras = true}) async {
     try {
-      var result = await _getRoomDetailByWebRidApi(webRid);
+      var result = await _getRoomDetailByWebRidApi(webRid, includeEntryExtras: includeEntryExtras);
       return result;
     } catch (e) {
       CoreLog.error(e);
     }
-    return await _getRoomDetailByWebRidHtml(webRid);
+    return await _getRoomDetailByWebRidHtml(webRid, includeEntryExtras: includeEntryExtras);
   }
 
   /// Loads room info by calling the room API with a web rid.
   /// - [webRid] room rid
+  /// - [includeEntryExtras] false for a card refresh: see
+  ///   [getRoomDetailForRefresh].
   /// - Returns the room info.
-  Future<LiveRoom> _getRoomDetailByWebRidApi(String webRid) async {
+  Future<LiveRoom> _getRoomDetailByWebRidApi(String webRid, {bool includeEntryExtras = true}) async {
     // Read the room info.
     var data = await _getRoomDataByApi(webRid);
 
@@ -475,8 +505,11 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     final onlineViewers = roomStatus ? douyinOnlineViewers(roomData) : '';
     final nativeAudience = totalViewers.isNotEmpty ? totalViewers : onlineViewers;
 
-    // Mainly here to collect the cookie the danmaku WebSocket needs.
-    var headers = await getRequestHeaders();
+    // Mainly here to collect the cookie the danmaku WebSocket needs, so a
+    // refresh — which does not build danmaku credentials — skips the request.
+    final danmakuCookie = includeEntryExtras
+        ? (await getRequestHeaders())["cookie"]?.toString() ?? ""
+        : "";
     return LiveRoom(
       roomId: webRid,
       title: roomData["title"].toString(),
@@ -496,20 +529,24 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
       area: '',
       introduction: owner?["signature"]?.toString() ?? "",
       notice: "",
-      danmakuData: DouyinDanmakuArgs(
-        webRid: webRid,
-        roomId: roomId,
-        userId: userUniqueId,
-        cookie: headers["cookie"]?.toString() ?? "",
-      ),
+      danmakuData: includeEntryExtras
+          ? DouyinDanmakuArgs(
+              webRid: webRid,
+              roomId: roomId,
+              userId: userUniqueId,
+              cookie: danmakuCookie,
+            )
+          : null,
       data: roomStatus ? roomData["stream_url"] : {},
     );
   }
 
   /// Loads room info by fetching the room page and reading its HTML.
   /// - [webRid] room rid
+  /// - [includeEntryExtras] false for a card refresh: see
+  ///   [getRoomDetailForRefresh].
   /// - Returns the room info.
-  Future<LiveRoom> _getRoomDetailByWebRidHtml(String roomId) async {
+  Future<LiveRoom> _getRoomDetailByWebRidHtml(String roomId, {bool includeEntryExtras = true}) async {
     var detail = await _getRoomDataByHtml(roomId);
     var webRid = roomId;
 
@@ -524,8 +561,11 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
     final onlineViewers = roomStatus ? douyinOnlineViewers(roomInfo) : '';
     final nativeAudience = totalViewers.isNotEmpty ? totalViewers : onlineViewers;
 
-    // Mainly here to collect the cookie the danmaku WebSocket needs.
-    var headers = await getRequestHeaders();
+    // Mainly here to collect the cookie the danmaku WebSocket needs, so a
+    // refresh — which does not build danmaku credentials — skips the request.
+    final danmakuCookie = includeEntryExtras
+        ? (await getRequestHeaders())["cookie"]?.toString() ?? ""
+        : "";
 
     return LiveRoom(
       roomId: roomId,
@@ -546,12 +586,14 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver {
       platform: Sites.douyinSite,
       introduction: roomInfo["title"].toString(),
       notice: "",
-      danmakuData: DouyinDanmakuArgs(
-        webRid: webRid,
-        roomId: realRoomId,
-        userId: userUniqueId,
-        cookie: headers["cookie"]?.toString() ?? "",
-      ),
+      danmakuData: includeEntryExtras
+          ? DouyinDanmakuArgs(
+              webRid: webRid,
+              roomId: realRoomId,
+              userId: userUniqueId,
+              cookie: danmakuCookie,
+            )
+          : null,
       data: roomStatus ? roomInfo["stream_url"] : {},
     );
   }
