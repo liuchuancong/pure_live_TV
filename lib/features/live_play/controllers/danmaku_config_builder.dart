@@ -1,4 +1,5 @@
 import 'package:flame_barrage/flame_barrage.dart';
+import 'package:pure_live/player/utils/device_playback_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 
@@ -44,10 +45,20 @@ int resolveDanmakuFps(DanmakuSettingsModel settings, {double? refreshRate}) {
   if (!settings.danmakuAutoFps) return settings.danmakuFps.clamp(30, 240);
 
   final double? rate = refreshRate ?? _displayRefreshRate();
-  if (rate == null || !rate.isFinite || rate <= 0) return 60;
+  if (rate == null || !rate.isFinite || rate <= 0) return _lowEndCapped(60);
   // Halo/VRR panels report odd values; snapping to the usual steps keeps the engine's
   // telemetry stable and never leaves it below 30 or above 240.
-  return rate.round().clamp(30, 240);
+  return _lowEndCapped(rate.round().clamp(30, 240));
+}
+
+/// 低端设备（含仅 32 位 ARM 的盒子）把自动弹幕帧预算压到 30。
+///
+/// 弹幕是逐帧排版 + GPU 合成，在跟随屏幕刷新率的自动模式下（60Hz 电视 =
+/// 60fps 弹幕）会从视频渲染里抢帧；这类盒子本来就在硬解 1080p 上吃紧，
+/// 弹幕降到 30fps 换回的是视频不掉帧。手动档位是用户的明确选择，不在此处改。
+int _lowEndCapped(int fps) {
+  if (!DevicePlaybackProfile.current.lowEnd) return fps;
+  return fps > 30 ? 30 : fps;
 }
 
 double? _displayRefreshRate() {

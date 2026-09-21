@@ -12,13 +12,24 @@ import 'package:flutter/foundation.dart';
 /// to fall back to software decoding drops fewer frames instead of stuttering.
 ///
 /// The probe is deliberately conservative: a device is only treated as low-end
-/// when Android itself flags it ([AndroidDeviceInfo.isLowRamDevice]) or its
-/// total RAM is at most [lowRamThresholdMb]. An unreadable RAM figure never
-/// downgrades a device, so a failed probe leaves playback exactly as it was.
+/// when Android itself flags it ([AndroidDeviceInfo.isLowRamDevice]), its total
+/// RAM is at most [lowRamThresholdMb], or its SoC has **no 64-bit ABI at all**.
+/// An unreadable report never downgrades a device, so a failed probe leaves
+/// playback exactly as it was.
+///
+/// The 32-bit rule exists because RAM alone misses the worst boxes: plenty of
+/// arm32 Android TVs report 2 GB and therefore looked "capable", while their
+/// Cortex-A7/A53-class SoC has to drop frames on a 1080p60 stream. A device
+/// that advertises no 64-bit ABI is from that generation by definition.
 @immutable
 final class DevicePlaybackProfile {
   /// Creates a profile.
-  const DevicePlaybackProfile({required this.lowEnd, required this.cpuCores, this.totalRamMb});
+  const DevicePlaybackProfile({
+    required this.lowEnd,
+    required this.cpuCores,
+    this.totalRamMb,
+    this.is32BitOnly = false,
+  });
 
   /// The profile used before [ensureLoaded] ran, or when the probe failed.
   ///
@@ -41,6 +52,13 @@ final class DevicePlaybackProfile {
 
   /// Total physical RAM in megabytes, when the platform reports it.
   final int? totalRamMb;
+
+  /// Whether the SoC itself has no 64-bit ABI (arm32-only box).
+  ///
+  /// Read from the *device* ({@code supported64BitAbis}), not from the running
+  /// process: a 64-bit TV that happens to run our armeabi-v7a APK is fine and
+  /// must keep the normal pipeline.
+  final bool is32BitOnly;
 
   /// Threads handed to libavcodec for software decoding.
   ///
@@ -86,14 +104,25 @@ final class DevicePlaybackProfile {
     required bool isLowRamDevice,
     required int physicalRamSizeMb,
     required int cpuCores,
+    bool is32BitOnly = false,
   }) {
     final bool ramKnown = physicalRamSizeMb > 0;
     return DevicePlaybackProfile(
-      lowEnd: isLowRamDevice || (ramKnown && physicalRamSizeMb <= lowRamThresholdMb),
+      lowEnd: isLowRamDevice || (ramKnown && physicalRamSizeMb <= lowRamThresholdMb) || is32BitOnly,
       cpuCores: cpuCores,
       totalRamMb: ramKnown ? physicalRamSizeMb : null,
+      is32BitOnly: is32BitOnly,
     );
   }
+
+  /// Whether one Android ABI report describes a 32-bit-only SoC.
+  ///
+  /// An empty [AndroidDeviceInfo.supported64BitAbis] means the *device* cannot
+  /// run 64-bit code at all. An empty [AndroidDeviceInfo.supportedAbis] is a
+  /// report we could not read, and must not downgrade anything.
+  @visibleForTesting
+  static bool isArm32OnlyDevice(AndroidDeviceInfo info) =>
+      info.supportedAbis.isNotEmpty && info.supported64BitAbis.isEmpty;
 
   /// Overrides the cached profile; tests only.
   @visibleForTesting
@@ -106,6 +135,7 @@ final class DevicePlaybackProfile {
         isLowRamDevice: info.isLowRamDevice,
         physicalRamSizeMb: info.physicalRamSize,
         cpuCores: cores,
+        is32BitOnly: isArm32OnlyDevice(info),
       );
     } catch (_) {
       // A missing platform channel (tests, a stripped build) must not turn

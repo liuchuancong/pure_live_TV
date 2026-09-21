@@ -9,6 +9,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/player/core/playback_proxy_policy.dart';
+import 'package:pure_live/player/utils/device_playback_profile.dart';
 
 class AppInitializer {
   static final AppInitializer _instance = AppInitializer._internal();
@@ -57,6 +58,10 @@ class AppInitializer {
     // Restore the optional local log file before playback starts, so a release
     // build can be diagnosed from the device.
     unawaited(Log.init());
+
+    // 预热设备档案：弹幕帧预算在 UI 侧计算，可能早于播放器初始化（那时档案
+    // 还是 unknown，低端设备拿不到封顶），这里先探一次。
+    unawaited(DevicePlaybackProfile.ensureLoaded());
 
     // Danmaku sockets reuse the proxy policy configured for API and image traffic.
     configureWebSocketProxyRouting((uri) => PlaybackProxyPolicy.currentDirective());
