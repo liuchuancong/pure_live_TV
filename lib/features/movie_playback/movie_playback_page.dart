@@ -304,11 +304,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
         children: [
           Text(
             i18n('movie_support_sites'),
-            style: AppTextStyles.t18W500.copyWith(
-              fontSize: 20.sp,
-              color: currentTvTheme.secondaryTextColor,
-              height: 1,
-            ),
+            style: AppTextStyles.t18W500.copyWith(fontSize: 20.sp, color: currentTvTheme.secondaryTextColor, height: 1),
           ),
           SizedBox(height: 12.sp),
           Flexible(
