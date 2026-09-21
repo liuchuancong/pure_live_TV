@@ -206,8 +206,14 @@ final class BetterPlayerAdapter implements PlayerAdapter {
 
     _state = _state.disposingState();
     _removeListener();
-    _controller?.dispose();
+    // better_player returns early from dispose() when autoDispose is false, and
+    // this adapter sets it false to own the lifecycle itself. Without
+    // forceDispose the native ExoPlayer survives - decoder, surface and audio
+    // included - so the next engine switch fights it for the hardware decoder
+    // and a closed room keeps playing behind the UI.
+    final controller = _controller;
     _controller = null;
+    controller?.dispose(forceDispose: true);
 
     _state = _state.disposedState();
     if (!_eventController.isClosed) {

@@ -297,7 +297,7 @@ final List<WallpaperApiGroup> kWallpaperApiGroups = <WallpaperApiGroup>[
     sources: <WallpaperApiSource>[
       const WallpaperApiSource(name: '小晓API', url: 'https://v2.xxapi.cn/api/wallpaper', kind: WallpaperApiKind.json),
       const WallpaperApiSource(name: 'mtyqx', url: 'https://api.mtyqx.cn/tapi/random.php'),
-      const WallpaperApiSource(name: 'picsum', url: 'https://picsum.photos/1280/720/?blur=10'),
+      const WallpaperApiSource(name: 'picsum', url: 'https://picsum.photos/1920/1080'),
       const WallpaperApiSource(name: 'dmoe', url: 'https://www.dmoe.cc/random.php'),
       const WallpaperApiSource(name: 'loliApi', url: 'https://www.loliapi.com/bg/'),
       const WallpaperApiSource(name: 'catvod', url: 'https://pictures.catvod.eu.org/'),

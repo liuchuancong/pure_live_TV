@@ -150,6 +150,15 @@ final class LivePlayerFacade {
       case LivePlaybackState.preparing:
         _stateSubject.add(PlayerState.preparing);
       case LivePlaybackState.buffering:
+        // media_core declares buffering the moment open() returns, and an engine
+        // that reports `playing` from inside its own open() has already been
+        // overtaken by it. better_player does exactly that - its play event is
+        // posted synchronously, so the playing state always lands first and this
+        // buffering becomes the last word. A live source may never produce
+        // another state change, which leaves the spinner on screen over a
+        // running stream. The adapter is the authority on what it is doing, so
+        // only a buffering it agrees with is forwarded.
+        if (_controller.handle?.adapter.state.playing ?? false) return;
         _stateSubject.add(PlayerState.buffering);
       case LivePlaybackState.playing:
         _stateSubject.add(PlayerState.playing);
