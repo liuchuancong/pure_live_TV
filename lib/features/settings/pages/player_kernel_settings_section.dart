@@ -82,13 +82,6 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
               value: playerState.enableCodec,
               onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),
             ),
-            TvSettingsSwitchTile(
-              title: i18n('force_destroy_player'),
-              subtitle: i18n('force_destroy_player_subtitle'),
-              icon: Remix.shut_down_line,
-              value: playerState.useHardStopOnExit,
-              onChanged: (v) => player.updateSettings(playerState.copyWith(useHardStopOnExit: v)),
-            ),
           ],
         ),
         // Everything below configures mpv itself, so the reference shows it only

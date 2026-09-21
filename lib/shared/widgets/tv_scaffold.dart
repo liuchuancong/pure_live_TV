@@ -78,7 +78,9 @@ class _BackgroundLayer extends StatelessWidget {
           BackgroundSource.networkImage => _ImageBackground(config: config),
           BackgroundSource.assetVideo ||
           BackgroundSource.localVideo ||
-          BackgroundSource.networkVideo => const _VideoBackground(),
+          // 刻意不加 const：const 实例每次都 identical，Element.updateChild
+          // 会跳过重建，播放器/海报帧的变化就刷不出来（影片层继续画旧帧）。
+          BackgroundSource.networkVideo => _VideoBackground(),
         };
       },
     );
@@ -240,7 +242,16 @@ class _VideoBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = SettingsService.to.bg.videoController;
+    final bg = SettingsService.to.bg;
+
+    // 播放器（直播/点播）正在播放时，壁纸解码器已被释放，这里改画播放前截下
+    // 的那张静态帧：背景不再参与视频解码，也就不和直播间抢 Surface 了。
+    final poster = bg.posterFrame;
+    if (poster != null) {
+      return SizedBox.expand(child: Image.memory(poster, fit: BoxFit.cover, gaplessPlayback: true));
+    }
+
+    final controller = bg.videoController;
     // 播放器按需创建：切到视频壁纸的首帧可能还没有控制器，先画黑底。
     if (controller == null) return const SizedBox.expand(child: ColoredBox(color: Colors.black));
 

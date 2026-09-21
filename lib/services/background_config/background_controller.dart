@@ -145,6 +145,63 @@ class BackgroundController extends _$BackgroundController {
     player.setPlaylistMode(PlaylistMode.loop);
   }
 
+  /// 播放器（直播/点播）正在播放时，背景层改用一张静态海报帧。
+  ///
+  /// 两个视频层同时解码时，Android TV（模拟器上更明显）的 Surface / 硬解
+  /// 资源会互相抢占，表现就是壁纸和直播画面一起闪。所以播放开始时不只暂停：
+  /// 先截下当前帧当海报，再彻底释放壁纸播放器的解码器——播放期间背景层只画
+  /// 这张静态图，截帧失败才退回"暂停保留最后一帧"。
+  bool _playbackSuspended = false;
+
+  /// 播放期间展示的静态帧；为空表示没有海报可用（此时播放器是暂停状态）。
+  Uint8List? _posterFrame;
+  Uint8List? get posterFrame => _posterFrame;
+
+  bool get isPlaybackSuspended => _playbackSuspended;
+
+  /// 由播放端在 播放/停止 时调用。
+  Future<void> setPlaybackActive(bool active) async {
+    if (_playbackSuspended == active) return;
+    _playbackSuspended = active;
+
+    if (active) {
+      // 背景不是视频时没有解码器要释放。
+      if (!_isVideoSource) return;
+      final player = _videoPlayer;
+      if (player == null) return;
+      Uint8List? frame;
+      try {
+        frame = await player.screenshot(format: 'image/jpeg');
+      } catch (_) {
+        frame = null;
+      }
+      if (frame != null && frame.isNotEmpty) {
+        _posterFrame = frame;
+        _disposeVideoPlayer();
+        // 播放器没了，通知背景层改画静态帧（否则它拿到 null 会画黑底）。
+        _configStream.add(state);
+      } else {
+        // 截不到帧（部分硬解组合不支持）：退回暂停保留最后一帧，同样不会
+        // 两路同时解码。
+        await player.pause();
+      }
+      return;
+    }
+
+    // 播放结束：先丢掉海报帧——期间背景可能已经被换成图片或其他视频，
+    // 留着旧帧会让下一次切回视频壁纸时显示错的那一张。
+    if (_posterFrame != null) {
+      _posterFrame = null;
+      _configStream.add(state);
+    }
+    if (_isVideoSource) await reloadBackgroundVideo();
+  }
+
+  bool get _isVideoSource =>
+      state.source == BackgroundSource.assetVideo ||
+      state.source == BackgroundSource.localVideo ||
+      state.source == BackgroundSource.networkVideo;
+
   /// 彻底释放背景播放器（强制销毁路径）。
   void _disposeVideoPlayer() {
     final player = _videoPlayer;
@@ -161,18 +218,23 @@ class BackgroundController extends _$BackgroundController {
       _ => null,
     };
     if (src != null && src.isNotEmpty) {
+      // 播放期间不分配解码器：背景层此刻画的是海报帧，等播放结束再起播
+      // （见 setPlaybackActive）。
+      if (_playbackSuspended) return;
+      final bool created = _videoPlayer == null;
       _ensureVideoPlayer();
-      await _videoPlayer?.open(Media(src), play: true);
+      // 播放器是懒创建的，而背景层是在 configChanges 重建时读到控制器：
+      // 刚创建出来的这一帧它拿到的还是 null，必须再发一次通知让它取到。
+      if (created) _configStream.add(state);
+      // 播放期间挂起的壁纸保持暂停：起播后由播放端在结束时恢复。
+      await _videoPlayer?.open(Media(src), play: !_playbackSuspended);
       return;
     }
 
-    // 不再是视频壁纸：开启“播放器强制销毁”时直接释放解码器，否则只暂停，
-    // 下次切回视频壁纸可以复用（默认省电、避免重建 Surface）。
-    if (SettingsService.to.playerState.useHardStopOnExit) {
-      _disposeVideoPlayer();
-    } else {
-      await _videoPlayer?.stop();
-    }
+    // 不再是视频壁纸：一律释放解码器，不留常驻实例。
+    _disposeVideoPlayer();
+    // 控制器已释放，通知背景层别再拿它渲染。
+    _configStream.add(state);
   }
 
   void setNone() => _updateState(state.copyWith(source: BackgroundSource.none));

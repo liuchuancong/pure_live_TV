@@ -118,16 +118,29 @@ final class LivePlayerFacade {
     switch (event) {
       case PlayerAdapterPlaying():
         _playingSubject.add(true);
+        _syncBackgroundVideoSuspension(true);
       case PlayerAdapterPaused():
         _playingSubject.add(false);
+        _syncBackgroundVideoSuspension(false);
       case PlayerAdapterStopped():
         _playingSubject.add(false);
+        _syncBackgroundVideoSuspension(false);
       case PlayerAdapterVideoSizeChanged(width: final w, height: final h):
         _widthSubject.add(w);
         _heightSubject.add(h);
         isVerticalVideo.add(h >= w);
       default:
         break;
+    }
+  }
+
+  /// 播放期间挂起壁纸视频（视频壁纸与直播间视频同时解码会互相抢 Surface，
+  /// 在 Android TV 上表现为两边画面一起闪）。
+  void _syncBackgroundVideoSuspension(bool playing) {
+    try {
+      unawaited(SettingsService.to.bg.setPlaybackActive(playing));
+    } catch (_) {
+      // 设置未就绪（例如启动早期的测试环境）时忽略：壁纸层保持原状即可。
     }
   }
 
@@ -209,17 +222,16 @@ final class LivePlayerFacade {
   /// Resumes playback.
   Future<void> resume() => _controller.resume();
 
-  /// Stops playback.
+  /// Stops playback and releases the player.
   ///
-  /// With `useHardStopOnExit` the player is released; the default
-  /// soft stop only pauses so the next room reuses the warm
-  /// instance.
+  /// 离开直播间一律彻底释放，不再保留热实例复用：复用只省下一次重建开销，
+  /// 代价是硬解实例在后台常驻（电视盒子上尤其明显）。所以原先的
+  /// `useHardStopOnExit` 开关连同“暂停复用”分支一起去掉了。
   Future<void> close() async {
-    if (SettingsService.to.playerState.useHardStopOnExit) {
-      await _controller.close();
-      return;
-    }
-    await _controller.pause();
+    // 播放结束：无论下面走哪条路，都把壁纸视频还回去（硬关不保证派发
+    // Stopped 事件，不在这里兜底壁纸会一直停在暂停帧）。
+    _syncBackgroundVideoSuspension(false);
+    await _controller.close();
   }
 
   /// Sets the volume (0.0–1.0).

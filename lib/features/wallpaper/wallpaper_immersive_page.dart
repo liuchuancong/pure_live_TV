@@ -82,6 +82,19 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
     player.setVolume(100);
   }
 
+  /// 彻底释放本页的播放器。
+  ///
+  /// 设为视频壁纸后，后台背景层会自己播同一个视频；开启“播放器强制销毁”时
+  /// 释放这里的解码器，避免两份硬解与重叠的声音。画面退回封面图（接着按 OK
+  /// 仍是“设为壁纸”，需要重新预览时按 ↓ 翻走再翻回来即可重建）。
+  void _destroyVideoPlayer() {
+    final player = _videoPlayer;
+    _videoPlayer = null;
+    _videoController = null;
+    _openedUrl = null;
+    unawaited(player?.dispose());
+  }
+
   Future<void> _openVideo(String url) async {
     final player = _videoPlayer;
     if (player == null || url.isEmpty) return;
@@ -109,6 +122,8 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
     setState(() => _applying = true);
     try {
       await _sequence.applyCurrent();
+      // 视频壁纸已交给后台背景层，本页不再保留第二份解码器。
+      if (_sequence.isVideo) _destroyVideoPlayer();
       if (mounted) ToastUtil.show(i18nOr('wallpaper_set_done', 'Background updated'));
     } catch (error) {
       if (mounted) {
@@ -187,11 +202,15 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
     final item = _sequence.itemAt(items);
 
     if (_sequence.isVideo && item.file.isNotEmpty && item.file != _openedUrl) {
-      _openedUrl = item.file;
-      final String url = item.file;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) unawaited(_openVideo(url));
-      });
+      // 刚被释放时不重建：等翻到别的条目（URL 变化）再自动播放。
+      final bool releasedAfterApply = _videoPlayer == null;
+      if (!releasedAfterApply) {
+        _openedUrl = item.file;
+        final String url = item.file;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) unawaited(_openVideo(url));
+        });
+      }
     }
 
     return PopScope(

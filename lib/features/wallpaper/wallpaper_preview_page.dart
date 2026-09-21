@@ -281,10 +281,9 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             bg.setGradient(colors);
         }
       }
-      // 视频壁纸切换后，预览页不再需要自己这份解码器。
-      if (_isVideo && SettingsService.to.playerState.useHardStopOnExit) {
-        _destroyVideoPlayer();
-      }
+      // 视频壁纸切换后，预览页不再需要自己这份解码器：释放掉，避免与后台
+      // 壁纸播放器同时硬解同一个视频（也多一份重叠的声音）。
+      if (_isVideo) _destroyVideoPlayer();
       if (mounted) ToastUtil.show(i18nOr('wallpaper_set_done', 'Background updated'));
     } catch (error) {
       if (mounted) {
@@ -454,10 +453,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
 
     if (_isVideo && item.file.isNotEmpty && item.file != _openedVideoUrl) {
-      // 已开启强制销毁且刚被释放时(播放器与封面都在)，不要立刻重建：等用户
-      // 明确按播放键再拉起，否则释放就白做了。翻到别的条目则正常自动播放。
-      final bool releasedBySetting = _videoPlayer == null && SettingsService.to.playerState.useHardStopOnExit;
-      if (!releasedBySetting) {
+      // 刚被上面这条释放过时不立刻重建：等用户明确按播放键再拉起，否则释放
+      // 就白做了。翻到别的条目(URL 变化)则正常自动播放。
+      final bool releasedAfterApply = _videoPlayer == null && !_videoPlaying;
+      if (!releasedAfterApply) {
         _openedVideoUrl = item.file;
         final String url = item.file;
         WidgetsBinding.instance.addPostFrameCallback((_) {
