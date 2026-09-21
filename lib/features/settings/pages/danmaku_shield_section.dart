@@ -15,7 +15,10 @@ import 'package:pure_live/shared/widgets/index.dart';
 
 /// Keyword shield, in the tag page's shape: the phone QR on top, an add dialog
 /// and a left-aligned chip cloud. Its own page and web route
-/// ([WebRemoteRouter.danmakuFilter]); the blocked-user list is a page of its own.
+/// ([WebRemoteRouter.danmakuFilter]).
+///
+/// This is the only danmaku blocklist: filtering by author was removed, so the
+/// page no longer offers a user mode and the phone has no second list to edit.
 class DanmakuShieldSectionPage extends ConsumerStatefulWidget {
   const DanmakuShieldSectionPage({super.key});
 
@@ -24,6 +27,10 @@ class DanmakuShieldSectionPage extends ConsumerStatefulWidget {
 }
 
 class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPage> {
+  /// The notifier whose phone callback this page owns; `dispose` must not touch
+  /// `ref` (riverpod asserts on using it after the widget is deactivated).
+  TvRemoteReceiver? _remote;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +40,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
   void _initRemote() {
     if (!mounted) return;
     final notifier = ref.read(tvRemoteReceiverProvider.notifier);
+    _remote = notifier;
     notifier.onDanmakuFilterUpdated = _syncFromRemote;
     notifier.seedDanmakuFilters(SettingsService.to.favState.shieldList);
     final remoteState = ref.read(tvRemoteReceiverProvider);
@@ -42,7 +50,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
 
   @override
   void dispose() {
-    ref.read(tvRemoteReceiverProvider.notifier).onDanmakuFilterUpdated = null;
+    _remote?.onDanmakuFilterUpdated = null;
     super.dispose();
   }
 
@@ -60,7 +68,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
   Future<void> _add() async {
     final added = await TvDialogUtils.show<bool>(
       context: context,
-      builder: (_) => const BlockEntryAddDialog(isUser: false),
+      builder: (_) => const BlockEntryAddDialog(),
     );
     if (added == true && mounted) setState(() {});
   }
@@ -134,10 +142,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
 /// Add dialog, in the tag page's shape: one required input, validated in
 /// place — empty and duplicates keep the dialog open with an error line.
 class BlockEntryAddDialog extends ConsumerStatefulWidget {
-  const BlockEntryAddDialog({super.key, required this.isUser});
-
-  /// Adds a blocked user instead of a keyword.
-  final bool isUser;
+  const BlockEntryAddDialog({super.key});
 
   @override
   ConsumerState<BlockEntryAddDialog> createState() => _BlockEntryAddDialogState();
@@ -182,13 +187,13 @@ class _BlockEntryAddDialogState extends ConsumerState<BlockEntryAddDialog> {
     }
     final container = ProviderScope.containerOf(context);
     final state = container.read(favoriteRoomControllerProvider);
-    final list = widget.isUser ? state.blockedDanmakuUsers : state.shieldList;
+    final list = state.shieldList;
     if (list.any((e) => e.trim().toLowerCase() == value.toLowerCase())) {
       setState(() => _error = i18nOr('block_entry_duplicate', '该条目已存在'));
       return;
     }
     final fav = container.read(favoriteRoomControllerProvider.notifier);
-    final ok = widget.isUser ? fav.addBlockedDanmakuUser(value) : fav.addShieldList(value);
+    final ok = fav.addShieldList(value);
     if (!ok) {
       setState(() => _error = i18nOr('block_entry_invalid', '条目无效'));
       return;
@@ -199,7 +204,7 @@ class _BlockEntryAddDialogState extends ConsumerState<BlockEntryAddDialog> {
   @override
   Widget build(BuildContext context) {
     return TvDialog(
-      title: widget.isUser ? i18nOr('block_add_user', '添加屏蔽用户') : i18nOr('block_add_keyword', '添加屏蔽关键词'),
+      title: i18nOr('block_add_keyword', '添加屏蔽关键词'),
       confirmText: i18n('confirm'),
       cancelText: i18n('cancel'),
       onConfirm: _submit,
@@ -212,7 +217,7 @@ class _BlockEntryAddDialogState extends ConsumerState<BlockEntryAddDialog> {
             TvInputField(
               controller: _controller,
               focusNode: _focusNode,
-              hint: widget.isUser ? i18n('block_danmaku_user') : i18n('block_danmaku_keyword'),
+              hint: i18n('block_danmaku_keyword'),
             ),
             if (_error.isNotEmpty)
               Padding(

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$FavoriteSettingsModel {
 
- List<String> get shieldList; List<String> get blockedDanmakuUsers; int get siteCatalogMigration; List<String> get hotAreasList; String get preferPlatform; List<LiveRoom> get favoriteRooms; List<LiveArea> get favoriteAreas;
+ List<String> get shieldList; int get siteCatalogMigration; List<String> get hotAreasList; String get preferPlatform; List<LiveRoom> get favoriteRooms; List<LiveArea> get favoriteAreas;
 /// Create a copy of FavoriteSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $FavoriteSettingsModelCopyWith<FavoriteSettingsModel> get copyWith => _$Favorite
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteSettingsModel&&const DeepCollectionEquality().equals(other.shieldList, shieldList)&&const DeepCollectionEquality().equals(other.blockedDanmakuUsers, blockedDanmakuUsers)&&(identical(other.siteCatalogMigration, siteCatalogMigration) || other.siteCatalogMigration == siteCatalogMigration)&&const DeepCollectionEquality().equals(other.hotAreasList, hotAreasList)&&(identical(other.preferPlatform, preferPlatform) || other.preferPlatform == preferPlatform)&&const DeepCollectionEquality().equals(other.favoriteRooms, favoriteRooms)&&const DeepCollectionEquality().equals(other.favoriteAreas, favoriteAreas));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteSettingsModel&&const DeepCollectionEquality().equals(other.shieldList, shieldList)&&(identical(other.siteCatalogMigration, siteCatalogMigration) || other.siteCatalogMigration == siteCatalogMigration)&&const DeepCollectionEquality().equals(other.hotAreasList, hotAreasList)&&(identical(other.preferPlatform, preferPlatform) || other.preferPlatform == preferPlatform)&&const DeepCollectionEquality().equals(other.favoriteRooms, favoriteRooms)&&const DeepCollectionEquality().equals(other.favoriteAreas, favoriteAreas));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(shieldList),const DeepCollectionEquality().hash(blockedDanmakuUsers),siteCatalogMigration,const DeepCollectionEquality().hash(hotAreasList),preferPlatform,const DeepCollectionEquality().hash(favoriteRooms),const DeepCollectionEquality().hash(favoriteAreas));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(shieldList),siteCatalogMigration,const DeepCollectionEquality().hash(hotAreasList),preferPlatform,const DeepCollectionEquality().hash(favoriteRooms),const DeepCollectionEquality().hash(favoriteAreas));
 
 @override
 String toString() {
-  return 'FavoriteSettingsModel(shieldList: $shieldList, blockedDanmakuUsers: $blockedDanmakuUsers, siteCatalogMigration: $siteCatalogMigration, hotAreasList: $hotAreasList, preferPlatform: $preferPlatform, favoriteRooms: $favoriteRooms, favoriteAreas: $favoriteAreas)';
+  return 'FavoriteSettingsModel(shieldList: $shieldList, siteCatalogMigration: $siteCatalogMigration, hotAreasList: $hotAreasList, preferPlatform: $preferPlatform, favoriteRooms: $favoriteRooms, favoriteAreas: $favoriteAreas)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $FavoriteSettingsModelCopyWith<$Res>  {
   factory $FavoriteSettingsModelCopyWith(FavoriteSettingsModel value, $Res Function(FavoriteSettingsModel) _then) = _$FavoriteSettingsModelCopyWithImpl;
 @useResult
 $Res call({
- List<String> shieldList, List<String> blockedDanmakuUsers, int siteCatalogMigration, List<String> hotAreasList, String preferPlatform, List<LiveRoom> favoriteRooms, List<LiveArea> favoriteAreas
+ List<String> shieldList, int siteCatalogMigration, List<String> hotAreasList, String preferPlatform, List<LiveRoom> favoriteRooms, List<LiveArea> favoriteAreas
 });
 
 
@@ -65,10 +65,9 @@ class _$FavoriteSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of FavoriteSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? shieldList = null,Object? blockedDanmakuUsers = null,Object? siteCatalogMigration = null,Object? hotAreasList = null,Object? preferPlatform = null,Object? favoriteRooms = null,Object? favoriteAreas = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? shieldList = null,Object? siteCatalogMigration = null,Object? hotAreasList = null,Object? preferPlatform = null,Object? favoriteRooms = null,Object? favoriteAreas = null,}) {
   return _then(_self.copyWith(
 shieldList: null == shieldList ? _self.shieldList : shieldList // ignore: cast_nullable_to_non_nullable
-as List<String>,blockedDanmakuUsers: null == blockedDanmakuUsers ? _self.blockedDanmakuUsers : blockedDanmakuUsers // ignore: cast_nullable_to_non_nullable
 as List<String>,siteCatalogMigration: null == siteCatalogMigration ? _self.siteCatalogMigration : siteCatalogMigration // ignore: cast_nullable_to_non_nullable
 as int,hotAreasList: null == hotAreasList ? _self.hotAreasList : hotAreasList // ignore: cast_nullable_to_non_nullable
 as List<String>,preferPlatform: null == preferPlatform ? _self.preferPlatform : preferPlatform // ignore: cast_nullable_to_non_nullable
@@ -159,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> shieldList,  List<String> blockedDanmakuUsers,  int siteCatalogMigration,  List<String> hotAreasList,  String preferPlatform,  List<LiveRoom> favoriteRooms,  List<LiveArea> favoriteAreas)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> shieldList,  int siteCatalogMigration,  List<String> hotAreasList,  String preferPlatform,  List<LiveRoom> favoriteRooms,  List<LiveArea> favoriteAreas)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FavoriteSettingsModel() when $default != null:
-return $default(_that.shieldList,_that.blockedDanmakuUsers,_that.siteCatalogMigration,_that.hotAreasList,_that.preferPlatform,_that.favoriteRooms,_that.favoriteAreas);case _:
+return $default(_that.shieldList,_that.siteCatalogMigration,_that.hotAreasList,_that.preferPlatform,_that.favoriteRooms,_that.favoriteAreas);case _:
   return orElse();
 
 }
@@ -180,10 +179,10 @@ return $default(_that.shieldList,_that.blockedDanmakuUsers,_that.siteCatalogMigr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> shieldList,  List<String> blockedDanmakuUsers,  int siteCatalogMigration,  List<String> hotAreasList,  String preferPlatform,  List<LiveRoom> favoriteRooms,  List<LiveArea> favoriteAreas)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> shieldList,  int siteCatalogMigration,  List<String> hotAreasList,  String preferPlatform,  List<LiveRoom> favoriteRooms,  List<LiveArea> favoriteAreas)  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteSettingsModel():
-return $default(_that.shieldList,_that.blockedDanmakuUsers,_that.siteCatalogMigration,_that.hotAreasList,_that.preferPlatform,_that.favoriteRooms,_that.favoriteAreas);case _:
+return $default(_that.shieldList,_that.siteCatalogMigration,_that.hotAreasList,_that.preferPlatform,_that.favoriteRooms,_that.favoriteAreas);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +199,10 @@ return $default(_that.shieldList,_that.blockedDanmakuUsers,_that.siteCatalogMigr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> shieldList,  List<String> blockedDanmakuUsers,  int siteCatalogMigration,  List<String> hotAreasList,  String preferPlatform,  List<LiveRoom> favoriteRooms,  List<LiveArea> favoriteAreas)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> shieldList,  int siteCatalogMigration,  List<String> hotAreasList,  String preferPlatform,  List<LiveRoom> favoriteRooms,  List<LiveArea> favoriteAreas)?  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteSettingsModel() when $default != null:
-return $default(_that.shieldList,_that.blockedDanmakuUsers,_that.siteCatalogMigration,_that.hotAreasList,_that.preferPlatform,_that.favoriteRooms,_that.favoriteAreas);case _:
+return $default(_that.shieldList,_that.siteCatalogMigration,_that.hotAreasList,_that.preferPlatform,_that.favoriteRooms,_that.favoriteAreas);case _:
   return null;
 
 }
@@ -215,7 +214,7 @@ return $default(_that.shieldList,_that.blockedDanmakuUsers,_that.siteCatalogMigr
 @JsonSerializable()
 
 class _FavoriteSettingsModel implements FavoriteSettingsModel {
-  const _FavoriteSettingsModel({final  List<String> shieldList = const [], final  List<String> blockedDanmakuUsers = const [], this.siteCatalogMigration = 0, final  List<String> hotAreasList = const [], this.preferPlatform = '', final  List<LiveRoom> favoriteRooms = const [], final  List<LiveArea> favoriteAreas = const []}): _shieldList = shieldList,_blockedDanmakuUsers = blockedDanmakuUsers,_hotAreasList = hotAreasList,_favoriteRooms = favoriteRooms,_favoriteAreas = favoriteAreas;
+  const _FavoriteSettingsModel({final  List<String> shieldList = const [], this.siteCatalogMigration = 0, final  List<String> hotAreasList = const [], this.preferPlatform = '', final  List<LiveRoom> favoriteRooms = const [], final  List<LiveArea> favoriteAreas = const []}): _shieldList = shieldList,_hotAreasList = hotAreasList,_favoriteRooms = favoriteRooms,_favoriteAreas = favoriteAreas;
   factory _FavoriteSettingsModel.fromJson(Map<String, dynamic> json) => _$FavoriteSettingsModelFromJson(json);
 
  final  List<String> _shieldList;
@@ -223,13 +222,6 @@ class _FavoriteSettingsModel implements FavoriteSettingsModel {
   if (_shieldList is EqualUnmodifiableListView) return _shieldList;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_shieldList);
-}
-
- final  List<String> _blockedDanmakuUsers;
-@override@JsonKey() List<String> get blockedDanmakuUsers {
-  if (_blockedDanmakuUsers is EqualUnmodifiableListView) return _blockedDanmakuUsers;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_blockedDanmakuUsers);
 }
 
 @override@JsonKey() final  int siteCatalogMigration;
@@ -269,16 +261,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteSettingsModel&&const DeepCollectionEquality().equals(other._shieldList, _shieldList)&&const DeepCollectionEquality().equals(other._blockedDanmakuUsers, _blockedDanmakuUsers)&&(identical(other.siteCatalogMigration, siteCatalogMigration) || other.siteCatalogMigration == siteCatalogMigration)&&const DeepCollectionEquality().equals(other._hotAreasList, _hotAreasList)&&(identical(other.preferPlatform, preferPlatform) || other.preferPlatform == preferPlatform)&&const DeepCollectionEquality().equals(other._favoriteRooms, _favoriteRooms)&&const DeepCollectionEquality().equals(other._favoriteAreas, _favoriteAreas));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteSettingsModel&&const DeepCollectionEquality().equals(other._shieldList, _shieldList)&&(identical(other.siteCatalogMigration, siteCatalogMigration) || other.siteCatalogMigration == siteCatalogMigration)&&const DeepCollectionEquality().equals(other._hotAreasList, _hotAreasList)&&(identical(other.preferPlatform, preferPlatform) || other.preferPlatform == preferPlatform)&&const DeepCollectionEquality().equals(other._favoriteRooms, _favoriteRooms)&&const DeepCollectionEquality().equals(other._favoriteAreas, _favoriteAreas));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_shieldList),const DeepCollectionEquality().hash(_blockedDanmakuUsers),siteCatalogMigration,const DeepCollectionEquality().hash(_hotAreasList),preferPlatform,const DeepCollectionEquality().hash(_favoriteRooms),const DeepCollectionEquality().hash(_favoriteAreas));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_shieldList),siteCatalogMigration,const DeepCollectionEquality().hash(_hotAreasList),preferPlatform,const DeepCollectionEquality().hash(_favoriteRooms),const DeepCollectionEquality().hash(_favoriteAreas));
 
 @override
 String toString() {
-  return 'FavoriteSettingsModel(shieldList: $shieldList, blockedDanmakuUsers: $blockedDanmakuUsers, siteCatalogMigration: $siteCatalogMigration, hotAreasList: $hotAreasList, preferPlatform: $preferPlatform, favoriteRooms: $favoriteRooms, favoriteAreas: $favoriteAreas)';
+  return 'FavoriteSettingsModel(shieldList: $shieldList, siteCatalogMigration: $siteCatalogMigration, hotAreasList: $hotAreasList, preferPlatform: $preferPlatform, favoriteRooms: $favoriteRooms, favoriteAreas: $favoriteAreas)';
 }
 
 
@@ -289,7 +281,7 @@ abstract mixin class _$FavoriteSettingsModelCopyWith<$Res> implements $FavoriteS
   factory _$FavoriteSettingsModelCopyWith(_FavoriteSettingsModel value, $Res Function(_FavoriteSettingsModel) _then) = __$FavoriteSettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
- List<String> shieldList, List<String> blockedDanmakuUsers, int siteCatalogMigration, List<String> hotAreasList, String preferPlatform, List<LiveRoom> favoriteRooms, List<LiveArea> favoriteAreas
+ List<String> shieldList, int siteCatalogMigration, List<String> hotAreasList, String preferPlatform, List<LiveRoom> favoriteRooms, List<LiveArea> favoriteAreas
 });
 
 
@@ -306,10 +298,9 @@ class __$FavoriteSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of FavoriteSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? shieldList = null,Object? blockedDanmakuUsers = null,Object? siteCatalogMigration = null,Object? hotAreasList = null,Object? preferPlatform = null,Object? favoriteRooms = null,Object? favoriteAreas = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? shieldList = null,Object? siteCatalogMigration = null,Object? hotAreasList = null,Object? preferPlatform = null,Object? favoriteRooms = null,Object? favoriteAreas = null,}) {
   return _then(_FavoriteSettingsModel(
 shieldList: null == shieldList ? _self._shieldList : shieldList // ignore: cast_nullable_to_non_nullable
-as List<String>,blockedDanmakuUsers: null == blockedDanmakuUsers ? _self._blockedDanmakuUsers : blockedDanmakuUsers // ignore: cast_nullable_to_non_nullable
 as List<String>,siteCatalogMigration: null == siteCatalogMigration ? _self.siteCatalogMigration : siteCatalogMigration // ignore: cast_nullable_to_non_nullable
 as int,hotAreasList: null == hotAreasList ? _self._hotAreasList : hotAreasList // ignore: cast_nullable_to_non_nullable
 as List<String>,preferPlatform: null == preferPlatform ? _self.preferPlatform : preferPlatform // ignore: cast_nullable_to_non_nullable

@@ -22,7 +22,6 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   FavoriteSettingsModel build() {
     final initial = FavoriteSettingsModel(
       shieldList: HivePrefUtil.getStringList('shieldList') ?? [],
-      blockedDanmakuUsers: HivePrefUtil.getStringList('blockedDanmakuUsers') ?? [],
       siteCatalogMigration: HivePrefUtil.getInt('siteCatalogMigration') ?? 0,
       hotAreasList: HivePrefUtil.getStringList('hotAreasList') ?? AppConsts.supportSites,
       preferPlatform: HivePrefUtil.getString('preferPlatform') ?? Sites.bilibiliSite,
@@ -99,9 +98,8 @@ class FavoriteRoomController extends _$FavoriteRoomController {
 
   FavoriteSettingsModel _normalizeDanmakuBlocks(FavoriteSettingsModel model) {
     final keywords = _normalizeDanmakuBlockValues(model.shieldList);
-    final users = _normalizeDanmakuBlockValues(model.blockedDanmakuUsers);
-    if (_sameStrings(model.shieldList, keywords) && _sameStrings(model.blockedDanmakuUsers, users)) return model;
-    return model.copyWith(shieldList: keywords, blockedDanmakuUsers: users);
+    if (_sameStrings(model.shieldList, keywords)) return model;
+    return model.copyWith(shieldList: keywords);
   }
 
   FavoriteSettingsModel _normalizeSiteCatalogIds(FavoriteSettingsModel model) {
@@ -299,22 +297,6 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     return true;
   }
 
-  bool addBlockedDanmakuUser(String value) {
-    final user = value.trim();
-    if (user.isEmpty || state.blockedDanmakuUsers.any((item) => item.trim().toLowerCase() == user.toLowerCase())) {
-      return false;
-    }
-    _update(state.copyWith(blockedDanmakuUsers: [...state.blockedDanmakuUsers, user]));
-    return true;
-  }
-
-  bool removeBlockedDanmakuUser(int index) {
-    if (index < 0 || index >= state.blockedDanmakuUsers.length) return false;
-    final updated = List<String>.from(state.blockedDanmakuUsers)..removeAt(index);
-    _update(state.copyWith(blockedDanmakuUsers: updated));
-    return true;
-  }
-
   // ------------------------------------------------------------------
   // hot areas / site catalog
   // ------------------------------------------------------------------
@@ -386,7 +368,6 @@ class FavoriteRoomController extends _$FavoriteRoomController {
 
   void _persist(FavoriteSettingsModel model) {
     HivePrefUtil.setStringList('shieldList', model.shieldList);
-    HivePrefUtil.setStringList('blockedDanmakuUsers', model.blockedDanmakuUsers);
     HivePrefUtil.setInt('siteCatalogMigration', model.siteCatalogMigration);
     HivePrefUtil.setStringList('hotAreasList', model.hotAreasList);
     HivePrefUtil.setString('preferPlatform', model.preferPlatform);
@@ -410,7 +391,6 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   static FavoriteSettingsModel _normalizeDanmakuBlockValuesModel(FavoriteSettingsModel model) {
     return model.copyWith(
       shieldList: _normalizeDanmakuBlockValues(model.shieldList),
-      blockedDanmakuUsers: _normalizeDanmakuBlockValues(model.blockedDanmakuUsers),
     );
   }
 

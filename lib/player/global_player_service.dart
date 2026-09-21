@@ -64,9 +64,16 @@ class GlobalPlayerService {
       kernel,
       defaultEngine: defaultEngine,
       onPreferredEngineChanged: (engine) {
-        final registration = _registrationOf(engine, priority: 100);
-        kernel.registry.unregister(registration.id);
-        kernel.registerBackend(registration);
+        // Re-register the whole set, not only the chosen engine. Raising the new
+        // preference to 100 while the previous one stayed at 100 left two
+        // registrations tied, and [PlayerAdapterSelector] resolved that tie by
+        // list order — so a second switch could keep running the kernel that was
+        // already active.
+        for (final PlayerEngine candidate in PlayerEngine.values) {
+          final registration = _registrationOf(candidate, priority: candidate == engine ? 100 : 80);
+          kernel.registry.unregister(registration.id);
+          kernel.registerBackend(registration);
+        }
       },
     );
     _livePlayer = facade;

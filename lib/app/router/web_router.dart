@@ -34,9 +34,6 @@ class WebRemoteRouter {
   /// Danmaku keyword filter settings
   static const String danmakuFilter = '/#/danmaku';
 
-  /// Danmaku blocked-user list
-  static const String danmakuUsers = '/#/danmaku_users';
-
   /// Tag management
   static const String tags = '/#/tags';
 

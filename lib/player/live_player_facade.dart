@@ -60,6 +60,19 @@ final class LivePlayerFacade {
 
   bool _disposed = false;
 
+  /// The source last handed to [play], kept so an engine switch can reopen it.
+  ///
+  /// `LivePlaybackController.close()` releases the handle *and* clears its own
+  /// current URL, which makes its `retry()` bail out immediately. A switch that
+  /// closed the controller and then called `retry()` therefore tore the player
+  /// down and never reopened the stream — a black surface with nothing playing.
+  /// The resolved headers are kept too, so reopening does not repeat header
+  /// resolution.
+  String? _lastUrl;
+  List<String> _lastLines = const <String>[];
+  Map<String, String> _lastHeaders = const <String, String>{};
+  LiveRoom? _lastRoom;
+
   // ---------------------------------------------------------------------------
   // Streams (the legacy surface)
   // ---------------------------------------------------------------------------
@@ -158,6 +171,13 @@ final class LivePlayerFacade {
       );
     }
 
+    // Remember the request before it is opened: an engine switch later needs to
+    // replay exactly this source, headers included.
+    _lastUrl = url;
+    _lastLines = playUrls;
+    _lastHeaders = effectiveHeaders;
+    _lastRoom = room;
+
     await _controller.play(
       LiveSourceRequest(
         urls: playUrls.isEmpty ? [url] : [url, ...playUrls.where((u) => u != url)],
@@ -226,6 +246,13 @@ final class LivePlayerFacade {
   /// [resumeCurrentSource] re-opens the remembered room; the
   /// settings page passes false so the last room does not restart
   /// behind the settings screen.
+  ///
+  /// The source is replayed through [play] rather than through
+  /// `LivePlaybackController.retry()`, because closing the controller clears the
+  /// URL that `retry()` needs and it then returns without doing anything — which
+  /// is what made a switch leave a torn-down player behind. The replay also
+  /// re-applies the audio-only preference and the room volume to the freshly
+  /// created adapter.
   Future<void> switchEngine(PlayerEngine engine, {bool isManual = false, bool resumeCurrentSource = true}) async {
     if (_disposed) return;
     preferredEngine = engine;
@@ -233,14 +260,23 @@ final class LivePlayerFacade {
       _onPreferredEngineChanged?.call(engine);
     }
 
-    // Close the current player; the next play() creates a new one
-    // on the preferred engine (the registration priorities make
-    // the kernel's selector pick it).
-    await _controller.close();
+    final String? url = _lastUrl;
+    final List<String> lines = _lastLines;
+    final Map<String, String> headers = _lastHeaders;
+    final LiveRoom? room = _lastRoom;
+
+    // Unmount the surface first: bumping the key rebuilds [TvVideoSurface]
+    // against a null handle so the retired `Video` widget leaves the tree
+    // instead of rebuilding on the adapter this call is about to dispose.
     videoKey.add(ValueKey('video_${DateTime.now().millisecondsSinceEpoch}'));
 
-    if (resumeCurrentSource) {
-      await _controller.retry();
+    // Close the current player; the replay below creates the next one, and the
+    // kernel's selector picks the engine this method just pushed to the top of
+    // the registry.
+    await _controller.close();
+
+    if (resumeCurrentSource && url != null && url.isNotEmpty) {
+      await play(url, lines, headers, room: room);
     }
   }
 

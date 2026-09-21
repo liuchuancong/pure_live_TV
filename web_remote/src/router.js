@@ -11,7 +11,6 @@ const SyncRemoteView = () => import('./views/SyncRemote.vue')
 const LogRemoteView = () => import('./views/LogRemote.vue')
 const AboutRemoteView = () => import('./views/AboutRemote.vue')
 const DanmakuFilterView = () => import('./views/DanmakuFilter.vue')
-const DanmakuUsersView = () => import('./views/DanmakuUsers.vue')
 const IptvRemoteView = () => import('./views/IptvRemote.vue')
 const ProxyRemoteView = () => import('./views/ProxyRemote.vue')
 const TagRemoteView = () => import('./views/TagRemote.vue')
@@ -51,11 +50,6 @@ const routes = [
     path: '/danmaku',
     component: DanmakuFilterView,
     meta: { title: '弹幕关键词过滤' }
-  },
-  {
-    path: '/danmaku_users',
-    component: DanmakuUsersView,
-    meta: { title: '弹幕用户屏蔽' }
   },
   {
     path: '/iptv',

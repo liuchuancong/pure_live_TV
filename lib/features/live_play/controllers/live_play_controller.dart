@@ -622,19 +622,13 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     state = state.copyWith(messages: messages);
   }
 
-  /// Blocked-word and blocked-user filtering.
+  /// Keyword shielding.
   ///
-  /// The data is shared with the danmaku filter panel and the phone scan page
-  /// through one [FavoriteRoomController], so all three stay in step.
+  /// The list is shared with the danmaku filter panel and the phone scan page
+  /// through one [FavoriteRoomController], so all three stay in step. Filtering
+  /// by author was removed: keywords are the only rule the player applies.
   bool _passesShield(LiveMessage message) {
-    final fav = SettingsService.to.favState;
-    final blockedUsers = fav.blockedDanmakuUsers;
-    final userName = message.userName.trim();
-    if (blockedUsers.isNotEmpty && userName.isNotEmpty) {
-      final lower = userName.toLowerCase();
-      if (blockedUsers.any((user) => user.trim().toLowerCase() == lower)) return false;
-    }
-    final shieldList = fav.shieldList;
+    final shieldList = SettingsService.to.favState.shieldList;
     if (shieldList.isEmpty) return true;
     final text = message.message;
     for (final word in shieldList) {

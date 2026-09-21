@@ -68,7 +68,7 @@ final class LivePlayControllerProvider
 }
 
 String _$livePlayControllerHash() =>
-    r'017b13ae7667181e596de5fa172bc2150c90d343';
+    r'da9c8db893cd58871511c20dea8185081cca57f1';
 
 /// Drives one live room: detail/quality/URL fetching, playback state
 /// projection, quality and line switching. Danmaku sessions live in
@@ -189,7 +189,7 @@ final class DanmakuSessionControllerProvider
 }
 
 String _$danmakuSessionControllerHash() =>
-    r'5623aa59d0852582e0991346352512e4ece4f921';
+    r'30e0233a665d45fcd26814c66cf9588638ae2a9a';
 
 /// Danmaku session for one room: owns the transport connection, message
 /// gating and duplicate filtering, and fans messages out to the overlay and

@@ -90,11 +90,6 @@ class VideoSettingsSectionPage extends ConsumerWidget {
               icon: Remix.filter_2_line,
               onTap: () => const DanmuShieldRoute().push(context),
             ),
-            TvSettingsNavTile(
-              title: i18nOr('blocked_users_title', '用户屏蔽'),
-              icon: Remix.user_forbid_line,
-              onTap: () => const DanmuUsersRoute().push(context),
-            ),
           ],
         ),
       ],

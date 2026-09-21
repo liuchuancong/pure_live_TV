@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$IptvSettingsModel {
 
- bool get isAutoSyncEnabled; int get autoSyncHoursInterval; String get customIptvUserAgent; String get customIptvReferer; String get customIptvCookie; String get m3uDirectory;/// Subscription URL of the built-in "热门" channel list. Empty falls back
+ bool get isAutoSyncEnabled; int get autoSyncHoursInterval; String get customIptvUserAgent; String get customIptvReferer; String get customIptvCookie; String get m3uDirectory;/// Subscription URL of the built-in hot channel list. Empty falls back
 /// to the controller's [defaultHotResourceUrl].
  String get hotResourceUrl;
 /// Create a copy of IptvSettingsModel
@@ -226,7 +226,7 @@ class _IptvSettingsModel implements IptvSettingsModel {
 @override@JsonKey() final  String customIptvReferer;
 @override@JsonKey() final  String customIptvCookie;
 @override@JsonKey() final  String m3uDirectory;
-/// Subscription URL of the built-in "热门" channel list. Empty falls back
+/// Subscription URL of the built-in hot channel list. Empty falls back
 /// to the controller's [defaultHotResourceUrl].
 @override@JsonKey() final  String hotResourceUrl;
 

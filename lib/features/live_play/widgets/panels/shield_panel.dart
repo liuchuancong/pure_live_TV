@@ -15,7 +15,11 @@ import 'package:pure_live/shared/widgets/index.dart';
 /// Blocked words share [FavoriteRoomController.shieldList] with the phone scan
 /// page: Up/Down pick a word, OK removes it, and words added on the phone are
 /// pushed back through [TvRemoteReceiver.onDanmakuFilterUpdated]. The QR for the
-/// phone page sits under the list, so it stays reachable when the list is empty.
+/// phone page sits above the list, so it stays reachable when the list is empty.
+///
+/// The blocked-user list is gone with the rest of the feature: filtering danmaku
+/// by author was dropped in favour of keywords, so the panel no longer offers a
+/// second code for a page whose list nothing would apply.
 class ShieldPanel extends ConsumerStatefulWidget {
   const ShieldPanel({super.key, this.onClose});
 
@@ -28,6 +32,15 @@ class ShieldPanel extends ConsumerStatefulWidget {
 class _ShieldPanelState extends ConsumerState<ShieldPanel> {
   int _index = 0;
 
+  /// The notifier whose phone callback this panel owns.
+  ///
+  /// Held in a field because `ref` may not be used from `dispose`: riverpod
+  /// asserts "Using ref when a widget is about to or has been unmounted is
+  /// unsafe", which is exactly what the unassign used to do (the player tore
+  /// the panel down on close and the error landed in the framework's
+  /// finalizeTree pass).
+  TvRemoteReceiver? _remote;
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +50,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
   void _initRemote() {
     if (!mounted) return;
     final notifier = ref.read(tvRemoteReceiverProvider.notifier);
+    _remote = notifier;
     notifier.onDanmakuFilterUpdated = _syncFromRemote;
     notifier.seedDanmakuFilters(SettingsService.to.favState.shieldList);
     final remoteState = ref.read(tvRemoteReceiverProvider);
@@ -62,7 +76,9 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
 
   @override
   void dispose() {
-    ref.read(tvRemoteReceiverProvider.notifier).onDanmakuFilterUpdated = null;
+    // Only the instance this panel registered, and without touching `ref`
+    // (see [_remote]).
+    _remote?.onDanmakuFilterUpdated = null;
     super.dispose();
   }
 
@@ -133,44 +149,16 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                 ],
               )
             else ...[
-              // Both lists get a code: the phone edits keywords on one page
-              // and blocked users on the other, so the panel offers both.
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // One code, one page: the phone edits the keyword list the player
+              // actually applies.
+              Column(
                 children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          i18n('danmaku_keyword_block'),
-                          style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
-                        ),
-                        SizedBox(height: 4.sp),
-                        TvQrCodeCard(qrData: qrData, qrSize: 120, urlText: qrData),
-                      ],
-                    ),
+                  Text(
+                    i18n('danmaku_keyword_block'),
+                    style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
                   ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          i18nOr('blocked_users_title', '用户屏蔽'),
-                          style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
-                        ),
-                        SizedBox(height: 4.sp),
-                        Builder(
-                          builder: (context) {
-                            final usersUrl = serverUrl.isEmpty
-                                ? ''
-                                : '$serverUrl${WebRemoteRouter.danmakuUsers}';
-                            return usersUrl.isEmpty
-                                ? SizedBox(height: 120.sp, child: tvInlineLoading(context, size: 18.sp))
-                                : TvQrCodeCard(qrData: usersUrl, qrSize: 120, urlText: usersUrl);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+                  SizedBox(height: 4.sp),
+                  TvQrCodeCard(qrData: qrData, qrSize: 120, urlText: qrData),
                 ],
               ),
               SizedBox(height: 6.sp),
