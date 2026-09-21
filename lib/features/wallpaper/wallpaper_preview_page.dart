@@ -1,5 +1,4 @@
 ﻿import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +15,6 @@ import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_immersive_page.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_sequence.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -29,7 +27,7 @@ import 'package:pure_live/services/background_config/background_config_model.dar
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
 /// What one button in the preview's action bar does.
-enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause, immersive, systemWallpaper }
+enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause, immersive }
 
 /// One entry of the preview's action bar.
 class _PreviewAction {
@@ -58,14 +56,6 @@ class WallpaperPreviewPage extends ConsumerStatefulWidget {
 }
 
 class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
-  /// Only for the system-wallpaper step; the immersive page shares the same
-  /// source and failure handling.
-  late final WallpaperSequence _sequenceForSystem = WallpaperSequence(
-    args: widget.args,
-    ref: ref,
-    initialIndex: widget.args.initialIndex,
-  );
-
   /// Catalog mode: position in the paged list.
   int _index = 0;
 
@@ -73,7 +63,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   Uint8List? _apiBytes;
   bool _apiLoading = false;
   bool _applying = false;
-  bool _settingSystem = false;
 
   /// Focus nodes for the button bar, held by the page so a rebuild (video vs
   /// image mode changes the button set) cannot drift the highlight.
@@ -159,8 +148,19 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   }
 
   Future<void> _togglePlay() async {
-    final player = _videoPlayer;
-    if (player == null) return;
+    // 播放器可能已被“强制销毁”释放掉（见 _destroyVideoPlayer）；此时播放按钮
+    // 负责把它重建起来并重新打开当前视频。
+    var player = _videoPlayer;
+    if (player == null) {
+      _createVideoPlayer();
+      player = _videoPlayer;
+      final item = _itemAt(_resolveItems(ref));
+      if (player != null && item.file.isNotEmpty) {
+        _openedVideoUrl = item.file;
+        await player.open(Media(item.file), play: true);
+      }
+      return;
+    }
     if (_videoPlaying) {
       await player.pause();
     } else {
@@ -168,16 +168,23 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  static const BackgroundItem _emptyItem = BackgroundItem(file: '');
-
-  /// Android only, and only for things that are actually media: catalog
-  /// images, downloaded random-API images, and catalog videos (as a live
-  /// wallpaper).
-  bool get _canSetSystemWallpaper {
-    if (!Platform.isAndroid) return false;
-    if (widget.args.isApiMode) return _apiBytes != null;
-    return widget.args.kind == BackgroundKind.image || widget.args.kind == BackgroundKind.video;
+  /// 彻底释放预览页自带的播放器。
+  ///
+  /// 设为视频壁纸后，后台背景层会自己开一个播放器播同一个视频——两份解码
+  /// 同时在跑，电视盒子既要多占一个硬解实例，声音也会重叠。开启“播放器强制
+  /// 销毁”时这里直接把预览的播放器释放掉，画面退回封面图。
+  void _destroyVideoPlayer() {
+    final player = _videoPlayer;
+    _videoPlayer = null;
+    _videoController = null;
+    _videoPlaying = false;
+    _openedVideoUrl = null;
+    unawaited(_playingSubscription?.cancel());
+    _playingSubscription = null;
+    unawaited(player?.dispose());
   }
+
+  static const BackgroundItem _emptyItem = BackgroundItem(file: '');
 
   BackgroundItem _itemAt(List<BackgroundItem> items) {
     if (items.isEmpty) return _emptyItem;
@@ -274,6 +281,10 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             bg.setGradient(colors);
         }
       }
+      // 视频壁纸切换后，预览页不再需要自己这份解码器。
+      if (_isVideo && SettingsService.to.playerState.useHardStopOnExit) {
+        _destroyVideoPlayer();
+      }
       if (mounted) ToastUtil.show(i18nOr('wallpaper_set_done', 'Background updated'));
     } catch (error) {
       if (mounted) {
@@ -281,37 +292,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       }
     } finally {
       if (mounted) setState(() => _applying = false);
-    }
-  }
-
-  /// Writes the system wallpaper (image) or live wallpaper (video) through
-  /// [WallpaperSequence.applyToSystemWallpaper], which the immersive page
-  /// shares.
-  Future<void> _setSystemWallpaper(List<BackgroundItem> items) async {
-    if (_settingSystem) return;
-    setState(() => _settingSystem = true);
-    try {
-      final bool needsConfirmation = await _sequenceForSystem.applyToSystemWallpaper();
-      if (!mounted) return;
-      ToastUtil.show(
-        needsConfirmation
-            ? i18nOr('wallpaper_live_confirm_hint', 'Confirm in the system dialog to apply the live wallpaper')
-            : i18nOr('wallpaper_system_set_done', 'System wallpaper updated'),
-      );
-    } on StateError catch (error) {
-      if (mounted) {
-        ToastUtil.show(
-          i18nOr('wallpaper_system_set_failed_reason', 'Failed to set the system wallpaper: {msg}', args: {'msg': error.message}),
-        );
-      }
-    } catch (error) {
-      if (mounted) {
-        ToastUtil.show(
-          i18nOr('wallpaper_system_set_failed_reason', 'Failed to set the system wallpaper: {msg}', args: {'msg': '$error'}),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _settingSystem = false);
     }
   }
 
@@ -392,16 +372,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         label: i18nOr('wallpaper_set_background', 'Set as background'),
         busy: _applying,
       ),
-      if (_canSetSystemWallpaper)
-        _PreviewAction(
-          kind: _PreviewActionKind.systemWallpaper,
-          icon: Icons.wallpaper_rounded,
-          // Video goes through the live-wallpaper path; the copy says so.
-          label: _isVideo
-              ? i18nOr('wallpaper_set_system_video', 'Set as live wallpaper')
-              : i18nOr('wallpaper_set_system', 'Set as system wallpaper'),
-          busy: _settingSystem,
-        ),
       _PreviewAction(
         kind: _PreviewActionKind.immersive,
         icon: Icons.fullscreen_rounded,
@@ -463,8 +433,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         unawaited(_togglePlay());
       case _PreviewActionKind.immersive:
         unawaited(_openImmersive(items));
-      case _PreviewActionKind.systemWallpaper:
-        unawaited(_setSystemWallpaper(items));
     }
   }
 
@@ -486,11 +454,16 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
 
     if (_isVideo && item.file.isNotEmpty && item.file != _openedVideoUrl) {
-      _openedVideoUrl = item.file;
-      final String url = item.file;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) unawaited(_openVideo(url));
-      });
+      // 已开启强制销毁且刚被释放时(播放器与封面都在)，不要立刻重建：等用户
+      // 明确按播放键再拉起，否则释放就白做了。翻到别的条目则正常自动播放。
+      final bool releasedBySetting = _videoPlayer == null && SettingsService.to.playerState.useHardStopOnExit;
+      if (!releasedBySetting) {
+        _openedVideoUrl = item.file;
+        final String url = item.file;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) unawaited(_openVideo(url));
+        });
+      }
     }
 
     // The page body holds no focus node: the bar owns the keyboard and

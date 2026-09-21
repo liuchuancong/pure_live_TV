@@ -241,6 +241,8 @@ class _VideoBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = SettingsService.to.bg.videoController;
+    // 播放器按需创建：切到视频壁纸的首帧可能还没有控制器，先画黑底。
+    if (controller == null) return const SizedBox.expand(child: ColoredBox(color: Colors.black));
 
     return SizedBox.expand(
       child: Video(

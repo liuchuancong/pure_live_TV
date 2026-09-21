@@ -39,6 +39,11 @@ class LivePlayController extends _$LivePlayController {
   @override
   LivePlayState build(LivePlayArgs args) {
     ref.onDispose(_teardown);
+    ref.listen(playerSettingsControllerProvider, (prev, next) {
+      if (prev?.videoPlayerKey != next.videoPlayerKey) {
+        _bootstrap();
+      }
+    });
     // Register the current-room lookup with the site layer, which needs it for
     // viewer counts and error recovery.
     Sites.currentRoomLookup = (platform, roomId) {

@@ -37,17 +37,9 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
   bool _hintVisible = true;
   Timer? _hintTimer;
 
-  /// Short OK applies the app background; holding it applies the system one.
-  Timer? _okHoldTimer;
-  bool _okLongPressed = false;
-
   /// 返回只允许生效一次（PopScope 回调在预测性返回等场景会被重复调用，
   /// 弹两次会把预览页一起弹掉，用户就直接退到壁纸列表了）。
   bool _popping = false;
-
-  /// Below this a press is a plain confirm, so remote jitter cannot set the
-  /// system wallpaper.
-  static const Duration _longPressThreshold = Duration(milliseconds: 1200);
 
   /// Online video plays here; the preview page pauses its own player while
   /// this route is on top.
@@ -78,7 +70,6 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
   @override
   void dispose() {
     _hintTimer?.cancel();
-    _okHoldTimer?.cancel();
     _focusNode.dispose();
     _videoPlayer?.dispose();
     super.dispose();
@@ -128,42 +119,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
     }
   }
 
-  /// Long OK writes the current item as the system wallpaper (video goes
-  /// through the live-wallpaper confirm screen).
-  Future<void> _setSystemWallpaper() async {
-    if (_applying) return;
-    _hintTimer?.cancel();
-    setState(() {
-      _applying = true;
-      _hintVisible = true;
-    });
-    try {
-      final bool needsConfirmation = await _sequence.applyToSystemWallpaper();
-      if (!mounted) return;
-      ToastUtil.show(
-        needsConfirmation
-            ? i18nOr('wallpaper_live_confirm_hint', 'Confirm in the system dialog to apply the live wallpaper')
-            : i18nOr('wallpaper_system_set_done', 'System wallpaper updated'),
-      );
-    } on StateError catch (error) {
-      if (mounted) {
-        ToastUtil.show(
-          i18nOr('wallpaper_system_set_failed_reason', 'Failed to set the system wallpaper: {msg}', args: {'msg': error.message}),
-        );
-      }
-    } catch (error) {
-      if (mounted) {
-        ToastUtil.show(
-          i18nOr('wallpaper_system_set_failed_reason', 'Failed to set the system wallpaper: {msg}', args: {'msg': '$error'}),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _applying = false);
-    }
-  }
-
-  /// Left/Right stay with focus traversal (this page has one node, so they do
-  /// nothing) rather than reaching anything else.
+  /// OK/Enter/Space on a TV remote all mean "confirm".
   static bool _isConfirmKey(LogicalKeyboardKey key) =>
       key == LogicalKeyboardKey.select ||
       key == LogicalKeyboardKey.enter ||
@@ -172,29 +128,6 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
 
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
     final key = event.logicalKey;
-
-    // OK: start the timer on press and dispatch on release, before the early
-    // returns below, since a KeyUpEvent is neither of their cases.
-    if (_isConfirmKey(key)) {
-      if (event is KeyDownEvent) {
-        _okLongPressed = false;
-        _okHoldTimer?.cancel();
-        _okHoldTimer = Timer(_longPressThreshold, () {
-          _okLongPressed = true;
-          unawaited(_setSystemWallpaper());
-        });
-        return KeyEventResult.handled;
-      }
-      if (event is KeyRepeatEvent) return KeyEventResult.handled;
-      if (event is KeyUpEvent) {
-        _okHoldTimer?.cancel();
-        _okHoldTimer = null;
-        if (!_okLongPressed) unawaited(_apply());
-        _okLongPressed = false;
-        return KeyEventResult.handled;
-      }
-      return KeyEventResult.ignored;
-    }
 
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
 
@@ -207,6 +140,10 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.arrowRight) {
+      return KeyEventResult.handled;
+    }
+    if (_isConfirmKey(key)) {
+      unawaited(_apply());
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -288,10 +225,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
                         borderRadius: BorderRadius.circular(28.sp),
                       ),
                       child: Text(
-                        i18nOr(
-                          'wallpaper_immersive_hint_long',
-                          '↑↓ 切换 · OK 设为壁纸 · 长按 OK 设为系统壁纸 · 返回退出',
-                        ),
+                        i18nOr('wallpaper_immersive_hint', '↑↓ 切换 · OK 设为壁纸 · 返回退出'),
                         style: TextStyle(fontSize: 18.sp, color: Colors.white),
                       ),
                     ),

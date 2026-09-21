@@ -22,8 +22,17 @@ part 'background_controller.g.dart';
 /// `Surface.release()` NPE in logcat, plus a reloading wallpaper.
 @Riverpod(keepAlive: true)
 class BackgroundController extends _$BackgroundController {
-  late final Player _videoPlayer;
-  late final VideoController videoController;
+  /// 背景视频播放器：**按需创建**。
+  ///
+  /// 以前它在 build 里就 new 出来，且只在 provider 销毁时才释放——即使用户
+  /// 选的是纯色/图片壁纸，也常驻一个原生播放器。现在只在真的需要播视频时创建，
+  /// 并在“播放器强制销毁”开启时于切走视频后彻底释放解码器。
+  Player? _videoPlayer;
+  VideoController? _videoController;
+
+  /// 背景层读取的渲染控制器；未创建时为 null（背景层据此画空白）。
+  VideoController? get videoController => _videoController;
+
   static BackgroundController get to => SettingsService.to.bg;
   final _configStream = BehaviorSubject<BackgroundConfigModel>();
   Stream<BackgroundConfigModel> get configChanges => _configStream.stream;
@@ -33,20 +42,9 @@ class BackgroundController extends _$BackgroundController {
 
   @override
   BackgroundConfigModel build() {
-    _videoPlayer = Player();
-    // Same platform workaround the live player uses: media_kit's stock
-    // configuration attaches the Android surface before the video parameters
-    // are known, which is how a background video ends up as a black (or
-    // one-pixel) texture.
-    videoController = VideoController(
-      _videoPlayer,
-      configuration: wallpaperVideoControllerConfiguration(),
-    );
-    _videoPlayer.setVolume(0.0);
-    _videoPlayer.setPlaylistMode(PlaylistMode.loop);
-
+    // 关闭应用时才释放（keepAlive 期间由 reloadBackgroundVideo 按需创建/释放）。
     ref.onDispose(() {
-      _videoPlayer.dispose();
+      _disposeVideoPlayer();
       _configStream.close();
     });
 
@@ -134,6 +132,27 @@ class BackgroundController extends _$BackgroundController {
     return MemoryImage(_cachedBytes!);
   }
 
+  /// 创建背景播放器（首次需要播视频时）。
+  ///
+  /// 沿用直播播放器的平台适配：media_kit 默认配置会在视频参数未知时就挂载
+  /// Android Surface，这正是背景视频变黑（或只有一个像素）的原因。
+  void _ensureVideoPlayer() {
+    if (_videoPlayer != null) return;
+    final player = Player();
+    _videoPlayer = player;
+    _videoController = VideoController(player, configuration: wallpaperVideoControllerConfiguration());
+    player.setVolume(0.0);
+    player.setPlaylistMode(PlaylistMode.loop);
+  }
+
+  /// 彻底释放背景播放器（强制销毁路径）。
+  void _disposeVideoPlayer() {
+    final player = _videoPlayer;
+    _videoPlayer = null;
+    _videoController = null;
+    unawaited(player?.dispose());
+  }
+
   Future<void> reloadBackgroundVideo() async {
     final src = switch (state.source) {
       BackgroundSource.assetVideo => state.assetVideoPath,
@@ -142,9 +161,17 @@ class BackgroundController extends _$BackgroundController {
       _ => null,
     };
     if (src != null && src.isNotEmpty) {
-      await _videoPlayer.open(Media(src), play: true);
+      _ensureVideoPlayer();
+      await _videoPlayer?.open(Media(src), play: true);
+      return;
+    }
+
+    // 不再是视频壁纸：开启“播放器强制销毁”时直接释放解码器，否则只暂停，
+    // 下次切回视频壁纸可以复用（默认省电、避免重建 Surface）。
+    if (SettingsService.to.playerState.useHardStopOnExit) {
+      _disposeVideoPlayer();
     } else {
-      await _videoPlayer.stop();
+      await _videoPlayer?.stop();
     }
   }
 

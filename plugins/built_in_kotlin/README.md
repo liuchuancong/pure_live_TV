@@ -6,7 +6,6 @@ Kotlin Gradle Plugin, which conflicts with AGP 9 Built-in Kotlin.
 
 | Package | Upstream release | Upstream repository |
 | --- | --- | --- |
-| `async_wallpaper` | 3.3.0 | <https://github.com/codenameakshay/async_wallpaper> |
 | `better_player_plus` | 1.3.5 | <https://github.com/SunnatilloShavkatov/betterplayer> |
 | `floating` | 6.0.0 | <https://github.com/wrbl606/floating> |
 | `flutter_exit_app` | 2.1.2 | <https://github.com/xang555/flutter_exit_app> |

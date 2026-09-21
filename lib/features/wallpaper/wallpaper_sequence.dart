@@ -10,9 +10,7 @@ import 'package:pure_live/shared/pagination/paging_core.dart';
 import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/shared/common/utils/color_util.dart';
-import 'package:dio/dio.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/wallpaper/system_wallpaper.dart';
 
 /// The wallpaper sequence shared by the preview and immersive pages: paging
 /// with prefetch for directory sources, random-image fetches for API sources,
@@ -172,47 +170,6 @@ class WallpaperSequence {
         if (colors.length < 2) throw StateError('incomplete gradient');
         bg.setGradient(colors);
     }
-  }
-
-  /// Writes the system wallpaper; true means the OS confirm screen is
-  /// waiting. Throws with a reason on failure.
-  Future<bool> applyToSystemWallpaper() async {
-    if (args.isApiMode) {
-      final bytes = apiBytes;
-      if (bytes == null) throw StateError('no image bytes');
-      await _setSystemImage(bytes);
-      return false;
-    }
-
-    final item = current;
-    switch (args.kind!) {
-      case BackgroundKind.gradient:
-        // A gradient has no image for the wallpaper API to write.
-        throw StateError('gradient');
-      case BackgroundKind.video:
-        String? localPath;
-        try {
-          localPath = await WallpaperVideoStore.download(item.file);
-        } catch (_) {
-          localPath = null;
-        }
-        final String? videoFailure = await SystemWallpaper.setVideo(filePath: localPath, url: item.file);
-        if (videoFailure != null) throw StateError(videoFailure);
-        return true;
-      case BackgroundKind.image:
-        final response = await Dio(
-          BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 5)),
-        ).get<List<int>>(item.file, options: Options(responseType: ResponseType.bytes));
-        final data = response.data;
-        if (data == null) throw StateError('download_failed');
-        await _setSystemImage(Uint8List.fromList(data));
-        return false;
-    }
-  }
-
-  Future<void> _setSystemImage(Uint8List bytes) async {
-    final String? failure = await SystemWallpaper.setImage(bytes);
-    if (failure != null) throw StateError(failure);
   }
 
   Future<void> _applyVideo(BackgroundItem item) async {
