@@ -1,15 +1,15 @@
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
+import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/data/db_service.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/features/iptv/data/database.dart' as database;
 import 'package:pure_live/features/iptv/services/iptv_sync_engine.dart';
+import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 
-import 'package:pure_live/app/router/web_router.dart';
 /// IPTV resource list page: the imported sources with per-item sync /
 /// auto-sync / delete. Deleting a source always asks for confirmation because
 /// the cascading delete also drops its channels.
@@ -158,7 +158,10 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
         if (_status.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.w, top: 10.h),
-            child: Text(_status, style: TextStyle(fontSize: 14.sp, color: theme.focusColor)),
+            child: Text(
+              _status,
+              style: TextStyle(fontSize: 14.sp, color: theme.focusColor),
+            ),
           ),
       ],
     );
@@ -175,10 +178,9 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
           ? override
           : '${i18n('hot_resource_url_hint')}\n${IptvSettingsController.defaultHotResourceUrl}',
       icon: Icons.live_tv_rounded,
-      trailingBuilder: (context, focused) => TvButton(
-        title: i18n('edit'),
-        size: TvButtonSize.mini,
-        onTap: _editHotResourceUrl,
+      trailingBuilder: (context, focused) => SizedBox(
+        width: 120.w,
+        child: TvButton(title: i18n('edit'), size: TvButtonSize.mini, onTap: _editHotResourceUrl),
       ),
       onSelect: _editHotResourceUrl,
     );
@@ -217,12 +219,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
       return rows;
     }
     if (_loading) {
-      rows.add(
-        TvSettingsRow(
-          title: i18n('refresh_loading'),
-          icon: Icons.hourglass_empty_rounded,
-        ),
-      );
+      rows.add(TvSettingsRow(title: i18n('refresh_loading'), icon: Icons.hourglass_empty_rounded));
       return rows;
     }
 
