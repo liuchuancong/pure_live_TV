@@ -116,6 +116,9 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                       ref.read(favoriteProvider.notifier).changeSelectedTag('all');
                       ref.read(favoriteProvider.notifier).changeSiteTab(index);
                     },
+                    // OK twice on the platform tab refetches this list, like the
+                    // status bar above it.
+                    onTabRefresh: (index) => ref.read(favoriteProvider.notifier).refreshData(),
                   ),
                   SizedBox(height: 12.sp),
                   if (favoriteState.visibleTags.isNotEmpty)

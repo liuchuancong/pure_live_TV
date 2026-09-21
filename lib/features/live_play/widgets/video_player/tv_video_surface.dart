@@ -42,8 +42,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
   /// one. That is the whole `VideoOutputManager.create` → `dispose` →
   /// `Resize 0x0` → `Surface.release()` NPE sequence in logcat. Never read the
   /// field without this check.
-  PlayerManager? get _playerManagerOrNull =>
-      GlobalPlayerService.instance.initialized ? GlobalPlayerService.instance.playerManager : null;
+  LivePlayerFacade? get _playerManagerOrNull =>
+      GlobalPlayerService.instance.initialized ? GlobalPlayerService.instance.livePlayer : null;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // `VideoOutputManager.create` → `dispose` → `Resize 0x0` → `Surface.release()`
     // NPE sequence in logcat (an output destroyed before it ever had a surface).
     // The failure overlay is drawn on top of the surface instead.
-    final PlayerManager? manager = _playerManagerOrNull;
+    final LivePlayerFacade? manager = _playerManagerOrNull;
     // The surface listens to `videoKey` on purpose: an engine switch bumps the
     // key, and this rebuild is what unmounts the `Video` widget of the retired
     // controller *before* PlayerManager destroys it. Without the listener the

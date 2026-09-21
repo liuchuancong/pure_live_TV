@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:pure_live/platforms/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/contracts/live_site.dart';
@@ -10,6 +11,15 @@ class Sites {
   /// through its Riverpod controller and the site layer uses it to recover from
   /// errors.
   static LiveRoom? Function(String platform, String roomId)? currentRoomLookup;
+
+  /// Test seam: substitutes the adapter [of] returns for one platform id.
+  ///
+  /// The registry is static and its adapters own real network state, so a test
+  /// that needs to observe how a caller treats a platform response (a failing
+  /// favourite refresh, for example) can install a fake here. Production code
+  /// never sets this.
+  @visibleForTesting
+  static LiveSite? Function(String id)? siteLookupOverride;
 
   static LiveRoom? currentRoom(String platform, String roomId) {
     final lookup = currentRoomLookup;
@@ -250,6 +260,14 @@ class Sites {
 
   static Site of(String id) {
     final normalizedId = id.trim().toLowerCase();
+
+    final override = siteLookupOverride;
+    if (override != null) {
+      final substituted = override(normalizedId);
+      if (substituted != null) {
+        return Site(id: normalizedId, name: normalizedId, logo: logoOf(normalizedId), liveSite: substituted);
+      }
+    }
 
     // Reuse the cached adapter: constructing a fresh one per call (favourite
     // verification does this per room per refresh) discarded platform session

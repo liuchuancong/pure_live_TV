@@ -5,6 +5,11 @@ import 'package:flutter/services.dart';
 /// handles sampling, capability checks and exceptions natively.
 class SystemWallpaper {
   /// Sets a static wallpaper; null on success, a user-facing reason otherwise.
+  ///
+  /// The reason is the plugin's real error code/message (e.g.
+  /// `wallpaper-not-allowed`, what Android TV ROMs answer when the launcher
+  /// forbids third-party wallpaper changes) — a bare `failed` here hid the
+  /// actual blocker and made the TV failure undiagnosable.
   static Future<String?> setImage(Uint8List bytes) async {
     try {
       final result = await AsyncWallpaper.applyWallpaper(
@@ -16,18 +21,27 @@ class SystemWallpaper {
         ),
       );
 
-      final home = result.home;
-      final status = home?.status ?? WallpaperTargetStatus.notAttempted;
-
-      switch (status) {
-        case WallpaperTargetStatus.applied:
+      // The automatic strategy falls back to the system cropper when a direct
+      // apply is blocked: from that point the user confirms in the system UI,
+      // which is progress, not failure.
+      switch (result.status) {
+        case WallpaperOperationStatus.applied:
+        case WallpaperOperationStatus.previewOpened:
+        case WallpaperOperationStatus.awaitingUserConfirmation:
           return null;
-        case WallpaperTargetStatus.unsupported:
-          return 'unsupported';
-        case WallpaperTargetStatus.notAttempted:
-          return result.errorMessage ?? result.errorCode ?? 'not_attempted';
-        case WallpaperTargetStatus.failed:
-          return home?.errorMessage ?? home?.errorCode ?? result.errorMessage ?? result.errorCode ?? 'failed';
+        case WallpaperOperationStatus.foregroundRequired:
+          return 'foreground_required';
+        case WallpaperOperationStatus.cancelled:
+          return 'cancelled';
+        case WallpaperOperationStatus.unsupported:
+        case WallpaperOperationStatus.failed:
+          final home = result.home;
+          return <String?>[
+            home?.errorCode,
+            home?.errorMessage,
+            result.errorCode,
+            result.errorMessage,
+          ].firstWhere((part) => part != null && part.isNotEmpty, orElse: () => 'failed')!;
       }
     } on MissingPluginException {
       return 'plugin_missing';

@@ -55,6 +55,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                     onTabChange: (index) {
                       ref.read(historyPageProvider.notifier).changeSiteTab(index);
                     },
+                    // OK on the tab already in force refetches it — the second press
+                    // used to do nothing on this bar.
+                    onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
                   ),
                   SizedBox(height: 16.sp),
                   Expanded(

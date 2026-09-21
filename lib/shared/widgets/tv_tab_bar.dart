@@ -132,9 +132,9 @@ class _TvTabBarState extends State<TvTabBar> {
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
-    // TvButton.medium's geometry (64.w pill, t26 label, 24.w icon), the same
+    // TvButton.medium's geometry (60.w pill, t26 label, 24.w icon), the same
     // size the sidebar's menu buttons use.
-    final double height = 64.0.w;
+    final double height = 60.0.w;
     final borderRadius = BorderRadius.circular(height / 2);
 
     return DpadRegion(
@@ -168,7 +168,7 @@ class _TvTabBarState extends State<TvTabBar> {
                   // itself is the custom effect below, because a tab tints
                   // instead of filling solid.
                   // TvButton.medium runs 1.06; the bar matches it.
-                  ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06),
+                  ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06, glow: false),
                   DpadCustomEffect((context, state, child) {
                     final isFocused = state.focused;
 
@@ -179,9 +179,7 @@ class _TvTabBarState extends State<TvTabBar> {
                     if (isSelected || isFocused) {
                       bgColor = currentTvTheme.focusColor;
                     } else {
-                      bgColor = currentTvTheme.buttonSurface.withValues(
-                        alpha: currentTvTheme.isLight ? 0.85 : 0.75,
-                      );
+                      bgColor = currentTvTheme.buttonSurface.withValues(alpha: currentTvTheme.isLight ? 0.85 : 0.75);
                     }
                     const Color foregroundColor = Colors.white;
                     final TextStyle baseStyle = AppTextStyles.t26W500;
@@ -228,18 +226,15 @@ class _TvTabBarState extends State<TvTabBar> {
                     // Fixed 24x24 icon slot (TvButton.medium's size): platform
                     // logos differ in size and must align with the label.
                     if (tab.icon != null) ...[
-                      SizedBox(width: 24.w, height: 24.w, child: Center(child: tab.icon)),
+                      SizedBox(
+                        width: 24.w,
+                        height: 24.w,
+                        child: Center(child: tab.icon),
+                      ),
                       SizedBox(width: 10.w),
                     ],
                     // Never wrap: ellipsize instead, so the pill stays one line.
-                    Center(
-                      child: Text(
-                        tab.title,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+                    Center(child: Text(tab.title, maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis)),
                   ],
                 ),
               ),

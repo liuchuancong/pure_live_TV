@@ -105,6 +105,6 @@ class VideoSettingsSectionPage extends ConsumerWidget {
   void _applyAudioOnly(bool value) {
     final service = GlobalPlayerService.instance;
     if (!service.initialized) return;
-    unawaited(service.playerManager.setAudioOnly(value));
+    unawaited(service.livePlayer?.setAudioOnly(value));
   }
 }

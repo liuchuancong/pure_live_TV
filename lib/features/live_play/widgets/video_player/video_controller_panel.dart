@@ -416,7 +416,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     if (engine == null || !service.initialized) return;
 
     try {
-      await service.playerManager.switchEngine(engine, isManual: true);
+      await service.livePlayer?.switchEngine(engine, isManual: true);
     } catch (error, stackTrace) {
       debugPrint('Switch player kernel to $key failed: $error\n$stackTrace');
     }

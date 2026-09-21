@@ -6,7 +6,6 @@ import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
@@ -196,8 +195,11 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
 
+    final livePlayer = service.livePlayer;
+    if (livePlayer == null) return;
+
     unawaited(
-      service.playerManager
+      livePlayer
           .switchEngine(engine, isManual: true, resumeCurrentSource: false)
           .catchError((Object error, StackTrace stackTrace) {
             debugPrint('Switch player kernel to $key failed: $error');

@@ -47,6 +47,8 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                     onTabChange: (index) {
                       ref.read(favoriteAreasProvider.notifier).changeSiteTab(index);
                     },
+                    // OK twice on a tab refetches it.
+                    onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
                   ),
                   SizedBox(height: 16.sp),
                   Expanded(

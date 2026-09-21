@@ -1,32 +1,20 @@
-export 'adapters/fijk_adapter.dart';
-export 'adapters/media_kit_adapter.dart';
-export 'adapters/video_player_adapter.dart';
-export 'core/engine_fallback_manager.dart';
-export 'core/line_fallback_manager.dart';
+// media_core-backed player layer.
+//
+// The heavy orchestration (watchdogs, line / engine fallback,
+// backoff) lives in package:media_core. This barrel exports the
+// facade, the engine adapters and the app-specific helpers the
+// features consume.
+
+export 'adapters/better_player_adapter.dart';
+export 'adapters/flv_lzc_adapter.dart';
+export 'adapters/media_kit_core_adapter.dart';
 export 'core/live_room_volume_manager.dart';
-export 'core/playback_header_resolver.dart';
-export 'core/playback_lifecycle_coordinator.dart';
 export 'core/playback_proxy_policy.dart';
-export 'core/playback_source.dart';
-export 'core/playback_source_transport.dart';
-export 'core/player_error_classifier.dart';
-export 'core/player_manager.dart';
-export 'core/player_pool.dart';
-export 'core/player_session.dart';
-export 'core/preload_player_manager.dart';
-export 'core/source_event_fence.dart';
 export 'global_player_service.dart';
-export 'interface/fijk_player_accessor.dart';
-export 'interface/media_kit_player_accessor.dart';
-export 'interface/unified_player_interface.dart';
-export 'interface/video_player_accessor.dart';
+export 'live_player_facade.dart';
 export 'models/player_engine.dart';
 export 'models/player_error_type.dart';
 export 'models/player_exception.dart';
 export 'models/player_state.dart';
 export 'utils/fijk_helper.dart';
-export 'utils/live_buffer_policy.dart';
-export 'utils/mpv_platform_profile.dart';
 export 'utils/player_consts.dart';
-export 'utils/video_output_size_policy.dart';
-export 'widgets/video_output_viewport_sizer.dart';
