@@ -94,22 +94,44 @@ final class LivePlayerFacade {
   // Binding
   // ---------------------------------------------------------------------------
 
-  void _bind() {
-    if (_stateSub != null) return;
+  /// The handle whose adapter events are already bound.
+  ///
+  /// The controller creates its handle inside its first open(), which happens
+  /// after play() returns. Binding only on the first call therefore never bound
+  /// anything, and every adapter-driven signal - playing, buffering, the
+  /// background-video suspension - stayed silent.
+  PlayerHandle? _boundHandle;
 
-    _stateSub = _controller.onStateChanged.listen(_onLiveStateChanged);
-    _errorSub = _controller.onError.listen((error) {
+  /// Whether the adapter last reported buffering.
+  ///
+  /// media_core declares buffering the moment open() returns, and that is not
+  /// the adapter's opinion. For a live stream it can also be the last state
+  /// change there ever is, which leaves the spinner on screen over a picture
+  /// that is playing fine. Only the adapter's own report separates the two.
+  bool _adapterBuffering = false;
+
+  void _bind() {
+    _stateSub ??= _controller.onStateChanged.listen(_onLiveStateChanged);
+    _errorSub ??= _controller.onError.listen((error) {
       if (_disposed) return;
       _errorSubject.add(PlayerException(message: error.message, type: PlayerErrorType.unknown));
     });
 
     final handle = _controller.handle;
-    if (handle != null) {
+    if (handle != null && !identical(handle, _boundHandle)) {
+      _boundHandle = handle;
       _bindHandle(handle);
     }
   }
 
   void _bindHandle(PlayerHandle handle) {
+    // A new handle means the previous one was released; its subscription goes
+    // with it, and so does the buffering that handle last reported.
+    for (final sub in List<StreamSubscription<dynamic>>.of(_subscriptions)) {
+      unawaited(sub.cancel());
+    }
+    _subscriptions.clear();
+    _adapterBuffering = false;
     _subscriptions.add(handle.adapter.events.listen(_onAdapterEvent, onError: (Object _) {}));
   }
 
@@ -117,14 +139,18 @@ final class LivePlayerFacade {
     if (_disposed) return;
     switch (event) {
       case PlayerAdapterPlaying():
+        _adapterBuffering = false;
         _playingSubject.add(true);
         _syncBackgroundVideoSuspension(true);
       case PlayerAdapterPaused():
         _playingSubject.add(false);
         _syncBackgroundVideoSuspension(false);
       case PlayerAdapterStopped():
+        _adapterBuffering = false;
         _playingSubject.add(false);
         _syncBackgroundVideoSuspension(false);
+      case PlayerAdapterBuffering(buffering: final buffering):
+        _adapterBuffering = buffering;
       case PlayerAdapterVideoSizeChanged(width: final w, height: final h):
         _widthSubject.add(w);
         _heightSubject.add(h);
@@ -150,15 +176,20 @@ final class LivePlayerFacade {
       case LivePlaybackState.preparing:
         _stateSubject.add(PlayerState.preparing);
       case LivePlaybackState.buffering:
-        // media_core declares buffering the moment open() returns, and an engine
-        // that reports `playing` from inside its own open() has already been
-        // overtaken by it. better_player does exactly that - its play event is
-        // posted synchronously, so the playing state always lands first and this
-        // buffering becomes the last word. A live source may never produce
-        // another state change, which leaves the spinner on screen over a
-        // running stream. The adapter is the authority on what it is doing, so
-        // only a buffering it agrees with is forwarded.
-        if (_controller.handle?.adapter.state.playing ?? false) return;
+        // media_core raises this the moment open() returns, and for a live
+        // stream that declaration can be the last state change there ever is -
+        // which pins the spinner over a picture that is playing fine. Only a
+        // buffering the adapter itself reported is real, and that has to come
+        // from its events: the state it exposes is overwritten by whichever
+        // event arrived last, and ExoPlayer re-buffers often enough that the
+        // value read here is not evidence of anything.
+        if (!_adapterBuffering) {
+          // The controller's own state has to move with it: leaving it on
+          // buffering makes a later real buffering collide with that dedupe
+          // (`if (state == next) return`) and never reach the UI at all.
+          _controller.state = LivePlaybackState.playing;
+          return;
+        }
         _stateSubject.add(PlayerState.buffering);
       case LivePlaybackState.playing:
         _stateSubject.add(PlayerState.playing);

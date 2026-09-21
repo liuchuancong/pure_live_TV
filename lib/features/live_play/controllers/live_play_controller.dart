@@ -36,6 +36,17 @@ class LivePlayController extends _$LivePlayController {
   /// rebuild.
   int _generation = 0;
 
+  /// How long a loading state may last before the UI calls it a failure.
+  ///
+  /// Recovery runs inside media_core, and a stream that offers more than one
+  /// line keeps it cycling between them: every pass re-opens a line and re-enters
+  /// buffering without spending an attempt, so the terminal error that would
+  /// reach the UI is never produced. The watchdogs do not cover it either - they
+  /// only watch a playback that already started. Without this deadline the
+  /// spinner is the last word on screen and the remote has nothing left to press.
+  static const Duration _stallReportTimeout = Duration(seconds: 30);
+  Timer? _stallReportTimer;
+
   @override
   LivePlayState build(LivePlayArgs args) {
     ref.onDispose(_teardown);
@@ -62,6 +73,7 @@ class LivePlayController extends _$LivePlayController {
 
   Future<void> _bootstrap() async {
     final generation = ++_generation;
+    _armStallReport(restart: true);
     state = state.copyWith(status: LivePlayStatus.loadingDetail, clearDetailError: true, clearErrorMessage: true);
 
     try {
@@ -124,6 +136,36 @@ class LivePlayController extends _$LivePlayController {
 
   bool _isCurrent(int generation) => ref.mounted && generation == _generation;
 
+  /// Starts the loading deadline. An already running one is kept unless
+  /// [restart] is set, so media_core cycling through lines cannot push the
+  /// deadline forward forever.
+  void _armStallReport({bool restart = false}) {
+    if (_stallReportTimer != null && !restart) return;
+    _stallReportTimer?.cancel();
+    _stallReportTimer = Timer(_stallReportTimeout, _reportStalledLoad);
+  }
+
+  void _cancelStallReport() {
+    _stallReportTimer?.cancel();
+    _stallReportTimer = null;
+  }
+
+  /// Turns a load that never resolved into a failure the user can act on.
+  ///
+  /// Guarded by [_isLoading] because a stream that started playing may well have
+  /// armed this deadline earlier, in a loading phase it has since left.
+  void _reportStalledLoad() {
+    _stallReportTimer = null;
+    if (!ref.mounted) return;
+    if (!_isLoading(state.status)) return;
+    state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('multiview_play_failed'));
+  }
+
+  static bool _isLoading(LivePlayStatus status) =>
+      status == LivePlayStatus.loadingDetail ||
+      status == LivePlayStatus.preparing ||
+      status == LivePlayStatus.buffering;
+
   void _bindPlayerStreams() {
     final manager = _playerManager;
     if (manager == null) return;
@@ -142,6 +184,7 @@ class LivePlayController extends _$LivePlayController {
     switch (playerState) {
       case PlayerState.ready:
       case PlayerState.playing:
+        _cancelStallReport();
         state = state.copyWith(status: LivePlayStatus.playing, clearErrorMessage: true);
         break;
       case PlayerState.buffering:
@@ -149,14 +192,19 @@ class LivePlayController extends _$LivePlayController {
       case PlayerState.initializing:
         if (state.status != LivePlayStatus.error) {
           state = state.copyWith(status: LivePlayStatus.buffering);
+          // Deliberately not restarted: media_core re-enters buffering once per
+          // line, and each pass would otherwise push back the deadline.
+          _armStallReport();
         }
         break;
       case PlayerState.paused:
+        _cancelStallReport();
         if (state.status != LivePlayStatus.error) {
           state = state.copyWith(status: LivePlayStatus.paused);
         }
         break;
       case PlayerState.error:
+        _cancelStallReport();
         // Terminal errors arrive through onError; this is only a fallback.
         state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('multiview_play_failed'));
         break;
@@ -186,6 +234,7 @@ class LivePlayController extends _$LivePlayController {
 
   void _teardown() {
     _generation++;
+    _cancelStallReport();
     _cancelSubscriptions();
     _channelBannerTimer?.cancel();
     _channelBannerTimer = null;
@@ -299,6 +348,7 @@ class LivePlayController extends _$LivePlayController {
   Future<void> changeQuality(int index) async {
     if (index < 0 || index >= state.qualities.length || index == state.qualityIndex) return;
     final generation = ++_generation;
+    _armStallReport(restart: true);
     state = state.copyWith(qualityIndex: index);
     await _openStream(state.qualities[index], generation);
   }
@@ -308,6 +358,7 @@ class LivePlayController extends _$LivePlayController {
     final manager = _playerManager;
     if (manager == null) return;
     final urls = state.playUrls;
+    _armStallReport(restart: true);
     state = state.copyWith(lineIndex: index, status: LivePlayStatus.preparing, clearErrorMessage: true);
     try {
       await manager.play(urls[index], urls, const <String, String>{}, room: state.room);
@@ -329,6 +380,7 @@ class LivePlayController extends _$LivePlayController {
       await _bootstrap();
       return;
     }
+    _armStallReport(restart: true);
     state = state.copyWith(status: LivePlayStatus.preparing, clearErrorMessage: true);
     try {
       await manager.retry();
