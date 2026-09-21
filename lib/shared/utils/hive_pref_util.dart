@@ -13,6 +13,15 @@ class HivePrefUtil {
   /// throwing `LateInitializationError` on `_box`.
   static bool get isInitialized => _initialized;
 
+  /// The store when it is up, `null` before bootstrap.
+  ///
+  /// Every read goes through this instead of touching [_box] directly: the
+  /// contract documented on [isInitialized] is that a read outside bootstrap
+  /// returns its default, but reading `_box` threw `LateInitializationError`
+  /// instead. That surfaced as a provider stuck in error state the moment a page
+  /// watched one (the settings catalog and its update badge, for example).
+  static Box? get _readable => _initialized ? _box : null;
+
   static Future<void> init() async {
     if (!Hive.isBoxOpen('app_settings')) {
       _box = await Hive.openBox('app_settings');
@@ -23,7 +32,7 @@ class HivePrefUtil {
   }
 
   static dynamic getAnyPref(String key) {
-    return _box.get(key);
+    return _readable?.get(key);
   }
 
   static void setObject(String key, dynamic value) {
@@ -31,7 +40,7 @@ class HivePrefUtil {
   }
 
   static T? getObject<T>(String key, T Function(dynamic) fromJson) {
-    final String? jsonString = _box.get(key);
+    final String? jsonString = _readable?.get(key);
     if (jsonString == null) return null;
     try {
       return fromJson(jsonDecode(jsonString));
@@ -41,7 +50,7 @@ class HivePrefUtil {
   }
 
   static List<T> getObjectList<T>(String key, T Function(Map<String, dynamic>) factory) {
-    final rawList = _box.get(key);
+    final rawList = _readable?.get(key);
     if (rawList is! List) return [];
 
     return rawList.map<T>((item) {
@@ -82,7 +91,7 @@ class HivePrefUtil {
   }
 
   static bool? getBool(String key) {
-    final value = _box.get(key);
+    final value = _readable?.get(key);
     return value is bool ? value : null;
   }
 
@@ -92,7 +101,7 @@ class HivePrefUtil {
   }
 
   static int? getInt(String key) {
-    final value = _box.get(key);
+    final value = _readable?.get(key);
     return value is int ? value : null;
   }
 
@@ -102,7 +111,7 @@ class HivePrefUtil {
   }
 
   static String? getString(String key) {
-    final value = _box.get(key);
+    final value = _readable?.get(key);
     return value is String ? value : null;
   }
 
@@ -112,7 +121,7 @@ class HivePrefUtil {
   }
 
   static double? getDouble(String key) {
-    final value = _box.get(key);
+    final value = _readable?.get(key);
     return value is double ? value : null;
   }
 
@@ -122,7 +131,7 @@ class HivePrefUtil {
   }
 
   static List<String>? getStringList(String key) {
-    final value = _box.get(key);
+    final value = _readable?.get(key);
     return value is List<String> ? value : null;
   }
 
