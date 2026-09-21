@@ -14,6 +14,7 @@ _BackgroundConfigModel _$BackgroundConfigModelFromJson(
       BackgroundSource.none,
   boxFit: $enumDecodeNullable(_$BoxFitEnumMap, json['boxFit']) ?? BoxFit.cover,
   maskOpacity: (json['maskOpacity'] as num?)?.toDouble() ?? 0.35,
+  blurSigma: (json['blurSigma'] as num?)?.toDouble() ?? 0,
   solidColor: json['solidColor'] == null
       ? const Color(0xFF141e30)
       : const HexColorConverter().fromJson(json['solidColor'] as String),
@@ -37,6 +38,7 @@ Map<String, dynamic> _$BackgroundConfigModelToJson(
   'source': _$BackgroundSourceEnumMap[instance.source]!,
   'boxFit': _$BoxFitEnumMap[instance.boxFit]!,
   'maskOpacity': instance.maskOpacity,
+  'blurSigma': instance.blurSigma,
   'solidColor': const HexColorConverter().toJson(instance.solidColor),
   'gradientColors': const HexColorListConverter().toJson(
     instance.gradientColors,

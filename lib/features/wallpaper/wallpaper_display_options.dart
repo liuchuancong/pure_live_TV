@@ -39,6 +39,28 @@ const List<double> kWallpaperMaskSteps = <double>[
   1,
 ];
 
+/// Blur presets (sigma). A remote steps through fixed values instead of
+/// dragging a slider; 0 is "off" so the row always has a way back.
+const List<double> kWallpaperBlurSteps = <double>[0, 2, 4, 6, 8, 12, 16, 24, 32, 48];
+
+/// Localised label of one blur preset.
+String wallpaperBlurLabel(double sigma) =>
+    sigma <= 0 ? i18nOr('wallpaper_blur_off', 'Off') : '${sigma.round()}';
+
+/// Index of the preset closest to [value].
+int wallpaperBlurIndex(double value) {
+  var best = 0;
+  var bestDelta = double.infinity;
+  for (var i = 0; i < kWallpaperBlurSteps.length; i++) {
+    final delta = (kWallpaperBlurSteps[i] - value).abs();
+    if (delta < bestDelta) {
+      bestDelta = delta;
+      best = i;
+    }
+  }
+  return best;
+}
+
 /// Localised label of one fill mode.
 String wallpaperFitLabel(BoxFit fit) => switch (fit) {
   BoxFit.fill => i18nOr('wallpaper_fit_fill', 'Stretch'),

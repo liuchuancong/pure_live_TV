@@ -109,6 +109,8 @@
   "wallpaper_video_subtitle": "Animated video backgrounds",
   "wallpaper_library_entry_subtitle": "Official, Wallhaven, Bing and more",
   "wallpaper_mask": "Mask",
+  "wallpaper_blur": "Blur",
+  "wallpaper_blur_off": "Off",
   "wallpaper_display_group": "Display settings",
   "wallpaper_fit_mode": "Fill mode",
   "wallpaper_fit_fill": "Stretch",

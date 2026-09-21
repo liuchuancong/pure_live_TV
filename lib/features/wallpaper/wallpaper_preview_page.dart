@@ -23,11 +23,12 @@ import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
+import 'package:pure_live/services/background_config/background_blur.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
 /// What one button in the preview's action bar does.
-enum _PreviewActionKind { prev, next, fresh, fit, mask, apply, playPause, immersive }
+enum _PreviewActionKind { prev, next, fresh, fit, blur, mask, apply, playPause, immersive }
 
 /// One entry of the preview's action bar.
 class _PreviewAction {
@@ -312,6 +313,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     SettingsService.to.bg.setBoxFit(kWallpaperFitModes[(current + 1) % kWallpaperFitModes.length]);
   }
 
+  void _cycleBlur() {
+    final current = wallpaperBlurIndex(SettingsService.to.bgState.blurSigma);
+    SettingsService.to.bg.setBlurSigma(kWallpaperBlurSteps[(current + 1) % kWallpaperBlurSteps.length]);
+  }
+
   void _cycleMask() {
     final current = wallpaperMaskIndex(SettingsService.to.bgState.maskOpacity);
     SettingsService.to.bg.setMaskOpacity(kWallpaperMaskSteps[(current + 1) % kWallpaperMaskSteps.length]);
@@ -359,6 +365,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         kind: _PreviewActionKind.fit,
         icon: Icons.aspect_ratio_outlined,
         label: wallpaperFitLabel(bgState.boxFit),
+      ),
+      _PreviewAction(
+        kind: _PreviewActionKind.blur,
+        icon: Icons.blur_on_outlined,
+        label: wallpaperBlurLabel(bgState.blurSigma),
       ),
       _PreviewAction(
         kind: _PreviewActionKind.mask,
@@ -424,6 +435,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         _prev(items);
       case _PreviewActionKind.fit:
         _cycleFit();
+      case _PreviewActionKind.blur:
+        _cycleBlur();
       case _PreviewActionKind.mask:
         _cycleMask();
       case _PreviewActionKind.apply:
@@ -472,7 +485,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _buildViewer(bgState, item),
+          // 模糊在遮罩之下：先虚化媒体本身，再压遮罩，所见即最终应用效果。
+          wallpaperBlurred(_buildViewer(bgState, item), bgState.blurSigma),
           // The mask the app applies over this wallpaper, drawn here too so the
           // mask action shows what it does: before, the button moved a number
           // and nothing on screen changed.

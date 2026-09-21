@@ -75,12 +75,12 @@ class _BackgroundLayer extends StatelessWidget {
           BackgroundSource.gradient => _GradientBackground(config: config),
           BackgroundSource.localImage ||
           BackgroundSource.assetImage ||
-          BackgroundSource.networkImage => _ImageBackground(config: config),
+          BackgroundSource.networkImage => wallpaperBlurred(_ImageBackground(config: config), config.blurSigma),
           BackgroundSource.assetVideo ||
           BackgroundSource.localVideo ||
           // 刻意不加 const：const 实例每次都 identical，Element.updateChild
           // 会跳过重建，播放器/海报帧的变化就刷不出来（影片层继续画旧帧）。
-          BackgroundSource.networkVideo => _VideoBackground(),
+          BackgroundSource.networkVideo => wallpaperBlurred(_VideoBackground(), config.blurSigma),
         };
       },
     );

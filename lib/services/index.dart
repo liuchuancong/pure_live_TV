@@ -3,6 +3,7 @@ library;
 
 export 'app_settings/app_settings_controller.dart';
 export 'app_settings/app_settings_model.dart';
+export 'background_config/background_blur.dart';
 export 'background_config/background_config_model.dart';
 export 'background_config/background_controller.dart';
 export 'app_update/app_update_service.dart';

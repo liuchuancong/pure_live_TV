@@ -13,6 +13,7 @@ import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_sequence.dart';
 import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
+import 'package:pure_live/services/background_config/background_blur.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
@@ -227,7 +228,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
           child: Stack(
             fit: StackFit.expand,
             children: [
-              _buildViewer(bgState, item),
+              wallpaperBlurred(_buildViewer(bgState, item), bgState.blurSigma),
               if (bgState.maskOpacity > 0) IgnorePointer(child: _buildMask(bgState)),
               // First-entry hint; it disappears on its own.
               AnimatedOpacity(

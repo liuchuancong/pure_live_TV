@@ -55,6 +55,7 @@ class BackgroundController extends _$BackgroundController {
         orElse: () => BoxFit.cover,
       ),
       maskOpacity: HivePrefUtil.getDouble('bgMaskOpacity') ?? 0.35,
+      blurSigma: HivePrefUtil.getDouble('bgBlurSigma') ?? 0,
       solidColor: HexColor(HivePrefUtil.getString('bgSolidColorHex') ?? '141e30'),
       gradientColors: (HivePrefUtil.getString('bgGradientColors') ?? "141e30,243b55,141e30")
           .split(",")
@@ -94,6 +95,7 @@ class BackgroundController extends _$BackgroundController {
     _writeIfChanged('bgSource', bgSourceToString(newModel.source));
     _writeIfChanged('bgBoxFit', newModel.boxFit.name);
     _writeIfChanged('bgMaskOpacity', newModel.maskOpacity);
+    _writeIfChanged('bgBlurSigma', newModel.blurSigma);
     _writeIfChanged('bgSolidColorHex', newModel.solidColor.toHex());
     _writeIfChanged('bgGradientColors', newModel.gradientColors.map((c) => c.toHex()).join(","));
     _writeIfChanged('bgAssetImagePath', newModel.assetImagePath ?? "");
@@ -243,6 +245,9 @@ class BackgroundController extends _$BackgroundController {
       _updateState(state.copyWith(source: BackgroundSource.gradient, gradientColors: colors));
   void setBoxFit(BoxFit fit) => _updateState(state.copyWith(boxFit: fit));
   void setMaskOpacity(double opacity) => _updateState(state.copyWith(maskOpacity: opacity));
+
+  /// 设置高斯模糊强度（sigma，0 关闭）。
+  void setBlurSigma(double sigma) => _updateState(state.copyWith(blurSigma: sigma.clamp(0, 60)));
   void setAssetImage(String path) => _updateState(
     state.copyWith(source: BackgroundSource.assetImage, assetImagePath: path, localImagePath: "", networkImageUrl: ""),
   );
@@ -291,6 +296,7 @@ class BackgroundController extends _$BackgroundController {
       source: bgSourceFromString(json["source"] ?? 'none'),
       boxFit: BoxFit.values.firstWhere((e) => e.name == json["boxFit"], orElse: () => BoxFit.cover),
       maskOpacity: (json["maskOpacity"] ?? 0.35).toDouble(),
+      blurSigma: (json["blurSigma"] ?? 0).toDouble(),
       solidColor: HexColor(json["solidColorHex"] ?? "141e30"),
       gradientColors: colors,
       assetImagePath: json["assetImagePath"],
@@ -309,6 +315,7 @@ class BackgroundController extends _$BackgroundController {
       "source": bgSourceToString(state.source),
       "boxFit": state.boxFit.name,
       "maskOpacity": state.maskOpacity,
+      "blurSigma": state.blurSigma,
       "solidColorHex": state.solidColor.toHex(),
       "gradientHexList": state.gradientColors.map((c) => c.toHex()).join(","),
       "assetImagePath": state.assetImagePath ?? "",

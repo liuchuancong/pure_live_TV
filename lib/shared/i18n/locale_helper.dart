@@ -108,6 +108,8 @@ Map<String, String> _labels = {
   'background_load_failed': '背景目录加载失败',
   'background_no_category': '该来源暂无数据',
   'background_no_item': '这个分类还没有资源',
+  'wallpaper_blur': '高斯模糊',
+  'wallpaper_blur_off': '关闭',
   'wallpaper_immersive': '沉浸式',
   'wallpaper_immersive_hint': '↑↓ 切换 · OK 设为壁纸 · 返回退出',
   'wallpaper': '壁纸',

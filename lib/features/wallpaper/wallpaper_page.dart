@@ -82,6 +82,13 @@ class WallpaperPage extends ConsumerWidget {
                   onChanged: (index) => SettingsService.to.bg.setMaskOpacity(kWallpaperMaskSteps[index]),
                 ),
                 TvSettingsOptionTile(
+                  title: i18nOr('wallpaper_blur', '高斯模糊'),
+                  icon: Icons.blur_on_outlined,
+                  options: [for (final step in kWallpaperBlurSteps) wallpaperBlurLabel(step)],
+                  index: wallpaperBlurIndex(bgState.blurSigma),
+                  onChanged: (index) => SettingsService.to.bg.setBlurSigma(kWallpaperBlurSteps[index]),
+                ),
+                TvSettingsOptionTile(
                   title: i18n('background_clear'),
                   icon: Icons.layers_clear_outlined,
                   options: const <String>[''],

@@ -105,6 +105,8 @@
   "wallpaper_video_subtitle": "动态视频背景",
   "wallpaper_library_entry_subtitle": "官方、Wallhaven、必应等图库",
   "wallpaper_mask": "遮罩",
+  "wallpaper_blur": "高斯模糊",
+  "wallpaper_blur_off": "关闭",
   "wallpaper_display_group": "显示设置",
   "wallpaper_fit_mode": "填充模式",
   "wallpaper_fit_fill": "拉伸填充",

@@ -66,7 +66,7 @@ final class BackgroundControllerProvider
 }
 
 String _$backgroundControllerHash() =>
-    r'491ff90111c49646066696128547335f1bd91ba4';
+    r'9e8486760a5874b22478e53ca150cc254c2d3f97';
 
 /// Background configuration and the player behind a video background.
 ///
