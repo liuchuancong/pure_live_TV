@@ -5,6 +5,7 @@
 // facade, the engine adapters and the app-specific helpers the
 // features consume.
 
+export 'adapters/better_player_adapter.dart';
 export 'adapters/flv_lzc_adapter.dart';
 export 'adapters/media_kit_core_adapter.dart';
 export 'core/live_room_volume_manager.dart';

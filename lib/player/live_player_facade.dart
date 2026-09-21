@@ -3,6 +3,8 @@ import 'models/player_state.dart';
 import 'models/player_engine.dart';
 import 'models/player_exception.dart';
 import 'package:flutter/material.dart';
+import 'package:better_player_plus/better_player_plus.dart';
+import 'adapters/better_player_adapter.dart';
 import 'adapters/flv_lzc_adapter.dart';
 import 'models/player_error_type.dart';
 import '../shared/consts/app_consts.dart';
@@ -181,6 +183,8 @@ final class LivePlayerFacade {
       await adapter.setAudioOnly(audioOnly);
     } else if (adapter is FlvLzcPlayerAdapter) {
       await adapter.setAudioOnly(audioOnly);
+    } else if (adapter is BetterPlayerAdapter) {
+      await adapter.setAudioOnly(audioOnly);
     }
   }
 
@@ -214,6 +218,7 @@ final class LivePlayerFacade {
   /// The engine currently in use.
   PlayerEngine get currentEngine => switch (_controller.backendId) {
     'ijk' => PlayerEngine.fijk,
+    'exo' => PlayerEngine.betterPlayer,
     _ => PlayerEngine.mediaKit,
   };
 
@@ -234,6 +239,8 @@ final class LivePlayerFacade {
     if (adapter is PureLiveMediaKitAdapter) {
       adapter.setVideoFit(fit);
     } else if (adapter is FlvLzcPlayerAdapter) {
+      adapter.setVideoFit(fit);
+    } else if (adapter is BetterPlayerAdapter) {
       adapter.setVideoFit(fit);
     }
   }
@@ -277,6 +284,10 @@ final class LivePlayerFacade {
     if (adapter is FlvLzcPlayerAdapter) {
       adapter.setVideoFit(fit);
       return adapter.viewHolder.build(adapter.fijkPlayer);
+    }
+    if (adapter is BetterPlayerAdapter) {
+      adapter.setVideoFit(fit);
+      return BetterPlayer(controller: adapter.controller);
     }
     return const ColoredBox(color: Colors.black);
   }

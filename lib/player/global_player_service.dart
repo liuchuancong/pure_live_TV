@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:media_core/media_core.dart';
 import 'package:media_kit/media_kit.dart' as mk;
 
+import 'adapters/better_player_adapter.dart';
 import 'adapters/flv_lzc_adapter.dart';
 import 'adapters/media_kit_core_adapter.dart';
 import 'live_player_facade.dart';
@@ -91,12 +92,10 @@ class GlobalPlayerService {
           priority: priority,
         );
       case PlayerEngine.betterPlayer:
-        // The legacy Exo adapter is retired; route it to MPV so a
-        // stored preference keeps working.
         return PlayerAdapterRegistration(
-          id: 'mpv',
-          factory: _MediaKitFactory(),
-          capabilities: PureLiveMediaKitAdapter.defaultCapabilities,
+          id: 'exo',
+          factory: _BetterPlayerFactory(),
+          capabilities: BetterPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
     }
@@ -128,4 +127,12 @@ class _FlvLzcFactory implements PlayerAdapterFactory {
 
   @override
   bool supports(String id) => id == 'ijk' || id.isEmpty;
+}
+
+class _BetterPlayerFactory implements PlayerAdapterFactory {
+  @override
+  PlayerAdapter create(String id) => BetterPlayerAdapter(id: id);
+
+  @override
+  bool supports(String id) => id == 'exo' || id.isEmpty;
 }
