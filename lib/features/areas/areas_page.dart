@@ -37,6 +37,9 @@ class _AreasPageState extends ConsumerState<AreasPage> {
                   onTabChange: (index) {
                     ref.read(platformTabProvider.notifier).switchPlatform(index);
                   },
+                  // OK twice on the platform tab refetches its category list — the
+                  // retry path for a platform whose directory request failed.
+                  onTabRefresh: (index) => ref.invalidate(getSiteCategoriesProvider(currentSite.id)),
                 ),
                 SizedBox(height: 16.sp),
                 Expanded(
