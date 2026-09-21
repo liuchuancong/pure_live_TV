@@ -38,7 +38,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1       # 通用文件缓存管理
 
   # 状态管理 & 代码序列化注解
-  flutter_riverpod: ^3.3.2            # Riverpod 状态管理
+  flutter_riverpod: ^3.4.0            # Riverpod 状态管理；≥3.4.0 修复 TickerMode 恢复订阅时 markNeedsBuild 崩溃
   riverpod_annotation: ^4.0.3          # Riverpod注解生成依赖
   freezed_annotation: ^3.1.0          # 数据模型冻结类注解
   json_annotation: ^4.12.0            # JSON序列化基础注解
