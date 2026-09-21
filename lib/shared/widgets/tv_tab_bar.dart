@@ -168,7 +168,7 @@ class _TvTabBarState extends State<TvTabBar> {
                   // itself is the custom effect below, because a tab tints
                   // instead of filling solid.
                   // TvButton.medium runs 1.06; the bar matches it.
-                  ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06),
+                 ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06, glow: false),
                   DpadCustomEffect((context, state, child) {
                     final isFocused = state.focused;
 
