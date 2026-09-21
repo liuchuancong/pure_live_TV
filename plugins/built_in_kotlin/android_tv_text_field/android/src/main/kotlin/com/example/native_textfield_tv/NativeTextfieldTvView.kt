@@ -3,8 +3,13 @@ import android.util.Log
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -32,37 +37,39 @@ class NativeTextfieldTvView(
 
             hint = creationParams?.get("hint") as? String ?: ""
 
-            // Initial colors
-          // Get color from creationParams safely
-val textColorValue = creationParams?.get("textColor")
-val textColor = when (textColorValue) {
-    is Int -> textColorValue
-    is Long -> textColorValue.toInt()
-    else -> Color.WHITE
-}
-setTextColor(textColor)
-setHintTextColor(textColor)
+            val textColor = creationParams.color("textColor", Color.WHITE)
+            setTextColor(textColor)
+            // The hint carries its own colour: reusing the text colour makes the
+            // placeholder read as typed content.
+            setHintTextColor(creationParams.color("hintColor", withAlpha(textColor, 0.4f)))
 
-val bgColorValue = creationParams?.get("backgroundColor")
-val bgColor = when (bgColorValue) {
-    is Int -> bgColorValue
-    is Long -> bgColorValue.toInt()
-    else -> Color.BLACK
-}
-setBackgroundColor(bgColor)
+            // Transparent by default. The Flutter frame behind this platform view
+            // owns the fill, and setBackgroundColor is also what strips the
+            // underline the platform theme would otherwise draw under the field.
+            setBackgroundColor(creationParams.color("backgroundColor", Color.TRANSPARENT))
 
+            // The platform default is 14sp, far below the surrounding TV type.
+            val fontSize = (creationParams?.get("fontSize") as? Number)?.toFloat() ?: 0f
+            if (fontSize > 0f) setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize)
+
+            tintCaret(creationParams.color("cursorColor", textColor))
+
+            // No inset of its own - the Flutter frame already pads the content -
+            // and no extra font padding, which otherwise pushes text off centre.
+            setPadding(0, 0, 0, 0)
+            includeFontPadding = false
+            gravity = Gravity.CENTER_VERTICAL or gravityFor(creationParams?.get("textAlign") as? String)
 
             // Input type
-            inputType = android.text.InputType.TYPE_CLASS_TEXT
+            inputType = InputType.TYPE_CLASS_TEXT
             val obscureText = creationParams?.get("obscureText") as? Boolean ?: false
             if (obscureText) {
-                inputType = android.text.InputType.TYPE_CLASS_TEXT or
-                        android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             }
 
             // Max lines
             val maxLines = creationParams?.get("maxLines") as? Int ?: 1
-            setLines(maxLines)
+            if (maxLines <= 1) setSingleLine(true) else setMaxLines(maxLines)
 
             imeOptions = EditorInfo.IME_ACTION_DONE
 
@@ -119,6 +126,7 @@ setBackgroundColor(bgColor)
     fun setHint(hint: String?) { editText.hint = hint }
 
     fun setTextColorFlutter(color: Int) { editText.setTextColor(color) }
+    fun setHintTextColorFlutter(color: Int) { editText.setHintTextColor(color) }
     fun setBackgroundColorFlutter(color: Int) { editText.setBackgroundColor(color) }
 
  fun setObscureText(obscure: Boolean) {
@@ -148,5 +156,45 @@ setBackgroundColor(bgColor)
             "left" -> if (pos > 0) editText.setSelection(pos - 1)
             "right" -> if (pos < editText.text.length) editText.setSelection(pos + 1)
         }
+    }
+}
+
+/// Reads a colour argument. Flutter sends ARGB over the standard codec, where
+/// it arrives as an Int (a Long on some platforms).
+private fun Map<String?, Any?>?.color(key: String, fallback: Int): Int {
+    return when (val value = this?.get(key)) {
+        is Int -> value
+        is Long -> value.toInt()
+        else -> fallback
+    }
+}
+
+private fun withAlpha(color: Int, alpha: Float): Int {
+    val a = (alpha.coerceIn(0f, 1f) * 255f).toInt()
+    return (color and 0x00FFFFFF) or (a shl 24)
+}
+
+private fun gravityFor(align: String?): Int = when (align) {
+    "center" -> Gravity.CENTER_HORIZONTAL
+    "right", "end" -> Gravity.END
+    else -> Gravity.START
+}
+
+/// Tints the caret. Q is the first release exposing this publicly; older
+/// devices keep the platform colour rather than being patched through private
+/// fields.
+private fun EditText.tintCaret(color: Int) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+    try {
+        val width = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, 2f, resources.displayMetrics
+        ).toInt()
+        textCursorDrawable = GradientDrawable().apply {
+            setColor(color)
+            // The platform stretches this to the line height; only width matters.
+            setSize(width, 0)
+        }
+    } catch (_: Throwable) {
+        // Decoration only - a failure keeps the platform caret.
     }
 }

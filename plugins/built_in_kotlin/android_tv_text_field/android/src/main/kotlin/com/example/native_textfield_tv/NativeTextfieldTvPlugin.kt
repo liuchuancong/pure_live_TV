@@ -74,6 +74,18 @@ class NativeTextfieldTvPlugin: FlutterPlugin, MethodCallHandler {
         view.setHint(hint)
         result.success(null)
       }
+      // Text and hint colours change while the view is alive (the frame behind
+      // it recolours on focus), and creation params are read only once.
+      "setTextColor" -> {
+        val color = call.argument<Number>("color")?.toInt()
+        if (color != null) view.setTextColorFlutter(color)
+        result.success(null)
+      }
+      "setHintTextColor" -> {
+        val color = call.argument<Number>("color")?.toInt()
+        if (color != null) view.setHintTextColorFlutter(color)
+        result.success(null)
+      }
       "moveCursor" -> {
         val direction = call.argument<String>("direction")
         if (direction == "left" || direction == "right") {

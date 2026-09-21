@@ -51,6 +51,17 @@ class NativeTextField extends StatefulWidget {
   final Color backgroundColor;
   final Color textColor;
 
+  /// Placeholder colour. Defaults to [textColor] at 40% alpha natively.
+  final Color? hintColor;
+
+  /// Caret colour. Defaults to [textColor] natively.
+  final Color? cursorColor;
+
+  /// Text size in logical pixels. Without it the platform's own 14sp applies,
+  /// which reads far smaller than the surrounding TV type.
+  final double? fontSize;
+  final TextAlign textAlign;
+
   const NativeTextField({
     super.key,
     this.controller,
@@ -67,6 +78,10 @@ class NativeTextField extends StatefulWidget {
     this.maxLines = 1,
     this.backgroundColor = Colors.black,
     this.textColor = Colors.white,
+    this.hintColor,
+    this.cursorColor,
+    this.fontSize,
+    this.textAlign = TextAlign.start,
   });
 
   @override
@@ -105,6 +120,46 @@ class _NativeTextFieldState extends State<NativeTextField> {
 
   void _onControllerTextChanged() {
     if (!_controller.isUpdatingFromNative) _syncToNative();
+  }
+
+  /// Whether the platform view exists yet.
+  ///
+  /// Creation params cover the initial colours only; anything that changes
+  /// afterwards has to be pushed, or the field keeps painting stale ones.
+  bool _platformViewReady = false;
+
+  @override
+  void didUpdateWidget(covariant NativeTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_platformViewReady) return;
+
+    if (widget.textColor != oldWidget.textColor ||
+        widget.hintColor != oldWidget.hintColor) {
+      _pushColors();
+    }
+    if (widget.obscureText != oldWidget.obscureText) {
+      _channel.invokeMethod('setObscureText', {
+        'instanceId': _instanceId,
+        'obscureText': widget.obscureText,
+      });
+    }
+  }
+
+  /// Pushes the colours a creation param cannot carry past the first frame.
+  ///
+  /// The frame behind this field recolours as focus moves, and the text has to
+  /// follow it — otherwise black text lands on a white focused card, or white
+  /// text on the default dark one.
+  void _pushColors() {
+    final Color hint = widget.hintColor ?? widget.textColor.withValues(alpha: 0.4);
+    _channel.invokeMethod('setTextColor', {
+      'instanceId': _instanceId,
+      'color': widget.textColor.toARGB32(),
+    });
+    _channel.invokeMethod('setHintTextColor', {
+      'instanceId': _instanceId,
+      'color': hint.toARGB32(),
+    });
   }
 
   static Future<dynamic> _handleMethodCall(MethodCall call) async {
@@ -185,8 +240,12 @@ class _NativeTextFieldState extends State<NativeTextField> {
       'initialText': widget.initialText,
       'obscureText': widget.obscureText,
       'maxLines': widget.maxLines,
-      'backgroundColor': widget.backgroundColor.value,
-      'textColor': widget.textColor.value,
+      'backgroundColor': widget.backgroundColor.toARGB32(),
+      'textColor': widget.textColor.toARGB32(),
+      'textAlign': _alignName(widget.textAlign),
+      if (widget.hintColor != null) 'hintColor': widget.hintColor!.toARGB32(),
+      if (widget.cursorColor != null) 'cursorColor': widget.cursorColor!.toARGB32(),
+      if (widget.fontSize != null) 'fontSize': widget.fontSize,
     };
 
     Widget child = AndroidView(
@@ -203,6 +262,7 @@ class _NativeTextFieldState extends State<NativeTextField> {
   }
 
   void _onPlatformViewCreated(int id) {
+    _platformViewReady = true;
     if (_controller.text.isNotEmpty && _controller.text != widget.initialText)
       _syncToNative();
   }
@@ -233,6 +293,25 @@ class AndroidTVTextField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final Widget? postFixWidget;
 
+  /// Placeholder and caret colours, forwarded to the platform field.
+  final Color? hintColor;
+  final Color? cursorColor;
+
+  /// Text size in logical pixels.
+  final double? fontSize;
+  final TextAlign textAlign;
+
+  /// Frame around the platform field.
+  ///
+  /// [focuesedBorderColor] and [unFocuesedBorderColor] were already part of the
+  /// API, but build ignored them and drew a fixed green/amber ring instead -
+  /// which fought whatever palette the caller had, and doubled up on the ring
+  /// a caller-drawn frame was already showing. They are honoured now, so a
+  /// caller that owns its own frame passes transparent for both.
+  final double borderRadius;
+  final double borderWidth;
+  final EdgeInsets contentPadding;
+
   const AndroidTVTextField(
       {super.key,
       required this.focusNode,
@@ -247,6 +326,13 @@ class AndroidTVTextField extends StatefulWidget {
       this.onSubmitted,
       this.focuesedBorderColor = Colors.transparent,
       this.unFocuesedBorderColor = Colors.transparent,
+      this.borderRadius = 10,
+      this.borderWidth = 1,
+      this.contentPadding = EdgeInsets.zero,
+      this.hintColor,
+      this.cursorColor,
+      this.fontSize,
+      this.textAlign = TextAlign.start,
       this.postFixWidget});
 
   @override
@@ -305,29 +391,29 @@ class _DpadNativeTextFieldState extends State<AndroidTVTextField> {
             return Container(
               height: widget.height,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(widget.borderRadius),
                 color: widget.backgroundColor,
                 border: Border.all(
-                  color:
-                      widget.focusNode.hasFocus ? Colors.green : Colors.amber,
-                  width: 1,
+                  color: widget.focusNode.hasFocus
+                      ? widget.focuesedBorderColor
+                      : widget.unFocuesedBorderColor,
+                  width: widget.borderWidth,
                 ),
               ),
-              padding: EdgeInsets.only(
-                  left: 5,
-                  right: widget.postFixWidget == null ? 5 : 50,
-                  top: 5,
-                  bottom: 5),
+              padding: widget.contentPadding,
               child: NativeTextField(
                 key: _nativeTextFieldKey,
                 controller: widget.controller,
                 width: double.infinity,
-                height: widget.height,
                 obscureText: widget.obscureText,
                 hint: widget.hint,
                 maxLines: widget.maxLines,
                 backgroundColor: widget.backgroundColor,
                 textColor: widget.textColor,
+                hintColor: widget.hintColor,
+                cursorColor: widget.cursorColor,
+                fontSize: widget.fontSize,
+                textAlign: widget.textAlign,
                 onSubmitted: widget.onSubmitted,
               ),
             );
@@ -338,3 +424,10 @@ class _DpadNativeTextFieldState extends State<AndroidTVTextField> {
     );
   }
 }
+
+/// The platform side turns this into a Gravity constant.
+String _alignName(TextAlign align) => switch (align) {
+      TextAlign.center => 'center',
+      TextAlign.right || TextAlign.end => 'right',
+      _ => 'start',
+    };

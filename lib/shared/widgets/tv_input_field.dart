@@ -156,10 +156,20 @@ class _TvInputFieldState extends State<TvInputField> {
         obscureText: _isObscure,
         hint: widget.hint,
         maxLines: lines ?? 1,
-        // The frame below is the only decoration: the native view gets the
-        // same fill and text colours so it melts into it.
-        backgroundColor: resolvedBgColor,
+        // The frame below is the only decoration, so the platform field draws
+        // none of its own: a fill would also be frozen, since AndroidView reads
+        // its creation params once while the frame recolours on focus.
+        backgroundColor: Colors.transparent,
         textColor: resolvedTextColor,
+        hintColor: resolvedTextColor.withValues(alpha: 0.4),
+        cursorColor: resolvedFocusedBorder,
+        focuesedBorderColor: Colors.transparent,
+        unFocuesedBorderColor: Colors.transparent,
+        borderWidth: 0,
+        // Matches the fallback backend, so the same field does not resize its
+        // text when it lands on a platform that uses the native view.
+        fontSize: 28.sp,
+        textAlign: widget.textAlign,
         onSubmitted: widget.onSubmitted,
       );
     } else {
