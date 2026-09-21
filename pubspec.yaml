@@ -109,7 +109,6 @@ dependencies:
   flutter_virtual_scroll: ^0.1.1
   marquee_list: ^1.0.0
   android_intent_plus: ^6.0.0
-  tv_textfield: ^1.0.5
   bonsoir: ^7.1.5
   flutter_inappwebview:
     git:
@@ -124,14 +123,10 @@ dependencies:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core
       ref: main  # 可选
-  async_wallpaper:
-    path: plugins/built_in_kotlin/async_wallpaper # 本地 AGP 9 内建 Kotlin 补丁
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）
 dependency_overrides:
-  async_wallpaper:
-    path: plugins/built_in_kotlin/async_wallpaper # 本地 AGP 9 内建 Kotlin 补丁
   flutter_inappwebview_android:
     path: plugins/built_in_kotlin/flutter_inappwebview_android # 上游网页内核 Android 子包 ProGuard 兼容补丁
   android_tv_text_field:

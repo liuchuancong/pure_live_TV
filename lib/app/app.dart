@@ -1,5 +1,4 @@
 import 'package:dpad/dpad.dart';
-import 'package:tv_textfield/tv_textfield.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:go_transitions/go_transitions.dart';
@@ -71,15 +70,9 @@ class App extends ConsumerWidget {
                     child: TvPaletteDefaults(
                       theme: resolvedTvTheme,
                       child: TvLocaleRebuilder(
-                        // tv_textfield's scope: every TvTextField under it moves
-                        // with the arrows while unfocused and only takes the
-                        // keyboard once OK is pressed, which is what a plain
-                        // TextField got wrong on TV (it swallowed the d-pad).
-                        child: TvTextFieldScope(
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [const TvAppBackground(), withDpad, const GlobalRoomPushOverlay()],
-                          ),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [const TvAppBackground(), withDpad, const GlobalRoomPushOverlay()],
                         ),
                       ),
                     ),

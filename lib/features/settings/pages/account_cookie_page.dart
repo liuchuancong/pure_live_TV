@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
-import 'package:tv_textfield/tv_textfield.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
@@ -414,30 +413,16 @@ class _CookieFieldState extends State<_CookieField> {
           Expanded(
             child: Align(
               alignment: Alignment.topLeft,
-              child: TvTextField(
+              // The outer container owns the frame (builder: true), so this
+              // field is bare text over it, unbounded and scroll-free.
+              child: TvInputField(
                 controller: widget.controller,
                 focusNode: widget.focusNode,
-                implementation: TvTextFieldImplementation.flutter,
                 textAlign: TextAlign.start,
-                // Outer container owns the visual frame.
-                focusDecoration: const BoxDecoration(),
-
-                minLines: null,
+                minLines: 1,
                 maxLines: null,
-
-                style: TextStyle(color: text, fontSize: 24.sp, height: 1.4),
-
-                decoration: const InputDecoration(
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  focusedErrorBorder: InputBorder.none,
-                  filled: false,
-                ),
+                textColor: text,
+                builder: (content, _) => content,
               ),
             ),
           ),

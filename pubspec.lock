@@ -80,13 +80,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.1"
-  async_wallpaper:
-    dependency: "direct main"
-    description:
-      path: "plugins/built_in_kotlin/async_wallpaper"
-      relative: true
-    source: path
-    version: "3.3.0"
   better_player_plus:
     dependency: "direct main"
     description:
@@ -1882,14 +1875,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.18"
-  tv_textfield:
-    dependency: "direct main"
-    description:
-      name: tv_textfield
-      sha256: "820ad500740717b1961f2a2e10e31aa8337fdc415dc0028f8ec35d8df01434f0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.5"
   typed_data:
     dependency: transitive
     description:

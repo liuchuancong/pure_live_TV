@@ -1,5 +1,4 @@
 import 'package:pure_live/exports/exports.dart';
-import 'package:tv_textfield/tv_textfield.dart';
 
 class TvInputDialog extends StatefulWidget {
   final String title;
@@ -34,9 +33,8 @@ class _TvInputDialogState extends State<TvInputDialog> {
       if (!mounted) return;
       _focusNode.requestFocus();
       // A dialog exists to be typed into, so the field goes straight into
-      // editing instead of waiting for another OK. `TvTextField` enters editing
-      // from its own key handler, which is also what the remote's OK reaches,
-      // so the dialog calls exactly that handler.
+      // editing instead of waiting for another OK: the field's own key handler
+      // is what the remote's OK reaches, so the dialog calls exactly that.
       final FocusOnKeyEventCallback? onKey = _focusNode.onKeyEvent;
       onKey?.call(
         _focusNode,
@@ -72,27 +70,16 @@ class _TvInputDialogState extends State<TvInputDialog> {
       cancelText: i18n('cancel'),
       onConfirm: _submit,
       onCancel: () => Navigator.of(context).pop(),
-      child: TvTextField(
+      // TvInputField, not a bare field: it brings the app palette and the
+      // TV key handling (arrows walk the layout until OK starts editing).
+      child: TvInputField(
         controller: _controller,
         focusNode: _focusNode,
+        hint: widget.hintText,
         maxLength: widget.maxLength,
-        style: TextStyle(color: tvTheme.primaryTextColor, fontSize: 26.sp),
-        // Same choice as TvInputField: the Flutter backend, so the dialog keeps
-        // the app's palette instead of a native EditText platform view.
-        implementation: TvTextFieldImplementation.flutter,
-        decoration: InputDecoration(
-          hintText: widget.hintText,
-          hintStyle: TextStyle(color: tvTheme.secondaryTextColor.withAlpha(120), fontSize: 24.sp),
-          filled: true,
-          fillColor: tvTheme.backgroundColor.withAlpha(100),
-          contentPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.w),
-          counterStyle: TextStyle(color: tvTheme.secondaryTextColor, fontSize: 18.sp),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16.sp), borderSide: BorderSide.none),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16.sp),
-            borderSide: BorderSide(color: tvTheme.focusColor, width: 2.sp),
-          ),
-        ),
+        height: 56.sp,
+        textColor: tvTheme.primaryTextColor,
+        backgroundColor: tvTheme.cardColor.withAlpha(120),
         onSubmitted: (_) => _submit(),
       ),
     );
