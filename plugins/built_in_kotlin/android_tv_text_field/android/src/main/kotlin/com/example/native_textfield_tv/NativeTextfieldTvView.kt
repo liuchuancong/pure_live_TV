@@ -49,15 +49,32 @@ class NativeTextfieldTvView(
             setBackgroundColor(creationParams.color("backgroundColor", Color.TRANSPARENT))
 
             // The platform default is 14sp, far below the surrounding TV type.
+            //
+            // Snapped to whole device pixels on purpose. The value Flutter sends
+            // is already scaled - screenutil multiplies it, and density
+            // multiplies it again - so it rarely lands on a whole number. Android
+            // renders a fractional text size by rescaling the glyph outlines
+            // rather than using their hinted forms, which softens them, and the
+            // softness accumulates along the line because every glyph sits at a
+            // fractional offset inherited from the ones before it.
             val fontSize = (creationParams?.get("fontSize") as? Number)?.toFloat() ?: 0f
-            if (fontSize > 0f) setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize)
+            if (fontSize > 0f) {
+                val sizePx = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, fontSize, resources.displayMetrics
+                )
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, Math.round(sizePx).toFloat())
+            }
 
             tintCaret(creationParams.color("cursorColor", textColor))
 
-            // No inset of its own - the Flutter frame already pads the content -
-            // and no extra font padding, which otherwise pushes text off centre.
+            // No inset of its own - the Flutter frame already pads the content.
+            //
+            // includeFontPadding and setSingleLine are deliberately left at their
+            // platform defaults. Both change how the view measures and lays out
+            // text, and the hint keeps its own layout inside TextView: moving it
+            // off the platform's metrics put the placeholder on fractional
+            // pixels, so it rendered soft while typed text stayed sharp.
             setPadding(0, 0, 0, 0)
-            includeFontPadding = false
             gravity = Gravity.CENTER_VERTICAL or gravityFor(creationParams?.get("textAlign") as? String)
 
             // Input type
@@ -69,7 +86,7 @@ class NativeTextfieldTvView(
 
             // Max lines
             val maxLines = creationParams?.get("maxLines") as? Int ?: 1
-            if (maxLines <= 1) setSingleLine(true) else setMaxLines(maxLines)
+            setLines(maxLines)
 
             imeOptions = EditorInfo.IME_ACTION_DONE
 

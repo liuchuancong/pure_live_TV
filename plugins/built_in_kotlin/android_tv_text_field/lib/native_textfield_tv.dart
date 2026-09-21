@@ -248,6 +248,11 @@ class _NativeTextFieldState extends State<NativeTextField> {
       if (widget.fontSize != null) 'fontSize': widget.fontSize,
     };
 
+    // Texture-layer composition, the default. Hybrid composition was tried and
+    // reverted: attaching the view to the Android hierarchy made the field read
+    // as blurred in its entirety, the Flutter-drawn icon included, which was
+    // worse than what it was meant to fix. (The blur turned out to be Impeller's
+    // text rendering on the affected device - the skia build is crisp.)
     Widget child = AndroidView(
       viewType: 'native_textfield_tv',
       onPlatformViewCreated: _onPlatformViewCreated,

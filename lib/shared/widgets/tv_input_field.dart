@@ -136,13 +136,20 @@ class _TvInputFieldState extends State<TvInputField> {
     // unfocused one can be a card, so the text colour is picked from the
     // *effective* background by contrast rather than from the palette's default
     // text colour.
-    final Color fallbackTextColor = TvThemeData.readableOn(
-      widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.backgroundColor),
-    );
-    final resolvedTextColor = widget.textColor ?? fallbackTextColor;
+    final Color effectiveBackground =
+        widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.backgroundColor);
+    final Color resolvedTextColor = widget.textColor ?? TvThemeData.readableOn(effectiveBackground);
     final resolvedFocusedBorder = widget.focuesedBorderColor ?? currentTvTheme.focusColor;
     final resolvedUnfocusedBorder =
         widget.unFocuesedBorderColor ?? currentTvTheme.secondaryTextColor.withValues(alpha: 0.25);
+    // Blended against the fill instead of carrying alpha of its own.
+    //
+    // Two reasons. The native field is a platform view, so Flutter composites
+    // its frames through a texture, and translucent text comes out of that
+    // soft; blending first reaches the native side opaque. And 40% is simply
+    // too faint to read at TV distance - the placeholder came across as
+    // blurred rather than dimmed, which is what this weight fixes.
+    final Color resolvedHintColor = Color.alphaBlend(resolvedTextColor.withValues(alpha: 0.7), effectiveBackground);
 
     final int? lines = widget.maxLines;
 
@@ -161,7 +168,8 @@ class _TvInputFieldState extends State<TvInputField> {
         // its creation params once while the frame recolours on focus.
         backgroundColor: Colors.transparent,
         textColor: resolvedTextColor,
-        hintColor: resolvedTextColor.withValues(alpha: 0.4),
+        // Opaque on purpose - see resolvedHintColor.
+        hintColor: resolvedHintColor,
         cursorColor: resolvedFocusedBorder,
         focuesedBorderColor: Colors.transparent,
         unFocuesedBorderColor: Colors.transparent,
@@ -187,7 +195,9 @@ class _TvInputFieldState extends State<TvInputField> {
         maxLength: widget.maxLength,
         textAlign: widget.textAlign,
         textColor: resolvedTextColor,
-        hintColor: resolvedTextColor.withValues(alpha: 0.4),
+        // Same colour as the native route, so the placeholder does not change
+        // weight when the field lands on a platform that uses the fallback.
+        hintColor: resolvedHintColor,
         onSubmitted: widget.onSubmitted,
         onChanged: widget.onChanged,
       );
@@ -248,15 +258,20 @@ class _TvInputFieldState extends State<TvInputField> {
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.sp),
-        // On light palettes an 18px blur is a grey smear around the focused
-        // field; a hard accent ring reads as a crisp focus indicator.
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: resolvedFocusedBorder.withAlpha(_isFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0),
-            blurRadius: currentTvTheme.isLight ? 0 : 18.0.sp,
-            spreadRadius: 2.0.sp,
-          ),
-        ],
+        // Built only while focused.
+        //
+        // The list used to hold a BoxShadow at all times, with the idle state
+        // expressed as a fully transparent colour - but a blurred shadow still
+        // costs a blur pass at zero alpha, and that pass sits between the
+        // platform view and the screen. Dropping it when idle changes nothing
+        // visually (it was invisible) and removes the layer. On light palettes
+        // an 18px blur was a grey smear anyway; a hard accent ring reads as a
+        // crisper focus indicator.
+        boxShadow: _isFocused && !currentTvTheme.isLight
+            ? <BoxShadow>[
+                BoxShadow(color: resolvedFocusedBorder.withValues(alpha: 0.55), blurRadius: 0.sp, spreadRadius: 2.0.sp),
+              ]
+            : const <BoxShadow>[],
       ),
       child: innerWidget,
     );
