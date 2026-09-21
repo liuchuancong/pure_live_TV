@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-index-master
+  group: release-index-main
   cancel-in-progress: false
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-        ref: master
+        ref: main
         fetch-depth: 0
 
     # 2. 设置 Python 环境
@@ -50,9 +50,9 @@ jobs:
           git commit -m "chore: update releases.json [skip ci]"
 
           # 推送前先拉取远程最新修改，防止与其他任务（如发布 Release）冲突
-          git pull --rebase origin master
+          git pull --rebase origin main
 
-          git push origin master
+          git push origin main
         else
           echo "数据未发生变化，无需更新。"
         fi
