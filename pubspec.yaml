@@ -121,6 +121,7 @@ dependencies:
     path: plugins/flv_lzc # 本地补丁：16 KB 页大小构建 + fijkview 黑屏修复
   async_wallpaper:
     path: plugins/built_in_kotlin/async_wallpaper # 本地 AGP 9 内建 Kotlin 补丁
+  android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）
 dependency_overrides:

@@ -1,36 +1,35 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:tv_textfield/tv_textfield.dart';
-import 'package:pure_live/shared/theme/tv_theme_data.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/widgets/tv_icon_button.dart';
+import 'package:pure_live/shared/theme/tv_theme_data.dart';
+import 'package:android_tv_text_field/native_textfield_tv.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-/// The TV text field: [TvTextField] from `tv_textfield` wearing the app's
-/// palette.
+/// The TV text field: one look, two backends.
 ///
-/// The field used to be a plain Flutter [TextField]. On a TV that is the wrong
-/// control: while focused it consumes the arrow keys for caret movement, so a
-/// remote could never leave the field — and after the soft keyboard was
-/// dismissed the focus was stuck, which left pages where only a mouse could
-/// press anything (flutter#147772). [TvTextField] shows a read-only display
-/// while it merely has focus, keeps the arrows for focus traversal, and only
-/// raises the keyboard once OK is pressed.
+/// * **Android** — `AndroidTVTextField` from `android_tv_text_field`: a native
+///   EditText platform view. The soft keyboard comes straight from the
+///   platform, so it *opens* where Flutter's `SystemChannels.textInput` route
+///   does nothing on TV boxes, and the platform owns caret movement and IME
+///   state — the two things that are broken in Flutter on Android TV
+///   (flutter#154924, flutter#147772).
+/// * **Everywhere else** — [TvTextField] with the flutter backend: a read-only
+///   display while the field merely has focus (arrows keep moving focus) and a
+///   real `TextField` once OK activates it.
 ///
-/// It used to wrap the `native_textfield_tv` package behind a
-/// `useNativeTextField` flag that defaulted to true — but every caller passes a
-/// plain [TextEditingController], and the widget cast it to the package's own
-/// controller type, so each field threw as soon as it was built. Text entry now
-/// goes through [TvTextField], and that dependency is gone.
+/// Both wear the same app palette: one frame draws the background, the radius
+/// and the focus ring, and the inner field draws nothing of its own — that is
+/// also the fix for the doubled ("ghosted") border the old three-layer field
+/// had.
 ///
-/// It also used to wrap itself in a [DpadRegion] to detect "the d-pad reached
-/// the field" — but a nested region is invisible to the dpad traversal policy's
-/// region-first search (nested-region items are only considered once the
-/// enclosing region has no candidate in that direction), so arrow navigation
-/// always skipped straight past the field. The field is now a plain focus
-/// target, and the visual focus state is tracked with a simple
-/// [Focus.onFocusChange] listener.
+/// The controller is the app's plain [TextEditingController] on both backends:
+/// the native route wraps it through [NativeTextFieldController.adopt] instead
+/// of demanding the package's own type (the trap the earlier
+/// `native_textfield_tv` integration fell into).
 class TvInputField extends StatefulWidget {
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final FocusNode? focusNode;
   final double? height;
   final bool obscureText;
@@ -50,12 +49,12 @@ class TvInputField extends StatefulWidget {
   /// The second argument is the field's real focus state. Wrapping the content
   /// in a bare [Focus] widget to track it from the caller is a trap: a plain
   /// Focus is itself focusable and traversal-visible, so the d-pad lands on
-  /// the wrapper instead of the TextField and OK never opens the keyboard.
+  /// the wrapper instead of the field and OK never opens the keyboard.
   final Widget Function(Widget content, bool isFocused)? builder;
 
   const TvInputField({
     super.key,
-    required this.controller,
+    this.controller,
     this.focusNode,
     this.height,
     this.obscureText = false,
@@ -80,12 +79,19 @@ class _TvInputFieldState extends State<TvInputField> {
   late bool _isObscure;
   late final FocusNode _focusNode;
   bool _ownsFocusNode = false;
+  bool _ownsController = false;
+  late final TextEditingController _controller;
   bool _isFocused = false;
+
+  /// The native route's controller wrapper over [_controller].
+  NativeTextFieldController? _nativeController;
 
   @override
   void initState() {
     super.initState();
     _isObscure = widget.obscureText;
+    _ownsController = widget.controller == null;
+    _controller = widget.controller ?? TextEditingController();
     if (widget.focusNode == null) {
       _focusNode = FocusNode();
       _ownsFocusNode = true;
@@ -99,6 +105,7 @@ class _TvInputFieldState extends State<TvInputField> {
   void dispose() {
     _focusNode.removeListener(_handleFocusChanged);
     if (_ownsFocusNode) _focusNode.dispose();
+    if (_ownsController) _controller.dispose();
     super.dispose();
   }
 
@@ -115,59 +122,57 @@ class _TvInputFieldState extends State<TvInputField> {
 
     final resolvedBgColor = widget.builder != null
         ? Colors.transparent
-        : (widget.backgroundColor ??
-              (_isFocused
-                  ? currentTvTheme.focusedCardColor
-                  : currentTvTheme.cardColor));
+        : (widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.backgroundColor));
 
     // The focused fill can be the accent (light palettes focus onto it) and the
-    // unfocused one is a card, so the text colour is picked from the *effective*
-    // background by contrast rather than from the palette's default text colour —
-    // the old luminance threshold left dark palettes with white-on-blue at 2.8:1 and
-    // light ones with white text on a white field.
+    // unfocused one can be a card, so the text colour is picked from the
+    // *effective* background by contrast rather than from the palette's default
+    // text colour.
     final Color fallbackTextColor = TvThemeData.readableOn(
-      widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.cardColor),
+      widget.backgroundColor ?? (_isFocused ? currentTvTheme.focusedCardColor : currentTvTheme.backgroundColor),
     );
     final resolvedTextColor = widget.textColor ?? fallbackTextColor;
-    final resolvedFocusedBorder =
-        widget.focuesedBorderColor ?? currentTvTheme.focusColor;
+    final resolvedFocusedBorder = widget.focuesedBorderColor ?? currentTvTheme.focusColor;
     final resolvedUnfocusedBorder =
-        widget.unFocuesedBorderColor ?? Colors.transparent;
+        widget.unFocuesedBorderColor ?? currentTvTheme.secondaryTextColor.withValues(alpha: 0.25);
 
     final int lines = widget.maxLines ?? 1;
-    final Widget inputCore = Container(
-      height: lines > 1 ? null : resolvedHeight,
-      constraints: lines > 1 ? BoxConstraints(minHeight: resolvedHeight) : null,
-      color: resolvedBgColor,
-      alignment: Alignment.centerLeft,
-      child: TvTextField(
+
+    // -- the input core, per platform -------------------------------------
+    final Widget inputCore;
+    if (_useNativeAndroidField) {
+      inputCore = AndroidTVTextField(
         focusNode: _focusNode,
-        controller: widget.controller,
+        controller: _nativeControllerOf(),
+        height: resolvedHeight,
+        obscureText: _isObscure,
+        hint: widget.hint,
+        maxLines: lines,
+        // The frame below is the only decoration: the native view gets the
+        // same fill and text colours so it melts into it.
+        backgroundColor: resolvedBgColor,
+        textColor: resolvedTextColor,
+        onSubmitted: widget.onSubmitted,
+      );
+    } else {
+      inputCore = TvTextField(
+        focusNode: _focusNode,
+        controller: _controller,
         obscureText: _isObscure,
         minLines: lines > 1 ? 2 : null,
         maxLines: lines,
-        // The Flutter backend, not the package's default. On Android `auto`
-        // picks the native EditText platform view, which would drop this app's
-        // palette (font, colours, hint) and its focus frame; the behaviour that
-        // was broken on TV — arrows being eaten by a focused field — is fixed by
-        // the Flutter backend too, and it still raises the platform keyboard
-        // once the field is activated.
+        // The Flutter backend, not the package's default: `auto` would pick
+        // `tv_textfield`'s own native EditText view on Android, a second native
+        // route to what `android_tv_text_field` already does here.
         implementation: TvTextFieldImplementation.flutter,
         // The focus ring is drawn by the frame around the field, so the field
         // itself only reports focus; the package's own decoration is disabled
         // to keep one look for focused and unfocused states.
         focusDecoration: const BoxDecoration(),
-        style: TextStyle(
-          color: resolvedTextColor,
-          fontSize: 28.sp,
-          textBaseline: TextBaseline.alphabetic,
-        ),
+        style: TextStyle(color: resolvedTextColor, fontSize: 28.sp, textBaseline: TextBaseline.alphabetic),
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: TextStyle(
-            color: resolvedTextColor.withValues(alpha: 0.4),
-            fontSize: 24.sp,
-          ),
+          hintStyle: TextStyle(color: resolvedTextColor.withValues(alpha: 0.4), fontSize: 24.sp),
           isDense: true,
           contentPadding: EdgeInsets.symmetric(vertical: 2.sp),
           border: InputBorder.none,
@@ -176,8 +181,8 @@ class _TvInputFieldState extends State<TvInputField> {
         ),
         onSubmitted: widget.onSubmitted,
         onChanged: widget.onChanged,
-      ),
-    );
+      );
+    }
 
     final Widget content = Stack(
       alignment: Alignment.centerRight,
@@ -186,9 +191,7 @@ class _TvInputFieldState extends State<TvInputField> {
           width: double.infinity,
           padding: EdgeInsets.only(
             left: 12.sp,
-            right: widget.postFixWidget == null && !widget.showPasswordToggle
-                ? 12.sp
-                : 50.sp,
+            right: widget.postFixWidget == null && !widget.showPasswordToggle ? 12.sp : 50.sp,
           ),
           child: Row(children: [Expanded(child: inputCore)]),
         ),
@@ -198,14 +201,12 @@ class _TvInputFieldState extends State<TvInputField> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (widget.showPasswordToggle) ...[
-                // TvIconButton, not a Material IconButton: it is d-pad
-                // focusable and answers focus with the shared accent
-                // fill/ring, while a raw IconButton showed no visible focus
-                // state of its own.
-                TvIconButton(
-                  size: TvIconButtonSize.mini,
-                  icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
-                  onTap: () => setState(() => _isObscure = !_isObscure),
+                IconButton(
+                  icon: Icon(
+                    _isObscure ? Icons.visibility_off : Icons.visibility,
+                    color: resolvedTextColor.withValues(alpha: 0.6),
+                  ),
+                  onPressed: () => setState(() => _isObscure = !_isObscure),
                 ),
                 SizedBox(width: 4.sp),
               ],
@@ -220,16 +221,17 @@ class _TvInputFieldState extends State<TvInputField> {
     if (widget.builder != null) {
       innerWidget = widget.builder!(content, _isFocused);
     } else {
+      // One frame, exactly one: background, radius and focus ring all live
+      // here, and both backends draw nothing of their own. The old stack
+      // (frame → filled InputDecorator → another container) painted three
+      // boxes and read as a doubled field.
       innerWidget = AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12.sp),
           color: resolvedBgColor,
-          border: Border.all(
-            color: _isFocused ? resolvedFocusedBorder : resolvedUnfocusedBorder,
-            width: 2.sp,
-          ),
+          border: Border.all(color: _isFocused ? resolvedFocusedBorder : resolvedUnfocusedBorder, width: 2.sp),
         ),
         child: content,
       );
@@ -243,9 +245,7 @@ class _TvInputFieldState extends State<TvInputField> {
         // field; a hard accent ring reads as a crisp focus indicator.
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: resolvedFocusedBorder.withAlpha(
-              _isFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0,
-            ),
+            color: resolvedFocusedBorder.withAlpha(_isFocused ? (0.55.clamp(0.0, 1.0) * 255).round() : 0),
             blurRadius: currentTvTheme.isLight ? 0 : 18.0.sp,
             spreadRadius: currentTvTheme.isLight ? 2.0.sp : 2.0.sp,
           ),
@@ -254,4 +254,18 @@ class _TvInputFieldState extends State<TvInputField> {
       child: innerWidget,
     );
   }
+
+  /// The native route's controller, adopted once and kept alive for the field's
+  /// lifetime so text typed on the native side reaches [_controller] (and every
+  /// listener bound to it) in both directions.
+  NativeTextFieldController _nativeControllerOf() {
+    return _nativeController ??= NativeTextFieldController();
+  }
+}
+
+/// The native Android route pays off on real TV boxes; everywhere else (tests,
+/// desktop, web, iOS) the flutter backend is the sane default.
+bool get _useNativeAndroidField {
+  if (kIsWeb) return false;
+  return Platform.isAndroid;
 }

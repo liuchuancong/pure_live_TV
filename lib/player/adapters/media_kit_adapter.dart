@@ -98,6 +98,17 @@ class MediaKitAdapter
     // to software instead of leaving a black surface.
     await native.setProperty('hwdec-software-fallback', '1');
 
+    if (PlatformUtils.isAndroid) {
+      // mediacodec surface direct rendering: frames go straight from the
+      // decoder to the display surface, skipping both the copy to RAM and the
+      // Flutter texture round-trip. On low-power TV boxes that copy is the
+      // difference between smooth and visibly stuttering playback.
+      await native.setProperty('mediacodec-surface-iostream', 'yes');
+      // Embedded videos (the usual live source) need the whole surface, or the
+      // decoder negotiates a cropped/letterboxed one.
+      await native.setProperty('mediacodec-embed-surface-landscape', 'yes');
+    }
+
     final audioOutput = effectiveMpvAudioOutputDriverForPlatform(
       customOutput: SettingsService.to.playerState.customPlayerOutput,
       configuredDriver: SettingsService.to.playerState.audioOutputDriver,
