@@ -78,7 +78,7 @@ dependencies:
   media_kit_libs_video:
     path: third_party/media-kit/libs/universal/media_kit_libs_video
   better_player_plus:
-    path: plugins/built_in_kotlin/better_player_plus # 本地 AGP 9 内建 Kotlin 补丁
+    path: plugins/built_in_kotlin/better_player_plus #
   wakelock_plus: ^1.4.0               # 播放时保持屏幕常亮
   flame_barrage:
     path: plugins/flame_barrage         # 本地补丁：逐条弹幕速度生效
@@ -118,7 +118,12 @@ dependencies:
       ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
   # Git私有仓库自定义库
   flv_lzc:
-    path: plugins/flv_lzc # 本地补丁：16 KB 页大小构建 + fijkview 黑屏修复
+     path: plugins/flv_lzc # 本地补丁：16 KB 页大小构建 + fijkview 黑屏修复
+  media_core:
+    git:
+      url: https://github.com/liuchuancong/media_core.git
+      path: packages/media_core
+      ref: main  # 可选
   async_wallpaper:
     path: plugins/built_in_kotlin/async_wallpaper # 本地 AGP 9 内建 Kotlin 补丁
   android_tv_text_field: ^1.0.0
@@ -136,7 +141,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter # Flutter单元测试框架
   flutter_lints: ^6.0.0 # Dart代码静态规范检查
-
   # 代码生成核心
   build_runner: ^2.15.0 # Dart代码生成执行器
 
@@ -155,8 +159,7 @@ dev_dependencies:
   # Riverpod状态代码生成
   riverpod_generator: ^4.0.4
   drift_dev: ^2.34.0
-
-
+  
 # 应用图标生成配置
 flutter_icons:
   android: "ic_launcher"

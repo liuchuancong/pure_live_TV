@@ -21,6 +21,10 @@ class TvButton extends StatelessWidget {
   final bool useFadedFocus;
   final FocusNode? focusNode;
 
+  /// Reports focus entering/leaving the button — for callers that react to the
+  /// highlight itself (a tab bar that switches as focus walks it).
+  final ValueChanged<bool>? onFocusChange;
+
   const TvButton({
     super.key,
     required this.title,
@@ -34,6 +38,7 @@ class TvButton extends StatelessWidget {
     this.selected = false,
     this.useFadedFocus = false,
     this.focusNode,
+    this.onFocusChange,
   });
 
   @override
@@ -123,6 +128,7 @@ class TvButton extends StatelessWidget {
       autofocus: autofocus && !excludeFocus,
       onSelect: excludeFocus ? null : onTap,
       focusNode: focusNode,
+      onFocusChange: onFocusChange,
       effects: buildEffects(),
       child: _buildLayout(baseTextStyle, space),
     );

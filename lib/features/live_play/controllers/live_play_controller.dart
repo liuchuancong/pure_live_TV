@@ -29,7 +29,7 @@ List<String> get kLivePlayFitLabels => AppConsts().videoFitType.map((e) => i18n(
 class LivePlayController extends _$LivePlayController {
   static const LivePlayRepository _repository = LivePlayRepository();
 
-  PlayerManager? _playerManager;
+  LivePlayerFacade? _playerManager;
   final List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
 
   /// Async bootstrap generation: stale callbacks are dropped after a retry or a
@@ -69,7 +69,7 @@ class LivePlayController extends _$LivePlayController {
     }
     if (!_isCurrent(generation)) return;
 
-    _playerManager = GlobalPlayerService.instance.playerManager;
+    _playerManager = GlobalPlayerService.instance.livePlayer;
     _bindPlayerStreams();
     _applyStoredVideoFit();
 
