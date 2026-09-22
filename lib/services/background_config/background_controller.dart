@@ -22,15 +22,13 @@ part 'background_controller.g.dart';
 /// `Surface.release()` NPE in logcat, plus a reloading wallpaper.
 @Riverpod(keepAlive: true)
 class BackgroundController extends _$BackgroundController {
-  /// 背景视频播放器：**按需创建**。
-  ///
-  /// 以前它在 build 里就 new 出来，且只在 provider 销毁时才释放——即使用户
-  /// 选的是纯色/图片壁纸，也常驻一个原生播放器。现在只在真的需要播视频时创建，
-  /// 并在“播放器强制销毁”开启时于切走视频后彻底释放解码器。
+  /// Lazily created: only a real video background needs a native player.
+  /// Creating it in `build` kept an mpv instance alive even for solid/image
+  /// wallpapers.
   Player? _videoPlayer;
   VideoController? _videoController;
 
-  /// 背景层读取的渲染控制器；未创建时为 null（背景层据此画空白）。
+  /// The controller the background layer renders; null until the player exists.
   VideoController? get videoController => _videoController;
 
   static BackgroundController get to => SettingsService.to.bg;
@@ -40,9 +38,21 @@ class BackgroundController extends _$BackgroundController {
   String? _cachedBase64;
   Uint8List? _cachedBytes;
 
+  /// Mirror of [state].
+  ///
+  /// Riverpod forbids reading `state` / using `ref` inside lifecycle callbacks
+  /// (`onDispose`, ...); doing so trips the `_debugCallbackStack == 0`
+  /// assertion. `setPlaybackActive` is reached from
+  /// `LivePlayController.onDispose` → `LivePlayerFacade.close`, and it (plus
+  /// `_isVideoSource` and `reloadBackgroundVideo`) used to read `state` there,
+  /// which crashed teardown. This field is kept in sync with `state` and is a
+  /// plain value, safe to read from any context.
+  late BackgroundConfigModel _lastModel;
+
   @override
   BackgroundConfigModel build() {
-    // 关闭应用时才释放（keepAlive 期间由 reloadBackgroundVideo 按需创建/释放）。
+    // Released only when the app closes; keepAlive keeps it alive between
+    // reloadBackgroundVideo calls.
     ref.onDispose(() {
       _disposeVideoPlayer();
       _configStream.close();
@@ -70,6 +80,8 @@ class BackgroundController extends _$BackgroundController {
       networkVideoUrl: HivePrefUtil.getString('bgNetworkVideoUrl'),
     );
 
+    // Seed the mirror before anything can read it.
+    _lastModel = model;
     _configStream.add(model);
     // A video background survives a restart, so the player has to pick it up on
     // startup too. `state` is only readable once `build` has returned, hence the
@@ -79,7 +91,8 @@ class BackgroundController extends _$BackgroundController {
   }
 
   void _updateState(BackgroundConfigModel newModel) {
-    final BackgroundConfigModel previous = state;
+    // Compare against the mirror, not `state` — see [_lastModel].
+    final BackgroundConfigModel previous = _lastModel;
     final bool videoChanged =
         newModel.source != previous.source ||
         newModel.localVideoPath != previous.localVideoPath ||
@@ -87,6 +100,7 @@ class BackgroundController extends _$BackgroundController {
         newModel.assetVideoPath != previous.assetVideoPath;
 
     state = newModel;
+    _lastModel = newModel;
     _configStream.add(newModel); // keep the stream in sync
 
     // Write only keys whose value changed: the base64 image slot can hold a
@@ -134,10 +148,11 @@ class BackgroundController extends _$BackgroundController {
     return MemoryImage(_cachedBytes!);
   }
 
-  /// 创建背景播放器（首次需要播视频时）。
+  /// Creates the background player on first real video use.
   ///
-  /// 沿用直播播放器的平台适配：media_kit 默认配置会在视频参数未知时就挂载
-  /// Android Surface，这正是背景视频变黑（或只有一个像素）的原因。
+  /// Uses the live player's platform configuration on purpose: media_kit's
+  /// default attaches an Android Surface before video parameters are known,
+  /// which is what made video wallpapers render black (or a single pixel).
   void _ensureVideoPlayer() {
     if (_videoPlayer != null) return;
     final player = Player();
@@ -147,27 +162,35 @@ class BackgroundController extends _$BackgroundController {
     player.setPlaylistMode(PlaylistMode.loop);
   }
 
-  /// 播放器（直播/点播）正在播放时，背景层改用一张静态海报帧。
+  /// While the live/VOD player is active, the background shows a static poster.
   ///
-  /// 两个视频层同时解码时，Android TV（模拟器上更明显）的 Surface / 硬解
-  /// 资源会互相抢占，表现就是壁纸和直播画面一起闪。所以播放开始时不只暂停：
-  /// 先截下当前帧当海报，再彻底释放壁纸播放器的解码器——播放期间背景层只画
-  /// 这张静态图，截帧失败才退回"暂停保留最后一帧"。
+  /// Two video layers decoding at once fight for Android TV Surface / hwdec
+  /// resources (visible even on emulators: wallpaper and live frame flash
+  /// together). So on playback start we don't just pause — we capture the
+  /// current frame as a poster and fully release the wallpaper decoder; only
+  /// the static image is drawn. If capture fails, fall back to pausing on the
+  /// last frame.
   bool _playbackSuspended = false;
 
-  /// 播放期间展示的静态帧；为空表示没有海报可用（此时播放器是暂停状态）。
+  /// Poster shown while playback is active; null means "no poster", in which
+  /// case the player is paused instead.
   Uint8List? _posterFrame;
   Uint8List? get posterFrame => _posterFrame;
 
   bool get isPlaybackSuspended => _playbackSuspended;
 
-  /// 由播放端在 播放/停止 时调用。
+  /// Called by the playback side on play/stop.
+  ///
+  /// Reached from a lifecycle path
+  /// (`LivePlayController.onDispose` → `LivePlayerFacade.close`); every read
+  /// below goes through [_lastModel] instead of `state` to stay out of the
+  /// Riverpod lifecycle assertion.
   Future<void> setPlaybackActive(bool active) async {
     if (_playbackSuspended == active) return;
     _playbackSuspended = active;
 
     if (active) {
-      // 背景不是视频时没有解码器要释放。
+      // Nothing to release when the background is not a video.
       if (!_isVideoSource) return;
       final player = _videoPlayer;
       if (player == null) return;
@@ -180,31 +203,37 @@ class BackgroundController extends _$BackgroundController {
       if (frame != null && frame.isNotEmpty) {
         _posterFrame = frame;
         _disposeVideoPlayer();
-        // 播放器没了，通知背景层改画静态帧（否则它拿到 null 会画黑底）。
-        _configStream.add(state);
+        // The player is gone; tell the background layer to draw the poster,
+        // otherwise it would render a black fill.
+        _configStream.add(_lastModel);
       } else {
-        // 截不到帧（部分硬解组合不支持）：退回暂停保留最后一帧，同样不会
-        // 两路同时解码。
+        // Capture unsupported by some hwdec combos: fall back to pausing on
+        // the last frame, which still avoids two decoders running at once.
         await player.pause();
       }
       return;
     }
 
-    // 播放结束：先丢掉海报帧——期间背景可能已经被换成图片或其他视频，
-    // 留着旧帧会让下一次切回视频壁纸时显示错的那一张。
+    // Playback ended: drop the poster first — the background may have been
+    // switched to another image/video meanwhile, and keeping the stale frame
+    // would show the wrong one on the next switch back.
     if (_posterFrame != null) {
       _posterFrame = null;
-      _configStream.add(state);
+      _configStream.add(_lastModel);
     }
     if (_isVideoSource) await reloadBackgroundVideo();
   }
 
-  bool get _isVideoSource =>
-      state.source == BackgroundSource.assetVideo ||
-      state.source == BackgroundSource.localVideo ||
-      state.source == BackgroundSource.networkVideo;
+  /// Reads the mirror, never `state` — this getter is called from the
+  /// lifecycle path described on [setPlaybackActive].
+  bool get _isVideoSource {
+    final source = _lastModel.source;
+    return source == BackgroundSource.assetVideo ||
+        source == BackgroundSource.localVideo ||
+        source == BackgroundSource.networkVideo;
+  }
 
-  /// 彻底释放背景播放器（强制销毁路径）。
+  /// Fully releases the background player (forced-destroy path).
   void _disposeVideoPlayer() {
     final player = _videoPlayer;
     _videoPlayer = null;
@@ -212,31 +241,34 @@ class BackgroundController extends _$BackgroundController {
     unawaited(player?.dispose());
   }
 
+  /// Also driven from the lifecycle path, so it reads [_lastModel] only.
   Future<void> reloadBackgroundVideo() async {
-    final src = switch (state.source) {
-      BackgroundSource.assetVideo => state.assetVideoPath,
-      BackgroundSource.localVideo => state.localVideoPath,
-      BackgroundSource.networkVideo => state.networkVideoUrl,
+    final src = switch (_lastModel.source) {
+      BackgroundSource.assetVideo => _lastModel.assetVideoPath,
+      BackgroundSource.localVideo => _lastModel.localVideoPath,
+      BackgroundSource.networkVideo => _lastModel.networkVideoUrl,
       _ => null,
     };
     if (src != null && src.isNotEmpty) {
-      // 播放期间不分配解码器：背景层此刻画的是海报帧，等播放结束再起播
-      // （见 setPlaybackActive）。
+      // Don't allocate a decoder while playback is active: the background
+      // shows the poster right now and the video resumes on playback end
+      // (see setPlaybackActive).
       if (_playbackSuspended) return;
       final bool created = _videoPlayer == null;
       _ensureVideoPlayer();
-      // 播放器是懒创建的，而背景层是在 configChanges 重建时读到控制器：
-      // 刚创建出来的这一帧它拿到的还是 null，必须再发一次通知让它取到。
-      if (created) _configStream.add(state);
-      // 播放期间挂起的壁纸保持暂停：起播后由播放端在结束时恢复。
+      // The player is lazy, and the background layer reads the controller on
+      // configChanges rebuild: on the frame it was just created, it still sees
+      // null, so notify once more so it can pick up the controller.
+      if (created) _configStream.add(_lastModel);
       await _videoPlayer?.open(Media(src), play: !_playbackSuspended);
       return;
     }
 
-    // 不再是视频壁纸：一律释放解码器，不留常驻实例。
+    // No longer a video wallpaper: release the decoder entirely, never keep
+    // an idle instance.
     _disposeVideoPlayer();
-    // 控制器已释放，通知背景层别再拿它渲染。
-    _configStream.add(state);
+    // The controller is gone; notify the background layer to stop rendering it.
+    _configStream.add(_lastModel);
   }
 
   void setNone() => _updateState(state.copyWith(source: BackgroundSource.none));
@@ -246,7 +278,7 @@ class BackgroundController extends _$BackgroundController {
   void setBoxFit(BoxFit fit) => _updateState(state.copyWith(boxFit: fit));
   void setMaskOpacity(double opacity) => _updateState(state.copyWith(maskOpacity: opacity));
 
-  /// 设置高斯模糊强度（sigma，0 关闭）。
+  /// Gaussian blur strength (sigma, 0 disables).
   void setBlurSigma(double sigma) => _updateState(state.copyWith(blurSigma: sigma.clamp(0, 60)));
   void setAssetImage(String path) => _updateState(
     state.copyWith(source: BackgroundSource.assetImage, assetImagePath: path, localImagePath: "", networkImageUrl: ""),
