@@ -302,7 +302,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final danmakuNotifier = ref.read(danmakuSettingsControllerProvider.notifier);
     final favoriteRooms = ref.watch(favoriteRoomControllerProvider).favoriteRooms;
     final room = state.room;
-    final bool playing = state.status == LivePlayStatus.playing || state.status == LivePlayStatus.buffering;
+    final bool playing = state.playerState.playing || state.playerState.buffering;
     final bool isFavorite = room != null && favoriteRooms.any((item) => item.hasSameIdentity(room));
     final bool danmakuOn = danmakuSettings.enableDanmakuDisplay && !danmakuSettings.hideDanmaku;
 

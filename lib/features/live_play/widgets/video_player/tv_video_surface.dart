@@ -1,12 +1,11 @@
 import 'package:pure_live/player/index.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/utils/text_util.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/shared/utils/text_util.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
-import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
@@ -60,14 +59,8 @@ class _InfoPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
-            Icon(icon, size: 16.sp, color: Colors.white70),
-            SizedBox(width: 4.sp),
-          ],
-          Text(
-            label,
-            style: AppTextStyles.t16W600.copyWith(color: filled ? Colors.white : Colors.white70),
-          ),
+          if (icon != null) ...[Icon(icon, size: 16.sp, color: Colors.white70), SizedBox(width: 4.sp)],
+          Text(label, style: AppTextStyles.t16W600.copyWith(color: filled ? Colors.white : Colors.white70)),
         ],
       ),
     );
@@ -103,11 +96,21 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final tvTheme = context.tvTheme;
 
-    final bool showLoading =
-        state.status == LivePlayStatus.loadingDetail ||
-        state.status == LivePlayStatus.preparing ||
-        state.status == LivePlayStatus.buffering;
-    final bool showError = state.status == LivePlayStatus.error;
+    // Room-detail loading is a business-level concern: it is not a player
+    // state, so it is derived from LivePlayState's own fields.
+    final bool loadingDetail = state.room == null && state.detailError == null;
+
+    // Show the spinner while the detail request or the player itself is
+    // still working. Playback progress comes exclusively from media_core's
+    // PlayerState; there is no local LivePlayStatus.
+    final bool showLoading = loadingDetail || state.playerState.opening || state.playerState.buffering;
+
+    // A single error flag for the overlay: business failures (detail / stream
+    // URL / play() throwing) surface through errorMessage or detailError;
+    // terminal playback failures from media_core surface through
+    // playerState.hasError (the controller also mirrors them into errorMessage
+    // via ErrorFormatter).
+    final bool showError = state.errorMessage != null || state.detailError != null || state.playerState.hasError;
 
     // The video widget stays mounted for the whole session, and the surface is
     // simply black until the player service is up.
@@ -150,7 +153,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                   tvInlineLoading(context, size: 36.sp),
                   SizedBox(height: 12.sp),
                   Text(
-                    state.status == LivePlayStatus.loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
+                    loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
                     style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
                   ),
                 ],
@@ -227,8 +230,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                                               style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
                                             ),
                                           ),
-                                        if (state.room!.nick.isNotEmpty &&
-                                            _audienceText(state.room!).isNotEmpty)
+                                        if (state.room!.nick.isNotEmpty && _audienceText(state.room!).isNotEmpty)
                                           SizedBox(width: 10.sp),
                                         if (_audienceText(state.room!).isNotEmpty)
                                           _InfoPill(label: _audienceText(state.room!), icon: Icons.whatshot_rounded),

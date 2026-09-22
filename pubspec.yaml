@@ -119,10 +119,7 @@ dependencies:
   flv_lzc:
      path: plugins/flv_lzc # 本地补丁：16 KB 页大小构建 + fijkview 黑屏修复
   media_core:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core
-      ref: main  # 可选
+    path: C:\Users\XA-158\projects\flutter\media_core\packages\media_core
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）

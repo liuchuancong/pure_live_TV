@@ -4,7 +4,10 @@ import 'package:flutter/painting.dart';
 import 'package:pure_live/player/index.dart';
 import 'package:flame_barrage/flame_barrage.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:media_core/core/player_state.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:media_core/error/player_failure.dart';
+import 'package:media_core/error/error_formatter.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
@@ -30,9 +33,10 @@ class LivePlayController extends _$LivePlayController {
   static const LivePlayRepository _repository = LivePlayRepository();
 
   LivePlayerFacade? _playerManager;
+
   final List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
 
-  /// Async bootstrap generation: stale callbacks are dropped after a retry or a
+  /// Async bootstrap generation: stale callbacks are dropped after a retry or
   /// rebuild.
   int _generation = 0;
 
@@ -45,26 +49,32 @@ class LivePlayController extends _$LivePlayController {
   /// only watch a playback that already started. Without this deadline the
   /// spinner is the last word on screen and the remote has nothing left to press.
   static const Duration _stallReportTimeout = Duration(seconds: 30);
+
   Timer? _stallReportTimer;
 
   @override
   LivePlayState build(LivePlayArgs args) {
     ref.onDispose(_teardown);
+
     ref.listen(playerSettingsControllerProvider, (prev, next) {
       if (prev?.videoPlayerKey != next.videoPlayerKey) {
         _bootstrap();
       }
     });
+
     // Register the current-room lookup with the site layer, which needs it for
     // viewer counts and error recovery.
     Sites.currentRoomLookup = (platform, roomId) {
       final room = state.room;
-      return (room != null && room.platform == platform && room.roomId == roomId) ? room : null;
+
+      return room != null && room.platform == platform && room.roomId == roomId ? room : null;
     };
+
     // Microtask-deferred: build has no state yet while it runs, and reading
     // it now throws "uninitialized provider".
     Future<void>.microtask(_bootstrap);
-    return const LivePlayState(status: LivePlayStatus.loadingDetail);
+
+    return LivePlayState(playerState: PlayerState());
   }
 
   // =========================
@@ -73,8 +83,10 @@ class LivePlayController extends _$LivePlayController {
 
   Future<void> _bootstrap() async {
     final generation = ++_generation;
+
     _armStallReport(restart: true);
-    state = state.copyWith(status: LivePlayStatus.loadingDetail, clearDetailError: true, clearErrorMessage: true);
+
+    state = state.copyWith(clearDetailError: true, clearErrorMessage: true);
 
     try {
       // Bring the service up on the stored kernel, not a hardcoded default.
@@ -84,6 +96,7 @@ class LivePlayController extends _$LivePlayController {
     } catch (e, s) {
       log('GlobalPlayerService initialize failed: $e', name: 'LivePlayController', error: e, stackTrace: s);
     }
+
     if (!_isCurrent(generation)) return;
 
     _playerManager = GlobalPlayerService.instance.livePlayer;
@@ -93,23 +106,28 @@ class LivePlayController extends _$LivePlayController {
     // Room details: the LiveRoom carried by the route only hints at platform and
     // room id; the site response is authoritative.
     LiveRoom detail;
+
     try {
       detail = await _repository.fetchRoomDetail(hintRoom: args.room ?? _hintRoom());
     } catch (e) {
       if (!_isCurrent(generation)) return;
+
       state = state.copyWith(
-        status: LivePlayStatus.error,
         detailError: i18n('get_room_info_failed_retry'),
         errorMessage: i18n('get_room_info_failed_retry'),
       );
+
       return;
     }
+
     if (!_isCurrent(generation)) return;
 
     state = state.copyWith(room: detail, clearDetailError: true);
+
     // Align the displayed volume with the volume remembered for the room; the
     // player restores the same value on start.
     state = state.copyWith(volume: detail.getSavedVolume().clamp(0.0, 1.0).toDouble());
+
     // Entering a room writes to watch history, which doubles as the channel list
     // when the route carried no playlist.
     try {
@@ -117,6 +135,7 @@ class LivePlayController extends _$LivePlayController {
     } catch (e) {
       log('addRoomToHistory failed: $e', name: 'LivePlayController');
     }
+
     // When the entry came from a channel switch, show the channel name first.
     if (args.showChannelBanner) {
       showChannelBanner(detail.nick.isNotEmpty ? detail.nick : detail.title);
@@ -127,6 +146,7 @@ class LivePlayController extends _$LivePlayController {
     // press away) and hide themselves again.
     showControls();
     _holdScreenAwake();
+
     unawaited(ref.read(danmakuSessionControllerProvider(args).notifier).connectRoom(detail));
 
     await loadQualitiesAndPlay(detail, generation);
@@ -141,7 +161,9 @@ class LivePlayController extends _$LivePlayController {
   /// deadline forward forever.
   void _armStallReport({bool restart = false}) {
     if (_stallReportTimer != null && !restart) return;
+
     _stallReportTimer?.cancel();
+
     _stallReportTimer = Timer(_stallReportTimeout, _reportStalledLoad);
   }
 
@@ -152,68 +174,56 @@ class LivePlayController extends _$LivePlayController {
 
   /// Turns a load that never resolved into a failure the user can act on.
   ///
-  /// Guarded by [_isLoading] because a stream that started playing may well have
-  /// armed this deadline earlier, in a loading phase it has since left.
+  /// The actual playback state comes from media_core. Room-detail loading is
+  /// represented by [state.room] still being null.
   void _reportStalledLoad() {
     _stallReportTimer = null;
-    if (!ref.mounted) return;
-    if (!_isLoading(state.status)) return;
-    state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('multiview_play_failed'));
-  }
 
-  static bool _isLoading(LivePlayStatus status) =>
-      status == LivePlayStatus.loadingDetail ||
-      status == LivePlayStatus.preparing ||
-      status == LivePlayStatus.buffering;
+    if (!ref.mounted) return;
+
+    final playerState = state.playerState;
+
+    final loading = state.room == null || playerState.opening || playerState.buffering;
+
+    if (!loading) return;
+
+    state = state.copyWith(errorMessage: i18n('multiview_play_failed'));
+  }
 
   void _bindPlayerStreams() {
     final manager = _playerManager;
+
     if (manager == null) return;
+
     _cancelSubscriptions();
+
     _subscriptions.addAll(<StreamSubscription<dynamic>>[
       manager.onStateChanged.listen(_onPlayerStateChanged),
       manager.onError.listen(_onPlayerError),
       manager.videoFitIndex.stream.listen((index) {
-        if (index != state.fitIndex) state = state.copyWith(fitIndex: index);
+        if (index != state.fitIndex) {
+          state = state.copyWith(fitIndex: index);
+        }
       }),
     ]);
   }
 
+  /// media_core is the single source of truth for playback state.
+  ///
+  /// No local LivePlayStatus is maintained here.
   void _onPlayerStateChanged(PlayerState playerState) {
     if (!ref.mounted) return;
-    switch (playerState) {
-      case PlayerState.ready:
-      case PlayerState.playing:
-        _cancelStallReport();
-        state = state.copyWith(status: LivePlayStatus.playing, clearErrorMessage: true);
-        break;
-      case PlayerState.buffering:
-      case PlayerState.preparing:
-      case PlayerState.initializing:
-        if (state.status != LivePlayStatus.error) {
-          state = state.copyWith(status: LivePlayStatus.buffering);
-          // Deliberately not restarted: media_core re-enters buffering once per
-          // line, and each pass would otherwise push back the deadline.
-          _armStallReport();
-        }
-        break;
-      case PlayerState.paused:
-        _cancelStallReport();
-        if (state.status != LivePlayStatus.error) {
-          state = state.copyWith(status: LivePlayStatus.paused);
-        }
-        break;
-      case PlayerState.error:
-        _cancelStallReport();
-        // Terminal errors arrive through onError; this is only a fallback.
-        state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('multiview_play_failed'));
-        break;
-      case PlayerState.idle:
-      case PlayerState.initialized:
-      case PlayerState.completed:
-      case PlayerState.stopped:
-      case PlayerState.disposed:
-        break;
+
+    state = state.copyWith(playerState: playerState);
+
+    if (playerState.playing || playerState.ready) {
+      _cancelStallReport();
+    } else if (playerState.opening || playerState.buffering) {
+      // Deliberately not restarted: media_core may re-enter buffering once per
+      // line, and each pass would otherwise push back the deadline.
+      _armStallReport();
+    } else if (playerState.hasError) {
+      _cancelStallReport();
     }
   }
 
@@ -227,21 +237,36 @@ class LivePlayController extends _$LivePlayController {
     unawaited(WakelockPlus.enable().catchError((Object _) {}));
   }
 
-  void _onPlayerError(PlayerException error) {
+  /// Terminal playback failure from media_core.
+  ///
+  /// The facade hands over the structured [PlayerFailure]; we render it into a
+  /// user-facing sentence through [ErrorFormatter]. The failure's code and
+  /// category stay available on the object if a future UI needs to branch on
+  /// them (network / decode / backend), but [LivePlayState] only carries the
+  /// final string.
+  void _onPlayerError(PlayerFailure failure) {
     if (!ref.mounted) return;
-    state = state.copyWith(status: LivePlayStatus.error, errorMessage: error.message);
+
+    _cancelStallReport();
+
+    state = state.copyWith(errorMessage: ErrorFormatter.format(failure));
   }
 
   void _teardown() {
     _generation++;
+
     _cancelStallReport();
     _cancelSubscriptions();
+
     _channelBannerTimer?.cancel();
     _channelBannerTimer = null;
+
     // Leaving the room releases the wake lock even when a new room follows.
     unawaited(WakelockPlus.disable().catchError((Object _) {}));
+
     final manager = _playerManager;
     _playerManager = null;
+
     if (manager != null) {
       // PlayerManager is a global singleton, so leaving a room stops this session.
       unawaited(manager.close().catchError((Object e, StackTrace s) {}));
@@ -250,8 +275,11 @@ class LivePlayController extends _$LivePlayController {
 
   void _cancelSubscriptions() {
     if (_subscriptions.isEmpty) return;
+
     final list = List<StreamSubscription<dynamic>>.of(_subscriptions);
+
     _subscriptions.clear();
+
     for (final sub in list) {
       unawaited(sub.cancel().catchError((Object e, StackTrace s) {}));
     }
@@ -262,22 +290,24 @@ class LivePlayController extends _$LivePlayController {
   // =========================
 
   Future<void> loadQualitiesAndPlay(LiveRoom detail, int generation) async {
-    state = state.copyWith(status: LivePlayStatus.preparing);
     final qualities = await _repository.fetchPlayQualities(detail);
+
     if (!_isCurrent(generation)) return;
 
     if (qualities.isEmpty) {
       state = state.copyWith(
         qualities: const <LivePlayQuality>[],
         qualityIndex: 0,
-        status: LivePlayStatus.error,
         errorMessage: i18n('stream_no_available_quality'),
       );
+
       return;
     }
 
     final preferredIndex = _resolvePreferredQualityIndex(qualities);
+
     state = state.copyWith(qualities: qualities, qualityIndex: preferredIndex);
+
     await _openStream(qualities[preferredIndex], generation);
   }
 
@@ -285,59 +315,76 @@ class LivePlayController extends _$LivePlayController {
     // Pick the quality that best matches the preferred resolution; otherwise
     // fall back to the highest bitrate.
     final prefer = SettingsService.to.playerState.preferResolution;
+
     if (prefer.isNotEmpty) {
       var bestScore = 0;
       var bestIndex = -1;
+
       for (var i = 0; i < qualities.length; i++) {
         final score = PlayerConsts.resolutionMatchScore(prefer, qualities[i].quality);
+
         if (score > bestScore) {
           bestScore = score;
           bestIndex = i;
         }
       }
+
       if (bestIndex != -1) return bestIndex;
     }
+
     var best = 0;
+
     for (var i = 1; i < qualities.length; i++) {
-      if (qualities[i].sort > qualities[best].sort) best = i;
+      if (qualities[i].sort > qualities[best].sort) {
+        best = i;
+      }
     }
+
     return best;
   }
 
   Future<void> _openStream(LivePlayQuality quality, int generation) async {
     final detail = state.room;
     final manager = _playerManager;
+
     if (detail == null || manager == null) return;
 
-    state = state.copyWith(status: LivePlayStatus.preparing, clearErrorMessage: true);
+    state = state.copyWith(clearErrorMessage: true);
+
     List<String> urls;
+
     try {
       urls = await _repository.fetchPlayUrls(detail, quality);
     } catch (e) {
       if (!_isCurrent(generation)) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_fetch_url_failed'));
+
+      state = state.copyWith(errorMessage: i18n('stream_fetch_url_failed'));
+
       return;
     }
+
     if (!_isCurrent(generation)) return;
 
     urls = urls.where((u) => u.trim().isNotEmpty).toList(growable: false);
+
     if (urls.isEmpty) {
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_no_available_line'));
+      state = state.copyWith(errorMessage: i18n('stream_no_available_line'));
+
       return;
     }
 
     state = state.copyWith(playUrls: urls, lineIndex: 0);
+
     try {
       await manager.play(urls.first, urls, const <String, String>{}, room: detail);
     } on ArgumentError catch (e) {
       if (!_isCurrent(generation)) return;
-      state = state.copyWith(
-        status: LivePlayStatus.error,
-        errorMessage: e.message ?? i18n('stream_start_invalid_params'),
-      );
+
+      state = state.copyWith(errorMessage: e.message ?? i18n('stream_start_invalid_params'));
     } catch (e) {
       if (!_isCurrent(generation)) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_start_failed'));
+
+      state = state.copyWith(errorMessage: i18n('stream_start_failed'));
     }
   }
 
@@ -346,47 +393,69 @@ class LivePlayController extends _$LivePlayController {
   // =========================
 
   Future<void> changeQuality(int index) async {
-    if (index < 0 || index >= state.qualities.length || index == state.qualityIndex) return;
+    if (index < 0 || index >= state.qualities.length || index == state.qualityIndex) {
+      return;
+    }
+
     final generation = ++_generation;
+
     _armStallReport(restart: true);
+
     state = state.copyWith(qualityIndex: index);
+
     await _openStream(state.qualities[index], generation);
   }
 
   Future<void> changeLine(int index) async {
-    if (index < 0 || index >= state.playUrls.length || index == state.lineIndex) return;
+    if (index < 0 || index >= state.playUrls.length || index == state.lineIndex) {
+      return;
+    }
+
     final manager = _playerManager;
+
     if (manager == null) return;
+
     final urls = state.playUrls;
+
     _armStallReport(restart: true);
-    state = state.copyWith(lineIndex: index, status: LivePlayStatus.preparing, clearErrorMessage: true);
+
+    state = state.copyWith(lineIndex: index, clearErrorMessage: true);
+
     try {
       await manager.play(urls[index], urls, const <String, String>{}, room: state.room);
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('stream_switch_line_failed'));
+
+      state = state.copyWith(errorMessage: i18n('stream_switch_line_failed'));
     }
   }
 
   Future<void> togglePlayPause() async {
     final manager = _playerManager;
+
     if (manager == null) return;
+
     await manager.togglePlayPause();
   }
 
   Future<void> retry() async {
     final manager = _playerManager;
+
     if (manager == null || !manager.initialized) {
       await _bootstrap();
       return;
     }
+
     _armStallReport(restart: true);
-    state = state.copyWith(status: LivePlayStatus.preparing, clearErrorMessage: true);
+
+    state = state.copyWith(clearErrorMessage: true);
+
     try {
       await manager.retry();
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(status: LivePlayStatus.error, errorMessage: i18n('play_video_failed'));
+
+      state = state.copyWith(errorMessage: i18n('play_video_failed'));
     }
   }
 
@@ -395,6 +464,7 @@ class LivePlayController extends _$LivePlayController {
   Future<void> refreshRoom() async {
     _generation++;
     _cancelSubscriptions();
+
     await _bootstrap();
   }
 
@@ -402,11 +472,17 @@ class LivePlayController extends _$LivePlayController {
   /// fullscreen control bar's aspect ratio dialog.
   void setFit(int index) {
     final options = kLivePlayFitList;
-    if (index < 0 || index >= options.length || index == state.fitIndex) return;
+
+    if (index < 0 || index >= options.length || index == state.fitIndex) {
+      return;
+    }
+
     ref
         .read(playerSettingsControllerProvider.notifier)
         .updateSettings(ref.read(playerSettingsControllerProvider).copyWith(videoFitIndex: index));
+
     state = state.copyWith(fitIndex: index);
+
     _playerManager?.changeVideoFit(index);
   }
 
@@ -416,19 +492,27 @@ class LivePlayController extends _$LivePlayController {
   /// settings page showed the user's choice.
   void _applyStoredVideoFit() {
     final manager = _playerManager;
+
     if (manager == null) return;
+
     final stored = PlayerSettingsController.normalizeVideoFitIndex(
       ref.read(playerSettingsControllerProvider).videoFitIndex,
     );
+
     state = state.copyWith(fitIndex: stored);
+
     manager.changeVideoFit(stored);
   }
 
   Future<void> setVolume(double volume) async {
     final clamped = volume.clamp(0.0, 1.0).toDouble();
+
     state = state.copyWith(volume: clamped);
+
     await _playerManager?.setVolume(clamped);
+
     final room = state.room;
+
     if (room != null) {
       unawaited(room.saveCurrentVolume(clamped).catchError((Object e, StackTrace s) {}));
     }
@@ -446,10 +530,14 @@ class LivePlayController extends _$LivePlayController {
   /// favourites, popular, areas or search results),
   /// otherwise fall back to the rooms in watch history that are still live.
   List<LiveRoom> get channelRooms {
-    if (args.playlist.length > 1) return args.playlist;
+    if (args.playlist.length > 1) {
+      return args.playlist;
+    }
+
     final history = SettingsService.to.historyState.historyRooms
         .where((room) => room.platform != Sites.iptvSite && room.liveStatus == LiveStatus.live)
         .toList(growable: false);
+
     return history.length > 1 ? history : args.playlist;
   }
 
@@ -457,8 +545,11 @@ class LivePlayController extends _$LivePlayController {
   int get channelIndex {
     final rooms = channelRooms;
     final current = state.room;
+
     if (current == null || rooms.isEmpty) return 0;
+
     final index = rooms.indexWhere((room) => room.hasSameIdentity(current));
+
     return index < 0 ? 0 : index;
   }
 
@@ -469,11 +560,16 @@ class LivePlayController extends _$LivePlayController {
   /// tell the user.
   LiveRoom? relativeChannel(int delta) {
     final rooms = channelRooms;
+
     if (rooms.length < 2) return null;
+
     final current = channelIndex;
     final raw = current + delta;
+
     final next = raw < 0 ? rooms.length - 1 : (raw >= rooms.length ? 0 : raw);
+
     final target = rooms[next];
+
     // Switching is pointless when only one playable room exists.
     return state.room != null && target.hasSameIdentity(state.room!) ? null : target;
   }
@@ -505,16 +601,23 @@ class LivePlayController extends _$LivePlayController {
   /// Shows the channel name for two seconds after an up/down switch.
   void showChannelBanner(String text) {
     _channelBannerTimer?.cancel();
+
     state = state.copyWith(channelBanner: text);
+
     _channelBannerTimer = Timer(const Duration(seconds: 2), () {
-      if (ref.mounted) state = state.copyWith(clearChannelBanner: true);
+      if (ref.mounted) {
+        state = state.copyWith(clearChannelBanner: true);
+      }
     });
   }
 
   void dismissChannelBanner() {
     _channelBannerTimer?.cancel();
     _channelBannerTimer = null;
-    if (state.showChannelBanner) state = state.copyWith(clearChannelBanner: true);
+
+    if (state.showChannelBanner) {
+      state = state.copyWith(clearChannelBanner: true);
+    }
   }
 
   // =========================
@@ -525,6 +628,7 @@ class LivePlayController extends _$LivePlayController {
 
   void showControls() {
     state = state.copyWith(showControls: true);
+
     _armControlsHide();
   }
 
@@ -544,12 +648,14 @@ class LivePlayController extends _$LivePlayController {
 
   void _armControlsHide() {
     _controlsHideTimer?.cancel();
+
     _controlsHideTimer = Timer(const Duration(seconds: 5), _dismissControls);
   }
 
   void _dismissControls() {
     _controlsHideTimer?.cancel();
     _controlsHideTimer = null;
+
     if (ref.mounted) {
       state = state.copyWith(showControls: false);
     }
@@ -571,6 +677,7 @@ class DanmakuSessionController extends _$DanmakuSessionController {
   @override
   DanmakuSessionState build(LivePlayArgs args) {
     ref.onDispose(_teardown);
+
     return DanmakuSessionState(barrageController: BarrageController());
   }
 
@@ -582,15 +689,19 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     // previous room cannot leak in.
     final oldEngine = _engine;
     _engine = null;
+
     if (oldEngine != null) {
       oldEngine.onMessage = null;
       oldEngine.onClose = null;
+
       unawaited(oldEngine.stop().catchError((Object e, StackTrace s) {}));
     }
+
     _messageGate.clear();
     _repeatedFilter.clear();
     _similarityFilter.clear();
     controller.clear();
+
     state = state.copyWith(
       messages: const <LiveMessage>[],
       connected: false,
@@ -598,17 +709,21 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     );
 
     LiveDanmaku engine;
+
     try {
       engine = _repository.createDanmaku(room);
     } catch (e) {
       if (token == _sessionToken && ref.mounted) {
         state = state.copyWith(statusText: i18n('danmaku_unavailable'));
       }
+
       return;
     }
 
     _engine = engine;
+
     engine.onMessage = (msg) => _acceptMessage(msg, token);
+
     engine.onClose = (msg) {
       if (token == _sessionToken && ref.mounted) {
         state = state.copyWith(connected: false, statusText: i18n('danmaku_disconnected'));
@@ -621,11 +736,13 @@ class DanmakuSessionController extends _$DanmakuSessionController {
       if (token == _sessionToken && ref.mounted) {
         state = state.copyWith(connected: false, statusText: i18n('danmaku_connect_timeout'));
       }
+
       return;
     } catch (e) {
       if (token == _sessionToken && ref.mounted) {
         state = state.copyWith(connected: false, statusText: i18n('danmaku_connect_failed'));
       }
+
       return;
     }
 
@@ -638,15 +755,19 @@ class DanmakuSessionController extends _$DanmakuSessionController {
 
   void _acceptMessage(LiveMessage message, int token) {
     if (token != _sessionToken || !ref.mounted) return;
+
     // The danmaku layer only handles chat messages; gifts and entrances go to the
     // list view alone.
     if (message.type != LiveMessageType.chat) return;
+
     if (!_messageGate.accepts(message)) return;
+
     // Blocked words and users configured in the filter panel are dropped on
     // match.
     if (!_passesShield(message)) return;
 
     final danmakuSettings = SettingsService.to.danmakuState;
+
     if (!_repeatedFilter.accepts(
       message,
       enabled: danmakuSettings.collapseRepeatedDanmaku,
@@ -654,16 +775,20 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     )) {
       return;
     }
+
     if (danmakuSettings.enableDanmakuSimilarityFilter) {
-      // The three sliders on the danmaku settings page (similarity threshold / cache duration /
-      // max cache size) were stored and never applied: the filter kept its
-      // constructor defaults, so changing them did nothing.
+      // The three sliders on the danmaku settings page (similarity threshold /
+      // cache duration / max cache size) were stored and never applied: the
+      // filter kept its constructor defaults, so changing them did nothing.
       _similarityFilter.updateConfig(
         similarityThreshold: danmakuSettings.danmakuSimilarityThreshold,
         cacheDuration: Duration(seconds: danmakuSettings.danmakuSimilarityCacheDuration.clamp(1, 60)),
         maxCacheSize: danmakuSettings.danmakuSimilarityMaxCacheSize,
       );
-      if (!_similarityFilter.shouldDisplay(message.message)) return;
+
+      if (!_similarityFilter.shouldDisplay(message.message)) {
+        return;
+      }
     }
 
     // flame_barrage rendering, only fed to the picture layer while danmaku are on.
@@ -673,9 +798,11 @@ class DanmakuSessionController extends _$DanmakuSessionController {
 
     // Keep the list view bounded in a single pass (no copy-then-trim).
     const maxListedMessages = 200;
+
     final messages = state.messages.length >= maxListedMessages
         ? <LiveMessage>[...state.messages.sublist(state.messages.length - maxListedMessages + 1), message]
         : <LiveMessage>[...state.messages, message];
+
     state = state.copyWith(messages: messages);
   }
 
@@ -686,17 +813,25 @@ class DanmakuSessionController extends _$DanmakuSessionController {
   /// by author was removed: keywords are the only rule the player applies.
   bool _passesShield(LiveMessage message) {
     final shieldList = SettingsService.to.favState.shieldList;
+
     if (shieldList.isEmpty) return true;
+
     final text = message.message;
+
     for (final word in shieldList) {
-      if (word.isNotEmpty && text.contains(word)) return false;
+      if (word.isNotEmpty && text.contains(word)) {
+        return false;
+      }
     }
+
     return true;
   }
 
   BarrageItem _toBarrageItem(LiveMessage msg) {
     final style = msg.style;
+
     final color = Color.fromARGB(255, msg.color.r, msg.color.g, msg.color.b);
+
     return BarrageItem(
       content: msg.message,
       type: switch (style?.placement) {
@@ -721,16 +856,21 @@ class DanmakuSessionController extends _$DanmakuSessionController {
     _messageGate.clear();
     _repeatedFilter.clear();
     _similarityFilter.clear();
+
     state.barrageController.clear();
+
     state = state.copyWith(messages: const <LiveMessage>[]);
   }
 
   void _teardown() {
     _sessionToken++;
+
     final engine = _engine;
     _engine = null;
+
     engine?.onMessage = null;
     engine?.onClose = null;
+
     if (engine != null) {
       unawaited(engine.stop().catchError((Object e, StackTrace s) {}));
     }

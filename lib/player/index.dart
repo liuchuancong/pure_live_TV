@@ -13,8 +13,5 @@ export 'core/playback_proxy_policy.dart';
 export 'global_player_service.dart';
 export 'live_player_facade.dart';
 export 'models/player_engine.dart';
-export 'models/player_error_type.dart';
-export 'models/player_exception.dart';
-export 'models/player_state.dart';
 export 'utils/fijk_helper.dart';
 export 'utils/player_consts.dart';

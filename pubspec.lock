@@ -1121,11 +1121,9 @@ packages:
   media_core:
     dependency: "direct main"
     description:
-      path: "packages/media_core"
-      ref: main
-      resolved-ref: "7106644a3de261a0b8c0a97058ed5307366bf84d"
-      url: "https://github.com/liuchuancong/media_core.git"
-    source: git
+      path: "C:\\Users\\XA-158\\projects\\flutter\\media_core\\packages\\media_core"
+      relative: false
+    source: path
     version: "0.1.0"
   media_kit:
     dependency: "direct main"

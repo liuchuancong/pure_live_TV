@@ -1,13 +1,9 @@
+import 'package:media_core/core/player_state.dart';
 import 'package:pure_live/exports/common_export.dart';
-
-/// UI-visible state of one playback session.
-enum LivePlayStatus { idle, loadingDetail, preparing, buffering, playing, paused, error }
 
 /// Which side panel is currently shown.
 ///
 /// Only one panel is visible at a time, matching the legacy live_play app.
-/// Switching is driven by [LivePlayState.panel] and
-/// [LivePlayState.showSidePanel].
 enum LivePlayPanel { danmakuSettings, playlist, shield }
 
 class LivePlayState {
@@ -18,7 +14,7 @@ class LivePlayState {
     this.qualityIndex = 0,
     this.playUrls = const <String>[],
     this.lineIndex = 0,
-    this.status = LivePlayStatus.idle,
+    required this.playerState,
     this.errorMessage,
     this.showControls = false,
     this.fitIndex = 0,
@@ -34,26 +30,24 @@ class LivePlayState {
   final int qualityIndex;
   final List<String> playUrls;
   final int lineIndex;
-  final LivePlayStatus status;
+
+  /// Playback state owned by media_core.
+  ///
+  /// The page should use this directly instead of maintaining another
+  /// LivePlayStatus enum.
+  final PlayerState playerState;
+
+  /// Business/UI error message.
+  ///
+  /// This is intentionally separate from [playerState], because errors such
+  /// as room-detail or stream-url requests are not player playback states.
   final String? errorMessage;
 
-  /// Whether the video control bar is visible. The remote toggles it with OK and
-  /// it hides itself automatically.
   final bool showControls;
-
-  /// Aspect ratio index, mirroring PlayerManager.videoFitIndex.
   final int fitIndex;
-
-  /// Current volume, 0.0 to 1.0.
   final double volume;
-
-  /// Whether the side info and danmaku panel is visible.
   final bool showSidePanel;
-
-  /// Which side panel is currently shown.
   final LivePlayPanel? panel;
-
-  /// Channel name toast shown after an up/down switch; empty hides it.
   final String? channelBanner;
 
   bool get showChannelBanner => channelBanner != null && channelBanner!.isNotEmpty;
@@ -67,7 +61,7 @@ class LivePlayState {
     int? qualityIndex,
     List<String>? playUrls,
     int? lineIndex,
-    LivePlayStatus? status,
+    PlayerState? playerState,
     String? errorMessage,
     bool clearErrorMessage = false,
     bool? showControls,
@@ -85,7 +79,7 @@ class LivePlayState {
       qualityIndex: qualityIndex ?? this.qualityIndex,
       playUrls: playUrls ?? this.playUrls,
       lineIndex: lineIndex ?? this.lineIndex,
-      status: status ?? this.status,
+      playerState: playerState ?? this.playerState,
       errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
       showControls: showControls ?? this.showControls,
       fitIndex: fitIndex ?? this.fitIndex,

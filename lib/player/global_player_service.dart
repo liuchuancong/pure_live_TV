@@ -1,18 +1,15 @@
 import 'dart:async';
 import 'dart:developer';
-
-import 'package:media_core/media_core.dart';
-import 'package:media_kit/media_kit.dart' as mk;
-
-import 'adapters/better_player_adapter.dart';
-import 'adapters/flv_lzc_adapter.dart';
-import 'adapters/media_kit_core_adapter.dart';
 import 'live_player_facade.dart';
 import 'models/player_engine.dart';
+import 'adapters/flv_lzc_adapter.dart';
+import 'package:media_core/media_core.dart';
+import 'adapters/better_player_adapter.dart';
+import 'adapters/media_kit_core_adapter.dart';
+import 'package:media_kit/media_kit.dart' as mk;
 
 export 'live_player_facade.dart';
 export 'models/player_engine.dart';
-export 'models/player_state.dart' show PlayerState;
 export 'utils/player_consts.dart';
 
 /// Media-core-backed global player service.

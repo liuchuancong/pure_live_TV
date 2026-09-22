@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'fijk_view_holder.dart';
 import '../utils/fijk_helper.dart';
 import 'package:flutter/material.dart';
@@ -7,64 +6,32 @@ import 'package:media_core/media_core.dart';
 import '../../services/settings/settings.dart';
 import '../core/playback_proxy_policy.dart';
 
-
-
 /// [PlayerAdapter] implementation backed by the local flv_lzc
 /// (fijkplayer) plugin — the IJK engine.
 ///
-/// Mirrors the semantics the legacy FijkAdapter established:
+/// Engine semantics:
 ///
-/// - source-scoped event acceptance (a listener installed during
-///   open must not deliver the previous source's events)
-/// - deferred native errors (FijkState.error can arrive before
-///   setDataSource completes)
+/// - source-scoped event acceptance and deferred native errors
+///   (FijkState.error can arrive before setDataSource completes) —
+///   provided by the base
 /// - proxy option for the app-owned loopback input
 /// - audio-only via the `disable-vid` player option
 /// - the view is exposed through [FijkViewHolder] so the surface
 ///   layer can rebuild without owning the adapter
-final class FlvLzcPlayerAdapter implements PlayerAdapter {
+final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   /// Creates the adapter.
-  FlvLzcPlayerAdapter({this.id = 'ijk', FijkPlayer? player}) : _injectedPlayer = player;
+  FlvLzcPlayerAdapter({super.id = 'ijk', super.capabilities = defaultCapabilities, FijkPlayer? player})
+      : _injectedPlayer = player;
 
-  @override
-  final String id;
   final FijkPlayer? _injectedPlayer;
-
   late final FijkPlayer _player = _injectedPlayer ?? FijkPlayer();
-  final _eventController = StreamController<PlayerAdapterEvent>.broadcast();
 
-  PlayerState _state = PlayerState.idle;
-  final PlayerAdapterMetrics _metrics = const PlayerAdapterMetrics();
-
-  bool _initialized = false;
-  bool _disposed = false;
   bool _isAudioOnly = false;
-  bool _acceptSourceEvents = false;
-  bool _sourceOpening = false;
   bool _sourceBuffering = false;
   bool _privateInput = false;
-  PlayerAdapterEvent? _deferredError;
-
-  Duration _lastPosition = Duration.zero;
-  int? _lastWidth;
-  int? _lastHeight;
+  Duration _lastDuration = Duration.zero;
 
   BoxFit _videoFit = BoxFit.contain;
-
-  @override
-  PlayerAdapterCapabilities get capabilities => defaultCapabilities;
-
-  @override
-  PlayerState get state => _state;
-
-  @override
-  PlayerAdapterMetrics get metrics => _metrics;
-
-  @override
-  Stream<PlayerAdapterEvent> get events => _eventController.stream;
-
-  @override
-  bool get initialized => _initialized;
 
   /// The underlying FijkPlayer.
   FijkPlayer get fijkPlayer => _player;
@@ -74,138 +41,75 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
   final FijkViewHolder _viewHolder = FijkViewHolder();
 
   // ---------------------------------------------------------------------------
-  // Lifecycle
+  // Engine contract
   // ---------------------------------------------------------------------------
 
   @override
-  Future<void> initialize(PlayerAdapterContext context) async {
-    if (_initialized) return;
-    _state = PlayerState.idle.initializingState().readyState();
-
+  Future<void> onInitialize(PlayerAdapterContext context) async {
     _player.addListener(_onPlayerValue);
     if (_isAudioOnly) {
       await _player.setOption(FijkOption.playerCategory, 'disable-vid', 1);
     }
-    _initialized = true;
   }
 
   @override
-  Future<void> open(PlayerSource source) async {
-    _requireReady();
+  bool get engineReportsOpenFailure => _player.value.state == FijkState.error;
 
-    // Source-scoped listener reset: the previous source's late
-    // events must not leak into this generation.
-    _acceptSourceEvents = false;
-    _sourceBuffering = false;
-    _deferredError = null;
-    _lastPosition = Duration.zero;
-    _lastWidth = null;
-    _lastHeight = null;
-
+  @override
+  Future<void> onOpen(PlayerSource source) async {
     final privateInput = _privateInput;
     _privateInput = false;
 
-    try {
-      if (_player.state != FijkState.idle) {
-        await _player.reset();
-      }
-      await _player.setOption(
-        FijkOption.formatCategory,
-        'http_proxy',
-        PlaybackProxyPolicy.currentNativeUrl(privateInput: privateInput),
-      );
-      await FijkHelper.setFijkOption(
-        _player,
-        enableCodec: SettingsService.to.playerState.enableCodec,
-        disableAudioOutput: false,
-        headers: source.hasHeaders ? Map<String, String>.from(source.headers!.values) : null,
-      );
-
-      _sourceOpening = true;
-      _acceptSourceEvents = true;
-      await _player.setDataSource(source.uri.toString(), autoPlay: true);
-      _sourceOpening = false;
-
-      final deferred = _deferredError;
-      _deferredError = null;
-      if (deferred != null && _player.value.state == FijkState.error) {
-        _acceptSourceEvents = false;
-        _state = _state.errorState();
-        _emit(deferred);
-        throw StateError('flv_lzc open failed');
-      }
-
-      _state = _state.openingState().withSource(true).readyState();
-      _emit(PlayerAdapterEvent.opened(source: source.id.value));
-    } catch (e) {
-      _sourceOpening = false;
-      _acceptSourceEvents = false;
-      _state = _state.errorState();
-      _emit(PlayerAdapterEvent.error(message: 'flv_lzc setDataSource failed: $e'));
-      rethrow;
+    if (_player.state != FijkState.idle) {
+      await _player.reset();
     }
+    await _player.setOption(
+      FijkOption.formatCategory,
+      'http_proxy',
+      PlaybackProxyPolicy.currentNativeUrl(privateInput: privateInput),
+    );
+    await FijkHelper.setFijkOption(
+      _player,
+      enableCodec: SettingsService.to.playerState.enableCodec,
+      disableAudioOutput: false,
+      headers: source.hasHeaders ? Map<String, String>.from(source.headers!.values) : null,
+    );
+    await _player.setDataSource(source.uri.toString(), autoPlay: true);
   }
 
   @override
-  Future<void> play() async {
-    _requireReady();
-    await _player.start();
-  }
+  Future<void> onPlay() => _player.start();
 
   @override
-  Future<void> pause() async {
-    _requireReady();
-    await _player.pause();
-  }
+  Future<void> onPause() => _player.pause();
 
   @override
-  Future<void> stop() async {
-    _requireReady();
-    _acceptSourceEvents = false;
+  Future<void> onStop() async {
     _sourceBuffering = false;
     await _player.stop();
-    _state = _state.stoppedState().withSource(false);
-    _emit(const PlayerAdapterEvent.stopped());
   }
 
   @override
-  Future<void> seek(Duration position) async {
-    _requireReady();
-    await _player.seekTo(position.inMilliseconds);
-    _emit(PlayerAdapterEvent.positionChanged(position: position));
-  }
+  Future<void> onSeek(Duration position) => _player.seekTo(position.inMilliseconds);
 
   @override
-  Future<void> setVolume(double volume) async {
-    _requireReady();
-    await _player.setVolume(volume.clamp(0.0, 1.0));
-  }
+  Future<void> onSetVolume(double volume) => _player.setVolume(volume.clamp(0.0, 1.0));
 
   @override
-  Future<void> setRate(double rate) async {
-    _requireReady();
+  Future<void> onSetRate(double rate) async {
     // soundtouch enables tempo processing for rates != 1.0.
     await _player.setOption(FijkOption.playerCategory, 'soundtouch', rate != 1.0 ? 1 : 0);
     await _player.setSpeed(rate);
-    _emit(PlayerAdapterEvent.rateChanged(rate: rate));
   }
 
   @override
-  Future<void> close() async {
-    if (!_initialized) return;
-    _acceptSourceEvents = false;
+  Future<void> onClose() async {
     _sourceBuffering = false;
     await _player.reset();
-    _state = _state.stoppedState().withSource(false);
-    _emit(const PlayerAdapterEvent.stopped());
   }
 
   @override
-  Future<void> dispose() async {
-    if (_disposed) return;
-    _disposed = true;
-
-    _state = _state.disposingState();
+  Future<void> onDispose() async {
     _player.removeListener(_onPlayerValue);
 
     try {
@@ -214,15 +118,10 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
       // Release races surface here on some devices; disposal
       // continues regardless.
     }
-
-    _state = _state.disposedState();
-    if (!_eventController.isClosed) {
-      await _eventController.close();
-    }
   }
 
   // ---------------------------------------------------------------------------
-  // TV-specific extensions
+  // TV extensions
   // ---------------------------------------------------------------------------
 
   /// Whether the next open bypasses the native proxy.
@@ -234,7 +133,7 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
   /// Enables or disables video decoding without replacing the
   /// player or reopening the current live stream.
   Future<void> setAudioOnly(bool audioOnly) async {
-    if (_disposed || _isAudioOnly == audioOnly) return;
+    if (isDisposed || _isAudioOnly == audioOnly) return;
     await _player.setOption(FijkOption.playerCategory, 'disable-vid', audioOnly ? 1 : 0);
     _isAudioOnly = audioOnly;
   }
@@ -254,21 +153,14 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
   // ---------------------------------------------------------------------------
 
   void _onPlayerValue() {
-    if (_disposed || !_acceptSourceEvents) return;
+    if (!acceptsEngineEvents) return;
     final value = _player.value;
     final state = value.state;
 
     // Dimensions.
     final size = value.size;
-    if (size != null && size.width > 0 && size.height > 0) {
-      final w = size.width.toInt();
-      final h = size.height.toInt();
-      if (w != _lastWidth || h != _lastHeight) {
-        _lastWidth = w;
-        _lastHeight = h;
-        _state = _state.withVideoEnabled(true);
-        _emit(PlayerAdapterEvent.videoSizeChanged(width: w, height: h));
-      }
+    if (size != null) {
+      emitVideoSizeChangedIfChanged(size.width.toInt(), size.height.toInt());
     }
 
     // Buffering updates drive loading, independent of state.
@@ -276,8 +168,7 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
     if (state == FijkState.asyncPreparing || state == FijkState.prepared) {
       if (!_sourceBuffering) {
         _sourceBuffering = true;
-        _state = _state.bufferingState();
-        _emit(const PlayerAdapterEvent.buffering(buffering: true));
+        emitBuffering(true);
       }
     }
 
@@ -285,28 +176,17 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
       case FijkState.started:
         if (_sourceBuffering) {
           _sourceBuffering = false;
-          _emit(const PlayerAdapterEvent.buffering(buffering: false));
+          emitBuffering(false);
         }
-        _state = _state.playingState();
-        _emit(const PlayerAdapterEvent.playing());
+        emitPlaying();
       case FijkState.paused:
-        _state = _state.pausedState();
-        _emit(const PlayerAdapterEvent.paused());
+        emitPaused();
       case FijkState.completed:
       case FijkState.end:
-        _state = _state.completedState();
-        _emit(const PlayerAdapterEvent.completed());
+        emitCompleted();
       case FijkState.error:
         final native = value.exception;
-        final event = PlayerAdapterEvent.error(
-          message: 'fijk error ${native.code}: ${native.message ?? 'native playback failure'}',
-        );
-        if (_sourceOpening) {
-          _deferredError = event;
-        } else {
-          _state = _state.errorState();
-          _emit(event);
-        }
+        reportEngineError(message: 'fijk error ${native.code}: ${native.message ?? 'native playback failure'}');
       case FijkState.stopped:
       case FijkState.idle:
       case FijkState.initialized:
@@ -317,25 +197,9 @@ final class FlvLzcPlayerAdapter implements PlayerAdapter {
 
     // Duration (live streams report zero).
     final duration = value.duration;
-    if (duration > Duration.zero && duration != _lastPosition) {
-      _lastPosition = duration;
-      _emit(PlayerAdapterEvent.durationChanged(duration: duration));
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
-
-  void _emit(PlayerAdapterEvent event) {
-    if (!_eventController.isClosed) {
-      _eventController.add(event);
-    }
-  }
-
-  void _requireReady() {
-    if (!_initialized || _disposed) {
-      throw StateError('FlvLzcPlayerAdapter is not initialized or has been disposed.');
+    if (duration > Duration.zero && duration != _lastDuration) {
+      _lastDuration = duration;
+      emitDurationChanged(duration);
     }
   }
 

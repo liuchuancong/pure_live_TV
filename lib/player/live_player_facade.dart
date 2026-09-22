@@ -1,26 +1,26 @@
 import 'dart:async';
-import 'models/player_state.dart';
 import 'models/player_engine.dart';
-import 'models/player_exception.dart';
 import 'package:flutter/material.dart';
-import 'package:better_player_plus/better_player_plus.dart';
-import 'adapters/better_player_adapter.dart';
 import 'adapters/flv_lzc_adapter.dart';
-import 'models/player_error_type.dart';
 import '../shared/consts/app_consts.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'core/live_room_volume_manager.dart';
 import 'core/playback_header_resolver.dart';
 import '../services/settings/settings.dart';
+import 'package:media_core/media_core.dart';
+import 'adapters/better_player_adapter.dart';
 import 'adapters/media_kit_core_adapter.dart';
 import '../shared/models/live_room/live_room.dart';
-import 'package:media_core/media_core.dart' hide PlayerState, PlayerException;
+import 'package:better_player_plus/better_player_plus.dart';
 
 /// App-facing facade over media_core's [LivePlaybackController].
 ///
 /// Keeps the surface the features already consume — BehaviorSubject
 /// state, videoKey bumps, engine switching, fit and volume — while
 /// the watchdog / line / engine recovery runs inside media_core.
+///
+/// Playback state and errors are surfaced as-is: [PlayerState] and
+/// [PlayerFailure]. No app-side wrapper types are introduced.
 ///
 /// ```text
 /// features ──▶ LivePlayerFacade ──▶ LivePlaybackController (media_core)
@@ -37,6 +37,7 @@ final class LivePlayerFacade {
   PlayerEngine preferredEngine;
 
   final LivePlaybackController _controller;
+
   // Callback stored through the initializer list.
   // ignore: prefer_initializing_formals
   final void Function(PlayerEngine engine)? _onPreferredEngineChanged;
@@ -45,9 +46,9 @@ final class LivePlayerFacade {
   // Rx state (the legacy surface)
   // ---------------------------------------------------------------------------
 
-  final _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.idle);
+  final _stateSubject = BehaviorSubject<PlayerState>.seeded(const PlayerState());
   final _playingSubject = BehaviorSubject<bool>.seeded(false);
-  final _errorSubject = PublishSubject<PlayerException>();
+  final _errorSubject = PublishSubject<PlayerFailure>();
   final _widthSubject = BehaviorSubject<int?>.seeded(null);
   final _heightSubject = BehaviorSubject<int?>.seeded(null);
   final videoFitIndex = BehaviorSubject<int>.seeded(0);
@@ -55,8 +56,8 @@ final class LivePlayerFacade {
   final isVerticalVideo = BehaviorSubject<bool>.seeded(false);
 
   final List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
-  StreamSubscription<LivePlaybackError>? _errorSub;
-  StreamSubscription<LivePlaybackState>? _stateSub;
+  StreamSubscription<PlayerFailure>? _errorSub;
+  StreamSubscription<PlayerState>? _stateSub;
 
   bool _disposed = false;
 
@@ -81,9 +82,9 @@ final class LivePlayerFacade {
 
   Stream<bool> get onPlaying => _playingSubject.stream;
 
-  Stream<PlayerException> get onError => _errorSubject.stream;
+  Stream<PlayerFailure> get onError => _errorSubject.stream;
 
-  bool get initialized => _stateSubject.value != PlayerState.disposed;
+  bool get initialized => !_stateSubject.value.disposed;
 
   bool get isPlayingNow => _playingSubject.value;
 
@@ -112,9 +113,9 @@ final class LivePlayerFacade {
 
   void _bind() {
     _stateSub ??= _controller.onStateChanged.listen(_onLiveStateChanged);
-    _errorSub ??= _controller.onError.listen((error) {
+    _errorSub ??= _controller.onError.listen((failure) {
       if (_disposed) return;
-      _errorSubject.add(PlayerException(message: error.message, type: PlayerErrorType.unknown));
+      _errorSubject.add(failure);
     });
 
     final handle = _controller.handle;
@@ -160,7 +161,6 @@ final class LivePlayerFacade {
     }
   }
 
-  /// 播放期间挂起壁纸视频（视频壁纸与直播间视频同时解码会互相抢 Surface，
   /// 在 Android TV 上表现为两边画面一起闪）。
   void _syncBackgroundVideoSuspension(bool playing) {
     try {
@@ -170,36 +170,25 @@ final class LivePlayerFacade {
     }
   }
 
-  void _onLiveStateChanged(LivePlaybackState state) {
+  void _onLiveStateChanged(PlayerState state) {
     if (_disposed) return;
-    switch (state) {
-      case LivePlaybackState.preparing:
-        _stateSubject.add(PlayerState.preparing);
-      case LivePlaybackState.buffering:
-        // media_core raises this the moment open() returns, and for a live
-        // stream that declaration can be the last state change there ever is -
-        // which pins the spinner over a picture that is playing fine. Only a
-        // buffering the adapter itself reported is real, and that has to come
-        // from its events: the state it exposes is overwritten by whichever
-        // event arrived last, and ExoPlayer re-buffers often enough that the
-        // value read here is not evidence of anything.
-        if (!_adapterBuffering) {
-          // The controller's own state has to move with it: leaving it on
-          // buffering makes a later real buffering collide with that dedupe
-          // (`if (state == next) return`) and never reach the UI at all.
-          _controller.state = LivePlaybackState.playing;
-          return;
-        }
-        _stateSubject.add(PlayerState.buffering);
-      case LivePlaybackState.playing:
-        _stateSubject.add(PlayerState.playing);
-      case LivePlaybackState.paused:
-        _stateSubject.add(PlayerState.paused);
-      case LivePlaybackState.error:
-        _stateSubject.add(PlayerState.error);
-      case LivePlaybackState.idle:
-        _stateSubject.add(PlayerState.idle);
+
+    // media_core raises buffering the moment open() returns, and for a live
+    // stream that declaration can be the last state change there ever is -
+    // which pins the spinner over a picture that is playing fine. Only a
+    // buffering the adapter itself reported is real, and that has to come
+    // from its events: the state it exposes is overwritten by whichever
+    // event arrived last, and ExoPlayer re-buffers often enough that the
+    // value read here is not evidence of anything.
+    if (state.playback == PlayerPlaybackState.buffering && !_adapterBuffering) {
+      // The controller's own state has to move with it: leaving it on
+      // buffering makes a later real buffering collide with that dedupe
+      // (`if (state == next) return`) and never reach the UI at all.
+      _controller.state = state.copyWith(playback: PlayerPlaybackState.playing);
+      return;
     }
+
+    _stateSubject.add(state);
   }
 
   // ---------------------------------------------------------------------------
@@ -263,13 +252,7 @@ final class LivePlayerFacade {
   Future<void> resume() => _controller.resume();
 
   /// Stops playback and releases the player.
-  ///
-  /// 离开直播间一律彻底释放，不再保留热实例复用：复用只省下一次重建开销，
-  /// 代价是硬解实例在后台常驻（电视盒子上尤其明显）。所以原先的
-  /// `useHardStopOnExit` 开关连同“暂停复用”分支一起去掉了。
   Future<void> close() async {
-    // 播放结束：无论下面走哪条路，都把壁纸视频还回去（硬关不保证派发
-    // Stopped 事件，不在这里兜底壁纸会一直停在暂停帧）。
     _syncBackgroundVideoSuspension(false);
     await _controller.close();
   }
