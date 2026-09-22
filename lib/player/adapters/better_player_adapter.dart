@@ -199,11 +199,9 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
   void _startFrameProgress() {
     _frameProgressTimer ??= Timer.periodic(_frameProgressInterval, (_) {
       if (isDisposed) return;
-
       final controller = _controller;
       if (controller == null) return;
       if (controller.isPlaying() != true) return;
-
       emitVideoFrameProgress();
     });
   }

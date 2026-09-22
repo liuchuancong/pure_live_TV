@@ -1,7 +1,6 @@
-import 'package:flv_lzc/fijkplayer.dart';
-import 'package:flutter/material.dart';
-
 import '../utils/fijk_helper.dart';
+import 'package:flutter/material.dart';
+import 'package:flv_lzc/fijkplayer.dart';
 
 /// Binds an [FijkView] to a [FijkPlayer] without the widget owning
 /// the adapter lifecycle.
@@ -37,9 +36,10 @@ final class FijkViewHolder {
           fit: FijkHelper.getIjkBoxFit(fit),
           fs: false,
           color: Colors.black,
-          panelBuilder: (FijkPlayer fijkPlayer, FijkData fijkData, BuildContext context, Size viewSize, Rect texturePos) {
-            return const SizedBox();
-          },
+          panelBuilder:
+              (FijkPlayer fijkPlayer, FijkData fijkData, BuildContext context, Size viewSize, Rect texturePos) {
+                return const SizedBox();
+              },
         );
       },
     );

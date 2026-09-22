@@ -115,14 +115,10 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     // The device budget must be known before the video controller and the
     // native property contract are built, because both branch on it.
     await DevicePlaybackProfile.ensureLoaded();
-
     _resolvePreferredHardwareDecoder();
-
     _videoController = _buildVideoController();
-
     _subscribeStreams();
     _observeDecodedFrames();
-
     await _applyNativeLiveProperties();
   }
 
@@ -521,39 +517,51 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     _subscriptions.add(s.buffer.listen(_onBuffer));
   }
 
+  /// Observes MPV's estimated video frame rate and turns it into
+  /// a throttled video-frame heartbeat.
+  ///
+  /// MPV does not expose a decoded-frame callback through
+  /// `video-frame-info/picture-type` in the current media_kit/libmpv
+  /// build, so that property cannot be used as the frame heartbeat.
+  ///
+  /// `estimated-vf-fps` is a video-frame-rate statistic rather than
+  /// a per-frame notification. It is therefore only used as evidence
+  /// that video output is still progressing.
+  ///
+  /// The callback is throttled by [_onNativeFrameSignal] so the
+  /// media_core event stream receives at most one heartbeat per second.
+  /// This heartbeat is consumed by the live watchdog to detect a
+  /// stalled video decoder/output.
+  ///
+  /// Do not use `video-params` here. It describes video geometry and
+  /// format and does not represent continuous frame progress.
   void _observeDecodedFrames() {
-    // Decoded-frame heartbeats: any observed frame proves the
-    // decoder is alive even while mpv still reports playing=true,
-    // which is what lets the live watchdog tell a wedged decoder
-    // from a healthy one.
-    //
-    // `video-frame-info/picture-type` is the property mpv actually
-    // publishes for the frame being decoded. The probe used to read
-    // `decoded-picture-type`, which is not an mpv property at all, so this
-    // heartbeat never fired and the watchdog could only ever be fed by
-    // geometry changes.
-    //
-    // Do not use `estimated-vf-fps` as a frame heartbeat. It is an FPS
-    // estimate rather than a decoded-frame notification and can change
-    // independently of individual frame delivery.
     _frameHeartbeatClock.start();
 
-    const property = 'video-frame-info/picture-type';
+    const property = 'estimated-vf-fps';
 
     try {
       final native = player.platform;
 
       // ignore: avoid_dynamic_calls
-      (native as dynamic).observeProperty?.call(property, (String value) {
-        _onNativeFrameSignal(property, value);
+      (native as dynamic).observeProperty?.call(property, (dynamic value) async {
+        _onNativeFrameSignal(property, value?.toString() ?? '');
       });
-    } catch (_) {
-      // observeProperty is a NativePlayer extension; a build without it
-      // simply has no native decoded-frame heartbeat.
+    } catch (error, stackTrace) {
+      Log.d(
+        '[MPV FRAME] observeProperty failed: '
+        '$error\n$stackTrace',
+      );
     }
   }
 
-  /// Turns one raw mpv frame probe into a throttled frame heartbeat.
+  /// Turns one raw mpv video-output statistic into a throttled
+  /// frame heartbeat.
+  ///
+  /// `estimated-vf-fps` is not a per-frame callback. It is an MPV
+  /// video-frame-rate statistic, so it is only used as evidence that
+  /// video output is still progressing. The heartbeat itself is
+  /// throttled to once per second before entering media_core.
   void _onNativeFrameSignal(String property, String value) {
     if (isDisposed) return;
 
@@ -561,22 +569,19 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     // It must not keep the live watchdog alive after playback has stopped.
     if (!_hasOpened || !_playingNow) return;
 
-    final signal = value.trim();
-
-    if (property != 'video-frame-info/picture-type') {
+    if (property != 'estimated-vf-fps') {
       return;
     }
 
-    final type = signal.toUpperCase();
+    final fps = double.tryParse(value.trim());
 
-    if (type != 'I' && type != 'P' && type != 'B') {
+    // Ignore invalid / unavailable FPS values.
+    if (fps == null || fps <= 0) {
       return;
     }
 
-    // This is the authoritative source for "a decoded video frame
-    // has actually been observed".
-    _hasDecodedVideoFrame = true;
-
+    // MPV reports the estimated frame rate much more frequently than
+    // the watchdog needs. Only publish one heartbeat per second.
     final now = _frameHeartbeatClock.elapsedMilliseconds;
 
     if (now - _lastFrameHeartbeatMs < frameHeartbeatIntervalMs) {
@@ -584,6 +589,8 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     }
 
     _lastFrameHeartbeatMs = now;
+
+    _hasDecodedVideoFrame = true;
     // media_core-level frame heartbeat.
     //
     // Do NOT emit videoSizeChanged here. Video size is geometry only
