@@ -38,27 +38,25 @@ class BackgroundController extends _$BackgroundController {
   String? _cachedBase64;
   Uint8List? _cachedBytes;
 
-  /// Mirror of [state].
+  BackgroundConfigModel? _lastModel;
+
+  /// Snapshot of the latest config, safe to read from any context (including
+  /// lifecycle callbacks where `state` is off-limits).
   ///
-  /// Riverpod forbids reading `state` / using `ref` inside lifecycle callbacks
-  /// (`onDispose`, ...); doing so trips the `_debugCallbackStack == 0`
-  /// assertion. `setPlaybackActive` is reached from
-  /// `LivePlayController.onDispose` → `LivePlayerFacade.close`, and it (plus
-  /// `_isVideoSource` and `reloadBackgroundVideo`) used to read `state` there,
-  /// which crashed teardown. This field is kept in sync with `state` and is a
-  /// plain value, safe to read from any context.
-  late BackgroundConfigModel _lastModel;
+  /// Nullable + lazily seeded: a lifecycle read can race the first `build()`
+  /// when the controller is reached through `SettingsService.to.bg` outside the
+  /// normal provider graph — a `late` field would throw `LateInitializationError`
+  /// in that window.
+  BackgroundConfigModel get _model {
+    final cached = _lastModel;
+    if (cached != null) return cached;
+    final fresh = _readModelFromPrefs();
+    _lastModel = fresh;
+    return fresh;
+  }
 
-  @override
-  BackgroundConfigModel build() {
-    // Released only when the app closes; keepAlive keeps it alive between
-    // reloadBackgroundVideo calls.
-    ref.onDispose(() {
-      _disposeVideoPlayer();
-      _configStream.close();
-    });
-
-    final model = BackgroundConfigModel(
+  BackgroundConfigModel _readModelFromPrefs() {
+    return BackgroundConfigModel(
       source: bgSourceFromString(HivePrefUtil.getString('bgSource') ?? 'none'),
       boxFit: BoxFit.values.firstWhere(
         (e) => e.name == (HivePrefUtil.getString('bgBoxFit') ?? 'cover'),
@@ -79,8 +77,20 @@ class BackgroundController extends _$BackgroundController {
       localVideoPath: HivePrefUtil.getString('bgLocalVideoPath'),
       networkVideoUrl: HivePrefUtil.getString('bgNetworkVideoUrl'),
     );
+  }
 
-    // Seed the mirror before anything can read it.
+  @override
+  BackgroundConfigModel build() {
+    // Released only when the app closes; keepAlive keeps it alive between
+    // reloadBackgroundVideo calls.
+    ref.onDispose(() {
+      _disposeVideoPlayer();
+      _configStream.close();
+    });
+
+    final model = _readModelFromPrefs();
+
+    // Seed the snapshot before anything can read it.
     _lastModel = model;
     _configStream.add(model);
     // A video background survives a restart, so the player has to pick it up on
@@ -91,8 +101,8 @@ class BackgroundController extends _$BackgroundController {
   }
 
   void _updateState(BackgroundConfigModel newModel) {
-    // Compare against the mirror, not `state` — see [_lastModel].
-    final BackgroundConfigModel previous = _lastModel;
+    // Compare against the cached snapshot, not `state` — see [_model].
+    final BackgroundConfigModel previous = _model;
     final bool videoChanged =
         newModel.source != previous.source ||
         newModel.localVideoPath != previous.localVideoPath ||
@@ -183,7 +193,7 @@ class BackgroundController extends _$BackgroundController {
   ///
   /// Reached from a lifecycle path
   /// (`LivePlayController.onDispose` → `LivePlayerFacade.close`); every read
-  /// below goes through [_lastModel] instead of `state` to stay out of the
+  /// below goes through [_model] instead of `state` to stay out of the
   /// Riverpod lifecycle assertion.
   Future<void> setPlaybackActive(bool active) async {
     if (_playbackSuspended == active) return;
@@ -205,7 +215,7 @@ class BackgroundController extends _$BackgroundController {
         _disposeVideoPlayer();
         // The player is gone; tell the background layer to draw the poster,
         // otherwise it would render a black fill.
-        _configStream.add(_lastModel);
+        _configStream.add(_model);
       } else {
         // Capture unsupported by some hwdec combos: fall back to pausing on
         // the last frame, which still avoids two decoders running at once.
@@ -219,15 +229,15 @@ class BackgroundController extends _$BackgroundController {
     // would show the wrong one on the next switch back.
     if (_posterFrame != null) {
       _posterFrame = null;
-      _configStream.add(_lastModel);
+      _configStream.add(_model);
     }
     if (_isVideoSource) await reloadBackgroundVideo();
   }
 
-  /// Reads the mirror, never `state` — this getter is called from the
+  /// Reads the snapshot, never `state` — this getter is called from the
   /// lifecycle path described on [setPlaybackActive].
   bool get _isVideoSource {
-    final source = _lastModel.source;
+    final source = _model.source;
     return source == BackgroundSource.assetVideo ||
         source == BackgroundSource.localVideo ||
         source == BackgroundSource.networkVideo;
@@ -241,12 +251,12 @@ class BackgroundController extends _$BackgroundController {
     unawaited(player?.dispose());
   }
 
-  /// Also driven from the lifecycle path, so it reads [_lastModel] only.
+  /// Also driven from the lifecycle path, so it reads [_model] only.
   Future<void> reloadBackgroundVideo() async {
-    final src = switch (_lastModel.source) {
-      BackgroundSource.assetVideo => _lastModel.assetVideoPath,
-      BackgroundSource.localVideo => _lastModel.localVideoPath,
-      BackgroundSource.networkVideo => _lastModel.networkVideoUrl,
+    final src = switch (_model.source) {
+      BackgroundSource.assetVideo => _model.assetVideoPath,
+      BackgroundSource.localVideo => _model.localVideoPath,
+      BackgroundSource.networkVideo => _model.networkVideoUrl,
       _ => null,
     };
     if (src != null && src.isNotEmpty) {
@@ -259,7 +269,7 @@ class BackgroundController extends _$BackgroundController {
       // The player is lazy, and the background layer reads the controller on
       // configChanges rebuild: on the frame it was just created, it still sees
       // null, so notify once more so it can pick up the controller.
-      if (created) _configStream.add(_lastModel);
+      if (created) _configStream.add(_model);
       await _videoPlayer?.open(Media(src), play: !_playbackSuspended);
       return;
     }
@@ -268,7 +278,7 @@ class BackgroundController extends _$BackgroundController {
     // an idle instance.
     _disposeVideoPlayer();
     // The controller is gone; notify the background layer to stop rendering it.
-    _configStream.add(_lastModel);
+    _configStream.add(_model);
   }
 
   void setNone() => _updateState(state.copyWith(source: BackgroundSource.none));
