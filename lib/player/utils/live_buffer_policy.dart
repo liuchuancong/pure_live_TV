@@ -47,8 +47,7 @@ abstract final class LiveBufferPolicy {
       (profile?.lowEnd ?? false) ? lowEndForwardBytes : forwardBytes;
 
   /// Backward byte budget for [profile].
-  static int backBytesFor(DevicePlaybackProfile? profile) =>
-      (profile?.lowEnd ?? false) ? lowEndBackBytes : backBytes;
+  static int backBytesFor(DevicePlaybackProfile? profile) => (profile?.lowEnd ?? false) ? lowEndBackBytes : backBytes;
 
   static Future<void> apply(
     Future<void> Function(String name, String value) setProperty, {
@@ -56,6 +55,7 @@ abstract final class LiveBufferPolicy {
   }) async {
     // Network cache-secs takes precedence over the smaller base readahead.
     // Set the whole contract before opening media, including inherited values.
+    await setProperty('force-seekable', 'yes');
     await setProperty('cache', 'yes');
     await setProperty('cache-on-disk', 'no');
     await setProperty('cache-secs', cacheSeconds.toString());

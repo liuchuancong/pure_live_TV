@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'fijk_view_holder.dart';
 import '../utils/fijk_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flv_lzc/fijkplayer.dart';
 import 'package:media_core/media_core.dart';
-import '../../services/settings/settings.dart';
 import '../core/playback_proxy_policy.dart';
+import '../../services/settings/settings.dart';
 
 /// [PlayerAdapter] implementation backed by the local flv_lzc
 /// (fijkplayer) plugin — the IJK engine.
@@ -18,10 +19,13 @@ import '../core/playback_proxy_policy.dart';
 /// - audio-only via the `disable-vid` player option
 /// - the view is exposed through [FijkViewHolder] so the surface
 ///   layer can rebuild without owning the adapter
+/// - a synthetic frame-progress heartbeat while the player is
+///   `started`, because IJK does not publish per-frame decode
+///   events. See [_syncFrameProgressTimer].
 final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   /// Creates the adapter.
   FlvLzcPlayerAdapter({super.id = 'ijk', super.capabilities = defaultCapabilities, FijkPlayer? player})
-      : _injectedPlayer = player;
+    : _injectedPlayer = player;
 
   final FijkPlayer? _injectedPlayer;
   late final FijkPlayer _player = _injectedPlayer ?? FijkPlayer();
@@ -29,9 +33,38 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   bool _isAudioOnly = false;
   bool _sourceBuffering = false;
   bool _privateInput = false;
+
   Duration _lastDuration = Duration.zero;
+  Duration _lastPosition = Duration.zero;
+
+  StreamSubscription<Duration>? _positionSubscription;
 
   BoxFit _videoFit = BoxFit.contain;
+
+  /// Frame-progress heartbeat timer.
+  ///
+  /// IJK does not publish a per-frame callback: `addListener` fires on
+  /// state / buffering / size changes only, and once `size` stabilises
+  /// it stops changing entirely. Without a real heartbeat the
+  /// [LiveWatchdogs] video-frame stall detector (10 s) fires on every
+  /// healthy stream and the recovery ladder resets the player every
+  /// 10 seconds — a spinner that never goes away.
+  ///
+  /// While the player is [FijkState.started] this timer emits
+  /// [PlayerAdapterVideoFrameProgress] at [_frameProgressInterval] so
+  /// the watchdog receives a continuous signal. It is stopped the
+  /// moment the state leaves `started`.
+  ///
+  /// This is a heartbeat only: it proves the player *believes* it is
+  /// playing, not that a specific frame was decoded. A genuinely
+  /// wedged IJK is still caught by its buffering and error events.
+  Timer? _frameProgressTimer;
+
+  /// Interval between synthetic frame-progress heartbeats.
+  ///
+  /// Aligned with [PureLiveMediaKitAdapter.frameHeartbeatIntervalMs] so
+  /// both engines feed the watchdog at the same cadence.
+  static const Duration _frameProgressInterval = Duration(seconds: 1);
 
   /// The underlying FijkPlayer.
   FijkPlayer get fijkPlayer => _player;
@@ -47,6 +80,9 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   @override
   Future<void> onInitialize(PlayerAdapterContext context) async {
     _player.addListener(_onPlayerValue);
+
+    _positionSubscription = _player.onCurrentPosUpdate.listen(_onPositionChanged);
+
     if (_isAudioOnly) {
       await _player.setOption(FijkOption.playerCategory, 'disable-vid', 1);
     }
@@ -60,21 +96,38 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
     final privateInput = _privateInput;
     _privateInput = false;
 
+    _lastPosition = Duration.zero;
+    _lastDuration = Duration.zero;
+    _sourceBuffering = false;
+
     if (_player.state != FijkState.idle) {
       await _player.reset();
     }
+
+    if (isDisposed) return;
+
+    await _player.setDataSource(source.uri.toString(), autoPlay: false);
+
+    if (isDisposed) return;
+
     await _player.setOption(
       FijkOption.formatCategory,
       'http_proxy',
       PlaybackProxyPolicy.currentNativeUrl(privateInput: privateInput),
     );
+
+    if (isDisposed) return;
+
     await FijkHelper.setFijkOption(
       _player,
       enableCodec: SettingsService.to.playerState.enableCodec,
       disableAudioOutput: false,
       headers: source.hasHeaders ? Map<String, String>.from(source.headers!.values) : null,
     );
-    await _player.setDataSource(source.uri.toString(), autoPlay: true);
+
+    if (isDisposed) return;
+
+    await _player.start();
   }
 
   @override
@@ -105,12 +158,24 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   @override
   Future<void> onClose() async {
     _sourceBuffering = false;
+    _lastPosition = Duration.zero;
+    _lastDuration = Duration.zero;
+
+    // The reset below drops back to idle; stop the heartbeat first so
+    // no synthetic event escapes after the source is released.
+    _syncFrameProgressTimer(FijkState.idle);
+
     await _player.reset();
   }
 
   @override
   Future<void> onDispose() async {
+    _syncFrameProgressTimer(FijkState.idle);
+
     _player.removeListener(_onPlayerValue);
+
+    await _positionSubscription?.cancel();
+    _positionSubscription = null;
 
     try {
       await _player.release();
@@ -134,7 +199,9 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   /// player or reopening the current live stream.
   Future<void> setAudioOnly(bool audioOnly) async {
     if (isDisposed || _isAudioOnly == audioOnly) return;
+
     await _player.setOption(FijkOption.playerCategory, 'disable-vid', audioOnly ? 1 : 0);
+
     _isAudioOnly = audioOnly;
   }
 
@@ -149,13 +216,60 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   BoxFit get videoFit => _videoFit;
 
   // ---------------------------------------------------------------------------
+  // Position progress
+  // ---------------------------------------------------------------------------
+
+  /// Receives frequent playback-position updates from FijkPlayer.
+  ///
+  /// This is playback-position progress only.
+  /// It is intentionally NOT used as a decoded-frame heartbeat.
+  void _onPositionChanged(Duration position) {
+    if (!acceptsEngineEvents) return;
+
+    if (position != _lastPosition) {
+      _lastPosition = position;
+      emitPositionChanged(position);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Frame-progress heartbeat
+  // ---------------------------------------------------------------------------
+
+  /// Synchronises the frame-progress heartbeat timer with [state].
+  ///
+  /// `started` keeps the timer running; every other state stops it.
+  /// Idempotent: repeated calls with the same state do nothing.
+  void _syncFrameProgressTimer(FijkState state) {
+    if (state == FijkState.started) {
+      _frameProgressTimer ??= Timer.periodic(_frameProgressInterval, (_) {
+        if (isDisposed) return;
+
+        // The timer can fire after the state has already moved on;
+        // re-check before emitting.
+        if (_player.value.state != FijkState.started) return;
+
+        emitVideoFrameProgress();
+      });
+      return;
+    }
+
+    _frameProgressTimer?.cancel();
+    _frameProgressTimer = null;
+  }
+
+  // ---------------------------------------------------------------------------
   // Value listener
   // ---------------------------------------------------------------------------
 
   void _onPlayerValue() {
     if (!acceptsEngineEvents) return;
+
     final value = _player.value;
     final state = value.state;
+
+    // Drive the synthetic frame-progress heartbeat from the state.
+    _syncFrameProgressTimer(state);
 
     // Dimensions.
     final size = value.size;
@@ -179,14 +293,22 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
           emitBuffering(false);
         }
         emitPlaying();
+
       case FijkState.paused:
         emitPaused();
+
       case FijkState.completed:
       case FijkState.end:
         emitCompleted();
+
       case FijkState.error:
         final native = value.exception;
-        reportEngineError(message: 'fijk error ${native.code}: ${native.message ?? 'native playback failure'}');
+        reportEngineError(
+          message:
+              'fijk error ${native.code}: '
+              '${native.message ?? 'native playback failure'}',
+        );
+
       case FijkState.stopped:
       case FijkState.idle:
       case FijkState.initialized:

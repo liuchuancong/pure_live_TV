@@ -7,6 +7,7 @@ import '../utils/mpv_platform_profile.dart';
 import '../../services/settings/settings.dart';
 import '../utils/device_playback_profile.dart';
 import 'package:media_kit/media_kit.dart' as mk;
+import 'package:pure_live/shared/utils/log.dart';
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'package:media_core/media_core.dart' hide PlatformUtils;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
@@ -17,7 +18,7 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 /// Engine semantics:
 ///
 /// - decoded-frame heartbeats via mpv property observers
-///   (`video-frame-info/picture-type` / `estimated-vf-fps`) so the
+///   (`video-frame-info/picture-type`) so the
 ///   live watchdog can detect a wedged decoder
 /// - software-decoder fallback marked for the *next* open (never
 ///   mutated mid-failure)
@@ -40,17 +41,21 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   bool _isAudioOnly = false;
   bool _privateInput = false;
   bool _softwareDecoderNextOpen = false;
+
   // Read by setAudioOutputSuppressed callers before open; kept
   // for parity with the legacy adapter surface.
   // ignore: unused_field
   bool _audioOutputSuppressed = false;
+
   String? _currentUrl;
 
   bool _playingNow = false;
   bool _bufferingNow = false;
   bool _hasOpened = false;
+
   int? _width;
   int? _height;
+
   double _lastEmittedVolume = -1.0;
 
   BoxFit _videoFit = BoxFit.contain;
@@ -87,10 +92,10 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// Minimum spacing between published decoded-frame heartbeats.
   ///
   /// libmpv reports every decoded frame; the live watchdog only needs proof
-  /// that frames are still arriving, so publishing at most one heartbeat per
-  /// interval keeps a 60 fps stream from pushing 60 notifications per second
-  /// through the isolate without adding any information.
-  static const int frameHeartbeatIntervalMs = 250;
+  /// that frames are still arriving, so publishing at most one heartbeat every
+  /// 1000ms keeps a 60 fps stream from pushing dozens of notifications per
+  /// second through the isolate without adding any information.
+  static const int frameHeartbeatIntervalMs = 1000;
 
   final Stopwatch _frameHeartbeatClock = Stopwatch();
   int _lastFrameHeartbeatMs = -frameHeartbeatIntervalMs;
@@ -106,13 +111,18 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   @override
   Future<void> onInitialize(PlayerAdapterContext context) async {
     _player = _injectedPlayer ?? mk.Player();
+
     // The device budget must be known before the video controller and the
     // native property contract are built, because both branch on it.
     await DevicePlaybackProfile.ensureLoaded();
+
     _resolvePreferredHardwareDecoder();
+
     _videoController = _buildVideoController();
+
     _subscribeStreams();
     _observeDecodedFrames();
+
     await _applyNativeLiveProperties();
   }
 
@@ -127,8 +137,11 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     // software decoder after a single codec failure — exactly the workload a
     // low-end box cannot afford.
     final bool sameSource = _softwareDecoderNextOpen && url == _currentUrl;
+
     _currentUrl = url;
     _hasDecodedVideoFrame = false;
+    _lastFrameHeartbeatMs = -frameHeartbeatIntervalMs;
+
     _softwareDecoderNextOpen = sameSource;
 
     await _applyDecoderPolicy();
@@ -138,7 +151,9 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   @override
   Future<void> onOpen(PlayerSource source) async {
     final headers = source.hasHeaders ? source.headers!.values : null;
+
     await player.open(mk.Media(source.uri.toString(), httpHeaders: headers), play: true);
+
     _hasOpened = true;
   }
 
@@ -157,6 +172,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   @override
   Future<void> onStop() async {
     await player.stop();
+
     _playingNow = false;
     _bufferingNow = false;
     _hasOpened = false;
@@ -174,6 +190,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   @override
   Future<void> onClose() async {
     await player.stop();
+
     _hasOpened = false;
     _playingNow = false;
     _bufferingNow = false;
@@ -182,9 +199,11 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   @override
   Future<void> onDispose() async {
     await Future.wait(_subscriptions.map((s) => s.cancel()));
+
     _subscriptions.clear();
 
     await _player?.dispose();
+
     _player = null;
     _videoController = null;
   }
@@ -210,6 +229,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// selected null audio output must survive engine fallback).
   Future<void> setAudioOutputSuppressed(bool suppressed) async {
     _audioOutputSuppressed = suppressed;
+
     if (suppressed) {
       try {
         await player.setAudioTrack(mk.AudioTrack.no());
@@ -222,8 +242,11 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// Enables or disables the video track.
   Future<void> setAudioOnly(bool audioOnly) async {
     if (isDisposed || _isAudioOnly == audioOnly) return;
+
     _isAudioOnly = audioOnly;
+
     if (!initialized) return;
+
     await player.setVideoTrack(audioOnly ? mk.VideoTrack.no() : mk.VideoTrack.auto());
   }
 
@@ -248,7 +271,9 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// - Default: `enableCodec ? auto-safe : no`.
   void _resolvePreferredHardwareDecoder() {
     final settings = SettingsService.to.playerState;
+
     final androidCompatMode = settings.playerCompatMode;
+
     final hardwareDecoder = normalizeMpvHardwareDecoderForPlatform(
       settings.videoHardwareDecoder,
       defaultTargetPlatform,
@@ -268,7 +293,9 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   mkv.VideoController _buildVideoController() {
     final settings = SettingsService.to.playerState;
     final platform = defaultTargetPlatform;
+
     final androidCompatMode = settings.playerCompatMode;
+
     final videoOutputDriver = normalizeMpvVideoOutputDriverForPlatform(settings.videoOutputDriver, platform);
 
     if (androidCompatMode) {
@@ -282,6 +309,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
         ),
       );
     }
+
     if (settings.customPlayerOutput) {
       return mkv.VideoController(
         player,
@@ -294,6 +322,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
         ),
       );
     }
+
     return mkv.VideoController(
       player,
       configuration: mkv.VideoControllerConfiguration(
@@ -313,21 +342,28 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// output driver.
   Future<void> _applyNativeLiveProperties() async {
     if (_player?.platform == null) return;
+
     final profile = DevicePlaybackProfile.current;
 
     await _setNativeProperty(
       'protocol_whitelist',
       'httpproxy,udp,rtp,tcp,tls,data,file,http,https,crypto,rtmp,rtmps,rtsp,srt',
     );
+
     await _setNativeProperty('demuxer-lavf-probesize', '2097152');
+
     // Short probe for live FLV/HLS: less black screen before the
     // first frame.
     await _setNativeProperty('demuxer-lavf-analyzeduration', '2');
+
     await LiveBufferPolicy.apply(_setNativeProperty, profile: profile);
+
     await _setNativeProperty('network-timeout', '15');
+
     // Drop a failing hw decoder after one bad frame so playback
     // falls back to software instead of a black surface.
     await _setNativeProperty('hwdec-software-fallback', '1');
+
     // The decoder is not chosen until the first open, so this is the
     // preference the first open will use.
     await _applyDecodeCostPolicy(profile, software: _preferredHardwareDecoder == 'no');
@@ -338,6 +374,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
       // HAL surfaces as a dropped video frame; the larger buffer is the
       // cheapest way to keep that clock steady.
       await _setNativeProperty('audio-buffer', '0.4');
+
       // Recover a short Wi-Fi/CDN interruption inside libavformat instead of
       // letting the transport die. This is deliberately limited to a low-end
       // device: there, the app's own recovery costs a full re-open and
@@ -355,6 +392,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     // from the decoder to the display surface, skipping both
     // the copy to RAM and the Flutter texture round-trip.
     await _setNativeProperty('mediacodec-surface-iostream', 'yes');
+
     await _setNativeProperty('mediacodec-embed-surface-landscape', 'yes');
 
     final audioOutput = effectiveMpvAudioOutputDriverForPlatform(
@@ -362,6 +400,7 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
       configuredDriver: SettingsService.to.playerState.audioOutputDriver,
       platform: defaultTargetPlatform,
     );
+
     if (audioOutput != null) {
       await _setNativeProperty('ao', audioOutput);
     }
@@ -382,18 +421,23 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// This libmpv build has no `vd-lavc-downscale` option; the low-resolution
   /// request therefore travels as a libavcodec AVOption through `vd-lavc-o`.
   /// Codecs without low-resolution support ignore it, and `vd-lavc-o` is
-  /// restored on a hardware decoder so a software episode cannot leak into the
-  /// next open.
+  /// restored on a hardware decoder so a software episode cannot leak into
+  /// the next open.
   Future<void> _applyDecodeCostPolicy(DevicePlaybackProfile profile, {required bool software}) async {
     if (!profile.lowEnd) return;
 
     if (software) {
       await _setNativeProperty('vd-lavc-threads', profile.softwareDecodeThreads.toString());
+
       await _setNativeProperty('vd-lavc-o', 'lowres=1');
+
       await _setNativeProperty('vd-lavc-skiploopfilter', 'nonref');
+
       return;
     }
+
     await _setNativeProperty('vd-lavc-o', 'lowres=0');
+
     await _setNativeProperty('vd-lavc-skiploopfilter', 'default');
   }
 
@@ -403,7 +447,9 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// rejected property is never a reason to fail playback.
   Future<void> _setNativeProperty(String name, String value) async {
     final native = _player?.platform;
+
     if (native == null) return;
+
     try {
       // ignore: avoid_dynamic_calls
       await (native as dynamic).setProperty(name, value);
@@ -421,20 +467,26 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// full-resolution decoding.
   Future<void> _applyDecoderPolicy() async {
     final decoder = _softwareDecoderNextOpen ? 'no' : _preferredHardwareDecoder;
+
     _softwareDecoderNextOpen = false;
+
     await _setNativeProperty('hwdec', decoder);
+
     await _applyDecodeCostPolicy(DevicePlaybackProfile.current, software: decoder == 'no');
   }
 
   Future<void> _applyProxy() async {
     final native = _player?.platform;
+
     if (native == null) return;
+
     try {
       // ignore: avoid_dynamic_calls
       await (native as dynamic).setProperty(
         'http-proxy',
         PlaybackProxyPolicy.currentNativeUrl(privateInput: _privateInput),
       );
+
       _privateInput = false;
     } catch (_) {
       // Best-effort.
@@ -449,14 +501,23 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     final s = player.stream;
 
     _subscriptions.add(s.playing.listen(_onPlaying));
+
     _subscriptions.add(s.completed.listen(_onCompleted));
+
     _subscriptions.add(s.buffering.listen(_onBuffering));
+
     _subscriptions.add(s.position.listen(_onPosition));
+
     _subscriptions.add(s.duration.listen(_onDuration));
+
     _subscriptions.add(s.volume.listen(_onVolume));
+
     _subscriptions.add(s.width.listen(_onWidth));
+
     _subscriptions.add(s.height.listen(_onHeight));
+
     _subscriptions.add(s.error.listen(_onError));
+
     _subscriptions.add(s.buffer.listen(_onBuffer));
   }
 
@@ -470,21 +531,25 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     // publishes for the frame being decoded. The probe used to read
     // `decoded-picture-type`, which is not an mpv property at all, so this
     // heartbeat never fired and the watchdog could only ever be fed by
-    // geometry changes. `estimated-vf-fps` is the second, independent signal:
-    // it keeps moving while frames are decoded, so a codec that publishes no
-    // picture type still reports liveness.
+    // geometry changes.
+    //
+    // Do not use `estimated-vf-fps` as a frame heartbeat. It is an FPS
+    // estimate rather than a decoded-frame notification and can change
+    // independently of individual frame delivery.
     _frameHeartbeatClock.start();
-    for (final String property in const <String>['video-frame-info/picture-type', 'estimated-vf-fps']) {
-      try {
-        final native = player.platform;
-        // ignore: avoid_dynamic_calls
-        (native as dynamic).observeProperty?.call(property, (String value) {
-          _onNativeFrameSignal(property, value);
-        });
-      } catch (_) {
-        // observeProperty is a NativePlayer extension; a build without it
-        // simply keeps the geometry-driven heartbeat.
-      }
+
+    const property = 'video-frame-info/picture-type';
+
+    try {
+      final native = player.platform;
+
+      // ignore: avoid_dynamic_calls
+      (native as dynamic).observeProperty?.call(property, (String value) {
+        _onNativeFrameSignal(property, value);
+      });
+    } catch (_) {
+      // observeProperty is a NativePlayer extension; a build without it
+      // simply has no native decoded-frame heartbeat.
     }
   }
 
@@ -492,36 +557,43 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   void _onNativeFrameSignal(String property, String value) {
     if (isDisposed) return;
 
+    // A native callback can arrive slightly after pause/stop/close.
+    // It must not keep the live watchdog alive after playback has stopped.
+    if (!_hasOpened || !_playingNow) return;
+
     final signal = value.trim();
-    if (property == 'video-frame-info/picture-type') {
-      final type = signal.toUpperCase();
-      if (type != 'I' && type != 'P' && type != 'B') return;
-    } else {
-      final fps = double.tryParse(signal);
-      if (fps == null || !fps.isFinite || fps <= 0) return;
+
+    if (property != 'video-frame-info/picture-type') {
+      return;
     }
 
+    final type = signal.toUpperCase();
+
+    if (type != 'I' && type != 'P' && type != 'B') {
+      return;
+    }
+
+    // This is the authoritative source for "a decoded video frame
+    // has actually been observed".
     _hasDecodedVideoFrame = true;
 
     final now = _frameHeartbeatClock.elapsedMilliseconds;
-    if (now - _lastFrameHeartbeatMs < frameHeartbeatIntervalMs) return;
-    _lastFrameHeartbeatMs = now;
 
-    _viewHolder.notifyFrameProgress();
-    // media_core maps a geometry event to the live watchdog's frame-progress
-    // witness, and only a decoded frame is authoritative proof of that. Emit
-    // it as the same event the surface already publishes once the geometry is
-    // known; before that, the size event that follows the first decoded frame
-    // carries the heartbeat instead.
-    final width = _width;
-    final height = _height;
-    if (width != null && height != null && width > 0 && height > 0) {
-      emitVideoSizeChanged(width, height);
+    if (now - _lastFrameHeartbeatMs < frameHeartbeatIntervalMs) {
+      return;
     }
+
+    _lastFrameHeartbeatMs = now;
+    // media_core-level frame heartbeat.
+    //
+    // Do NOT emit videoSizeChanged here. Video size is geometry only
+    // and must never be used as a proof that frames are still decoding.
+    emitVideoFrameProgress();
   }
 
   void _onPlaying(bool playing) {
     if (_playingNow == playing) return;
+
     _playingNow = playing;
 
     if (playing) {
@@ -533,24 +605,35 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
 
   void _onCompleted(bool completed) {
     if (!completed) return;
+
     _playingNow = false;
+
     emitCompleted();
   }
 
   void _onBuffering(bool buffering) {
     if (_bufferingNow == buffering) return;
+
     _bufferingNow = buffering;
+
     emitBuffering(buffering, resumePlaying: buffering ? null : _playingNow);
   }
 
-  void _onPosition(Duration position) => emitPositionChanged(position);
+  void _onPosition(Duration position) {
+    emitPositionChanged(position);
+  }
 
-  void _onDuration(Duration duration) => emitDurationChanged(duration);
+  void _onDuration(Duration duration) {
+    emitDurationChanged(duration);
+  }
 
   void _onVolume(double v) {
     final normalised = (v / 100.0).clamp(0.0, 1.0);
+
     if (normalised == _lastEmittedVolume) return;
+
     _lastEmittedVolume = normalised;
+
     emitVolumeChanged(normalised);
   }
 
@@ -567,12 +650,18 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   void _maybeEmitSize() {
     final w = _width;
     final h = _height;
+
     if (w == null || h == null || w <= 0 || h <= 0) return;
-    _hasDecodedVideoFrame = true;
+
+    // Video dimensions are geometry only.
+    //
+    // Do NOT set `_hasDecodedVideoFrame` here. A size notification
+    // does not prove that the decoder is still producing frames.
     emitVideoSizeChanged(w, h);
   }
 
   void _onError(String message) {
+    Log.d(message);
     reportEngineError(message: message);
   }
 

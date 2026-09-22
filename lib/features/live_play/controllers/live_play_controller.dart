@@ -247,6 +247,7 @@ class LivePlayController extends _$LivePlayController {
   void _onPlayerError(PlayerFailure failure) {
     if (!ref.mounted) return;
     _cancelStallReport();
+    Log.d(ErrorFormatter.format(failure));
     state = state.copyWith(errorMessage: ErrorFormatter.format(failure));
   }
 

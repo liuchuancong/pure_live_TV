@@ -184,7 +184,7 @@ final class LivePlayerFacade {
       // The controller's own state has to move with it: leaving it on
       // buffering makes a later real buffering collide with that dedupe
       // (`if (state == next) return`) and never reach the UI at all.
-      _controller.state = state.copyWith(playback: PlayerPlaybackState.playing);
+      _stateSubject.add(state.copyWith(playback: PlayerPlaybackState.playing));
       return;
     }
 

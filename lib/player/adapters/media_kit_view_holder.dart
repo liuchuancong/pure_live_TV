@@ -4,8 +4,7 @@ import 'package:media_kit_video/media_kit_video.dart' as mkv;
 /// Binds a media_kit [Video] to a [VideoController] without the
 /// widget owning the adapter lifecycle.
 ///
-/// The surface layer watches [fitNotifier] for fit changes and
-/// [frameProgress] for decoder liveness heartbeats.
+/// The surface layer watches [fitNotifier] for fit changes.
 final class MediaKitViewHolder {
   /// Creates the holder.
   MediaKitViewHolder();
@@ -13,18 +12,10 @@ final class MediaKitViewHolder {
   /// Notifies on every fit change.
   final ValueNotifier<BoxFit> fitNotifier = ValueNotifier<BoxFit>(BoxFit.contain);
 
-  /// Monotonic frame-progress heartbeat counter.
-  final ValueNotifier<int> frameProgress = ValueNotifier<int>(0);
-
   /// Updates the fit and notifies listeners.
   // ignore: use_setters_to_change_properties
   void updateFit(BoxFit value) {
     fitNotifier.value = value;
-  }
-
-  /// Called by the adapter on every decoded frame observation.
-  void notifyFrameProgress() {
-    frameProgress.value++;
   }
 
   /// Builds the video view for [controller].
@@ -49,6 +40,5 @@ final class MediaKitViewHolder {
   /// Releases the holder.
   void dispose() {
     fitNotifier.dispose();
-    frameProgress.dispose();
   }
 }
