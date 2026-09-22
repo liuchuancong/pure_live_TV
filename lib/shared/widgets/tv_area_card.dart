@@ -1,9 +1,9 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/services/area_images/area_image_matcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/services/area_images/area_image_matcher.dart';
 
 class TvAreaCard extends StatelessWidget {
   const TvAreaCard({super.key, required this.area, required this.onTap, required this.onLongPress});
@@ -78,11 +78,7 @@ class TvAreaCard extends StatelessWidget {
               SizedBox(height: 12.sp),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12.sp),
-                child: TvMarqueeText(
-                  text: area.areaName,
-                  isFocused: isFocused,
-                  style: AppTextStyles.t20W600.copyWith(color: titleColor),
-                ),
+                child: Text(area.areaName, style: AppTextStyles.t20W600.copyWith(color: titleColor)),
               ),
             ],
           ),

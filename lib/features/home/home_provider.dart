@@ -46,9 +46,17 @@ class AppMenuItem {
   /// Must be one of the [TvMenuType] values, not an ad-hoc constant.
   final int index;
   final String title;
+
+  /// The two-character caption the collapsed sidebar paints under the icon.
+  ///
+  /// The full [title] is four characters ("直播关注") and does not fit the
+  /// 110dp icon rail; the short form keeps every destination readable without
+  /// expanding the sidebar. Empty falls back to [title].
+  final String shortTitle;
   final IconData icon;
 
-  AppMenuItem({required this.index, required this.title, required this.icon});
+  AppMenuItem({required this.index, required this.title, required this.icon, String? shortTitle})
+    : shortTitle = shortTitle ?? '';
 }
 
 /// Side menu entries in the order configured in settings, limited to the
@@ -68,11 +76,13 @@ AppMenuItem? _sideMenuItem(String id, Map<String, IconData> overrides) {
     HomeMenu.favorite => AppMenuItem(
       index: TvMenuType.favorite.value,
       title: i18n('ui_following'),
+      shortTitle: i18n('menu_short_following'),
       icon: withOverride(Icons.favorite_border),
     ),
     HomeMenu.hot => AppMenuItem(
       index: TvMenuType.hot.value,
       title: i18n('kilakila_hot'),
+      shortTitle: i18n('menu_short_hot'),
       icon: withOverride(Icons.local_fire_department_outlined),
     ),
     // Categories and followed categories are different destinations, so they
@@ -80,26 +90,31 @@ AppMenuItem? _sideMenuItem(String id, Map<String, IconData> overrides) {
     HomeMenu.areas => AppMenuItem(
       index: TvMenuType.areas.value,
       title: i18n('ui_category'),
+      shortTitle: i18n('menu_short_category'),
       icon: withOverride(RemixIcons.function_line),
     ),
     HomeMenu.favoriteAreas => AppMenuItem(
       index: TvMenuType.favoriteAreas.value,
       title: i18n('favorite_areas'),
+      shortTitle: i18n('menu_short_areas'),
       icon: withOverride(Icons.collections_bookmark_outlined),
     ),
     HomeMenu.moviePlayback => AppMenuItem(
       index: TvMenuType.moviePlayback.value,
       title: i18n('ui_link_playback'),
+      shortTitle: i18n('menu_short_link_playback'),
       icon: withOverride(Icons.movie_creation_outlined),
     ),
     HomeMenu.search => AppMenuItem(
       index: TvMenuType.search.value,
       title: i18n('search_live'),
+      shortTitle: i18n('menu_short_search'),
       icon: withOverride(Icons.search_rounded),
     ),
     HomeMenu.history => AppMenuItem(
       index: TvMenuType.history.value,
       title: i18n('watch_history'),
+      shortTitle: i18n('menu_short_history'),
       icon: withOverride(Icons.history),
     ),
     null => null,
@@ -111,6 +126,7 @@ AppMenuItem mySettingsMenuItem(Ref ref) {
   return AppMenuItem(
     index: TvMenuType.settings.value,
     title: i18n('settings'),
+    shortTitle: i18n('menu_short_settings'),
     icon: ref.watch(menuIconOverridesProvider)['settings'] ?? Icons.settings_outlined,
   );
 }

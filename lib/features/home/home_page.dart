@@ -81,6 +81,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     final sidebarWidth = isExpanded ? 200.sp : 110.sp;
 
+    // The collapsed rail trades item spacing for the caption line every tile
+    // gained: the column still has to fit the clock, all entries and the toggle
+    // inside the design height.
+    final menuGap = isExpanded ? 14.sp : 8.sp;
+
     final cacheableTypes = [
       TvMenuType.favorite,
       TvMenuType.hot,
@@ -141,12 +146,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     SizedBox(height: 15.sp),
                     Padding(
-                      padding: EdgeInsets.only(bottom: 14.sp),
+                      padding: EdgeInsets.only(bottom: menuGap),
                       child: _buildAdaptiveItem(
                         ref: ref,
                         item: AppMenuItem(
                           index: TvMenuType.settings.value,
                           title: i18n('backup_manage'),
+                          shortTitle: i18n('menu_short_backup'),
                           icon: Icons.backup_outlined,
                         ),
                         isExpanded: isExpanded,
@@ -162,7 +168,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       final isSelected = currentIndex == item.index;
 
                       return Padding(
-                        padding: EdgeInsets.only(bottom: 14.sp),
+                        padding: EdgeInsets.only(bottom: menuGap),
                         child: _buildAdaptiveItem(
                           ref: ref,
                           item: item,
@@ -175,7 +181,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     }),
                     const Spacer(),
                     Padding(
-                      padding: EdgeInsets.only(bottom: 14.sp),
+                      padding: EdgeInsets.only(bottom: menuGap),
                       child: TvIconButton(
                         icon: AnimatedRotation(
                           turns: isExpanded ? 0.5 : 0.0,
@@ -183,6 +189,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                           curve: Curves.easeOutCubic,
                           child: const Icon(Icons.arrow_forward_ios_rounded),
                         ),
+                        // Expanded already spells every entry out; collapsed is
+                        // the state where the arrow needs a name.
+                        label: isExpanded ? null : i18n('menu_short_expand'),
                         size: TvIconButtonSize.medium,
                         isSecondary: true,
                         onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
@@ -296,6 +305,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return TvIconButton(
       icon: Icon(item.icon),
+      // Collapsed rail: the icon alone left the destinations ambiguous, so each
+      // tile carries its two-character name underneath.
+      label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
       selected: isSelected,
       size: TvIconButtonSize.medium,
       useFadedFocus: true,
