@@ -1,11 +1,12 @@
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/consts/app_consts.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/services/font_settings/font_settings_controller.dart';
+import 'package:pure_live/app/consts/app_theme_consts.dart';
 import 'package:pure_live/shared/platform/font_download_manager.dart';
+import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class ThemeSettingsSectionPage extends ConsumerWidget {
@@ -111,10 +112,10 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 title: i18n('change_language'),
                 subtitle: i18n('change_language_subtitle'),
                 icon: Remix.global_line,
-                options: AppConsts.languages.keys.toList(growable: false),
+                options: AppThemeConsts.languages.keys.toList(growable: false),
                 index: _languageIndex(themeState.languageName),
                 onChanged: (i) async {
-                  final languageName = AppConsts.languages.keys.elementAt(i);
+                  final languageName = AppThemeConsts.languages.keys.elementAt(i);
                   await theme.changeLanguageWithRetry(context, languageName: languageName);
                 },
               ),
@@ -166,9 +167,9 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     return key;
   }
 
-  /// Index of the persisted language inside [AppConsts.languages].
+  /// Index of the persisted language inside [AppThemeConsts.languages].
   static int _languageIndex(String languageName) {
-    final index = AppConsts.languages.keys.toList(growable: false).indexOf(languageName);
+    final index = AppThemeConsts.languages.keys.toList(growable: false).indexOf(languageName);
     return index < 0 ? 1 : index;
   }
 }

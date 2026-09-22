@@ -1,9 +1,9 @@
 ﻿import 'package:dpad/dpad.dart';
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/player/utils/player_consts.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/app/consts/app_theme_consts.dart';
 
 /// What the colour picker returns.
 ///
@@ -26,13 +26,12 @@ class TvColorOption {
 /// Colours offered by the picker.
 ///
 /// The mobile app opens a full colour wheel plus the named palette
-/// (`AppConsts.colorsNameMap`); a remote cannot drive a wheel, so the same
+/// (`AppThemeConsts.colorsNameMap`); a remote cannot drive a wheel, so the same
 /// freedom is offered as a dense grid: the named colours first, then three
 /// shades of every Material hue, which covers what a wheel is actually used for
 /// — finding a nearby tone.
 final List<TvColorOption> kTvColorOptions = <TvColorOption>[
-  for (final MapEntry<String, Color> entry in PlayerConsts.themeColors.entries)
-    TvColorOption(entry.key, entry.value),
+  for (final MapEntry<String, Color> entry in AppThemeConsts.themeColors.entries) TvColorOption(entry.key, entry.value),
   const TvColorOption('White', Color(0xFFFFFFFF)),
   const TvColorOption('Black', Color(0xFF000000)),
   const TvColorOption('Grey', Color(0xFF9E9E9E)),
@@ -136,15 +135,18 @@ class _ColorTile extends StatelessWidget {
           padding: EdgeInsets.all(6.sp),
           child: Column(
             children: [
-              Expanded(child: SizedBox(width: double.infinity, child: ColoredBox(color: color))),
+              Expanded(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ColoredBox(color: color),
+                ),
+              ),
               SizedBox(height: 4.sp),
               Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14W500.copyWith(
-                  color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor,
-                ),
+                style: AppTextStyles.t14W500.copyWith(color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor),
               ),
             ],
           ),

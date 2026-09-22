@@ -4,9 +4,9 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:go_transitions/go_transitions.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:material_ui/material_ui.dart' as material;
 import 'package:pure_live/shared/widgets/tv_scaffold.dart';
+import 'package:pure_live/app/consts/app_theme_consts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/features/remote/global_room_push.dart';
 import 'package:pure_live/shared/widgets/tv_locale_rebuilder.dart';
@@ -34,7 +34,7 @@ class App extends ConsumerWidget {
     final themeMode = selectedMode == ThemeMode.system ? ThemeMode.dark : selectedMode;
     final paletteBrightness = themeMode == ThemeMode.light ? Brightness.light : Brightness.dark;
 
-    final appLocale = AppConsts.languages[themeSettings.languageName] ?? const Locale('zh');
+    final appLocale = AppThemeConsts.languages[themeSettings.languageName] ?? const Locale('zh');
 
     // Text scale from font settings, clamped
     final fontSettings = ref.watch(fontSettingsControllerProvider).value;

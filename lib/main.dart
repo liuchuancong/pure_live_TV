@@ -1,8 +1,8 @@
 import 'package:pure_live/app/app.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/app/bootstrap/initialized.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/app/consts/app_theme_consts.dart';
 
 void main() async {
   final initializer = AppInitializer();
@@ -10,7 +10,7 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: AppConsts.languages.values.toList(growable: false),
+      supportedLocales: AppThemeConsts.languages.values.toList(growable: false),
       path: 'assets/translations',
       fallbackLocale: const Locale('zh'),
       // The language preference lives in Hive and is only readable once storage

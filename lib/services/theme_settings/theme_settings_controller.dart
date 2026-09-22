@@ -13,6 +13,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
   static const String defaultThemeModeName = 'System';
   static const String defaultLanguageName = '简体中文';
+
   /// The grid gap is stored directly in design pixels; 32 reproduces the
   /// historical look (the old model stored 6 behind a hidden 26 offset).
   static const double defaultSpacing = 6;
@@ -42,10 +43,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
   @override
   ThemeSettingsModel build() {
-    final savedJson = HivePrefUtil.getObject(
-      'theme_settings',
-      (json) => json as Map<String, dynamic>,
-    );
+    final savedJson = HivePrefUtil.getObject('theme_settings', (json) => json as Map<String, dynamic>);
     // A fresh install has no stored legacy value to migrate: its defaults are
     // already direct spacing, otherwise the +26 legacy shift would inflate
     // them. Only reads of stored data go through the one-time conversion.
@@ -85,19 +83,19 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     );
   }
 
-  /// Matches a stored mode against [AppConsts.themeModes] ignoring case.
+  /// Matches a stored mode against [AppThemeConsts.themeModes] ignoring case.
   static String normalizeThemeMode(String value) {
     final normalized = value.trim().toLowerCase();
-    return AppConsts.themeModes.keys.firstWhere(
+    return AppThemeConsts.themeModes.keys.firstWhere(
       (candidate) => candidate.toLowerCase() == normalized,
       orElse: () => defaultThemeModeName,
     );
   }
 
-  /// Matches a stored language against [AppConsts.languages] ignoring case.
+  /// Matches a stored language against [AppThemeConsts.languages] ignoring case.
   static String normalizeLanguage(String value) {
     final normalized = value.trim().toLowerCase();
-    return AppConsts.languages.keys.firstWhere(
+    return AppThemeConsts.languages.keys.firstWhere(
       (candidate) => candidate.toLowerCase() == normalized,
       orElse: () => defaultLanguageName,
     );
@@ -105,9 +103,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
 
   static String normalizeLoadingStyle(String value) {
     final normalized = value.trim();
-    return _loadingStyleKeys.contains(normalized)
-        ? normalized
-        : AppConsts.defaultLoadingStyleKey;
+    return _loadingStyleKeys.contains(normalized) ? normalized : AppConsts.defaultLoadingStyleKey;
   }
 
   static double normalizeSpacing(num value) {
@@ -120,9 +116,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   static int normalizeRoomCardColumns(num value) {
     final converted = value.toDouble();
     if (!converted.isFinite) return defaultRoomCardColumns;
-    return roomCardColumnsOptions.reduce(
-      (a, b) => (converted - a).abs() <= (converted - b).abs() ? a : b,
-    );
+    return roomCardColumnsOptions.reduce((a, b) => (converted - a).abs() <= (converted - b).abs() ? a : b);
   }
 
   void updateSettings(ThemeSettingsModel newModel) {
@@ -138,20 +132,17 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     updateSettings(state.copyWith(themeColor: color));
   }
 
-  Future<void> changeLanguageWithRetry(
-    BuildContext context, {
-    required String languageName,
-  }) async {
+  Future<void> changeLanguageWithRetry(BuildContext context, {required String languageName}) async {
     changeLanguage(languageName);
 
-    final targetLocale = AppConsts.languages[languageName];
+    final targetLocale = AppThemeConsts.languages[languageName];
     if (targetLocale == null) return;
     if (!_hasSwitchedOnce) {
-      final pivotLanguage = AppConsts.languages.keys.firstWhere(
+      final pivotLanguage = AppThemeConsts.languages.keys.firstWhere(
         (key) => key != languageName,
         orElse: () => languageName,
       );
-      final pivotLocale = AppConsts.languages[pivotLanguage]!;
+      final pivotLocale = AppThemeConsts.languages[pivotLanguage]!;
       await context.setLocale(Locale(targetLocale.languageCode));
       // ignore: use_build_context_synchronously
       await context.setLocale(Locale(pivotLocale.languageCode));
@@ -183,10 +174,8 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   }
 
   // Accessor helpers
-  ThemeMode get themeMode =>
-      AppConsts.themeModes[state.themeModeName] ?? ThemeMode.system;
-  Locale get locale =>
-      AppConsts.languages[state.languageName] ?? const Locale('zh', 'CN');
+  ThemeMode get themeMode => AppThemeConsts.themeModes[state.themeModeName] ?? ThemeMode.system;
+  Locale get locale => AppThemeConsts.languages[state.languageName] ?? const Locale('zh', 'CN');
 
   // Backup and restore
   Map<String, dynamic> toJson() => state.toJson();

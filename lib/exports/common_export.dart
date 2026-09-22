@@ -7,3 +7,4 @@ library;
 export 'package:pure_live/shared/index.dart';
 export 'package:pure_live/platforms/index.dart';
 export 'package:pure_live/features/iptv/index.dart';
+export 'package:pure_live/app/consts/index.dart';

@@ -1,7 +1,7 @@
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
+import 'package:pure_live/app/consts/app_theme_consts.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/player_settings/player_settings_model.dart';
 
@@ -67,7 +67,7 @@ class PlayerSettingsController extends _$PlayerSettingsController {
   }
 
   static int normalizeVideoFitIndex(int value) {
-    final optionCount = AppConsts().videoFitType.length;
+    final optionCount = AppThemeConsts.videoFitType.length;
     if (optionCount == 0 || value < 0 || value >= optionCount) return defaultVideoFitIndex;
     return value;
   }
@@ -104,7 +104,7 @@ class PlayerSettingsController extends _$PlayerSettingsController {
 
   /// Advances the video fit option and returns the new index.
   int? advanceVideoFitIndex() {
-    final optionCount = AppConsts().videoFitType.length;
+    final optionCount = AppThemeConsts.videoFitType.length;
     if (optionCount == 0) return null;
     final next = (normalizeVideoFitIndex(state.videoFitIndex) + 1) % optionCount;
     updateSettings(state.copyWith(videoFitIndex: next));

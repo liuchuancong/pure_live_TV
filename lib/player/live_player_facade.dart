@@ -2,7 +2,6 @@ import 'dart:async';
 import 'models/player_engine.dart';
 import 'package:flutter/material.dart';
 import 'adapters/flv_lzc_adapter.dart';
-import '../shared/consts/app_consts.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'core/live_room_volume_manager.dart';
 import 'core/playback_header_resolver.dart';
@@ -11,6 +10,7 @@ import 'package:media_core/media_core.dart';
 import 'adapters/better_player_adapter.dart';
 import 'adapters/media_kit_core_adapter.dart';
 import '../shared/models/live_room/live_room.dart';
+import 'package:pure_live/app/consts/app_theme_consts.dart';
 import 'package:better_player_plus/better_player_plus.dart';
 
 /// App-facing facade over media_core's [LivePlaybackController].
@@ -328,7 +328,7 @@ final class LivePlayerFacade {
 
   /// Changes the viewport fit by index into the app fit list.
   void changeVideoFit(int index) {
-    final fitList = AppConsts().videoFitList;
+    final fitList = AppThemeConsts.videoFitList;
     if (index < 0 || index >= fitList.length) return;
     videoFitIndex.add(index);
     _applyVideoFit(fitList[index]);

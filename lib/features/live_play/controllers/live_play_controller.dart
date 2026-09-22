@@ -20,10 +20,10 @@ part 'live_play_controller.g.dart';
 
 /// Aspect ratio options, aligned with the index semantics of
 /// PlayerManager.changeVideoFit and the stored settings index.
-List<BoxFit> get kLivePlayFitList => AppConsts().videoFitList;
+List<BoxFit> get kLivePlayFitList => AppThemeConsts.videoFitList;
 
 /// Localized labels of [kLivePlayFitList] in the same order as the stored index.
-List<String> get kLivePlayFitLabels => AppConsts().videoFitType.map((e) => i18n(e['desc'] as String)).toList();
+List<String> get kLivePlayFitLabels => AppThemeConsts.videoFitType.map((e) => i18n(e['desc'] as String)).toList();
 
 /// Drives one live room: detail/quality/URL fetching, playback state
 /// projection, quality and line switching. Danmaku sessions live in
@@ -247,8 +247,6 @@ class LivePlayController extends _$LivePlayController {
   void _onPlayerError(PlayerFailure failure) {
     if (!ref.mounted) return;
     _cancelStallReport();
-    print("****************************************************");
-    print(ErrorFormatter.format(failure));
     state = state.copyWith(errorMessage: ErrorFormatter.format(failure));
   }
 

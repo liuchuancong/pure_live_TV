@@ -389,9 +389,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   }
 
   static FavoriteSettingsModel _normalizeDanmakuBlockValuesModel(FavoriteSettingsModel model) {
-    return model.copyWith(
-      shieldList: _normalizeDanmakuBlockValues(model.shieldList),
-    );
+    return model.copyWith(shieldList: _normalizeDanmakuBlockValues(model.shieldList));
   }
 
   static FavoriteSettingsModel _normalizeDanmakuBlocksStatic(FavoriteSettingsModel model) {

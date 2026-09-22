@@ -1,12 +1,12 @@
 ﻿import 'package:dpad/dpad.dart';
-import 'package:pure_live/app/router/app_routes.dart';
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/settings/pages/color_picker_section.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/index.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/services/index.dart';
+import 'package:pure_live/app/consts/app_consts.dart';
+import 'package:pure_live/app/router/app_routes.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/features/settings/pages/color_picker_section.dart';
 
 /// Loading animation picker.
 ///
@@ -34,10 +34,7 @@ class LoadingStyleSectionPage extends ConsumerWidget {
             size: TvButtonSize.mini,
             icon: Icon(Remix.restart_line, size: 22.w),
             onTap: () => theme.updateSettings(
-              themeState.copyWith(
-                loadingStyle: AppConsts.defaultLoadingStyleKey,
-                loadingStyleColor: null,
-              ),
+              themeState.copyWith(loadingStyle: AppConsts.defaultLoadingStyleKey, loadingStyleColor: null),
             ),
           ),
         ],

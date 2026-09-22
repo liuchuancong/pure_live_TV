@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/consts/app_consts.dart';
 
 /// The animation picker is only useful if every entry animates.
 ///
@@ -83,12 +83,15 @@ void main() {
     }
   });
 
-  testWidgets('a preview scales styles that paint wider than their box', (WidgetTester tester) async {    // SpinKitThreeInOut paints ~1.5x its size; unscaled it overflowed the tile
+  testWidgets('a preview scales styles that paint wider than their box', (WidgetTester tester) async {
+    // SpinKitThreeInOut paints ~1.5x its size; unscaled it overflowed the tile
     // and painted over its neighbours.
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: Center(child: TvLoadingStylePreview(style: 'threeInOut', color: Colors.red, size: 44, theme: darkTvTheme)),
+          body: Center(
+            child: TvLoadingStylePreview(style: 'threeInOut', color: Colors.red, size: 44, theme: darkTvTheme),
+          ),
         ),
       ),
     );
