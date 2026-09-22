@@ -26,9 +26,9 @@ class TvIconButton extends StatelessWidget {
   /// ambiguous (the collapsed home sidebar names each destination with two
   /// characters).
   ///
-  /// The caption sits inside the same focus surface, which grows downwards by
-  /// one line; without a label the button stays the square icon-only control
-  /// every other caller expects.
+  /// The caption fits inside the same square tile, which stays the size of the
+  /// icon-only button; without a label the button is the plain circle it always
+  /// was.
   final String? label;
 
   /// The node the button focuses by; owned by the caller when given (the home
@@ -53,10 +53,11 @@ class TvIconButton extends StatelessWidget {
     final activeTheme = context.tvTheme;
     final (boxSize, iconSize) = _getSizeConfig();
     final bool captioned = label != null && label!.trim().isNotEmpty;
-    final double boxHeight = captioned ? boxSize + _captionBlock.sp : boxSize;
-    // A caption turns the circle into a rounded tile: text needs a flat edge to
-    // sit on, and a full-radius pill with a caption reads as a lopsided circle.
-    final borderRadius = BorderRadius.circular(captioned ? 16.sp : boxSize / 2);
+    // Square either way: the caption shares the tile with the glyph instead of
+    // growing it, so the collapsed rail stays a grid of equal squares. A caption
+    // needs a flat edge to sit on, hence the rounded square rather than the
+    // full-radius circle of the icon-only button.
+    final borderRadius = BorderRadius.circular(captioned ? boxSize * 0.28 : boxSize / 2);
 
     return UnconstrainedBox(
       child: DpadFocusable(
@@ -93,19 +94,19 @@ class TvIconButton extends StatelessWidget {
               duration: TvFocusStyle.focusDuration(isFocused),
               curve: TvFocusStyle.curve,
               width: boxSize,
-              height: boxHeight,
+              height: boxSize,
               decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
               child: IconTheme(
-                // The caption takes vertical space out of the same tile, so the
-                // glyph gives up a little of its own to keep both balanced.
-                data: IconThemeData(size: captioned ? iconSize * 0.86 : iconSize, color: foregroundColor),
+                // The caption shares the tile with the glyph, so the glyph gives
+                // up a little of its own to keep both balanced.
+                data: IconThemeData(size: captioned ? iconSize * 0.8 : iconSize, color: foregroundColor),
                 child: captioned
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           child,
-                          SizedBox(height: 3.sp),
+                          SizedBox(height: 2.sp),
                           Text(
                             label!,
                             maxLines: 1,
@@ -132,9 +133,6 @@ class TvIconButton extends StatelessWidget {
       ),
     );
   }
-
-  /// Extra height a caption adds to the tile.
-  static const double _captionBlock = 18.0;
 
   (double, double) _getSizeConfig() {
     return switch (size) {

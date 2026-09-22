@@ -26,8 +26,8 @@ class _ExpandedMenu extends IsMenuExpanded {
 ///
 /// The regression this pins: collapsed, the rail was a column of bare glyphs, so
 /// the remote had to be aimed at an unlabelled icon to find 关注 / 热门 / 分区.
-/// The labels are a caption line inside [TvIconButton]'s own surface, which now
-/// grows downwards instead of staying square.
+/// The caption lives inside [TvIconButton]'s own surface, which stays the square
+/// it was — icon and label share the tile, so the rail keeps its even grid.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -59,7 +59,7 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('an icon button with a caption paints it under the icon', (tester) async {
+  testWidgets('an icon button with a caption paints it under the icon, inside the same square', (tester) async {
     await pump(tester, TvIconButton(icon: const Icon(Icons.favorite_border), label: '关注'));
 
     expect(tester.takeException(), isNull);
@@ -68,8 +68,8 @@ void main() {
     final Size captioned = tester.getSize(find.byType(DpadFocusable));
     expect(
       captioned.height,
-      greaterThan(captioned.width),
-      reason: 'the caption makes the tile a vertical pill instead of a square',
+      captioned.width,
+      reason: 'the caption shares the tile with the glyph, so the rail stays a grid of squares',
     );
   });
 

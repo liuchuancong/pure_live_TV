@@ -81,11 +81,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     final sidebarWidth = isExpanded ? 200.sp : 110.sp;
 
-    // The collapsed rail trades item spacing for the caption line every tile
-    // gained: the column still has to fit the clock, all entries and the toggle
-    // inside the design height.
-    final menuGap = isExpanded ? 14.sp : 8.sp;
-
     final cacheableTypes = [
       TvMenuType.favorite,
       TvMenuType.hot,
@@ -146,7 +141,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     SizedBox(height: 15.sp),
                     Padding(
-                      padding: EdgeInsets.only(bottom: menuGap),
+                      padding: EdgeInsets.only(bottom: 14.sp),
                       child: _buildAdaptiveItem(
                         ref: ref,
                         item: AppMenuItem(
@@ -168,7 +163,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       final isSelected = currentIndex == item.index;
 
                       return Padding(
-                        padding: EdgeInsets.only(bottom: menuGap),
+                        padding: EdgeInsets.only(bottom: 14.sp),
                         child: _buildAdaptiveItem(
                           ref: ref,
                           item: item,
@@ -181,7 +176,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     }),
                     const Spacer(),
                     Padding(
-                      padding: EdgeInsets.only(bottom: menuGap),
+                      padding: EdgeInsets.only(bottom: 14.sp),
                       child: TvIconButton(
                         icon: AnimatedRotation(
                           turns: isExpanded ? 0.5 : 0.0,
