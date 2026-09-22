@@ -274,7 +274,12 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     if (androidCompatMode) {
       return mkv.VideoController(
         player,
-        configuration: const mkv.VideoControllerConfiguration(vo: 'mediacodec_embed', hwdec: 'mediacodec'),
+        configuration: const mkv.VideoControllerConfiguration(
+          vo: 'mediacodec_embed',
+          hwdec: 'mediacodec',
+          enableAndroidSurfaceProducer: false,
+          androidAttachSurfaceAfterVideoParameters: false,
+        ),
       );
     }
     if (settings.customPlayerOutput) {
@@ -284,12 +289,19 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
           vo: videoOutputDriver,
           hwdec: normalizeMpvHardwareDecoderForPlatform(settings.videoHardwareDecoder, platform),
           enableHardwareAcceleration: true,
+          enableAndroidSurfaceProducer: false,
+          androidAttachSurfaceAfterVideoParameters: false,
         ),
       );
     }
     return mkv.VideoController(
       player,
-      configuration: mkv.VideoControllerConfiguration(enableHardwareAcceleration: settings.enableCodec, hwdec: null),
+      configuration: mkv.VideoControllerConfiguration(
+        enableHardwareAcceleration: settings.enableCodec,
+        hwdec: 'no',
+        enableAndroidSurfaceProducer: false,
+        androidAttachSurfaceAfterVideoParameters: false,
+      ),
     );
   }
 

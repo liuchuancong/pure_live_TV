@@ -152,10 +152,10 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                 children: [
                   tvInlineLoading(context, size: 36.sp),
                   SizedBox(height: 12.sp),
-                  Text(
-                    loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
-                    style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
-                  ),
+                  // Text(
+                  //   loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
+                  //   style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                  // ),
                 ],
               ),
             ),

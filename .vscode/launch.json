@@ -1,25 +1,37 @@
 {
-  // 使用 IntelliSense 了解相关属性。 
-  // 悬停以查看现有属性的描述。
-  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "pure_live_TV",
-      "request": "launch",
-      "type": "dart"
-    },
-    {
-      "name": "pure_live_TV (profile mode)",
-      "request": "launch",
-      "type": "dart",
-      "flutterMode": "profile"
-    },
-    {
-      "name": "pure_live_TV (release mode)",
-      "request": "launch",
-      "type": "dart",
-      "flutterMode": "release"
-    }
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "pure_live_TV (debug, Skia)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "toolArgs": ["--no-enable-impeller"]
+        },
+        {
+            "name": "pure_live_TV (debug, Skia, local defines)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "toolArgs": ["--no-enable-impeller", "--dart-define-from-file=.pure_live_TV_build_defines.env"]
+        },
+        {
+            "name": "pure_live_TV (debug, Impeller)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "toolArgs": ["--enable-impeller"]
+        },
+        {
+            "name": "pure_live_TV (debug, Impeller, local defines)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "toolArgs": ["--enable-impeller", "--dart-define-from-file=.pure_live_TV_build_defines.env"]
+        }
+    ]
 }
