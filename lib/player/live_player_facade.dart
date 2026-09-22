@@ -309,7 +309,7 @@ final class LivePlayerFacade {
     // kernel's selector picks the engine this method just pushed to the top of
     // the registry.
     await _controller.close();
-
+    await Future.delayed(const Duration(seconds: 1));
     if (resumeCurrentSource && url != null && url.isNotEmpty) {
       await play(url, lines, headers, room: room);
     }

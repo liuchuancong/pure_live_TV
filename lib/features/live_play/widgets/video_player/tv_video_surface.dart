@@ -103,7 +103,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // Show the spinner while the detail request or the player itself is
     // still working. Playback progress comes exclusively from media_core's
     // PlayerState; there is no local LivePlayStatus.
-    final bool showLoading = loadingDetail || state.playerState.opening || state.playerState.buffering;
+    final bool showLoading = !loadingDetail && (state.playerState.opening || state.playerState.buffering);
 
     // A single error flag for the overlay: business failures (detail / stream
     // URL / play() throwing) surface through errorMessage or detailError;

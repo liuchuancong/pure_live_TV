@@ -72,16 +72,19 @@ dependencies:
 
   # 视频播放、流媒体、弹幕
   media_kit:
-    path: third_party/media-kit/media_kit # 本地快照：Predidit/media-kit@994465d
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      path: ./media_kit
+      ref: 6fd002aabce0c22009bfbf564c1b7f16f0b120d8
+
   media_kit_video:
-    path: third_party/media_kit_video # 本地补丁：Android Surface 生命周期与纯音频轨道切换
-  media_kit_libs_video:
-    path: third_party/media-kit/libs/universal/media_kit_libs_video
-  better_player_plus:
-    path: plugins/built_in_kotlin/better_player_plus #
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      path: ./media_kit_video
+      ref: 6fd002aabce0c22009bfbf564c1b7f16f0b120d8
+  better_player_plus: ^1.4.1
   wakelock_plus: ^1.4.0               # 播放时保持屏幕常亮
-  flame_barrage:
-    path: plugins/flame_barrage         # 本地补丁：逐条弹幕速度生效
+  flame_barrage: 0.0.6
 
   # 文件选择、打开、权限
   open_filex: ^4.7.0                  # 调用第三方APP打开本地文件
@@ -116,8 +119,8 @@ dependencies:
       path: flutter_inappwebview
       ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
   # Git私有仓库自定义库
-  flv_lzc:
-     path: plugins/flv_lzc # 本地补丁：16 KB 页大小构建 + fijkview 黑屏修复
+  flv_lzc: 
+    git: https://github.com/liuchuancong/flv_lzc.git
   media_core:
     path: C:\Users\XA-158\projects\flutter\media_core\packages\media_core
   android_tv_text_field: ^1.0.0
