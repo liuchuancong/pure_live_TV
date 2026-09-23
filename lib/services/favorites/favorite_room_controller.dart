@@ -14,10 +14,6 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   static FavoriteRoomController get to => SettingsService.to.fav;
   static const int maxShieldKeywordLength = 40;
 
-  /// Bump whenever `Sites.supportSites` gains a platform, so an existing
-  /// install appends the new ids once instead of never seeing them.
-  static const int _siteCatalogVersion = 4;
-
   // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<List<LiveRoom>> get favoriteRooms => SettingsValue(() => state.favoriteRooms);
   SettingsValue<List<String>> get hotAreasList => SettingsValue(() => state.hotAreasList);
@@ -138,14 +134,51 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     return model.copyWith(favoriteRooms: normalized);
   }
 
+  /// Platforms appended to [Sites.supportSites] after the version-3 catalog,
+  /// in the order they were released. Each release appends only what it
+  /// introduced: re-enabling the whole catalog would silently un-hide every
+  /// platform the user deliberately removed from the home tabs.
+  static const List<String> _catalogAdditions = [
+    Sites.liveMeSite, // v4
+    Sites.tiktokSite, // v5
+    Sites.youtubeSite, // v6
+    Sites.bigoSite, // v7
+    Sites.pandaLiveSite, // v8
+    Sites.popkonSite, // v9
+    Sites.shopeeLiveSite, // v10
+    Sites.vkVideoLiveSite, // v11
+    Sites.nimoTvSite, // v12
+    Sites.dailymotionSite, // v13
+    Sites.rumbleSite, // v14
+    Sites.goodgameSite, // v15
+    Sites.fc2LiveSite, // v16
+    Sites.steamBroadcastSite, // v17
+    Sites.jdLiveSite, // v18
+    Sites.taobaoLiveSite, // v19
+    Sites.kugouLiveSite, // v20
+    Sites.baiduLiveSite, // v21
+    Sites.sixRoomSite, // v22
+    Sites.lookLiveSite, // v23
+    Sites.seventeenLiveSite, // v24
+  ];
+
+  /// Version 3 was the catalog before [_catalogAdditions] started, so the
+  /// current version is `3 + _catalogAdditions.length`.
+  static const int _siteCatalogVersion = 24;
+
   FavoriteSettingsModel _migrateSiteCatalog(FavoriteSettingsModel model) {
+    assert(_siteCatalogVersion == 3 + _catalogAdditions.length);
     if (model.siteCatalogMigration >= _siteCatalogVersion) return model;
-    // Only append new platforms, so a release never resets platforms the user
-    // deliberately hid. The catalog is already deduplicated, so one pass that
-    // appends every missing id is idempotent across older version numbers.
     final updated = List<String>.from(model.hotAreasList);
-    for (final site in Sites.supportSites) {
-      if (!updated.contains(site.id)) updated.add(site.id);
+    final seen = updated.toSet();
+    if (model.siteCatalogMigration < 2) {
+      for (final site in Sites.supportSites) {
+        if (seen.add(site.id)) updated.add(site.id);
+      }
+    }
+    final granted = model.siteCatalogMigration < 3 ? 0 : model.siteCatalogMigration - 3;
+    for (final id in _catalogAdditions.skip(granted.clamp(0, _catalogAdditions.length))) {
+      if (seen.add(id)) updated.add(id);
     }
     return model.copyWith(hotAreasList: updated, siteCatalogMigration: _siteCatalogVersion);
   }
