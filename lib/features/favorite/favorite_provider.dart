@@ -189,29 +189,43 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   List<LiveRoom> getFilteredRooms() {
-    List<LiveRoom> source = switch (state.tabOnlineIndex) {
+    final List<LiveRoom> source = switch (state.tabOnlineIndex) {
       0 => state.onlineRooms,
       1 => state.replayRooms,
       2 => state.offlineRooms,
       _ => state.onlineRooms,
     };
 
+    return _inPageScope(source);
+  }
+
+  /// The followed rooms that are live right now, in the scope the page shows
+  /// (platform tab and tag).
+  ///
+  /// This is what the player takes as its playlist: a room opened from this page
+  /// is switched with up/down against the 已开播 list, so opening a replay or an
+  /// offline card still moves between rooms that are actually live.
+  List<LiveRoom> getLiveRooms() => _inPageScope(state.onlineRooms);
+
+  /// Applies the page's platform tab and tag filter to [source].
+  List<LiveRoom> _inPageScope(List<LiveRoom> source) {
     final currentAvailableSites = Sites().availableSites(containsAll: true);
     if (state.tabSiteIndex < 0 || state.tabSiteIndex >= currentAvailableSites.length) {
       return [];
     }
 
+    List<LiveRoom> rooms = source;
     final activeSite = currentAvailableSites[state.tabSiteIndex];
     if (activeSite.id != Sites.allSite) {
-      source = source.where((room) => room.platform.toUpperCase() == activeSite.id.toUpperCase()).toList();
+      rooms = rooms.where((room) => room.platform.toUpperCase() == activeSite.id.toUpperCase()).toList();
     }
 
     if (state.selectedTagId == 'all') {
-      return source;
+      return rooms;
     }
 
     final tagController = ref.read(tagManagementControllerProvider.notifier);
-    return source.where((room) {
+    return rooms.where((room) {
       final List<String> ids = tagController.getTagsForRoom(room);
       return ids.contains(state.selectedTagId);
     }).toList();

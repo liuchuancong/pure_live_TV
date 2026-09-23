@@ -74,7 +74,9 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     final double crossSpacing = themeState.crossAxisSpacing;
     final double mainSpacing = themeState.mainAxisSpacing;
 
-    final currentRooms = ref.read(favoriteProvider.notifier).getFilteredRooms();
+    // The playlist the player gets from this page is the 已开播 list — a room
+    // opened from 回放/离线 must still switch between rooms that are live.
+    final liveRooms = ref.read(favoriteProvider.notifier).getLiveRooms();
 
     final currentParam = _getOrCreateParam(
       'fav_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}',
@@ -182,7 +184,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
-                          playlist: currentRooms,
+                          playlist: liveRooms,
                           onLongPress: () {
                             FavOperateUtil.showRoomActionDialog(context, room);
                           },
