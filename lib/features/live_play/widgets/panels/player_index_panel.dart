@@ -37,6 +37,7 @@ class PlayerIndexPanel extends StatefulWidget {
     this.onAdjustLeft,
     this.onAdjustRight,
     this.rowBuilder,
+    this.rowExtent,
     this.header,
     this.footer,
     this.emptyHint,
@@ -62,6 +63,14 @@ class PlayerIndexPanel extends StatefulWidget {
   /// selection and the keys. [index] is the *real* row index; the close row is not
   /// passed here.
   final Widget Function(BuildContext context, int index, bool selected)? rowBuilder;
+
+  /// Height of one row, margins included, when [rowBuilder] draws them.
+  ///
+  /// Must be the height the row widget really renders — the list uses it as its
+  /// `itemExtent` and to decide how far to scroll, so a mismatch either squeezes
+  /// the rows or walks the highlight off screen. Defaults to the panel's own
+  /// label row.
+  final double? rowExtent;
 
   /// Widget between the title and the list — the shield panel's phone QR
   /// lives here so it stays visible whatever the list length is.
@@ -116,19 +125,58 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
   }
 
   /// Keeps the highlighted row on screen while the user walks the list.
+  ///
+  /// The list only moves when the selected row would leave the visible band, and
+  /// then just far enough to keep one whole row of context on that side. Walking
+  /// down therefore reveals the next channel before the highlight reaches the
+  /// edge, and the last row of a long list is still reachable.
+  ///
+  /// Two things this replaces, both of which lost the highlight: the previous
+  /// version scrolled to `index * rowExtent - 120`, so every press restarted a
+  /// 180 ms animation and a run of presses left the selection trailing off-screen;
+  /// and it aimed at a fixed offset instead of the real viewport, which with a
+  /// long list (history appended to the playlist) put the bottom rows below the
+  /// fold.
   void _scrollToSelection() {
     if (!_scrollController.hasClients) return;
-    final double rowExtent = _rowExtent;
-    final double target = (widget.selectedIndex * rowExtent) - 120;
+
+    final ScrollPosition position = _scrollController.position;
+    final double viewport = position.viewportDimension;
+    if (viewport <= 0) return;
+
+    // One row of lead, so the row after the selected one stays visible.
+    final double margin = _rowExtent;
+    final double top = position.pixels;
+    final double rowTop = _listPadding + widget.selectedIndex * _rowExtent;
+    final double rowBottom = rowTop + _rowExtent;
+
+    double? target;
+
+    if (rowTop < top + margin) {
+      target = rowTop - margin;
+    } else if (rowBottom > top + viewport - margin) {
+      target = rowBottom - viewport + margin;
+    }
+
+    if (target == null) return;
+
     _scrollController.animateTo(
-      target.clamp(0, _scrollController.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 180),
+      target.clamp(0, position.maxScrollExtent),
+      duration: const Duration(milliseconds: 140),
       curve: Curves.easeOut,
     );
   }
 
   /// Row height, including its margins, scaled by panel font size.
-  double get _rowExtent => (66 * PlayerPanelLayout.fontSize).sp;
+  ///
+  /// Panels whose rows are drawn by a `rowBuilder` pass [rowExtent] instead: the
+  /// playlist's room rows are taller than a plain label row, and the height has to
+  /// match what the row widget actually renders or the highlight drifts a little
+  /// further out of view with every step.
+  double get _rowExtent => widget.rowExtent ?? (66 * PlayerPanelLayout.fontSize).sp;
+
+  /// Top padding of the row list, matching the [ListView] below.
+  double get _listPadding => 4.sp;
 
   static bool _isConfirm(LogicalKeyboardKey key) =>
       key == LogicalKeyboardKey.select ||
@@ -244,6 +292,11 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                         controller: _scrollController,
                         padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
                         itemCount: rows.length,
+                        // Every row is exactly this tall, so the list knows its own
+                        // scroll extent instead of estimating it from the children it
+                        // has built — an estimate that left the last rows of a long
+                        // playlist below the fold and out of reach.
+                        itemExtent: _rowExtent,
                         itemBuilder: (context, index) {
                           final bool isSelected = index == selected;
                           final Widget? custom = index < widget.rows.length

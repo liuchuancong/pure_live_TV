@@ -32,6 +32,11 @@ class PlaylistPanel extends ConsumerStatefulWidget {
 }
 
 class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
+  /// The room rows use [PlayerRoomRow]'s large layout, and the panel needs the
+  /// same height to keep the highlight on screen. One flag feeds both, so they
+  /// cannot disagree.
+  static const bool _largeRows = true;
+
   int _index = 0;
 
   @override
@@ -54,12 +59,15 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
       onAdjustRight: (i) => _toggleFollow(rooms[i]),
       onClose: controller.toggleSidePanel,
       showCloseRow: false,
+      rowExtent: PlayerRoomRow.extentOf(large: _largeRows),
       rowBuilder: (context, i, selected) => PlayerRoomRow(
         room: rooms[i],
         selected: selected,
-        large: true,
+        large: _largeRows,
         active: current != null && rooms[i].hasSameIdentity(current),
         favorite: favorites.any((item) => item.hasSameIdentity(rooms[i])),
+        // Left/Right follow or unfollow on this row, so the row says so.
+        showFollowAction: true,
       ),
     );
   }

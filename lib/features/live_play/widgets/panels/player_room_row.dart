@@ -25,6 +25,7 @@ class PlayerRoomRow extends ConsumerWidget {
     required this.selected,
     this.active = false,
     this.favorite = false,
+    this.showFollowAction = false,
     this.trailing,
     this.large = false,
   });
@@ -36,14 +37,29 @@ class PlayerRoomRow extends ConsumerWidget {
   /// session is.
   final bool active;
 
-  /// Shows the follow heart (the playlist panel marks followed rooms).
+  /// Whether the room is followed.
   final bool favorite;
+
+  /// Draws the follow state as a text button on the row (关注 / 已关注).
+  ///
+  /// The playlist panel turns this on: Left/Right follow or unfollow the row
+  /// there, so the row shows what the key does. The room switcher leaves it off —
+  /// its Left/Right walk the tabs, and a follow label would advertise an action
+  /// that does not exist in that list.
+  final bool showFollowAction;
 
   /// Overrides the right-hand read-out; defaults to the audience, or the
   /// replay/record label.
   final String? trailing;
 
   final bool large;
+
+  /// Total height of one row, margins included.
+  ///
+  /// The row draws itself with these numbers and the host list sets its
+  /// `itemExtent` and its keep-in-view arithmetic from the same source, so the
+  /// highlight cannot drift away from the rows it is meant to mark.
+  static double extentOf({bool large = false}) => large ? 96.sp : (66 * PlayerPanelLayout.fontSize).sp;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -97,13 +113,14 @@ class PlayerRoomRow extends ConsumerWidget {
                         style: AppTextStyles.t16W600.copyWith(color: foreground, fontSize: titleSize),
                       ),
                     ),
-                    if (favorite)
+                    if (showFollowAction)
                       Padding(
-                        padding: EdgeInsets.only(left: 6.sp),
-                        child: Icon(
-                          Icons.favorite,
-                          size: (large ? 18.sp : 16.sp * scale),
-                          color: selected ? Colors.white : tvTheme.focusColor,
+                        padding: EdgeInsets.only(left: 8.sp),
+                        child: _FollowLabel(
+                          followed: favorite,
+                          selected: selected,
+                          accent: tvTheme.focusColor,
+                          scale: scale,
                         ),
                       ),
                   ],
@@ -162,5 +179,46 @@ class PlayerRoomRow extends ConsumerWidget {
     );
 
     return audience.isEmpty ? i18n('audience_unknown') : readableCount(audience);
+  }
+}
+
+/// The follow state as a text button: 关注 when the row is not followed, 已关注
+/// when it is.
+///
+/// A pill rather than an icon because the row is read at TV distance and the pill
+/// also names the action the row's Left/Right performs; the word comes from the
+/// same i18n keys the control bar's follow button uses.
+class _FollowLabel extends StatelessWidget {
+  const _FollowLabel({required this.followed, required this.selected, required this.accent, required this.scale});
+
+  final bool followed;
+  final bool selected;
+  final Color accent;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    // On the accent fill the pill takes white, like the rest of the selected row;
+    // on a normal row it is the accent itself. An unfollowed row is muted so the
+    // followed ones stand out.
+    final Color color = selected ? Colors.white : accent;
+    final Color background = selected ? Colors.white.withValues(alpha: 0.22) : color.withValues(alpha: followed ? 0.22 : 0.10);
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(6.sp),
+        border: Border.all(color: color.withValues(alpha: selected ? 0.75 : (followed ? 0.75 : 0.35))),
+      ),
+      child: Text(
+        followed ? i18n('followed') : i18n('follow'),
+        style: AppTextStyles.t14W500.copyWith(
+          color: color,
+          fontSize: 13.sp * scale,
+          fontWeight: followed ? FontWeight.w600 : FontWeight.w500,
+        ),
+      ),
+    );
   }
 }
