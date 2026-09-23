@@ -7,7 +7,8 @@ class InkeSite extends LiveSite
         LiveDirectoryNotice,
         LiveSiteRoomRefresher,
         LiveSiteRecordRoomResolver,
-        LivePlayRecoveryResolver {
+        LivePlayRecoveryResolver,
+        LiveCancellableSearch {
   InkeSite({InkeApi? api}) : _api = api ?? InkeApi();
   final InkeApi _api;
 
@@ -57,6 +58,49 @@ class InkeSite extends LiveSite
   @override
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) =>
       _slice(page: page, pageSize: pageSize, category: category);
+
+  @override
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) =>
+      searchRoomsCancellable(keyword, page: page, pageSize: pageSize);
+
+  static String? _searchUid(String input) {
+    try {
+      return InkeApi.roomId(input);
+    } on InkeException {
+      final uri = Uri.tryParse(input);
+      return uri == null ? null : InkeApi.roomFromUri(uri);
+    }
+  }
+
+  @override
+  Future<List<LiveRoom>> searchRoomsCancellable(
+    String keyword, {
+    int page = 1,
+    int pageSize = 30,
+    CancelToken? cancel,
+  }) async {
+    if (page < 1 || pageSize < 1) throw const InkeException(InkeFailure.schema);
+    final input = keyword.trim();
+    final uid = _searchUid(input);
+    if (uid == null) {
+      // A malformed/shared URL is not a nickname query.
+      if (Uri.tryParse(input)?.hasScheme == true) return const [];
+      return _api.searchShowcases(input, page: page, pageSize: pageSize, cancel: cancel);
+    }
+    if (page != 1) return const [];
+    try {
+      var room = await _api.detail(uid, playback: false, cancel: cancel);
+      if (room.isExplicitlyOfflineNow) {
+        // The public no-current-broadcast response has no profile metadata.
+        // Keep the search card identifiable without inventing a nickname.
+        room = room.copyWith(title: 'UID $uid', nick: 'UID $uid');
+      }
+      return [room];
+    } on InkeException catch (error) {
+      if (error.kind == InkeFailure.notFound) return const [];
+      rethrow;
+    }
+  }
 
   Future<LiveRoom> _detail(String roomId, String platform, {required bool playback}) async {
     if (platform != id) throw const InkeException(InkeFailure.schema);

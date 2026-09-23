@@ -1,8 +1,25 @@
-import 'package:pure_live/exports/exports.dart';
+import 'package:dio/dio.dart';
+import 'package:pure_live/shared/contracts/live_danmaku.dart';
+import 'package:pure_live/shared/contracts/live_directory.dart';
+import 'package:pure_live/shared/contracts/live_search.dart';
+import 'package:pure_live/shared/contracts/live_site.dart';
+import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/models/live_area/live_area.dart';
+import 'package:pure_live/shared/models/live_category/live_category.dart';
+import 'package:pure_live/shared/models/live_play_quality/live_play_quality.dart';
+import 'package:pure_live/shared/models/live_room/live_room.dart';
 
+import 'picarto_api.dart';
+import 'picarto_hls.dart';
 
 class PicartoSite extends LiveSite
-    implements LiveSiteRoomRefresher, LiveSiteRecordRoomResolver, LivePlayRecoveryResolver {
+    implements
+        LiveSiteRoomRefresher,
+        LiveSiteRecordRoomResolver,
+        LivePlayRecoveryResolver,
+        LiveSiteDirectoryPager,
+        LiveCancellableSearch {
   PicartoSite({PicartoApi? api}) : _api = api ?? PicartoApi();
   final PicartoApi _api;
   @override
@@ -15,11 +32,11 @@ class PicartoSite extends LiveSite
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async => page == 1
       ? [
-          // A directory entry, not an invented server category taxonomy.
           LiveCategory(
             id: id,
             name: name,
             children: [
+              // A directory entry, not an invented server category taxonomy.
               LiveArea(
                 platform: id,
                 areaId: 'live',
@@ -27,21 +44,42 @@ class PicartoSite extends LiveSite
                 areaName: i18n('picarto_public_directory'),
                 typeName: name,
               ),
+              ...await _api.categories(),
             ],
           ),
         ]
       : [];
 
   @override
+  Future<LiveDirectoryPage> getDirectoryPage({int page = 1, LiveArea? category, CancelToken? cancel}) {
+    if (category != null && category.platform == id && category.areaType == 'directory' && category.areaId == 'live') {
+      return _api.directoryPage(page: page, cancel: cancel);
+    }
+    return _api.directoryPage(page: page, category: category, cancel: cancel);
+  }
+
+  @override
   Future<List<LiveRoom>> getRecommendRooms({int page = 1, int pageSize = 30}) =>
       _api.directory(page: page, pageSize: pageSize);
   @override
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) {
-    if (category.platform != id || category.areaId != 'live' || category.areaType != 'directory') {
-      throw const PicartoException(PicartoFailure.schema);
+    if (category.platform == id && category.areaId == 'live' && category.areaType == 'directory') {
+      return getRecommendRooms(page: page, pageSize: pageSize);
     }
-    return getRecommendRooms(page: page, pageSize: pageSize);
+    return _api.directory(page: page, pageSize: pageSize, category: category);
   }
+
+  @override
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) =>
+      searchRoomsCancellable(keyword, page: page, pageSize: pageSize);
+
+  @override
+  Future<List<LiveRoom>> searchRoomsCancellable(
+    String keyword, {
+    int page = 1,
+    int pageSize = 30,
+    CancelToken? cancel,
+  }) => _api.searchProfiles(keyword, page: page, pageSize: pageSize, cancel: cancel);
 
   @override
   Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) async =>
