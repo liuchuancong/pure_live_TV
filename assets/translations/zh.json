@@ -2402,7 +2402,7 @@
   "webview2_missing_content": "您的 Windows 系统缺少网页核心组件 (WebView2 Runtime)。如果不安装，应用内的网页搜索功能将完全无法使用。\n\n是否立即前往微软官网下载安装？",
   "webview2_missing_title": "系统组件缺失",
   "webview2_open_error": "无法打开下载链接，请手动前往微软官网下载",
-  "weibo_directory_scope": "仅展示官方公开推荐快照；推荐卡片未提供直播状态及观看人数。支持精确场次 ID 或官方直播链接，不支持昵称搜索。",
+  "weibo_directory_scope": "仅展示官方公开推荐快照；推荐卡片未提供直播状态及观看人数。支持精确场次 ID 或官方直播链接，也可按昵称筛选当前推荐快照；并非全站主播搜索。",
   "weibo_original_stream": "原始流",
   "weibo_public_directory": "公开推荐",
   "weibo_restricted": "当前场次存在访问限制或播放已关闭；公开直播源不可用。",
