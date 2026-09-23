@@ -69,7 +69,6 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
                 imageUrl: avatar,
                 cacheManager: CustomImageCacheManager.instance,
                 memCacheWidth: 320,
-                maxWidthDiskCache: 640,
                 fit: BoxFit.cover,
                 errorWidget: (_, _, _) => const SizedBox.shrink(),
               ),

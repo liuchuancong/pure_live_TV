@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -8,7 +9,6 @@ import 'package:pure_live/services/cache/cache_controller.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 class TvRoomCard extends ConsumerStatefulWidget {
   const TvRoomCard({
@@ -165,7 +165,6 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                             // Decode covers at grid size and reuse the shared disk
                             // cache so scrolling back does not download again.
                             memCacheWidth: 640,
-                            maxWidthDiskCache: 1280,
                             placeholder: (context, url) => Container(
                               color: tvTheme.cardColor,
                               child: AppStatusView(

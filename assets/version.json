@@ -1,7 +1,7 @@
 {
-  "version": "3.0.2",
-  "version_num": 130002,
-  "version_desc": "-Fixed:优化主页.\n-Intro: 双击Tbar即可刷新. \n-Intro: 长按直播间或.分区可关注或取消关注 ",
+  "version": "3.0.3",
+  "version_num": 130003,
+  "version_desc": "-Feature:接入 20+ 个直播平台（YouTube Live / TikTok / 淘宝 / 京东 / 酷狗 / 虾皮 / VK 等）。\n-Feature:新增纯音频模式，播放页底栏一键切换，只听声音不渲染画面。\n-Feature:关注页支持标签分组，可按标签筛选关注的直播间。\n-Fixed:修复在线更新下载失败：按 ABI 与渲染器选择正确的安装包。\n-Fixed:修复列表只加载第一页，每页档位统一为 20/40/60/80。\n-Fixed:修复电视输入法输入的内容不被识别、部分平台分类页加载失败。\n-Intro: 播放页顶栏房间信息与时间合并成一张卡，线路/清晰度只在底栏显示。\n-Intro: 切换直播间弹窗改为上下选择、OK 确认，切换线路不再闪加载圈。",
   "prerelease":false,
   "android_abis": ["arm64-v8a", "armeabi-v7a", "x86_64"],
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/utils/cache_manager.dart';
 
 class TvCommonAvatar extends StatelessWidget {
   final String? avatarUrl;
@@ -45,7 +45,6 @@ class TvCommonAvatar extends StatelessWidget {
           // at display size.
           cacheManager: CustomImageCacheManager.instance,
           memCacheWidth: 160,
-          maxWidthDiskCache: 320,
           fit: BoxFit.cover,
           placeholder: (_, _) => Container(color: tvTheme.secondaryTextColor.withValues(alpha: 0.15)),
           errorWidget: (_, _, _) => fallback(),
@@ -54,4 +53,3 @@ class TvCommonAvatar extends StatelessWidget {
     );
   }
 }
-
