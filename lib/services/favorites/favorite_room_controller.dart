@@ -144,6 +144,12 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     }
     // Only append new platforms, so a release never resets platforms the user
     // deliberately hid.
+    if (version < 4) {
+      for (final site in Sites.supportSites) {
+        if (!updated.contains(site.id)) updated.add(site.id);
+      }
+      return model.copyWith(hotAreasList: updated, siteCatalogMigration: 4);
+    }
     if (version < 3) {
       version = 3;
       return model.copyWith(hotAreasList: updated, siteCatalogMigration: 3);

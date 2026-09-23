@@ -99,6 +99,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       'yy' => cookies.yyCookie,
       'soop' => cookies.soopCookie,
       'twitch' => cookies.twitchCookie,
+      'taobao' => cookies.taobaoCookie,
       _ => '',
     };
   }
@@ -124,6 +125,8 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
         controller.setSoopCookie(cookie);
       case 'twitch':
         controller.setTwitchCookie(cookie);
+      case 'taobao':
+        controller.setTaobaoCookie(cookie);
       default:
         return false;
     }

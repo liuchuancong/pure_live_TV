@@ -88,6 +88,14 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       read: (cookies) => cookies.soopCookie,
       apply: (controller, value) => controller.setSoopCookie(value),
     ),
+    CookieSite(
+      siteId: Sites.taobaoLiveSite,
+      titleKey: 'site_taobaolive',
+      route: AppRoutes.kSettingsAccountTaobao,
+      hintKey: 'cookie_hint',
+      read: (cookies) => cookies.taobaoCookie,
+      apply: (controller, value) => controller.setTaobaoCookie(value),
+    ),
   ];
 
   @override

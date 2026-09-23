@@ -269,6 +269,53 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
+    // JD labels the public-directory `pv` value as views rather than current
+    // concurrency, so it remains a cumulative audience field.
+    'jdlive': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    // Taobao's live-detail viewCount is cumulative session traffic. It is not
+    // a concurrent audience count; broadcaster fansNum remains separate.
+    'taobaolive': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    // Kugou keeps directory viewerNum/getViewerNum, platform hot and
+    // broadcaster fansCount as three independent metrics.
+    'kugoulive': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // Baidu's PC feed audience_count and room online_users are live audience
+    // values. Fan counts stay in the independent follower field.
+    'baidulive': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // Zhanqi keeps a separate public online count in its room response.
+    'zhanqi': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // The room detail keeps current liveViewerCount separate from cumulative viewerCount.
+    '17live': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomRealtime,
+    ),
+    // LOOK keeps recommendation popularity and onlineNumber as independent
+    // values. The latter is the current audience shown on official web cards.
+    'looklive': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
     // The watch page exposes a dedicated concurrent-view renderer while a
     // broadcast is live. Historical viewCount is deliberately not reused.
     'youtube': AudiencePlatformCapability(

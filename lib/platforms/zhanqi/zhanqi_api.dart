@@ -3,10 +3,24 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/index.dart';
+import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/shared/common/request_scope.dart';
 import 'package:pure_live/platforms/zhanqi/zhanqi_player_layout.dart';
 
-enum ZhanqiFailure { transport, access, missing, rateLimited, service, api, schema, identity, cancelled }
+enum ZhanqiFailure {
+  transport,
+  access,
+  missing,
+  rateLimited,
+  service,
+  api,
+  schema,
+  identity,
+  cancelled,
+  notLive,
+  unknownState,
+  mediaUnavailable,
+}
 
 class ZhanqiException implements Exception {
   const ZhanqiException(this.kind);

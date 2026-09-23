@@ -69,6 +69,12 @@ class Sites {
   static const String goodgameSite = 'goodgame';
   static const String fc2LiveSite = 'fc2live';
   static const String steamBroadcastSite = 'steambroadcast';
+  static const String jdLiveSite = 'jdlive';
+  static const String taobaoLiveSite = 'taobaolive';
+  static const String kugouLiveSite = 'kugoulive';
+  static const String baiduLiveSite = 'baidulive';
+  static const String lookLiveSite = 'looklive';
+  static const String seventeenLiveSite = '17live';
   static const String sixRoomSite = 'sixroom';
 
   static const Set<String> supportedSiteIds = {
@@ -110,6 +116,12 @@ class Sites {
     goodgameSite,
     fc2LiveSite,
     steamBroadcastSite,
+    jdLiveSite,
+    taobaoLiveSite,
+    kugouLiveSite,
+    baiduLiveSite,
+    lookLiveSite,
+    seventeenLiveSite,
     sixRoomSite,
     iptvSite,
   };
@@ -294,6 +306,37 @@ class Sites {
         logo: logoOf(steamBroadcastSite),
         liveSite: SteamBroadcastSite(),
       ),
+      jdLiveSite => Site(id: jdLiveSite, name: i18n('site_jdlive'), logo: logoOf(jdLiveSite), liveSite: JdLiveSite()),
+      taobaoLiveSite => Site(
+        id: taobaoLiveSite,
+        name: i18n('site_taobaolive'),
+        logo: logoOf(taobaoLiveSite),
+        liveSite: TaobaoLiveSite(),
+      ),
+      kugouLiveSite => Site(
+        id: kugouLiveSite,
+        name: i18n('site_kugoulive'),
+        logo: logoOf(kugouLiveSite),
+        liveSite: KugouLiveSite(),
+      ),
+      baiduLiveSite => Site(
+        id: baiduLiveSite,
+        name: i18n('site_baidulive'),
+        logo: logoOf(baiduLiveSite),
+        liveSite: BaiduLiveSite(),
+      ),
+      lookLiveSite => Site(
+        id: lookLiveSite,
+        name: i18n('site_looklive'),
+        logo: logoOf(lookLiveSite),
+        liveSite: LookLiveSite(),
+      ),
+      seventeenLiveSite => Site(
+        id: seventeenLiveSite,
+        name: i18n('site_17live'),
+        logo: logoOf(seventeenLiveSite),
+        liveSite: SeventeenLiveSite(),
+      ),
       sixRoomSite => Site(
         id: sixRoomSite,
         name: i18n('site_sixroom'),
@@ -348,6 +391,12 @@ class Sites {
       goodgameSite,
       fc2LiveSite,
       steamBroadcastSite,
+      jdLiveSite,
+      taobaoLiveSite,
+      kugouLiveSite,
+      baiduLiveSite,
+      lookLiveSite,
+      seventeenLiveSite,
       sixRoomSite,
       niconicoSite,
       weiboSite,

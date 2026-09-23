@@ -86,6 +86,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsAccountKuaishou: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountKuaishou)),
   AppRoutes.kSettingsAccountTwitch: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTwitch)),
   AppRoutes.kSettingsAccountSoop: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
+  AppRoutes.kSettingsAccountTaobao: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTaobao)),
   AppRoutes.kSettingsTags: (context) => const TagManagementSectionPage(),
   AppRoutes.kBackup: (context) => const BackupSettingsSectionPage(),
   AppRoutes.kSettingsDanmuShield: (context) => const DanmakuShieldSectionPage(),
@@ -138,6 +139,7 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsAccountKuaishou: const AccountKuaishouRoute(),
   AppRoutes.kSettingsAccountTwitch: const AccountTwitchRoute(),
   AppRoutes.kSettingsAccountSoop: const AccountSoopRoute(),
+  AppRoutes.kSettingsAccountTaobao: const AccountTaobaoRoute(),
   AppRoutes.kSettingsTags: const TagsRoute(),
   AppRoutes.kBackup: const BackupRoute(),
   AppRoutes.kSettingsDanmuShield: const DanmuShieldRoute(),
@@ -498,6 +500,14 @@ class AccountSoopRoute extends GoRouteData with $AccountSoopRoute {
   Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
 }
 
+/// `kSettingsAccountTaobao`.
+class AccountTaobaoRoute extends GoRouteData with $AccountTaobaoRoute {
+  const AccountTaobaoRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
 /// `kSettingsTags`.
 class TagsRoute extends GoRouteData with $TagsRoute {
   const TagsRoute();
@@ -585,6 +595,7 @@ TypedGoRoute<AccountDouyuRoute>(path: AppRoutes.kSettingsAccountDouyu),
     TypedGoRoute<AccountKuaishouRoute>(path: AppRoutes.kSettingsAccountKuaishou),
     TypedGoRoute<AccountTwitchRoute>(path: AppRoutes.kSettingsAccountTwitch),
     TypedGoRoute<AccountSoopRoute>(path: AppRoutes.kSettingsAccountSoop),
+TypedGoRoute<AccountTaobaoRoute>(path: AppRoutes.kSettingsAccountTaobao),
     TypedGoRoute<TagsRoute>(path: AppRoutes.kSettingsTags),
     TypedGoRoute<BackupRoute>(path: AppRoutes.kBackup),
     TypedGoRoute<DanmuShieldRoute>(path: AppRoutes.kSettingsDanmuShield),
