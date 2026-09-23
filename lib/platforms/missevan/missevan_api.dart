@@ -224,6 +224,52 @@ class MissevanApi {
     return MissevanDirectoryPage(rooms: List.unmodifiable(result.values), page: page, maxPage: maxPage, count: count);
   }
 
+  /// Official /v2/chatroom/search returns room metadata, including offline
+  /// creators. Search never resolves stale playback URLs from these cards.
+  Future<List<LiveRoom>> searchPage(
+    String keyword, {
+    int page = 1,
+    int pageSize = serverPageSize,
+    CancelToken? cancel,
+  }) async {
+    final term = keyword.trim();
+    if (term.isEmpty ||
+        term.length > 100 ||
+        RegExp(r'[\x00-\x1f\x7f]').hasMatch(term) ||
+        page < 1 ||
+        page > 10000 ||
+        pageSize < 1 ||
+        pageSize > 100) {
+      throw const MissevanException(MissevanFailure.schema);
+    }
+    final info = await _get(
+      'chatroom/search',
+      query: {'s': term, 'p': '$page', 'page_size': '$pageSize'},
+      cancel: cancel,
+    );
+    final pagination = _object(info['pagination']);
+    final rows = info['data'];
+    final maxPage = _integer(pagination['maxpage']);
+    final count = _integer(pagination['count']);
+    if (_integer(pagination['p']) != page ||
+        _integer(pagination['pagesize']) != pageSize ||
+        maxPage == null ||
+        maxPage < 0 ||
+        count == null ||
+        count < 0 ||
+        rows is! List ||
+        rows.length > 100 ||
+        (page > maxPage && rows.isNotEmpty)) {
+      throw const MissevanException(MissevanFailure.schema);
+    }
+    final rooms = <String, LiveRoom>{};
+    for (final raw in rows) {
+      final room = _room(_object(raw));
+      rooms.putIfAbsent(room.roomId, () => room);
+    }
+    return List.unmodifiable(rooms.values);
+  }
+
   static LiveRoom _room(Map<String, dynamic> row) {
     final id = roomId('${row['room_id']}');
     final open = _integer(_object(row['status'])['open']);
@@ -253,7 +299,7 @@ class MissevanApi {
     );
   }
 
-  Future<LiveRoom> detail(String input, {CancelToken? cancel}) async {
+  Future<LiveRoom> detail(String input, {bool includeMedia = true, CancelToken? cancel}) async {
     final id = roomId(input);
     final info = await _get('live/$id', cancel: cancel);
     final row = _object(info['room']);
@@ -267,8 +313,9 @@ class MissevanApi {
     }
     final followers = _integer(_object(row['statistics'])['attention_count']);
     if (followers != null && followers >= 0) room2 = room2.copyWith(followers: '$followers');
-    if (!room2.isLiveNow) {
-      return room2.copyWith(data: const <LivePlayQuality>[]); // Ignore stale/offline channel URLs entirely.
+    if (!room2.isLiveNow || !includeMedia) {
+      // Search metadata and offline rooms never inspect stale channel URLs.
+      return room2.copyWith(data: const <LivePlayQuality>[]);
     }
     final channel = _object(row['channel']);
     final qualities = <LivePlayQuality>[];

@@ -6,15 +6,16 @@ import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 
-/// Anonymous directory, room, playback and recording adapter. Search and
-/// danmaku remain absent until their public contracts are verified.
+/// Anonymous directory, official keyword/exact search, playback and recording.
+/// Remote danmaku remains absent until its contract is verified.
 class MissevanSite extends LiveSite
     implements
         LiveSiteRoomRefresher,
         LiveSiteRecordRoomResolver,
         LivePlayRecoveryResolver,
         LivePlayLeaseMetadata,
-        LiveSiteDirectoryPager {
+        LiveSiteDirectoryPager,
+        LiveCancellableSearch {
   MissevanSite({MissevanApi? api}) : _api = api ?? MissevanApi();
   final MissevanApi _api;
   @override
@@ -38,6 +39,42 @@ class MissevanSite extends LiveSite
   @override
   Future<List<LiveRoom>> getCategoryRooms(LiveArea category, {int page = 1, int pageSize = 30}) =>
       _api.directory(page: page, pageSize: pageSize, category: category);
+
+  @override
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) =>
+      searchRoomsCancellable(keyword, page: page, pageSize: pageSize);
+
+  @override
+  Future<List<LiveRoom>> searchRoomsCancellable(
+    String keyword, {
+    int page = 1,
+    int pageSize = 30,
+    CancelToken? cancel,
+  }) async {
+    if (pageSize < 1) return const [];
+    final input = keyword.trim();
+    if (input.isEmpty) return const [];
+    String? id;
+    try {
+      id = MissevanApi.roomId(input);
+    } on MissevanException {
+      final uri = Uri.tryParse(input);
+      if (uri != null) id = MissevanApi.roomFromUri(uri);
+    }
+    if (id != null) {
+      if (page != 1) return const [];
+      try {
+        return [await _api.detail(id, includeMedia: false, cancel: cancel)];
+      } on MissevanException catch (error) {
+        if (error.kind == MissevanFailure.notFound) return const [];
+        rethrow;
+      }
+    }
+    // A foreign/malformed share URL is not a nickname search request.
+    if (Uri.tryParse(input)?.hasScheme == true) return const [];
+    return _api.searchPage(input, page: page, pageSize: pageSize, cancel: cancel);
+  }
+
   @override
   Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) {
     if (platform != id) throw const MissevanException(MissevanFailure.schema);
