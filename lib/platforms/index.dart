@@ -29,4 +29,5 @@ export 'twitch/index.dart' hide Stream, Channel;
 export 'weibo/index.dart';
 export 'xiaohongshu/index.dart';
 export 'yy/index.dart';
+export 'youtube/index.dart';
 export 'zhanqi/index.dart';

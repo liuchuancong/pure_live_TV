@@ -29,6 +29,8 @@ Map<String, String> _labels = {
   'site_kilakila': '克拉克拉',
   'site_bigo': 'Bigo Live',
   'site_tiktok': 'TikTok LIVE',
+  'site_youtube': 'YouTube Live',
+  'youtube_chat_notice': 'YouTube Live 远端聊天尚待接入；仅在直播页返回专用并发观看字段时显示当前在线，不把累计播放量当作在线人数。',
   'tiktok_chat_notice': 'TikTok LIVE 远端聊天尚待接入；当前观看与累计进房分别展示。',
   'bigo_category_public': '公开推荐',
   'bigo_chat_notice': 'Bigo Live 远端聊天尚待接入；目录 user_count 仅作为当前直播在线人数，房间详情缺值时保持未知。',
