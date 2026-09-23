@@ -18,6 +18,10 @@ import 'package:pure_live/app/router/app_router.dart';
 /// Each row is the mobile app's small-screen room card (avatar, title, streamer,
 /// platform and audience) rather than a bare title, so the channel list looks
 /// like the room lists elsewhere in the app.
+///
+/// The list carries no trailing close row: 返回 (Back) closes the panel before it
+/// leaves the room, which is the way out the other side panels already use. One
+/// row per channel, and the remote's Back is the exit.
 class PlaylistPanel extends ConsumerStatefulWidget {
   const PlaylistPanel({super.key, required this.args});
 
@@ -51,6 +55,7 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
       onAdjustLeft: (i) => _toggleFollow(rooms[i]),
       onAdjustRight: (i) => _toggleFollow(rooms[i]),
       onClose: controller.toggleSidePanel,
+      showCloseRow: false,
       rowBuilder: (context, i, selected) => PlayerRoomRow(
         room: rooms[i],
         selected: selected,

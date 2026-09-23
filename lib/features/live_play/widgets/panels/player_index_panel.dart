@@ -71,9 +71,13 @@ class PlayerIndexPanel extends StatefulWidget {
   final String? emptyHint;
   final double width;
 
-  /// Appends the trailing close row. The danmaku-settings and shield panels turn
-  /// this off — they are exited with Escape / the panel key instead, which the
-  /// key scope routes to the same close action.
+  /// Appends the trailing close row.
+  ///
+  /// Off for every side panel the player ships (playlist, danmaku settings,
+  /// shield): they are left with 返回 / Escape, which the key scope routes to the
+  /// same close action, so their rows are content only. The bar's own option
+  /// lists (clarity / line / aspect / kernel) still end with a close row — those
+  /// are drawn by the control bar, not by this widget.
   final bool showCloseRow;
 
   @override
@@ -184,11 +188,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     return KeyEventResult.ignored;
   }
 
-  /// The rendered list: the rows, then a close row unless [PlayerIndexPanel.showCloseRow]
-  /// is off, so every panel has the same way out as the bar's own option lists
-  /// (quality/line/aspect ratio/engine all end with a close row). It used to be
-  /// a back row *first*, which is the one place the bar's lists and the panels
-  /// disagreed.
+  /// The rendered list: the rows, then a close row when
+  /// [PlayerIndexPanel.showCloseRow] is on. It used to be a back row *first*,
+  /// which shifted every real row's index by one.
   List<PlayerPanelRow> get _renderedRows => <PlayerPanelRow>[
     ...widget.rows,
     if (widget.showCloseRow) PlayerPanelRow(label: i18nOr('close', '关闭'), icon: Icons.close_rounded),
