@@ -14,6 +14,10 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   static FavoriteRoomController get to => SettingsService.to.fav;
   static const int maxShieldKeywordLength = 40;
 
+  /// Bump whenever `Sites.supportSites` gains a platform, so an existing
+  /// install appends the new ids once instead of never seeing them.
+  static const int _siteCatalogVersion = 4;
+
   // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<List<LiveRoom>> get favoriteRooms => SettingsValue(() => state.favoriteRooms);
   SettingsValue<List<String>> get hotAreasList => SettingsValue(() => state.hotAreasList);
@@ -135,26 +139,15 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   }
 
   FavoriteSettingsModel _migrateSiteCatalog(FavoriteSettingsModel model) {
-    final updated = List<String>.from(model.hotAreasList);
-    var version = model.siteCatalogMigration;
-    if (version < 2) {
-      for (final site in Sites.supportSites) {
-        if (!updated.contains(site.id)) updated.add(site.id);
-      }
-    }
+    if (model.siteCatalogMigration >= _siteCatalogVersion) return model;
     // Only append new platforms, so a release never resets platforms the user
-    // deliberately hid.
-    if (version < 4) {
-      for (final site in Sites.supportSites) {
-        if (!updated.contains(site.id)) updated.add(site.id);
-      }
-      return model.copyWith(hotAreasList: updated, siteCatalogMigration: 4);
+    // deliberately hid. The catalog is already deduplicated, so one pass that
+    // appends every missing id is idempotent across older version numbers.
+    final updated = List<String>.from(model.hotAreasList);
+    for (final site in Sites.supportSites) {
+      if (!updated.contains(site.id)) updated.add(site.id);
     }
-    if (version < 3) {
-      version = 3;
-      return model.copyWith(hotAreasList: updated, siteCatalogMigration: 3);
-    }
-    return model;
+    return model.copyWith(hotAreasList: updated, siteCatalogMigration: _siteCatalogVersion);
   }
 
   // ------------------------------------------------------------------
