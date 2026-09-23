@@ -270,6 +270,15 @@ class PagingCore<T> extends _$PagingCore<T> {
     onLocalSourceUpdate?.call();
     final pool = await fetchAll?.call() ?? <T>[];
     if (!ref.mounted) return;
+
+    // Keep the pool this slice came from, exactly like _loadServerAll does: the
+    // next-page path slices from `allLocalItems`, so a refresh that did not store
+    // it left the list with nothing to page through. Reaching the end of the grid
+    // then sliced an empty pool, which cleared `items` and put the page into its
+    // empty state — the history page lost every entry the first time the user
+    // walked to the bottom of the list.
+    state = state.copyWith(allLocalItems: List<T>.of(pool));
+
     _sliceLocalData(pool, firstPageKey);
   }
 
