@@ -3,5 +3,6 @@
   "version_num": 130002,
   "version_desc": "-Fixed:优化主页.\n-Intro: 双击Tbar即可刷新. \n-Intro: 长按直播间或.分区可关注或取消关注 ",
   "prerelease":false,
+  "android_abis": ["arm64-v8a", "armeabi-v7a", "x86_64"],
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
 }
