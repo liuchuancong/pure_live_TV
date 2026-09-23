@@ -8,7 +8,8 @@ class InkeSite extends LiveSite
         LiveSiteRoomRefresher,
         LiveSiteRecordRoomResolver,
         LivePlayRecoveryResolver,
-        LiveCancellableSearch {
+        LiveCancellableSearch,
+    LiveSearchPaginationPolicy {
   InkeSite({InkeApi? api}) : _api = api ?? InkeApi();
   final InkeApi _api;
 
@@ -70,6 +71,14 @@ class InkeSite extends LiveSite
       final uri = Uri.tryParse(input);
       return uri == null ? null : InkeApi.roomFromUri(uri);
     }
+  }
+
+  /// An exact UID or official link resolves one room, so the caller must not
+  /// page past the first request.
+  @override
+  bool supportsSearchPaginationFor(String keyword) {
+    final input = keyword.trim();
+    return input.isNotEmpty && _searchUid(input) == null && Uri.tryParse(input)?.hasScheme != true;
   }
 
   @override

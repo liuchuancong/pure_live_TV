@@ -15,7 +15,8 @@ class MissevanSite extends LiveSite
         LivePlayRecoveryResolver,
         LivePlayLeaseMetadata,
         LiveSiteDirectoryPager,
-        LiveCancellableSearch {
+        LiveCancellableSearch,
+    LiveSearchPaginationPolicy {
   MissevanSite({MissevanApi? api}) : _api = api ?? MissevanApi();
   final MissevanApi _api;
   @override
@@ -44,6 +45,23 @@ class MissevanSite extends LiveSite
   Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) =>
       searchRoomsCancellable(keyword, page: page, pageSize: pageSize);
 
+  /// An exact room id or official link resolves one room, so the caller must
+  /// not page past the first request.
+  static String? _searchRoomId(String input) {
+    try {
+      return MissevanApi.roomId(input);
+    } on MissevanException {
+      final uri = Uri.tryParse(input);
+      return uri == null ? null : MissevanApi.roomFromUri(uri);
+    }
+  }
+
+  @override
+  bool supportsSearchPaginationFor(String keyword) {
+    final input = keyword.trim();
+    return input.isNotEmpty && _searchRoomId(input) == null && Uri.tryParse(input)?.hasScheme != true;
+  }
+
   @override
   Future<List<LiveRoom>> searchRoomsCancellable(
     String keyword, {
@@ -54,13 +72,7 @@ class MissevanSite extends LiveSite
     if (pageSize < 1) return const [];
     final input = keyword.trim();
     if (input.isEmpty) return const [];
-    String? id;
-    try {
-      id = MissevanApi.roomId(input);
-    } on MissevanException {
-      final uri = Uri.tryParse(input);
-      if (uri != null) id = MissevanApi.roomFromUri(uri);
-    }
+    final id = _searchRoomId(input);
     if (id != null) {
       if (page != 1) return const [];
       try {

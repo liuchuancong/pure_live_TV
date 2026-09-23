@@ -10,7 +10,8 @@ class HuajiaoSite extends LiveSite
         LiveSiteRoomRefresher,
         LiveSiteRecordRoomResolver,
         LivePlayRecoveryResolver,
-        LiveCancellableSearch {
+        LiveCancellableSearch,
+    LiveSearchPaginationPolicy {
   HuajiaoSite({HuajiaoApi? api}) : _api = api ?? HuajiaoApi();
   final HuajiaoApi _api;
   @override
@@ -121,7 +122,8 @@ class HuajiaoSite extends LiveSite
 
   /// TV has no `LiveSearchPaginationPolicy`; the reference guard is kept as a
   /// site-private predicate so paging only applies to a free-text keyword.
-  static bool _supportsSearchPaginationFor(String keyword) {
+  @override
+  bool supportsSearchPaginationFor(String keyword) {
     final input = keyword.trim();
     return input.isNotEmpty &&
         input.length <= 100 &&
@@ -148,7 +150,7 @@ class HuajiaoSite extends LiveSite
       if (link?.kind == HuajiaoLinkKind.owner) uid = link!.id;
     }
     if (uid == null) {
-      if (!_supportsSearchPaginationFor(input) || RegExp(r'[\x00-\x1f]').hasMatch(input)) return const [];
+      if (!supportsSearchPaginationFor(input) || RegExp(r'[\x00-\x1f]').hasMatch(input)) return const [];
       final start = (page - 1) * pageSize;
       if (start >= searchRecommendationPages * 30) return const [];
       final query = input.toLowerCase();

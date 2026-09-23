@@ -9,7 +9,8 @@ class KilakilaSite extends LiveSite
         LiveSiteRoomRefresher,
         LiveSiteRecordRoomResolver,
         LivePlayRecoveryResolver,
-        LiveCancellableSearch {
+        LiveCancellableSearch,
+    LiveSearchPaginationPolicy {
   KilakilaSite({KilakilaApi? api}) : _api = api ?? KilakilaApi();
   final KilakilaApi _api;
   @override
@@ -118,7 +119,8 @@ class KilakilaSite extends LiveSite
 
   /// TV has no `LiveSearchPaginationPolicy`; this keeps the reference guard
   /// that only a free-text nickname query may be paged on the website search.
-  static bool _supportsSearchPaginationFor(String keyword) {
+  @override
+  bool supportsSearchPaginationFor(String keyword) {
     final input = keyword.trim();
     return input.isNotEmpty &&
         _searchLink(input) == null &&
@@ -137,7 +139,7 @@ class KilakilaSite extends LiveSite
     final input = keyword.trim();
     final link = _searchLink(input);
     if (link == null) {
-      if (!_supportsSearchPaginationFor(input)) return const [];
+      if (!supportsSearchPaginationFor(input)) return const [];
       return List.unmodifiable([
         for (final owner in await _api.searchOwners(input, page: page, pageSize: pageSize, cancel: cancel))
           _profileRoom(owner),

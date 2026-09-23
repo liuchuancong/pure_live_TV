@@ -21,7 +21,8 @@ final class GoodGameSite extends LiveSite
         LiveSiteRoomRefresher,
         LiveSiteRecordRoomResolver,
         LivePlayUrlResolver,
-        LivePlayRecoveryResolver {
+        LivePlayRecoveryResolver,
+    LiveSearchPaginationPolicy {
   GoodGameSite({GoodGameApi? api}) : _api = api ?? GoodGameApi();
 
   final GoodGameApi _api;
@@ -119,6 +120,14 @@ final class GoodGameSite extends LiveSite
   /// first page must not fall through to a keyword scan of unrelated rooms.
   static bool _isExactOnly(String input) =>
       GoodGameLink.parse(input) != null || GoodGameLink.parseReference(input)?.kind == GoodGameLinkKind.player;
+
+  /// Exact channel/player lookups resolve a single room, so the caller must not
+  /// page past the first request.
+  @override
+  bool supportsSearchPaginationFor(String keyword) {
+    final input = keyword.trim();
+    return input.isNotEmpty && !_isExactOnly(input);
+  }
 
   /// Keyword search must scan more than the page the UI happens to be on:
   /// matches live in a bounded, server-paged directory, so the whole bounded

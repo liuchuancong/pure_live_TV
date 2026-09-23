@@ -9,6 +9,13 @@ abstract interface class LiveCancellableSearch {
   Future<List<LiveRoom>> searchRoomsCancellable(String keyword, {int page = 1, int pageSize = 30, CancelToken? cancel});
 }
 
+/// Optional per-query pagination rule for adapters that combine exact lookup
+/// (one result) with a paged keyword source, so the caller stops paging an
+/// exact room id or share link after the first request.
+abstract interface class LiveSearchPaginationPolicy {
+  bool supportsSearchPaginationFor(String keyword);
+}
+
 extension LiveSiteSearch on LiveSite {
   Future<List<LiveRoom>> searchRoomsWithCancellation(
     String keyword, {

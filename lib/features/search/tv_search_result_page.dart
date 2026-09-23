@@ -92,7 +92,22 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
           .toList();
     }
 
-    if (siteId == Sites.kuaishouSite) {
+    // A platform that resolves an exact room id or share link in a single
+    // request must not be paged: every later page is guaranteed empty, so one
+    // request replaces the whole paging sequence.
+    final bool exactOnly =
+        !_isStreamerSearch &&
+        liveSite is LiveSearchPaginationPolicy &&
+        !(liveSite as LiveSearchPaginationPolicy).supportsSearchPaginationFor(_currentKeyword);
+
+    if (exactOnly) {
+      _currentParam = PagingParam<LiveRoom>(
+        mode: PagingMode.serverAll,
+        pageSize: 12,
+        keepAlive: false,
+        fetchAll: () => fetch(1, 12),
+      );
+    } else if (siteId == Sites.kuaishouSite) {
       _currentParam = PagingParam<LiveRoom>(
         mode: PagingMode.serverAll,
         pageSize: 12,
