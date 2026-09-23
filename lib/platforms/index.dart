@@ -20,6 +20,7 @@ export 'picarto/index.dart';
 export 'kick/index.dart';
 export 'chzzk/index.dart';
 export 'showroom/index.dart';
+export 'sixroom/index.dart';
 export 'soop/index.dart';
 export 'tting/index.dart';
 export 'twitcasting/index.dart';

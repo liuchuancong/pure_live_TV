@@ -55,6 +55,7 @@ class Sites {
   static const String showroomSite = 'showroom';
   static const String chzzkSite = 'chzzk';
   static const String kickSite = 'kick';
+  static const String sixRoomSite = 'sixroom';
 
   static const Set<String> supportedSiteIds = {
     weiboSite,
@@ -81,6 +82,7 @@ class Sites {
     showroomSite,
     chzzkSite,
     kickSite,
+    sixRoomSite,
     iptvSite,
   };
 
@@ -215,6 +217,12 @@ class Sites {
         liveSite: ChzzkSite(),
       ),
       kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoOf(kickSite), liveSite: KickSite()),
+      sixRoomSite => Site(
+        id: sixRoomSite,
+        name: i18n('site_sixroom'),
+        logo: logoOf(sixRoomSite),
+        liveSite: SixRoomSite(),
+      ),
       iptvSite => Site(id: iptvSite, name: i18n('site_iptv'), logo: logoOf(iptvSite), liveSite: IptvSite()),
       _ => throw StateError('Unsupported live site: $normalizedId'),
     };
@@ -249,6 +257,7 @@ class Sites {
       showroomSite,
       chzzkSite,
       kickSite,
+      sixRoomSite,
       niconicoSite,
       weiboSite,
       iptvSite,
