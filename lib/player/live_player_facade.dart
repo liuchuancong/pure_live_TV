@@ -55,6 +55,15 @@ final class LivePlayerFacade {
   final videoKey = BehaviorSubject<ValueKey>.seeded(const ValueKey('video_0'));
   final isVerticalVideo = BehaviorSubject<bool>.seeded(false);
 
+  /// Audio-only playback mode, as the play page sees it.
+  ///
+  /// Seeded from the persisted setting so a room entered after a settings
+  /// restore (backup / WebDAV / LAN sync) starts in the right mode.
+  final _audioOnlySubject = BehaviorSubject<bool>.seeded(SettingsService.to.playerState.audioOnly);
+
+  /// Audio-only playback mode stream.
+  Stream<bool> get onAudioOnlyChanged => _audioOnlySubject.stream;
+
   final List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
   StreamSubscription<PlayerFailure>? _errorSub;
   StreamSubscription<PlayerState>? _stateSub;
@@ -229,9 +238,9 @@ final class LivePlayerFacade {
     );
 
     // Apply the audio-only preference to the freshly bound adapter.
-    if (SettingsService.to.playerState.audioOnly) {
-      await setAudioOnly(true);
-    }
+    // The controller remembers it, so the engine switch and the replay
+    // paths inside media_core re-apply it without the app's help.
+    await setAudioOnly(SettingsService.to.playerState.audioOnly);
 
     if (room != null) {
       final volume = LiveRoomVolumeManager.getRoomVolume(room.platform, room.roomId).clamp(0.0, 1.0);
@@ -260,16 +269,24 @@ final class LivePlayerFacade {
   /// Sets the volume (0.0–1.0).
   Future<void> setVolume(double volume) => _controller.setVolume(volume);
 
-  /// Applies audio-only to the active player.
+  /// Whether playback is restricted to the audio track.
+  bool get isAudioOnly => _audioOnlySubject.value;
+
+  /// Restricts playback to the audio track.
+  ///
+  /// [isAudioOnlySubject] is the surface the UI listens to: the audio-only
+  /// panel replaces the video surface on the play page, and it has to
+  /// appear even when the active engine cannot switch its video track off
+  /// (see `BetterPlayerAdapter`). The track switch itself is the
+  /// controller's business — it stores the preference, applies it to the
+  /// adapter that declares [PlayerAdapterCapabilities.supportsAudioOnly],
+  /// and re-applies it whenever a new adapter is bound.
   Future<void> setAudioOnly(bool audioOnly) async {
-    final adapter = _controller.handle?.adapter;
-    if (adapter is PureLiveMediaKitAdapter) {
-      await adapter.setAudioOnly(audioOnly);
-    } else if (adapter is FlvLzcPlayerAdapter) {
-      await adapter.setAudioOnly(audioOnly);
-    } else if (adapter is BetterPlayerAdapter) {
-      await adapter.setAudioOnly(audioOnly);
+    if (!_disposed && _audioOnlySubject.value != audioOnly) {
+      _audioOnlySubject.add(audioOnly);
     }
+
+    await _controller.setAudioOnly(audioOnly);
   }
 
   // ---------------------------------------------------------------------------
@@ -428,5 +445,6 @@ final class LivePlayerFacade {
     await isVerticalVideo.close();
     await videoFitIndex.close();
     await videoKey.close();
+    await _audioOnlySubject.close();
   }
 }

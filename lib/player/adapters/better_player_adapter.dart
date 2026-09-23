@@ -18,13 +18,15 @@ import 'package:better_player_plus/better_player_plus.dart';
 ///   has no decoded-frame signal, so `supportsVideoFrameProgress` is false
 ///   and the live video-frame watchdog stays disabled for this backend
 ///   instead of being fed a fabricated heartbeat.
+/// - no audio-only command: better_player_plus cannot switch the video
+///   decoder off, so `supportsAudioOnly` is false and audio-only playback
+///   is handled by not mounting this engine's surface.
 final class BetterPlayerAdapter extends PlayerAdapterBase {
   /// Creates the adapter.
   BetterPlayerAdapter({super.id = 'exo', super.capabilities = defaultCapabilities});
 
   BetterPlayerController? _controller;
 
-  bool _isAudioOnly = false;
   bool _audioOutputSuppressed = false;
 
   /// The underlying BetterPlayerController.
@@ -134,27 +136,14 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
     _audioOutputSuppressed = suppressed;
   }
 
-  /// Enables or disables video rendering.
-  Future<void> setAudioOnly(bool audioOnly) async {
-    if (isDisposed || _isAudioOnly == audioOnly) return;
-
-    _isAudioOnly = audioOnly;
-
-    if (!initialized) return;
-
-    // ExoPlayer track selection goes through the video controller;
-    // better_player exposes no direct toggle, so mute the video
-    // track via the underlying controller where available.
-    final underlying = _controller?.videoPlayerController;
-
-    if (underlying != null) {
-      try {
-        await underlying.setVolume(audioOnly ? underlying.value.volume : underlying.value.volume);
-      } catch (_) {
-        // Best-effort.
-      }
-    }
-  }
+  // Audio-only is not implemented for this engine, and the capability
+  // declaration says so: better_player_plus exposes no video-track
+  // control at any layer - `setTrack` only picks among adaptive video
+  // variants, and the platform channel behind it has no "disable video
+  // renderer" method - so the decoder cannot be switched off. The
+  // audio-only playback mode is therefore honored by the presentation
+  // layer, which stops mounting this engine's surface and shows the
+  // audio panel instead; video keeps decoding underneath.
 
   /// Applies the viewport fit through `setOverriddenFit`.
   void setVideoFit(BoxFit fit) {
@@ -238,6 +227,13 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
     supportsRateControl: true,
     supportsVolumeControl: true,
     supportsMuteControl: true,
+
+    // `supportsAudioOnly` is false: better_player_plus exposes no
+    // video-track control, so the video decoder cannot be switched off
+    // and the adapter will not accept a command it cannot carry out. The
+    // audio-only playback mode is a presentation decision on this engine
+    // (the surface is not mounted); see the class body.
+    supportsAudioOnly: false,
 
     // Video and rendering.
     //

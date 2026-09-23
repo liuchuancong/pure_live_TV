@@ -60,6 +60,14 @@ class LivePlayController extends _$LivePlayController {
       if (prev?.videoPlayerKey != next.videoPlayerKey) {
         _bootstrap();
       }
+
+      // The audio-only row applies itself when the user flips it, but a
+      // settings restore (backup, WebDAV, LAN sync) or a migration writes the
+      // same field with no UI in between. Push it here so a playing room
+      // follows the setting whichever way it changed.
+      if (prev?.audioOnly != next.audioOnly) {
+        unawaited(_playerManager?.setAudioOnly(next.audioOnly) ?? Future<void>.value());
+      }
     });
 
     // Register the current-room lookup with the site layer, which needs it for

@@ -42,7 +42,6 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   mkv.VideoController? _videoController;
   final List<StreamSubscription<dynamic>> _subscriptions = [];
 
-  bool _isAudioOnly = false;
   bool _privateInput = false;
   bool _softwareDecoderNextOpen = false;
 
@@ -155,6 +154,10 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     await player.open(mk.Media(source.uri.toString(), httpHeaders: headers), play: true);
 
     _hasOpened = true;
+
+    if (audioOnly) {
+      await _applyAudioOnly(true);
+    }
   }
 
   @override
@@ -239,14 +242,20 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     }
   }
 
-  /// Enables or disables the video track.
-  Future<void> setAudioOnly(bool audioOnly) async {
-    if (isDisposed || _isAudioOnly == audioOnly) return;
+  /// Restricts playback to the audio track through mpv's `vid` property.
+  ///
+  /// The base calls this only when the value changes and only because
+  /// [defaultCapabilities] declares [PlayerAdapterCapabilities.supportsAudioOnly].
+  @override
+  Future<void> onSetAudioOnly(bool audioOnly) => _applyAudioOnly(audioOnly);
 
-    _isAudioOnly = audioOnly;
-
-    if (!initialized) return;
-
+  /// Applies the audio-only preference to the engine.
+  ///
+  /// `vid` is an option default rather than a sticky property: a new
+  /// source resets the track selection, so this runs both on a change and
+  /// again after every open - including the replays media_core performs on
+  /// its own (same-engine retry, line cycling, recovery).
+  Future<void> _applyAudioOnly(bool audioOnly) async {
     await player.setVideoTrack(audioOnly ? mk.VideoTrack.no() : mk.VideoTrack.auto());
   }
 
@@ -724,6 +733,12 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     supportsRateControl: true,
     supportsVolumeControl: true,
     supportsMuteControl: false,
+
+    // `supportsAudioOnly` is true: `vid` really switches the video
+    // decoder off, so an audio-only session does not pay for video
+    // decoding. It is re-applied after every open because a new source
+    // resets the track selection.
+    supportsAudioOnly: true,
 
     // Video and rendering.
     //

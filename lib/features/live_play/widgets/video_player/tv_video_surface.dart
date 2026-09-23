@@ -10,6 +10,7 @@ import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dar
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
+import 'package:pure_live/features/live_play/widgets/video_player/audio_only_surface.dart';
 
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
 /// overlay, loading/error overlays and an auto-hiding D-pad control panel.
@@ -144,6 +145,28 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
           )
         : const ColoredBox(color: Colors.black);
 
+    // Audio-only mode: the picture is replaced by the room panel, but the video
+    // widget is only hidden, never unmounted — tearing it down disposes the
+    // engine's video output and the restore would then have to rebuild the
+    // whole texture. The listener mirrors what the settings page pushes into the
+    // player, so the panel appears the moment the switch flips.
+    final Widget videoLayer = manager == null
+        ? video
+        : StreamBuilder<bool>(
+            stream: manager.onAudioOnlyChanged,
+            initialData: manager.isAudioOnly,
+            builder: (context, snapshot) {
+              final bool audioOnly = snapshot.data ?? false;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Offstage(offstage: audioOnly, child: video),
+                  if (audioOnly) AudioOnlySurface(room: state.room),
+                ],
+              );
+            },
+          );
+
     final children = <Widget>[
       // The video area is NOT a d-pad node any more: the whole player is key
       // handled by [LivePlayPage], exactly like the reference player. Keys reach
@@ -151,7 +174,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
       Stack(
         fit: StackFit.expand,
         children: [
-          video,
+          videoLayer,
           DanmakuOverlay(args: widget.args),
           if (showLoading && !showError)
             Center(

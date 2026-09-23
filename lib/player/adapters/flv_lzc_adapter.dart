@@ -31,7 +31,6 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   final FijkPlayer? _injectedPlayer;
   late final FijkPlayer _player = _injectedPlayer ?? FijkPlayer();
 
-  bool _isAudioOnly = false;
   bool _sourceBuffering = false;
   bool _privateInput = false;
 
@@ -59,8 +58,10 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
 
     _positionSubscription = _player.onCurrentPosUpdate.listen(_onPositionChanged);
 
-    if (_isAudioOnly) {
-      await _player.setOption(FijkOption.playerCategory, 'disable-vid', 1);
+    // The controller applies the audio-only preference after initialize,
+    // but a preference that arrived earlier must not be lost either.
+    if (audioOnly) {
+      await _applyAudioOnly(true);
     }
   }
 
@@ -102,6 +103,14 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
     );
 
     if (isDisposed) return;
+
+    // `disable-vid` is a player option, and a new data source follows the
+    // same path as a fresh prepare, so re-assert it here: the replays
+    // media_core performs on its own (same-engine retry, line cycling,
+    // recovery) never go back through the application.
+    if (audioOnly) {
+      await _applyAudioOnly(true);
+    }
 
     await _player.start();
   }
@@ -165,14 +174,17 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   /// proxy must not intercept it.
   void setPrivateInput(bool value) => _privateInput = value;
 
-  /// Enables or disables video decoding without replacing the
-  /// player or reopening the current live stream.
-  Future<void> setAudioOnly(bool audioOnly) async {
-    if (isDisposed || _isAudioOnly == audioOnly) return;
+  /// Restricts playback to the audio track through IJKPlayer's
+  /// `disable-vid` option: the decoder is switched off, the stream is not
+  /// merely hidden.
+  @override
+  Future<void> onSetAudioOnly(bool audioOnly) => _applyAudioOnly(audioOnly);
+
+  /// Applies the audio-only preference to the engine.
+  Future<void> _applyAudioOnly(bool audioOnly) async {
+    if (isDisposed) return;
 
     await _player.setOption(FijkOption.playerCategory, 'disable-vid', audioOnly ? 1 : 0);
-
-    _isAudioOnly = audioOnly;
   }
 
   /// Applies the viewport fit without wrapping the texture in a
@@ -305,6 +317,11 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
     supportsRateControl: true,
     supportsVolumeControl: true,
     supportsMuteControl: true,
+
+    // `supportsAudioOnly` is true: IJKPlayer's `disable-vid` option stops
+    // video decoding for the source instead of hiding the picture, and it
+    // is re-applied on every open.
+    supportsAudioOnly: true,
 
     // Video and rendering.
     //
