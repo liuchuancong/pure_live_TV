@@ -155,11 +155,7 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
     // the home sidebar after a room was closed — the reclaim also fires when the
     // overlay puts the page back on stage, a few frames after the restore, so
     // the restore alone could never win.
-    final bool held = _focusHeldInsidePage();
-    // ignore: avoid_print
-    print('SHELL claim opener=${widget.openingFocus?.hashCode} primary=${FocusManager.instance.primaryFocus?.hashCode} '
-        'target=${_restoreTarget?.hashCode} targetUsable=${_restoreTarget == null ? false : _usable(_restoreTarget!)} held=$held');
-    if (held) {
+    if (_focusHeldInsidePage()) {
       _claimedFocus = true;
       return;
     }
