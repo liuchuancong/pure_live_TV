@@ -120,9 +120,9 @@ class Sites {
     taobaoLiveSite,
     kugouLiveSite,
     baiduLiveSite,
+    sixRoomSite,
     lookLiveSite,
     seventeenLiveSite,
-    sixRoomSite,
     iptvSite,
   };
 
@@ -395,9 +395,9 @@ class Sites {
       taobaoLiveSite,
       kugouLiveSite,
       baiduLiveSite,
+      sixRoomSite,
       lookLiveSite,
       seventeenLiveSite,
-      sixRoomSite,
       niconicoSite,
       weiboSite,
       iptvSite,
