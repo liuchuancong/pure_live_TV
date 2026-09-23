@@ -1,7 +1,6 @@
 import 'dart:async';
+
 import 'package:pure_live/exports/exports.dart';
-
-
 
 class _Playback {
   _Playback(this.roomKey, Iterable<LivePlayQuality> qualities) : qualities = List.unmodifiable(qualities);
@@ -15,7 +14,8 @@ class OpenrecSite extends LiveSite
         LiveDirectoryNotice,
         LiveSiteRoomRefresher,
         LiveSiteRecordRoomResolver,
-        LivePlayRecoveryResolver {
+        LivePlayRecoveryResolver,
+        LiveCancellableSearch {
   OpenrecSite({OpenrecApi? api}) : _api = api ?? OpenrecApi();
   final OpenrecApi _api;
   @override
@@ -114,6 +114,34 @@ class OpenrecSite extends LiveSite
           ),
         ]
       : [];
+
+  @override
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) =>
+      searchRoomsCancellable(keyword, page: page, pageSize: pageSize);
+
+  @override
+  Future<List<LiveRoom>> searchRoomsCancellable(
+    String keyword, {
+    int page = 1,
+    int pageSize = 30,
+    CancelToken? cancel,
+  }) async {
+    if (page < 1 || pageSize < 1) throw const OpenrecException(OpenrecFailure.schema);
+    // TV has no `LiveSearchPaginationPolicy`; the reference single-page rule is
+    // kept as this site's private decision.
+    if (page > 1) return const [];
+    final input = keyword.trim();
+    final uri = Uri.tryParse(input);
+    if (uri == null || uri.hasQuery || uri.hasFragment) return const [];
+    final link = OpenrecLink.validId(input) ? OpenrecLink(OpenrecLinkKind.channel, input) : OpenrecLink.parse(input);
+    if (link == null || link.kind != OpenrecLinkKind.channel) return const [];
+    try {
+      return [_owner(await _api.channel(link.id, cancel: cancel))];
+    } on OpenrecException catch (error) {
+      if (error.kind == OpenrecFailure.missing) return const [];
+      rethrow;
+    }
+  }
 
   Future<LiveRoom> _detail(String roomId, String platform, {required bool playback}) async {
     if (platform != id) throw const OpenrecException(OpenrecFailure.identity);
