@@ -179,6 +179,13 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: true,
       onlineAvailability: AudienceOnlineAvailability.unsupported,
     ),
+    // The finite public directory exposes user_count for current broadcasts.
+    // Room detail has no verified concurrent field and therefore keeps it unknown.
+    'bigo': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
     // Six Rooms exposes a homepage `count` used by its ranking cards, without
     // a stable public contract proving unique concurrent viewers. Keep it as
     // platform popularity; room fans remain an independent follower metric.

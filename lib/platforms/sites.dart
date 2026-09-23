@@ -55,6 +55,7 @@ class Sites {
   static const String showroomSite = 'showroom';
   static const String chzzkSite = 'chzzk';
   static const String kickSite = 'kick';
+  static const String bigoSite = 'bigo';
   static const String sixRoomSite = 'sixroom';
 
   static const Set<String> supportedSiteIds = {
@@ -82,6 +83,7 @@ class Sites {
     showroomSite,
     chzzkSite,
     kickSite,
+    bigoSite,
     sixRoomSite,
     iptvSite,
   };
@@ -217,6 +219,7 @@ class Sites {
         liveSite: ChzzkSite(),
       ),
       kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoOf(kickSite), liveSite: KickSite()),
+      bigoSite => Site(id: bigoSite, name: i18n('site_bigo'), logo: logoOf(bigoSite), liveSite: BigoSite()),
       sixRoomSite => Site(
         id: sixRoomSite,
         name: i18n('site_sixroom'),
@@ -257,6 +260,7 @@ class Sites {
       showroomSite,
       chzzkSite,
       kickSite,
+      bigoSite,
       sixRoomSite,
       niconicoSite,
       weiboSite,
