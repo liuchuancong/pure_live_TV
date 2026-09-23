@@ -22,6 +22,13 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     _listenEventBus();
     _setupRefreshStrategy();
 
+    // A restore asks for one verification pass over the imported list; the event
+    // above only reaches this provider when the page is already up (see
+    // FavoriteRoomController.importFromJson).
+    if (ref.read(favoriteRoomControllerProvider.notifier).consumeStatusRefreshRequest()) {
+      Future<void>.microtask(refreshData);
+    }
+
     final favState = ref.watch(favoriteRoomControllerProvider);
     // Rebuild when the audience display preference or the grid density change.
     final appState = ref.watch(appSettingsControllerProvider);

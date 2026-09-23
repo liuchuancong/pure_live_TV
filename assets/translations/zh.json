@@ -734,6 +734,7 @@
   "favorite_status_verifying": "正在核验",
   "favorites": "收藏直播间",
   "favorites_title": "关注",
+  "favorite_invalid_room_removed": "该直播间已失效，已从关注列表移除",
   "fhd_recommend": "原画推荐 (1080P)",
   "file_download_failed_retry": "文件下载失败请重试",
   "file_name": "文件名",

@@ -411,6 +411,32 @@ class FavoriteRoomController extends _$FavoriteRoomController {
 
   void importFromJson(Map<String, dynamic> json) {
     _update(FavoriteSettingsModel.fromJson(json));
+
+    if (state.favoriteRooms.isEmpty) return;
+
+    // A restored follow list arrives with the statuses it was exported with —
+    // hours, days or weeks old — so the imported rooms would sit in whichever
+    // bucket the backup remembered. Ask for one verification pass: the event
+    // reaches a favourites page that is already mounted, and a page that opens
+    // later takes the flag instead. (The reference does the same after its account
+    // download: restore the settings, then refresh the followed rooms.)
+    _statusRefreshRequested = true;
+    EventBus.instance.emit('refresh_favorite_rooms', true);
+  }
+
+  /// Whether an import left the followed list asking to be verified.
+  bool _statusRefreshRequested = false;
+
+  /// Takes the pending verification request, if any.
+  ///
+  /// The favourites page calls this when it builds. The flag exists because an
+  /// import is driven from the settings side, where the favourites page (and its
+  /// listener on the event above) may not be alive yet.
+  bool consumeStatusRefreshRequest() {
+    if (!_statusRefreshRequested) return false;
+
+    _statusRefreshRequested = false;
+    return true;
   }
 
   /// Parses the favorites section with validation and normalization, without persisting.

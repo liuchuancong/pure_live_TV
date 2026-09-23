@@ -739,6 +739,7 @@
   "favorite_status_verifying": "Verifying",
   "favorites": "Favorites",
   "favorites_title": "Favorites",
+  "favorite_invalid_room_removed": "This room is no longer valid and was removed from your followed list",
   "fhd_recommend": "Recommended for Original Quality (1080P)",
   "file_download_failed_retry": "File download failed, please try again",
   "file_name": "File name",

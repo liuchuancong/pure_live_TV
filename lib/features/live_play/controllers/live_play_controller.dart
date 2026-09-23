@@ -9,6 +9,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:media_core/error/player_failure.dart';
 import 'package:media_core/error/error_formatter.dart';
 import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
@@ -140,6 +141,8 @@ class LivePlayController extends _$LivePlayController {
 
     state = state.copyWith(room: detail, clearDetailError: true);
 
+    _syncFollowedRoom(detail);
+
     // Align the displayed volume with the volume remembered for the room; the
     // player restores the same value on start.
     state = state.copyWith(volume: detail.getSavedVolume().clamp(0.0, 1.0).toDouble());
@@ -186,6 +189,31 @@ class LivePlayController extends _$LivePlayController {
   void _cancelStallReport() {
     _stallReportTimer?.cancel();
     _stallReportTimer = null;
+  }
+
+  /// Writes the platform's answer back into the followed list.
+  ///
+  /// Opening a room is the one moment its status is known to be fresh, so the
+  /// followed entry is updated from it: a room that stopped streaming lands in
+  /// 未开播 on its own, and a live one refreshes its title, cover and audience.
+  /// The reference does the same through `_updateFavoriteRoomSnapshot`.
+  ///
+  /// A room the platform cannot identify at all — an empty or placeholder id
+  /// (`0`/`null`/`undefined`/`nan`/`none`) — is not a room: it is dropped instead
+  /// of being kept as a card that can never play.
+  void _syncFollowedRoom(LiveRoom detail) {
+    if (detail.platform.trim().isEmpty) return;
+
+    final favorites = ref.read(favoriteRoomControllerProvider.notifier);
+
+    if (!FavoriteRoomController.isValidFavoriteRoomStatic(detail)) {
+      if (favorites.removeRoom(detail)) {
+        ToastUtil.show(i18n('favorite_invalid_room_removed'));
+      }
+      return;
+    }
+
+    favorites.updateRoom(detail);
   }
 
   /// Turns a load that never resolved into a failure the user can act on.
