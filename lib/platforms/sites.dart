@@ -59,6 +59,9 @@ class Sites {
   static const String tiktokSite = 'tiktok';
   static const String youtubeSite = 'youtube';
   static const String bigoSite = 'bigo';
+  static const String pandaLiveSite = 'pandalive';
+  static const String popkonSite = 'popkontv';
+  static const String shopeeLiveSite = 'shopeelive';
   static const String sixRoomSite = 'sixroom';
 
   static const Set<String> supportedSiteIds = {
@@ -90,6 +93,9 @@ class Sites {
     tiktokSite,
     youtubeSite,
     bigoSite,
+    pandaLiveSite,
+    popkonSite,
+    shopeeLiveSite,
     sixRoomSite,
     iptvSite,
   };
@@ -229,6 +235,24 @@ class Sites {
       tiktokSite => Site(id: tiktokSite, name: i18n('site_tiktok'), logo: logoOf(tiktokSite), liveSite: TikTokSite()),
       youtubeSite => Site(id: youtubeSite, name: i18n('site_youtube'), logo: logoOf(youtubeSite), liveSite: YouTubeSite()),
       bigoSite => Site(id: bigoSite, name: i18n('site_bigo'), logo: logoOf(bigoSite), liveSite: BigoSite()),
+      pandaLiveSite => Site(
+        id: pandaLiveSite,
+        name: i18n('site_pandalive'),
+        logo: logoOf(pandaLiveSite),
+        liveSite: PandaLiveSite(),
+      ),
+      popkonSite => Site(
+        id: popkonSite,
+        name: i18n('site_popkontv'),
+        logo: logoOf(popkonSite),
+        liveSite: PopkonSite(),
+      ),
+      shopeeLiveSite => Site(
+        id: shopeeLiveSite,
+        name: i18n('site_shopeelive'),
+        logo: logoOf(shopeeLiveSite),
+        liveSite: ShopeeLiveSite(),
+      ),
       sixRoomSite => Site(
         id: sixRoomSite,
         name: i18n('site_sixroom'),
@@ -273,6 +297,9 @@ class Sites {
       tiktokSite,
       youtubeSite,
       bigoSite,
+      pandaLiveSite,
+      popkonSite,
+      shopeeLiveSite,
       sixRoomSite,
       niconicoSite,
       weiboSite,

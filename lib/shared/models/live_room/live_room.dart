@@ -200,6 +200,27 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: true,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
+    // PandaTV's `user` value is the concurrent audience in the official
+    // directory and play response. `playCnt` remains a separate session value.
+    'pandalive': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // PopkonTV documents `watchCnt` as the current audience while
+    // `totalWatchCnt` is a separate cumulative session counter.
+    'popkontv': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // The homepage live feed and session detail expose `view_count` and
+    // `viewer_count` respectively as the visible current audience metric.
+    'shopeelive': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
     // The watch page exposes a dedicated concurrent-view renderer while a
     // broadcast is live. Historical viewCount is deliberately not reused.
     'youtube': AudiencePlatformCapability(
