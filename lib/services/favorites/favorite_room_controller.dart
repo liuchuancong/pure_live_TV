@@ -410,7 +410,17 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   Map<String, dynamic> toJson() => state.toJson();
 
   void importFromJson(Map<String, dynamic> json) {
-    _update(FavoriteSettingsModel.fromJson(json));
+    // An imported document is normalized exactly like a stored one, which is what
+    // the reference's `fromJson` does before publishing the lists: identities are
+    // canonicalised, then rooms with an invalid identity and duplicate identities
+    // are dropped. An import is the one place a foreign document can smuggle in a
+    // room whose id is a placeholder ("0"/"null"/…) or the same room twice, and
+    // the pass is what deletes them instead of leaving cards that can never play.
+    final imported = _normalizeFavoriteRoomIdentities(
+      _normalizeSiteCatalogIds(_normalizeDanmakuBlocks(FavoriteSettingsModel.fromJson(json))),
+    );
+
+    _update(imported);
 
     if (state.favoriteRooms.isEmpty) return;
 
