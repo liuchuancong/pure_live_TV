@@ -19,9 +19,10 @@ import '../../services/settings/settings.dart';
 /// - audio-only via the `disable-vid` player option
 /// - the view is exposed through [FijkViewHolder] so the surface
 ///   layer can rebuild without owning the adapter
-/// - a synthetic frame-progress heartbeat while the player is
-///   `started`, because IJK does not publish per-frame decode
-///   events. See [_syncFrameProgressTimer].
+/// - an honest capability declaration ([defaultCapabilities]): the engine
+///   has no decoded-frame signal, so `supportsVideoFrameProgress` is false
+///   and the live video-frame watchdog stays disabled for this backend
+///   instead of being fed a fabricated heartbeat.
 final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   /// Creates the adapter.
   FlvLzcPlayerAdapter({super.id = 'ijk', super.capabilities = defaultCapabilities, FijkPlayer? player})
@@ -40,31 +41,6 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   StreamSubscription<Duration>? _positionSubscription;
 
   BoxFit _videoFit = BoxFit.contain;
-
-  /// Frame-progress heartbeat timer.
-  ///
-  /// IJK does not publish a per-frame callback: `addListener` fires on
-  /// state / buffering / size changes only, and once `size` stabilises
-  /// it stops changing entirely. Without a real heartbeat the
-  /// [LiveWatchdogs] video-frame stall detector (10 s) fires on every
-  /// healthy stream and the recovery ladder resets the player every
-  /// 10 seconds — a spinner that never goes away.
-  ///
-  /// While the player is [FijkState.started] this timer emits
-  /// [PlayerAdapterVideoFrameProgress] at [_frameProgressInterval] so
-  /// the watchdog receives a continuous signal. It is stopped the
-  /// moment the state leaves `started`.
-  ///
-  /// This is a heartbeat only: it proves the player *believes* it is
-  /// playing, not that a specific frame was decoded. A genuinely
-  /// wedged IJK is still caught by its buffering and error events.
-  Timer? _frameProgressTimer;
-
-  /// Interval between synthetic frame-progress heartbeats.
-  ///
-  /// Aligned with [PureLiveMediaKitAdapter.frameHeartbeatIntervalMs] so
-  /// both engines feed the watchdog at the same cadence.
-  static const Duration _frameProgressInterval = Duration(seconds: 1);
 
   /// The underlying FijkPlayer.
   FijkPlayer get fijkPlayer => _player;
@@ -161,17 +137,11 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
     _lastPosition = Duration.zero;
     _lastDuration = Duration.zero;
 
-    // The reset below drops back to idle; stop the heartbeat first so
-    // no synthetic event escapes after the source is released.
-    _syncFrameProgressTimer(FijkState.idle);
-
     await _player.reset();
   }
 
   @override
   Future<void> onDispose() async {
-    _syncFrameProgressTimer(FijkState.idle);
-
     _player.removeListener(_onPlayerValue);
 
     await _positionSubscription?.cancel();
@@ -233,32 +203,6 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
   }
 
   // ---------------------------------------------------------------------------
-  // Frame-progress heartbeat
-  // ---------------------------------------------------------------------------
-
-  /// Synchronises the frame-progress heartbeat timer with [state].
-  ///
-  /// `started` keeps the timer running; every other state stops it.
-  /// Idempotent: repeated calls with the same state do nothing.
-  void _syncFrameProgressTimer(FijkState state) {
-    if (state == FijkState.started) {
-      _frameProgressTimer ??= Timer.periodic(_frameProgressInterval, (_) {
-        if (isDisposed) return;
-
-        // The timer can fire after the state has already moved on;
-        // re-check before emitting.
-        if (_player.value.state != FijkState.started) return;
-
-        emitVideoFrameProgress();
-      });
-      return;
-    }
-
-    _frameProgressTimer?.cancel();
-    _frameProgressTimer = null;
-  }
-
-  // ---------------------------------------------------------------------------
   // Value listener
   // ---------------------------------------------------------------------------
 
@@ -267,9 +211,6 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
 
     final value = _player.value;
     final state = value.state;
-
-    // Drive the synthetic frame-progress heartbeat from the state.
-    _syncFrameProgressTimer(state);
 
     // Dimensions.
     final size = value.size;
@@ -325,17 +266,121 @@ final class FlvLzcPlayerAdapter extends PlayerAdapterBase {
     }
   }
 
-  /// Capabilities of the IJK engine.
+  /// Capabilities of the IJK engine (flv_lzc / fijkplayer), as exposed by
+  /// this adapter.
+  ///
+  /// The declaration is scoped to what the adapter actually produces or
+  /// accepts today, not to what the FFmpeg-backed IJKPlayer exposes in the
+  /// abstract. Backend features that are not yet surfaced through the adapter
+  /// (track lists, metadata, chapter navigation, dynamic filters, …) stay
+  /// false; they can be flipped on the same line as the subscription or
+  /// command that makes them real.
+  ///
+  /// [PlayerAdapterCapabilities] is the single source of truth for what this
+  /// adapter supports: this class declares no `supportsXxx` field or getter of
+  /// its own, and the base reads the snapshot directly.
+  ///
+  /// Signal emits and their capability flags:
+  ///
+  /// - [PlayerAdapterEvent.videoSizeChanged] is produced from `FijkValue.size`,
+  ///   which IJK reports once decoding starts and on every later change.
+  /// - [PlayerAdapterEvent.videoFrameProgress] is **not** produced: FijkPlayer
+  ///   publishes no per-frame callback, and the events it does expose
+  ///   (`addListener` state / size changes, `onCurrentPosUpdate`) do not prove
+  ///   that a frame was decoded at the current moment. Polling
+  ///   [FijkState.started] is not that proof either — it only reports what the
+  ///   player already believes. The flag therefore stays false and
+  ///   [LiveWatchdogs] keeps its video-frame stall detector off for this
+  ///   backend.
   static const PlayerAdapterCapabilities defaultCapabilities = PlayerAdapterCapabilities(
+    // Core playback.
+    //
+    // Every command hook is implemented against FijkPlayer: start() /
+    // pause() / stop() / seekTo() / setVolume() / setSpeed() (with soundtouch
+    // enabled for rates != 1.0). Mute is setVolume(0.0).
     supportsLive: true,
     supportsSeek: true,
     supportsPause: true,
-    supportsRateControl: false,
+    supportsStop: true,
+    supportsRateControl: true,
     supportsVolumeControl: true,
+    supportsMuteControl: true,
+
+    // Video and rendering.
+    //
+    // `supportsVideoSizeChanged` is true because the adapter consumes
+    // `FijkValue.size`.
+    //
+    // `supportsVideoFrameProgress` is false: IJKPlayer has no callback that
+    // proves frame-level progress, and playback-position updates are not a
+    // substitute. The live video-frame watchdog must therefore stay disabled
+    // for this backend rather than be fed a fabricated heartbeat.
+    //
+    // The remaining video capabilities are not exposed through the adapter:
+    // screenshots would need a custom renderer or a modified native layer, and
+    // there is no reconfig / hwdec / filter surface.
+    supportsVideoFrameProgress: false,
+    supportsVideoSizeChanged: true,
+    supportsVideoReconfig: false,
+    supportsHwdecInfo: false,
+    supportsVideoFilters: false,
+    supportsScreenshot: false,
+
+    // Audio.
+    //
+    // IJK can switch audio output and apply audio filters through setOption,
+    // but the adapter exposes neither surface.
+    supportsAudioReconfig: false,
+    supportsAudioDeviceSelection: false,
+    supportsAudioFilters: false,
+
+    // Tracks and subtitles.
+    //
+    // The adapter can toggle the video track for audio-only playback, but it
+    // has no track-list surface and does not forward subtitle payloads.
+    supportsTrackSelection: false,
+    supportsSubtitleTrack: false,
+    supportsExternalSubtitle: false,
+
+    // Playback state and buffering.
+    //
+    // Buffering transitions are reported without a ratio, so no buffering
+    // progress is promised, and there is no cache or chapter surface.
+    supportsCacheState: false,
+    supportsBufferingProgress: false,
+    supportsChapterControl: false,
+    supportsLoop: false,
+
+    // Metadata and playlist.
+    //
+    // getMediaInfo() could expose metadata, but the adapter does not
+    // subscribe to it or publish it as a stream.
+    supportsMetadata: false,
+    supportsPlaylist: false,
+    supportsPlaylistControl: false,
+
+    // Diagnostics and integration.
+    supportsClientMessage: false,
+    supportsLogMessages: false,
+
+    // Decoders.
+    //
+    // The flv_lzc build ships both the FFmpeg software decoder and the
+    // MediaCodec hardware path, and the adapter can select between them.
     supportsHardwareDecoder: true,
     supportsSoftwareDecoder: true,
+
+    // Presentation.
+    //
+    // PiP is not provided by IJKPlayer; fullscreen is a widget-level decision
+    // the adapter does not veto.
     supportsPictureInPicture: false,
     supportsFullscreen: true,
+
+    // Source matching.
+    //
+    // The FFmpeg build covers a wider protocol and format set than most
+    // engines, including RTMP and RTSP.
     supportedProtocols: {'http', 'https', 'hls', 'rtmp', 'rtsp', 'udp', 'file', 'asset'},
     supportedFormats: {'mp4', 'mkv', 'webm', 'flv', 'm3u8', 'mov', 'avi', 'ts', 'h265', 'hevc'},
   );

@@ -1127,7 +1127,7 @@ packages:
     description:
       path: "packages/media_core"
       ref: main
-      resolved-ref: "001f90202edb73cf4c9b86588ff71b97e52fddfe"
+      resolved-ref: "3ddf0583387505c308a688629988d5e47cdbf56d"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"

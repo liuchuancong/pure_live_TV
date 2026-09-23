@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
 import 'package:better_player_plus/better_player_plus.dart';
@@ -15,10 +14,10 @@ import 'package:better_player_plus/better_player_plus.dart';
 /// - audio-output suppression starts the source muted, avoiding an
 ///   audible burst during initialization
 /// - live streams flagged through the data source
-/// - a synthetic frame-progress heartbeat while the player reports
-///   `isPlaying`, because ExoPlayer (through better_player_plus)
-///   does not publish per-frame decode events. See
-///   [_startFrameProgress].
+/// - an honest capability declaration ([defaultCapabilities]): the engine
+///   has no decoded-frame signal, so `supportsVideoFrameProgress` is false
+///   and the live video-frame watchdog stays disabled for this backend
+///   instead of being fed a fabricated heartbeat.
 final class BetterPlayerAdapter extends PlayerAdapterBase {
   /// Creates the adapter.
   BetterPlayerAdapter({super.id = 'exo', super.capabilities = defaultCapabilities});
@@ -27,29 +26,6 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
 
   bool _isAudioOnly = false;
   bool _audioOutputSuppressed = false;
-
-  /// Frame-progress heartbeat timer.
-  ///
-  /// better_player_plus emits only state / resolution / buffering
-  /// events. Once the resolution stabilises there is no further
-  /// signal, and the [LiveWatchdogs] video-frame stall detector
-  /// (10 s) would fire on every healthy stream — the recovery
-  /// ladder then resets the player every 10 seconds.
-  ///
-  /// While the controller reports [isPlaying] this timer emits
-  /// [PlayerAdapterVideoFrameProgress] at [_frameProgressInterval].
-  /// It is stopped on pause / finish / error / close / dispose.
-  ///
-  /// This is a heartbeat only: it proves ExoPlayer believes it is
-  /// playing, not that a specific frame was rendered. A genuinely
-  /// wedged ExoPlayer is still caught by its buffering / error events.
-  Timer? _frameProgressTimer;
-
-  /// Interval between synthetic frame-progress heartbeats.
-  ///
-  /// Aligned with the other engines so all three feed the watchdog
-  /// at the same cadence.
-  static const Duration _frameProgressInterval = Duration(milliseconds: 1);
 
   /// The underlying BetterPlayerController.
   ///
@@ -117,7 +93,6 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
 
   @override
   Future<void> onStop() async {
-    _stopFrameProgress();
     await controller.pause();
     await controller.seekTo(Duration.zero);
   }
@@ -133,15 +108,12 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
 
   @override
   Future<void> onClose() async {
-    _stopFrameProgress();
     await controller.pause();
     await controller.seekTo(Duration.zero);
   }
 
   @override
   Future<void> onDispose() async {
-    _stopFrameProgress();
-
     // better_player returns early from dispose() when autoDispose is false, and
     // this adapter sets it false to own the lifecycle itself. Without
     // forceDispose the native ExoPlayer survives - decoder, surface and audio
@@ -190,29 +162,6 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
   }
 
   // ---------------------------------------------------------------------------
-  // Frame-progress heartbeat
-  // ---------------------------------------------------------------------------
-
-  /// Starts the synthetic frame-progress heartbeat.
-  ///
-  /// Idempotent: a second call while the timer is running does nothing.
-  void _startFrameProgress() {
-    _frameProgressTimer ??= Timer.periodic(_frameProgressInterval, (_) {
-      if (isDisposed) return;
-      final controller = _controller;
-      if (controller == null) return;
-      if (controller.isPlaying() != true) return;
-      emitVideoFrameProgress();
-    });
-  }
-
-  /// Stops the synthetic frame-progress heartbeat.
-  void _stopFrameProgress() {
-    _frameProgressTimer?.cancel();
-    _frameProgressTimer = null;
-  }
-
-  // ---------------------------------------------------------------------------
   // Engine events
   // ---------------------------------------------------------------------------
 
@@ -229,28 +178,21 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
         }
 
       case BetterPlayerEventType.play:
-        _startFrameProgress();
         emitPlaying();
 
       case BetterPlayerEventType.pause:
-        _stopFrameProgress();
         emitPaused();
 
       case BetterPlayerEventType.bufferingStart:
-        // Heartbeat keeps running: buffering is a transient state and
-        // the video-frame watchdog is already cancelled by the
-        // buffering watchdog taking over.
         emitBuffering(true);
 
       case BetterPlayerEventType.bufferingEnd:
         emitBuffering(false, resumePlaying: state.playing);
 
       case BetterPlayerEventType.finished:
-        _stopFrameProgress();
         emitCompleted();
 
       case BetterPlayerEventType.exception:
-        _stopFrameProgress();
         reportEngineError(message: event.parameters?['exception']?.toString() ?? 'BetterPlayer Error');
 
       default:
@@ -258,17 +200,115 @@ final class BetterPlayerAdapter extends PlayerAdapterBase {
     }
   }
 
-  /// Capabilities of the ExoPlayer engine.
+  /// Capabilities of the ExoPlayer engine, as exposed by this adapter.
+  ///
+  /// The declaration is scoped to what the adapter actually produces or
+  /// accepts today, not to what Media3 exposes in the abstract. Backend
+  /// features reachable only through a sub-API better_player_plus does not
+  /// surface stay false; they can be flipped on the same line as the
+  /// subscription or command that makes them real.
+  ///
+  /// [PlayerAdapterCapabilities] is the single source of truth for what this
+  /// adapter supports: this class declares no `supportsXxx` field or getter of
+  /// its own, and the base reads the snapshot directly.
+  ///
+  /// Signal emits and their capability flags:
+  ///
+  /// - [PlayerAdapterEvent.videoSizeChanged] is produced from better_player's
+  ///   `initialized` / `changedResolution` events.
+  /// - [PlayerAdapterEvent.videoFrameProgress] is **not** produced:
+  ///   better_player_plus exposes no per-frame decode callback and does not
+  ///   surface ExoPlayer's own `VideoFrameMetadataListener`, so this adapter
+  ///   has no signal that proves a frame was decoded. An `isPlaying` poll is
+  ///   not that signal — it would only report what the engine already
+  ///   believes, and a wedged-but-"playing" ExoPlayer would never be caught.
+  ///   The flag therefore stays false and [LiveWatchdogs] keeps its
+  ///   video-frame stall detector off for this backend.
   static const PlayerAdapterCapabilities defaultCapabilities = PlayerAdapterCapabilities(
+    // Core playback.
+    //
+    // Every command hook is implemented against the controller:
+    // play() / pause() / pause()+seekTo(zero) for stop / seekTo() /
+    // setSpeed() / setVolume(). Mute is setVolume(0.0), which the adapter
+    // accepts for the lifetime of the session.
     supportsLive: true,
     supportsSeek: true,
     supportsPause: true,
+    supportsStop: true,
     supportsRateControl: true,
     supportsVolumeControl: true,
+    supportsMuteControl: true,
+
+    // Video and rendering.
+    //
+    // `supportsVideoSizeChanged` is true because the adapter consumes
+    // better_player's `initialized` / `changedResolution` events.
+    //
+    // `supportsVideoFrameProgress` is false: the engine has no frame-level
+    // callback this adapter can forward, and geometry is not a substitute for
+    // frame progress. The live video-frame watchdog must therefore stay
+    // disabled for this backend rather than be fed a fabricated heartbeat.
+    //
+    // The remaining video capabilities are not surfaced through the adapter,
+    // so reconfig / hwdec info / filters / screenshot stay false until the
+    // adapter wraps them.
+    supportsVideoFrameProgress: false,
+    supportsVideoSizeChanged: true,
+    supportsVideoReconfig: false,
+    supportsHwdecInfo: false,
+    supportsVideoFilters: false,
+    supportsScreenshot: false,
+
+    // Audio.
+    //
+    // No dedicated audio-output reconfigured event, device list, or runtime
+    // filter surface is wired through the adapter.
+    supportsAudioReconfig: false,
+    supportsAudioDeviceSelection: false,
+    supportsAudioFilters: false,
+
+    // Tracks and subtitles.
+    //
+    // better_player can enumerate tracks, but this adapter neither exposes the
+    // list nor accepts a selection command, and it has no subtitle surface.
+    supportsTrackSelection: false,
+    supportsSubtitleTrack: false,
+    supportsExternalSubtitle: false,
+
+    // Playback state and buffering.
+    //
+    // `emitBuffering` is called without a ratio and the buffered position is
+    // never read into metrics, so no buffering progress is promised and no
+    // cache state is observable.
+    supportsCacheState: false,
+    supportsBufferingProgress: false,
+    supportsChapterControl: false,
+    supportsLoop: false,
+
+    // Metadata and playlist.
+    supportsMetadata: false,
+    supportsPlaylist: false,
+    supportsPlaylistControl: false,
+
+    // Diagnostics and integration.
+    supportsClientMessage: false,
+    supportsLogMessages: false,
+
+    // Decoders.
+    //
+    // The ExoPlayer build shipped with better_player_plus decodes through
+    // MediaCodec; this adapter wires no software fallback.
     supportsHardwareDecoder: true,
     supportsSoftwareDecoder: false,
+
+    // Presentation.
+    //
+    // PiP is a system-level feature the adapter exposes no command for;
+    // fullscreen is a widget-level decision the adapter does not veto.
     supportsPictureInPicture: false,
     supportsFullscreen: true,
+
+    // Source matching.
     supportedProtocols: {'http', 'https', 'hls', 'dash', 'file'},
     supportedFormats: {'mp4', 'webm', 'm3u8', 'mpd', 'ts', 'mov', 'mkv'},
   );

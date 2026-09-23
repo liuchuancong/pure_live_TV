@@ -27,6 +27,10 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 /// - proxy option for the app-owned loopback input
 /// - events consumed through subscriptions bound once for the whole
 ///   adapter lifetime, so the base's source gate stays open
+/// - a capability declaration that matches the signals the adapter really
+///   emits ([defaultCapabilities]), because the base drops a
+///   `videoFrameProgress` / `videoSizeChanged` emit whose capability is not
+///   declared.
 final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
   /// Creates the adapter.
   PureLiveMediaKitAdapter({super.id = 'mpv', super.capabilities = defaultCapabilities, mk.Player? player})
@@ -664,7 +668,12 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     //
     // Do NOT set `_hasDecodedVideoFrame` here. A size notification
     // does not prove that the decoder is still producing frames.
-    emitVideoSizeChanged(w, h);
+    //
+    // The deduplicating helper is used so the base owns the
+    // comparison and resets it on every open: the first geometry of
+    // each source is always published, and width / height arriving as
+    // two separate stream events cannot publish the same pair twice.
+    emitVideoSizeChangedIfChanged(w, h);
   }
 
   void _onError(String message) {
@@ -676,17 +685,110 @@ final class PureLiveMediaKitAdapter extends PlayerAdapterBase {
     updateMetrics((metrics) => metrics.copyWith(buffered: buffered));
   }
 
-  /// Capabilities of the MPV engine.
+  /// Capabilities of the MPV engine, as exposed by this adapter.
+  ///
+  /// The declaration is scoped to what the adapter actually produces or
+  /// accepts today, not to what libmpv exposes in the abstract. Backend
+  /// events the adapter does not yet subscribe to
+  /// (`MPV_EVENT_VIDEO_RECONFIG`, `MPV_EVENT_AUDIO_RECONFIG`, `metadata`,
+  /// track lists, …) stay false; they can be flipped on the same line as the
+  /// subscription that makes them real.
+  ///
+  /// [PlayerAdapterCapabilities] is the single source of truth for what this
+  /// adapter supports: this class declares no `supportsXxx` field or getter of
+  /// its own, and the base reads the snapshot directly.
+  ///
+  /// Signal emits and their capability flags:
+  ///
+  /// - [PlayerAdapterEvent.videoFrameProgress] is produced by
+  ///   [_observeDecodedFrames] from mpv's `estimated-vf-fps`. It is a rate
+  ///   statistic rather than a per-frame callback, but it is a real proof that
+  ///   video output is still advancing, which is exactly what the video-frame
+  ///   watchdog needs. The flag has to be declared: the base drops a signal
+  ///   emit whose capability is false, and [LiveWatchdogs] never arms that
+  ///   watchdog without it.
+  /// - [PlayerAdapterEvent.videoSizeChanged] is produced by
+  ///   [_onWidth] / [_onHeight] from the media_kit width and height streams.
   static const PlayerAdapterCapabilities defaultCapabilities = PlayerAdapterCapabilities(
+    // Core playback.
+    //
+    // Every command hook is implemented and forwarded to media_kit:
+    // play() / pause() / stop() / seek() / setVolume() / setRate().
+    // `supportsMuteControl` stays false: muting is done by routing through
+    // `setAudioTrack(no)` for the current source, not by a dedicated mute
+    // command the adapter accepts for the lifetime of the session.
     supportsLive: true,
     supportsSeek: true,
     supportsPause: true,
+    supportsStop: true,
     supportsRateControl: true,
     supportsVolumeControl: true,
+    supportsMuteControl: false,
+
+    // Video and rendering.
+    //
+    // Only the two signals the adapter currently emits are declared.
+    // Reconfig / hwdec info / filters / screenshot are backend capabilities
+    // that are not surfaced through the adapter yet, so they stay false until
+    // a corresponding subscription or command is added.
+    supportsVideoFrameProgress: true,
+    supportsVideoSizeChanged: true,
+    supportsVideoReconfig: false,
+    supportsHwdecInfo: false,
+    supportsVideoFilters: false,
+    supportsScreenshot: false,
+
+    // Audio.
+    //
+    // No audio reconfig subscription, device list, or dynamic filter surface
+    // is wired through the adapter.
+    supportsAudioReconfig: false,
+    supportsAudioDeviceSelection: false,
+    supportsAudioFilters: false,
+
+    // Tracks and subtitles.
+    //
+    // `setAudioOnly` and `setAudioOutputSuppressed` exist, but they are
+    // adapter-specific toggles, not the general "list and pick a track"
+    // surface the capability describes.
+    supportsTrackSelection: false,
+    supportsSubtitleTrack: false,
+    supportsExternalSubtitle: false,
+
+    // Playback state and buffering.
+    //
+    // `_onBuffer` updates metrics but does not emit a buffering progress
+    // ratio, so `supportsBufferingProgress` stays false until
+    // `emitBuffering(progress: …)` is actually wired.
+    supportsCacheState: false,
+    supportsBufferingProgress: false,
+    supportsChapterControl: false,
+    supportsLoop: false,
+
+    // Metadata and playlist.
+    supportsMetadata: false,
+    supportsPlaylist: false,
+    supportsPlaylistControl: false,
+
+    // Diagnostics and integration.
+    supportsClientMessage: false,
+    supportsLogMessages: false,
+
+    // Decoders.
+    //
+    // mpv decodes in hardware (mediacodec) or software (FFmpeg), and the
+    // adapter selects between them through the `hwdec` property.
     supportsHardwareDecoder: true,
     supportsSoftwareDecoder: true,
+
+    // Presentation.
+    //
+    // PiP is not provided by mpv; fullscreen is a widget-level decision the
+    // adapter does not veto.
     supportsPictureInPicture: false,
     supportsFullscreen: true,
+
+    // Source matching.
     supportedProtocols: {'http', 'https', 'hls', 'dash', 'rtmp', 'rtsp', 'udp', 'file', 'asset'},
     supportedFormats: {
       'mp4',
