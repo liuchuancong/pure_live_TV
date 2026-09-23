@@ -86,7 +86,15 @@ class LivePlayController extends _$LivePlayController {
 
     _armStallReport(restart: true);
 
-    state = state.copyWith(clearDetailError: true, clearErrorMessage: true);
+    // A fresh session (first room, or a new kernel) starts without a picture, so
+    // the loading overlay is armed again. Switching quality or line never comes
+    // through here, which is why the picture survives those.
+    state = state.copyWith(
+      clearDetailError: true,
+      clearErrorMessage: true,
+      hasStartedPlayback: false,
+      switchingStream: false,
+    );
 
     try {
       // Bring the service up on the stored kernel, not a hardcoded default.
@@ -214,7 +222,13 @@ class LivePlayController extends _$LivePlayController {
   void _onPlayerStateChanged(PlayerState playerState) {
     if (!ref.mounted) return;
 
-    state = state.copyWith(playerState: playerState);
+    // Once a room has played, the loading overlay stays down for the rest of the
+    // session: quality/line switches and ordinary live re-buffering reopen on the
+    // same player and must not blank the picture with a spinner. Only a new
+    // session (another room, another kernel) arms it again.
+    final bool started = state.hasStartedPlayback || playerState.playing || playerState.ready;
+
+    state = state.copyWith(playerState: playerState, hasStartedPlayback: started);
 
     if (playerState.playing || playerState.ready) {
       _cancelStallReport();
@@ -372,10 +386,16 @@ class LivePlayController extends _$LivePlayController {
       return;
     }
 
-    state = state.copyWith(playUrls: urls, lineIndex: 0);
+    // A quality change may return a different number of CDN lines, so the line
+    // the viewer is on is re-clamped rather than reset: the reference client
+    // keeps the same line across a quality switch instead of jumping back to the
+    // first one.
+    final int line = state.lineIndex.clamp(0, urls.length - 1);
+
+    state = state.copyWith(playUrls: urls, lineIndex: line);
 
     try {
-      await manager.play(urls.first, urls, const <String, String>{}, room: detail);
+      await manager.play(urls[line], urls, const <String, String>{}, room: detail);
     } on ArgumentError catch (e) {
       if (!_isCurrent(generation)) return;
 
@@ -400,9 +420,17 @@ class LivePlayController extends _$LivePlayController {
 
     _armStallReport(restart: true);
 
-    state = state.copyWith(qualityIndex: index);
+    // The picture keeps running while the new URLs are resolved: the switch is
+    // announced only inside the selector, never over the video.
+    state = state.copyWith(qualityIndex: index, switchingStream: true);
 
-    await _openStream(state.qualities[index], generation);
+    try {
+      await _openStream(state.qualities[index], generation);
+    } finally {
+      if (_isCurrent(generation)) {
+        state = state.copyWith(switchingStream: false);
+      }
+    }
   }
 
   Future<void> changeLine(int index) async {
@@ -418,7 +446,7 @@ class LivePlayController extends _$LivePlayController {
 
     _armStallReport(restart: true);
 
-    state = state.copyWith(lineIndex: index, clearErrorMessage: true);
+    state = state.copyWith(lineIndex: index, clearErrorMessage: true, switchingStream: true);
 
     try {
       await manager.play(urls[index], urls, const <String, String>{}, room: state.room);
@@ -426,6 +454,10 @@ class LivePlayController extends _$LivePlayController {
       if (!ref.mounted) return;
 
       state = state.copyWith(errorMessage: i18n('stream_switch_line_failed'));
+    } finally {
+      if (ref.mounted) {
+        state = state.copyWith(switchingStream: false);
+      }
     }
   }
 

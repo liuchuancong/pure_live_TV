@@ -103,7 +103,15 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // Show the spinner while the detail request or the player itself is
     // still working. Playback progress comes exclusively from media_core's
     // PlayerState; there is no local LivePlayStatus.
-    final bool showLoading = !loadingDetail && (state.playerState.opening || state.playerState.buffering);
+    //
+    // Only the *first* connection of a room paints it. Switching quality or CDN
+    // line reopens the source on the same native player, so the reference client
+    // never shows an overlay there — it is what makes its switch read as a
+    // silent background update. The TV used to key this off the raw
+    // opening/buffering state, so every switch and every live re-buffer flashed a
+    // spinner (and, with it, a visible gap) over the picture.
+    final bool showLoading =
+        !loadingDetail && !state.hasStartedPlayback && (state.playerState.opening || state.playerState.buffering);
 
     // A single error flag for the overlay: business failures (detail / stream
     // URL / play() throwing) surface through errorMessage or detailError;
@@ -315,7 +323,9 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     }
 
     // quality / line read-out on the right edge: quieter than putting them in the
-    // top bar, and it stays visible while watching.
+    // top bar, and it stays visible while watching. A switch in progress is
+    // reported here — a small ring next to the read-out — instead of over the
+    // picture.
     if (!showError && state.qualities.isNotEmpty) {
       children.add(
         Positioned(
@@ -325,6 +335,20 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                if (state.switchingStream) ...[
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      tvInlineLoading(context, size: 18.sp, color: Colors.white70),
+                      SizedBox(width: 8.sp),
+                      Text(
+                        i18n('ui_switching'),
+                        style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6.sp),
+                ],
                 Text(
                   state.qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)].quality,
                   style: AppTextStyles.t16W500.copyWith(color: Colors.white70),

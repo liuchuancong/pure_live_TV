@@ -6,6 +6,7 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/tv_focus_style.dart';
+import 'package:pure_live/shared/widgets/app_status_view.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
@@ -350,12 +351,14 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         icon: Icons.high_quality_rounded,
         label: _qualityLabel(state),
         active: _panel == _OptionsPanel.quality,
+        loading: state.switchingStream,
         onSelect: () => _openPanel(_OptionsPanel.quality, state),
       ),
       _PanelAction(
         icon: Icons.density_small_rounded,
         label: i18n('multiview_line', args: {'index': '${state.lineIndex + 1}'}),
         active: _panel == _OptionsPanel.line,
+        loading: state.switchingStream,
         onSelect: () => _openPanel(_OptionsPanel.line, state),
       ),
       _PanelAction(
@@ -467,7 +470,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (_panel != _OptionsPanel.none && options.isNotEmpty) _buildOptionsPanel(options, tvTheme),
+            if (_panel != _OptionsPanel.none && options.isNotEmpty)
+              _buildOptionsPanel(options, tvTheme, switching: state.switchingStream),
             _buildBar(actions, tvTheme),
           ],
         ),
@@ -475,7 +479,11 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     );
   }
 
-  Widget _buildOptionsPanel(List<({String label, VoidCallback apply, bool active})> options, TvThemeData tvTheme) {
+  Widget _buildOptionsPanel(
+    List<({String label, VoidCallback apply, bool active})> options,
+    TvThemeData tvTheme, {
+    required bool switching,
+  }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.sp),
       child: Center(
@@ -512,6 +520,9 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
                         selected: selected,
                         accent: tvTheme.focusColor,
                         trailing: option.active ? Icons.check_rounded : null,
+                        // The row being applied carries the ring; the list stays
+                        // open so the options can still be compared.
+                        loading: switching && option.active,
                       ),
                     );
                   },
@@ -550,6 +561,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
               selected: _zone == _Zone.bar && index == _barIndex,
               accent: tvTheme.focusColor,
               tinted: action.active,
+              loading: action.loading,
             ),
           );
         },
@@ -559,8 +571,14 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
 }
 
 class _PanelAction {
-  const _PanelAction({this.icon, this.asset, required this.label, required this.onSelect, this.active = false})
-    : assert(icon != null || asset != null, 'A bar button needs an icon or an asset');
+  const _PanelAction({
+    this.icon,
+    this.asset,
+    required this.label,
+    required this.onSelect,
+    this.active = false,
+    this.loading = false,
+  }) : assert(icon != null || asset != null, 'A bar button needs an icon or an asset');
 
   final IconData? icon;
 
@@ -571,6 +589,11 @@ class _PanelAction {
 
   /// A state this button currently represents (followed, danmaku on, open panel).
   final bool active;
+
+  /// A value this button offers is being applied right now (quality/line
+  /// switching). The button swaps its glyph for a small ring instead of anything
+  /// happening over the picture.
+  final bool loading;
 }
 
 /// The reference's bottom-bar button: a pill that turns into the accent colour
@@ -584,6 +607,7 @@ class _Pill extends StatelessWidget {
     required this.accent,
     this.tinted = false,
     this.trailing,
+    this.loading = false,
   });
 
   // Pill geometry lives here so the bar can be retuned in one place.
@@ -601,10 +625,16 @@ class _Pill extends StatelessWidget {
   final bool tinted;
   final IconData? trailing;
 
+  /// Replaces the glyph with a small ring: the value is being applied, the
+  /// picture and the rest of the bar are untouched.
+  final bool loading;
+
   @override
   Widget build(BuildContext context) {
     final Color background = selected ? accent : Colors.transparent;
     final Color foreground = Colors.white;
+    // The ring has to read on both the accent-filled and the translucent pill.
+    final Color loadingColor = selected ? Colors.white : accent;
 
     // Bigger than the t20 the bar started with — the label is what the viewer
     // actually reads from the couch, so it should not be the smallest thing on
@@ -640,7 +670,9 @@ class _Pill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (asset != null)
+            if (loading)
+              tvInlineLoading(context, size: _iconSize.sp, color: loadingColor)
+            else if (asset != null)
               SvgPicture.asset(
                 asset!,
                 width: _iconSize.sp,
@@ -649,7 +681,7 @@ class _Pill extends StatelessWidget {
               )
             else if (icon != null)
               Icon(icon, size: _iconSize.sp, color: foreground),
-            if (asset != null || icon != null) SizedBox(width: _gap.sp),
+            if (loading || asset != null || icon != null) SizedBox(width: _gap.sp),
             Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
             if (trailing != null) ...[
               SizedBox(width: _gap.sp),

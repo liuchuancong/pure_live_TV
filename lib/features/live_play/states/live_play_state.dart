@@ -22,6 +22,8 @@ class LivePlayState {
     this.showSidePanel = false,
     this.panel,
     this.channelBanner,
+    this.hasStartedPlayback = false,
+    this.switchingStream = false,
   });
 
   final LiveRoom? room;
@@ -50,6 +52,21 @@ class LivePlayState {
   final LivePlayPanel? panel;
   final String? channelBanner;
 
+  /// Whether this room has already painted a playing stream at least once.
+  ///
+  /// The full-screen spinner belongs to the *first* connection of a room. A
+  /// quality or CDN-line switch reopens the source on the same native player, so
+  /// it must not re-enter the "no picture yet" state: the reference client shows
+  /// no overlay there at all, which is why its switch reads as a silent
+  /// background update while the TV flashed its buffering spinner.
+  final bool hasStartedPlayback;
+
+  /// Whether a quality/line change is currently being resolved and opened.
+  ///
+  /// Only a small indicator inside the selector uses this; the picture and the
+  /// control bar stay exactly as they were.
+  final bool switchingStream;
+
   bool get showChannelBanner => channelBanner != null && channelBanner!.isNotEmpty;
 
   LivePlayState copyWith({
@@ -71,6 +88,8 @@ class LivePlayState {
     LivePlayPanel? panel,
     String? channelBanner,
     bool clearChannelBanner = false,
+    bool? hasStartedPlayback,
+    bool? switchingStream,
   }) {
     return LivePlayState(
       room: clearRoom ? null : (room ?? this.room),
@@ -87,6 +106,8 @@ class LivePlayState {
       showSidePanel: showSidePanel ?? this.showSidePanel,
       panel: panel ?? this.panel,
       channelBanner: clearChannelBanner ? null : (channelBanner ?? this.channelBanner),
+      hasStartedPlayback: hasStartedPlayback ?? this.hasStartedPlayback,
+      switchingStream: switchingStream ?? this.switchingStream,
     );
   }
 }
