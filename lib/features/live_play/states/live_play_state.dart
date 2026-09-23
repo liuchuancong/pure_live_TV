@@ -78,6 +78,18 @@ class LivePlayState {
 
   bool get showChannelBanner => channelBanner != null && channelBanner!.isNotEmpty;
 
+  /// Whether the failure overlay owns the picture.
+  ///
+  /// Both blocking overlays (this one and the "not living" placeholder) are
+  /// full-screen, carry their own focusable buttons, and therefore have to be
+  /// known to the page-level key handler: while one is up it must let ←/→/OK
+  /// through to those buttons instead of eating OK as "show the controls".
+  bool get showFailureOverlay =>
+      !isOffline && (errorMessage != null || detailError != null || playerState.hasError);
+
+  /// Whether a blocking overlay (failure or offline) is covering the picture.
+  bool get hasBlockingOverlay => isOffline || showFailureOverlay;
+
   LivePlayState copyWith({
     LiveRoom? room,
     bool clearRoom = false,

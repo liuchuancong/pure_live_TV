@@ -13,6 +13,7 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/shared/widgets/tv_button.dart';
 
 /// Following a room while the favourite grid is alive must show up in the
 /// grid.
@@ -93,6 +94,73 @@ void main() {
 
     // Unmount and let riverpod's deferred dispose task (a zero-delay timer)
     // run: the harness asserts no timer is pending when the test ends.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 50));
+  });
+
+  /// The tag strip's active chip carries the accent until the filter moves on.
+  ///
+  /// Regression: the strip only passed `isSecondary`, so the tag that filtered
+  /// the grid had no highlight of its own — the chip looked highlighted only
+  /// while the remote was on it, and choosing another tag read as "the highlight
+  /// disappeared".
+  testWidgets('the tag strip keeps the accent on the tag that is filtering', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1920, 1080);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    // Two tags, one room each, so the strip offers 全部 plus both of them.
+    final tags = SettingsService.to.tag;
+    tags.addTag('游戏', '');
+    tags.addTag('音乐', '');
+    final tagState = SettingsService.to.tagState;
+    final game = tagState.tags.firstWhere((tag) => tag.name == '游戏');
+    final music = tagState.tags.firstWhere((tag) => tag.name == '音乐');
+    tags.setRoomTags(_room('1', '房间一'), <String>[game.id]);
+    tags.setRoomTags(_room('2', '房间二'), <String>[music.id]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          favoriteRoomControllerProvider.overrideWith(
+            () => _FakeFavoriteController(
+              FavoriteSettingsModel(favoriteRooms: <LiveRoom>[_room('1', '房间一'), _room('2', '房间二')]),
+            ),
+          ),
+        ],
+        child: ScreenUtilPlusInit(
+          designSize: const Size(1920, 1080),
+          autoRebuild: false,
+          minTextAdapt: false,
+          splitScreenMode: false,
+          child: MaterialApp(
+            builder: Dpad.wrap(),
+            theme: ThemeData(extensions: <ThemeExtension<dynamic>>[TvThemeExtension(theme: darkTvTheme)]),
+            home: const FavoritePage(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    TvButton chip(String label) =>
+        tester.widget<TvButton>(find.ancestor(of: find.text(label), matching: find.byType(TvButton)));
+
+    expect(chip('recorder_tab_all').selected, isTrue, reason: 'the page opens on 全部');
+
+    await tester.tap(find.text('游戏'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(chip('游戏').selected, isTrue, reason: 'the filtering tag keeps the accent');
+    expect(chip('recorder_tab_all').selected, isFalse);
+
+    await tester.tap(find.text('音乐'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(chip('音乐').selected, isTrue, reason: 'the highlight moves to the new tag instead of vanishing');
+    expect(chip('游戏').selected, isFalse);
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 50));
   });

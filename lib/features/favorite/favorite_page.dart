@@ -145,6 +145,13 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                               title: isAllTag ? i18n('recorder_tab_all') : favoriteState.visibleTags[index - 1].name,
                               size: TvButtonSize.mini,
                               isSecondary: !isSelected,
+                              // `selected` is what keeps the accent on the tag
+                              // that filters the grid. Without it the active tag
+                              // was only ever highlighted while the remote was on
+                              // it, so moving to another tag looked like the
+                              // highlight had been lost (the reference paints its
+                              // selected chip with the primary colour).
+                              selected: isSelected,
                               onTap: () {
                                 if (isAllTag) {
                                   ref.read(favoriteProvider.notifier).changeSelectedTag('all');

@@ -74,6 +74,23 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
       }
       return KeyEventResult.ignored;
     }
+    // 覆盖层（播放失败 / 未开播）自带可聚焦按钮，并按 index 自己处理 ←/→/OK。
+    // 这里必须放行：否则页面会先把 OK 吃成"显示控制条"、把 ←/→ 吃成换台与关注，
+    // 覆盖层上的按钮就永远点不动（它们的 autofocus 会被页面已持有的焦点压掉，
+    // 只能靠落在自己节点上的按键生效）。↑/↓ 仍由这里处理——在离线房间里直接
+    // 跳下一个直播间是最快的出路。
+    if (state.hasBlockingOverlay) {
+      if (key == LogicalKeyboardKey.arrowUp) {
+        _switchChannel(-1);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.arrowDown) {
+        _switchChannel(1);
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
     // With the controls up, the control layer's own handler runs first; anything
     // it does not use has already bubbled to here.
     if (state.showControls) return KeyEventResult.ignored;

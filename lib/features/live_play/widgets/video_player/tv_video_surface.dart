@@ -124,8 +124,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // playerState.hasError (the controller also mirrors them into errorMessage
     // via ErrorFormatter).
     // 离线不是错误：房间信息拿到了，只是没在播，所以走占位页而不是失败层。
-    final bool showError =
-        !state.isOffline && (state.errorMessage != null || state.detailError != null || state.playerState.hasError);
+    // 判据来自 state（页面级按键处理用的是同一个 getter）。
+    final bool showError = state.showFailureOverlay;
 
     // The video widget stays mounted for the whole session, and the surface is
     // simply black until the player service is up.
