@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:pure_live/shared/models/live_area/live_area.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
+import 'goodgame_danmaku.dart';
 import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'package:pure_live/shared/contracts/live_directory.dart';
 import 'package:pure_live/shared/contracts/live_search.dart';
@@ -36,7 +36,7 @@ final class GoodGameSite extends LiveSite
   String get directoryNoticeKey => 'goodgame_directory_scope';
 
   @override
-  LiveDanmaku getDanmaku() => EmptyDanmaku();
+  LiveDanmaku getDanmaku() => GoodGameDanmaku();
 
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async => page == 1 && pageSize > 0
@@ -81,7 +81,7 @@ final class GoodGameSite extends LiveSite
     onlineViewers: room.viewers?.toString() ?? '',
     followers: room.followers?.toString() ?? '',
     audienceMetricType: room.viewers == null ? AudienceMetricType.unknown : AudienceMetricType.onlineViewers,
-    notice: room.adult ? i18n('goodgame_adult_notice') : i18n('goodgame_chat_notice'),
+    notice: room.adult ? i18n('goodgame_adult_notice') : i18n('goodgame_audience_notice'),
     httpHeaders: GoodGameApi.mediaHeaders(room.channel),
     data: includeMedia ? room : null,
   );
@@ -115,6 +115,11 @@ final class GoodGameSite extends LiveSite
   Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) =>
       searchRoomsCancellable(keyword, page: page, pageSize: pageSize);
 
+  /// Exact channel/player lookups resolve a single room, so paging past the
+  /// first page must not fall through to a keyword scan of unrelated rooms.
+  static bool _isExactOnly(String input) =>
+      GoodGameLink.parse(input) != null || GoodGameLink.parseReference(input)?.kind == GoodGameLinkKind.player;
+
   @override
   Future<List<LiveRoom>> searchRoomsCancellable(
     String keyword, {
@@ -124,14 +129,18 @@ final class GoodGameSite extends LiveSite
   }) async {
     final raw = keyword.trim();
     if (raw.isEmpty || page < 1 || pageSize < 1) return [];
+    final exactOnly = _isExactOnly(raw);
+    if (exactOnly && page != 1) return [];
     final reference = GoodGameLink.parseReference(raw);
     if (page == 1 && reference != null && (!raw.contains(' ') || raw.contains('://'))) {
       try {
         return [_room(await _api.room(reference.storageKey, cancel: cancel), includeMedia: false)];
       } on GoodGameException catch (error) {
         if (error.kind != GoodGameFailure.missing && error.kind != GoodGameFailure.schema) rethrow;
+        if (exactOnly) return [];
       }
     }
+    if (exactOnly) return [];
     final query = raw.toLowerCase();
     final result = await _api.directory(page: page, cancel: cancel);
     return result.items

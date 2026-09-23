@@ -46,6 +46,8 @@ Map<String, String> _labels = {
   'site_dailymotion': 'Dailymotion',
   'site_rumble': 'Rumble',
   'site_goodgame': 'GoodGame',
+  'goodgame_audience_notice': 'GoodGame viewers 按当前观看人数展示，rating 与 premium 计数不作在线人数。',
+  'goodgame_adult_notice': '该直播由平台标记为成人内容；当前观看人数仍按 viewers 字段展示。',
   'site_fc2live': 'FC2 Live',
   'site_steambroadcast': 'Steam Broadcasts',
   'site_taobaolive': '淘宝直播',
