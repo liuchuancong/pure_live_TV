@@ -11,7 +11,7 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
   String id = Sites.yySite;
 
   @override
-  String name = 'YY Live';
+  String name = i18n('site_yy');
 
   @override
   LiveDanmaku getDanmaku() => YyDanmaku();
@@ -130,11 +130,11 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
     );
     final result = decode(resultText);
     final categoryTabs = result['categoryTabs'] ?? [];
-    // `LiveCategory` is a freezed model, so `children` is an *unmodifiable* view of the
-    // list it was built with: sub-categories have to be in hand when the category is
-    // created. Filling `children` afterwards threw
-    // `Unsupported operation: Cannot add to an unmodifiable list`, which is what the
-    // categories page showed "load failed" on this platform.
+    // `LiveCategory` is a freezed model, so its `children` getter exposes the list it
+    // was built with as an *unmodifiable* view. Mutating it after construction threw
+    // `Unsupported operation: Cannot add to an unmodifiable list`, which surfaced as
+    // "load failed" on the categories page. Collect the sub-categories first and hand
+    // them to the category through `copyWith`, mirroring the reference site.
     return Future.wait(<Future<LiveCategory>>[
       for (final item in categoryTabs)
         Future<LiveCategory>(() async {
@@ -623,11 +623,9 @@ class YYSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResol
       return await _fetchRoomDetail(platform: platform, roomId: roomId);
     } catch (e) {
       CoreLog.error(e);
-      {
-final currentRoom = Sites.currentRoom(platform, roomId);
-        if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
-          return currentRoom!.getLiveRoomWithError();
-        }
+      final currentRoom = Sites.currentRoom(platform, roomId);
+      if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
+        return currentRoom!.getLiveRoomWithError();
       }
       return LiveRoom(roomId: roomId, platform: platform).getLiveRoomWithError();
     }

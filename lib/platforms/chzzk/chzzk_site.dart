@@ -233,14 +233,16 @@ class ChzzkSite extends LiveSite
     final live = room.live;
     if (live == null || !live.isLive) return _channelCard(room.channel);
     final qualities = playback && live.media.isNotEmpty ? await _qualities(live) : <LivePlayQuality>[];
+    final card = _liveCard(live);
+    // Mirror the reference cascade: keep the _liveCard notice when no branch matches.
     final notice = live.regionRestricted
         ? i18n('chzzk_region_notice')
         : live.adult && live.media.isEmpty
         ? i18n('chzzk_adult_notice')
         : live.timeMachineActive
         ? i18n('chzzk_time_machine_notice')
-        : '';
-    return _liveCard(live).copyWith(
+        : card.notice;
+    return card.copyWith(
       followers: room.channel.followers?.toString() ?? '',
       introduction: room.channel.description,
       notice: notice,
