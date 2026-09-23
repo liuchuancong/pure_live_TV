@@ -120,6 +120,36 @@ final class GoodGameSite extends LiveSite
   static bool _isExactOnly(String input) =>
       GoodGameLink.parse(input) != null || GoodGameLink.parseReference(input)?.kind == GoodGameLinkKind.player;
 
+  /// Keyword search must scan more than the page the UI happens to be on:
+  /// matches live in a bounded, server-paged directory, so the whole bounded
+  /// window is cached briefly and then paged locally.
+  static const int maxSearchDirectoryPages = 10;
+  static const Duration searchDirectoryCacheAge = Duration(seconds: 30);
+  List<GoodGameRoom>? _searchDirectorySnapshot;
+  DateTime? _searchDirectoryFetchedAt;
+
+  Future<List<GoodGameRoom>> _searchDirectory(CancelToken? cancel) async {
+    final snapshot = _searchDirectorySnapshot;
+    final fetchedAt = _searchDirectoryFetchedAt;
+    if (snapshot != null && fetchedAt != null && DateTime.now().difference(fetchedAt) < searchDirectoryCacheAge) {
+      if (cancel?.isCancelled == true) throw cancel!.cancelError!;
+      return snapshot;
+    }
+    final rooms = <GoodGameRoom>[];
+    final seen = <String>{};
+    for (var directoryPage = 1; directoryPage <= maxSearchDirectoryPages; directoryPage++) {
+      final result = await _api.directory(page: directoryPage, cancel: cancel);
+      for (final room in result.items) {
+        if (seen.add(room.channel)) rooms.add(room);
+      }
+      if (!result.hasMore) break;
+    }
+    if (cancel?.isCancelled == true) throw cancel!.cancelError!;
+    _searchDirectorySnapshot = List.unmodifiable(rooms);
+    _searchDirectoryFetchedAt = DateTime.now();
+    return _searchDirectorySnapshot!;
+  }
+
   @override
   Future<List<LiveRoom>> searchRoomsCancellable(
     String keyword, {
@@ -142,8 +172,8 @@ final class GoodGameSite extends LiveSite
     }
     if (exactOnly) return [];
     final query = raw.toLowerCase();
-    final result = await _api.directory(page: page, cancel: cancel);
-    return result.items
+    final rooms = await _searchDirectory(cancel);
+    return rooms
         .where(
           (room) =>
               room.channel.contains(query) ||
@@ -151,7 +181,8 @@ final class GoodGameSite extends LiveSite
               room.title.toLowerCase().contains(query) ||
               room.category.toLowerCase().contains(query),
         )
-        .take(pageSize.clamp(1, 50))
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
         .map((room) => _room(room, includeMedia: false))
         .toList(growable: false);
   }
