@@ -190,10 +190,10 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                 ],
               ),
             ),
-          // Room info as one floating panel over the picture: avatar, title and
-          // a metadata line (streamer, platform, audience) on the left, the wall
-          // clock on the right. A gradient alone left the text floating on the
-          // video, which read as stray labels rather than as a bar.
+          // Room info and the wall clock in **one** floating card: avatar, title
+          // and a metadata line (platform, streamer, audience) on the left, the
+          // clock behind a divider on the right. Two cards side by side read as
+          // two unrelated read-outs instead of one room banner.
           if (!showError && state.room != null && state.showControls)
             Positioned(
               left: 0,
@@ -209,94 +209,76 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                       colors: [Colors.black.withValues(alpha: 0.72), Colors.black.withValues(alpha: 0.0)],
                     ),
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.42),
-                            borderRadius: BorderRadius.circular(18.sp),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
-                          ),
-                          child: Row(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.42),
+                      borderRadius: BorderRadius.circular(18.sp),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+                    ),
+                    child: Row(
+                      children: [
+                        TvCommonAvatar(
+                          avatarUrl: state.room!.avatar,
+                          fallbackName: state.room!.nick,
+                          radius: 30.sp,
+                        ),
+                        SizedBox(width: 14.sp),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TvCommonAvatar(
-                                avatarUrl: state.room!.avatar,
-                                fallbackName: state.room!.nick,
-                                radius: 30.sp,
+                              Text(
+                                state.room!.title.trim().isNotEmpty
+                                    ? state.room!.title.trim()
+                                    : i18n('untitled_room'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.t28W600.copyWith(color: Colors.white),
                               ),
-                              SizedBox(width: 14.sp),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      state.room!.title.trim().isNotEmpty
-                                          ? state.room!.title.trim()
-                                          : i18n('untitled_room'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.t28W600.copyWith(color: Colors.white),
+                              SizedBox(height: 8.sp),
+                              Row(
+                                children: [
+                                  if (state.room!.platform.isNotEmpty) ...[
+                                    _InfoPill(
+                                      label: state.room!.platform.toUpperCase(),
+                                      accent: tvTheme.focusColor,
+                                      filled: true,
                                     ),
-                                    SizedBox(height: 8.sp),
-                                    Row(
-                                      children: [
-                                        if (state.room!.platform.isNotEmpty) ...[
-                                          _InfoPill(
-                                            label: state.room!.platform.toUpperCase(),
-                                            accent: tvTheme.focusColor,
-                                            filled: true,
-                                          ),
-                                          SizedBox(width: 10.sp),
-                                        ],
-                                        if (state.room!.nick.isNotEmpty)
-                                          Flexible(
-                                            child: Text(
-                                              state.room!.nick,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
-                                            ),
-                                          ),
-                                        if (state.room!.nick.isNotEmpty && _audienceText(state.room!).isNotEmpty)
-                                          SizedBox(width: 10.sp),
-                                        if (_audienceText(state.room!).isNotEmpty)
-                                          _InfoPill(label: _audienceText(state.room!), icon: Icons.whatshot_rounded),
-                                      ],
-                                    ),
+                                    SizedBox(width: 10.sp),
                                   ],
-                                ),
+                                  if (state.room!.nick.isNotEmpty)
+                                    Flexible(
+                                      child: Text(
+                                        state.room!.nick,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                                      ),
+                                    ),
+                                  if (state.room!.nick.isNotEmpty && _audienceText(state.room!).isNotEmpty)
+                                    SizedBox(width: 10.sp),
+                                  if (_audienceText(state.room!).isNotEmpty)
+                                    _InfoPill(label: _audienceText(state.room!), icon: Icons.whatshot_rounded),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                      ),
-                      SizedBox(width: 14.sp),
-                      // Wall clock: a live stream has no duration, so the time a
-                      // viewer glances up for is the time of day.
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.42),
-                          borderRadius: BorderRadius.circular(18.sp),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+                        SizedBox(width: 18.sp),
+                        Container(width: 1.sp, height: 44.sp, color: Colors.white.withValues(alpha: 0.14)),
+                        SizedBox(width: 18.sp),
+                        // Wall clock: a live stream has no duration, so the time a
+                        // viewer glances up for is the time of day.
+                        Icon(RemixIcons.time_line, size: 24.sp, color: Colors.white70),
+                        SizedBox(width: 8.sp),
+                        TvDigitalClock(
+                          format: 'HH:mm',
+                          style: AppTextStyles.t28W600.copyWith(color: Colors.white),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(RemixIcons.time_line, size: 24.sp, color: Colors.white70),
-                            SizedBox(width: 8.sp),
-                            TvDigitalClock(
-                              format: 'HH:mm',
-                              style: AppTextStyles.t28W600.copyWith(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -345,48 +327,11 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
       children.add(Positioned(left: 0, right: 0, bottom: 0, child: VideoControllerPanel(args: widget.args)));
     }
 
-    // quality / line read-out on the right edge: quieter than putting them in the
-    // top bar, and it stays visible while watching. A switch in progress is
-    // reported here — a small ring next to the read-out — instead of over the
-    // picture.
-    if (!showError && state.qualities.isNotEmpty) {
-      children.add(
-        Positioned(
-          right: 16.sp,
-          top: 96.sp,
-          child: IgnorePointer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (state.switchingStream) ...[
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      tvInlineLoading(context, size: 18.sp, color: Colors.white70),
-                      SizedBox(width: 8.sp),
-                      Text(
-                        i18n('ui_switching'),
-                        style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6.sp),
-                ],
-                Text(
-                  state.qualities[state.qualityIndex.clamp(0, state.qualities.length - 1)].quality,
-                  style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
-                ),
-                SizedBox(height: 4.sp),
-                Text(
-                  i18n('multiview_line', args: {'index': '${state.lineIndex + 1}'}),
-                  style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+    // The quality / line read-out that used to sit on the right edge is gone:
+    // both live on the control bar, which is where the user picks them, and a
+    // permanent copy over the picture is one more thing competing with the
+    // stream. A switch in progress is still reported — by the bar's own pill,
+    // whose glyph turns into a ring while it applies.
 
     return Stack(fit: StackFit.expand, children: children);
   }

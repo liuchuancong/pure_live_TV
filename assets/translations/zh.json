@@ -2285,6 +2285,7 @@
   "ui_use_the_best_decoder": "启用最佳解码器",
   "ui_use_the_best_decoder_with_copy_back_support": "启用带拷贝功能的最佳解码器",
   "ui_vertical_card_spacing": "纵向卡片间距",
+  "ui_video_mode": "视频模式",
   "ui_video_output_driver": "视频输出驱动",
   "ui_volume_down": "音量-",
   "ui_volume_up": "音量+",

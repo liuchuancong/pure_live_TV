@@ -81,9 +81,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     final rooms = SettingsService.to.favState.favoriteRooms;
     return [
       for (final room in rooms)
-        if (room.isLiveNow &&
-            room.effectiveLiveStatus != LiveStatus.replay &&
-            !room.hasSameIdentity(widget.current))
+        if (room.isLiveNow && room.effectiveLiveStatus != LiveStatus.replay && !room.hasSameIdentity(widget.current))
           room,
     ];
   }
@@ -124,6 +122,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
   KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
+
     final LogicalKeyboardKey key = event.logicalKey;
 
     if (key == LogicalKeyboardKey.escape) {
@@ -132,6 +131,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     }
 
     final int count = _tabs[_tabIndex].length;
+
     // A tab with nothing in it has no rows to steer: the keyboard belongs to the
     // strip whatever zone it was in a moment ago.
     final bool inRows = _zone == _Zone.rows && count > 0;
@@ -157,6 +157,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       }
       return KeyEventResult.handled;
     }
+
     if (key == LogicalKeyboardKey.arrowDown) {
       if (inRows) {
         _selectRow((_rowIndex + 1) % count);
@@ -165,6 +166,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       }
       return KeyEventResult.handled;
     }
+
     if (key == LogicalKeyboardKey.arrowLeft) {
       if (inRows) {
         setState(() => _zone = _Zone.tabs);
@@ -173,10 +175,14 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       }
       return KeyEventResult.handled;
     }
+
     if (key == LogicalKeyboardKey.arrowRight) {
-      if (!inRows) _selectTab((_tabIndex + 1) % _tabCount);
+      if (!inRows) {
+        _selectTab((_tabIndex + 1) % _tabCount);
+      }
       return KeyEventResult.handled;
     }
+
     return KeyEventResult.ignored;
   }
 
@@ -194,11 +200,17 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     setState(() {
       _tabIndex = index;
       _rowIndex = 0;
+
       // A tab with nothing in it has no row to walk: the keyboard stays on the
       // strip instead of pointing at an empty list.
-      if (_tabs[index].isEmpty) _zone = _Zone.tabs;
+      if (_tabs[index].isEmpty) {
+        _zone = _Zone.tabs;
+      }
     });
-    if (_scrollController.hasClients) _scrollController.jumpTo(0);
+
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
   }
 
   void _selectRow(int index) {
@@ -209,8 +221,10 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   /// Keeps the highlighted row on screen while the user walks the list.
   void _revealRow(int index) {
     if (!_scrollController.hasClients) return;
+
     final double rowExtent = (_rowExtentBase * PlayerPanelLayout.fontSize).sp;
-    final double target = (index * rowExtent) - 160;
+    final double target = (index * rowExtent) - 120.sp;
+
     _scrollController.animateTo(
       target.clamp(0, _scrollController.position.maxScrollExtent),
       duration: const Duration(milliseconds: 180),
@@ -233,29 +247,38 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     final List<LiveRoom> rooms = tabs[_tabIndex];
     final int rowIndex = rooms.isEmpty ? 0 : _rowIndex.clamp(0, rooms.length - 1);
 
+    final Size screenSize = MediaQuery.sizeOf(context);
+
+    final double dialogHeight = (screenSize.height * 0.70).clamp(520.sp, 760.sp).toDouble();
+
     return TvDialog(
       title: i18n('switch_live_room'),
-      // Wide enough that the room rows read as full-width list entries instead
-      // of a squeezed column.
       width: 1280.sp,
-      // The dialog's only focusable node is the key handler below, so it opens
-      // with the remote already on the tab strip.
       initialFocusNode: _focusNode,
       child: Focus(
         focusNode: _focusNode,
         autofocus: true,
         onKeyEvent: _onKeyEvent,
         child: SizedBox(
-          height: 900.sp,
+          height: dialogHeight,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              SizedBox(height: 4.sp),
               _buildTabs(tabs),
-              SizedBox(height: 16.sp),
+              SizedBox(height: 14.sp),
               Expanded(
-                child: MediaQuery(
-                  data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(_listTextScale)),
-                  child: _buildRooms(rooms, rowIndex),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18.sp),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1.sp),
+                    color: Colors.black.withValues(alpha: 0.10),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: MediaQuery(
+                    data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(_listTextScale)),
+                    child: _buildRooms(rooms, rowIndex),
+                  ),
                 ),
               ),
             ],
@@ -285,19 +308,20 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         for (int i = 0; i < _tabCount; i++) ...<Widget>[
-          if (i > 0) SizedBox(width: 12.sp),
-          // Compact pill: fixed horizontal padding, sized to the label, no
-          // Flexible/Expanded so the strip stays centered and narrow.
+          if (i > 0) SizedBox(width: 10.sp),
           GestureDetector(
             onTap: () => _selectTab(i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeOut,
-              padding: EdgeInsets.symmetric(horizontal: 22.sp, vertical: 8.sp),
+              padding: EdgeInsets.symmetric(horizontal: 22.sp, vertical: 9.sp),
               decoration: BoxDecoration(
-                color: i == _tabIndex ? accent.withValues(alpha: 0.18) : Colors.transparent,
+                color: i == _tabIndex ? accent.withValues(alpha: 0.16) : Colors.white.withValues(alpha: 0.035),
                 borderRadius: BorderRadius.circular(20.sp),
-                border: Border.all(color: i == _tabIndex ? accent : Colors.white24, width: 1.5.sp),
+                border: Border.all(
+                  color: i == _tabIndex ? accent.withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.14),
+                  width: i == _tabIndex ? 1.5.sp : 1.sp,
+                ),
               ),
               child: Text(
                 titles[i],
@@ -305,7 +329,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 18.sp,
-                  height: 1.2,
+                  height: 1.15,
                   fontWeight: i == _tabIndex ? FontWeight.w600 : FontWeight.w400,
                   color: i == _tabIndex ? accent : Colors.white70,
                 ),
@@ -321,7 +345,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     if (rooms.isEmpty) {
       return Center(
         child: SizedBox(
-          height: 360.sp,
+          height: 280.sp,
           child: AppStatusView(
             type: AppStatusType.empty,
             title: '',
@@ -338,10 +362,13 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.symmetric(horizontal: 4.sp, vertical: 8.sp),
+      physics: const ClampingScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(8.sp, 8.sp, 8.sp, 12.sp),
       itemCount: rooms.length,
-      itemBuilder: (context, index) =>
-          PlayerRoomRow(room: rooms[index], selected: _zone == _Zone.rows && index == rowIndex),
+      itemBuilder: (context, index) => Padding(
+        padding: EdgeInsets.only(bottom: 6.sp),
+        child: PlayerRoomRow(room: rooms[index], selected: _zone == _Zone.rows && index == rowIndex),
+      ),
     );
   }
 }

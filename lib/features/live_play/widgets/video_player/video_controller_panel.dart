@@ -445,9 +445,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     // was opened with (the entry page's list plus history), so a room taken from
     // the followed tab does not silently turn the playlist into the followed list.
     final rooms = ref.read(livePlayControllerProvider(widget.args).notifier).channelRooms;
-    LivePlayRoute(
-      LivePlayArgs.fromRoom(picked, playlist: rooms, showChannelBanner: true),
-    ).replace(context);
+    LivePlayRoute(LivePlayArgs.fromRoom(picked, playlist: rooms, showChannelBanner: true)).replace(context);
   }
 
   // =========================

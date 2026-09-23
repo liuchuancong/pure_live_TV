@@ -2,8 +2,8 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/utils/cache_manager.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
 
 /// The picture area while a session plays audio only.
@@ -27,14 +27,13 @@ class AudioOnlySurface extends StatefulWidget {
 }
 
 class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerProviderStateMixin {
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2200),
-  )..repeat(reverse: true);
+  late final AnimationController _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2200))
+    ..repeat(reverse: true);
 
-  late final Animation<double> _scale = Tween<double>(begin: 0.97, end: 1.03).animate(
-    CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
-  );
+  late final Animation<double> _scale = Tween<double>(
+    begin: 0.97,
+    end: 1.03,
+  ).animate(CurvedAnimation(parent: _pulse, curve: Curves.easeInOut));
 
   @override
   void dispose() {
@@ -49,9 +48,7 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
     final String? avatar = room?.avatar;
     final bool hasAvatar = avatar != null && avatar.isNotEmpty;
 
-    final String title = (room?.title ?? '').trim().isNotEmpty
-        ? room!.title.trim()
-        : i18n('untitled_room');
+    final String title = (room?.title ?? '').trim().isNotEmpty ? room!.title.trim() : i18n('untitled_room');
 
     // Compact under 500 logical pixels of height, which is where the panel
     // otherwise crowds the room-info bar and the control bar.
@@ -105,11 +102,7 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
                       shape: BoxShape.circle,
                       border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.55), width: 2.sp),
                     ),
-                    child: TvCommonAvatar(
-                      avatarUrl: avatar,
-                      fallbackName: room?.nick,
-                      radius: compact ? 56.sp : 76.sp,
-                    ),
+                    child: TvCommonAvatar(avatarUrl: avatar, fallbackName: room?.nick, radius: compact ? 56.sp : 76.sp),
                   ),
                 ),
                 SizedBox(height: compact ? 20.sp : 32.sp),
@@ -164,17 +157,9 @@ class _AudioOnlyBadge extends StatelessWidget {
           SizedBox(width: 10.sp),
           Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                i18n('ui_audio_only'),
-                style: AppTextStyles.t18W500.copyWith(color: tvTheme.primaryTextColor),
-              ),
-              if (!compact)
-                Text(
-                  i18n('ui_audio_only_no_video_rendering'),
-                  style: AppTextStyles.t14W300.copyWith(color: tvTheme.secondaryTextColor),
-                ),
+              Text(i18n('ui_audio_only'), style: AppTextStyles.t18W500.copyWith(color: tvTheme.primaryTextColor)),
             ],
           ),
         ],
