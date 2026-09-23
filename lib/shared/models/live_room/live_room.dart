@@ -221,6 +221,33 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
+    // VK Video Live exposes `count.viewers` as concurrent viewers and
+    // `count.views` as a separate cumulative stream metric.
+    'vkvideolive': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // The homepage card and mobile room bootstrap both expose current viewers.
+    'nimotv': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // The public API identifies live/offline state but exposes no verified
+    // concurrent audience value. Historical views are not reused here.
+    'dailymotion': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    // Live directory cards expose a dedicated current-viewer badge. The
+    // VideoObject interaction count is cumulative and stays in totalViewers.
+    'rumble': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
     // The watch page exposes a dedicated concurrent-view renderer while a
     // broadcast is live. Historical viewCount is deliberately not reused.
     'youtube': AudiencePlatformCapability(

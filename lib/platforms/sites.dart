@@ -62,6 +62,10 @@ class Sites {
   static const String pandaLiveSite = 'pandalive';
   static const String popkonSite = 'popkontv';
   static const String shopeeLiveSite = 'shopeelive';
+  static const String vkVideoLiveSite = 'vkvideolive';
+  static const String nimoTvSite = 'nimotv';
+  static const String dailymotionSite = 'dailymotion';
+  static const String rumbleSite = 'rumble';
   static const String sixRoomSite = 'sixroom';
 
   static const Set<String> supportedSiteIds = {
@@ -96,6 +100,10 @@ class Sites {
     pandaLiveSite,
     popkonSite,
     shopeeLiveSite,
+    vkVideoLiveSite,
+    nimoTvSite,
+    dailymotionSite,
+    rumbleSite,
     sixRoomSite,
     iptvSite,
   };
@@ -253,6 +261,20 @@ class Sites {
         logo: logoOf(shopeeLiveSite),
         liveSite: ShopeeLiveSite(),
       ),
+      vkVideoLiveSite => Site(
+        id: vkVideoLiveSite,
+        name: i18n('site_vkvideolive'),
+        logo: logoOf(vkVideoLiveSite),
+        liveSite: VkVideoLiveSite(),
+      ),
+      nimoTvSite => Site(id: nimoTvSite, name: i18n('site_nimotv'), logo: logoOf(nimoTvSite), liveSite: NimoTvSite()),
+      dailymotionSite => Site(
+        id: dailymotionSite,
+        name: i18n('site_dailymotion'),
+        logo: logoOf(dailymotionSite),
+        liveSite: DailymotionSite(),
+      ),
+      rumbleSite => Site(id: rumbleSite, name: i18n('site_rumble'), logo: logoOf(rumbleSite), liveSite: RumbleSite()),
       sixRoomSite => Site(
         id: sixRoomSite,
         name: i18n('site_sixroom'),
@@ -300,6 +322,10 @@ class Sites {
       pandaLiveSite,
       popkonSite,
       shopeeLiveSite,
+      vkVideoLiveSite,
+      nimoTvSite,
+      dailymotionSite,
+      rumbleSite,
       sixRoomSite,
       niconicoSite,
       weiboSite,
