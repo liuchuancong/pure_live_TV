@@ -37,9 +37,8 @@ class FavOperateUtil {
 
   /// Lets the user pick the tags of [room]; the selection is saved on confirm.
   static Future<void> showRoomTagDialog(BuildContext context, LiveRoom room) async {
-    final controller = TagManagementController.to;
     final tags = SettingsService.to.tagState.tags;
-    final selected = controller.getTagsForRoom(room).toSet();
+    final selected = SettingsService.to.tag.getTagsForRoom(room).toSet();
 
     final result = await TvDialogUtils.showMultiSelect<String>(
       context: context,
@@ -50,7 +49,11 @@ class FavOperateUtil {
     );
 
     if (result == null) return;
-    controller.setRoomTags(room, result.toList(growable: false));
+    // Read the controller at the call site instead of holding one across the
+    // dialog: the tag store is an auto-disposed provider, so a notifier picked up
+    // before the await is already disposed when the user confirms — using it
+    // throws "Cannot use the Ref ... after it has been disposed".
+    SettingsService.to.tag.setRoomTags(room, result.toList(growable: false));
   }
 
   static void toggleRoomFollowDialog(BuildContext context, LiveRoom room) {

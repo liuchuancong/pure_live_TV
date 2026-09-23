@@ -3,7 +3,6 @@ import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/player/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/tv_focus_style.dart';
@@ -438,14 +437,8 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   Future<void> _switchRoom(LiveRoom? room) async {
     if (room == null) return;
     _focusNode.unfocus();
-    final picked = await showRoomSwitchDialog(context, current: room);
+    await pickAndSwitchRoom(context, ref: ref, args: widget.args, current: room);
     if (mounted) _focusNode.requestFocus();
-    if (picked == null || !mounted) return;
-    // Switching rooms is not switching context: the session keeps the playlist it
-    // was opened with (the entry page's list plus history), so a room taken from
-    // the followed tab does not silently turn the playlist into the followed list.
-    final rooms = ref.read(livePlayControllerProvider(widget.args).notifier).channelRooms;
-    LivePlayRoute(LivePlayArgs.fromRoom(picked, playlist: rooms, showChannelBanner: true)).replace(context);
   }
 
   // =========================

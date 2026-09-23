@@ -90,7 +90,9 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
       TvTabItemData(title: i18n('offline_room_title')),
     ];
 
-    final availableSitesList = Sites().availableSites(containsAll: true);
+    // 全部 plus the platforms that actually have a followed room, like the
+    // mobile reference: a platform nobody follows is not a tab.
+    final availableSitesList = ref.read(favoriteProvider.notifier).siteTabs;
     final List<TvTabItemData> siteTabs = availableSitesList.map(TvTabItemData.site).toList();
 
     return TvScaffold(

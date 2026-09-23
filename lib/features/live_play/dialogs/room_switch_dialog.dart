@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/features/live_play/models/live_play_args.dart';
+import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart';
 
@@ -388,10 +392,28 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   }
 }
 
-/// Opens the room switch dialog and returns the chosen room, if any.
+/// 打开切换直播间弹窗，返回用户选中的房间；取消返回 null。
 Future<LiveRoom?> showRoomSwitchDialog(BuildContext context, {required LiveRoom current}) {
   return TvDialogUtils.show<LiveRoom>(
     context: context,
     builder: (dialogContext) => RoomSwitchDialog(current: current),
   );
+}
+
+/// 选房间并跳过去（切换弹窗 + 路由替换的唯一实现）。
+///
+/// 播放页底部按钮条与"不在线"占位页都从这里走：切换直播间不是切换上下文，
+/// 新房间沿用本次会话打开时的那份播放列表（入口页列表 + 观看历史），
+/// 所以从关注页里挑的房间不会把播放列表悄悄换成关注列表。
+Future<void> pickAndSwitchRoom(
+  BuildContext context, {
+  required WidgetRef ref,
+  required LivePlayArgs args,
+  required LiveRoom current,
+}) async {
+  final picked = await showRoomSwitchDialog(context, current: current);
+  if (picked == null || !context.mounted) return;
+
+  final rooms = ref.read(livePlayControllerProvider(args).notifier).channelRooms;
+  LivePlayRoute(LivePlayArgs.fromRoom(picked, playlist: rooms, showChannelBanner: true)).replace(context);
 }

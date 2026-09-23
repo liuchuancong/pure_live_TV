@@ -103,6 +103,7 @@ class LivePlayController extends _$LivePlayController {
       clearErrorMessage: true,
       hasStartedPlayback: false,
       switchingStream: false,
+      isOffline: false,
     );
 
     try {
@@ -159,6 +160,18 @@ class LivePlayController extends _$LivePlayController {
     if (args.showChannelBanner) {
       showChannelBanner(detail.nick.isNotEmpty ? detail.nick : detail.title);
     }
+
+    // 未开播：到此为止。不连弹幕（对着离线房间开 socket 只会白重连）、不常亮
+    // （占位页是静止画面，不该阻止息屏）、不取流，直接进"不在线"占位页。
+    // 判定放在这一层而不是 loadQualitiesAndPlay 里，因为只有这里拿得到平台的
+    // 房间状态（LiveRoom.isPlayableNow 同时覆盖直播与回放两种可播状态）。
+    if (!detail.isPlayableNow) {
+      _cancelStallReport();
+      state = state.copyWith(isOffline: true, clearErrorMessage: true);
+      return;
+    }
+
+    state = state.copyWith(isOffline: false);
 
     // A TV room is always fullscreen, so the controls are never pinned: they
     // appear for a few seconds on entry (quality and line switching are then one

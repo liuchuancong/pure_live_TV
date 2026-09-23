@@ -10,6 +10,7 @@ import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dar
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
+import 'package:pure_live/features/live_play/widgets/placeholder/not_living_video_widget.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/audio_only_surface.dart';
 
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
@@ -112,14 +113,19 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // opening/buffering state, so every switch and every live re-buffer flashed a
     // spinner (and, with it, a visible gap) over the picture.
     final bool showLoading =
-        !loadingDetail && !state.hasStartedPlayback && (state.playerState.opening || state.playerState.buffering);
+        !loadingDetail &&
+        !state.isOffline &&
+        !state.hasStartedPlayback &&
+        (state.playerState.opening || state.playerState.buffering);
 
     // A single error flag for the overlay: business failures (detail / stream
     // URL / play() throwing) surface through errorMessage or detailError;
     // terminal playback failures from media_core surface through
     // playerState.hasError (the controller also mirrors them into errorMessage
     // via ErrorFormatter).
-    final bool showError = state.errorMessage != null || state.detailError != null || state.playerState.hasError;
+    // 离线不是错误：房间信息拿到了，只是没在播，所以走占位页而不是失败层。
+    final bool showError =
+        !state.isOffline && (state.errorMessage != null || state.detailError != null || state.playerState.hasError);
 
     // The video widget stays mounted for the whole session, and the surface is
     // simply black until the player service is up.
@@ -321,6 +327,10 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
           ),
         ),
       );
+    } else if (state.isOffline) {
+      // 未开播：占位页自带两个可聚焦按钮（切换直播间 / 重新检测），
+      // 所以这里不再挂底部控制条——否则两套焦点互相抢。
+      children.add(Positioned.fill(child: NotLivingVideoWidget(args: widget.args)));
     } else if (state.showControls) {
       // Flush to the bottom edge: the bar's own black band is the anchor, and
       // floating it above the edge left a strip of live picture under it.

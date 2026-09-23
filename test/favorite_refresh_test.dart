@@ -156,4 +156,150 @@ void main() {
     expect(state.replayRooms.map((room) => room.roomId), unorderedEquals(['replay', 'record']));
     expect(state.offlineRooms.map((room) => room.roomId), ['ended']);
   });
+
+  group('关注 site 的显示逻辑', () {
+    /// The notifier keeps its tab/tag selection across tests the way it does
+    /// across page visits, so each test states where it starts: 全部平台 / 直播 /
+    /// 全部标签.
+    FavoriteNotifier resetSelection() {
+      final notifier = favoriteNotifier();
+      notifier.changeOnlineTab(0);
+      notifier.changeSiteTab(0);
+      notifier.changeSelectedTag('all');
+      return notifier;
+    }
+
+    List<String> tabIds() => favoriteSitesForRooms(
+      container.read(favoriteRoomControllerProvider).favoriteRooms,
+    ).map((site) => site.id).toList();
+
+    test('only the platforms that hold a followed room become tabs', () {
+      replaceFavorites([_room('1'), _room('2').copyWith(platform: Sites.douyuSite)]);
+      resetSelection();
+
+      final ids = tabIds();
+
+      expect(ids.first, Sites.allSite, reason: '全部 is always the first tab');
+      expect(ids, containsAll(<String>[Sites.bilibiliSite, Sites.douyuSite]));
+      expect(ids.length, 3, reason: 'the configured platforms nobody follows are left out');
+    });
+
+    test('a platform that loses its last room stops being a tab', () {
+      replaceFavorites([_room('1')]);
+      resetSelection();
+
+      expect(tabIds(), <String>[Sites.allSite, Sites.bilibiliSite]);
+    });
+
+    test('the selection follows the platform id while the tab list changes', () {
+      // Douyu sits at index 1 here …
+      expect(
+        resolveFavoriteSiteIndex(
+          siteIds: <String>[Sites.allSite, Sites.douyuSite],
+          selectedSiteId: Sites.douyuSite,
+          fallback: 0,
+        ),
+        1,
+      );
+      // … and at index 2 once bilibili has a room again.
+      expect(
+        resolveFavoriteSiteIndex(
+          siteIds: <String>[Sites.allSite, Sites.bilibiliSite, Sites.douyuSite],
+          selectedSiteId: Sites.douyuSite,
+          fallback: 0,
+        ),
+        2,
+      );
+      // Gone: the previous index, clamped — never out of range.
+      expect(
+        resolveFavoriteSiteIndex(
+          siteIds: <String>[Sites.allSite, Sites.bilibiliSite],
+          selectedSiteId: Sites.douyuSite,
+          fallback: 2,
+        ),
+        1,
+      );
+    });
+
+    test('picking a tab filters the grid to that platform', () {
+      replaceFavorites([_room('1'), _room('2').copyWith(platform: Sites.douyuSite)]);
+      final notifier = resetSelection();
+
+      final ids = tabIds();
+      notifier.changeSiteTab(ids.indexOf(Sites.douyuSite));
+
+      expect(
+        container.read(favoriteProvider).onlineRooms.length,
+        2,
+        reason: 'the provider keeps every followed room; the page scope does the filtering',
+      );
+      expect(notifier.getFilteredRooms().map((room) => room.roomId), ['2']);
+    });
+  });
+
+  group('tag 在关注列表的显示逻辑', () {
+    /// The notifier keeps its tab/tag selection across tests the way it does
+    /// across page visits, so each test states where it starts: 全部平台 / 直播 /
+    /// 全部标签.
+    FavoriteNotifier resetSelection() {
+      final notifier = favoriteNotifier();
+      notifier.changeOnlineTab(0);
+      notifier.changeSiteTab(0);
+      notifier.changeSelectedTag('all');
+      return notifier;
+    }
+
+    /// Assigns a tag to [room] the way the room-tag dialog does.
+    String tagRoom(LiveRoom room, String name) {
+      final tags = SettingsService.to.tag;
+      tags.addTag(name, '');
+      final String id = SettingsService.to.tagState.tags.firstWhere((tag) => tag.name == name).id;
+      tags.setRoomTags(room, <String>[id]);
+      return id;
+    }
+
+    test('the strip lists the tags in use on the shown list, in the user order', () {
+      // Ids of their own: the tag map outlives a test, so reusing one the site
+      // group already used would hand this room the previous test's tags.
+      final LiveRoom live = _room('tag-a');
+      final LiveRoom other = _room('tag-b').copyWith(platform: Sites.douyuSite);
+      tagRoom(live, '游戏');
+      tagRoom(other, '音乐');
+      replaceFavorites(<LiveRoom>[live, other]);
+      final notifier = resetSelection();
+
+      expect(container.read(favoriteProvider).visibleTags.map((tag) => tag.name), <String>['游戏', '音乐']);
+
+      // Scoped to the platform tab: douyu's tag is not offered under bilibili.
+      notifier.changeSiteTab(1);
+      expect(container.read(favoriteProvider).visibleTags.map((tag) => tag.name), <String>['游戏']);
+    });
+
+    test('the strip follows the status tab', () {
+      final LiveRoom ended = _room('tag-c', liveStatus: LiveStatus.offline, status: false);
+      tagRoom(ended, '游戏');
+      replaceFavorites(<LiveRoom>[_room('tag-d'), ended]);
+      final notifier = resetSelection();
+
+      expect(container.read(favoriteProvider).visibleTags, isEmpty, reason: 'the 直播 list has no tagged room');
+
+      notifier.changeOnlineTab(2);
+      expect(container.read(favoriteProvider).visibleTags.map((tag) => tag.name), <String>['游戏']);
+    });
+
+    test('a deleted tag is dropped from the filter', () {
+      final LiveRoom room = _room('tag-e');
+      final String id = tagRoom(room, '游戏');
+      replaceFavorites(<LiveRoom>[room]);
+      final notifier = resetSelection();
+      notifier.changeSelectedTag(id);
+      expect(container.read(favoriteProvider).selectedTagId, id);
+
+      SettingsService.to.tag.deleteTagById(id);
+      notifier.changeOnlineTab(1);
+
+      expect(container.read(favoriteProvider).selectedTagId, 'all', reason: 'the filter must not outlive its tag');
+      expect(container.read(favoriteProvider).visibleTags, isEmpty);
+    });
+  });
 }

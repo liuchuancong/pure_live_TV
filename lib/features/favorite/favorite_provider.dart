@@ -7,10 +7,49 @@ import 'package:pure_live/features/favorite/model/favorite_state.dart';
 
 part 'favorite_provider.g.dart';
 
+/// The platform tabs a follower sees: 全部 plus the platforms that actually hold
+/// a followed room, in the configured platform order.
+///
+/// The mobile reference's `favoriteSitesForRooms` rule. A platform nobody
+/// follows is not a tab: listing every available platform buried the one or two
+/// the user follows among empty tabs, and an empty tab has no rooms — and so no
+/// tags — to show or filter by.
+List<Site> favoriteSitesForRooms(Iterable<LiveRoom> rooms) {
+  final List<Site> available = Sites().availableSites(containsAll: true);
+  final Set<String> followed = <String>{
+    for (final LiveRoom room in rooms)
+      if (room.normalizedPlatformId.isNotEmpty) room.normalizedPlatformId,
+  };
+  return <Site>[
+    for (final Site site in available)
+      if (site.id == Sites.allSite || followed.contains(site.id.trim().toLowerCase())) site,
+  ];
+}
+
+/// The tab index to show for [selectedSiteId]: where that platform sits in
+/// [siteIds], or [fallback] clamped into range once it is gone (its last room was
+/// unfollowed, so it is not a tab any more).
+int resolveFavoriteSiteIndex({required List<String> siteIds, required String selectedSiteId, required int fallback}) {
+  if (siteIds.isEmpty) return 0;
+  final int selected = siteIds.indexOf(selectedSiteId);
+  return selected >= 0 ? selected : fallback.clamp(0, siteIds.length - 1);
+}
+
 @riverpod
 class FavoriteNotifier extends _$FavoriteNotifier {
   StreamSubscription? _eventSubscription;
   Timer? _autoRefreshTimer;
+
+  /// The platform whose tab the page shows, by id.
+  ///
+  /// The tab list grows and shrinks with the followed rooms, so the selection is
+  /// remembered as an id and re-resolved on every rebuild: an index alone pointed
+  /// at whatever platform slid into the position of one that just lost its last
+  /// room.
+  String _selectedSiteId = Sites.allSite;
+
+  /// The platform tabs the page draws. See [favoriteSitesForRooms].
+  List<Site> get siteTabs => favoriteSitesForRooms(ref.read(favoriteRoomControllerProvider).favoriteRooms);
 
   @override
   FavoriteState build() {
@@ -62,6 +101,8 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   void changeSiteTab(int index) {
+    final List<Site> sites = siteTabs;
+    if (index >= 0 && index < sites.length) _selectedSiteId = sites[index].id;
     final favState = ref.read(favoriteRoomControllerProvider);
     state = _syncAndFilter(state.copyWith(tabSiteIndex: index), favState);
   }
@@ -99,6 +140,24 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
     final tagState = ref.read(tagManagementControllerProvider);
     final tagController = ref.read(tagManagementControllerProvider.notifier);
+
+    // The platform tabs, and the one actually shown. Resolving by id keeps the
+    // selection on the same platform while the tab list grows and shrinks.
+    final List<Site> sites = favoriteSitesForRooms(roomsBase);
+    final int siteIndex = resolveFavoriteSiteIndex(
+      siteIds: <String>[for (final Site site in sites) site.id],
+      selectedSiteId: _selectedSiteId,
+      fallback: currentState.tabSiteIndex,
+    );
+    final Site? activeSite = sites.isEmpty ? null : sites[siteIndex];
+    _selectedSiteId = activeSite?.id ?? Sites.allSite;
+
+    // A tag deleted while it was the active filter must not keep filtering
+    // invisibly: the reference drops the same selection.
+    final String selectedTagId =
+        currentState.selectedTagId == 'all' || tagState.tags.any((tag) => tag.id == currentState.selectedTagId)
+        ? currentState.selectedTagId
+        : 'all';
 
     int getRoomTagScore(LiveRoom room) {
       final List<String> ids = tagController.getTagsForRoom(room);
@@ -146,7 +205,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     }
 
     int sortRooms(LiveRoom a, LiveRoom b) {
-      if (currentState.selectedTagId == 'all') {
+      if (selectedTagId == 'all') {
         return byAudience(a, b);
       }
       final int sa = tagScoreOf(a);
@@ -158,16 +217,17 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     online.sort(sortRooms);
     replay.sort(sortRooms);
 
-    final currentAvailableSites = Sites().availableSites(containsAll: true);
     final List<LiveTag> visibleTagsList = [];
 
     // Legacy builds stored tags by room number alone; move them onto
     // platform-scoped identities now that the followed rooms are known.
     tagController.migrateLegacyRoomTagKeys([...online, ...replay, ...offline]);
 
-    if (currentState.tabSiteIndex >= 0 && currentState.tabSiteIndex < currentAvailableSites.length) {
-      final activeSite = currentAvailableSites[currentState.tabSiteIndex];
-      List<LiveRoom> target = switch (currentState.tabOnlineIndex) {
+    // The tag strip: the tags of the rooms the page is showing — the selected
+    // status list, on the selected platform — in the user's own tag order. Tags
+    // no room on screen carries would filter to an empty grid.
+    if (activeSite != null) {
+      final List<LiveRoom> target = switch (currentState.tabOnlineIndex) {
         0 => online,
         1 => replay,
         2 => offline,
@@ -175,19 +235,20 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       };
 
       final Set<String> tagIds = {};
-      for (var room in target) {
-        if (activeSite.id == Sites.allSite || room.platform.toUpperCase() == activeSite.id.toUpperCase()) {
-          final ids = tagController.getTagsForRoom(room);
-          tagIds.addAll(ids);
+      for (final LiveRoom room in target) {
+        if (activeSite.id == Sites.allSite || room.normalizedPlatformId == activeSite.id.trim().toLowerCase()) {
+          tagIds.addAll(tagController.getTagsForRoom(room));
         }
       }
 
-      final tags = tagState.tags.where((t) => tagIds.contains(t.id)).toList();
+      final List<LiveTag> tags = tagState.tags.where((tag) => tagIds.contains(tag.id)).toList();
       tags.sort((a, b) => a.order.compareTo(b.order));
       visibleTagsList.addAll(tags);
     }
 
     return currentState.copyWith(
+      tabSiteIndex: siteIndex,
+      selectedTagId: selectedTagId,
       onlineRooms: online,
       offlineRooms: offline,
       replayRooms: replay,
@@ -216,15 +277,16 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
   /// Applies the page's platform tab and tag filter to [source].
   List<LiveRoom> _inPageScope(List<LiveRoom> source) {
-    final currentAvailableSites = Sites().availableSites(containsAll: true);
-    if (state.tabSiteIndex < 0 || state.tabSiteIndex >= currentAvailableSites.length) {
+    final List<Site> sites = siteTabs;
+    if (state.tabSiteIndex < 0 || state.tabSiteIndex >= sites.length) {
       return [];
     }
 
     List<LiveRoom> rooms = source;
-    final activeSite = currentAvailableSites[state.tabSiteIndex];
+    final activeSite = sites[state.tabSiteIndex];
     if (activeSite.id != Sites.allSite) {
-      rooms = rooms.where((room) => room.platform.toUpperCase() == activeSite.id.toUpperCase()).toList();
+      final String siteId = activeSite.id.trim().toLowerCase();
+      rooms = rooms.where((room) => room.normalizedPlatformId == siteId).toList();
     }
 
     if (state.selectedTagId == 'all') {
@@ -274,14 +336,15 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
     final favState = ref.read(favoriteRoomControllerProvider);
     final List<LiveRoom> source = List<LiveRoom>.from(favState.favoriteRooms);
-    final currentAvailableSites = Sites().availableSites(containsAll: true);
+    final List<Site> sites = favoriteSitesForRooms(source);
     final refreshState = ref.read(refreshConfigControllerProvider);
 
     List<LiveRoom> valid = source;
-    if (state.tabSiteIndex >= 0 && state.tabSiteIndex < currentAvailableSites.length) {
-      final activeSite = currentAvailableSites[state.tabSiteIndex];
+    if (state.tabSiteIndex >= 0 && state.tabSiteIndex < sites.length) {
+      final activeSite = sites[state.tabSiteIndex];
       if (activeSite.id != Sites.allSite) {
-        valid = source.where((r) => r.platform.toUpperCase() == activeSite.id.toUpperCase()).toList();
+        final String siteId = activeSite.id.trim().toLowerCase();
+        valid = source.where((r) => r.normalizedPlatformId == siteId).toList();
       }
     }
 

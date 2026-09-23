@@ -24,6 +24,7 @@ class LivePlayState {
     this.channelBanner,
     this.hasStartedPlayback = false,
     this.switchingStream = false,
+    this.isOffline = false,
   });
 
   final LiveRoom? room;
@@ -61,6 +62,14 @@ class LivePlayState {
   /// background update while the TV flashed its buffering spinner.
   final bool hasStartedPlayback;
 
+  /// The room loaded successfully but is not broadcasting.
+  ///
+  /// Kept apart from [errorMessage]: nothing failed here — the stream simply
+  /// does not exist yet, so asking the site for play URLs would be pointless
+  /// and presenting a retry-an-error overlay would mislead. The page shows the
+  /// "not living" placeholder with a channel switcher instead.
+  final bool isOffline;
+
   /// Whether a quality/line change is currently being resolved and opened.
   ///
   /// Only a small indicator inside the selector uses this; the picture and the
@@ -90,6 +99,7 @@ class LivePlayState {
     bool clearChannelBanner = false,
     bool? hasStartedPlayback,
     bool? switchingStream,
+    bool? isOffline,
   }) {
     return LivePlayState(
       room: clearRoom ? null : (room ?? this.room),
@@ -108,6 +118,7 @@ class LivePlayState {
       channelBanner: clearChannelBanner ? null : (channelBanner ?? this.channelBanner),
       hasStartedPlayback: hasStartedPlayback ?? this.hasStartedPlayback,
       switchingStream: switchingStream ?? this.switchingStream,
+      isOffline: isOffline ?? this.isOffline,
     );
   }
 }
