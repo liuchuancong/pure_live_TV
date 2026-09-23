@@ -3,8 +3,10 @@ import 'package:pure_live/services/settings/settings.dart';
 
 /// Resolves the HTTP headers used to read a platform's media stream.
 ///
-/// Covers bilibili, douyu, huya, douyin, kuaishou, cc and iptv; platforms
-/// without a specific policy get an empty header set.
+/// Mirrors the reference client's per-platform header policy: account cookies
+/// are attached for the platforms that accept them, and platforms that need a
+/// signed Referer/Origin get their own static header set. Platforms without a
+/// specific policy get an empty header set.
 class PlaybackHeaderResolver {
   const PlaybackHeaderResolver._();
 
@@ -44,11 +46,9 @@ class PlaybackHeaderResolver {
         };
         break;
       case Sites.douyuSite:
-        headers = <String, String>{
-          'origin': 'https://www.douyu.com',
-          'referer': 'https://www.douyu.com/$normalizedRoomId',
-          'user-agent': _desktopUserAgent,
-        };
+        // The signer did and playback share one Cookie, so an optional account
+        // session travels with the media request as well.
+        headers = DouyuUtils.playbackHeaders(roomId.trim());
         break;
       case Sites.huyaSite:
         // Huya's URL signer refreshes this process-wide value while resolving
@@ -95,6 +95,95 @@ class PlaybackHeaderResolver {
         break;
       case Sites.iptvSite:
         headers = {...HttpHeaderPolicy.normalize(roomHeaders)};
+        break;
+      case Sites.twitchSite:
+        final cookie = _configuredCookie((settings) => settings.cookieManager.twitchCookie.value);
+        headers = <String, String>{
+          'user-agent': TwitchSite.defaultUa,
+          'origin': TwitchSite.baseUrl,
+          'referer': normalizedRoomId.isEmpty ? '${TwitchSite.baseUrl}/' : '${TwitchSite.baseUrl}/$normalizedRoomId',
+          if (cookie.isNotEmpty) 'cookie': cookie,
+        };
+        break;
+      case Sites.soopSite:
+        final cookie = _configuredCookie((settings) => settings.cookieManager.soopCookie.value);
+        headers = <String, String>{
+          'user-agent': _desktopUserAgent,
+          'origin': 'https://www.sooplive.co.kr',
+          'referer': normalizedRoomId.isEmpty
+              ? 'https://www.sooplive.co.kr/'
+              : 'https://play.sooplive.co.kr/$normalizedRoomId',
+          if (cookie.isNotEmpty) 'cookie': cookie,
+        };
+        break;
+      case Sites.yySite:
+        final cookie = _configuredCookie((settings) => settings.cookieManager.yyCookie.value);
+        headers = <String, String>{
+          'origin': 'https://www.yy.com',
+          'referer': 'https://www.yy.com/',
+          'user-agent': _desktopUserAgent,
+          if (cookie.isNotEmpty) 'cookie': cookie,
+        };
+        break;
+      case Sites.picartoSite:
+        headers = {...PicartoApi.playHeaders, 'User-Agent': _desktopUserAgent};
+        break;
+      case Sites.twitcastingSite:
+        headers = TwitcastingApi.playHeaders;
+        break;
+      case Sites.missevanSite:
+        headers = MissevanApi.playHeaders;
+        break;
+      case Sites.openrecSite:
+        headers = OpenrecApi.headers;
+        break;
+      case Sites.ttingSite:
+        headers = TtingApi.playHeaders;
+        break;
+      case Sites.xiaohongshuSite:
+        headers = XiaohongshuApi.headers;
+        break;
+      case Sites.huajiaoSite:
+        headers = HuajiaoApi.headers;
+        break;
+      case Sites.kilakilaSite:
+        headers = KilakilaApi.playHeaders;
+        break;
+      case Sites.inkeSite:
+        headers = InkeApi.playHeaders;
+        break;
+      case Sites.acfunSite:
+        headers = {...AcfunApi.playHeaders, 'origin': AcfunApi.origin};
+        break;
+      case Sites.showroomSite:
+        headers = ShowroomApi.mediaHeaders;
+        break;
+      case Sites.chzzkSite:
+        headers = ChzzkApi.mediaHeaders;
+        break;
+      case Sites.kickSite:
+        headers = KickApi.mediaHeaders(roomId);
+        break;
+      case Sites.seventeenLiveSite:
+        headers = SeventeenLiveApi.mediaHeaders(roomId);
+        break;
+      case Sites.liveMeSite:
+        headers = LiveMeApi.mediaHeaders(roomId);
+        break;
+      case Sites.tiktokSite:
+        headers = TikTokApi.mediaHeaders(roomId);
+        break;
+      case Sites.youtubeSite:
+        headers = YouTubeApi.mediaHeaders(roomId);
+        break;
+      case Sites.bigoSite:
+        headers = BigoApi.headers;
+        break;
+      case Sites.pandaLiveSite:
+        headers = PandaLiveApi.mediaHeaders(roomId);
+        break;
+      case Sites.popkonSite:
+        headers = PopkonApi.mediaHeaders(roomId);
         break;
       default:
         headers = const <String, String>{};
