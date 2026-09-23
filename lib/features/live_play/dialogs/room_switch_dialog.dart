@@ -43,12 +43,12 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   /// If the avatar inside [PlayerRoomRow] does not follow this, its radius is
   /// hard-coded — pass a size in from there, or derive it from
   /// `MediaQuery.textScalerOf(context).scale(...)`.
-  static const double _listTextScale = 1.35;
+  static const double _listTextScale = 1.0;
 
   /// Estimated row height used by [_revealRow]; roughly the pre-scale value
   /// (66) multiplied by the scale above, so the auto-scroll target matches
   /// the taller rows on screen.
-  static const double _rowExtentBase = 90;
+  static const double _rowExtentBase = 96;
 
   final FocusNode _focusNode = FocusNode(debugLabel: 'room-switch');
   final ScrollController _scrollController = ScrollController();
@@ -60,8 +60,11 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_focusNode.hasFocus) _focusNode.requestFocus();
+      if (mounted && !_focusNode.hasFocus) {
+        _focusNode.requestFocus();
+      }
     });
   }
 
@@ -79,6 +82,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   /// Followed rooms that are live now; a replay is not "is live".
   List<LiveRoom> _liveRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
+
     return [
       for (final room in rooms)
         if (room.isLiveNow && room.effectiveLiveStatus != LiveStatus.replay && !room.hasSameIdentity(widget.current))
@@ -90,6 +94,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   /// replay tab (`effectiveLiveStatus == LiveStatus.replay`).
   List<LiveRoom> _replayRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
+
     return [
       for (final room in rooms)
         if (room.isRecord || room.effectiveLiveStatus == LiveStatus.replay)
@@ -99,6 +104,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
   List<LiveRoom> _historyRooms() {
     final rooms = SettingsService.to.historyState.historyRooms;
+
     return [
       for (final room in rooms)
         if (!room.hasSameIdentity(widget.current)) room,
@@ -121,7 +127,9 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       key == LogicalKeyboardKey.gameButtonA;
 
   KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
-    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    if (event is KeyUpEvent) {
+      return KeyEventResult.ignored;
+    }
 
     final LogicalKeyboardKey key = event.logicalKey;
 
@@ -142,6 +150,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       } else if (count > 0) {
         setState(() => _zone = _Zone.rows);
       }
+
       return KeyEventResult.handled;
     }
 
@@ -155,6 +164,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
           _selectRow(_rowIndex - 1);
         }
       }
+
       return KeyEventResult.handled;
     }
 
@@ -164,6 +174,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       } else if (count > 0) {
         setState(() => _zone = _Zone.rows);
       }
+
       return KeyEventResult.handled;
     }
 
@@ -173,6 +184,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       } else {
         _selectTab((_tabIndex - 1 + _tabCount) % _tabCount);
       }
+
       return KeyEventResult.handled;
     }
 
@@ -180,6 +192,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       if (!inRows) {
         _selectTab((_tabIndex + 1) % _tabCount);
       }
+
       return KeyEventResult.handled;
     }
 
@@ -220,10 +233,13 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
   /// Keeps the highlighted row on screen while the user walks the list.
   void _revealRow(int index) {
-    if (!_scrollController.hasClients) return;
+    if (!_scrollController.hasClients) {
+      return;
+    }
 
     final double rowExtent = (_rowExtentBase * PlayerPanelLayout.fontSize).sp;
-    final double target = (index * rowExtent) - 120.sp;
+
+    final double target = (index * rowExtent) - 150.sp;
 
     _scrollController.animateTo(
       target.clamp(0, _scrollController.position.maxScrollExtent),
@@ -245,15 +261,16 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   Widget build(BuildContext context) {
     final List<List<LiveRoom>> tabs = _tabs;
     final List<LiveRoom> rooms = tabs[_tabIndex];
+
     final int rowIndex = rooms.isEmpty ? 0 : _rowIndex.clamp(0, rooms.length - 1);
 
     final Size screenSize = MediaQuery.sizeOf(context);
 
-    final double dialogHeight = (screenSize.height * 0.70).clamp(520.sp, 760.sp).toDouble();
+    final double dialogHeight = (screenSize.height * 0.72).clamp(560.sp, 780.sp).toDouble();
 
     return TvDialog(
       title: i18n('switch_live_room'),
-      width: 1280.sp,
+      width: 1160.sp,
       initialFocusNode: _focusNode,
       child: Focus(
         focusNode: _focusNode,
@@ -363,12 +380,10 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     return ListView.builder(
       controller: _scrollController,
       physics: const ClampingScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(8.sp, 8.sp, 8.sp, 12.sp),
+      padding: EdgeInsets.fromLTRB(12.sp, 10.sp, 12.sp, 16.sp),
       itemCount: rooms.length,
-      itemBuilder: (context, index) => Padding(
-        padding: EdgeInsets.only(bottom: 6.sp),
-        child: PlayerRoomRow(room: rooms[index], selected: _zone == _Zone.rows && index == rowIndex),
-      ),
+      itemBuilder: (context, index) =>
+          PlayerRoomRow(room: rooms[index], selected: _zone == _Zone.rows && index == rowIndex, large: true),
     );
   }
 }

@@ -1,12 +1,12 @@
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
-import 'package:pure_live/features/live_play/models/live_play_args.dart';
-import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
-import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart';
-import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/features/live_play/models/live_play_args.dart';
+import 'package:pure_live/services/favorites/favorite_room_controller.dart';
+import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart';
+import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
+import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
 
 /// Playlist panel shown inside the player, as an index list of room cards.
 ///
@@ -45,9 +45,7 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
 
     return PlayerIndexPanel(
       title: i18nOr('ui_playlist', 'Playlist'),
-      rows: <PlayerPanelRow>[
-        for (final LiveRoom room in rooms) PlayerPanelRow(label: room.title, subtitle: room.nick),
-      ],
+      rows: <PlayerPanelRow>[for (final LiveRoom room in rooms) PlayerPanelRow(label: room.title, subtitle: room.nick)],
       selectedIndex: index,
       onSelectionChanged: (i) => setState(() => _index = i),
       emptyHint: i18n('ui_none'),
@@ -59,6 +57,7 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
       rowBuilder: (context, i, selected) => PlayerRoomRow(
         room: rooms[i],
         selected: selected,
+        large: true,
         active: current != null && rooms[i].hasSameIdentity(current),
         favorite: favorites.any((item) => item.hasSameIdentity(rooms[i])),
       ),
@@ -68,9 +67,7 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
   void _openRoom(LiveRoom room, List<LiveRoom> rooms) {
     final current = ref.read(livePlayControllerProvider(widget.args)).room;
     if (current != null && room.hasSameIdentity(current)) return;
-    LivePlayRoute(
-      LivePlayArgs.fromRoom(room, playlist: rooms, showChannelBanner: true),
-    ).replace(context);
+    LivePlayRoute(LivePlayArgs.fromRoom(room, playlist: rooms, showChannelBanner: true)).replace(context);
   }
 
   void _toggleFollow(LiveRoom room) {
