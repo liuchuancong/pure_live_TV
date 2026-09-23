@@ -385,7 +385,12 @@ class PagingCore<T> extends _$PagingCore<T> {
         return;
       }
 
-      final hasMore = list.length >= state.pageSize;
+      // Anything on this page means there may be more. Providers return their
+      // own page granularity, which need not equal the requested size, so
+      // comparing against pageSize read "fewer rows than asked for" as "end of
+      // list" and stranded the user on the first page. One wasted request at the
+      // real end is the cheaper mistake.
+      final hasMore = list.isNotEmpty;
 
       state = state.copyWith(
         items: pageKey == firstPageKey ? List<T>.of(list) : [...state.items, ...list],

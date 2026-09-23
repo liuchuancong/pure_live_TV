@@ -1994,7 +1994,7 @@
   "tag_input_hint": "Please enter tag name...",
   "tag_invalid_or_duplicate": "Invalid name or tag already exists",
   "tag_management": "Tag Management",
-  "tag_management_subtitle": "Customize and manage live-room filtering tags",
+  "tag_management_subtitle": "Group your followed rooms and filter them by tag on the favorites page",
   "tag_name_empty_error": "Tag name cannot be empty",
   "tag_name_label": "Tag Name",
   "tags": "Tags",

@@ -72,8 +72,9 @@ String? abiForAssetName(String name) {
     if (RegExp(
       '(^|[^a-z0-9])${RegExp.escape(abi)}'
       r'([^a-z0-9]|$)',
-    ).hasMatch(lower))
+    ).hasMatch(lower)) {
       return abi;
+    }
   }
   return null;
 }

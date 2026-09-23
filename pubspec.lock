@@ -1125,11 +1125,9 @@ packages:
   media_core:
     dependency: "direct main"
     description:
-      path: "packages/media_core"
-      ref: main
-      resolved-ref: af58e423deb08c16ac65bb942db5c8d56bf9ec41
-      url: "https://github.com/liuchuancong/media_core.git"
-    source: git
+      path: "F:\\media_core\\packages\\media_core"
+      relative: false
+    source: path
     version: "0.1.0"
   media_kit:
     dependency: "direct main"

@@ -122,10 +122,7 @@ dependencies:
   flv_lzc: 
     git: https://github.com/liuchuancong/flv_lzc.git
   media_core:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core
-      ref: main  # 可选
+    path: F:\media_core\packages\media_core
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）

@@ -278,10 +278,30 @@ class _TvInputFieldState extends State<TvInputField> {
   }
 
   /// The native route's controller, adopted once and kept alive for the field's
-  /// lifetime so text typed on the native side reaches [_controller] (and every
-  /// listener bound to it) in both directions.
+  /// lifetime.
+  ///
+  /// The platform writes into this one, so its text is mirrored into
+  /// [_controller] - the controller the caller passed in and reads back. Without
+  /// the mirror anything typed on a TV keyboard stayed invisible to callers: the
+  /// history page kept re-reading the value it had set itself.
   NativeTextFieldController _nativeControllerOf() {
-    return _nativeController ??= NativeTextFieldController();
+    final existing = _nativeController;
+    if (existing != null) return existing;
+
+    final native = NativeTextFieldController();
+    native.addListener(() {
+      if (!identical(_nativeController, native)) return;
+      if (_controller.text == native.text) return;
+      // A value copy, so the caret follows the mirrored text instead of staying
+      // at whatever offset the previous value had.
+      _controller.value = _controller.value.copyWith(
+        text: native.text,
+        selection: TextSelection.collapsed(offset: native.text.length),
+        composing: TextRange.empty,
+      );
+    });
+    _nativeController = native;
+    return native;
   }
 }
 

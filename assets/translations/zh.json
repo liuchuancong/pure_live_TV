@@ -1992,7 +1992,7 @@
   "tag_input_hint": "请输入标签名称...",
   "tag_invalid_or_duplicate": "名称无效或该标签已存在",
   "tag_management": "标签管理",
-  "tag_management_subtitle": "自定义和管理直播间的过滤标签",
+  "tag_management_subtitle": "给关注的直播间分组，在关注页按标签筛选",
   "tag_name_empty_error": "标签名称不能为空",
   "tag_name_label": "标签名称",
   "tags": "标签",
