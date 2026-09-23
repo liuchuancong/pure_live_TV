@@ -186,6 +186,13 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
+    // TikTok LIVE exposes liveRoomStats.userCount as concurrent viewers and
+    // enterCount as cumulative room entries; keep those metrics separate.
+    'tiktok': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomRealtime,
+    ),
     // Six Rooms exposes a homepage `count` used by its ranking cards, without
     // a stable public contract proving unique concurrent viewers. Keep it as
     // platform popularity; room fans remain an independent follower metric.

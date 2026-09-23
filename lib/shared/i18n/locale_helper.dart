@@ -28,6 +28,8 @@ Map<String, String> _labels = {
   'site_inke': '映客',
   'site_kilakila': '克拉克拉',
   'site_bigo': 'Bigo Live',
+  'site_tiktok': 'TikTok LIVE',
+  'tiktok_chat_notice': 'TikTok LIVE 远端聊天尚待接入；当前观看与累计进房分别展示。',
   'bigo_category_public': '公开推荐',
   'bigo_chat_notice': 'Bigo Live 远端聊天尚待接入；目录 user_count 仅作为当前直播在线人数，房间详情缺值时保持未知。',
   'bigo_login_required': '该房间当前要求登录，直播状态与媒体保持未知。',
