@@ -69,6 +69,12 @@ class _HotPageState extends ConsumerState<HotPage> {
     final currentSite = tabsState.sites[tabsState.currentIndex];
     final currentParam = _getOrCreateParam(currentSite.id);
 
+    // The rooms this tab has loaded so far. The player takes it as the up/down
+    // channel list and fills the playlist panel with it, so a room opened from
+    // the popular list switches within the popular list instead of falling back
+    // to watch history.
+    final List<LiveRoom> rooms = ref.watch(pagingCoreProvider(currentParam).select((state) => state.items));
+
     return TvScaffold(
       child: Row(
           children: [
@@ -105,6 +111,7 @@ class _HotPageState extends ConsumerState<HotPage> {
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
+                          playlist: rooms,
                           onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
                         ),
                       ),

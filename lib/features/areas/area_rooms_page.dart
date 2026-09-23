@@ -74,6 +74,12 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
     final double crossSpacing = themeState.crossAxisSpacing;
     final double mainSpacing = themeState.mainAxisSpacing;
 
+    // The rooms this category has loaded so far. The player takes it as the
+    // up/down channel list and fills the playlist panel with it, so a room
+    // opened from a category switches within that category instead of falling
+    // back to watch history.
+    final List<LiveRoom> rooms = ref.watch(pagingCoreProvider(_currentParam).select((state) => state.items));
+
     return TvPageScaffold(
       title: widget.subCategory.areaName,
       // No Expanded here: TvScaffold places its child inside a Stack, which is
@@ -94,8 +100,11 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
             crossAxisSpacing: crossSpacing.w,
             childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
           ),
-          itemBuilder: (context, room, index) =>
-              TvRoomCard(room: room, onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room)),
+          itemBuilder: (context, room, index) => TvRoomCard(
+            room: room,
+            playlist: rooms,
+            onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
+          ),
         ),
       ),
     );

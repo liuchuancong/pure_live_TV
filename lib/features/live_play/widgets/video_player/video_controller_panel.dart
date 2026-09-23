@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:pure_live/player/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -301,11 +302,14 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final danmakuSettings = ref.watch(danmakuSettingsControllerProvider);
     final danmakuNotifier = ref.read(danmakuSettingsControllerProvider.notifier);
+    final playerSettings = ref.watch(playerSettingsControllerProvider);
+    final playerNotifier = ref.read(playerSettingsControllerProvider.notifier);
     final favoriteRooms = ref.watch(favoriteRoomControllerProvider).favoriteRooms;
     final room = state.room;
     final bool playing = state.playerState.playing || state.playerState.buffering;
     final bool isFavorite = room != null && favoriteRooms.any((item) => item.hasSameIdentity(room));
     final bool danmakuOn = danmakuSettings.enableDanmakuDisplay && !danmakuSettings.hideDanmaku;
+    final bool audioOnly = playerSettings.audioOnly;
 
     return <_PanelAction>[
       _PanelAction(
@@ -366,6 +370,15 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         label: _fitLabel(state),
         active: _panel == _OptionsPanel.fit,
         onSelect: () => _openPanel(_OptionsPanel.fit, state),
+      ),
+      // Audio-only mode: the surface swaps the picture for the room card while
+      // the stream keeps playing. The button writes the same setting the
+      // settings page does — the live controller pushes that field into the
+      // player — so the two can never disagree about which mode is on.
+      _PanelAction(
+        icon: audioOnly ? Remix.headphone_line : Remix.tv_2_line,
+        label: audioOnly ? i18n('ui_audio_only') : i18n('ui_video_mode'),
+        onSelect: () => playerNotifier.updateSettings(playerSettings.copyWith(audioOnly: !audioOnly)),
       ),
       _PanelAction(
         icon: Icons.swap_horiz_rounded,
@@ -428,10 +441,14 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   Future<void> _switchRoom(LiveRoom? room) async {
     if (room == null) return;
     _focusNode.unfocus();
-    final selected = await showRoomSwitchDialog(context, current: room);
+    final selection = await showRoomSwitchDialog(context, current: room);
     if (mounted) _focusNode.requestFocus();
-    if (selected == null || !mounted) return;
-    LivePlayRoute(selected).replace(context);
+    if (selection == null || !mounted) return;
+    // The list the room was picked from becomes the new playlist, so switching
+    // from the followed tab keeps switching within it.
+    LivePlayRoute(
+      LivePlayArgs.fromRoom(selection.room, playlist: selection.rooms, showChannelBanner: true),
+    ).replace(context);
   }
 
   // =========================

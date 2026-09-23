@@ -565,11 +565,16 @@ class LivePlayController extends _$LivePlayController {
   // Channel switching and the playlist.
   // =========================
 
-  /// Channel list: prefer the list carried by the route (the current page of
-  /// favourites, popular, areas or search results),
-  /// otherwise fall back to the rooms in watch history that are still live.
+  /// Channel list: the list carried by the route (the page of favourites,
+  /// popular rooms, a category or search results the room was opened from)
+  /// when there is one, otherwise the rooms in watch history that are still
+  /// live.
+  ///
+  /// The carried list wins even with a single entry: it is the context the
+  /// viewer came from, and substituting watch history for it made up/down and
+  /// the playlist panel jump to unrelated rooms.
   List<LiveRoom> get channelRooms {
-    if (args.playlist.length > 1) {
+    if (args.playlist.isNotEmpty) {
       return args.playlist;
     }
 
