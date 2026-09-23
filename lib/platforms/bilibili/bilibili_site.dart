@@ -15,6 +15,18 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   @override
   LiveDanmaku getDanmaku() => BiliBiliDanmaku();
 
+  /// Bind the danmaku uid to the same Cookie whenever `DedeUserID` is
+  /// available. Account refresh is asynchronous, so a separately persisted uid
+  /// can briefly belong to an older identity even though the Cookie has already
+  /// changed. Anonymous danmaku always uses uid=0.
+  static int resolveDanmakuUid({required String cookie, required int storedUserId}) {
+    if (cookie.trim().isEmpty) return 0;
+    final cookieUid = RegExp(r'(?:^|;)\s*DedeUserID=(\d+)(?:;|$)', caseSensitive: false).firstMatch(cookie)?.group(1);
+    final parsedCookieUid = int.tryParse(cookieUid ?? '');
+    if (parsedCookieUid != null && parsedCookieUid > 0) return parsedCookieUid;
+    return storedUserId > 0 ? storedUserId : 0;
+  }
+
   static const String kDefaultUserAgent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36";
   static const String kDefaultReferer = "https://live.bilibili.com/";
@@ -602,7 +614,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
       // A remembered uid without its login cookie is not an authenticated
       // identity. Sending it in a guest auth packet makes the gateway close
       // the socket on some rooms; anonymous danmaku uses uid=0.
-      uid: cookie.trim().isEmpty ? 0 : userId,
+      uid: resolveDanmakuUid(cookie: cookie, storedUserId: userId),
       token: data['token']?.toString() ?? '',
       serverUrls: serverUrls,
       buvid: buvid3,
@@ -633,7 +645,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
         final headers = await getHeader();
         danmakuArgs = BiliBiliDanmakuArgs(
           roomId: int.tryParse(realRoomId) ?? 0,
-          uid: cookie.trim().isEmpty ? 0 : userId,
+          uid: resolveDanmakuUid(cookie: cookie, storedUserId: userId),
           token: '',
           serverUrls: const ['wss://broadcastlv.chat.bilibili.com/sub'],
           buvid: buvid3,

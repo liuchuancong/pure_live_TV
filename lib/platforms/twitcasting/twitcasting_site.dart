@@ -1,17 +1,19 @@
+import 'package:dio/dio.dart';
 import 'package:pure_live/shared/contracts/index.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/index.dart';
 
 import 'twitcasting_api.dart';
 import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
 
 class TwitcastingSite extends LiveSite
-    implements LiveSiteRoomRefresher, LiveSiteRecordRoomResolver, LivePlayRecoveryResolver {
+    implements LiveSiteRoomRefresher, LiveSiteRecordRoomResolver, LivePlayRecoveryResolver, LiveCancellableSearch {
   TwitcastingSite({TwitcastingApi? api}) : _api = api ?? TwitcastingApi();
   final TwitcastingApi _api;
   @override
   String get id => 'twitcasting';
   @override
-  String get name => 'TwitCasting';
+  String get name => i18n('site_twitcasting');
   @override
   LiveDanmaku getDanmaku() => EmptyDanmaku();
   @override
@@ -29,6 +31,18 @@ class TwitcastingSite extends LiveSite
     }
     return _api.directory(page: page, pageSize: pageSize, category: category.areaId);
   }
+
+  @override
+  Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) =>
+      searchRoomsCancellable(keyword, page: page, pageSize: pageSize);
+
+  @override
+  Future<List<LiveRoom>> searchRoomsCancellable(
+    String keyword, {
+    int page = 1,
+    int pageSize = 30,
+    CancelToken? cancel,
+  }) => _api.searchLives(keyword, page: page, pageSize: pageSize, cancel: cancel);
 
   @override
   Future<LiveRoom> getRoomDetail({required String roomId, required String platform}) {
