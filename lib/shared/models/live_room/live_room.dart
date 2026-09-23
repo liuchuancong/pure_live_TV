@@ -248,6 +248,27 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: true,
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
+    // GoodGame's public directory and channel endpoint expose `viewers` as
+    // the live audience. Rating and premium counters are separate concepts.
+    'goodgame': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // FC2 exposes current `count` and cumulative `total` independently in
+    // both its public directory and member metadata.
+    'fc2live': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    // Steam community cards and getbroadcastmpd both expose the current
+    // concurrent audience independently from the broadcast identity.
+    'steambroadcast': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
     // The watch page exposes a dedicated concurrent-view renderer while a
     // broadcast is live. Historical viewCount is deliberately not reused.
     'youtube': AudiencePlatformCapability(

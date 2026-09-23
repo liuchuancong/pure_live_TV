@@ -66,6 +66,9 @@ class Sites {
   static const String nimoTvSite = 'nimotv';
   static const String dailymotionSite = 'dailymotion';
   static const String rumbleSite = 'rumble';
+  static const String goodgameSite = 'goodgame';
+  static const String fc2LiveSite = 'fc2live';
+  static const String steamBroadcastSite = 'steambroadcast';
   static const String sixRoomSite = 'sixroom';
 
   static const Set<String> supportedSiteIds = {
@@ -104,6 +107,9 @@ class Sites {
     nimoTvSite,
     dailymotionSite,
     rumbleSite,
+    goodgameSite,
+    fc2LiveSite,
+    steamBroadcastSite,
     sixRoomSite,
     iptvSite,
   };
@@ -275,6 +281,19 @@ class Sites {
         liveSite: DailymotionSite(),
       ),
       rumbleSite => Site(id: rumbleSite, name: i18n('site_rumble'), logo: logoOf(rumbleSite), liveSite: RumbleSite()),
+      goodgameSite => Site(
+        id: goodgameSite,
+        name: i18n('site_goodgame'),
+        logo: logoOf(goodgameSite),
+        liveSite: GoodGameSite(),
+      ),
+      fc2LiveSite => Site(id: fc2LiveSite, name: i18n('site_fc2live'), logo: logoOf(fc2LiveSite), liveSite: Fc2Site()),
+      steamBroadcastSite => Site(
+        id: steamBroadcastSite,
+        name: i18n('site_steambroadcast'),
+        logo: logoOf(steamBroadcastSite),
+        liveSite: SteamBroadcastSite(),
+      ),
       sixRoomSite => Site(
         id: sixRoomSite,
         name: i18n('site_sixroom'),
@@ -326,6 +345,9 @@ class Sites {
       nimoTvSite,
       dailymotionSite,
       rumbleSite,
+      goodgameSite,
+      fc2LiveSite,
+      steamBroadcastSite,
       sixRoomSite,
       niconicoSite,
       weiboSite,

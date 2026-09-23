@@ -17,7 +17,18 @@ final RouteObserver<ModalRoute<void>> tvRouteObserver = RouteObserver<ModalRoute
 class TvFocusRestorer extends StatefulWidget {
   final Widget child;
 
-  const TvFocusRestorer({super.key, required this.child});
+  /// Reports the node this subtree's restore aims at — the item the user last
+  /// acted on while the route was current — or `null` while there is none.
+  ///
+  /// The enclosing page shell uses it to tell "the user's item is still here,
+  /// leave the keyboard alone" from "nothing holds it, claim the opening
+  /// node". Reading [FocusManager.primaryFocus] cannot answer that at claim
+  /// time: focus requests are applied in a microtask, so the shell saw the
+  /// keyboard as unset and dragged the highlight to its opening node on top of
+  /// the restore that had just been requested.
+  final ValueChanged<FocusNode?>? onRestoreTarget;
+
+  const TvFocusRestorer({super.key, required this.child, this.onRestoreTarget});
 
   @override
   State<TvFocusRestorer> createState() => _TvFocusRestorerState();
@@ -33,6 +44,12 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
   /// The last node of *this route* that held the keyboard while the route was
   /// current, so a focus death after the bounded restore can still be corrected.
   FocusNode? _lastInsideRoute;
+
+  /// Records where the keyboard is, for the restore and for the page shell.
+  void _remember(FocusNode node) {
+    _lastInsideRoute = node;
+    widget.onRestoreTarget?.call(node);
+  }
 
   @override
   void didChangeDependencies() {
@@ -61,12 +78,22 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
     final FocusNode? primary = FocusManager.instance.primaryFocus;
     if (primary != null && primary is! FocusScopeNode) {
       _focusWhenCovered = primary;
+      _remember(primary);
+      return;
     }
+    // The keyboard was already nowhere real by the time the observer ran: a
+    // route pushed through the router first updates the route stack, and the
+    // rebuild that follows can drop the keyboard before this callback sees it.
+    // Falling back to the last node of this route that held it keeps the
+    // return target — the node itself usually survives the push (it is only
+    // excluded while covered), so the pop can still land back on the item the
+    // user acted on instead of on whatever the fallback picks.
+    _focusWhenCovered = _lastInsideRoute;
   }
 
   @override
   void didPopNext() {
-    final FocusNode? node = _focusWhenCovered;
+    final FocusNode? node = _focusWhenCovered ?? _lastInsideRoute;
     _focusWhenCovered = null;
     if (node == null) return;
     _restore(node);
@@ -99,7 +126,7 @@ class _TvFocusRestorerState extends State<TvFocusRestorer> with RouteAware {
 
     final FocusNode? primary = FocusManager.instance.primaryFocus;
     if (primary != null && _isInsideRoute(primary, route)) {
-      if (primary is! FocusScopeNode) _lastInsideRoute = primary;
+      if (primary is! FocusScopeNode) _remember(primary);
       return;
     }
 

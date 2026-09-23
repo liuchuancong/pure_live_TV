@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/app/router/router.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
@@ -72,7 +73,17 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                         ),
                         itemBuilder: (context, area, index) => TvAreaCard(
                           area: area,
-                          onTap: () {},
+                          // A followed category is a shortcut into the same room
+                          // list the 分区 tab opens: pressing OK used to do
+                          // nothing here, so the page was a dead end. The
+                          // category carries its own platform, which is what the
+                          // "全部" tab needs (the grid then spans platforms).
+                          onTap: () {
+                            context.pushPage(
+                              AppRoutes.kAreaRooms,
+                              extra: AreaRoomsArgs(site: Sites.of(area.platform), subCategory: area),
+                            );
+                          },
                           onLongPress: () {
                             FavOperateUtil.toggleAreaFollowDialog(context, area);
                           },

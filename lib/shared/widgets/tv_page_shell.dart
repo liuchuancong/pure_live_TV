@@ -42,6 +42,10 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
   /// Whether this page's subtree is on stage — see [build].
   bool _onStage = true;
 
+  /// The item the page-local restorer says the keyboard belongs to — see
+  /// [TvFocusRestorer.onRestoreTarget] and [_focusHeldInsidePage].
+  FocusNode? _restoreTarget;
+
   @override
   void initState() {
     super.initState();
@@ -143,6 +147,23 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
       return;
     }
 
+    // Something inside this page already holds the keyboard: leave it there.
+    //
+    // The page-local [TvFocusRestorer] runs before this claim on a pop and puts
+    // the highlight back on the item the user acted on. Claiming the opening
+    // node on top of that is what moved the highlight off the room card and onto
+    // the home sidebar after a room was closed — the reclaim also fires when the
+    // overlay puts the page back on stage, a few frames after the restore, so
+    // the restore alone could never win.
+    final bool held = _focusHeldInsidePage();
+    // ignore: avoid_print
+    print('SHELL claim opener=${widget.openingFocus?.hashCode} primary=${FocusManager.instance.primaryFocus?.hashCode} '
+        'target=${_restoreTarget?.hashCode} targetUsable=${_restoreTarget == null ? false : _usable(_restoreTarget!)} held=$held');
+    if (held) {
+      _claimedFocus = true;
+      return;
+    }
+
     // 1. The page's own back button, when it has one.
     final FocusNode? back = widget.openingFocus;
     if (back != null && _usable(back)) {
@@ -170,6 +191,37 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
       _focusClaimAttempts++;
       WidgetsBinding.instance.addPostFrameCallback((_) => _claimFocus());
     }
+  }
+
+  /// Whether the keyboard is on a real node inside this page's own subtree.
+  ///
+  /// Used to keep the opening claim from overriding a restore [TvFocusRestorer]
+  /// already made — see [_claimFocus]. The live focus is checked first, but a
+  /// request made in this same frame is only applied in a microtask, so the
+  /// restore target the restorer reported is what actually answers this while a
+  /// pop is settling.
+  bool _focusHeldInsidePage() {
+    final FocusNode? primary = FocusManager.instance.primaryFocus;
+    if (primary != null && primary is! FocusScopeNode && _belongsToPage(primary)) return true;
+    final FocusNode? target = _restoreTarget;
+    return target != null && _usable(target) && _belongsToPage(target);
+  }
+
+  bool _belongsToPage(FocusNode node) {
+    final BuildContext? nodeContext = node.context;
+    if (nodeContext == null || !nodeContext.mounted) return false;
+    // A plain containment walk: `findAncestorStateOfType` stops at the nearest
+    // shell, so a node owned by a page nested inside this one (every home tab
+    // is its own shell) would answer "not mine" and still lose the keyboard.
+    bool inside = false;
+    nodeContext.visitAncestorElements((Element element) {
+      if (element == context) {
+        inside = true;
+        return false;
+      }
+      return true;
+    });
+    return inside;
   }
 
   /// Attached, mounted and able to take focus — the rule the d-pad package's own
@@ -238,7 +290,10 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
       key: _contentRegionKey,
       verticalEdge: hasBar ? DpadEdgeBehavior.stop : DpadEdgeBehavior.leave,
       onEdge: hasBar ? _onContentEdge : null,
-      child: TvFocusRestorer(child: widget.child),
+      child: TvFocusRestorer(
+        onRestoreTarget: (node) => _restoreTarget = node,
+        child: widget.child,
+      ),
     );
 
     return Scaffold(
