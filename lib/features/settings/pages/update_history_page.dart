@@ -1,6 +1,6 @@
+import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -153,32 +153,10 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
               focused,
               release.version == state.currentVersion ? i18n('font_in_use') : i18n('update_view_log'),
             ),
-            onSelect: () => showReleaseNotesDialog(
-              context: context,
-              release: release,
-              controller: controller,
-              onDownloadStarted: _backToUpdatePage,
-            ),
+            onSelect: () => showReleaseNotesDialog(context: context, release: release),
           ),
       ],
     );
-  }
-
-  /// `date · size · downloads`, plus the pre-release mark.
-  /// Progress for a download started here lives on the update page, which owns the
-  /// progress bar; when this page was opened from it, the pop lands right back on it.
-  void _backToUpdatePage() {
-    if (!mounted) return;
-    final NavigatorState? navigator = Navigator.maybeOf(context);
-    if (navigator != null && navigator.canPop()) {
-      navigator.pop();
-      return;
-    }
-    // Reached directly (a widget test, or a future deep link): open the update page so the
-    // download is not invisible.
-    // Typed navigation needs a router in scope; a bare widget test has none.
-    final GoRouter? router = GoRouter.maybeOf(context);
-    if (router != null) const AppUpdateRoute().push(context);
   }
 
   Widget _hint(String label) {
@@ -234,14 +212,12 @@ String releaseSubtitle(ReleaseModel release) {
 
 /// The changelog + assets dialog of one release.
 ///
-/// Shared with online update's preview rows. Installing any release listed here is also the
-/// rollback path: [AppUpdateController.downloadAndInstallUrl] takes an arbitrary asset
-/// url through the same mirrors and the same installer.
+/// Shared with online update's preview rows. Downloading any release listed here is also the
+/// rollback path: the asset button opens the download dialog on that url, which the controller
+/// takes through the same mirrors and the same installer as the newest release.
 Future<void> showReleaseNotesDialog({
   required BuildContext context,
   required ReleaseModel release,
-  required AppUpdateController controller,
-  VoidCallback? onDownloadStarted,
 }) async {
   await TvDialogUtils.show<void>(
     context: context,
@@ -296,8 +272,7 @@ Future<void> showReleaseNotesDialog({
                       onTap: file.url.startsWith('http')
                           ? () {
                               Navigator.of(dialogContext).pop();
-                              controller.downloadAndInstallUrl(file.url);
-                              onDownloadStarted?.call();
+                              showDownloadApkDialog(context: context, url: file.url);
                             }
                           : null,
                     ),

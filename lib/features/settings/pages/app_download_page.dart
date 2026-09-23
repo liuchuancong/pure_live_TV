@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:markdown_widget/config/configs.dart';
 import 'package:markdown_widget/widget/all.dart';
+import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/release_model/release_model.dart';
 import 'package:pure_live/shared/theme/index.dart';
@@ -18,7 +18,9 @@ import 'package:pure_live/shared/widgets/index.dart';
 ///
 /// Unlike the plain download row on the update page (which races the mirrors
 /// itself), a source picked here is tried first: "source 3" really means
-/// source 3 — with the remaining mirrors kept as fallback.
+/// source 3 — with the remaining mirrors kept as fallback. The transfer itself
+/// runs in the download dialog, which owns the progress, the cancel and the
+/// install action; this page only picks the source.
 class AppDownloadPage extends ConsumerWidget {
   const AppDownloadPage({super.key});
 
@@ -122,7 +124,6 @@ class AppDownloadPage extends ConsumerWidget {
                       style: TextStyle(fontSize: 15.sp, color: context.tvTheme.secondaryTextColor),
                     ),
                   ),
-                if (state.phase == AppUpdatePhase.downloading) _DownloadProgress(state: state),
                 if (state.phase == AppUpdatePhase.readyToInstall)
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
@@ -132,7 +133,7 @@ class AppDownloadPage extends ConsumerWidget {
                           title: i18n('update_install_now'),
                           size: TvButtonSize.small,
                           icon: Icon(Icons.install_mobile_rounded, size: 18.sp),
-                          onTap: controller.installDownloaded,
+                          onTap: () => controller.installDownloaded(),
                         ),
                         SizedBox(width: 16.sp),
                         Expanded(
@@ -207,7 +208,6 @@ class _AbiDownloadSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (sources.isEmpty) return const SizedBox.shrink();
-    final controller = ref.read(appUpdateControllerProvider.notifier);
     final tvTheme = context.tvTheme;
 
     return Padding(
@@ -236,7 +236,7 @@ class _AbiDownloadSection extends ConsumerWidget {
                   title: useOrigin ? i18n('github_origin_source') : i18n('download_source', args: {'num': '${i + 1}'}),
                   size: TvButtonSize.small,
                   icon: Icon(Remix.link, size: 18.sp),
-                  onTap: () => _confirmSource(context, controller, sources[i], i),
+                  onTap: () => _startDownload(context, sources[i]),
                 ),
             ],
           ),
@@ -245,30 +245,12 @@ class _AbiDownloadSection extends ConsumerWidget {
     );
   }
 
-  /// Shows the source's URL and starts the download from exactly that source
-  /// on confirm — the given URL is tried first, the other mirrors stay as
-  /// fallback (see [AppUpdateController.downloadAndInstallUrl]).
-  void _confirmSource(BuildContext context, AppUpdateController controller, String url, int index) {
-    final tvTheme = context.tvTheme;
-    TvDialogUtils.show(
-      context: context,
-      builder: (dialogContext) => TvDialog(
-        title: useOrigin ? i18n('github_origin_source') : i18n('download_source', args: {'num': '${index + 1}'}),
-        confirmText: i18n('download'),
-        cancelText: i18n('cancel'),
-        onConfirm: () {
-          Navigator.of(dialogContext).pop();
-          controller.downloadAndInstallUrl(url, preferGivenUrl: true);
-        },
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Text(
-            url,
-            style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
-          ),
-        ),
-      ),
-    );
+  /// Starts the download from exactly the picked source: the download dialog
+  /// opens on that URL — with the other mirrors kept as fallback by the
+  /// controller — and carries the progress, the cancel and the install action
+  /// itself, so the page keeps no transfer state of its own.
+  void _startDownload(BuildContext context, String url) {
+    showDownloadApkDialog(context: context, url: url, preferGivenUrl: true);
   }
 
   String _abiLabel(String abi) {
@@ -278,53 +260,6 @@ class _AbiDownloadSection extends ConsumerWidget {
       'x86_64' => i18n('arch_x86_64'),
       _ => abi,
     };
-  }
-}
-
-class _DownloadProgress extends ConsumerWidget {
-  const _DownloadProgress({required this.state});
-
-  final AppUpdateState state;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tvTheme = context.tvTheme;
-    final controller = ref.read(appUpdateControllerProvider.notifier);
-    final String done = (state.receivedBytes / 1048576).toStringAsFixed(1);
-    final String total = state.totalBytes > 0 ? ' / ${(state.totalBytes / 1048576).toStringAsFixed(1)} MB' : ' MB';
-    final String percent = state.totalBytes > 0 ? '${(state.progress * 100).toStringAsFixed(0)}%' : '';
-    final String speed = state.speedMbps > 0 ? '${state.speedMbps.toStringAsFixed(1)} MB/s' : '';
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6.sp),
-            child: LinearProgressIndicator(
-              value: state.totalBytes > 0 ? state.progress : null,
-              minHeight: 8.sp,
-              color: tvTheme.focusColor,
-              backgroundColor: tvTheme.cardColor,
-            ),
-          ),
-          SizedBox(height: 8.sp),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  [done + total, if (percent.isNotEmpty) percent, if (speed.isNotEmpty) speed]
-                      .join(' · '),
-                  style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
-                ),
-              ),
-              TvButton(title: i18n('cancel'), size: TvButtonSize.mini, isSecondary: true, onTap: controller.cancelDownload),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }
 

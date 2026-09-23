@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:crypto/crypto.dart';
+import 'package:path/path.dart' as path;
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/common/http_client.dart';
@@ -20,6 +22,12 @@ enum AppUpdatePhase { idle, checking, upToDate, available, downloading, readyToI
 
 /// What the app did to this device's copy of itself.
 enum AppUpdateAction { checked, available, downloaded, installed, failed }
+
+/// What happened when a downloaded package was handed to the installer.
+///
+/// The download dialog owns the install action, so the controller reports the
+/// outcome instead of showing anything itself: the caller picks the message.
+enum AppInstallResult { launched, permissionDenied, launchFailed, missingPackage }
 
 /// One line of local update log; kept in Hive so it survives the restart.
 class AppUpdateRecord {
@@ -137,6 +145,110 @@ String cleanReleaseNotes(String raw) {
   return buffer.join('\n').trim();
 }
 
+/// Longest file name (in UTF-8 bytes) [safeDownloadFileName] may return.
+///
+/// The cap keeps the name inside the 255-byte limit every filesystem the TV
+/// build writes to enforces, with room left for the `.part` / `.previous`
+/// staging suffixes the download uses.
+const int _maxDownloadBaseNameBytes = 240;
+const int _maxDownloadExtensionBytes = 32;
+
+/// Turns [url] (or [suggestedName]) into a file name that is safe on every
+/// filesystem the TV build writes to.
+///
+/// Ported from the mobile app's updater: the release asset names carry spaces,
+/// non-ASCII characters and occasionally path separators, and the `.part` /
+/// `.previous` staging files add to the name, so the result has to be a valid
+/// single path segment and short enough to leave room for those suffixes.
+String safeDownloadFileName(String url, {String? suggestedName}) {
+  var candidate = suggestedName?.trim() ?? '';
+
+  if (candidate.isEmpty) {
+    try {
+      final uri = Uri.parse(url.trim());
+      final segments = uri.pathSegments.where((segment) => segment.trim().isNotEmpty).toList();
+
+      if (segments.isNotEmpty) {
+        candidate = segments.last;
+      }
+    } catch (_) {}
+  }
+
+  try {
+    candidate = Uri.decodeComponent(candidate);
+  } catch (_) {}
+
+  candidate = candidate.replaceAll('\\', '/').split('/').last.trim();
+
+  candidate = candidate
+      .replaceAll(RegExp(r'[\x00-\x1F\x7F<>:"/\\|?*\u202A-\u202E\u2066-\u2069]'), '_')
+      .replaceFirst(RegExp(r'^[. ]+'), '')
+      .replaceFirst(RegExp(r'[. ]+$'), '');
+
+  candidate = String.fromCharCodes(candidate.runes);
+
+  if (candidate.isEmpty || candidate == '.' || candidate == '..') {
+    candidate = 'PureLive-tv-update.apk';
+  }
+
+  if (RegExp(r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)', caseSensitive: false).hasMatch(candidate)) {
+    candidate = '_$candidate';
+  }
+
+  return _fitDownloadBaseName(candidate);
+}
+
+/// Shortens [candidate] to [_maxDownloadBaseNameBytes] without splitting a
+/// multi-byte character, keeping the extension and adding a content hash so two
+/// different long names cannot collide on the same shortened one.
+String _fitDownloadBaseName(String candidate) {
+  if (utf8.encode(candidate).length <= _maxDownloadBaseNameBytes) {
+    return candidate;
+  }
+
+  final rawExtension = path.extension(candidate);
+  final extension = _truncateUtf8(rawExtension, _maxDownloadExtensionBytes);
+
+  final stem = rawExtension.isEmpty ? candidate : candidate.substring(0, candidate.length - rawExtension.length);
+
+  final digest = sha256.convert(utf8.encode(candidate)).toString().substring(0, 12);
+
+  final suffix = '-$digest$extension';
+
+  final stemBudget = _maxDownloadBaseNameBytes - utf8.encode(suffix).length;
+
+  var fittedStem = _truncateUtf8(stem, stemBudget);
+
+  if (fittedStem.isEmpty) {
+    fittedStem = _truncateUtf8('PureLive', stemBudget);
+  }
+
+  return '$fittedStem$suffix';
+}
+
+String _truncateUtf8(String value, int maxBytes) {
+  if (maxBytes <= 0 || value.isEmpty) {
+    return '';
+  }
+
+  final buffer = StringBuffer();
+  var usedBytes = 0;
+
+  for (final rune in value.runes) {
+    final scalar = String.fromCharCode(rune);
+    final scalarBytes = utf8.encode(scalar).length;
+
+    if (usedBytes + scalarBytes > maxBytes) {
+      break;
+    }
+
+    buffer.write(scalar);
+    usedBytes += scalarBytes;
+  }
+
+  return buffer.toString();
+}
+
 /// Everything the update page renders.
 class AppUpdateState {
   final AppUpdatePhase phase;
@@ -161,6 +273,13 @@ class AppUpdateState {
   final int receivedBytes;
   final int totalBytes;
   final double speedMbps;
+
+  /// Absolute path of the package the last successful download committed.
+  ///
+  /// The download dialog owns the transfer, so the finished package has to
+  /// outlive it: this is what [AppUpdateController.installDownloaded] hands to
+  /// the installer, and what the download page's install row acts on.
+  final String downloadedPath;
 
   final List<ReleaseModel> history;
   final bool historyLoading;
@@ -187,6 +306,7 @@ class AppUpdateState {
     this.receivedBytes = 0,
     this.totalBytes = 0,
     this.speedMbps = 0,
+    this.downloadedPath = '',
     this.history = const [],
     this.historyLoading = false,
     this.historyError,
@@ -219,6 +339,7 @@ class AppUpdateState {
     int? receivedBytes,
     int? totalBytes,
     double? speedMbps,
+    String? downloadedPath,
     List<ReleaseModel>? history,
     bool? historyLoading,
     String? historyError,
@@ -240,6 +361,7 @@ class AppUpdateState {
       receivedBytes: receivedBytes ?? this.receivedBytes,
       totalBytes: totalBytes ?? this.totalBytes,
       speedMbps: speedMbps ?? this.speedMbps,
+      downloadedPath: downloadedPath ?? this.downloadedPath,
       history: history ?? this.history,
       historyLoading: historyLoading ?? this.historyLoading,
       historyError: historyError,
@@ -574,27 +696,32 @@ class AppUpdateController extends _$AppUpdateController {
 
   // ---------------------------------------------------------------------------
   // Download + install
+  //
+  // The transfer is owned by the update dialog, which draws the progress,
+  // offers the cancel and drives the install. What stays here is what the
+  // dialog must not own: the mirror candidate list, the private destination
+  // directory, the staged commit of the package, the local update log and the
+  // "install unknown apps" grant.
   // ---------------------------------------------------------------------------
 
-  Future<void> downloadAndInstall([String? abiOverride]) async {
-    if (state.phase == AppUpdatePhase.downloading) return;
-    final url = resolveAssetUrl(abiOverride);
-    if (url == null || !url.startsWith('http')) {
-      _patchState(phase: AppUpdatePhase.failed, error: 'no download url');
-      return;
-    }
-    await downloadAndInstallUrl(url);
-  }
-
-  /// Downloads an arbitrary release asset (a history version for rollback)
-  /// through the same mirror list and installs it.
-  Future<void> downloadAndInstallUrl(String url, {bool preferGivenUrl = false}) async {
-    if (state.phase == AppUpdatePhase.downloading) return;
+  /// Downloads one release asset into the app's private download directory.
+  ///
+  /// The candidates are tried in order — the picked source first when the
+  /// download page handed one over, the app's mirror list otherwise, the plain
+  /// origin always last — so a dead mirror costs one attempt instead of the
+  /// whole download. Progress is published through [AppUpdateState] for the
+  /// caller to render, and the committed path is kept in
+  /// [AppUpdateState.downloadedPath] so the install survives the dialog.
+  ///
+  /// Returns true when a package was committed.
+  Future<bool> downloadAsset(String url, {bool preferGivenUrl = false}) async {
+    if (state.phase == AppUpdatePhase.downloading) return false;
     if (!url.startsWith('http')) {
-      _patchState(phase: AppUpdatePhase.failed, error: 'no download url');
-      return;
+      _patchState(phase: AppUpdatePhase.available, error: 'no download url');
+      return false;
     }
-    final fileName = _safeFileName(url);
+
+    final fileName = safeDownloadFileName(url);
     // The download page hands over an explicitly picked source: it goes first
     // so "source 3" really downloads from source 3, with the remaining mirrors
     // kept as fallback. The plain path keeps mirror-first ordering.
@@ -605,7 +732,14 @@ class AppUpdateController extends _$AppUpdateController {
 
     _cancelToken = CancelToken();
     _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 30)));
-    _patchState(phase: AppUpdatePhase.downloading, receivedBytes: 0, totalBytes: 0, speedMbps: 0, error: '');
+    _patchState(
+      phase: AppUpdatePhase.downloading,
+      receivedBytes: 0,
+      totalBytes: 0,
+      speedMbps: 0,
+      downloadedPath: '',
+      error: '',
+    );
 
     Directory? target;
     try {
@@ -613,36 +747,54 @@ class AppUpdateController extends _$AppUpdateController {
       target = Directory('${base.path}${Platform.pathSeparator}update');
       if (!await target.exists()) await target.create(recursive: true);
     } catch (error) {
-      _patchState(phase: AppUpdatePhase.failed, error: '$error');
-      return;
+      _cancelDownload();
+      _patchState(phase: AppUpdatePhase.available, error: '$error');
+      return false;
     }
 
     Object? lastError;
     for (final candidate in candidates.toSet()) {
+      final destination = '${target.path}${Platform.pathSeparator}$fileName';
       try {
-        await _downloadOne(candidate, '${target.path}${Platform.pathSeparator}$fileName');
-        if (_cancelToken?.isCancelled == true) return;
-        _patchState(phase: AppUpdatePhase.readyToInstall, receivedBytes: state.totalBytes);
+        await _downloadCandidate(candidate, destination);
+        if (_cancelToken?.isCancelled == true) return false;
+        _cancelDownload();
+        _patchState(
+          phase: AppUpdatePhase.readyToInstall,
+          receivedBytes: state.totalBytes,
+          downloadedPath: destination,
+        );
         _appendRecord(AppUpdateAction.downloaded, version: state.latestVersion);
-        unawaited(_install(target.path, fileName));
-        return;
+        return true;
       } catch (error) {
-        if (_cancelToken?.isCancelled == true) return;
+        if (_cancelToken?.isCancelled == true) return false;
         lastError = error;
       }
     }
+
+    _cancelDownload();
     _patchState(
       phase: AppUpdatePhase.available,
       error: 'download failed: $lastError',
       receivedBytes: 0,
       totalBytes: 0,
+      speedMbps: 0,
     );
     _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
+    return false;
   }
 
-  Future<void> _downloadOne(String url, String destination) async {
+  /// Streams one candidate into `<destination>.part`, then commits it.
+  ///
+  /// The package is never written where the installer can see a half-file: the
+  /// bytes land in a staging file, and only a completed transfer is renamed
+  /// onto [destination].
+  Future<void> _downloadCandidate(String url, String destination) async {
+    final completed = File(destination);
     final partial = File('$destination.part');
-    if (await partial.exists()) await partial.delete();
+
+    await _recoverInterruptedCommit(completed);
+    await _deleteIfPresent(partial);
 
     var lastTick = DateTime.now();
     var lastBytes = 0;
@@ -664,20 +816,32 @@ class AppUpdateController extends _$AppUpdateController {
         }
       },
     );
-    await partial.rename(destination);
+
+    if (!await partial.exists()) {
+      throw const FileSystemException('Downloaded staging file is missing');
+    }
+
+    await _commitStagedFile(partial, completed);
   }
 
-  /// Hands the downloaded package to the platform installer. Android TVs need
-  /// the "install unknown apps" grant for this app first.
-  Future<void> _install(String directory, String fileName) async {
-    final path = '$directory${Platform.pathSeparator}$fileName';
-    if (Platform.isAndroid && fileName.toLowerCase().endsWith('.apk')) {
+  /// Hands the package the download committed to the platform installer.
+  ///
+  /// Android TVs need the "install unknown apps" grant for this app first; a
+  /// denied grant is reported, not thrown, so the dialog can say so.
+  Future<AppInstallResult> installDownloaded() async {
+    final String packagePath = state.downloadedPath;
+    if (packagePath.isEmpty || !await File(packagePath).exists()) {
+      _patchState(error: 'install package missing');
+      return AppInstallResult.missingPackage;
+    }
+
+    if (Platform.isAndroid && packagePath.toLowerCase().endsWith('.apk')) {
       try {
         if (await Permission.requestInstallPackages.isDenied) {
           final granted = await Permission.requestInstallPackages.request();
           if (!granted.isGranted) {
             _patchState(error: 'install permission denied');
-            return;
+            return AppInstallResult.permissionDenied;
           }
         }
       } catch (_) {
@@ -685,38 +849,19 @@ class AppUpdateController extends _$AppUpdateController {
         // will still fail loudly if the grant is missing.
       }
     }
-    final ok = await FileUtils.openFileOrUrl(path);
+
+    final ok = await FileUtils.openFileOrUrl(packagePath);
     if (!ok) {
       _patchState(error: 'installer launch failed');
       _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
-      return;
+      return AppInstallResult.launchFailed;
     }
     _appendRecord(AppUpdateAction.installed, version: state.latestVersion);
+    return AppInstallResult.launched;
   }
 
-  Future<void> installDownloaded() async {
-    // The installer was already launched right after the download; this re-opens
-    // the newest package in the update folder when the user closed it.
-    try {
-      final base = await AppPathManager().getDir(AppPathManager.dirDownload);
-      final dir = Directory('${base.path}${Platform.pathSeparator}update');
-      if (!await dir.exists()) return;
-      final files = await dir
-          .list()
-          .where((e) => e is File)
-          .toList();
-      File? newest;
-      for (final entity in files.cast<File>()) {
-        if (newest == null || (await entity.lastModified()).isAfter(await newest.lastModified())) {
-          newest = entity;
-        }
-      }
-      if (newest != null) await FileUtils.openFileOrUrl(newest.path);
-    } catch (_) {}
-  }
-
+  /// Aborts the transfer the download dialog started.
   void cancelDownload() {
-    _cancelToken?.cancel();
     _cancelDownload();
     _patchState(phase: AppUpdatePhase.available, receivedBytes: 0, totalBytes: 0, speedMbps: 0);
   }
@@ -728,6 +873,56 @@ class AppUpdateController extends _$AppUpdateController {
     } catch (_) {}
     _cancelToken = null;
     _dio = null;
+  }
+
+  Future<void> _deleteIfPresent(File? file) async {
+    if (file != null && await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  /// Repairs a commit that a kill (or a battery pull) interrupted between the
+  /// backup rename and the staging rename.
+  Future<void> _recoverInterruptedCommit(File completedFile) async {
+    final backupFile = File('${completedFile.path}.previous');
+
+    if (!await backupFile.exists()) {
+      return;
+    }
+
+    if (await completedFile.exists()) {
+      await backupFile.delete();
+    } else {
+      await backupFile.rename(completedFile.path);
+    }
+  }
+
+  /// Moves [partialFile] onto [completedFile], keeping the previous package as
+  /// a `.previous` backup until the swap succeeded.
+  Future<File> _commitStagedFile(File partialFile, File completedFile) async {
+    final backupFile = File('${completedFile.path}.previous');
+
+    await _deleteIfPresent(backupFile);
+
+    final hadPreviousFile = await completedFile.exists();
+
+    if (hadPreviousFile) {
+      await completedFile.rename(backupFile.path);
+    }
+
+    try {
+      final committedFile = await partialFile.rename(completedFile.path);
+
+      await _deleteIfPresent(backupFile);
+
+      return committedFile;
+    } catch (_) {
+      if (hadPreviousFile && await backupFile.exists() && !await completedFile.exists()) {
+        await backupFile.rename(completedFile.path);
+      }
+
+      rethrow;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -749,6 +944,7 @@ class AppUpdateController extends _$AppUpdateController {
     int? receivedBytes,
     int? totalBytes,
     double? speedMbps,
+    String? downloadedPath,
     List<ReleaseModel>? history,
     bool? historyLoading,
     String? historyError,
@@ -771,21 +967,12 @@ class AppUpdateController extends _$AppUpdateController {
       receivedBytes: receivedBytes,
       totalBytes: totalBytes,
       speedMbps: speedMbps,
+      downloadedPath: downloadedPath,
       history: history,
       historyLoading: historyLoading,
       historyError: historyError,
       records: records,
       latestAssets: latestAssets,
     );
-  }
-
-  String _safeFileName(String url) {
-    var name = '';
-    try {
-      final segments = Uri.parse(url).pathSegments.where((s) => s.trim().isNotEmpty).toList();
-      if (segments.isNotEmpty) name = Uri.decodeComponent(segments.last);
-    } catch (_) {}
-    name = name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_').trim();
-    return name.isEmpty ? 'pure_live_tv_update.apk' : name;
   }
 }

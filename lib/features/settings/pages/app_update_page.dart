@@ -157,7 +157,7 @@ class AppUpdatePage extends ConsumerWidget {
               focused,
               release.version == state.currentVersion ? i18n('font_in_use') : i18n('update_view_log'),
             ),
-            onSelect: () => showReleaseNotesDialog(context: context, release: release, controller: controller),
+            onSelect: () => showReleaseNotesDialog(context: context, release: release),
           ),
         if (state.history.isEmpty)
           Padding(
