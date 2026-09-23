@@ -1,10 +1,10 @@
 import 'kick_api.dart';
+import 'kick_danmaku.dart';
 import 'kick_hls.dart';
 import 'kick_link.dart';
 import 'package:dio/dio.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/contracts/live_site.dart';
-import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
 import 'package:pure_live/shared/contracts/live_search.dart';
 import 'package:pure_live/shared/contracts/live_danmaku.dart';
 import 'package:pure_live/shared/contracts/live_directory.dart';
@@ -41,7 +41,7 @@ class KickSite extends LiveSite
   String get directoryNoticeKey => 'kick_directory_scope';
 
   @override
-  LiveDanmaku getDanmaku() => EmptyDanmaku();
+  LiveDanmaku getDanmaku() => KickDanmaku(api: _api);
 
   static LiveRoom _channelCard(KickChannel channel) => LiveRoom(
     platform: 'kick',
@@ -54,6 +54,7 @@ class KickSite extends LiveSite
     followers: channel.followers?.toString() ?? '',
     introduction: channel.bio,
     link: KickLink.url(channel.slug),
+    danmakuData: channel.slug,
     liveStatus: channel.isBanned
         ? LiveStatus.banned
         : channel.isLive
@@ -70,9 +71,10 @@ class KickSite extends LiveSite
     avatar: live.channel.avatar,
     cover: live.cover,
     area: live.category,
-    followers: live.channel.followers!.toString(),
+    followers: live.channel.followers?.toString() ?? '',
     introduction: live.channel.bio,
     link: KickLink.url(live.channel.slug),
+    danmakuData: live.channel.slug,
     liveStatus: LiveStatus.live,
     onlineViewers: live.viewers?.toString() ?? '',
     audienceMetricType: AudienceMetricType.onlineViewers,
