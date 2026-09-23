@@ -30,6 +30,7 @@ import { ChevronRight as ChevronRightIcon } from 'lucide-vue-next'
 
 import bilibiliIcon from '@/assets/bilibili.png'
 import huyaIcon from '@/assets/huya.png'
+import douyuIcon from '@/assets/douyu.png'
 import douyinIcon from '@/assets/douyin.png'
 import kuaishouIcon from '@/assets/kuaishou.png'
 import yyIcon from '@/assets/yy.png'
@@ -37,16 +38,19 @@ import soopIcon from '@/assets/soop.png'
 import twitchIcon from '@/assets/twitch.png'
 const route = useRoute()
 
-// The TV app's own platform list: douyu/cc are gone, yy/soop/twitch are in.
-// The three new ones have no logo asset — a monogram badge reads cleaner than
-// a broken img.
+// Must mirror the TV app's cookie fields exactly (see lib/services/cookie_manager/
+// cookie_model.dart): the TV builds its pairing QR as /#/cookie/<siteId>, so a
+// platform missing here sends the phone to the dashboard instead of the page.
+// A platform with no logo asset falls back to a monogram badge.
 const supportSites = [
   { id: 'bilibili', name: '哔哩哔哩', icon: bilibiliIcon },
   { id: 'huya', name: '虎牙', icon: huyaIcon },
+  { id: 'douyu', name: '斗鱼', icon: douyuIcon },
   { id: 'douyin', name: '抖音', icon: douyinIcon },
   { id: 'kuaishou', name: '快手', icon: kuaishouIcon },
   { id: 'yy', name: 'YY', icon: yyIcon },
   { id: 'soop', name: 'SOOP', icon: soopIcon },
-  { id: 'twitch', name: 'Twitch', icon: twitchIcon }
+  { id: 'twitch', name: 'Twitch', icon: twitchIcon },
+  { id: 'taobao', name: '淘宝直播', badge: '淘', badgeClass: 'bg-orange-500/15 text-orange-500' }
 ]
 </script>

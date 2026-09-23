@@ -4,7 +4,6 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
-import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -26,7 +25,6 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       hintKey: 'cookie_hint',
       read: (cookies) => cookies.bilibiliCookie,
       apply: (controller, value) => controller.setBilibiliCookie(value),
-      webPath: WebRemoteRouter.cookieBilibili,
     ),
     CookieSite(
       siteId: Sites.huyaSite,
@@ -35,7 +33,6 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       hintKey: 'huya_cookie_hint',
       read: (cookies) => cookies.huyaCookie,
       apply: (controller, value) => controller.setHuyaCookie(value),
-      webPath: WebRemoteRouter.cookieHuya,
     ),
     CookieSite(
       siteId: Sites.douyuSite,
@@ -44,7 +41,6 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       hintKey: 'cookie_hint',
       read: (cookies) => cookies.douyuCookie,
       apply: (controller, value) => controller.setDouyuCookie(value),
-      webPath: WebRemoteRouter.cookieDouyu,
     ),
     CookieSite(
       siteId: Sites.yySite,
@@ -61,7 +57,6 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       hintKey: 'douyin_cookie_hint',
       read: (cookies) => cookies.douyinCookie,
       apply: (controller, value) => controller.setDouyinCookie(value),
-      webPath: WebRemoteRouter.cookieDouyin,
     ),
     CookieSite(
       siteId: Sites.kuaishouSite,
@@ -70,7 +65,6 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       hintKey: 'kuaishou_cookie_hint',
       read: (cookies) => cookies.kuaishouCookie,
       apply: (controller, value) => controller.setKuaishouCookie(value),
-      webPath: WebRemoteRouter.cookieKuaishou,
     ),
     CookieSite(
       siteId: Sites.twitchSite,
@@ -176,7 +170,6 @@ class CookieSite {
     required this.hintKey,
     required this.read,
     required this.apply,
-    this.webPath,
   });
 
   /// Platform id in [Sites], used to resolve the bundled logo.
@@ -187,9 +180,6 @@ class CookieSite {
   final String hintKey;
   final String Function(CookieModel) read;
   final void Function(CookieController controller, String value) apply;
-
-  /// Phone page for this platform; null when the bundled phone pages have none.
-  final String? webPath;
 }
 
 /// The platform's own logo from the central registry (`assets/images`), sized

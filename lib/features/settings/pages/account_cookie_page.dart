@@ -84,6 +84,10 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
 
       if (server?.isRunning == true) {
         setState(() {
+          // The page is addressed by platform id, so web_remote must have a
+          // route per id this app stores a cookie for — a missing one silently
+          // lands the phone on the dashboard. Both lists live in
+          // web_remote/src/views/CookieRemote.vue and router.js.
           _phoneUrl = '${server!.serverUrl}/#/cookie/${widget.platform.siteId}';
         });
       } else {
@@ -440,10 +444,12 @@ class CookiePlatform {
     required this.hint,
     required this.read,
     required this.apply,
-    this.webPath,
   });
 
-  /// Platform id in `Sites`.
+  /// Platform id in `Sites`. Also the phone page's route segment: the pairing
+  /// QR below is built as `/#/cookie/<siteId>`, so a platform whose cookie this
+  /// app stores must exist as a page in web_remote (see
+  /// web_remote/src/views/CookieRemote.vue).
   final String siteId;
 
   final String name;
@@ -451,9 +457,6 @@ class CookiePlatform {
 
   final String Function(CookieModel) read;
   final ValueChanged<String> apply;
-
-  /// Phone-remote page for this platform.
-  final String? webPath;
 }
 
 /// Creates the platform descriptor for a route.
@@ -471,7 +474,6 @@ CookiePlatform cookiePlatformFor(String route) {
     hint: i18n(site.hintKey, args: {'name': name}),
     read: site.read,
     apply: (value) => site.apply(SettingsService.to.cookieManager, value),
-    webPath: site.webPath,
   );
 }
 

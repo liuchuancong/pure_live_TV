@@ -41,7 +41,6 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
         hint: i18n('cookie_hint', args: {'name': i18n('site_bilibili')}),
         read: (model) => model.bilibiliCookie,
         apply: (value) => ref.read(cookieControllerProvider.notifier).setBilibiliCookie(value),
-        webPath: '/#/cookie/bilibili',
       ),
       // The left column is the sign-in itself: the QR is on screen the moment
       // the page opens, no dialog to enter first.

@@ -58,12 +58,11 @@ const editingIndex = ref(-1)
 const editingWord = ref('')
 
 const loadFilter = async () => {
-  const res = await api.getDanmakuFilter()
-  if (res.isOk && Array.isArray(res.data)) {
-    filterList.value = res.data
-  } else {
-    filterList.value = []
-  }
+  // getDanmakuFilter 已经解包，直接返回数组本身（不像 getTags 那样带
+  // {isOk, data}。此前按信封读，isOk 恒为 undefined，filterList 永远是空的——
+  // 于是每次添加都只提交一个新词，服务端整体替换后把之前添加的全清掉。
+  const list = await api.getDanmakuFilter()
+  filterList.value = Array.isArray(list) ? list : []
 }
 
 onMounted(loadFilter)
