@@ -37,6 +37,8 @@ Map<String, String> _labels = {
   'bigo_login_required': '该房间当前要求登录，直播状态与媒体保持未知。',
   'bigo_access_restricted': '该房间受密码或付费访问限制，直播状态与媒体保持未知。',
   'site_sixroom': '六间房直播',
+  'site_liveme': 'LiveMe',
+  'liveme_chat_notice': 'LiveMe 远端聊天尚待接入；热度、当前观看和累计观看分别展示。',
   'sixroom_chat_notice': '六间房远端聊天尚待接入；大厅 count 保留为平台热度，不标记为唯一并发人数，主播粉丝数单独展示。',
   'sixroom_restricted_notice': '该六间房直播受私密房或黑屏访问条件限制，界面保持未知状态，不将其显示成未开播。',
   'site_weibo': '微博直播',

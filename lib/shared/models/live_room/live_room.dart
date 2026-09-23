@@ -193,6 +193,13 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: true,
       onlineAvailability: AudienceOnlineAvailability.roomRealtime,
     ),
+    // LiveMe exposes platform heat, current playnumber and cumulative
+    // watchnumber as separate fields in both its directory and room response.
+    'liveme': AudiencePlatformCapability(
+      hasPopularity: true,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
     // The watch page exposes a dedicated concurrent-view renderer while a
     // broadcast is live. Historical viewCount is deliberately not reused.
     'youtube': AudiencePlatformCapability(

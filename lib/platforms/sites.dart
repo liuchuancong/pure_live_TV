@@ -55,6 +55,7 @@ class Sites {
   static const String showroomSite = 'showroom';
   static const String chzzkSite = 'chzzk';
   static const String kickSite = 'kick';
+  static const String liveMeSite = 'liveme';
   static const String tiktokSite = 'tiktok';
   static const String youtubeSite = 'youtube';
   static const String bigoSite = 'bigo';
@@ -85,6 +86,7 @@ class Sites {
     showroomSite,
     chzzkSite,
     kickSite,
+    liveMeSite,
     tiktokSite,
     youtubeSite,
     bigoSite,
@@ -223,6 +225,7 @@ class Sites {
         liveSite: ChzzkSite(),
       ),
       kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoOf(kickSite), liveSite: KickSite()),
+      liveMeSite => Site(id: liveMeSite, name: i18n('site_liveme'), logo: logoOf(liveMeSite), liveSite: LiveMeSite()),
       tiktokSite => Site(id: tiktokSite, name: i18n('site_tiktok'), logo: logoOf(tiktokSite), liveSite: TikTokSite()),
       youtubeSite => Site(id: youtubeSite, name: i18n('site_youtube'), logo: logoOf(youtubeSite), liveSite: YouTubeSite()),
       bigoSite => Site(id: bigoSite, name: i18n('site_bigo'), logo: logoOf(bigoSite), liveSite: BigoSite()),
@@ -266,6 +269,7 @@ class Sites {
       showroomSite,
       chzzkSite,
       kickSite,
+      liveMeSite,
       tiktokSite,
       youtubeSite,
       bigoSite,
