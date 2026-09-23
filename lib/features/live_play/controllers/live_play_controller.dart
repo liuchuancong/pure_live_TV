@@ -565,24 +565,32 @@ class LivePlayController extends _$LivePlayController {
   // Channel switching and the playlist.
   // =========================
 
-  /// Channel list: the list carried by the route (the page of favourites,
-  /// popular rooms, a category or search results the room was opened from)
-  /// when there is one, otherwise the rooms in watch history that are still
-  /// live.
+  /// Channel list: the list the room was opened from (the page of favourites,
+  /// popular rooms, a category or search results), followed by the rooms in watch
+  /// history that are not already in it.
   ///
-  /// The carried list wins even with a single entry: it is the context the
-  /// viewer came from, and substituting watch history for it made up/down and
-  /// the playlist panel jump to unrelated rooms.
+  /// The carried list comes first because it is the context the viewer came from:
+  /// entering from a category switches within that category. History is appended
+  /// rather than used as a fallback, so the playlist always carries the recent
+  /// rooms and up/down keeps working when the entry list is short or exhausted.
+  /// Offline and IPTV history entries are left out — there is nothing to switch to.
   List<LiveRoom> get channelRooms {
-    if (args.playlist.isNotEmpty) {
-      return args.playlist;
-    }
+    final List<LiveRoom> source = args.playlist;
 
-    final history = SettingsService.to.historyState.historyRooms
+    final List<LiveRoom> history = SettingsService.to.historyState.historyRooms
         .where((room) => room.platform != Sites.iptvSite && room.liveStatus == LiveStatus.live)
         .toList(growable: false);
 
-    return history.length > 1 ? history : args.playlist;
+    if (history.isEmpty) return source;
+
+    final rooms = <LiveRoom>[...source];
+
+    for (final room in history) {
+      if (rooms.any((existing) => existing.hasSameIdentity(room))) continue;
+      rooms.add(room);
+    }
+
+    return rooms;
   }
 
   /// Index of the current room in the channel list, or 0 when it is missing.

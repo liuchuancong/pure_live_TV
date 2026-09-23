@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart';
-import 'package:pure_live/services/settings/settings.dart';
 
 /// Dialog that switches the current playback to another room.
 ///
@@ -37,6 +37,19 @@ enum _Zone { tabs, rows }
 class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   static const int _tabCount = 3;
 
+  /// Scale applied to the room rows: title, streamer, platform badge and
+  /// audience all grow together so the list reads from a couch distance.
+  ///
+  /// If the avatar inside [PlayerRoomRow] does not follow this, its radius is
+  /// hard-coded — pass a size in from there, or derive it from
+  /// `MediaQuery.textScalerOf(context).scale(...)`.
+  static const double _listTextScale = 1.35;
+
+  /// Estimated row height used by [_revealRow]; roughly the pre-scale value
+  /// (66) multiplied by the scale above, so the auto-scroll target matches
+  /// the taller rows on screen.
+  static const double _rowExtentBase = 90;
+
   final FocusNode _focusNode = FocusNode(debugLabel: 'room-switch');
   final ScrollController _scrollController = ScrollController();
 
@@ -64,52 +77,37 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   // =========================
 
   /// Followed rooms that are live now; a replay is not "is live".
-  ///
-  /// [includeCurrent] keeps the room being watched in the list, which is what the
-  /// new session needs as its playlist: the room is hidden from the *offer* (you
-  /// cannot switch to what is already playing) but it still belongs to the list
-  /// the viewer picked from.
-  List<LiveRoom> _liveRooms({bool includeCurrent = false}) {
+  List<LiveRoom> _liveRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
     return [
       for (final room in rooms)
         if (room.isLiveNow &&
             room.effectiveLiveStatus != LiveStatus.replay &&
-            (includeCurrent || !room.hasSameIdentity(widget.current)))
+            !room.hasSameIdentity(widget.current))
           room,
     ];
   }
 
   /// Followed rooms that are replaying or recorded, matching the mobile page's
   /// replay tab (`effectiveLiveStatus == LiveStatus.replay`).
-  List<LiveRoom> _replayRooms({bool includeCurrent = false}) {
+  List<LiveRoom> _replayRooms() {
     final rooms = SettingsService.to.favState.favoriteRooms;
     return [
       for (final room in rooms)
         if (room.isRecord || room.effectiveLiveStatus == LiveStatus.replay)
-          if (includeCurrent || !room.hasSameIdentity(widget.current)) room,
+          if (!room.hasSameIdentity(widget.current)) room,
     ];
   }
 
-  List<LiveRoom> _historyRooms({bool includeCurrent = false}) {
+  List<LiveRoom> _historyRooms() {
     final rooms = SettingsService.to.historyState.historyRooms;
     return [
       for (final room in rooms)
-        if (includeCurrent || !room.hasSameIdentity(widget.current)) room,
+        if (!room.hasSameIdentity(widget.current)) room,
     ];
   }
 
   List<List<LiveRoom>> get _tabs => <List<LiveRoom>>[_liveRooms(), _replayRooms(), _historyRooms()];
-
-  /// [tabIndex] as the viewer sees it, but with the room being watched kept in,
-  /// in its original position. This is the playlist the new session gets.
-  List<LiveRoom> _playlistOf(int tabIndex) {
-    return switch (tabIndex) {
-      0 => _liveRooms(includeCurrent: true),
-      1 => _replayRooms(includeCurrent: true),
-      _ => _historyRooms(includeCurrent: true),
-    };
-  }
 
   // =========================
   // key handling
@@ -184,14 +182,10 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
   /// Closes the dialog with the picked row of the visible tab.
   ///
-  /// The whole tab travels with the room: the player takes it as the playlist, so
-  /// a room picked from the followed list switches within the followed list rather
-  /// than falling back to watch history.
+  /// Only the room travels back: switching rooms is not switching context, so the
+  /// session keeps the playlist it was opened with.
   void _pick(int rowIndex) {
-    final List<LiveRoom> visible = _tabs[_tabIndex];
-    Navigator.of(context).pop(
-      RoomSwitchSelection(room: visible[rowIndex], rooms: _playlistOf(_tabIndex)),
-    );
+    Navigator.of(context).pop(_tabs[_tabIndex][rowIndex]);
   }
 
   /// Switches the shown list. The keyboard stays where it is — on the strip when
@@ -215,8 +209,8 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   /// Keeps the highlighted row on screen while the user walks the list.
   void _revealRow(int index) {
     if (!_scrollController.hasClients) return;
-    final double rowExtent = (66 * PlayerPanelLayout.fontSize).sp;
-    final double target = (index * rowExtent) - 120;
+    final double rowExtent = (_rowExtentBase * PlayerPanelLayout.fontSize).sp;
+    final double target = (index * rowExtent) - 160;
     _scrollController.animateTo(
       target.clamp(0, _scrollController.position.maxScrollExtent),
       duration: const Duration(milliseconds: 180),
@@ -243,9 +237,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       title: i18n('switch_live_room'),
       // Wide enough that the room rows read as full-width list entries instead
       // of a squeezed column.
-      width: 1080.sp,
-      cancelText: i18n('close'),
-      onCancel: _close,
+      width: 1280.sp,
       // The dialog's only focusable node is the key handler below, so it opens
       // with the remote already on the tab strip.
       initialFocusNode: _focusNode,
@@ -254,13 +246,18 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
         autofocus: true,
         onKeyEvent: _onKeyEvent,
         child: SizedBox(
-          height: 640.sp,
+          height: 900.sp,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildTabs(tabs),
               SizedBox(height: 16.sp),
-              Expanded(child: _buildRooms(rooms, rowIndex)),
+              Expanded(
+                child: MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(_listTextScale)),
+                  child: _buildRooms(rooms, rowIndex),
+                ),
+              ),
             ],
           ),
         ),
@@ -268,11 +265,12 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     );
   }
 
-  /// The three category tabs, drawn as the app's own tab pills and highlighted
-  /// from [_tabIndex].
+  /// The three category tabs, drawn as compact centered pills.
   ///
   /// They are deliberately not focusable — a [GestureDetector] keeps them
   /// clickable with a mouse, while the remote reaches them through the index.
+  /// The selected pill carries the accent color; whether the keyboard is on
+  /// the strip or in the list is shown by the row highlight below.
   Widget _buildTabs(List<List<LiveRoom>> tabs) {
     final List<String> titles = <String>[
       '${i18n('online_room_title')} (${tabs[0].length})',
@@ -280,21 +278,38 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       '${i18n('watch_history')} (${tabs[2].length})',
     ];
 
+    final Color accent = Theme.of(context).colorScheme.primary;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         for (int i = 0; i < _tabCount; i++) ...<Widget>[
           if (i > 0) SizedBox(width: 12.sp),
+          // Compact pill: fixed horizontal padding, sized to the label, no
+          // Flexible/Expanded so the strip stays centered and narrow.
           GestureDetector(
             onTap: () => _selectTab(i),
-            child: TvButton(
-              title: titles[i],
-              size: TvButtonSize.medium,
-              excludeFocus: true,
-              // The accent marks the tab whose list is on screen; whether the
-              // keyboard is on the strip or in the list is shown by the row
-              // highlight below.
-              selected: i == _tabIndex,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.symmetric(horizontal: 22.sp, vertical: 8.sp),
+              decoration: BoxDecoration(
+                color: i == _tabIndex ? accent.withValues(alpha: 0.18) : Colors.transparent,
+                borderRadius: BorderRadius.circular(20.sp),
+                border: Border.all(color: i == _tabIndex ? accent : Colors.white24, width: 1.5.sp),
+              ),
+              child: Text(
+                titles[i],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  height: 1.2,
+                  fontWeight: i == _tabIndex ? FontWeight.w600 : FontWeight.w400,
+                  color: i == _tabIndex ? accent : Colors.white70,
+                ),
+              ),
             ),
           ),
         ],
@@ -323,34 +338,17 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.symmetric(horizontal: 4.sp, vertical: 4.sp),
+      padding: EdgeInsets.symmetric(horizontal: 4.sp, vertical: 8.sp),
       itemCount: rooms.length,
-      itemBuilder: (context, index) => PlayerRoomRow(
-        room: rooms[index],
-        selected: _zone == _Zone.rows && index == rowIndex,
-      ),
+      itemBuilder: (context, index) =>
+          PlayerRoomRow(room: rooms[index], selected: _zone == _Zone.rows && index == rowIndex),
     );
   }
 }
 
-/// A room picked in [showRoomSwitchDialog] together with the list it was picked
-/// from, so the new session keeps that list as its playlist.
-class RoomSwitchSelection {
-  const RoomSwitchSelection({required this.room, required this.rooms});
-
-  /// The room to play.
-  final LiveRoom room;
-
-  /// The tab the room was picked from, current room included.
-  final List<LiveRoom> rooms;
-}
-
-/// Opens the room switch dialog and returns the chosen room with its list, if any.
-Future<RoomSwitchSelection?> showRoomSwitchDialog(
-  BuildContext context, {
-  required LiveRoom current,
-}) {
-  return TvDialogUtils.show<RoomSwitchSelection>(
+/// Opens the room switch dialog and returns the chosen room, if any.
+Future<LiveRoom?> showRoomSwitchDialog(BuildContext context, {required LiveRoom current}) {
+  return TvDialogUtils.show<LiveRoom>(
     context: context,
     builder: (dialogContext) => RoomSwitchDialog(current: current),
   );

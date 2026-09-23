@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/player/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -234,10 +234,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   /// its way out is a row like any other — at the bottom, where the eye ends up
   /// after walking the list.
   List<({String label, VoidCallback apply, bool active})> _optionsWithClose(LivePlayState state) =>
-      <({String label, VoidCallback apply, bool active})>[
-        ..._panelOptions(state),
-        (label: i18nOr('close', '关闭'), apply: _closePanel, active: false),
-      ];
+      <({String label, VoidCallback apply, bool active})>[..._panelOptions(state)];
 
   String get _panelTitle => switch (_panel) {
     _OptionsPanel.quality => i18n('recorder_stage_quality'),
@@ -441,13 +438,15 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   Future<void> _switchRoom(LiveRoom? room) async {
     if (room == null) return;
     _focusNode.unfocus();
-    final selection = await showRoomSwitchDialog(context, current: room);
+    final picked = await showRoomSwitchDialog(context, current: room);
     if (mounted) _focusNode.requestFocus();
-    if (selection == null || !mounted) return;
-    // The list the room was picked from becomes the new playlist, so switching
-    // from the followed tab keeps switching within it.
+    if (picked == null || !mounted) return;
+    // Switching rooms is not switching context: the session keeps the playlist it
+    // was opened with (the entry page's list plus history), so a room taken from
+    // the followed tab does not silently turn the playlist into the followed list.
+    final rooms = ref.read(livePlayControllerProvider(widget.args).notifier).channelRooms;
     LivePlayRoute(
-      LivePlayArgs.fromRoom(selection.room, playlist: selection.rooms, showChannelBanner: true),
+      LivePlayArgs.fromRoom(picked, playlist: rooms, showChannelBanner: true),
     ).replace(context);
   }
 
