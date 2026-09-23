@@ -7,19 +7,20 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/utils/githup_mirror.dart';
 import 'package:pure_live/shared/utils/platform_utils.dart';
 
-/// Download URLs assembled from the release identity itself, mirroring the
-/// mobile app's `ReleaseAssetUrls`: `{projectUrl}/releases/download/v{version}/
-/// PureLive-{version}-{build}-android-{abi}-release.apk`.
+/// Download URLs assembled from the release identity itself, following the
+/// names the Android release workflow uploads:
+/// `{projectUrl}/releases/download/v{version}/PureLive-TV-{abi}-{renderer}.apk`.
 ///
-/// The fallback path of the update flow: the releases.json file list and the
-/// manifest's `download_url` are tried first, and this fills in when a release
-/// was published with the standard asset names but no matching entry.
+/// The last resort of the update flow: the release's real asset list and the
+/// releases.json file list are tried first, and this fills in when a release
+/// was published with the standard names but no matching entry was read — the
+/// state an up-to-date device is in, where nothing an update check returned
+/// carries a file list.
 class ReleaseAssetUrls {
-  const ReleaseAssetUrls({required this.projectUrl, required this.version, required this.buildNumber});
+  const ReleaseAssetUrls({required this.projectUrl, required this.version});
 
   final String projectUrl;
   final String version;
-  final int buildNumber;
 
   String get normalizedVersion {
     final value = version.trim();
@@ -36,8 +37,7 @@ class ReleaseAssetUrls {
         !uri.hasQuery &&
         !uri.hasFragment &&
         uri.userInfo.isEmpty &&
-        safeVersion &&
-        buildNumber > 0;
+        safeVersion;
   }
 
   String get releaseBase {
@@ -46,24 +46,14 @@ class ReleaseAssetUrls {
     return '$normalizedProject/releases/download/v$normalizedVersion';
   }
 
-  String _asset(String suffix) {
+  /// The package for one ABI, e.g. `PureLive-TV-arm64-v8a-skia.apk`. Releases
+  /// from before the dual-variant split carry no renderer in the name.
+  String apkForAbi(String abi, {String renderer = ''}) {
     if (!isValid) return '';
-    return '$releaseBase/PureLive-$normalizedVersion-$buildNumber-$suffix';
-  }
-
-  String get androidArm64 => _asset('android-arm64-v8a-release.apk');
-  String get androidArmeabiV7a => _asset('android-armeabi-v7a-release.apk');
-  String get androidX8664 => _asset('android-x86_64-release.apk');
-
-  String urlForAbi(String abi) {
-    switch (abi) {
-      case 'armeabi-v7a':
-        return androidArmeabiV7a;
-      case 'x86_64':
-        return androidX8664;
-      default:
-        return androidArm64;
-    }
+    final String name = abi.trim().toLowerCase();
+    if (name.isEmpty) return '';
+    final String tag = renderer.trim().toLowerCase();
+    return '$releaseBase/PureLive-TV-$name${tag.isEmpty ? '' : '-$tag'}.apk';
   }
 }
 

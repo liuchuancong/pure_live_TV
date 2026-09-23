@@ -1,20 +1,19 @@
+import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
-import 'package:pure_live/app/bootstrap/app_path_manager.dart';
-import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/platform/file_utils.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:pure_live/shared/models/release_model/release_model.dart';
 import 'package:pure_live/shared/platform/race_http.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/shared/platform/file_utils.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/app/bootstrap/app_path_manager.dart';
+import 'package:pure_live/shared/models/release_model/release_model.dart';
 
 part 'app_update_service.g.dart';
 
@@ -58,6 +57,44 @@ class AppUpdateRecord {
   }
 }
 
+/// The ABI one release asset name belongs to, null when the name carries none
+/// (checksums, source zips, …).
+///
+/// Matched as a token instead of a prefix: the TV packages are named
+/// `PureLive-TV-arm64-v8a-impeller.apk`, the older mobile ones
+/// `PureLive-2.0.20-12020-android-arm64-v8a-release.apk` and `app-armeabi-v7a-release.apk`,
+/// and the manifest writes a bare `arm64-v8a` — a `startsWith` test sees none of
+/// the prefixed ones.
+String? abiForAssetName(String name) {
+  final String lower = name.trim().toLowerCase();
+  for (final String abi in const <String>['arm64-v8a', 'armeabi-v7a', 'x86_64']) {
+    // Boundaries keep `armeabi-v7a` from answering for `arm64-v8a`.
+    if (RegExp(
+      '(^|[^a-z0-9])${RegExp.escape(abi)}'
+      r'([^a-z0-9]|$)',
+    ).hasMatch(lower))
+      return abi;
+  }
+  return null;
+}
+
+/// `impeller` / `skia` when the name carries the renderer tag, '' for the
+/// pre-variant asset naming.
+String rendererForAssetName(String name) {
+  final String lower = name.trim().toLowerCase();
+  if (lower.contains('skia')) return 'skia';
+  if (lower.contains('impeller')) return 'impeller';
+  return '';
+}
+
+/// Whether an entry is an installable package. The GitHub API names end in
+/// `.apk`; the releases.json entries carry the extension on the url instead.
+bool isApkAsset(String name, String url) {
+  final String fileName = name.trim().toLowerCase();
+  if (fileName.endsWith('.apk')) return true;
+  return url.trim().toLowerCase().split('?').first.endsWith('.apk');
+}
+
 /// One release asset from GitHub's releases API — the source of truth for
 /// downloads (version.json is only a hint).
 class ReleaseAssetInfo {
@@ -68,30 +105,44 @@ class ReleaseAssetInfo {
   final int sizeBytes;
 
   /// `arm64-v8a`, `armeabi-v7a` or `x86_64` when the file name carries one,
-  /// null for anything else (source zips, checksums, …).
-  String? get abi {
-    for (final candidate in const ['arm64-v8a', 'armeabi-v7a', 'x86_64']) {
-      if (name.toLowerCase().contains(candidate)) return candidate;
-    }
-    return null;
-  }
+  /// null for anything else.
+  String? get abi => abiForAssetName(name);
 
-  bool get isApk => name.toLowerCase().endsWith('.apk');
+  bool get isApk => isApkAsset(name, url);
 
-  /// `impeller` / `skia` when the file name carries the renderer tag, '' for
-  /// the pre-variant asset naming.
-  String get renderer {
-    final lower = name.toLowerCase();
-    if (lower.contains('skia')) return 'skia';
-    if (lower.contains('impeller')) return 'impeller';
-    return '';
-  }
+  /// `impeller` / `skia` when the file name carries the renderer tag.
+  String get renderer => rendererForAssetName(name);
 
   String get sizeText {
     if (sizeBytes <= 0) return '';
     if (sizeBytes < 1024 * 1024) return '${(sizeBytes / 1024).toStringAsFixed(0)} KB';
     return '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
+}
+
+/// The release of an API payload (`/releases`) that describes [version].
+///
+/// The entry whose tag is that version wins, the newest non-prerelease release
+/// answers when the version is not published, and a payload of nothing but
+/// prereleases still describes its first entry. The manifest is what the update
+/// page shows, so a manifest behind the newest release must not pair its notes
+/// with that release's files.
+Map<String, dynamic>? selectReleaseEntry(Object? decoded, String version) {
+  if (decoded is! List || decoded.isEmpty) return null;
+  final String wanted = version.trim().replaceFirst(RegExp('^[vV]'), '');
+  Map<String, dynamic>? newest;
+  for (final entry in decoded) {
+    if (entry is! Map) continue;
+    final map = Map<String, dynamic>.from(entry);
+    if (map['prerelease'] == true) continue;
+    newest ??= map;
+    if (wanted.isEmpty) continue;
+    final tag = '${map['tag_name'] ?? map['name'] ?? ''}'.trim().replaceFirst(RegExp('^[vV]'), '');
+    if (tag == wanted) return map;
+  }
+  if (newest != null) return newest;
+  final first = decoded.first;
+  return first is Map ? Map<String, dynamic>.from(first) : null;
 }
 
 /// The release history payload (JSON array or `releases` object), newest first.
@@ -249,6 +300,35 @@ String _truncateUtf8(String value, int maxBytes) {
   return buffer.toString();
 }
 
+/// The mirror prefix [url] already carries, '' when it is the plain github url.
+String _mirrorPrefixOf(String url) {
+  for (final String mirror in AppUpdateController.assetMirrors) {
+    if (url.startsWith(mirror)) return mirror;
+  }
+  return '';
+}
+
+/// The urls one download tries, in order.
+///
+/// [url] is either a plain release url or one already behind a mirror — the
+/// download page builds its sources that way. The picked source goes first when
+/// [preferGivenUrl] ("source 3" really means source 3), the remaining mirrors
+/// follow, and the plain origin is always last.
+///
+/// Every candidate is built from the github url the given one wraps: a proxy
+/// prefix stacked on an already prefixed url (`proxy/proxy/github.com/…`) is a
+/// request no proxy can serve, which used to leave the fallback chain dead.
+List<String> downloadCandidates(String url, {bool preferGivenUrl = false}) {
+  final String used = _mirrorPrefixOf(url);
+  final String origin = used.isEmpty ? url : url.substring(used.length);
+  return <String>[
+    if (preferGivenUrl) url,
+    for (final String mirror in AppUpdateController.assetMirrors)
+      if (mirror != used) '$mirror$origin',
+    origin,
+  ];
+}
+
 /// Everything the update page renders.
 class AppUpdateState {
   final AppUpdatePhase phase;
@@ -380,15 +460,31 @@ class AppUpdateController extends _$AppUpdateController {
   CancelToken? _cancelToken;
   bool _checking = false;
 
-  /// Proxies tried in order for release assets hosted on github.com; the plain
-  /// origin is always appended last. Public: the download page renders one
-  /// pickable source button per entry, in this order.
+  /// Proxies for GitHub Release assets (binaries, archives, model weights).
+  ///
+  /// Only `asset` matters here — the GitHub API is not used. Entries marked
+  /// with 206 support HTTP Range, so interrupted downloads can resume.
   static const List<String> assetMirrors = [
+    // 🟢 asset=206: resumable, best for large files
+    'https://cdn.gh-proxy.org/',
+    'https://edgeone.gh-proxy.org/',
+    'https://hk.gh-proxy.org/',
+    'https://gh.noki.eu.org/',
+    'https://gh-proxy.com/',
+    'https://slink.ltd/',
+    'https://gh.catmak.name/',
+    'https://proxy.gitwarp.top/',
+    'https://github.ednovas.xyz/',
+    'https://ghproxy.monkeyray.net/',
+    'https://fastgit.cc/',
+    'https://ghfile.geekertao.top/',
+
+    // 🟠 asset=200: works, but no resume
     'https://gh-proxy.org/',
-    'https://ghfast.top/',
     'https://ghproxy.net/',
     'https://wget.la/',
-    'https://gh.h233.eu.org/',
+    'https://git.yylx.win/',
+    'https://g.blfrp.cn/',
   ];
 
   @override
@@ -434,6 +530,12 @@ class AppUpdateController extends _$AppUpdateController {
       if (!hasUpdate) {
         _patchState(phase: AppUpdatePhase.upToDate, latestVersion: VersionUtil.latestVersion, abis: abis);
         if (userInitiated) _appendRecord(AppUpdateAction.checked, version: VersionUtil.version);
+        // The download page opens from the up-to-date state as well, and the
+        // manifest says nothing about the files a release published: without
+        // this its sources would be names assembled from the version alone.
+        // Only when the manifest answered — a check that failed has no release
+        // to ask GitHub about.
+        if (ok) unawaited(_fetchLatestReleaseAssets());
         return;
       }
       final history = state.history;
@@ -470,7 +572,8 @@ class AppUpdateController extends _$AppUpdateController {
   /// of the proxies (the same prefixes the download path uses, in front of
   /// `api.github.com`). Returns null when no candidate answered.
   Future<List<ReleaseAssetInfo>?> _fetchLatestReleaseAssets() async {
-    final api = 'https://api.github.com/repos/${VersionUtil.updateOwner}/${VersionUtil.updateRepository}/releases?per_page=10';
+    final api =
+        'https://api.github.com/repos/${VersionUtil.updateOwner}/${VersionUtil.updateRepository}/releases?per_page=10';
     final candidates = <String>[
       if (SettingsService.to.appState.useGitHubOriginForUpdates) api,
       for (final mirror in assetMirrors) '$mirror$api',
@@ -506,18 +609,11 @@ class AppUpdateController extends _$AppUpdateController {
     return null;
   }
 
-  /// Picks the newest non-prerelease release from the list (falling back to
-  /// the first entry) and maps its assets.
+  /// Picks the release the page is about (see [selectReleaseEntry]) and maps
+  /// its assets.
   List<ReleaseAssetInfo>? _parseLatestReleaseAssets(Object? decoded) {
-    if (decoded is! List || decoded.isEmpty) return null;
-    Map<String, dynamic>? release;
-    for (final entry in decoded) {
-      if (entry is Map && entry['prerelease'] != true) {
-        release = Map<String, dynamic>.from(entry);
-        break;
-      }
-    }
-    release ??= Map<String, dynamic>.from(decoded.first as Map);
+    final release = selectReleaseEntry(decoded, state.latestVersion);
+    if (release == null) return null;
     final assets = release['assets'];
     if (assets is! List) return null;
     final result = <ReleaseAssetInfo>[];
@@ -532,7 +628,8 @@ class AppUpdateController extends _$AppUpdateController {
     return result;
   }
 
-  Dio _dioForApi() => Dio(BaseOptions(connectTimeout: const Duration(seconds: 12), receiveTimeout: const Duration(seconds: 12)));
+  Dio _dioForApi() =>
+      Dio(BaseOptions(connectTimeout: const Duration(seconds: 12), receiveTimeout: const Duration(seconds: 12)));
 
   // ---------------------------------------------------------------------------
   // Release history (assets/releases.json through the repo mirrors)
@@ -545,9 +642,9 @@ class AppUpdateController extends _$AppUpdateController {
       final mirror = VersionUtil.mirror;
       final useOrigin = SettingsService.to.appState.useGitHubOriginForUpdates;
       final sources = useOrigin ? [mirror.rawUrl('assets/releases.json')] : mirror.mirrors('assets/releases.json');
-      final url = await RaceHttp.findFastestUrl(
-        [for (final s in sources) '$s?ts=${DateTime.now().millisecondsSinceEpoch}'],
-      );
+      final url = await RaceHttp.findFastestUrl([
+        for (final s in sources) '$s?ts=${DateTime.now().millisecondsSinceEpoch}',
+      ]);
       if (url == null) throw StateError('no mirror responded');
       final data = await HttpClient.instance.getJson(url);
       final decoded = data is String ? jsonDecode(data) : data;
@@ -613,53 +710,41 @@ class AppUpdateController extends _$AppUpdateController {
 
   /// Release asset for the selected ABI: the GitHub release's real file first
   /// (exact name and url, straight from the API), the releases.json file list
-  /// second, the manifest download_url third, and the standard asset name
+  /// second, the manifest's download_url third, and the standard asset name
   /// assembled from the release identity last.
+  ///
+  /// Within both file lists the preference is the same: the selected renderer
+  /// variant, then the legacy untagged name (releases from before the
+  /// dual-variant split), then any package published for the ABI.
   String? resolveAssetUrl([String? abiOverride]) {
-    final abi = (abiOverride ?? state.selectedAbi).trim().toLowerCase();
-    final renderer = state.rendererVariant;
+    final String abi = (abiOverride ?? state.selectedAbi).trim().toLowerCase();
+    final String renderer = state.rendererVariant;
 
-    // Release assets carry the renderer tag since the dual-variant builds;
-    // prefer the exact variant, fall back to the legacy untagged naming for
-    // releases published before the split.
-    String? exact;
+    final List<({String name, String url})> published = <({String name, String url})>[
+      for (final ReleaseAssetInfo asset in state.latestAssets)
+        if (asset.isApk) (name: asset.name, url: asset.url),
+      for (final ReleaseFileModel file in _latestRelease?.files ?? const <ReleaseFileModel>[])
+        if (isApkAsset(file.name, file.url) && file.url.startsWith('http')) (name: file.name, url: file.url),
+    ];
+
     String? untagged;
-    for (final asset in state.latestAssets) {
-      if (asset.abi?.toLowerCase() != abi || !asset.isApk) continue;
-      if (asset.renderer == renderer) {
-        exact = asset.url;
-        break;
-      }
-      if (asset.renderer.isEmpty) untagged ??= asset.url;
-    }
-    if (exact != null) return exact;
-
-    final release = _latestRelease;
-    if (release != null) {
-      for (final file in release.files) {
-        final lower = file.name.trim().toLowerCase();
-        if (!lower.startsWith(abi) || !file.url.startsWith('http')) continue;
-        if (lower.contains(renderer)) return file.url;
-      }
+    String? anyPackage;
+    for (final ({String name, String url}) asset in published) {
+      if (abiForAssetName(asset.name) != abi) continue;
+      final String tag = rendererForAssetName(asset.name);
+      if (tag == renderer) return asset.url;
+      if (tag.isEmpty) untagged ??= asset.url;
+      anyPackage ??= asset.url;
     }
     if (untagged != null) return untagged;
-
-    final release2 = _latestRelease;
-    if (release2 != null) {
-      for (final file in release2.files) {
-        if (file.name.trim().toLowerCase() == abi && file.url.startsWith('http')) {
-          return file.url;
-        }
-      }
-    }
+    if (anyPackage != null) return anyPackage;
 
     final direct = VersionUtil.downloadUrl;
     if (direct.toLowerCase().endsWith('.apk')) return direct;
     final assembled = ReleaseAssetUrls(
       projectUrl: VersionUtil.projectUrl,
       version: state.latestVersion,
-      buildNumber: VersionUtil.latestBuildNumber ?? 0,
-    ).urlForAbi(abi);
+    ).apkForAbi(abi, renderer: renderer);
     return assembled.startsWith('http') ? assembled : null;
   }
 
@@ -672,22 +757,38 @@ class AppUpdateController extends _$AppUpdateController {
   }
 
   /// The size text of the asset for one ABI: the GitHub release's real size
-  /// first, the releases.json entry second.
+  /// first, the releases.json entry second, matched the same way
+  /// [resolveAssetUrl] matches the file itself.
   String? assetSizeFor(String abi) {
-    final renderer = state.rendererVariant;
-    for (final asset in state.latestAssets) {
-      if (asset.abi?.toLowerCase() != abi.trim().toLowerCase()) continue;
-      if (asset.sizeText.isEmpty) continue;
-      // Variant-tagged assets first; untagged ones answer for both variants.
-      if (asset.renderer.isEmpty || asset.renderer == renderer) return asset.sizeText;
+    final String wanted = abi.trim().toLowerCase();
+    final String renderer = state.rendererVariant;
+
+    String? untagged;
+    String? anyPackage;
+
+    for (final ReleaseAssetInfo asset in state.latestAssets) {
+      if (asset.abi != wanted || asset.sizeText.isEmpty) continue;
+      if (asset.renderer == renderer) return asset.sizeText;
+      if (asset.renderer.isEmpty) untagged ??= asset.sizeText;
+      anyPackage ??= asset.sizeText;
     }
+
     final ReleaseModel? release = _latestRelease;
-    if (release == null) return null;
-    for (final ReleaseFileModel file in release.files) {
-      if (file.name.trim().toLowerCase() == abi.trim().toLowerCase() && file.size.isNotEmpty) return file.size;
+    if (release != null) {
+      for (final ReleaseFileModel file in release.files) {
+        if (file.size.isEmpty) continue;
+        if (abiForAssetName(file.name) != wanted) continue;
+        final String tag = rendererForAssetName(file.name);
+        if (tag == renderer) return file.size;
+        if (tag.isEmpty) untagged ??= file.size;
+        anyPackage ??= file.size;
+      }
+      if (release.files.length == 1 && release.files.first.size.isNotEmpty) {
+        anyPackage ??= release.files.first.size;
+      }
     }
-    if (release.files.length == 1 && release.files.first.size.isNotEmpty) return release.files.first.size;
-    return null;
+
+    return untagged ?? anyPackage;
   }
 
   /// The size text of the asset that would be installed for the selected ABI, when the
@@ -722,13 +823,7 @@ class AppUpdateController extends _$AppUpdateController {
     }
 
     final fileName = safeDownloadFileName(url);
-    // The download page hands over an explicitly picked source: it goes first
-    // so "source 3" really downloads from source 3, with the remaining mirrors
-    // kept as fallback. The plain path keeps mirror-first ordering.
-    final mirrorCandidates = <String>[for (final mirror in assetMirrors) '$mirror$url'];
-    final candidates = preferGivenUrl
-        ? <String>[url, ...mirrorCandidates, url]
-        : <String>[...mirrorCandidates, url];
+    final candidates = downloadCandidates(url, preferGivenUrl: preferGivenUrl);
 
     _cancelToken = CancelToken();
     _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 30)));
@@ -759,11 +854,7 @@ class AppUpdateController extends _$AppUpdateController {
         await _downloadCandidate(candidate, destination);
         if (_cancelToken?.isCancelled == true) return false;
         _cancelDownload();
-        _patchState(
-          phase: AppUpdatePhase.readyToInstall,
-          receivedBytes: state.totalBytes,
-          downloadedPath: destination,
-        );
+        _patchState(phase: AppUpdatePhase.readyToInstall, receivedBytes: state.totalBytes, downloadedPath: destination);
         _appendRecord(AppUpdateAction.downloaded, version: state.latestVersion);
         return true;
       } catch (error) {

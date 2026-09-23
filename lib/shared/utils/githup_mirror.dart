@@ -25,19 +25,40 @@ class GitHubMirror {
     return 'https://fastly.jsdelivr.net/gh/$owner/$repo@$branch/$filePath';
   }
 
+  /// Raw-file proxies that accept the origin URL as a path suffix.
+  ///
+  /// Order matters: earlier entries are the more reliable ones as of the
+  /// latest probe, and they also support HTTP Range (206) for resumable
+  /// downloads.
+  static const List<String> _rawPrefixes = [
+    // Best: api=200 + asset=206, resumable.
+    'https://cdn.gh-proxy.org/',
+    'https://edgeone.gh-proxy.org/',
+    'https://hk.gh-proxy.org/',
+    'https://gh.noki.eu.org/',
+    'https://gh-proxy.com/',
+    'https://slink.ltd/',
+
+    // Usable: api=200 + asset=200.
+    'https://ghproxy.link/',
+    'https://gh-proxy.net/',
+    'https://gitproxy.click/',
+    'https://v6.gh-proxy.org/',
+
+    // Asset-only: API is rate-limited but raw files download fine.
+    'https://ghproxy.net/',
+    'https://wget.la/',
+    'https://gh.catmak.name/',
+    'https://g.blfrp.cn/',
+  ];
+
   /// Every candidate URL for [filePath], origin first and CDNs last.
   List<String> mirrors(String filePath) {
     final raw = rawUrl(filePath);
     return [
       raw,
-      'https://hub.glowp.xyz/$raw',
-      'https://hk.gh-proxy.org/$raw',
+      for (final prefix in _rawPrefixes) '$prefix$raw',
       'https://raw.kkgithub.com/$owner/$repo/$branch/$filePath',
-      'https://wget.la/$raw',
-      'https://ghproxy.net/$raw',
-      'https://ghfast.top/$raw',
-      'https://gh.catmak.name/$raw',
-      'https://g.blfrp.cn/$raw',
       // CDN
       jsdelivr(filePath),
       jsdelivrFastly(filePath),

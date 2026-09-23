@@ -67,8 +67,7 @@ void main() {
     SettingsService.to.init(ProviderContainer());
   });
 
-  group('release history payload', () {
-    test('is ordered by date, newest first, with the version as the tie-breaker', () {
+  group('release history payload', () {    test('is ordered by date, newest first, with the version as the tie-breaker', () {
       final releases = parseReleaseHistoryPayload(<dynamic>[
         <String, dynamic>{'version': '1.0.0', 'date': '2026-01-01'},
         <String, dynamic>{'version': '1.2.0', 'date': '2026-03-01'},
@@ -107,6 +106,204 @@ void main() {
       expect(cleaned, contains('新增了 B'));
       expect(cleaned, isNot(contains('|')));
       expect(cleaned, isNot(contains('#')));
+    });
+  });
+
+  group('asset naming', () {
+    test('reads the ABI and the renderer out of every name the repo published', () {
+      // v3.0.0+ uploads these; the ABI never comes first in the name.
+      expect(abiForAssetName('PureLive-TV-arm64-v8a-impeller.apk'), 'arm64-v8a');
+      expect(rendererForAssetName('PureLive-TV-arm64-v8a-impeller.apk'), 'impeller');
+      expect(abiForAssetName('PureLive-TV-armeabi-v7a-skia.apk'), 'armeabi-v7a');
+      expect(rendererForAssetName('PureLive-TV-x86_64-skia.apk'), 'skia');
+      // The releases.json entries carry the prefix and no extension.
+      expect(abiForAssetName('PureLive-TV-arm64-v8a-impeller'), 'arm64-v8a');
+      expect(rendererForAssetName('PureLive-TV-arm64-v8a-impeller'), 'impeller');
+      // Older naming schemes.
+      expect(abiForAssetName('PureLive-2.0.20-12020-android-arm64-v8a-release.apk'), 'arm64-v8a');
+      expect(rendererForAssetName('app-arm64-v8a-release.apk'), '');
+      expect(abiForAssetName('arm64-v8a'), 'arm64-v8a');
+      // Nothing an ABI could be read from.
+      expect(abiForAssetName('checksums.txt'), isNull);
+      expect(abiForAssetName('source.zip'), isNull);
+    });
+
+    test('tells a package from the other release files', () {
+      expect(isApkAsset('PureLive-TV-arm64-v8a-impeller.apk', 'https://example.test/x'), isTrue);
+      expect(isApkAsset('PureLive-TV-arm64-v8a-impeller', 'https://example.test/PureLive-TV-arm64-v8a-impeller.apk'), isTrue);
+      expect(isApkAsset('source', 'https://example.test/v3.0.2.zip'), isFalse);
+    });
+  });
+
+  group('release selection', () {
+    test('takes the release whose tag is the version the page shows', () {
+      final selected = selectReleaseEntry(
+        <Map<String, dynamic>>[
+          <String, dynamic>{'tag_name': 'v3.0.3', 'prerelease': false},
+          <String, dynamic>{'tag_name': 'v3.0.2', 'prerelease': false},
+        ],
+        '3.0.2',
+      );
+
+      expect(selected?['tag_name'], 'v3.0.2', reason: 'a manifest behind the newest release keeps its own files');
+    });
+
+    test('falls back to the newest non-prerelease release', () {
+      final selected = selectReleaseEntry(
+        <Map<String, dynamic>>[
+          <String, dynamic>{'tag_name': 'v3.1.0', 'prerelease': true},
+          <String, dynamic>{'tag_name': 'v3.0.4', 'prerelease': false},
+        ],
+        '3.0.4-beta',
+      );
+
+      expect(selected?['tag_name'], 'v3.0.4');
+    });
+
+    test('answers nothing for a payload without a release', () {
+      expect(selectReleaseEntry(<String, dynamic>{'message': 'Not Found'}, '3.0.2'), isNull);
+      expect(selectReleaseEntry(const <dynamic>[], '3.0.2'), isNull);
+    });
+  });
+
+  group('download candidates', () {
+    const String url = 'https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.2/PureLive-TV-arm64-v8a-skia.apk';
+
+    test('wraps the plain release url in every mirror, the origin last', () {
+      final List<String> candidates = downloadCandidates(url);
+
+      expect(candidates.first, '${AppUpdateController.assetMirrors.first}$url');
+      expect(candidates.last, url);
+      expect(candidates.length, AppUpdateController.assetMirrors.length + 1);
+    });
+
+    test('keeps a picked mirror first and the fallbacks unstacked', () {
+      final String picked = '${AppUpdateController.assetMirrors[1]}$url';
+      final List<String> candidates = downloadCandidates(picked, preferGivenUrl: true);
+
+      expect(candidates.first, picked, reason: '"source 2" is tried first');
+      expect(candidates.toSet().length, candidates.length, reason: 'no candidate is listed twice');
+      for (final String candidate in candidates) {
+        final bool plain = candidate == url;
+        final bool singleProxy = AppUpdateController.assetMirrors.any((String mirror) => candidate == '$mirror$url');
+        expect(plain || singleProxy, isTrue, reason: 'a proxy in front of a proxy cannot serve: $candidate');
+      }
+      expect(candidates, contains(url), reason: 'the plain origin is the last resort');
+    });
+  });
+
+  group('asset resolution', () {
+    const String origin = 'https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.2';
+
+    AppUpdateController controllerFor(AppUpdateState state) {
+      final ProviderContainer container = ProviderContainer(
+        overrides: [appUpdateControllerProvider.overrideWith(() => _FakeUpdateController(state))],
+      );
+      addTearDown(container.dispose);
+      return container.read(appUpdateControllerProvider.notifier);
+    }
+
+    ReleaseFileModel file(String name, String size) =>
+        ReleaseFileModel(name: name, size: size, url: '$origin/$name.apk');
+
+    test('picks the published variant for the ABI and the renderer', () {
+      final controller = controllerFor(
+        AppUpdateState(
+          phase: AppUpdatePhase.available,
+          latestVersion: '3.0.2',
+          rendererVariant: 'skia',
+          abis: const <String>['arm64-v8a'],
+          selectedAbi: 'arm64-v8a',
+          latestAssets: const <ReleaseAssetInfo>[
+            ReleaseAssetInfo(
+              name: 'PureLive-TV-arm64-v8a-impeller.apk',
+              url: '$origin/PureLive-TV-arm64-v8a-impeller.apk',
+              sizeBytes: 89137751,
+            ),
+            ReleaseAssetInfo(
+              name: 'PureLive-TV-arm64-v8a-skia.apk',
+              url: '$origin/PureLive-TV-arm64-v8a-skia.apk',
+              sizeBytes: 89137791,
+            ),
+          ],
+        ),
+      );
+
+      expect(controller.resolveAssetUrl('arm64-v8a'), '$origin/PureLive-TV-arm64-v8a-skia.apk');
+      expect(controller.assetSizeFor('arm64-v8a'), '85.0 MB');
+    });
+
+    test('reads the manifest file list, whose names carry the release prefix', () {
+      // The prefix used to hide every entry: an up-to-date device — whose page
+      // only has this list to go on — was left with no url at all.
+      final controller = controllerFor(
+        AppUpdateState(
+          phase: AppUpdatePhase.upToDate,
+          latestVersion: '3.0.2',
+          rendererVariant: 'impeller',
+          abis: const <String>['arm64-v8a'],
+          selectedAbi: 'arm64-v8a',
+          history: <ReleaseModel>[
+            ReleaseModel(
+              version: '3.0.2',
+              date: '2026-09-22',
+              author: const AuthorModel(name: 'liuchuancong'),
+              files: <ReleaseFileModel>[
+                file('PureLive-TV-arm64-v8a-impeller', '85.01mb'),
+                file('PureLive-TV-arm64-v8a-skia', '85.01mb'),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      expect(controller.resolveAssetUrl('arm64-v8a'), '$origin/PureLive-TV-arm64-v8a-impeller.apk');
+      expect(controller.assetSizeFor('arm64-v8a'), '85.01mb');
+    });
+
+    test('assembles the name the release workflow uploads when nothing lists the file', () {
+      // Used to be the mobile app's `PureLive-3.0.2-130002-android-…-release.apk`,
+      // which this repository has never published.
+      final controller = controllerFor(
+        const AppUpdateState(
+          phase: AppUpdatePhase.upToDate,
+          latestVersion: '3.0.2',
+          rendererVariant: 'skia',
+          abis: <String>['armeabi-v7a'],
+          selectedAbi: 'armeabi-v7a',
+        ),
+      );
+
+      expect(controller.resolveAssetUrl('armeabi-v7a'), '$origin/PureLive-TV-armeabi-v7a-skia.apk');
+    });
+
+    test('a release from before the renderer split answers for either variant', () {
+      final controller = controllerFor(
+        AppUpdateState(
+          phase: AppUpdatePhase.upToDate,
+          latestVersion: '2.0.18',
+          rendererVariant: 'skia',
+          abis: const <String>['arm64-v8a'],
+          selectedAbi: 'arm64-v8a',
+          history: <ReleaseModel>[
+            ReleaseModel(
+              version: '2.0.18',
+              date: '2026-05-26',
+              author: const AuthorModel(name: 'liuchuancong'),
+              files: <ReleaseFileModel>[
+                ReleaseFileModel(name: 'app-arm64-v8a-release.apk', size: '51.8mb', url: '$origin/app-arm64-v8a-release.apk'),
+                ReleaseFileModel(
+                  name: 'app-arm64-v8a-without-exo.apk',
+                  size: '45.3mb',
+                  url: '$origin/app-arm64-v8a-without-exo.apk',
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      expect(controller.resolveAssetUrl('arm64-v8a'), '$origin/app-arm64-v8a-release.apk');
     });
   });
 
