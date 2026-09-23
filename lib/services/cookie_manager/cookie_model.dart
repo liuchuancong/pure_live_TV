@@ -9,6 +9,7 @@ abstract class CookieModel with _$CookieModel {
     @Default('') String bilibiliCookie,
     @Default(0) int bilibiliUid,
     @Default('') String huyaCookie,
+    @Default('') String douyuCookie,
     @Default('') String douyinCookie,
     @Default('') String kuaishouCookie,
     @Default('') String yyCookie,

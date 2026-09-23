@@ -93,6 +93,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     return switch (site) {
       'bilibili' => cookies.bilibiliCookie,
       'huya' => cookies.huyaCookie,
+      'douyu' => cookies.douyuCookie,
       'douyin' => cookies.douyinCookie,
       'kuaishou' => cookies.kuaishouCookie,
       'yy' => cookies.yyCookie,
@@ -111,6 +112,8 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
         controller.setBilibiliCookie(cookie);
       case 'huya':
         controller.setHuyaCookie(cookie);
+      case 'douyu':
+        controller.setDouyuCookie(cookie);
       case 'douyin':
         controller.setDouyinCookie(cookie);
       case 'kuaishou':

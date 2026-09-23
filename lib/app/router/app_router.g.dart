@@ -218,6 +218,11 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
       factory: $AccountHuyaRoute._fromState,
     ),
     GoRouteData.$route(
+      path: '/settings_account/douyu',
+      hasOverriddenOnExit: false,
+      factory: $AccountDouyuRoute._fromState,
+    ),
+    GoRouteData.$route(
       path: '/settings_account/yy',
       hasOverriddenOnExit: false,
       factory: $AccountYyRoute._fromState,
@@ -1028,6 +1033,27 @@ mixin $AccountHuyaRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/settings_account/huya');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $AccountDouyuRoute on GoRouteData {
+  static AccountDouyuRoute _fromState(GoRouterState state) =>
+      const AccountDouyuRoute();
+
+  @override
+  String get location => GoRouteData.$location('/settings_account/douyu');
 
   @override
   void go(BuildContext context) => context.go(location);

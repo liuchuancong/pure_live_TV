@@ -17,6 +17,7 @@ class CookieController extends _$CookieController {
   SettingsValue<String> get bilibiliCookie => SettingsValue(() => state.bilibiliCookie);
   SettingsValue<int> get bilibiliUid => SettingsValue(() => state.bilibiliUid);
   SettingsValue<String> get huyaCookie => SettingsValue(() => state.huyaCookie);
+  SettingsValue<String> get douyuCookie => SettingsValue(() => state.douyuCookie);
   SettingsValue<String> get douyinCookie => SettingsValue(() => state.douyinCookie);
   SettingsValue<String> get kuaishouCookie => SettingsValue(() => state.kuaishouCookie);
   SettingsValue<String> get yyCookie => SettingsValue(() => state.yyCookie);
@@ -29,6 +30,7 @@ class CookieController extends _$CookieController {
       bilibiliCookie: normalizeAccountCookie(HivePrefUtil.getString('bilibiliCookie') ?? ''),
       bilibiliUid: HivePrefUtil.getInt('bilibiliUid') ?? 0,
       huyaCookie: normalizeAccountCookie(HivePrefUtil.getString('huyaCookie') ?? ''),
+      douyuCookie: normalizeAccountCookie(HivePrefUtil.getString('douyuCookie') ?? ''),
       douyinCookie: normalizeAccountCookie(HivePrefUtil.getString('douyinCookie') ?? ''),
       kuaishouCookie: normalizeAccountCookie(HivePrefUtil.getString('kuaishouCookie') ?? ''),
       yyCookie: normalizeAccountCookie(HivePrefUtil.getString('yyCookie') ?? ''),
@@ -49,6 +51,7 @@ class CookieController extends _$CookieController {
       bilibiliCookie: normalizeAccountCookie(model.bilibiliCookie),
       bilibiliUid: model.bilibiliUid,
       huyaCookie: normalizeAccountCookie(model.huyaCookie),
+      douyuCookie: normalizeAccountCookie(model.douyuCookie),
       douyinCookie: normalizeAccountCookie(model.douyinCookie),
       kuaishouCookie: normalizeAccountCookie(model.kuaishouCookie),
       yyCookie: normalizeAccountCookie(model.yyCookie),
@@ -77,6 +80,8 @@ class CookieController extends _$CookieController {
 
   void setHuyaCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(huyaCookie: v), cookie);
 
+  void setDouyuCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(douyuCookie: v), cookie);
+
   void setDouyinCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(douyinCookie: v), cookie);
 
   void setKuaishouCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(kuaishouCookie: v), cookie);
@@ -104,6 +109,7 @@ class CookieController extends _$CookieController {
     HivePrefUtil.setString('bilibiliCookie', model.bilibiliCookie);
     HivePrefUtil.setInt('bilibiliUid', model.bilibiliUid);
     HivePrefUtil.setString('huyaCookie', model.huyaCookie);
+    HivePrefUtil.setString('douyuCookie', model.douyuCookie);
     HivePrefUtil.setString('douyinCookie', model.douyinCookie);
     HivePrefUtil.setString('kuaishouCookie', model.kuaishouCookie);
     HivePrefUtil.setString('yyCookie', model.yyCookie);
@@ -124,6 +130,7 @@ class CookieController extends _$CookieController {
     return {
       'bilibiliCookie': normalizeAccountCookie((json['bilibiliCookie'] ?? '') as String),
       'huyaCookie': normalizeAccountCookie((json['huyaCookie'] ?? '') as String),
+      'douyuCookie': normalizeAccountCookie((json['douyuCookie'] ?? '') as String),
       'douyinCookie': normalizeAccountCookie((json['douyinCookie'] ?? '') as String),
       'kuaishouCookie': normalizeAccountCookie((json['kuaishouCookie'] ?? '') as String),
       'bilibiliUid': (json['bilibiliUid'] ?? 0) as int,

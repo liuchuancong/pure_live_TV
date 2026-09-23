@@ -38,6 +38,15 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       webPath: WebRemoteRouter.cookieHuya,
     ),
     CookieSite(
+      siteId: Sites.douyuSite,
+      titleKey: 'site_douyu',
+      route: AppRoutes.kSettingsAccountDouyu,
+      hintKey: 'cookie_hint',
+      read: (cookies) => cookies.douyuCookie,
+      apply: (controller, value) => controller.setDouyuCookie(value),
+      webPath: WebRemoteRouter.cookieDouyu,
+    ),
+    CookieSite(
       siteId: Sites.yySite,
       titleKey: 'site_yy',
       route: AppRoutes.kSettingsAccountYy,

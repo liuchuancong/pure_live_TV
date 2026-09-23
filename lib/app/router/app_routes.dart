@@ -186,6 +186,7 @@ abstract final class AppRoutes {
   /// QR (phone page or device sign-in) and manual input.
   static const kSettingsAccountBilibili = "/settings_account/bilibili";
   static const kSettingsAccountHuya = "/settings_account/huya";
+  static const kSettingsAccountDouyu = "/settings_account/douyu";
   static const kSettingsAccountYy = "/settings_account/yy";
   static const kSettingsAccountDouyin = "/settings_account/douyin";
   static const kSettingsAccountKuaishou = "/settings_account/kuaishou";

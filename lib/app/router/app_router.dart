@@ -80,6 +80,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsAccount: (context) => const AccountSettingsSectionPage(),
   AppRoutes.kSettingsAccountBilibili: (context) => const AccountBilibiliPage(),
   AppRoutes.kSettingsAccountHuya: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountHuya)),
+  AppRoutes.kSettingsAccountDouyu: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyu)),
   AppRoutes.kSettingsAccountYy: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountYy)),
   AppRoutes.kSettingsAccountDouyin: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyin)),
   AppRoutes.kSettingsAccountKuaishou: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountKuaishou)),
@@ -131,6 +132,7 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsAccount: const AccountSettingsRoute(),
   AppRoutes.kSettingsAccountBilibili: const AccountBilibiliRoute(),
   AppRoutes.kSettingsAccountHuya: const AccountHuyaRoute(),
+  AppRoutes.kSettingsAccountDouyu: const AccountDouyuRoute(),
   AppRoutes.kSettingsAccountYy: const AccountYyRoute(),
   AppRoutes.kSettingsAccountDouyin: const AccountDouyinRoute(),
   AppRoutes.kSettingsAccountKuaishou: const AccountKuaishouRoute(),
@@ -448,6 +450,14 @@ class AccountHuyaRoute extends GoRouteData with $AccountHuyaRoute {
   Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
 }
 
+/// `kSettingsAccountDouyu`.
+class AccountDouyuRoute extends GoRouteData with $AccountDouyuRoute {
+  const AccountDouyuRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
 /// `kSettingsAccountYy`.
 class AccountYyRoute extends GoRouteData with $AccountYyRoute {
   const AccountYyRoute();
@@ -569,6 +579,7 @@ class AboutRoute extends GoRouteData with $AboutRoute {
     TypedGoRoute<AccountSettingsRoute>(path: AppRoutes.kSettingsAccount),
     TypedGoRoute<AccountBilibiliRoute>(path: AppRoutes.kSettingsAccountBilibili),
     TypedGoRoute<AccountHuyaRoute>(path: AppRoutes.kSettingsAccountHuya),
+TypedGoRoute<AccountDouyuRoute>(path: AppRoutes.kSettingsAccountDouyu),
     TypedGoRoute<AccountYyRoute>(path: AppRoutes.kSettingsAccountYy),
     TypedGoRoute<AccountDouyinRoute>(path: AppRoutes.kSettingsAccountDouyin),
     TypedGoRoute<AccountKuaishouRoute>(path: AppRoutes.kSettingsAccountKuaishou),
