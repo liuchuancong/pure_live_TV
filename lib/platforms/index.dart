@@ -19,6 +19,7 @@ export 'inke/index.dart';
 export 'kilakila/index.dart';
 export 'kuaishou/index.dart';
 export 'kugoulive/index.dart';
+export 'langlive/index.dart';
 export 'liveme/index.dart';
 export 'looklive/index.dart';
 export 'missevan/index.dart';

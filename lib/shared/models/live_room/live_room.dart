@@ -161,6 +161,25 @@ abstract class LiveRoom with _$LiveRoom {
       hasTotalViewers: false,
       onlineAvailability: AudienceOnlineAvailability.unsupported,
     ),
+    // SHOWROOM's view_num is session traffic and is not documented as a
+    // concurrent audience. Keep it in the cumulative column.
+    'showroom': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: true,
+      onlineAvailability: AudienceOnlineAvailability.unsupported,
+    ),
+    // CHZZK exposes concurrentUserCount and separately tells clients whether
+    // the value may be shown through cvExposure.
+    'chzzk': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
+    'kick': AudiencePlatformCapability(
+      hasPopularity: false,
+      hasTotalViewers: false,
+      onlineAvailability: AudienceOnlineAvailability.roomList,
+    ),
     'missevan': AudiencePlatformCapability(
       hasPopularity: true,
       hasTotalViewers: false,

@@ -54,6 +54,7 @@ Map<String, String> _labels = {
   'site_kugoulive': '酷狗直播',
   'site_baidulive': '百度直播',
   'site_zhanqi': '战旗直播',
+  'langlive_chat_notice': '浪 Live 远端聊天尚待接入；平台未返回明确并发人数时保持未知。',
   'site_jdlive': '京东直播',
   'site_17live': '17LIVE',
   'site_looklive': 'LOOK 直播',
