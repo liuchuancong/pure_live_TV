@@ -164,20 +164,11 @@ class BackgroundController extends _$BackgroundController {
   /// default attaches an Android Surface before video parameters are known,
   /// which is what made video wallpapers render black (or a single pixel).
   void _ensureVideoPlayer() {
-    // TEMP DIAG: wallpaper video player disabled to isolate the
-    // VideoOutputManager.create/dispose churn in logcat.
-    return;
-    // ignore: dead_code
     if (_videoPlayer != null) return;
-    // ignore: dead_code
     final player = Player();
-    // ignore: dead_code
     _videoPlayer = player;
-    // ignore: dead_code
     _videoController = VideoController(player, configuration: wallpaperVideoControllerConfiguration());
-    // ignore: dead_code
     player.setVolume(0.0);
-    // ignore: dead_code
     player.setPlaylistMode(PlaylistMode.loop);
   }
 
@@ -198,79 +189,53 @@ class BackgroundController extends _$BackgroundController {
 
   bool get isPlaybackSuspended => _playbackSuspended;
 
-  /// Called by the playback side on play/stop.
+  /// Called when the player page enters or leaves the navigation stack
+  /// (via [WallpaperRouteObserver]; a buffer-level play/pause flip is not a
+  /// real user action and must not reach here).
   ///
-  /// Reached from a lifecycle path
-  /// (`LivePlayController.onDispose` → `LivePlayerFacade.close`); every read
-  /// below goes through [_model] instead of `state` to stay out of the
-  /// Riverpod lifecycle assertion.
+  /// Every read below goes through [_model] instead of `state` to stay out of
+  /// the Riverpod lifecycle assertion.
   Future<void> setPlaybackActive(bool active) async {
-    // TEMP DIAG: wallpaper suspend/resume disabled — the whole path was
-    // screenshotting and disposing the wallpaper player on every play/stop,
-    // which is one of the create/dispose sources under investigation.
-    debugPrint('[BGDIAG] setPlaybackActive($active) SKIPPED (wallpaper disabled)');
-    return;
-    // ignore: dead_code
     if (_playbackSuspended == active) return;
-    // ignore: dead_code
     _playbackSuspended = active;
 
-    // ignore: dead_code
     if (active) {
       // Nothing to release when the background is not a video.
-      // ignore: dead_code
       if (!_isVideoSource) return;
-      // ignore: dead_code
       final player = _videoPlayer;
-      // ignore: dead_code
       if (player == null) return;
-      // ignore: dead_code
       Uint8List? frame;
-      // ignore: dead_code
       try {
-        // ignore: dead_code
         frame = await player.screenshot(format: 'image/jpeg');
       } catch (_) {
-        // ignore: dead_code
         frame = null;
       }
       // The capture is asynchronous, and playback can have ended while it was
       // in flight. That branch already rebuilt (and resumed) the background
       // player, so acting on the stale frame here would dispose the fresh
       // player and leave the wallpaper black until the next rebuild.
-      // ignore: dead_code
       if (!_playbackSuspended) return;
-      // ignore: dead_code
       if (frame != null && frame.isNotEmpty) {
-        // ignore: dead_code
         _posterFrame = frame;
-        // ignore: dead_code
         _disposeVideoPlayer();
         // The player is gone; tell the background layer to draw the poster,
         // otherwise it would render a black fill.
-        // ignore: dead_code
         _configStream.add(_model);
       } else {
         // Capture unsupported by some hwdec combos: fall back to pausing on
         // the last frame, which still avoids two decoders running at once.
-        // ignore: dead_code
         await player.pause();
       }
-      // ignore: dead_code
       return;
     }
 
     // Playback ended: drop the poster first — the background may have been
     // switched to another image/video meanwhile, and keeping the stale frame
     // would show the wrong one on the next switch back.
-    // ignore: dead_code
     if (_posterFrame != null) {
-      // ignore: dead_code
       _posterFrame = null;
-      // ignore: dead_code
       _configStream.add(_model);
     }
-    // ignore: dead_code
     if (_isVideoSource) await reloadBackgroundVideo();
   }
 
@@ -291,46 +256,33 @@ class BackgroundController extends _$BackgroundController {
     unawaited(player?.dispose());
   }
 
-  /// Also driven from the lifecycle path, so it reads [_model] only.
+  /// Also driven from the route-observer path, so it reads [_model] only.
   Future<void> reloadBackgroundVideo() async {
-    // TEMP DIAG: no video wallpaper is ever opened — the decoder would be
-    // the last remaining source of the create/dispose churn.
-    return;
-    // ignore: dead_code
     final src = switch (_model.source) {
       BackgroundSource.assetVideo => _model.assetVideoPath,
       BackgroundSource.localVideo => _model.localVideoPath,
       BackgroundSource.networkVideo => _model.networkVideoUrl,
       _ => null,
     };
-    // ignore: dead_code
     if (src != null && src.isNotEmpty) {
       // Don't allocate a decoder while playback is active: the background
       // shows the poster right now and the video resumes on playback end
       // (see setPlaybackActive).
-      // ignore: dead_code
       if (_playbackSuspended) return;
-      // ignore: dead_code
       final bool created = _videoPlayer == null;
-      // ignore: dead_code
       _ensureVideoPlayer();
       // The player is lazy, and the background layer reads the controller on
       // configChanges rebuild: on the frame it was just created, it still sees
       // null, so notify once more so it can pick up the controller.
-      // ignore: dead_code
       if (created) _configStream.add(_model);
-      // ignore: dead_code
       await _videoPlayer?.open(Media(src), play: !_playbackSuspended);
-      // ignore: dead_code
       return;
     }
 
     // No longer a video wallpaper: release the decoder entirely, never keep
     // an idle instance.
-    // ignore: dead_code
     _disposeVideoPlayer();
     // The controller is gone; notify the background layer to stop rendering it.
-    // ignore: dead_code
     _configStream.add(_model);
   }
 
