@@ -48,7 +48,7 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
       enableDanmakuDisplay: HivePrefUtil.getBool('enableDanmakuDisplay') ?? true,
       enableDanmakuStroke: HivePrefUtil.getBool('enableDanmakuStroke') ?? true,
       danmakuFps: (HivePrefUtil.getInt('danmakuFps') ?? 60).clamp(30, 240),
-      danmakuAutoFps: HivePrefUtil.getBool('danmakuAutoFps') ?? true,
+      danmakuAutoFps: HivePrefUtil.getBool('danmakuAutoFps') ?? false,
       enableDanmakuTapInteraction: HivePrefUtil.getBool('enableDanmakuTapInteraction') ?? true,
       enableDanmakuLongPressInteraction: HivePrefUtil.getBool('enableDanmakuLongPressInteraction') ?? true,
       collapseRepeatedDanmaku: HivePrefUtil.getBool('collapseRepeatedDanmaku') ?? false,

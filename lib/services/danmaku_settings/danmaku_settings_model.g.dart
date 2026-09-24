@@ -22,7 +22,7 @@ _DanmakuSettingsModel _$DanmakuSettingsModelFromJson(
   enableDanmakuDisplay: json['enableDanmakuDisplay'] as bool? ?? true,
   enableDanmakuStroke: json['enableDanmakuStroke'] as bool? ?? true,
   danmakuFps: (json['danmakuFps'] as num?)?.toInt() ?? 60,
-  danmakuAutoFps: json['danmakuAutoFps'] as bool? ?? true,
+  danmakuAutoFps: json['danmakuAutoFps'] as bool? ?? false,
   enableDanmakuTapInteraction:
       json['enableDanmakuTapInteraction'] as bool? ?? true,
   enableDanmakuLongPressInteraction:
