@@ -184,6 +184,9 @@ abstract final class AppRoutes {
   /// Device sync (the TV end of the phone's device sync row)
   static const kSettingsDeviceSync = "/settings/device_sync";
 
+  /// View the local log in a browser (QR + address served by the web remote)
+  static const kSettingsLogViewer = "/settings/log_viewer";
+
   /// Per-platform cookie pages: every platform gets its own page, with both a
   /// QR (phone page or device sign-in) and manual input.
   static const kSettingsAccountBilibili = "/settings_account/bilibili";

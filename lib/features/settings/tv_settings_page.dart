@@ -213,6 +213,7 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsAudience: 'audience_metric_settings',
   AppRoutes.kSettingsLocalBackup: 'local_backup',
   AppRoutes.kSettingsDeviceSync: 'remote_sync_receive',
+  AppRoutes.kSettingsLogViewer: 'view_logs_in_browser',
   AppRoutes.kSettingsConfigPreview: 'config_preview',
   AppRoutes.kSettingsDanmuShield: 'danmaku_keyword_block',
   AppRoutes.kSettingsHotAreas: 'platform_display',

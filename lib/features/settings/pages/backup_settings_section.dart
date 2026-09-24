@@ -1,13 +1,10 @@
 import 'dart:io';
-import 'dart:async';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
-import 'package:pure_live/features/remote/tv_remote_receiver.dart';
-import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 
 /// Backup and restore, in the mobile page's grouping.
@@ -61,25 +58,6 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
     setState(() {
       _busy = false;
       _result = ok ? '${i18n('ui_exported')}: ${file.path}' : i18n('ui_export_failed');
-    });
-  }
-
-  /// The log is served by the LAN remote; a TV has no browser, so the row shows
-  /// the address to open on a phone or a PC.
-  Future<void> _showLogUrl() async {
-    final notifier = ref.read(tvRemoteReceiverProvider.notifier);
-    ServerState? server = ref.read(tvRemoteReceiverProvider).value;
-    if (server?.isRunning != true) {
-      await notifier.startServer();
-      if (!mounted) return;
-      server = ref.read(tvRemoteReceiverProvider).value;
-    }
-    if (!mounted) return;
-    final url = server?.serverUrl ?? '';
-    setState(() {
-      _result = url.isEmpty
-          ? (server?.error ?? i18n('remote_service_unavailable'))
-          : '${i18n('view_logs_in_browser')}: $url/api/log/download';
     });
   }
 
@@ -138,7 +116,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
                   : _logApplying
                   ? i18n('local_log_applying')
                   : i18n('enable_local_log_desc'),
-              icon: Icons.description_outlined,
+icon: logState.storedEnableLog ? Icons.receipt_long_outlined : Icons.description_outlined,
               value: logState.storedEnableLog,
               onChanged: _logApplying ? null : _toggleLog,
             ),
@@ -148,7 +126,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               icon: Remix.global_line,
               options: [i18n('ui_show')],
               index: 0,
-              onChanged: (_) => _showLogUrl(),
+              onChanged: (_) => const LogViewerRoute().push(context),
             ),
           ],
         ),

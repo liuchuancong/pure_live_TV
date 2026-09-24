@@ -11,6 +11,7 @@ export 'pages/grid_spacing_section.dart';
 export 'pages/icon_picker_section.dart';
 export 'pages/loading_style_section.dart';
 export 'pages/local_config_preview_section.dart';
+export 'pages/log_viewer_page.dart';
 export 'pages/page_settings_section.dart';
 export 'pages/platform_display_section.dart';
 export 'pages/platform_settings_section.dart';

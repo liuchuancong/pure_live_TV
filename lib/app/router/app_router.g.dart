@@ -163,6 +163,11 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
       factory: $DeviceSyncRoute._fromState,
     ),
     GoRouteData.$route(
+      path: '/settings/log_viewer',
+      hasOverriddenOnExit: false,
+      factory: $LogViewerRoute._fromState,
+    ),
+    GoRouteData.$route(
       path: '/iptv',
       hasOverriddenOnExit: false,
       factory: $IptvRoute._fromState,
@@ -809,6 +814,27 @@ mixin $DeviceSyncRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/settings/device_sync');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $LogViewerRoute on GoRouteData {
+  static LogViewerRoute _fromState(GoRouterState state) =>
+      const LogViewerRoute();
+
+  @override
+  String get location => GoRouteData.$location('/settings/log_viewer');
 
   @override
   void go(BuildContext context) => context.go(location);
