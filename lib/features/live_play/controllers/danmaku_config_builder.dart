@@ -1,5 +1,5 @@
 import 'package:flame_barrage/flame_barrage.dart';
-import 'package:pure_live/player/utils/device_playback_profile.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 

@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'models/player_engine.dart';
 import 'package:flutter/material.dart';
-import 'adapters/flv_lzc_adapter.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'core/live_room_volume_manager.dart';
 import 'core/playback_header_resolver.dart';
 import '../services/settings/settings.dart';
 import 'package:media_core/media_core.dart';
-import 'adapters/better_player_adapter.dart';
-import 'adapters/media_kit_core_adapter.dart';
+import 'package:media_core_ijk_player/media_core_ijk_player.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart';
+import 'package:media_core_better_player/media_core_video_player.dart';
 import '../shared/models/live_room/live_room.dart';
 import 'package:pure_live/app/consts/app_theme_consts.dart';
-import 'package:better_player_plus/better_player_plus.dart';
 
 /// App-facing facade over media_core's [LivePlaybackController].
 ///
@@ -25,7 +24,7 @@ import 'package:better_player_plus/better_player_plus.dart';
 /// ```text
 /// features ──▶ LivePlayerFacade ──▶ LivePlaybackController (media_core)
 ///                    │                     └── PlayerKernel / adapters
-///                    └── view holders (FijkView / Video)
+///                    └── PlayerVideo.build() (owned by each adapter)
 /// ```
 final class LivePlayerFacade {
   /// Creates the facade.
@@ -353,7 +352,7 @@ final class LivePlayerFacade {
 
   void _applyVideoFit(BoxFit fit) {
     final adapter = _controller.handle?.adapter;
-    if (adapter is PureLiveMediaKitAdapter) {
+    if (adapter is MediaKitPlayerAdapter) {
       adapter.setVideoFit(fit);
     } else if (adapter is FlvLzcPlayerAdapter) {
       adapter.setVideoFit(fit);
@@ -391,20 +390,21 @@ final class LivePlayerFacade {
     );
   }
 
+  /// Builds the live surface of [adapter].
+  ///
+  /// Every media_core adapter owns its own surface through [PlayerVideo], so
+  /// the facade only has to hand the fit over and ask for the widget — it no
+  /// longer reaches into a view holder or a `VideoController` of its own.
   Widget _buildAdapterView(PlayerAdapter adapter, BoxFit fit) {
-    if (adapter is PureLiveMediaKitAdapter) {
+    if (adapter is MediaKitPlayerAdapter) {
       adapter.setVideoFit(fit);
-      final controller = adapter.videoController;
-      if (controller == null) return const ColoredBox(color: Colors.black);
-      return adapter.viewHolder.build(controller);
+    } else if (adapter is FlvLzcPlayerAdapter) {
+      adapter.setVideoFit(fit);
+    } else if (adapter is BetterPlayerAdapter) {
+      adapter.setVideoFit(fit);
     }
-    if (adapter is FlvLzcPlayerAdapter) {
-      adapter.setVideoFit(fit);
-      return adapter.viewHolder.build(adapter.fijkPlayer);
-    }
-    if (adapter is BetterPlayerAdapter) {
-      adapter.setVideoFit(fit);
-      return BetterPlayer(controller: adapter.controller);
+    if (adapter case final PlayerVideo video) {
+      return video.build();
     }
     return const ColoredBox(color: Colors.black);
   }

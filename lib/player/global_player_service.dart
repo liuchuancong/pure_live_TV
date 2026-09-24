@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:developer';
 import 'live_player_facade.dart';
 import 'models/player_engine.dart';
-import 'adapters/flv_lzc_adapter.dart';
 import 'package:media_core/media_core.dart';
-import 'adapters/better_player_adapter.dart';
-import 'adapters/media_kit_core_adapter.dart';
-import 'package:media_kit/media_kit.dart' as mk;
+import 'package:media_core_ijk_player/media_core_ijk_player.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart';
+import 'package:media_core_better_player/media_core_video_player.dart';
 
 export 'live_player_facade.dart';
 export 'models/player_engine.dart';
@@ -42,7 +41,7 @@ class GlobalPlayerService {
   Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) async {
     if (_initialized) return;
 
-    mk.MediaKit.ensureInitialized();
+    MediaKitPlayerAdapter.ensureInitialized();
 
     final kernel = PlayerKernel();
     _kernel = kernel;
@@ -84,21 +83,21 @@ class GlobalPlayerService {
       case PlayerEngine.mediaKit:
         return PlayerAdapterRegistration(
           id: 'mpv',
-          factory: _MediaKitFactory(),
-          capabilities: PureLiveMediaKitAdapter.defaultCapabilities,
+          factory: const MediaKitAdapterFactory(),
+          capabilities: MediaKitPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
       case PlayerEngine.fijk:
         return PlayerAdapterRegistration(
           id: 'ijk',
-          factory: _FlvLzcFactory(),
+          factory: const IjkPlayerAdapterFactory(),
           capabilities: FlvLzcPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
       case PlayerEngine.betterPlayer:
         return PlayerAdapterRegistration(
           id: 'exo',
-          factory: _BetterPlayerFactory(),
+          factory: const BetterPlayerAdapterFactory(),
           capabilities: BetterPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
@@ -115,28 +114,4 @@ class GlobalPlayerService {
     _initialized = false;
     log('GlobalPlayerService: Disposed.', name: 'GlobalPlayerService');
   }
-}
-
-class _MediaKitFactory implements PlayerAdapterFactory {
-  @override
-  PlayerAdapter create(String id) => PureLiveMediaKitAdapter(id: id);
-
-  @override
-  bool supports(String id) => id == 'mpv' || id.isEmpty;
-}
-
-class _FlvLzcFactory implements PlayerAdapterFactory {
-  @override
-  PlayerAdapter create(String id) => FlvLzcPlayerAdapter(id: id);
-
-  @override
-  bool supports(String id) => id == 'ijk' || id.isEmpty;
-}
-
-class _BetterPlayerFactory implements PlayerAdapterFactory {
-  @override
-  PlayerAdapter create(String id) => BetterPlayerAdapter(id: id);
-
-  @override
-  bool supports(String id) => id == 'exo' || id.isEmpty;
 }

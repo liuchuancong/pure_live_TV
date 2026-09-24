@@ -37,8 +37,9 @@ class DecoderSettingsSectionPage extends ConsumerWidget {
     _softwareOnly,
   ];
 
-  /// iOS/macOS has no Vulkan video path and the app's own iOS contract
-  /// (`mpvHardwareDecodersForPlatform`) rejects it, so it is not offered here.
+  /// iOS/macOS has no Vulkan video path and the mpv platform contract
+  /// (`media_core_media_kit`'s `MpvPlatformProfile.hardwareDecodersForPlatform`)
+  /// rejects it, so it is not offered here.
   static const List<String> _apple = [..._common, 'videotoolbox', 'videotoolbox-copy', _softwareOnly];
 
   static const List<String> _windows = [

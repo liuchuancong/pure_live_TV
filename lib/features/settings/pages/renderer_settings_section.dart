@@ -11,9 +11,10 @@ import 'package:pure_live/services/player_settings/player_settings_controller.da
 /// the mobile renderer page renders
 /// (`pure_live/lib/modules/settings/pages/renderer_settings.dart`), labels
 /// included (`VA-API (Linux)`, `CACA (macOS/Linux)`, ...). The Windows,
-/// Linux and macOS drivers are kept because the app's own platform contract
-/// (`PlayerConsts.videoOutputDrivers` / `mpvVideoOutputDriversForPlatform`)
-/// accepts them on every platform but iOS.
+/// Linux and macOS drivers are kept because the platform contract the mpv
+/// kernel applies (`media_core_media_kit`'s `PlayerConsts.videoOutputDrivers` /
+/// `MpvPlatformProfile.videoOutputDriversForPlatform`) accepts them on every
+/// platform but iOS.
 class RendererSettingsSectionPage extends ConsumerWidget {
   const RendererSettingsSectionPage({super.key});
 

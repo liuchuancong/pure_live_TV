@@ -70,19 +70,6 @@ dependencies:
   qr_flutter: ^4.1.0                  # 生成二维码图片
   markdown_widget: ^2.3.2+8           # 更新页更新日志的 Markdown 渲染
 
-  # 视频播放、流媒体、弹幕
-  media_kit:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      path: ./media_kit
-      ref: 6fd002aabce0c22009bfbf564c1b7f16f0b120d8
-
-  media_kit_video:
-    git:
-      url: https://github.com/Predidit/media-kit.git
-      path: ./media_kit_video
-      ref: 6fd002aabce0c22009bfbf564c1b7f16f0b120d8
-  better_player_plus: ^1.4.1
   wakelock_plus: ^1.4.0               # 播放时保持屏幕常亮
   flame_barrage: 0.0.6
 
@@ -118,14 +105,19 @@ dependencies:
       url: https://github.com/guide-inc-org/guide-flutter_inappwebview.git
       path: flutter_inappwebview
       ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
-  # Git私有仓库自定义库
-  flv_lzc: 
-    git: https://github.com/liuchuancong/flv_lzc.git
   media_core:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core
-      ref: main  # 可选
+    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core
+  media_core_media_kit:
+    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core_media_kit
+  media_core_better_player:
+    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core_better_player
+  media_core_ijk_player:
+    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core_ijk_player
+  # The video layer consumes media_core's adapters, but the wallpaper feature
+  # still drives media_kit / media_kit_video directly, so both are declared
+  # here instead of only being pulled in transitively.
+  media_kit: ^1.1.11
+  media_kit_video: ^1.2.5
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）
@@ -135,6 +127,17 @@ dependency_overrides:
   android_tv_text_field:
     path: plugins/built_in_kotlin/android_tv_text_field # 本地 AGP 9 内建 Kotlin 补丁（原生 TV 输入框）
   wakelock_plus: ^1.4.0 # media_kit 声明的版本覆盖
+  media_kit:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: media_kit
+
+  media_kit_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: media_kit_video
 dev_dependencies:
   flutter_test:
     sdk: flutter # Flutter单元测试框架

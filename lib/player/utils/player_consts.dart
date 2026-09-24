@@ -1,5 +1,6 @@
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/player/models/player_engine.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart' as media_core_media_kit;
 
 class PlayerConsts {
   static final String defaultKey = 'mpv';
@@ -77,76 +78,21 @@ class PlayerConsts {
 
   static String resolutionLabel(String key) => i18n(normalizeResolutionKey(key));
 
-  static const videoOutputDrivers = {
-    "gpu": "gpu",
-    "gpu-next": "gpu-next",
-    "xv": "xv (X11 only)",
-    "x11": "x11 (X11 only)",
-    "vdpau": "vdpau (X11 only)",
-    "direct3d": "direct3d (Windows only)",
-    "sdl": "sdl",
-    "dmabuf-wayland": "dmabuf-wayland",
-    "wlshm": "wlshm (Wayland SHM, Linux only)",
-    "vaapi": "vaapi",
-    "drm": "drm (Linux only)",
-    "caca": "caca (macOS / Linux only)",
-    "avfoundation": "avfoundation (macOS / iOS only)",
-    "null": "null",
-    "libmpv": "libmpv",
-    "mediacodec_embed": "mediacodec_embed (Android only)",
-  };
+  /// Raw mpv option catalogs.
+  ///
+  /// These three tables are the *only* part of this file that media_core
+  /// already owns, so they are re-exported from
+  /// `media_core_media_kit`'s `PlayerConsts` instead of being duplicated
+  /// here — two copies of the same driver list drift, and the platform
+  /// normaliser in the package reads its own copy anyway.
+  ///
+  /// Everything else in this class (engine keys, resolution preferences,
+  /// the labelled option lists below) is app-specific and stays here.
+  static const videoOutputDrivers = media_core_media_kit.PlayerConsts.videoOutputDrivers;
 
-  static const audioOutputDrivers = {
-    "null": "null (No audio output)",
-    "pulse": "pulse (Linux, uses PulseAudio)",
-    "pipewire": "pipewire (Linux, via Pulse compatibility or native)",
-    "alsa": "alsa (Linux only)",
-    "oss": "oss (Linux only)",
-    "jack": "jack (Linux/macOS, low-latency audio)",
-    "directsound": "directsound (Windows only)",
-    "wasapi": "wasapi (Windows only)",
-    "winmm": "winmm (Windows only, legacy API)",
-    "audiounit": "audiounit (iOS only)",
-    "coreaudio": "coreaudio (macOS only)",
-    "opensles": "opensles (Android only)",
-    "audiotrack": "audiotrack (Android only)",
-    "aaudio": "aaudio (Android only)",
-    "pcm": "pcm (Cross-platform)",
-    "sdl": "sdl (Cross-platform, via SDL library)",
-    "openal": "openal (Cross-platform, OpenAL backend)",
-    "libao": "libao (Cross-platform, uses libao library)",
-    "auto": "auto (Automatic fallback)",
-  };
+  static const audioOutputDrivers = media_core_media_kit.PlayerConsts.audioOutputDrivers;
 
-  static const hardwareDecoder = {
-    "no": "no",
-    "auto": "auto",
-    "auto-safe": "auto-safe",
-    "yes": "yes",
-    "auto-copy": "auto-copy",
-    "d3d11va": "d3d11va",
-    "d3d11va-copy": "d3d11va-copy",
-    "videotoolbox": "videotoolbox",
-    "videotoolbox-copy": "videotoolbox-copy",
-    "vaapi": "vaapi",
-    "vaapi-copy": "vaapi-copy",
-    "nvdec": "nvdec",
-    "nvdec-copy": "nvdec-copy",
-    "drm": "drm",
-    "drm-copy": "drm-copy",
-    "vulkan": "vulkan",
-    "vulkan-copy": "vulkan-copy",
-    "dxva2": "dxva2",
-    "dxva2-copy": "dxva2-copy",
-    "vdpau": "vdpau",
-    "vdpau-copy": "vdpau-copy",
-    "mediacodec": "mediacodec",
-    "mediacodec-copy": "mediacodec-copy",
-    "cuda": "cuda",
-    "cuda-copy": "cuda-copy",
-    "crystalhd": "crystalhd",
-    "rkmpp": "rkmpp",
-  };
+  static const hardwareDecoder = media_core_media_kit.PlayerConsts.hardwareDecoder;
 
   /// Hardware decoders available to mpv.
   ///

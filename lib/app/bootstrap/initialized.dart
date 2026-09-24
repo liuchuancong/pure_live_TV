@@ -9,7 +9,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:pure_live/player/core/playback_proxy_policy.dart';
-import 'package:pure_live/player/utils/device_playback_profile.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart';
 
 class AppInitializer {
   static final AppInitializer _instance = AppInitializer._internal();
