@@ -2,6 +2,7 @@
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 class AreaRoomsPage extends ConsumerStatefulWidget {
   final Site site;
@@ -26,13 +27,31 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
     final liveSite = widget.site.liveSite;
     final siteId = widget.site.id;
 
+    // The reference's area-rooms gate (`area_rooms_controller`, all three
+    // controller variants): bilibili answers -352 (risk control) and douyin
+    // crashes the parser with a NoSuchMethodError when the platform hides its
+    // category list behind a session. Both are reported as the login-required
+    // state — the shared classifier maps the "loginRequired" marker — never as
+    // an ordinary network error.
+    Future<List<LiveRoom>> fetchCategoryRooms({required int page}) async {
+      try {
+        return await liveSite.getCategoryRooms(widget.subCategory, page: page);
+      } catch (e) {
+        final String text = e.toString();
+        if (text.contains("-352") || (text.contains("NoSuchMethodError") && text.contains("'[]'"))) {
+          throw Exception("loginRequired");
+        }
+        rethrow;
+      }
+    }
+
     if (siteId == Sites.kuaishouSite) {
       _currentParam = PagingParam<LiveRoom>(
         mode: PagingMode.serverAll,
         pageSize: 12,
         keepAlive: true,
         fetchAll: () async {
-          final list = await liveSite.getCategoryRooms(widget.subCategory, page: 1);
+          final list = await fetchCategoryRooms(page: 1);
           return list;
         },
       );
@@ -49,7 +68,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
         fixedServerSize: fixedSize,
         keepAlive: true,
         fetchFixed: (bigPage, size) async {
-          final list = await liveSite.getCategoryRooms(widget.subCategory, page: bigPage);
+          final list = await fetchCategoryRooms(page: bigPage);
           return list;
         },
       );
@@ -59,7 +78,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
         pageSize: 12,
         keepAlive: true,
         fetchRemote: (page, size) async {
-          final list = await liveSite.getCategoryRooms(widget.subCategory, page: page);
+          final list = await fetchCategoryRooms(page: page);
           return list;
         },
       );
@@ -94,6 +113,9 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           param: _currentParam,
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
           emptyScene: EmptyScene.areaRooms,
+          // A -352 risk-controlled category is the bilibili session gate: the
+          // 去登录 button leads to the account (cookie) settings.
+          onGoLogin: () => const AccountSettingsRoute().push(context),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: themeState.denseRoomLayout,
             mainAxisSpacing: mainSpacing.w,
