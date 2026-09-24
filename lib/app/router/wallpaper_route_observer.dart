@@ -43,23 +43,33 @@ class WallpaperRouteObserver extends NavigatorObserver {
     }
   }
 
+  /// TEMP DIAG — logs every navigation callback with the route name, so a
+  /// replay of the whole stack onto a freshly constructed observer is visible.
+  static void _diag(String cb, Route<dynamic>? route, Route<dynamic>? previous) {
+    debugPrint('[BGDIAG] obs this=${identityHashCode(wallpaperRouteObserver)} $cb route=${route?.settings.name} prev=${previous?.settings.name}');
+  }
+
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _diag('didPush', route, previousRoute);
     if (_isLiveRoute(route)) _sync(true, 'didPush');
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _diag('didPop', route, previousRoute);
     if (_isLiveRoute(route)) _sync(false, 'didPop');
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _diag('didRemove', route, previousRoute);
     if (_isLiveRoute(route)) _sync(false, 'didRemove');
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    _diag('didReplace', newRoute, oldRoute);
     // Channel switching uses replace, so both routes are the player page:
     // `_sync(true)` is a no-op and the wallpaper stays suspended across the
     // handover instead of flickering.
