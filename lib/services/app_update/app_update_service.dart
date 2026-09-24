@@ -13,6 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/release_model/release_model.dart';
 
 part 'app_update_service.g.dart';
@@ -558,7 +559,7 @@ class AppUpdateController extends _$AppUpdateController {
       // the page can already render, and the rows upgrade when it lands.
       unawaited(_fetchLatestReleaseAssets());
     } catch (error) {
-      _patchState(phase: AppUpdatePhase.failed, error: '$error');
+      _patchState(phase: AppUpdatePhase.failed, error: _describeError(error, fallback: i18n('check_update_failed')));
       _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
     } finally {
       _checking = false;
@@ -796,6 +797,64 @@ class AppUpdateController extends _$AppUpdateController {
   /// history entry for that version carries one.
   String? get selectedAssetSize => assetSizeFor(state.selectedAbi);
 
+  /// Expected package size in **bytes** for [abi], or 0 when unknown.
+  ///
+  /// Used to verify the transfer after it completes: the exact byte count the
+  /// release publishes is the only proof that a mirror served the whole file.
+  /// Matching follows [resolveAssetUrl] (abi, then renderer variant), so the
+  /// size belongs to the same asset that gets downloaded.
+  int expectedBytesFor(String abi) {
+    final String wanted = abi.trim().toLowerCase();
+    final String renderer = state.rendererVariant;
+
+    int untagged = 0;
+    int anyPackage = 0;
+
+    for (final ReleaseAssetInfo asset in state.latestAssets) {
+      if (!asset.isApk || asset.abi != wanted || asset.sizeBytes <= 0) continue;
+      if (asset.renderer == renderer) return asset.sizeBytes;
+      if (asset.renderer.isEmpty) untagged = untagged == 0 ? asset.sizeBytes : untagged;
+      anyPackage = anyPackage == 0 ? asset.sizeBytes : anyPackage;
+    }
+
+    final ReleaseModel? release = _latestRelease;
+    if (release != null) {
+      for (final ReleaseFileModel file in release.files) {
+        final int? parsed = parseSizeText(file.size);
+        if (parsed == null || parsed <= 0) continue;
+        if (abiForAssetName(file.name) != wanted) continue;
+        final String tag = rendererForAssetName(file.name);
+        if (tag == renderer) return parsed;
+        if (tag.isEmpty) untagged = untagged == 0 ? parsed : untagged;
+        anyPackage = anyPackage == 0 ? parsed : anyPackage;
+      }
+      if (release.files.length == 1) {
+        final int? parsed = parseSizeText(release.files.first.size);
+        if (anyPackage == 0 && parsed != null && parsed > 0) anyPackage = parsed;
+      }
+    }
+
+    return untagged != 0 ? untagged : anyPackage;
+  }
+
+  /// 把 releases.json 里的体积文案（如 `12.3 MB`）换算成字节；无法解析返回 null。
+  ///
+  /// 这份体积是四舍五入过的（见 [assetSizeFor] 的展示用途），所以调用方校验时
+  /// 必须留容忍区间，不能当作精确值。
+  static int? parseSizeText(String text) {
+    final match = RegExp(r'([0-9]+(?:\.[0-9]+)?)\s*([kKmMgG]?)[bB]').firstMatch(text.trim());
+    if (match == null) return null;
+    final double value = double.tryParse(match.group(1)!) ?? -1;
+    if (value < 0) return null;
+    final double scale = switch (match.group(2)!.toLowerCase()) {
+      'k' => 1024,
+      'm' => 1024 * 1024,
+      'g' => 1024 * 1024 * 1024,
+      _ => 1,
+    };
+    return (value * scale).round();
+  }
+
   // ---------------------------------------------------------------------------
   // Download + install
   //
@@ -819,7 +878,7 @@ class AppUpdateController extends _$AppUpdateController {
   Future<bool> downloadAsset(String url, {bool preferGivenUrl = false}) async {
     if (state.phase == AppUpdatePhase.downloading) return false;
     if (!url.startsWith('http')) {
-      _patchState(phase: AppUpdatePhase.available, error: 'no download url');
+      _patchState(phase: AppUpdatePhase.available, error: i18n('update_error_no_url'));
       return false;
     }
 
@@ -844,15 +903,19 @@ class AppUpdateController extends _$AppUpdateController {
       if (!await target.exists()) await target.create(recursive: true);
     } catch (error) {
       _cancelDownload();
-      _patchState(phase: AppUpdatePhase.available, error: '$error');
+      _patchState(phase: AppUpdatePhase.available, error: i18n('update_error_storage'));
       return false;
     }
+
+    // 期望体积来自发布元数据：下载完必须核对，否则镜像返回的 HTML 错误页
+    // 也会被当成"下载成功"提交成安装包。
+    final int expectedBytes = expectedBytesFor(state.selectedAbi);
 
     Object? lastError;
     for (final candidate in candidates.toSet()) {
       final destination = '${target.path}${Platform.pathSeparator}$fileName';
       try {
-        await _downloadCandidate(candidate, destination);
+        await _downloadCandidate(candidate, destination, expectedBytes: expectedBytes);
         if (_cancelToken?.isCancelled == true) return false;
         _cancelDownload();
         _patchState(phase: AppUpdatePhase.readyToInstall, receivedBytes: state.totalBytes, downloadedPath: destination);
@@ -867,7 +930,8 @@ class AppUpdateController extends _$AppUpdateController {
     _cancelDownload();
     _patchState(
       phase: AppUpdatePhase.available,
-      error: 'download failed: $lastError',
+      // lastError 为 null 时（候选列表为空）不能拼成 "…: null" 这种半截英文。
+      error: _describeError(lastError, fallback: i18n('download_failed')),
       receivedBytes: 0,
       totalBytes: 0,
       speedMbps: 0,
@@ -881,7 +945,7 @@ class AppUpdateController extends _$AppUpdateController {
   /// The package is never written where the installer can see a half-file: the
   /// bytes land in a staging file, and only a completed transfer is renamed
   /// onto [destination].
-  Future<void> _downloadCandidate(String url, String destination) async {
+  Future<void> _downloadCandidate(String url, String destination, {int expectedBytes = 0}) async {
     final completed = File(destination);
     final partial = File('$destination.part');
 
@@ -910,10 +974,93 @@ class AppUpdateController extends _$AppUpdateController {
     );
 
     if (!await partial.exists()) {
-      throw const FileSystemException('Downloaded staging file is missing');
+      throw FileSystemException(i18n('update_error_package_missing'));
+    }
+
+    // 校验放在提交之前：不合格的整包直接删掉，安装器永远看不到半个文件。
+    final String? invalid = await _validateStagedPackage(partial, expectedBytes: expectedBytes);
+    if (invalid != null) {
+      await _deleteIfPresent(partial);
+      throw FileSystemException(invalid);
     }
 
     await _commitStagedFile(partial, completed);
+  }
+
+  /// 校验刚下载完的安装包；通过返回 null，不通过返回展示给用户的文案。
+  ///
+  /// 三道检查，从便宜到昂贵：
+  /// 1. 非空；
+  /// 2. **ZIP 魔数**：APK 是 ZIP，头两字节必为 `PK`。镜像/门户劫持返回的
+  ///    HTML 错误页以 `<` 开头，这一步就能挡住，且不依赖任何元数据；
+  /// 3. **体积核对**：发布元数据给了期望字节数时比对。GitHub 的 `size` 是精确
+  ///    值；releases.json 的体积文案（`12.3 MB`）是四舍五入过的，所以留 2%
+  ///    容忍区间——截断/半包（往往差几十 MB）仍然会被挡下。
+  Future<String?> _validateStagedPackage(File partial, {required int expectedBytes}) async {
+    final int actual = await partial.length();
+    if (actual <= 0) return i18n('update_error_package_empty');
+
+    RandomAccessFile? head;
+    try {
+      head = await partial.open();
+      final magic = await head.read(2);
+      if (magic.length < 2 || magic[0] != 0x50 || magic[1] != 0x4B) {
+        return i18n('update_error_package_invalid');
+      }
+    } catch (_) {
+      return i18n('update_error_package_invalid');
+    } finally {
+      await head?.close();
+    }
+
+    if (expectedBytes > 0) {
+      final int tolerance = (expectedBytes * 0.02).round().clamp(0, 4 * 1024 * 1024);
+      if ((actual - expectedBytes).abs() > tolerance) {
+        return i18n(
+          'update_error_package_size',
+          args: {'expected': _readableBytes(expectedBytes), 'actual': _readableBytes(actual)},
+        );
+      }
+    }
+    return null;
+  }
+
+  static String _readableBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(0)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  /// 把任意异常转成可展示的文案。
+  ///
+  /// 直接 `'$error'` 有两个坑：DioException 的 message 可能是 null（页面就会
+  /// 出现 "DioException …: null"），以及全是英文。这里按类型映射成中文提示，
+  /// 认不出的异常退回到调用方给的兜底文案。
+  static String _describeError(Object? error, {required String fallback}) {
+    if (error == null) return fallback;
+    if (error is FileSystemException) {
+      final String text = error.message.trim();
+      return text.isEmpty ? fallback : text;
+    }
+    if (error is DioException) {
+      return switch (error.type) {
+        DioExceptionType.connectionTimeout ||
+        DioExceptionType.sendTimeout ||
+        DioExceptionType.receiveTimeout => i18n('update_error_timeout'),
+        DioExceptionType.badResponse => i18n(
+          'update_error_http_status',
+          args: {'code': '${error.response?.statusCode ?? 0}'},
+        ),
+        DioExceptionType.connectionError => i18n('update_error_network'),
+        DioExceptionType.cancel => fallback,
+        DioExceptionType.badCertificate => i18n('update_error_network'),
+        DioExceptionType.transformTimeout => i18n('update_error_timeout'),
+        DioExceptionType.unknown => i18n('update_error_network'),
+      };
+    }
+    final String text = error.toString().trim();
+    if (text.isEmpty || text == 'null' || text.endsWith(': null')) return fallback;
+    return text;
   }
 
   /// Hands the package the download committed to the platform installer.
@@ -923,7 +1070,7 @@ class AppUpdateController extends _$AppUpdateController {
   Future<AppInstallResult> installDownloaded() async {
     final String packagePath = state.downloadedPath;
     if (packagePath.isEmpty || !await File(packagePath).exists()) {
-      _patchState(error: 'install package missing');
+      _patchState(error: i18n('update_error_package_missing'));
       return AppInstallResult.missingPackage;
     }
 
@@ -932,7 +1079,7 @@ class AppUpdateController extends _$AppUpdateController {
         if (await Permission.requestInstallPackages.isDenied) {
           final granted = await Permission.requestInstallPackages.request();
           if (!granted.isGranted) {
-            _patchState(error: 'install permission denied');
+            _patchState(error: i18n('update_error_install_permission'));
             return AppInstallResult.permissionDenied;
           }
         }
@@ -944,7 +1091,7 @@ class AppUpdateController extends _$AppUpdateController {
 
     final ok = await FileUtils.openFileOrUrl(packagePath);
     if (!ok) {
-      _patchState(error: 'installer launch failed');
+      _patchState(error: i18n('update_error_installer_launch'));
       _appendRecord(AppUpdateAction.failed, version: state.latestVersion);
       return AppInstallResult.launchFailed;
     }
