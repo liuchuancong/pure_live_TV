@@ -437,9 +437,9 @@ final class LivePlayerFacade {
   /// Returns the engine currently in use.
   PlayerEngine get currentEngine {
     switch (_controller.backendId) {
-      case 'ijk':
+      case BackendIds.fijk:
         return PlayerEngine.fijk;
-      case 'exo':
+      case BackendIds.betterPlayer:
         return PlayerEngine.betterPlayer;
       default:
         return PlayerEngine.mediaKit;

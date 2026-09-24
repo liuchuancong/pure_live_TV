@@ -41,7 +41,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
         ? playerState.videoPlayerKey
         : PlayerConsts.defaultKey;
     final bool isMpv = activeEngineKey == PlayerConsts.defaultKey;
-    final bool isExo = activeEngineKey == 'exo';
+    final bool isExo = activeEngineKey == BackendIds.betterPlayer;
     final bool proxyEnabled = SettingsService.to.proxyState.enableProxy;
     final bool customOutput = playerState.customPlayerOutput;
 
@@ -183,7 +183,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     final controller = ref.read(playerSettingsControllerProvider.notifier);
     controller.updateSettings(ref.read(playerSettingsControllerProvider).copyWith(videoPlayerKey: key));
 
-    final engine = PlayerConsts.engines[key];
+    final engine = PlayerConsts.getEngine(key);
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
 

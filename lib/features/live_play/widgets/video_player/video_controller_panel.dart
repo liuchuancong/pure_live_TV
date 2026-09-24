@@ -423,7 +423,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     ref.read(livePlayControllerProvider(widget.args).notifier).keepControlsAlive();
     ref.read(playerSettingsControllerProvider.notifier).updateSettings(playerSettings.copyWith(videoPlayerKey: key));
 
-    final engine = PlayerConsts.engines[key];
+    final engine = PlayerConsts.getEngine(key);
     final service = GlobalPlayerService.instance;
     if (engine == null || !service.initialized) return;
 

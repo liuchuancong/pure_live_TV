@@ -3,18 +3,40 @@ import 'package:pure_live/player/models/player_engine.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart' as media_core_media_kit;
 
 class PlayerConsts {
-  static final String defaultKey = 'mpv';
+  static final String defaultKey = BackendIds.mediaKit;
 
-  static final Map<String, PlayerEngine> engines = {
-    'mpv': PlayerEngine.mediaKit,
-    'ijk': PlayerEngine.fijk,
-    'exo': PlayerEngine.betterPlayer,
+  static const Map<String, PlayerEngineConfig> engineConfigs = {
+    BackendIds.mediaKit: PlayerEngineConfig(engine: PlayerEngine.mediaKit, nameKey: 'player_mpv'),
+    BackendIds.fijk: PlayerEngineConfig(engine: PlayerEngine.fijk, nameKey: 'player_ijk'),
+    BackendIds.betterPlayer: PlayerEngineConfig(engine: PlayerEngine.betterPlayer, nameKey: 'player_exo'),
   };
 
-  static final Map<String, String> names = {'mpv': 'player_mpv', 'ijk': 'player_ijk', 'exo': 'player_exo'};
+  static PlayerEngine? engineOf(String id) {
+    return engineConfigs[id]?.engine;
+  }
+
+  static String? nameOf(String id) {
+    return engineConfigs[id]?.nameKey;
+  }
+
+  static final Map<String, PlayerEngine> engines = {
+    for (final entry in engineConfigs.entries) entry.key: entry.value.engine,
+  };
+
+  static final Map<String, String> names = {for (final entry in engineConfigs.entries) entry.key: entry.value.nameKey};
+
+  static PlayerEngine? getEngine(String key) {
+    return engineConfigs[key]?.engine;
+  }
 
   static String getKeyByI18nKey(String i18nKey) {
-    return names.entries.firstWhere((e) => e.value == i18nKey, orElse: () => names.entries.first).key;
+    for (final entry in engineConfigs.entries) {
+      if (entry.value.nameKey == i18nKey) {
+        return entry.key;
+      }
+    }
+
+    return engineConfigs.keys.first;
   }
 
   /// Stable identifiers of the resolution preference, in display order.
