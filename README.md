@@ -224,7 +224,9 @@ flutter build apk --release --flavor skia --split-per-abi \
 
 如果 Pure Live TV 对你有帮助，欢迎给项目一个 ⭐ Star：
 
-[![Stargazers over time](https://starchart.cc/liuchuancong/pure_live_TV.svg?variant=adaptive)](https://starchart.cc/liuchuancong/pure_live_TV)
+## Star History
+
+[![Star History Chart](https://api.star-history.com/chart?repos=liuchuancong/pure_live_tv&type=date&legend=top-left)](https://www.star-history.com/?repos=liuchuancong%2Fpure_live_tv&type=date&legend=top-left)
 
 ---
 
