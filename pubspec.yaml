@@ -106,18 +106,27 @@ dependencies:
       path: flutter_inappwebview
       ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
   media_core:
-    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core
+    path: F:/media_core/packages/media_core
   media_core_media_kit:
-    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core_media_kit
+    path: F:/media_core/packages/media_core_media_kit
   media_core_better_player:
-    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core_better_player
+    path: F:/media_core/packages/media_core_better_player
   media_core_ijk_player:
-    path: C:/Users/XA-158/projects/flutter/media_core/packages/media_core_ijk_player
+    path: F:/media_core/packages/media_core_ijk_player
   # The video layer consumes media_core's adapters, but the wallpaper feature
   # still drives media_kit / media_kit_video directly, so both are declared
   # here instead of only being pulled in transitively.
-  media_kit: ^1.1.11
-  media_kit_video: ^1.2.5
+  media_kit:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit
+
+  media_kit_video:
+    git:
+      url: https://github.com/Predidit/media-kit.git
+      ref: main
+      path: ./media_kit_video
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）
@@ -138,6 +147,7 @@ dependency_overrides:
       url: https://github.com/Predidit/media-kit.git
       ref: main
       path: media_kit_video
+
 dev_dependencies:
   flutter_test:
     sdk: flutter # Flutter单元测试框架

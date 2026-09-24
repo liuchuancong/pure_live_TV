@@ -31,6 +31,19 @@ final class LivePlayerFacade {
   LivePlayerFacade(PlayerKernel kernel, {required PlayerEngine defaultEngine, this._onPreferredEngineChanged})
     : _controller = LivePlaybackController(kernel),
       preferredEngine = defaultEngine {
+    // The app lifecycle is the source of truth the handle's lifecycle
+    // state machine was always meant to consume: backgrounding auto-pauses
+    // the live player, foregrounding re-arms it (without auto-play). The
+    // driver resolves the current handle per event, so it survives engine
+    // switches.
+    _appLifecycle = AppLifecycleDriver(
+      resolve: () => _controller.handle,
+      // Backgrounding must also stand the live controller's watchdogs down,
+      // or its unexpected-pause recovery quietly resumes playback in the
+      // background.
+      onBackgrounded: (_) => _controller.noteBackgrounded(),
+    );
+
     _bindController();
   }
 
@@ -38,6 +51,8 @@ final class LivePlayerFacade {
   PlayerEngine preferredEngine;
 
   final LivePlaybackController _controller;
+
+  late final AppLifecycleDriver _appLifecycle;
 
   // Callback stored through the initializer list.
   // ignore: prefer_initializing_formals
@@ -75,6 +90,7 @@ final class LivePlayerFacade {
   StreamSubscription<PlayerFailure>? _errorSub;
   StreamSubscription<PlayerState>? _stateSub;
   StreamSubscription<PlayerAdapterEvent>? _adapterSub;
+  StreamSubscription<PlayerBackendChange>? _backendChangeSub;
 
   bool _disposed = false;
 
@@ -110,12 +126,6 @@ final class LivePlayerFacade {
   // ---------------------------------------------------------------------------
   // Engine switch coordination
   // ---------------------------------------------------------------------------
-
-  /// Monotonically increasing token used to invalidate stale engine switches.
-  ///
-  /// If the user switches engines several times quickly, an older async switch
-  /// must not reopen a source after a newer switch has already started.
-  int _engineSwitchGeneration = 0;
 
   int _videoKeyGeneration = 0;
 
@@ -173,10 +183,19 @@ final class LivePlayerFacade {
 
   void _bindAdapter(PlayerHandle handle) {
     unawaited(_adapterSub?.cancel());
+    unawaited(_backendChangeSub?.cancel());
 
     _adapterBuffering = false;
 
-    _adapterSub = handle.adapter.events.listen(_onAdapterEvent, onError: (Object _) {});
+    // The handle's stream, not the adapter instance's: recovery can swap
+    // the adapter inside the handle, and a subscription taken from the
+    // adapter would go silently dead at that moment — playing/size updates
+    // would stop while the new engine played on.
+    _adapterSub = handle.adapterEvents.listen(_onAdapterEvent, onError: (Object _) {});
+
+    // A recovery engine swap must rebuild the video surface: the widget
+    // tree still holds the previous adapter's texture.
+    _backendChangeSub = handle.backendChanges.listen((_) => _bumpVideoKey());
   }
 
   void _onAdapterEvent(PlayerAdapterEvent event) {
@@ -267,7 +286,7 @@ final class LivePlayerFacade {
       if (playUrls.isEmpty) sourceUrl else ...[sourceUrl, ...playUrls.where((value) => value != sourceUrl)],
     ];
 
-    final request = LiveSourceRequest(urls: urls, headers: effectiveHeaders, title: room?.title);
+    final request = LiveSourceRequest.fromUrls(urls, headers: effectiveHeaders, title: room?.title);
 
     // Remember the complete request before opening it.
     //
@@ -275,17 +294,16 @@ final class LivePlayerFacade {
     // replay path must have the exact same source information available.
     _lastRequest = request;
 
-    await _controller.play(request);
+    // Pin the engine the user chose: the explicit preference cannot lose a
+    // tie-break. Close/play ordering is the controller queue's job now.
+    await _controller.play(request, preferredBackend: _backendIdOf(preferredEngine));
 
-    // The controller creates the handle during open().
-    // Bind it immediately after play has created it.
+    // The controller creates the handle during open(). Bind whatever is
+    // current after the queued task settled.
     _bindCurrentHandle();
 
-    // Apply the audio-only preference to the freshly bound adapter.
-    //
-    // The controller remembers it, so engine switch and recovery paths inside
-    // media_core can re-apply it without the app having to duplicate that
-    // logic.
+    // Apply the audio-only preference to the freshly bound adapter; the
+    // controller remembers it and re-applies it across engine switches.
     await setAudioOnly(SettingsService.to.playerState.audioOnly);
 
     if (room != null) {
@@ -339,6 +357,8 @@ final class LivePlayerFacade {
     _playingSubject.add(false);
     await _adapterSub?.cancel();
     _adapterSub = null;
+    await _backendChangeSub?.cancel();
+    _backendChangeSub = null;
   }
 
   /// Sets the volume (0.0–1.0).
@@ -381,17 +401,15 @@ final class LivePlayerFacade {
 
   /// Switches the engine, disposing the player that runs now.
   ///
-  /// [resumeCurrentSource] re-opens the remembered room; the
-  /// settings page passes false so the last room does not restart
-  /// behind the settings screen.
+  /// [resumeCurrentSource] re-opens the remembered request; the settings
+  /// page passes false so the last room does not restart behind the
+  /// settings screen.
   ///
-  /// The source is replayed through [play] rather than through
-  /// `LivePlaybackController.retry()`, because closing the controller clears
-  /// the URL that `retry()` needs and it then returns without doing anything.
+  /// Close and play are tasks on the controller's queue, so they run in
+  /// order and nothing can interleave: no delayed replay, no stale-request
+  /// race. A switch is simply two consecutive tasks.
   Future<void> switchEngine(PlayerEngine engine, {bool isManual = false, bool resumeCurrentSource = true}) async {
     if (_disposed) return;
-
-    final generation = ++_engineSwitchGeneration;
 
     preferredEngine = engine;
 
@@ -401,37 +419,44 @@ final class LivePlayerFacade {
 
     final request = _lastRequest;
 
-    // Unmount the surface first: bumping the key rebuilds [TvVideoSurface]
-    // against a null handle so the retired `Video` widget leaves the tree
-    // instead of rebuilding on the adapter this call is about to dispose.
+    // Unmount the surface first: the retired adapter's widget must leave
+    // the tree before its texture is disposed.
     _bumpVideoKey();
 
     await close();
 
-    // A newer switch has already started.
-    if (_disposed || generation != _engineSwitchGeneration) {
+    if (_disposed || !resumeCurrentSource || request == null || request.sources.isEmpty) {
       return;
     }
 
-    // Keep this delay because Android TV Surface / Texture teardown may still
-    // be in progress when the controller is closed.
-    await Future.delayed(const Duration(seconds: 1));
+    await playRequest(request);
+  }
 
-    // Another switch may have started during the teardown delay.
-    if (_disposed || generation != _engineSwitchGeneration) {
-      return;
+  /// Plays a previously built request as-is.
+  Future<void> playRequest(LiveSourceRequest request) async {
+    if (_disposed) return;
+
+    _lastRequest = request;
+
+    await _controller.play(request, preferredBackend: _backendIdOf(preferredEngine));
+
+    _bindCurrentHandle();
+
+    await setAudioOnly(SettingsService.to.playerState.audioOnly);
+
+    _bindCurrentHandle();
+  }
+
+  /// The backend id [engine] is registered under.
+  String _backendIdOf(PlayerEngine engine) {
+    switch (engine) {
+      case PlayerEngine.fijk:
+        return BackendIds.fijk;
+      case PlayerEngine.betterPlayer:
+        return BackendIds.betterPlayer;
+      default:
+        return BackendIds.mediaKit;
     }
-
-    if (!resumeCurrentSource || request == null || request.urls.isEmpty) {
-      return;
-    }
-
-    await play(
-      request.urls.first,
-      request.urls.length > 1 ? request.urls.sublist(1) : const <String>[],
-      request.headers,
-      room: _lastRoomFromRequest,
-    );
   }
 
   /// Returns the engine currently in use.
@@ -449,14 +474,6 @@ final class LivePlayerFacade {
   // ---------------------------------------------------------------------------
   // Request metadata
   // ---------------------------------------------------------------------------
-
-  /// The current facade does not store a second room object.
-  ///
-  /// Room title is already carried by [LiveSourceRequest]. If the app needs
-  /// room-specific volume after an engine switch, that information should
-  /// eventually move into the request itself rather than being duplicated
-  /// beside it.
-  LiveRoom? get _lastRoomFromRequest => null;
 
   // ---------------------------------------------------------------------------
   // Fit
@@ -544,7 +561,6 @@ final class LivePlayerFacade {
     if (_disposed) return;
 
     _disposed = true;
-    ++_engineSwitchGeneration;
 
     await _stateSub?.cancel();
     await _errorSub?.cancel();
@@ -556,6 +572,11 @@ final class LivePlayerFacade {
 
     _boundHandle = null;
     _adapterBuffering = false;
+
+    await _backendChangeSub?.cancel();
+    _backendChangeSub = null;
+
+    _appLifecycle.dispose();
 
     await _controller.dispose();
 

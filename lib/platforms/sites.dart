@@ -151,7 +151,7 @@ class Sites {
     kilakilaSite: '$_assetRoot/kilakila.png',
     huajiaoSite: '$_assetRoot/huajiao.png',
     openrecSite: '$_assetRoot/openrec.png',
-    ttingSite: '$_assetRoot/ttinglive.gif',
+    ttingSite: '$_assetRoot/ttinglive.png',
     xiaohongshuSite: '$_assetRoot/xiaohongshu.png',
     niconicoSite: '$_assetRoot/niconico.png',
     weiboSite: '$_assetRoot/weibo.png',
