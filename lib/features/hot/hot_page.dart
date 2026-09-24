@@ -15,6 +15,24 @@ class HotPage extends ConsumerStatefulWidget {
 class _HotPageState extends ConsumerState<HotPage> {
   final Map<String, PagingParam<LiveRoom>> _pagingParamsCache = {};
 
+  /// The reference's popular-grid rule (`popular_grid_controller`): a
+  /// recommend API answered with something other than JSON — risk control, a
+  /// session gate — crashes the parser with a NoSuchMethodError. That crash,
+  /// on *this platform's own* recommend fetch, means the platform hid its
+  /// data behind a login and is reported as such; the rewrite lives here and
+  /// not in the shared error classifier, so a parsing bug on any other page
+  /// still reads as an ordinary error.
+  Future<List<LiveRoom>> _fetchRecommend(LiveSite liveSite, {required int page, required int pageSize}) async {
+    try {
+      return await liveSite.getRecommendRooms(page: page, pageSize: pageSize);
+    } catch (e) {
+      if (e.toString().contains("NoSuchMethodError") && e.toString().contains("'[]'")) {
+        throw Exception("loginRequired");
+      }
+      rethrow;
+    }
+  }
+
   PagingParam<LiveRoom> _getOrCreateParam(String siteId) {
     if (_pagingParamsCache.containsKey(siteId)) {
       return _pagingParamsCache[siteId]!;
@@ -27,7 +45,7 @@ class _HotPageState extends ConsumerState<HotPage> {
       param = PagingParam<LiveRoom>(
         mode: PagingMode.serverAll,
         pageSize: 12,
-        fetchAll: () async => await liveSite.getRecommendRooms(page: 1, pageSize: 999),
+        fetchAll: () async => _fetchRecommend(liveSite, page: 1, pageSize: 999),
       );
     } else if (siteId == Sites.douyuSite || siteId == Sites.huyaSite || siteId == Sites.douyinSite) {
       int fixedSize = siteId == Sites.douyuSite ? 40 : (siteId == Sites.huyaSite ? 120 : 20);
@@ -35,14 +53,14 @@ class _HotPageState extends ConsumerState<HotPage> {
         mode: PagingMode.serverFixedSize,
         pageSize: 12,
         fixedServerSize: fixedSize,
-        fetchFixed: (bigPage, size) async => await liveSite.getRecommendRooms(page: bigPage, pageSize: size),
+        fetchFixed: (bigPage, size) async => _fetchRecommend(liveSite, page: bigPage, pageSize: size),
         keepAlive: true,
       );
     } else {
       param = PagingParam<LiveRoom>(
         mode: PagingMode.serverRemote,
         pageSize: 12,
-        fetchRemote: (page, size) async => await liveSite.getRecommendRooms(page: page, pageSize: size),
+        fetchRemote: (page, size) async => _fetchRecommend(liveSite, page: page, pageSize: size),
         keepAlive: true,
       );
     }

@@ -92,7 +92,6 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
               key: ValueKey('page_$currentCategoryIndex'),
               param: currentParam,
               getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
-              onGoLogin: () => const AccountSettingsRoute().push(context),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 8,
                 mainAxisSpacing: mainSpacing.w,

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/utils/log.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -122,13 +121,16 @@ class PagingCore<T> extends _$PagingCore<T> {
     final exceptionStr = exception.toString().toLowerCase();
 
     // Platforms report a missing session in their own wording, so the match is
-    // against the message text rather than anything localized here.
+    // against the message text rather than anything localized here. The
+    // "loginRequired" marker is thrown by the hot page's own recommend fetch
+    // (see HotPage._fetchRecommend): only that path knows a parser crash here
+    // means the platform hid its data behind a login. It is deliberately NOT
+    // inferred from NoSuchMethodError in this shared classifier — a parsing
+    // bug on any page would otherwise read as "需要登录账号".
     final isLoginIssue =
         exceptionStr.contains("loginrequired") ||
         exceptionStr.contains("unauthorized") ||
-        exceptionStr.contains("未登录") ||
-        exception.toString().contains("NoSuchMethodError") && exception.toString().contains("'[]'");
-    Log.d(isLoginIssue.toString());
+        exceptionStr.contains("未登录");
     state = state.copyWith(
       controllerState: state.controllerState.copyWith(
         errorMsg: msg,
