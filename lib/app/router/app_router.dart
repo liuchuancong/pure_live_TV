@@ -1,8 +1,3 @@
-// Typed go_router routes. Every destination is a GoRouteData class; the tree
-// is built from the generated $appRoutes. Navigation uses those classes
-// (`const IptvRoute().push(context)`), so path/argument mistakes are compile
-// errors. AppRoutes owns the path strings shared with the web router.
-
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
@@ -11,13 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
 import 'package:pure_live/shared/models/live_room/live_room.dart';
+import 'package:pure_live/app/router/wallpaper_route_observer.dart';
 import 'package:pure_live/services/startup/startup_controller.dart';
-import 'package:pure_live/features/settings/pages/app_download_page.dart';
+import 'package:pure_live/features/iptv/pages/iptv_sync_section.dart';
 import 'package:pure_live/features/settings/pages/app_update_page.dart';
-import 'package:pure_live/features/settings/pages/update_history_page.dart';
+import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_import_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_headers_section.dart';
+import 'package:pure_live/features/settings/pages/app_download_page.dart';
 import 'package:pure_live/features/settings/pages/nav_order_section.dart';
 import 'package:pure_live/features/settings/pages/nav_icons_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_section.dart';
+import 'package:pure_live/features/iptv/pages/iptv_resources_section.dart';
+import 'package:pure_live/features/settings/pages/update_history_page.dart';
 import 'package:pure_live/features/settings/pages/device_sync_section.dart';
 import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
 import 'package:pure_live/features/settings/pages/backup_manage_section.dart';
@@ -31,11 +32,10 @@ import 'package:pure_live/features/settings/pages/font_family_manager_section.da
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/features/settings/pages/platform_display_order_section.dart';
 import 'package:pure_live/features/settings/pages/platform_display_visibility_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_manage_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_resources_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_import_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_sync_section.dart';
-import 'package:pure_live/features/iptv/pages/iptv_headers_section.dart';
+// Typed go_router routes. Every destination is a GoRouteData class; the tree
+// is built from the generated $appRoutes. Navigation uses those classes
+// (`const IptvRoute().push(context)`), so path/argument mistakes are compile
+// errors. AppRoutes owns the path strings shared with the web router.
 
 part 'app_router.g.dart';
 
@@ -79,20 +79,27 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsHotAreasOrder: (context) => const PlatformDisplayOrderSectionPage(),
   AppRoutes.kSettingsAccount: (context) => const AccountSettingsSectionPage(),
   AppRoutes.kSettingsAccountBilibili: (context) => const AccountBilibiliPage(),
-  AppRoutes.kSettingsAccountHuya: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountHuya)),
-  AppRoutes.kSettingsAccountDouyu: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyu)),
-  AppRoutes.kSettingsAccountYy: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountYy)),
-  AppRoutes.kSettingsAccountDouyin: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyin)),
-  AppRoutes.kSettingsAccountKuaishou: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountKuaishou)),
-  AppRoutes.kSettingsAccountTwitch: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTwitch)),
-  AppRoutes.kSettingsAccountSoop: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
-  AppRoutes.kSettingsAccountTaobao: (context) => AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTaobao)),
+  AppRoutes.kSettingsAccountHuya: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountHuya)),
+  AppRoutes.kSettingsAccountDouyu: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyu)),
+  AppRoutes.kSettingsAccountYy: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountYy)),
+  AppRoutes.kSettingsAccountDouyin: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountDouyin)),
+  AppRoutes.kSettingsAccountKuaishou: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountKuaishou)),
+  AppRoutes.kSettingsAccountTwitch: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTwitch)),
+  AppRoutes.kSettingsAccountSoop: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountSoop)),
+  AppRoutes.kSettingsAccountTaobao: (context) =>
+      AccountCookiePage(platform: cookiePlatformFor(AppRoutes.kSettingsAccountTaobao)),
   AppRoutes.kSettingsTags: (context) => const TagManagementSectionPage(),
   AppRoutes.kBackup: (context) => const BackupSettingsSectionPage(),
   AppRoutes.kSettingsDanmuShield: (context) => const DanmakuShieldSectionPage(),
   AppRoutes.kAbout: (context) => const AboutSettingsSectionPage(),
 };
-
 
 /// The same table as typed route instances, keyed by path.
 final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
@@ -589,13 +596,13 @@ class AboutRoute extends GoRouteData with $AboutRoute {
     TypedGoRoute<AccountSettingsRoute>(path: AppRoutes.kSettingsAccount),
     TypedGoRoute<AccountBilibiliRoute>(path: AppRoutes.kSettingsAccountBilibili),
     TypedGoRoute<AccountHuyaRoute>(path: AppRoutes.kSettingsAccountHuya),
-TypedGoRoute<AccountDouyuRoute>(path: AppRoutes.kSettingsAccountDouyu),
+    TypedGoRoute<AccountDouyuRoute>(path: AppRoutes.kSettingsAccountDouyu),
     TypedGoRoute<AccountYyRoute>(path: AppRoutes.kSettingsAccountYy),
     TypedGoRoute<AccountDouyinRoute>(path: AppRoutes.kSettingsAccountDouyin),
     TypedGoRoute<AccountKuaishouRoute>(path: AppRoutes.kSettingsAccountKuaishou),
     TypedGoRoute<AccountTwitchRoute>(path: AppRoutes.kSettingsAccountTwitch),
     TypedGoRoute<AccountSoopRoute>(path: AppRoutes.kSettingsAccountSoop),
-TypedGoRoute<AccountTaobaoRoute>(path: AppRoutes.kSettingsAccountTaobao),
+    TypedGoRoute<AccountTaobaoRoute>(path: AppRoutes.kSettingsAccountTaobao),
     TypedGoRoute<TagsRoute>(path: AppRoutes.kSettingsTags),
     TypedGoRoute<BackupRoute>(path: AppRoutes.kBackup),
     TypedGoRoute<DanmuShieldRoute>(path: AppRoutes.kSettingsDanmuShield),
@@ -798,7 +805,7 @@ class WallpaperPreviewRoute extends GoRouteData with $WallpaperPreviewRoute {
 
 /// Playback accepts either a resolved room (the normal push) or ready-made
 /// [LivePlayArgs] (channel switching inside the player).
-@TypedGoRoute<LivePlayRoute>(path: AppRoutes.kLivePlay)
+@TypedGoRoute<LivePlayRoute>(path: AppRoutes.kLivePlay, name: AppRoutes.kLivePlayName)
 class LivePlayRoute extends GoRouteData with $LivePlayRoute {
   LivePlayRoute(this.$extra);
 
@@ -824,7 +831,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: appNavigatorKey,
     // Lets every page know when it is covered and uncovered again, so focus can
     // return to the item the user acted on after a pop.
-    observers: [tvRouteObserver],
+    observers: [tvRouteObserver, WallpaperRouteObserver()],
     initialLocation: AppRoutes.kInitial,
     redirect: (context, state) {
       final location = state.uri.path;

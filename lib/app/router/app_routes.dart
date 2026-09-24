@@ -19,6 +19,8 @@ abstract final class AppRoutes {
   /// Live playback
   static const kLivePlay = "/live_play";
 
+  static const String kLivePlayName = 'live_play';
+
   /// Search
   static const kSearch = "/search";
 

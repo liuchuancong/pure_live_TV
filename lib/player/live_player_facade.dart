@@ -185,7 +185,6 @@ final class LivePlayerFacade {
     if (event is PlayerAdapterPlaying) {
       _adapterBuffering = false;
       _playingSubject.add(true);
-      _syncBackgroundVideoSuspension(true);
       return;
     }
 
@@ -202,7 +201,6 @@ final class LivePlayerFacade {
     if (event is PlayerAdapterStopped) {
       _adapterBuffering = false;
       _playingSubject.add(false);
-      _syncBackgroundVideoSuspension(false);
       return;
     }
 
@@ -215,15 +213,6 @@ final class LivePlayerFacade {
       _widthSubject.add(width);
       _heightSubject.add(height);
       isVerticalVideo.add(height >= width);
-    }
-  }
-
-  /// 在 Android TV 上表现为两边画面一起闪）。
-  void _syncBackgroundVideoSuspension(bool playing) {
-    try {
-      unawaited(SettingsService.to.bg.setPlaybackActive(playing));
-    } catch (_) {
-      // 设置未就绪（例如启动早期的测试环境）时忽略：壁纸层保持原状即可。
     }
   }
 
@@ -344,15 +333,10 @@ final class LivePlayerFacade {
   /// Stops playback and releases the player.
   Future<void> close() async {
     if (_disposed) return;
-
-    _syncBackgroundVideoSuspension(false);
-
     await _controller.close();
-
     _boundHandle = null;
     _adapterBuffering = false;
     _playingSubject.add(false);
-
     await _adapterSub?.cancel();
     _adapterSub = null;
   }
@@ -551,15 +535,6 @@ final class LivePlayerFacade {
   // ---------------------------------------------------------------------------
   // Presentation visibility (watchdog hint)
   // ---------------------------------------------------------------------------
-
-  /// Marks whether the current route owns the mounted video
-  /// presentation; hidden presentations stop frame watchdogs.
-  void setVideoPresentationVisible(bool visible) {
-    if (_disposed) return;
-
-    _controller.setPresentationVisible(visible);
-  }
-
   // ---------------------------------------------------------------------------
   // Dispose
   // ---------------------------------------------------------------------------

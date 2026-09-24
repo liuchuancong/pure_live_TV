@@ -1,17 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
-import 'core/playback_proxy_policy.dart';
 import 'live_player_facade.dart';
 import 'models/player_engine.dart';
+import 'core/playback_proxy_policy.dart';
 import '../services/settings/settings.dart';
 import 'package:media_core/media_core.dart';
-import 'package:media_core_ijk_player/media_core_ijk_player.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart';
+import 'package:media_core_ijk_player/media_core_ijk_player.dart';
 import 'package:media_core_better_player/media_core_video_player.dart';
-
-export 'live_player_facade.dart';
-export 'models/player_engine.dart';
-export 'utils/player_consts.dart';
 
 /// Builds the media_kit adapter configuration from the persisted engine
 /// switches.

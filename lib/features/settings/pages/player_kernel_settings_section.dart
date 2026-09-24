@@ -1,14 +1,13 @@
-import 'dart:async';
 import 'dart:io';
-
-import 'package:url_launcher/url_launcher.dart';
-import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/player/global_player_service.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'dart:async';
+import 'package:pure_live/player/index.dart';
 import 'package:pure_live/services/index.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// player engine settings.
 ///
@@ -192,11 +191,12 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
     if (livePlayer == null) return;
 
     unawaited(
-      livePlayer
-          .switchEngine(engine, isManual: true, resumeCurrentSource: false)
-          .catchError((Object error, StackTrace stackTrace) {
-            debugPrint('Switch player kernel to $key failed: $error');
-          }),
+      livePlayer.switchEngine(engine, isManual: true, resumeCurrentSource: false).catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        debugPrint('Switch player kernel to $key failed: $error');
+      }),
     );
   }
 }

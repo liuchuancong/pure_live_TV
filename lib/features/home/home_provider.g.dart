@@ -103,7 +103,7 @@ final class MySettingsMenuItemProvider
 }
 
 String _$mySettingsMenuItemHash() =>
-    r'2b12b2dba8b31b80ad49d3a6ecb8bd5b54265f06';
+    r'41646141c3fba521181f43a17c10f834f09e4174';
 
 @ProviderFor(SideMenuIndex)
 final sideMenuIndexProvider = SideMenuIndexProvider._();

@@ -42,7 +42,7 @@ final class PageSettingsControllerProvider
 }
 
 String _$pageSettingsControllerHash() =>
-    r'eca7119ad214b33aa4a9b0d297c98eed7106d035';
+    r'2d51db267bd37f55b56b2ae20978cd61884e38a2';
 
 abstract class _$PageSettingsController extends $Notifier<PageSettingsModel> {
   PageSettingsModel build();

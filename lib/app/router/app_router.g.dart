@@ -1800,6 +1800,7 @@ mixin $WallpaperPreviewRoute on GoRouteData {
 
 RouteBase get $livePlayRoute => GoRouteData.$route(
   path: '/live_play',
+  name: 'live_play',
   hasOverriddenOnExit: false,
   factory: $LivePlayRoute._fromState,
 );
