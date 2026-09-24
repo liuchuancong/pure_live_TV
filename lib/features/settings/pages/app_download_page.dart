@@ -245,7 +245,7 @@ class _AbiDownloadSection extends ConsumerWidget {
     );
   }
 
-  /// Starts the download from exactly the picked source: the download dialog
+  /// Starts the download from the picked source: the download dialog
   /// opens on that URL — with the other mirrors kept as fallback by the
   /// controller — and carries the progress, the cancel and the install action
   /// itself, so the page keeps no transfer state of its own.

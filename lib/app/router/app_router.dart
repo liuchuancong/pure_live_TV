@@ -559,7 +559,7 @@ class AboutRoute extends GoRouteData with $AboutRoute {
 
 /// The settings shell: ONE shell for every settings page, and it contributes
 /// **no chrome** — each page brings its own scaffold (its own app bar, its own
-/// back button and its own focus wiring), which is what keeps the bar and the
+/// back button and its own focus wiring), which keeps the bar and the
 /// highlight belonging to the page the user is looking at.
 ///
 /// The shell used to hold one `TvScaffold` for all of them, so the app bar — and

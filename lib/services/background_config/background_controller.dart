@@ -170,7 +170,7 @@ class BackgroundController extends _$BackgroundController {
   ///
   /// Uses the live player's platform configuration on purpose: media_kit's
   /// default attaches an Android Surface before video parameters are known,
-  /// which is what made video wallpapers render black (or a single pixel).
+  /// which made video wallpapers render black (or a single pixel).
   void _ensureVideoPlayer() {
     if (_videoPlayer != null) return;
     final player = Player();

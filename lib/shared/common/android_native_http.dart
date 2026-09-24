@@ -8,7 +8,7 @@ import 'package:meta/meta.dart';
 /// Small Android-system HTTP transport for endpoints that terminate a
 /// `dart:io` TLS connection after an HTTP CONNECT proxy tunnel is established.
 ///
-/// The native side deliberately accepts only Twitch's HTTPS GraphQL host. It
+/// The native side accepts only Twitch's HTTPS GraphQL host. It
 /// uses Android's platform TLS stack and otherwise keeps the request identity,
 /// proxy and response parsing identical to the Dart transport.
 class AndroidNativeHttp {

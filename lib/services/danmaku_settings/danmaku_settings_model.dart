@@ -72,8 +72,9 @@ abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
     @Default(true) bool enableDanmakuDisplay,
     @Default(true) bool enableDanmakuStroke,
     @Default(60) int danmakuFps,
-    /// 自动帧率（跟随屏幕刷新率）默认关闭：TV 盒子视频解码吃紧时,
-    /// 120Hz 面板会把弹幕合成预算翻倍。关闭后走 danmakuFps（默认 60）。
+    /// Auto frame rate (follow the display) defaults off: a 120Hz panel doubles
+    /// the danmaku compositing budget on boxes whose video decode is already
+    /// tight. When off, [danmakuFps] applies (60 by default).
     @Default(false) bool danmakuAutoFps,
     @Default(true) bool enableDanmakuTapInteraction,
     @Default(true) bool enableDanmakuLongPressInteraction,

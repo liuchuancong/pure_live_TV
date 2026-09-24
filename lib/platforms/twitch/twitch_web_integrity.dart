@@ -91,7 +91,7 @@ class TwitchWebIntegrityProvider {
   }
 
   /// Executes the public GraphQL request in Chromium when Twitch rejects the
-  /// Dart socket/TLS fingerprint. This is intentionally a last-resort path and
+  /// Dart socket/TLS fingerprint. This is a last-resort path and
   /// keeps account cookies out of the headless browser session.
   static Future<dynamic> postGraphQl({
     required String body,
@@ -212,7 +212,7 @@ class TwitchWebIntegrityProvider {
           cacheEnabled: true,
           // Let Android WebView expose its internally consistent Chromium UA
           // and client hints. A Windows UA paired with an Android Chromium TLS
-          // fingerprint is precisely the mismatch Twitch classifies as an
+          // fingerprint is the exact mismatch Twitch classifies as an
           // automated client.
           userAgent: Platform.isAndroid ? null : userAgent,
           transparentBackground: true,

@@ -393,7 +393,7 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
       final loaded = await _loadRoom(roomId, includePlaybackData: true, ensureSession: true);
       if (loaded.isLiveNow) return loaded;
 
-      // The public recommendation feed intentionally includes replay cards.
+      // The public recommendation feed includes replay cards.
       // Their room page reports offline but the selected card carries signed
       // replay URLs. Preserve that matching card as an explicit recording.
       final current = _matchingCurrentRoom(platform: platform, roomId: roomId);

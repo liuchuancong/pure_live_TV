@@ -53,7 +53,7 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
             TvSettingsSwitchTile(
               title: i18n('auto_refresh_follow'),
               subtitle: i18n('ui_refresh_the_online_status_of_favorites_periodica'),
-              icon: Remix.refresh_line,
+              icon: refreshState.autoRefreshFavorite ? Icons.sync_rounded : Icons.sync_disabled_rounded,
               value: refreshState.autoRefreshFavorite,
               onChanged: (v) => refresh.updateSettings(refreshState.copyWith(autoRefreshFavorite: v)),
             ),

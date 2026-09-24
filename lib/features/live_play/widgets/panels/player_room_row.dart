@@ -40,7 +40,7 @@ class PlayerRoomRow extends ConsumerWidget {
   /// Whether the room is followed.
   final bool favorite;
 
-  /// Draws the follow state as a text button on the row (关注 / 已关注).
+  /// Draws the follow state as a text button on the row (follow / followed).
   ///
   /// The playlist panel turns this on: Left/Right follow or unfollow the row
   /// there, so the row shows what the key does. The room switcher leaves it off —
@@ -182,7 +182,7 @@ class PlayerRoomRow extends ConsumerWidget {
   }
 }
 
-/// The follow state as a text button: 关注 when the row is not followed, 已关注
+/// The follow state as a text button: "follow" when not followed, "followed"
 /// when it is.
 ///
 /// A pill rather than an icon because the row is read at TV distance and the pill

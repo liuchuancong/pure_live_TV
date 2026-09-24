@@ -7,7 +7,7 @@ import 'package:pure_live/services/player_settings/player_settings_controller.da
 
 /// video output driver(--vo).
 ///
-/// The option list is `PlayerConsts.videoRenderersList`, i.e. exactly the list
+/// The option list is `PlayerConsts.videoRenderersList`, i.e. the same list
 /// the mobile renderer page renders
 /// (`pure_live/lib/modules/settings/pages/renderer_settings.dart`), labels
 /// included (`VA-API (Linux)`, `CACA (macOS/Linux)`, ...). The Windows,

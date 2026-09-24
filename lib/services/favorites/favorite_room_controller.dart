@@ -147,7 +147,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   /// Platforms appended to [Sites.supportSites] after the version-3 catalog,
   /// in the order they were released. Each release appends only what it
   /// introduced: re-enabling the whole catalog would silently un-hide every
-  /// platform the user deliberately removed from the home tabs.
+  /// platform the user removed from the home tabs.
   static const List<String> _catalogAdditions = [
     Sites.liveMeSite, // v4
     Sites.tiktokSite, // v5
@@ -254,7 +254,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   /// used to be the base of [LiveRoom.withAudienceFallbackFrom], which only
   /// fills *empty* fields, so every refreshed viewer count was discarded as soon
   /// as the stored card already had one. A card therefore kept a stale count and
-  /// the 在线 ordering never moved after a refresh.
+  /// the live ordering never moved after a refresh.
   static LiveRoom mergeRefreshedRoom(LiveRoom stored, LiveRoom refreshed) {
     final fresh = refreshed.withAudienceFallbackFrom(stored);
 
@@ -384,7 +384,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   /// Puts [siteId] at [targetIndex] of the platform display order.
   ///
   /// The platform order page's "pick a platform, then name its position" move: the one
-  /// the user chose lands exactly there instead of being nudged step by step.
+  /// the user chose lands there instead of being nudged step by step.
   void moveSiteTo(String siteId, int targetIndex) {
     final current = enabledSiteIds();
     final next = reorderIds(current, siteId.trim().toLowerCase(), targetIndex);

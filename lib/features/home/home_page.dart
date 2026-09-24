@@ -79,6 +79,29 @@ class _HomePageState extends ConsumerState<HomePage> {
       });
     }
 
+    // A destination can change while the remote is somewhere else entirely: the
+    // empty-state actions (follows → 去搜索, history → 去逛热门) and the
+    // auto-correction above both write the index from inside another page. The
+    // keyboard then belongs to a widget that is about to be removed — the empty
+    // state's button — or to an entry that just disappeared, and the d-pad layer is
+    // free to settle on any tile, which is how the sidebar ended up highlighting one
+    // entry while the *selected* one was another.
+    //
+    // Aiming the claim at the node that is now selected keeps the ring and the
+    // selection telling the same story. Pressing OK on an entry already has the
+    // keyboard there, so that path stays a no-op; moving the highlight around the
+    // sidebar without confirming never changes the index, so browsing is untouched.
+    ref.listen(sideMenuIndexProvider, (_, next) {
+      if (!visibleIndexes.contains(next)) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final node = _menuFocusNodes[next];
+        if (node == null || node.hasFocus) return;
+        DpadRegion.ofNode(node)?.noteFocus(node);
+        node.requestFocus();
+      });
+    });
+
     final sidebarWidth = isExpanded ? 200.sp : 110.sp;
 
     final cacheableTypes = [

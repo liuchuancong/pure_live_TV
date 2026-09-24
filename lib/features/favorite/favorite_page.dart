@@ -42,7 +42,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   /// Keeps the grid in step with the followed rooms.
   ///
   /// The grid's data lives in the PagingCore, and a favourite change
-  /// deliberately does NOT rebuild the view — its identity is only the
+  /// does not rebuild the view — its identity is only the
   /// tab/tag selection, so that following a room no longer throws away the
   /// focus and the scroll position. That also meant nothing told the core the
   /// list had changed, so a room followed in the player only showed up after a
@@ -51,20 +51,22 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   /// The favorite grid's empty state, layered like the mobile reference's
   /// `_FavoriteEmptyState`:
   ///
-  /// * nothing followed at all → 无已开播直播间, with a plain refresh;
+  /// * nothing followed at all -> an empty live list with a plain refresh;
   /// * this platform tab holds no rooms → its own hint;
-  /// * rooms exist but the tag filter empties the list → "关注数据仍在", so the
+  /// * rooms exist but the tag filter empties the list -> a "data still there"
   ///   user knows the follows are safe;
-  /// * the 未开播 tab has rooms the current tab hides → a 查看未开播 shortcut.
+  ///   hint, so the user knows filtering - not unfollowing - emptied it;
   ///
-  /// Both 重试 buttons run the provider's `refreshData` — the reference's
+  /// Both retry buttons run the provider's `refreshData` - the reference's
   /// `controller.refreshData`, a network revalidation of the followed rooms —
   /// not the paging core's local re-slice, which on an empty list is a no-op.
   ///
-  /// Under every layer sits a 去搜索 jump: the reference keeps search reachable
+  /// * the offline tab holds rooms the current tab hides -> a jump to it.
+///
+/// Under every layer sits a search jump: the reference keeps search reachable
   /// from this page through its app-bar menu, and an empty favorites page is
   /// exactly where the user needs a way *to* rooms they don't follow yet.
-  /// The reference's 重试: a full network revalidation of the followed rooms,
+  /// retry: a full network revalidation of the followed rooms,
   /// not the paging core's local re-slice.
   Future<void> _retryRefresh() => ref.read(favoriteProvider.notifier).refreshData();
 
@@ -157,8 +159,8 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     final double crossSpacing = themeState.crossAxisSpacing;
     final double mainSpacing = themeState.mainAxisSpacing;
 
-    // The playlist the player gets from this page is the 已开播 list — a room
-    // opened from 回放/离线 must still switch between rooms that are live.
+    // The playlist this page hands the player is the live-only list - a room
+    // opened from the replay or offline tab still switches between live rooms.
     final liveRooms = ref.read(favoriteProvider.notifier).getLiveRooms();
 
     final currentParam = _getOrCreateParam(
@@ -173,7 +175,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
       TvTabItemData(title: i18n('offline_room_title')),
     ];
 
-    // 全部 plus the platforms that actually have a followed room, like the
+    // "All" plus the platforms that actually have a followed room, like the
     // mobile reference: a platform nobody follows is not a tab.
     final availableSitesList = ref.read(favoriteProvider.notifier).siteTabs;
     final List<TvTabItemData> siteTabs = availableSitesList.map(TvTabItemData.site).toList();
@@ -228,7 +230,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                               title: isAllTag ? i18n('recorder_tab_all') : favoriteState.visibleTags[index - 1].name,
                               size: TvButtonSize.mini,
                               isSecondary: !isSelected,
-                              // `selected` is what keeps the accent on the tag
+                              // `selected` keeps the accent on the tag
                               // that filters the grid. Without it the active tag
                               // was only ever highlighted while the remote was on
                               // it, so moving to another tag looked like the

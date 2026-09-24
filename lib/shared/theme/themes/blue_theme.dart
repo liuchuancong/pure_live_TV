@@ -7,7 +7,7 @@ const blueTvTheme = TvThemeData(
   nameKey: 'ui_tech_blue',
 
   // The palette carries its own surface: the theme supplies the page background
-  // whenever no background is configured, so the base colour is what makes this
+  // whenever no background is configured, so the base colour makes this
   // theme look different from the others.
   backgroundType: TvBackgroundType.color,
 

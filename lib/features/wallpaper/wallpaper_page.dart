@@ -12,12 +12,12 @@ import 'package:pure_live/app/router/app_router.dart';
 
 /// Background settings home.
 ///
-/// Deliberately a short list: four entries picking *what* the background is
+/// Kept short on purpose: four entries picking *what* the background is
 /// (colors / live wallpapers / the wallpaper library / the random-image APIs),
 /// then the three display switches that apply to whatever is picked. Each entry
 /// is its own page, so the 5 700-item library and the 19 random APIs are never
 /// rebuilt as part of this screen — the old page listed every source and every
-/// API inline, which is what made it slow and long.
+/// API inline, which made it slow and long.
 class WallpaperPage extends ConsumerWidget {
   const WallpaperPage({super.key});
 

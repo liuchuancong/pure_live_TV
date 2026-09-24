@@ -31,7 +31,7 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
   }
 
   /// Drops the encoded thumbnail cache and rolls the visible covers onto a new
-  /// cache key (`imageCacheEpoch`), which is what makes the refresh visible on
+  /// cache key (`imageCacheEpoch`), which makes the refresh visible on
   /// screen instead of only freeing disk space.
   Future<void> _refreshThumbnails() async {
     setState(() => _result = '');

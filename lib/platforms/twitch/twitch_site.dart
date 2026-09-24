@@ -113,7 +113,7 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
     // Some Android proxy paths accept CONNECT and then reset dart:io's TLS
     // socket. Retry the exact request through Android's platform TLS stack
     // before involving Chromium/KPSDK. The native channel is host-allowlisted
-    // to gql.twitch.tv and is intentionally unavailable on other platforms.
+    // to gql.twitch.tv and is unavailable on other platforms.
     if (AndroidNativeHttp.isSupported) {
       try {
         response = await _postAndroidSystemGql(liveGpl);
@@ -193,7 +193,7 @@ class TwitchSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomR
       }
       // The browser fallback is the last and most capable transport. Surface
       // its diagnostic rather than an earlier Dart socket error so production
-      // logs identify CORS/KPSDK/GraphQL failures precisely.
+      // logs identify CORS/KPSDK/GraphQL failures accurately.
       if (browserError != null && browserStackTrace != null) {
         Error.throwWithStackTrace(browserError, browserStackTrace);
       }

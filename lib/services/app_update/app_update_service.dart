@@ -359,7 +359,7 @@ class AppUpdateState {
   /// Absolute path of the package the last successful download committed.
   ///
   /// The download dialog owns the transfer, so the finished package has to
-  /// outlive it: this is what [AppUpdateController.installDownloaded] hands to
+  /// outlive it: [AppUpdateController.installDownloaded] hands it to
   /// the installer, and what the download page's install row acts on.
   final String downloadedPath;
 
@@ -555,7 +555,7 @@ class AppUpdateController extends _$AppUpdateController {
       );
       _appendRecord(AppUpdateAction.available, version: VersionUtil.latestVersion);
       // The manifest's version/build_number is a hint; the release's real
-      // asset list is what actually downloads. Fetched in the background so
+      // asset list that downloads. Fetched in the background so
       // the page can already render, and the rows upgrade when it lands.
       unawaited(_fetchLatestReleaseAssets());
     } catch (error) {
@@ -598,7 +598,7 @@ class AppUpdateController extends _$AppUpdateController {
         if (assets != null) {
           final abis = assets.map((a) => a.abi).whereType<String>().toSet().toList()..sort();
           // Real assets win over the manifest's declared ABI list: the rows
-          // the page draws should be exactly the files that can download.
+          // the page draws should match the downloadable files.
           _patchState(latestAssets: assets, abis: abis.isNotEmpty ? abis : null);
           return assets;
         }
@@ -837,10 +837,11 @@ class AppUpdateController extends _$AppUpdateController {
     return untagged != 0 ? untagged : anyPackage;
   }
 
-  /// 把 releases.json 里的体积文案（如 `12.3 MB`）换算成字节；无法解析返回 null。
+  /// Converts a releases.json size string such as `12.3 MB` into bytes; null when
+  /// unparsable.
   ///
-  /// 这份体积是四舍五入过的（见 [assetSizeFor] 的展示用途），所以调用方校验时
-  /// 必须留容忍区间，不能当作精确值。
+  /// The value is rounded for display (see [assetSizeFor]), so callers must
+  /// verify with a tolerance instead of treating it as exact.
   static int? parseSizeText(String text) {
     final match = RegExp(r'([0-9]+(?:\.[0-9]+)?)\s*([kKmMgG]?)[bB]').firstMatch(text.trim());
     if (match == null) return null;
@@ -907,8 +908,8 @@ class AppUpdateController extends _$AppUpdateController {
       return false;
     }
 
-    // 期望体积来自发布元数据：下载完必须核对，否则镜像返回的 HTML 错误页
-    // 也会被当成"下载成功"提交成安装包。
+    // Expected size from release metadata. The finished download must be checked
+    // against it, or a mirror's HTML error page commits as an installer.
     final int expectedBytes = expectedBytesFor(state.selectedAbi);
 
     Object? lastError;
@@ -930,7 +931,8 @@ class AppUpdateController extends _$AppUpdateController {
     _cancelDownload();
     _patchState(
       phase: AppUpdatePhase.available,
-      // lastError 为 null 时（候选列表为空）不能拼成 "…: null" 这种半截英文。
+      // lastError is null when the candidate list was empty; never splice that into
+    // the message as a dangling "...: null".
       error: _describeError(lastError, fallback: i18n('download_failed')),
       receivedBytes: 0,
       totalBytes: 0,
@@ -977,7 +979,8 @@ class AppUpdateController extends _$AppUpdateController {
       throw FileSystemException(i18n('update_error_package_missing'));
     }
 
-    // 校验放在提交之前：不合格的整包直接删掉，安装器永远看不到半个文件。
+    // Validate before the commit: a rejected package is deleted here, so the
+  // installer never sees a partial file.
     final String? invalid = await _validateStagedPackage(partial, expectedBytes: expectedBytes);
     if (invalid != null) {
       await _deleteIfPresent(partial);
@@ -987,15 +990,17 @@ class AppUpdateController extends _$AppUpdateController {
     await _commitStagedFile(partial, completed);
   }
 
-  /// 校验刚下载完的安装包；通过返回 null，不通过返回展示给用户的文案。
+  /// Validates the staged package. Returns null when it passes, otherwise the
+  /// message to show the user.
   ///
-  /// 三道检查，从便宜到昂贵：
-  /// 1. 非空；
-  /// 2. **ZIP 魔数**：APK 是 ZIP，头两字节必为 `PK`。镜像/门户劫持返回的
-  ///    HTML 错误页以 `<` 开头，这一步就能挡住，且不依赖任何元数据；
-  /// 3. **体积核对**：发布元数据给了期望字节数时比对。GitHub 的 `size` 是精确
-  ///    值；releases.json 的体积文案（`12.3 MB`）是四舍五入过的，所以留 2%
-  ///    容忍区间——截断/半包（往往差几十 MB）仍然会被挡下。
+  /// Three checks, cheapest first:
+  /// 1. non-empty;
+  /// 2. **ZIP magic** - an APK is a ZIP, so the first two bytes must be `PK`.
+  ///    A hijacked mirror's HTML error page starts with `<` and is caught here
+  ///    without any metadata;
+  /// 3. **size** - when release metadata provides one. GitHub's `size` is exact;
+  ///    the releases.json string (`12.3 MB`) is rounded, so the comparison keeps
+  ///    a 2% tolerance. Truncated transfers (tens of MB short) still fail.
   Future<String?> _validateStagedPackage(File partial, {required int expectedBytes}) async {
     final int actual = await partial.length();
     if (actual <= 0) return i18n('update_error_package_empty');
@@ -1031,11 +1036,12 @@ class AppUpdateController extends _$AppUpdateController {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  /// 把任意异常转成可展示的文案。
+  /// Maps any thrown error to a presentable message.
   ///
-  /// 直接 `'$error'` 有两个坑：DioException 的 message 可能是 null（页面就会
-  /// 出现 "DioException …: null"），以及全是英文。这里按类型映射成中文提示，
-  /// 认不出的异常退回到调用方给的兜底文案。
+  /// Interpolating `$error` directly has two traps: a DioException's message can
+  /// be null (the UI would render "DioException ...: null"), and the text is
+  /// English regardless of the app language. Errors are mapped by type; unknown
+  /// ones fall back to the caller's message.
   static String _describeError(Object? error, {required String fallback}) {
     if (error == null) return fallback;
     if (error is FileSystemException) {

@@ -309,7 +309,7 @@ class BiliBiliSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
     Object? rankedError;
 
     // `webMain/getMoreRecList` is a recommendation feed: its `online` values
-    // are deliberately not ordered. The Popular page promises a heat ranking,
+    // are not ordered. The Popular page promises a heat ranking,
     // so prefer the anonymous endpoint whose contract includes sort=online.
     for (var attempt = 0; attempt < 2; attempt++) {
       try {
@@ -674,7 +674,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   @override
   Future<LiveRoom> getRoomDetailForRefresh({required String platform, required String roomId}) async {
     final roomInfo = await getRoomInfo(roomId: roomId);
-    // Card verification deliberately skips getDanmuInfo. Chat credentials are
+    // Card verification skips getDanmuInfo. Chat credentials are
     // short-lived and useful only after the user enters this room.
     return _buildRoom(roomInfo, roomId: roomId);
   }

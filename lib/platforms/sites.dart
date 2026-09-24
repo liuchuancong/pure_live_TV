@@ -483,7 +483,7 @@ class Site {
 
   /// Resolve registry labels when they are painted instead of freezing the
   /// locale that happened to be active when an adapter was constructed.
-  /// Popular and search controllers deliberately retain their [Site]
+  /// Popular and search controllers retain their [Site]
   /// instances so pagination/session state stays stable; the label must still
   /// follow an in-app language change without rebuilding those adapters.
   String get name {

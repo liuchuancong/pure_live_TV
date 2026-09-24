@@ -300,7 +300,7 @@ class SettingsSectionScaffold extends StatelessWidget {
       title: i18n(settingsSectionTitleKey(location)),
       // Each settings page carries its own scaffold — its own app bar, its own back
       // button and its own focus wiring — inside its own route of the shell's nested
-      // navigator. The shell deliberately contributes no chrome (see the route
+      // navigator. The shell contributes no chrome (see the route
       // table): a scaffold shared by every page never saw an inner push, so its back
       // button outlived the page it belonged to and stole the highlight.
       child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),

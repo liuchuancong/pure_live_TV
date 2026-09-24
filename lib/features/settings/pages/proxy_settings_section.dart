@@ -52,7 +52,7 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
             TvSettingsSwitchTile(
               title: i18n('enable_player_proxy'),
               subtitle: i18n('enable_player_proxy_desc'),
-              icon: Icons.vpn_key_rounded,
+icon: proxyState.enableProxy ? Icons.vpn_key_rounded : Icons.vpn_key_off_outlined,
               value: proxyState.enableProxy,
               onChanged: (v) => proxy.updateSettings(proxyState.copyWith(enableProxy: v)),
             ),

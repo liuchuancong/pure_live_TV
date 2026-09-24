@@ -22,7 +22,7 @@ import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart
 ///
 /// Steering is by **selected index**, like the player's own control bar and side
 /// panels: one [Focus] owns every key and moves a tab index or a row index, and
-/// the widgets below only draw the state. Focus traversal is deliberately not
+/// the widgets below only draw the state. Focus traversal is not
 /// used — a tab change used to hand the keyboard to a row of the page that was
 /// still on its way out, so the highlight and the list disagreed.
 class RoomSwitchDialog extends StatefulWidget {
@@ -311,7 +311,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
   /// The three category tabs, drawn as compact centered pills.
   ///
-  /// They are deliberately not focusable — a [GestureDetector] keeps them
+  /// They are not focusable — a [GestureDetector] keeps them
   /// clickable with a mouse, while the remote reaches them through the index.
   /// The selected pill carries the accent color; whether the keyboard is on
   /// the strip or in the list is shown by the row highlight below.
@@ -392,7 +392,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   }
 }
 
-/// 打开切换直播间弹窗，返回用户选中的房间；取消返回 null。
+/// Opens the room switch dialog and returns the picked room; null on cancel.
 Future<LiveRoom?> showRoomSwitchDialog(BuildContext context, {required LiveRoom current}) {
   return TvDialogUtils.show<LiveRoom>(
     context: context,
@@ -400,11 +400,13 @@ Future<LiveRoom?> showRoomSwitchDialog(BuildContext context, {required LiveRoom 
   );
 }
 
-/// 选房间并跳过去（切换弹窗 + 路由替换的唯一实现）。
+/// Picks a room and navigates to it - the single implementation of the
+/// switch dialog plus route replace.
 ///
-/// 播放页底部按钮条与"不在线"占位页都从这里走：切换直播间不是切换上下文，
-/// 新房间沿用本次会话打开时的那份播放列表（入口页列表 + 观看历史），
-/// 所以从关注页里挑的房间不会把播放列表悄悄换成关注列表。
+/// Both the control bar and the offline placeholder go through here. Switching
+/// rooms is not switching context: the new room keeps the playlist this session
+/// was opened with (entry list plus history), so picking from the followed tab
+/// does not silently re-scope the playlist.
 Future<void> pickAndSwitchRoom(
   BuildContext context, {
   required WidgetRef ref,

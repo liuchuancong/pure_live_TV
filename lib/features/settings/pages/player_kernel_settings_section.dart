@@ -20,7 +20,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 ///    cluster → custom driver & hardware accel → hardware decoder(--hwdec) → video output driver(--vo)
 /// 3. audio settings — audio output driver(--ao)
 ///
-/// audio only is deliberately *not* here: the mobile app toggles audio-only from
+/// audio only does not belong here: the mobile app toggles audio-only from
 /// the player controls instead of the settings page, and a TV-only row in the
 /// middle of this list broke the order. It lives on the video page's audio group.
 class PlayerKernelSettingsSectionPage extends ConsumerWidget {
@@ -77,7 +77,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
             TvSettingsSwitchTile(
               title: i18n('enable_codec'),
               subtitle: i18n('gpu_decode'),
-              icon: Remix.speed_up_line,
+icon: playerState.enableCodec ? Remix.speed_up_line : Remix.speed_line,
               value: playerState.enableCodec,
               onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),
             ),
@@ -91,7 +91,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
             TvSettingsSwitchTile(
               title: i18n('compat_mode'),
               subtitle: i18n('compat_mode_subtitle'),
-              icon: Remix.shield_check_line,
+icon: playerState.playerCompatMode ? Remix.shield_check_line : Remix.shield_line,
               value: playerState.playerCompatMode,
               onChanged: (v) => player.updateSettings(playerState.copyWith(playerCompatMode: v)),
             ),
@@ -172,7 +172,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
   /// Stores the chosen kernel and switches the player onto it now.
   ///
   /// The switch hard-disposes the player that is running ([PlayerManager.switchEngine]),
-  /// which is what actually releases the native kernel — including when the same
+  /// which is what releases the native kernel — including when the same
   /// kernel is picked again, which therefore doubles as a player reset.
   ///
   /// `resumeCurrentSource: false` because the manager still remembers the last

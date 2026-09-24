@@ -178,7 +178,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
           // AND the surface must actually have no frame. media_core keeps
           // `opening` until its playback verification passes, which on a
           // slow source lands seconds after the first frame is already on
-          // screen — keying the spinner on the state alone pinned 缓冲中
+          // screen - keying the spinner on the state alone pinned the buffering label
           // over a picture that was playing.
           if (manager != null)
             StreamBuilder<bool>(

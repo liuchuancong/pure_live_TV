@@ -13,7 +13,7 @@ import 'package:pure_live/shared/widgets/tv_page_shell.dart';
 /// A page shell **without chrome**: no app bar, no back button, no title.
 ///
 /// This widget used to build the app bar and own the back button for every page, which
-/// is exactly what made focus unpredictable: the settings shell kept ONE of these for
+/// made focus unpredictable: the settings shell kept ONE of these for
 /// all of its pages, so the back button belonged to the shell rather than to the page it
 /// was drawn on, survived every page change, and kept pulling the highlight back.
 ///
@@ -78,8 +78,9 @@ class _BackgroundLayer extends StatelessWidget {
           BackgroundSource.networkImage => wallpaperBlurred(_ImageBackground(config: config), config.blurSigma),
           BackgroundSource.assetVideo ||
           BackgroundSource.localVideo ||
-          // 刻意不加 const：const 实例每次都 identical，Element.updateChild
-          // 会跳过重建，播放器/海报帧的变化就刷不出来（影片层继续画旧帧）。
+          // Not const on purpose: a const instance is identical across builds, so
+          // Element.updateChild skips the rebuild and player/poster changes never
+          // reach the screen (the layer keeps painting the old frame).
           BackgroundSource.networkVideo => wallpaperBlurred(_VideoBackground(), config.blurSigma),
         };
       },
@@ -244,15 +245,17 @@ class _VideoBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final bg = SettingsService.to.bg;
 
-    // 播放器（直播/点播）正在播放时，壁纸解码器已被释放，这里改画播放前截下
-    // 的那张静态帧：背景不再参与视频解码，也就不和直播间抢 Surface 了。
+    // While a player (live or VOD) is running, the wallpaper decoder is released
+    // and the layer paints the frame captured before playback: the background
+    // stops competing for the decoder and the Surface.
     final poster = bg.posterFrame;
     if (poster != null) {
       return SizedBox.expand(child: Image.memory(poster, fit: BoxFit.cover, gaplessPlayback: true));
     }
 
     final controller = bg.videoController;
-    // 播放器按需创建：切到视频壁纸的首帧可能还没有控制器，先画黑底。
+    // The player is lazy: right after switching to a video wallpaper the
+    // controller may not exist yet, so paint black until it does.
     if (controller == null) return const SizedBox.expand(child: ColoredBox(color: Colors.black));
 
     return SizedBox.expand(

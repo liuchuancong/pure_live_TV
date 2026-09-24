@@ -7,7 +7,7 @@ import 'package:pure_live/services/player_settings/player_settings_controller.da
 
 /// audio output driver(--ao).
 ///
-/// The option list is `PlayerConsts.audioOutputDriversList`, i.e. exactly the
+/// The option list is `PlayerConsts.audioOutputDriversList`, i.e. the same as
 /// list the mobile audio page renders
 /// (`pure_live/lib/modules/settings/pages/audio_output_settings_page.dart`),
 /// labels included — that is where PipeWire, OSS, WinMM, AudioUnit and libao

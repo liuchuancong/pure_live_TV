@@ -157,7 +157,7 @@ abstract interface class LivePlayLeaseMetadata {
 
   /// The final instant at which a prefetched URL can start a new connection.
   ///
-  /// This is deliberately separate from [getPlayUrlRefreshAt]. A source
+  /// Separate from [getPlayUrlRefreshAt]. A source
   /// prefetched shortly before the active connection fails remains usable until
   /// this deadline, while an expired cache entry must be discarded.
   DateTime? getPlayUrlInvalidAt(String url, {DateTime? now});
@@ -290,7 +290,7 @@ abstract interface class LiveSiteRoomRefresher {
 /// adapters answer a transport or response-shape failure with an
 /// offline-looking fallback room (see [LiveSiteRoomRefresher]'s note above).
 /// Calling that from a card refresh silently turned a network hiccup into an
-/// authoritative 离线 card, which is the "followed room status is wrong"
+/// authoritative offline card, which is the "followed room status is wrong"
 /// defect this dispatch fixes.
 ///
 /// Adapters without the fast path keep the old call and are expected to
@@ -312,14 +312,14 @@ Future<LiveRoom> fetchRoomDetailForRefresh({
 /// Strict, playback-complete room lookup used before a recording starts.
 ///
 /// The ordinary [LiveSite.getRoomDetail] contract is UI-oriented. Several
-/// adapters deliberately turn transport/shape errors into an offline-looking
+/// adapters turn transport/shape errors into an offline-looking
 /// fallback room so an already mounted player can keep its last metadata.
 /// That behaviour is useful for presentation, but it is unsafe for recording:
 /// one temporary metadata error was interpreted as an authoritative offline
 /// state and the recorder stopped before it ever asked for a stream URL.
 ///
 /// [LiveSiteRoomRefresher] is not a substitute for this capability. Refresh
-/// implementations may intentionally omit signed playback descriptors to keep
+/// implementations may omit signed playback descriptors to keep
 /// favourite-card refreshes cheap. Implementations of this interface must:
 ///
 /// * propagate transport and response-shape failures;

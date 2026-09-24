@@ -71,7 +71,7 @@ class _IptvSyncSectionPageState extends ConsumerState<IptvSyncSectionPage> {
             TvSettingsSwitchTile(
               title: i18n('auto_sync_title'),
               subtitle: i18n('auto_sync_desc'),
-              icon: Icons.sync_rounded,
+              icon: settings.isAutoSyncEnabled ? Icons.sync_rounded : Icons.sync_disabled_rounded,
               value: settings.isAutoSyncEnabled,
               onChanged: (value) => _settings.setAutoSyncEnabled(value),
             ),

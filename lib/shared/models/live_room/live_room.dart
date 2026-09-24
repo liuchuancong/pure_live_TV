@@ -336,7 +336,7 @@ abstract class LiveRoom with _$LiveRoom {
       onlineAvailability: AudienceOnlineAvailability.roomList,
     ),
     // The watch page exposes a dedicated concurrent-view renderer while a
-    // broadcast is live. Historical viewCount is deliberately not reused.
+    // broadcast is live. Historical viewCount is not reused.
     'youtube': AudiencePlatformCapability(
       hasPopularity: false,
       hasTotalViewers: false,

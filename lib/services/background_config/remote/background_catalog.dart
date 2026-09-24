@@ -214,7 +214,7 @@ class BackgroundCatalog {
   /// number once the page loads.
   factory BackgroundCatalog.builtIn() {
     // Official categories, as the extension's own sidebar lists them. The
-    // "all" bucket is deliberately absent: it overlaps the seven groups and
+    // "all" bucket is absent by design: it overlaps the seven groups and
     // would just duplicate content.
     BackgroundSource images(
       String id,

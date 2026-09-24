@@ -71,7 +71,7 @@ class HuajiaoMedia {
   const HuajiaoMedia({required this.url, required this.format});
   final String url;
   // Format comes from the returned URL, not the name of the main/h264_url key.
-  // Codec is deliberately not exposed: captured encode/path hints disagreed
+  // Codec is not exposed: captured encode/path hints disagreed
   // with the video packet headers, even when encode=h264 was requested.
   final String format;
 }

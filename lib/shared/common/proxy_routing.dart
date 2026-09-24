@@ -37,7 +37,7 @@ int? parseProxyPortInput(String value) {
 
 /// Builds the directive accepted by `dart:io`'s `HttpClient.findProxy`.
 ///
-/// Invalid or incomplete values deliberately remain direct. This keeps a
+/// Invalid or incomplete values remain direct. This keeps a
 /// half-edited settings field from turning all application requests into an
 /// invalid proxy lookup.
 String buildProxyDirective({required bool enabled, required String host, required int port}) {

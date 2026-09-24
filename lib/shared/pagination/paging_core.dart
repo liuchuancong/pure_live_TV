@@ -124,9 +124,9 @@ class PagingCore<T> extends _$PagingCore<T> {
     // against the message text rather than anything localized here. The
     // "loginRequired" marker is thrown by the hot page's own recommend fetch
     // (see HotPage._fetchRecommend): only that path knows a parser crash here
-    // means the platform hid its data behind a login. It is deliberately NOT
+    // means the platform hid its data behind a login. It is NOT
     // inferred from NoSuchMethodError in this shared classifier — a parsing
-    // bug on any page would otherwise read as "需要登录账号".
+    // bug on any page would otherwise read as "login required".
     final isLoginIssue =
         exceptionStr.contains("loginrequired") ||
         exceptionStr.contains("unauthorized") ||

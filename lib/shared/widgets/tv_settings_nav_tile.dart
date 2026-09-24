@@ -5,7 +5,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// Settings row that opens another page.
 ///
-/// A navigation row intentionally does not react to Left/Right, and it renders
+/// A navigation row does not react to Left/Right, and it renders
 /// through [TvSettingsRow] so every other settings row shares its look.
 class TvSettingsNavTile extends StatelessWidget {
   const TvSettingsNavTile({

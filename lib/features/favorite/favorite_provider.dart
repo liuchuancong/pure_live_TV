@@ -7,7 +7,7 @@ import 'package:pure_live/features/favorite/model/favorite_state.dart';
 
 part 'favorite_provider.g.dart';
 
-/// The platform tabs a follower sees: 全部 plus the platforms that actually hold
+/// The platform tabs a follower sees: "All" plus the platforms that actually hold
 /// a followed room, in the configured platform order.
 ///
 /// The mobile reference's `favoriteSitesForRooms` rule. A platform nobody
@@ -120,12 +120,12 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     // `liveStatus == live` by hand:
     //
     // * a platform that has not answered yet persists `unknown` together with
-    //   `status`, and `isLiveNow` is what treats that as 在线 — reading the enum
-    //   directly filed such a followed room under 离线;
+    //   `status`, and `isLiveNow` is what treats that as live - reading the enum
+    //   directly filed such a followed room under offline;
     // * a replay (`isRecord`, or a platform-reported `LiveStatus.replay` such as
-    //   Huya's REPLAY and Weibo's replay state) belongs to 回放, not 离线;
-    // * 离线 therefore only holds cards that are not playable at all, which is
-    //   exactly the mobile reference's `!isPlayableNow` bucket.
+    //   Huya's REPLAY and Weibo's replay state) belongs to replay, not offline;
+    // * offline therefore only holds cards that are not playable at all, which is
+    //   the same as the mobile reference's `!isPlayableNow` bucket.
     final onlineSrc = roomsBase.where((r) => r.isLiveNow && r.isRecord == false).toList();
     final replaySrc = roomsBase.where((r) => r.isRecord || r.effectiveLiveStatus == LiveStatus.replay).toList();
     final offline = roomsBase.where((r) => !r.isPlayableNow).toList();
@@ -271,7 +271,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   /// (platform tab and tag).
   ///
   /// This is what the player takes as its playlist: a room opened from this page
-  /// is switched with up/down against the 已开播 list, so opening a replay or an
+  /// is switched with up/down against the live-only list, so opening a replay or an
   /// offline card still moves between rooms that are actually live.
   List<LiveRoom> getLiveRooms() => _inPageScope(state.onlineRooms);
 
@@ -310,7 +310,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   /// lets its failures propagate, which is what this guard needs: the
   /// presentation-oriented `LiveSite.getRoomDetail` answers an error with an
   /// offline-looking fallback room, so a single hiccup used to rewrite a live
-  /// followed room as 离线. Returning `null` keeps the stored snapshot (status
+  /// followed room as offline. Returning `null` keeps the stored snapshot (status
   /// included) instead of publishing a guess.
   Future<LiveRoom?> _refreshRoom(LiveRoom room) async {
     try {

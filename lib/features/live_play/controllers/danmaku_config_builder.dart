@@ -51,11 +51,14 @@ int resolveDanmakuFps(DanmakuSettingsModel settings, {double? refreshRate}) {
   return _lowEndCapped(rate.round().clamp(30, 240));
 }
 
-/// 低端设备（含仅 32 位 ARM 的盒子）把自动弹幕帧预算压到 30。
+/// Danmaku frame budget drops to 30 on low-end devices (32-bit-only boxes
+/// included).
 ///
-/// 弹幕是逐帧排版 + GPU 合成，在跟随屏幕刷新率的自动模式下（60Hz 电视 =
-/// 60fps 弹幕）会从视频渲染里抢帧；这类盒子本来就在硬解 1080p 上吃紧，
-/// 弹幕降到 30fps 换回的是视频不掉帧。手动档位是用户的明确选择，不在此处改。
+/// Danmaku is per-frame layout plus GPU compositing; in auto mode it follows
+/// the display refresh rate (60fps on a 60Hz TV), which competes with video
+/// rendering. Boxes that already struggle to hardware-decode 1080p trade
+/// danmaku smoothness for video frames. The manual setting is an explicit
+/// user choice and is left alone here.
 int _lowEndCapped(int fps) {
   if (!DevicePlaybackProfile.current.lowEnd) return fps;
   return fps > 30 ? 30 : fps;

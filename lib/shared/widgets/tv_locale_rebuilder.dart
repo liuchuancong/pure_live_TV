@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 /// returns the existing element untouched.
 ///
 /// Marking every element below dirty re-runs each `build` with the new locale while every
-/// `State` survives, which is what makes this the right tool here rather than a keyed
+/// `State` survives, which is why a plain widget works here rather than a keyed
 /// `KeyedSubtree`: scroll offsets, the player and the kept-alive tabs keep working, and
 /// the keyboard stays on the node it was on. The marking happens after the frame, since
 /// an element may not be marked dirty while the tree is being built.
@@ -33,7 +33,7 @@ class _TvLocaleRebuilderState extends State<TvLocaleRebuilder> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Depending on `Localizations` here is what makes this run on a language change.
+    // Depending on `Localizations` makes this rebuild on a language change.
     final Locale? locale = Localizations.maybeLocaleOf(context);
     if (locale == null || locale == _locale) return;
     final bool firstRun = _locale == null;
@@ -50,7 +50,7 @@ class _TvLocaleRebuilderState extends State<TvLocaleRebuilder> {
   /// The walk is what matters: rebuilding only the top would hand the same `const`
   /// widgets down again, and `updateChild` skips an element whose widget did not change,
   /// so a `const` label would keep its old text. Every element rebuilding itself is
-  /// exactly the guarantee this widget exists for.
+  /// the guarantee this widget exists for.
   static void _rebuildSubtree(Element element) {
     element.visitChildren(_rebuildSubtree);
     if (element is ComponentElement) {

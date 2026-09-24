@@ -114,7 +114,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
           emptyScene: EmptyScene.areaRooms,
           // A -352 risk-controlled category is the bilibili session gate: the
-          // 去登录 button leads to the account (cookie) settings.
+          // The sign-in button leads to the account (cookie) settings.
           onGoLogin: () => const AccountSettingsRoute().push(context),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: themeState.denseRoomLayout,

@@ -161,10 +161,11 @@ class LivePlayController extends _$LivePlayController {
       showChannelBanner(detail.nick.isNotEmpty ? detail.nick : detail.title);
     }
 
-    // 未开播：到此为止。不连弹幕（对着离线房间开 socket 只会白重连）、不常亮
-    // （占位页是静止画面，不该阻止息屏）、不取流，直接进"不在线"占位页。
-    // 判定放在这一层而不是 loadQualitiesAndPlay 里，因为只有这里拿得到平台的
-    // 房间状态（LiveRoom.isPlayableNow 同时覆盖直播与回放两种可播状态）。
+    // Not on air: stop here. No danmaku socket (it would just reconnect against
+    // an offline room), no screen-awake hold (the placeholder is a still page),
+    // no stream fetch - go straight to the offline placeholder. The check lives
+    // in this layer rather than loadQualitiesAndPlay because only here is the
+    // platform's room state available (isPlayableNow covers live and replay).
     if (!detail.isPlayableNow) {
       _cancelStallReport();
       state = state.copyWith(isOffline: true, clearErrorMessage: true);
@@ -208,7 +209,7 @@ class LivePlayController extends _$LivePlayController {
   ///
   /// Opening a room is the one moment its status is known to be fresh, so the
   /// followed entry is updated from it: a room that stopped streaming lands in
-  /// 未开播 on its own, and a live one refreshes its title, cover and audience.
+  /// offline on its own, and a live one refreshes its title, cover and audience.
   /// The reference does the same through `_updateFavoriteRoomSnapshot`.
   ///
   /// A room the platform cannot identify at all — an empty or placeholder id
@@ -282,7 +283,7 @@ class LivePlayController extends _$LivePlayController {
     if (playerState.playing || playerState.ready) {
       _cancelStallReport();
     } else if (playerState.opening || playerState.buffering) {
-      // Deliberately not restarted: media_core may re-enter buffering once per
+      // Not restarted: media_core may re-enter buffering once per
       // line, and each pass would otherwise push back the deadline.
       _armStallReport();
     } else if (playerState.hasError) {

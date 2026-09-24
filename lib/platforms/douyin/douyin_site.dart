@@ -385,7 +385,7 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
   ///
   /// Failures propagate. The favourite refresh treats a thrown lookup as "the
   /// platform could not be asked" and keeps the stored snapshot, whereas an
-  /// offline-looking fallback room would rewrite a live followed room as 离线.
+  /// offline-looking fallback room would rewrite a live followed room as offline.
   @override
   Future<LiveRoom> getRoomDetailForRefresh({required String roomId, required String platform}) =>
       _roomDetail(roomId, includeEntryExtras: false);

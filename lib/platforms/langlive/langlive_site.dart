@@ -12,7 +12,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'langlive_api.dart';
 import 'langlive_link.dart';
 
-/// Internal readiness adapter. It is intentionally kept out of the site registry until
+/// Internal readiness adapter. It is kept out of the site registry until
 /// a current production response and one returned media prefix are verified.
 final class LangLiveSite extends LiveSite
     implements

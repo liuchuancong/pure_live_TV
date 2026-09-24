@@ -16,7 +16,7 @@ class TvDialogUtils {
     _container?.read(tvDialogLockProvider.notifier).lock();
 
     // The row/button that had the keyboard before the dialog opened. Restoring
-    // it here (not from the page's route-lifecycle hooks) is what actually
+    // it here (not from the page's route-lifecycle hooks) is what
     // wins: the dialog's focus tree disposes when its *exit transition* ends —
     // after any frame-bounded restore has run — and the d-pad layer answers
     // that focus death by parking on the top-most node it finds, which is the
@@ -52,7 +52,7 @@ class TvDialogUtils {
   }
 
   /// Re-asserts [node] until it settles, for up to [deadline]; gives up
-  /// silently when the node was rebuilt away or focus moved on deliberately.
+  /// silently when the node was rebuilt away or focus moved elsewhere.
   ///
   /// The window must outlast the dialog's 300ms *exit* transition: the dialog's
   /// focus tree (and its focus guard) only disposes when that animation ends,

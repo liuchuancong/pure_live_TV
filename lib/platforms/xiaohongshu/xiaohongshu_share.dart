@@ -182,7 +182,7 @@ class XiaohongshuShare {
         : monetization != 0 || (limits as List).any((v) => v != 0)
         ? XiaohongshuAccess.restricted
         : XiaohongshuAccess.public;
-    // nextRoomInfo, deeplink preload URLs and replayInfo are deliberately not
+    // nextRoomInfo, deeplink preload URLs and replayInfo are not
     // media sources for this room, nor proof that this room is live.
     final streams = live == true && access == XiaohongshuAccess.public
         ? _streams(room['pullConfig'], roomId)

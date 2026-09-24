@@ -49,7 +49,7 @@ class AppMenuItem {
 
   /// The two-character caption the collapsed sidebar paints under the icon.
   ///
-  /// The full [title] is four characters ("直播关注") and does not fit the
+  /// The full [title] is too long to fit the
   /// 110dp icon rail; the short form keeps every destination readable without
   /// expanding the sidebar. Empty falls back to [title].
   final String shortTitle;

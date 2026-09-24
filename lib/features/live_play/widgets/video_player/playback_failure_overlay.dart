@@ -12,7 +12,7 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 /// autofocus per scope and the page's handler node already holds it.
 ///
 /// Steering is by selected index (0 = retry, 1 = refresh room): ←/→ move,
-/// OK activates. ↑/↓ are deliberately left to the page — switching channels is
+/// OK activates. Up/Down stay with the page — switching channels is
 /// the quickest way out of a room that will not play.
 class PlaybackFailureOverlay extends StatefulWidget {
   final String message;

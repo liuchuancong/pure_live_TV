@@ -59,8 +59,9 @@ class AppInitializer {
     // build can be diagnosed from the device.
     unawaited(Log.init());
 
-    // 预热设备档案：弹幕帧预算在 UI 侧计算，可能早于播放器初始化（那时档案
-    // 还是 unknown，低端设备拿不到封顶），这里先探一次。
+    // Warm up the device profile: the danmaku frame budget is resolved on the UI
+    // side and can run before the player initializes (profile still `unknown`,
+    // so the low-end cap would not apply). Probe it once here.
     unawaited(DevicePlaybackProfile.ensureLoaded());
 
     // Danmaku sockets reuse the proxy policy configured for API and image traffic.

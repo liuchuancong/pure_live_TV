@@ -151,7 +151,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
     return Column(
       children: [
         Expanded(
-          // Deliberately no `DpadRegion` here. The callers already wrap this
+          // No `DpadRegion` here on purpose. The callers already wrap this
           // view in a `TvTabView` region whose edges they choose; a region per
           // grid cell (plus one around the grid) replaced that region for every
           // cell with default `leave/leave` edges, silently discarding the

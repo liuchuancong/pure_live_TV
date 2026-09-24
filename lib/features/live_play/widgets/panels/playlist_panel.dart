@@ -19,7 +19,7 @@ import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.d
 /// platform and audience) rather than a bare title, so the channel list looks
 /// like the room lists elsewhere in the app.
 ///
-/// The list carries no trailing close row: 返回 (Back) closes the panel before it
+/// The list carries no trailing close row: Back closes the panel before it
 /// leaves the room, which is the way out the other side panels already use. One
 /// row per channel, and the remote's Back is the exit.
 class PlaylistPanel extends ConsumerStatefulWidget {

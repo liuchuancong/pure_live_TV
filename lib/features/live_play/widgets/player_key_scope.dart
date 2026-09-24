@@ -74,11 +74,12 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
       }
       return KeyEventResult.ignored;
     }
-    // 覆盖层（播放失败 / 未开播）自带可聚焦按钮，并按 index 自己处理 ←/→/OK。
-    // 这里必须放行：否则页面会先把 OK 吃成"显示控制条"、把 ←/→ 吃成换台与关注，
-    // 覆盖层上的按钮就永远点不动（它们的 autofocus 会被页面已持有的焦点压掉，
-    // 只能靠落在自己节点上的按键生效）。↑/↓ 仍由这里处理——在离线房间里直接
-    // 跳下一个直播间是最快的出路。
+    // Blocking overlays (playback failure / offline) carry their own focusable
+    // buttons and handle left/right/OK on their own node. These must pass
+    // through: the page would otherwise eat OK as "show controls" and left/right
+    // as channel switch and follow, leaving the overlay buttons unreachable
+    // (their autofocus loses to the node this scope already holds). Up/Down stay
+    // here - hopping to the next room is the fastest way past a dead one.
     if (state.hasBlockingOverlay) {
       if (key == LogicalKeyboardKey.arrowUp) {
         _switchChannel(-1);
@@ -171,7 +172,7 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
     return PopScope(
       // Back closes what is on screen before it leaves the player: an option
       // list, then the side panel, then the controls — and only then the page.
-      // Leaving straight from a visible panel is what made the remote feel
+      // Leaving straight from a visible panel made the remote feel
       // unpredictable.
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {

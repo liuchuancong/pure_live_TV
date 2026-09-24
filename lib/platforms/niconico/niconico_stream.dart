@@ -4,7 +4,7 @@ import 'package:pure_live/shared/common/hls_session_cookies.dart';
 import 'package:pure_live/platforms/niconico/niconico_watch.dart';
 
 /// One revocable stream grant. Cookies never enter the shared Dio/account jar.
-/// The observed domain cookies are intentionally narrowed to this media origin.
+/// The observed domain cookies are narrowed to this media origin.
 class NiconicoStream {
   NiconicoStream._(this.uri, this.quality, this.availableQualities, this._cookies);
   final Uri uri;

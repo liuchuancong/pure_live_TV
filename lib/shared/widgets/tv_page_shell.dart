@@ -194,7 +194,7 @@ class _TvPageShellState extends State<TvPageShell> with RouteAware {
   /// Used to keep the opening claim from overriding a restore [TvFocusRestorer]
   /// already made — see [_claimFocus]. The live focus is checked first, but a
   /// request made in this same frame is only applied in a microtask, so the
-  /// restore target the restorer reported is what actually answers this while a
+  /// restore target the restorer reported is what answers this while a
   /// pop is settling.
   bool _focusHeldInsidePage() {
     final FocusNode? primary = FocusManager.instance.primaryFocus;

@@ -4,7 +4,7 @@ import 'package:pure_live/shared/models/live_message/live_message_model.dart';
 
 /// Rejects platform backlog and duplicate delivery while keeping memory
 /// bounded. Stable platform IDs receive a longer replay window; platforms
-/// without IDs use a deliberately short text fingerprint window so repeated
+/// without IDs use a short text fingerprint window so repeated
 /// audience messages remain visible.
 ///
 /// Keeps stable platform IDs in a longer replay window and falls back to a
@@ -68,12 +68,12 @@ class DanmakuMessageGate {
 
 /// Collapses a short burst of identical audience text into its first message.
 ///
-/// This is intentionally separate from [DanmakuMessageGate]: the gate rejects
+/// Separate from [DanmakuMessageGate]: the gate rejects
 /// replayed packets from one sender/ID, while this optional user-facing filter
 /// suppresses copy-paste text sent by different accounts. Local and system
 /// messages are never affected.
 ///
-/// Uses a deliberately short text window so repeated audience messages stay visible.
+/// Uses a short text window so repeated audience messages stay visible.
 class RepeatedDanmakuFilter {
   RepeatedDanmakuFilter({this.maxEntries = 1024});
 

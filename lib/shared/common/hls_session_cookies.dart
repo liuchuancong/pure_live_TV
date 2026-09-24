@@ -2,7 +2,7 @@ import 'dart:io';
 
 /// Bounded, in-memory cookies for one HLS relay, never a browser/account jar.
 ///
-/// Deliberately pin even Domain cookies to the issuing origin. A playlist may
+/// Pin even Domain cookies to the issuing origin. A playlist may
 /// reference arbitrary CDN hosts; it must not grant one host access to another
 /// host's session. Cross-origin cookie sharing is not supported by this relay.
 class HlsSessionCookies {

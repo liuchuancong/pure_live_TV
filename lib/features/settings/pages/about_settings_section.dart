@@ -64,7 +64,7 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
             TvSettingsSwitchTile(
               title: i18n('ui_use_direct_github_updates'),
               subtitle: i18n('ui_check_updates_directly_on_github_without_a_mirro'),
-              icon: Icons.cloud_outlined,
+icon: appState.useGitHubOriginForUpdates ? Icons.cloud_outlined : Icons.cloud_off_outlined,
               value: appState.useGitHubOriginForUpdates,
               onChanged: (v) => app.update(appState.copyWith(useGitHubOriginForUpdates: v)),
             ),

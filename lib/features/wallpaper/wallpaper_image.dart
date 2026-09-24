@@ -7,7 +7,7 @@ import 'package:pure_live/shared/utils/cache_manager.dart';
 /// Every entry now carries absolute URLs (the iTab API returns them), so the
 /// only fallback worth having is "grid copy failed → full picture": a thumbnail
 /// can 404 while the original is fine, and the old behaviour of showing a broken
-/// tile in that case is what made the library look unloadable.
+/// tile in that case made the library look unloadable.
 class WallpaperNetworkImage extends StatefulWidget {
   const WallpaperNetworkImage({
     super.key,

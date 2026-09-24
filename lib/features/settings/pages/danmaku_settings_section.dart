@@ -86,7 +86,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               TvSettingsSwitchTile(
                 title: i18n('danmaku_stroke'),
                 subtitle: i18n('danmaku_stroke_width'),
-                icon: Icons.border_color_outlined,
+  icon: state.enableDanmakuStroke ? Icons.border_color_rounded : Icons.border_color_outlined,
                 value: state.enableDanmakuStroke,
                 onChanged: (v) => update((s) => s.copyWith(enableDanmakuStroke: v)),
               ),
@@ -136,7 +136,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               ),
               TvSettingsSwitchTile(
                 title: i18n('danmaku_no_emoji'),
-                icon: Icons.emoji_emotions_outlined,
+  icon: state.noEmojiMode ? Icons.emoji_emotions_rounded : Icons.emoji_emotions_outlined,
                 value: state.noEmojiMode,
                 onChanged: (v) => update((s) => s.copyWith(noEmojiMode: v)),
               ),
@@ -169,7 +169,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               TvSettingsSwitchTile(
                 title: i18n('collapse_repeated_danmaku'),
                 subtitle: i18n('collapse_repeated_danmaku_desc'),
-                icon: Icons.filter_alt_outlined,
+  icon: state.collapseRepeatedDanmaku ? Icons.filter_alt_rounded : Icons.filter_alt_outlined,
                 value: state.collapseRepeatedDanmaku,
                 onChanged: (v) => update((s) => s.copyWith(collapseRepeatedDanmaku: v)),
               ),

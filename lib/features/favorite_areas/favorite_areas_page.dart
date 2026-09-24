@@ -74,10 +74,10 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                         itemBuilder: (context, area, index) => TvAreaCard(
                           area: area,
                           // A followed category is a shortcut into the same room
-                          // list the 分区 tab opens: pressing OK used to do
+                          // list the areas tab opens: pressing OK used to do
                           // nothing here, so the page was a dead end. The
                           // category carries its own platform, which is what the
-                          // "全部" tab needs (the grid then spans platforms).
+                          // "all" tab needs (the grid then spans platforms).
                           onTap: () {
                             context.pushPage(
                               AppRoutes.kAreaRooms,

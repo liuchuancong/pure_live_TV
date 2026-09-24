@@ -22,6 +22,9 @@ class VideoSettingsSectionPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final playerState = ref.watch(playerSettingsControllerProvider);
     final player = ref.read(playerSettingsControllerProvider.notifier);
+    // The mute state picks this row's icon: slashed speaker when muted, regular
+            // speaker once sound is on.
+    final bool globalMute = ref.watch(volumeSettingsControllerProvider).globalVolumeMute;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,11 +34,11 @@ class VideoSettingsSectionPage extends ConsumerWidget {
         TvSettingsCard(
           children: [
             // global mute is honoured by the player core (`live_room_volume_manager`).
-            TvSettingsSwitchTile(
+                        TvSettingsSwitchTile(
               title: i18n('global_mute'),
               subtitle: i18n('global_mute_subtitle'),
-              icon: Remix.volume_mute_line,
-              value: ref.watch(volumeSettingsControllerProvider).globalVolumeMute,
+              icon: globalMute ? Remix.volume_mute_line : Remix.volume_up_line,
+              value: globalMute,
               onChanged: (v) => ref.read(volumeSettingsControllerProvider.notifier).setGlobalVolumeMute(v),
             ),
             // TV-only: the mobile app toggles audio-only from the player controls,
@@ -44,7 +47,7 @@ class VideoSettingsSectionPage extends ConsumerWidget {
             TvSettingsSwitchTile(
               title: i18n('ui_audio_only'),
               subtitle: i18n('ui_audio_only_no_video_rendering'),
-              icon: Remix.headphone_line,
+icon: playerState.audioOnly ? Remix.headphone_line : Remix.volume_up_line,
               value: playerState.audioOnly,
               onChanged: (v) {
                 player.updateSettings(playerState.copyWith(audioOnly: v));

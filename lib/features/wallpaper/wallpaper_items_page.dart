@@ -55,7 +55,7 @@ class WallpaperItemsPage extends ConsumerWidget {
 
     return TvPageScaffold(
       title: title,
-      // The paged view deliberately installs no region of its own; this one lets
+      // The paged view installs no region of its own; this one lets
       // the d-pad leave upward so the scaffold can hand focus to the back button.
       child: DpadRegion(
         verticalEdge: DpadEdgeBehavior.leave,

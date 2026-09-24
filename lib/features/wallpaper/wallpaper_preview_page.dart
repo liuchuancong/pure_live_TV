@@ -149,8 +149,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   }
 
   Future<void> _togglePlay() async {
-    // 播放器可能已被“强制销毁”释放掉（见 _destroyVideoPlayer）；此时播放按钮
-    // 负责把它重建起来并重新打开当前视频。
+    // The player may already be gone (hard-stop release in _destroyVideoPlayer);
+    // the play button rebuilds it and reopens the current clip.
     var player = _videoPlayer;
     if (player == null) {
       _createVideoPlayer();
@@ -169,11 +169,12 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     }
   }
 
-  /// 彻底释放预览页自带的播放器。
+  /// Fully releases the preview's own player.
   ///
-  /// 设为视频壁纸后，后台背景层会自己开一个播放器播同一个视频——两份解码
-  /// 同时在跑，电视盒子既要多占一个硬解实例，声音也会重叠。开启“播放器强制
-  /// 销毁”时这里直接把预览的播放器释放掉，画面退回封面图。
+  /// Once the clip becomes the wallpaper the background layer plays it through
+  /// its own player; two decoders on one box double the hardware decode cost
+  /// and stack the audio. With "hard stop on exit" enabled the preview player
+  /// is released here and the surface falls back to the poster.
   void _destroyVideoPlayer() {
     final player = _videoPlayer;
     _videoPlayer = null;
@@ -282,8 +283,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             bg.setGradient(colors);
         }
       }
-      // 视频壁纸切换后，预览页不再需要自己这份解码器：释放掉，避免与后台
-      // 壁纸播放器同时硬解同一个视频（也多一份重叠的声音）。
+      // After the switch the preview no longer needs its decoder; release it so
+      // it does not double-decode against the background player (or stack audio).
       if (_isVideo) _destroyVideoPlayer();
       if (mounted) ToastUtil.show(i18nOr('wallpaper_set_done', 'Background updated'));
     } catch (error) {
@@ -466,8 +467,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
     final bool hasPicture = !widget.args.isApiMode || _apiBytes != null;
 
     if (_isVideo && item.file.isNotEmpty && item.file != _openedVideoUrl) {
-      // 刚被上面这条释放过时不立刻重建：等用户明确按播放键再拉起，否则释放
-      // 就白做了。翻到别的条目(URL 变化)则正常自动播放。
+      // Do not rebuild immediately after the release above - that would undo it.
+      // The play button pulls it back up; a real URL change autoplays as usual.
       final bool releasedAfterApply = _videoPlayer == null && !_videoPlaying;
       if (!releasedAfterApply) {
         _openedVideoUrl = item.file;
@@ -485,7 +486,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // 模糊在遮罩之下：先虚化媒体本身，再压遮罩，所见即最终应用效果。
+          // Blur sits under the mask: blur the media first, then the mask, so what the
+  // preview shows is what the applied background looks like.
           wallpaperBlurred(_buildViewer(bgState, item), bgState.blurSigma),
           // The mask the app applies over this wallpaper, drawn here too so the
           // mask action shows what it does: before, the button moved a number

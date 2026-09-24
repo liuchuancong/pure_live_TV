@@ -134,8 +134,8 @@ class FontDownloadManager {
   /// Downloads every weight file of [fontModel] and reports progress through
   /// [onStateChanged].
   ///
-  /// It deliberately does **not** register the family: which file (or all of them)
-  /// becomes active is the caller's decision, and that is also what keeps a halted
+  /// It does **not** register the family: which file (or all of them)
+  /// becomes active is the caller's decision, which also keeps a halted
   /// download from half-applying a family.
   Future<bool> downloadFontFamily({
     required FontModel fontModel,

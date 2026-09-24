@@ -42,7 +42,7 @@ class LivePlayState {
 
   /// Business/UI error message.
   ///
-  /// This is intentionally separate from [playerState], because errors such
+  /// Separate from [playerState], because errors such
   /// as room-detail or stream-url requests are not player playback states.
   final String? errorMessage;
 

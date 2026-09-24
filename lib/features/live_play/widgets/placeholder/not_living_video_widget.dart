@@ -16,9 +16,9 @@ import 'package:pure_live/features/live_play/controllers/live_play_controller.da
 /// fine, so this is not an error screen — nothing failed, there is simply no
 /// stream yet. It therefore offers the two things that actually help:
 ///
-/// - **切换直播间**: the same switch dialog the control bar opens, so the viewer
+/// - **Switch room**: the same switch dialog the control bar opens, so the viewer
 ///   can move on without backing out to the list first.
-/// - **重新检测**: re-runs the room bootstrap (site response included), which is
+/// - **Re-check**: re-runs the room bootstrap (site response included), which is
 ///   what clears the placeholder once the streamer is back.
 ///
 /// Focus model: this placeholder **owns a focus node and handles its own keys**,
@@ -121,7 +121,7 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 主播头像旁边放一个"离线"图标，比单纯文字更快传达状态。
+            // An offline marker on the avatar reads faster than a line of text.
             _OfflineBadge(room: room, title: title),
             SizedBox(height: 18.sp),
             Text(
@@ -259,7 +259,7 @@ class _OfflineBadge extends StatelessWidget {
                       ),
               ),
             ),
-            // 右下角离线标记：一眼看出"人不在播"，而不是网络故障。
+            // Bottom-right marker: reads as "streamer not live", not as a network fault.
             Positioned(
               right: -2.sp,
               bottom: -2.sp,

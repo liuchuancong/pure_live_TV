@@ -47,7 +47,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   /// Cover cache key for the current cache epoch.
   ///
   /// refresh live thumbnails clears the encoded-image cache and bumps the epoch; folding
-  /// it into the key is what makes the visible covers reload instead of keeping
+  /// it into the key makes the visible covers reload instead of keeping
   /// the bitmaps they already decoded.
   String get coverCacheKey {
     final int epoch = ref.watch(cacheControllerProvider.select((m) => m.imageCacheEpoch));

@@ -38,8 +38,8 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
   bool _hintVisible = true;
   Timer? _hintTimer;
 
-  /// 返回只允许生效一次（PopScope 回调在预测性返回等场景会被重复调用，
-  /// 弹两次会把预览页一起弹掉，用户就直接退到壁纸列表了）。
+  /// Back is applied once: the PopScope callback can fire more than once per
+  /// press (predictive back), and popping twice would drop the preview too.
   bool _popping = false;
 
   /// Online video plays here; the preview page pauses its own player while
@@ -83,11 +83,13 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
     player.setVolume(100);
   }
 
-  /// 彻底释放本页的播放器。
+  /// Fully releases this page's player.
   ///
-  /// 设为视频壁纸后，后台背景层会自己播同一个视频；开启“播放器强制销毁”时
-  /// 释放这里的解码器，避免两份硬解与重叠的声音。画面退回封面图（接着按 OK
-  /// 仍是“设为壁纸”，需要重新预览时按 ↓ 翻走再翻回来即可重建）。
+  /// Once the clip is the wallpaper, the background layer plays it through its
+  /// own player. With "hard stop on exit" enabled this page releases its
+  /// decoder so the two do not double-decode or double-play audio; the surface
+  /// falls back to the poster (OK still applies it; step away and back to
+  /// preview again).
   void _destroyVideoPlayer() {
     final player = _videoPlayer;
     _videoPlayer = null;
@@ -123,7 +125,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
     setState(() => _applying = true);
     try {
       await _sequence.applyCurrent();
-      // 视频壁纸已交给后台背景层，本页不再保留第二份解码器。
+      // The clip belongs to the background layer now; no second decoder here.
       if (_sequence.isVideo) _destroyVideoPlayer();
       if (mounted) ToastUtil.show(i18nOr('wallpaper_set_done', 'Background updated'));
     } catch (error) {
@@ -203,7 +205,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
     final item = _sequence.itemAt(items);
 
     if (_sequence.isVideo && item.file.isNotEmpty && item.file != _openedUrl) {
-      // 刚被释放时不重建：等翻到别的条目（URL 变化）再自动播放。
+      // Do not rebuild right after a release; autoplay waits for a real URL change.
       final bool releasedAfterApply = _videoPlayer == null;
       if (!releasedAfterApply) {
         _openedUrl = item.file;

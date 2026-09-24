@@ -11,7 +11,7 @@ import 'package:pure_live/services/log_settings/log_settings_controller.dart';
 ///
 /// cloud backup → WebDAV and device sync, local backup → create and restore, backup settings →
 /// the backup directory, log management → the local log. The mobile Firebase row is
-/// deliberately absent.
+/// absent by design.
 class BackupSettingsSectionPage extends ConsumerStatefulWidget {
   const BackupSettingsSectionPage({super.key});
 

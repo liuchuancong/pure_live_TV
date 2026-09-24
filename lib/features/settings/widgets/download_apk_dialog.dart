@@ -238,8 +238,9 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
   /// `12.3 MB / 42.5 MB · 29% · 3.4 MB/s`, or the same figures as they arrive.
   String _statusText(AppUpdateState state, {required bool downloading, required bool ready, required bool failed}) {
     if (ready) return i18n('download_success');
-    // 失败原因来自状态：体积校验失败/超时/HTTP 状态码等都已经是可以直接展示的
-    // 整句（见 AppUpdateService._describeError），比笼统的"下载失败"有用。
+    // The failure reason comes from state: size mismatch, timeout and HTTP
+    // status all arrive as complete sentences (see AppUpdateService
+    // ._describeError), which beats a generic "download failed".
     if (failed) {
       final String reason = state.error.trim();
       return reason.isEmpty ? i18n('download_failed') : reason;

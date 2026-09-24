@@ -83,7 +83,7 @@ class PlayerIndexPanel extends StatefulWidget {
   /// Appends the trailing close row.
   ///
   /// Off for every side panel the player ships (playlist, danmaku settings,
-  /// shield): they are left with 返回 / Escape, which the key scope routes to the
+  /// shield): they are left with Back / Escape, which the key scope routes to the
   /// same close action, so their rows are content only. The bar's own option
   /// lists (clarity / line / aspect / kernel) still end with a close row — those
   /// are drawn by the control bar, not by this widget.

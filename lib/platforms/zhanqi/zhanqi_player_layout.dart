@@ -51,7 +51,7 @@ class ZhanqiPlayerLayout {
       List.unmodifiable(cells.map((cell) => cell.qualityIndex).toSet().toList()..sort());
   bool get defaultQualityEnabled => cells.any((cell) => cell.qualityIndex == defaultQualityIndex);
 
-  // Different logical lines may select exactly the same CDN and suffix. Keep
+  // Different logical lines may select the same CDN and suffix. Keep
   // their indices in cells, but expose identity groups for consumer deduplication.
   Map<(int, String), List<ZhanqiPlayerCell>> get sourceGroups {
     final result = <(int, String), List<ZhanqiPlayerCell>>{};

@@ -2,7 +2,7 @@
 ///
 /// The value tables mirror DanmakuConstants from the legacy `pure_live` app so
 /// both apps feel the same and persist identical numbers. Left/Right cycles
-/// through exactly these candidates.
+/// through these candidates.
 class DanmakuOptionSteps {
   DanmakuOptionSteps._();
 
