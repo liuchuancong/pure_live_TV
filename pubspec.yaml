@@ -104,13 +104,25 @@ dependencies:
       path: flutter_inappwebview
       ref: 3e6c4c4a25340cd363af9d38891d88498b90be26
   media_core:
-    path: F:/media_core/packages/media_core
+    git:
+      url: https://github.com/liuchuancong/media_core.git
+      path: packages/media_core
+      ref: 6350af39dd77e134320af63e3201e369fe21e33a
   media_core_media_kit:
-    path: F:/media_core/packages/media_core_media_kit
+    git:
+      url: https://github.com/liuchuancong/media_core.git
+      path: packages/media_core_media_kit
+      ref: main
   media_core_better_player:
-    path: F:/media_core/packages/media_core_better_player
+    git:
+      url: https://github.com/liuchuancong/media_core.git
+      path: packages/media_core_better_player
+      ref: main
   media_core_ijk_player:
-    path: F:/media_core/packages/media_core_ijk_player
+    git:
+      url: https://github.com/liuchuancong/media_core.git
+      path: packages/media_core_ijk_player
+      ref: main
   # The video layer consumes media_core's adapters, but the wallpaper feature
   # still drives media_kit / media_kit_video directly, so both are declared
   # here instead of only being pulled in transitively.
