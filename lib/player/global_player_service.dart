@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
+import 'core/playback_proxy_policy.dart';
 import 'live_player_facade.dart';
 import 'models/player_engine.dart';
+import '../services/settings/settings.dart';
 import 'package:media_core/media_core.dart';
 import 'package:media_core_ijk_player/media_core_ijk_player.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart';
@@ -10,6 +12,78 @@ import 'package:media_core_better_player/media_core_video_player.dart';
 export 'live_player_facade.dart';
 export 'models/player_engine.dart';
 export 'utils/player_consts.dart';
+
+/// Builds the media_kit adapter configuration from the persisted engine
+/// switches.
+///
+/// The package adapter takes its configuration by construction and never reads
+/// this app's settings, so the factory has to rebuild the config for every
+/// adapter the kernel creates. A settings change then applies to the next
+/// player session instead of being silently dropped.
+///
+/// The fields that libmpv only honours on one platform (compat mode, RTX VSR)
+/// are forwarded as stored; the adapter ignores them elsewhere. Driver values
+/// are forwarded unnormalised because the adapter normalises them per platform
+/// itself.
+MediaKitPlayerConfig buildMediaKitPlayerConfig() {
+  final settings = SettingsService.to.playerState;
+  return MediaKitPlayerConfig(
+    // A loopback/private input must never be sent through the native proxy.
+    proxyUrlResolver: ({required bool privateInput}) =>
+        PlaybackProxyPolicy.currentNativeUrl(privateInput: privateInput),
+    enableCodec: settings.enableCodec,
+    playerCompatMode: settings.playerCompatMode,
+    customPlayerOutput: settings.customPlayerOutput,
+    videoHardwareDecoder: settings.videoHardwareDecoder,
+    videoOutputDriver: settings.videoOutputDriver,
+    audioOutputDriver: settings.audioOutputDriver,
+    enableRtxVsr: settings.enableRtxVsr,
+  );
+}
+
+/// Builds the ijkplayer adapter configuration from the persisted switches.
+FijkPlayerConfig buildFijkPlayerConfig() {
+  final settings = SettingsService.to.playerState;
+  return FijkPlayerConfig(
+    proxyUrlResolver: ({required bool privateInput}) =>
+        PlaybackProxyPolicy.currentNativeUrl(privateInput: privateInput),
+    enableCodec: settings.enableCodec,
+  );
+}
+
+/// Creates a media_kit adapter with the current settings.
+///
+/// Registered under the app's historical backend id `mpv`
+/// ([PlayerConsts.defaultKey]); the kernel addresses the registration by that
+/// id and never consults [PlayerAdapterFactory.supports].
+final class _MediaKitFactory implements PlayerAdapterFactory {
+  const _MediaKitFactory();
+
+  @override
+  PlayerAdapter create(String id) => MediaKitPlayerAdapter(
+    id: id,
+    capabilities: MediaKitPlayerAdapter.defaultCapabilities,
+    config: buildMediaKitPlayerConfig(),
+  );
+
+  @override
+  bool supports(String id) => id == 'mpv' || id.isEmpty;
+}
+
+/// Creates an ijkplayer (flv_lzc) adapter with the current settings.
+final class _FlvLzcFactory implements PlayerAdapterFactory {
+  const _FlvLzcFactory();
+
+  @override
+  PlayerAdapter create(String id) => FlvLzcPlayerAdapter(
+    id: id,
+    capabilities: FlvLzcPlayerAdapter.defaultCapabilities,
+    config: buildFijkPlayerConfig(),
+  );
+
+  @override
+  bool supports(String id) => id == 'ijk' || id.isEmpty;
+}
 
 /// Media-core-backed global player service.
 ///
@@ -83,14 +157,14 @@ class GlobalPlayerService {
       case PlayerEngine.mediaKit:
         return PlayerAdapterRegistration(
           id: 'mpv',
-          factory: const MediaKitAdapterFactory(),
+          factory: const _MediaKitFactory(),
           capabilities: MediaKitPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
       case PlayerEngine.fijk:
         return PlayerAdapterRegistration(
           id: 'ijk',
-          factory: const IjkPlayerAdapterFactory(),
+          factory: const _FlvLzcFactory(),
           capabilities: FlvLzcPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
