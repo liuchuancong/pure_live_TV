@@ -318,12 +318,18 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
         }
         _openLivePlay();
       },
-      onLongSelect: () {
-        final isLocked =
-            SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
-        if (isLocked) return;
-        widget.onLongPress?.call();
-      },
+      // Without a long-press action the hook stays null on purpose: with one, the
+      // d-pad layer holds select back until the key is released (and drops it
+      // entirely once the hold passes the threshold), so a card that has nothing to
+      // show on a hold would swallow the press instead of opening the room.
+      onLongSelect: widget.onLongPress == null
+          ? null
+          : () {
+              final isLocked =
+                  SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
+              if (isLocked) return;
+              widget.onLongPress!.call();
+            },
       child: const SizedBox(),
     );
   }

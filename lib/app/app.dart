@@ -54,7 +54,23 @@ class App extends ConsumerWidget {
           routerConfig: router,
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
-            final withDpad = Dpad.wrap(theme: const DpadThemeData(scrollDuration: Duration.zero))(context, child!);
+            // `longSelectDuration` is the d-pad layer's hold threshold for
+            // `onLongSelect`; its 500 ms default is what a remote press aimed at a
+            // card's context menu regularly misses — the press ends just under half
+            // a second, is treated as a select, and the room opens instead of the
+            // menu. 350 ms keeps a deliberate quick press (~200 ms) on the select
+            // side while an intended hold reads as a hold. The only long-press
+            // targets are the room and category cards (and the search chips), whose
+            // menus are all non-destructive.
+            //
+            // `scrollDuration: Duration.zero` keeps the d-pad layer from animating
+            // the reveal itself; the grids drive their own scrolling.
+            final withDpad = Dpad.wrap(
+              theme: const DpadThemeData(
+                scrollDuration: Duration.zero,
+                longSelectDuration: Duration(milliseconds: 350),
+              ),
+            )(context, child!);
 
             return FlutterSmartDialog.init()(
               context,
