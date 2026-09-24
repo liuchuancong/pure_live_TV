@@ -220,14 +220,22 @@ class LivePlayController extends _$LivePlayController {
 
     final favorites = ref.read(favoriteRoomControllerProvider.notifier);
 
-    if (!FavoriteRoomController.isValidFavoriteRoomStatic(detail)) {
-      if (favorites.removeRoom(detail)) {
+    // Re-bind to the identity the room was opened with before both checks and
+    // the write: platforms answer with their canonical id (Douyin reports the
+    // web rid, for example), which can differ from the favourite card's key.
+    // Without the re-bind updateRoom finds no entry and the card keeps its
+    // stale status - the offline room stayed in the replay bucket.
+    final LiveRoom hint = args.room ?? _hintRoom();
+    final rebound = detail.copyWith(roomId: hint.normalizedRoomId, platform: hint.normalizedPlatformId);
+
+    if (!FavoriteRoomController.isValidFavoriteRoomStatic(rebound)) {
+      if (favorites.removeRoom(rebound)) {
         ToastUtil.show(i18n('favorite_invalid_room_removed'));
       }
       return;
     }
 
-    favorites.updateRoom(detail);
+    favorites.updateRoom(rebound);
   }
 
   /// Turns a load that never resolved into a failure the user can act on.

@@ -65,7 +65,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     // above only reaches this provider when the page is already up (see
     // FavoriteRoomController.importFromJson).
     if (ref.read(favoriteRoomControllerProvider.notifier).consumeStatusRefreshRequest()) {
-      Future<void>.microtask(refreshData);
+      Future<void>.microtask(() => refreshData(scopeAll: true));
     }
 
     final favState = ref.watch(favoriteRoomControllerProvider);
@@ -78,7 +78,9 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
   void _listenEventBus() {
     _eventSubscription = EventBus.instance.listen('refresh_favorite_rooms', (data) {
-      refreshData();
+      // data == true marks the import/restore verification pass: verify every
+      // followed room, not just the slice the page is showing.
+      refreshData(scopeAll: data == true);
     });
   }
 
@@ -330,7 +332,14 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     }
   }
 
-  Future<void> refreshData() async {
+  ///
+  /// [scopeAll] widens the pass beyond the visible platform tab and tag: a
+  /// synced follow list arrives with the statuses its backup remembered, so
+  /// stale cards sit in buckets they no longer belong to - verifying only the
+  /// visible slice leaves the other buckets wrong until the user happens to
+  /// visit each one. The import-triggered verification pass therefore passes
+  /// true; a manual pull-refresh stays scoped (and fast).
+  Future<void> refreshData({bool scopeAll = false}) async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true);
 
@@ -340,20 +349,22 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     final refreshState = ref.read(refreshConfigControllerProvider);
 
     List<LiveRoom> valid = source;
-    if (state.tabSiteIndex >= 0 && state.tabSiteIndex < sites.length) {
-      final activeSite = sites[state.tabSiteIndex];
-      if (activeSite.id != Sites.allSite) {
-        final String siteId = activeSite.id.trim().toLowerCase();
-        valid = source.where((r) => r.normalizedPlatformId == siteId).toList();
+    if (!scopeAll) {
+      if (state.tabSiteIndex >= 0 && state.tabSiteIndex < sites.length) {
+        final activeSite = sites[state.tabSiteIndex];
+        if (activeSite.id != Sites.allSite) {
+          final String siteId = activeSite.id.trim().toLowerCase();
+          valid = source.where((r) => r.normalizedPlatformId == siteId).toList();
+        }
       }
-    }
 
-    final tagController = ref.read(tagManagementControllerProvider.notifier);
-    if (state.selectedTagId != 'all') {
-      valid = valid.where((room) {
-        final List<String> ids = tagController.getTagsForRoom(room);
-        return ids.contains(state.selectedTagId);
-      }).toList();
+      final tagController = ref.read(tagManagementControllerProvider.notifier);
+      if (state.selectedTagId != 'all') {
+        valid = valid.where((room) {
+          final List<String> ids = tagController.getTagsForRoom(room);
+          return ids.contains(state.selectedTagId);
+        }).toList();
+      }
     }
 
     final validRooms = valid.where((r) => r.platform.isNotEmpty).toList();
