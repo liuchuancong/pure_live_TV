@@ -13,6 +13,7 @@ import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/common/http_header_policy.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/shared/utils/log.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -200,15 +201,36 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
 
   Future<String?> _getLocalIp() async {
     try {
+      // Multi-NIC boxes surface virtual adapters first (VPN/TUN, bridges,
+      // emulator NAT), so "first non-loopback IPv4" used to advertise a
+      // 10.x address the phone could not reach. Rank the candidates the same
+      // way the LAN-sync service does and honor its manual pick, so the
+      // selector on the device sync page fixes both services' QR codes.
+      final candidates = <String>[];
       final interfaces = await NetworkInterface.list(type: InternetAddressType.IPv4, includeLoopback: false);
       for (final iface in interfaces) {
         for (final addr in iface.addresses) {
-          if (!addr.address.startsWith('127.') && !addr.address.startsWith('169.254.')) {
-            return addr.address;
-          }
+          final ip = addr.address;
+          if (!ip.startsWith('127.') && !ip.startsWith('169.254.')) candidates.add(ip);
         }
       }
-      return null;
+      if (candidates.isEmpty) return null;
+
+      final manual = HivePrefUtil.getString('syncSelectedIp');
+      if (manual != null && manual.isNotEmpty && candidates.contains(manual)) return manual;
+
+      int score(String ip) {
+        if (ip.startsWith('192.168.')) return 3;
+        if (ip.startsWith('10.')) return 2;
+        if (ip.startsWith('172.')) {
+          final second = int.tryParse(ip.split('.')[1]);
+          if (second != null && second >= 16 && second <= 31) return 1;
+        }
+        return 0;
+      }
+
+      candidates.sort((a, b) => score(b).compareTo(score(a)));
+      return candidates.first;
     } catch (e) {
       _addLog('Failed to read the IP address: $e');
       return null;
