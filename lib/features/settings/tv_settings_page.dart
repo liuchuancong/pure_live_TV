@@ -170,7 +170,7 @@ class SettingsCatalogView extends ConsumerWidget {
                   trailing: hasUpdate && entry.path == AppRoutes.kAbout
                       ? Text(
                           i18n('new_version_found'),
-                          style: TextStyle(fontSize: 13.sp, color: context.tvTheme.focusColor),
+                          style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor),
                         )
                       : null,
                   onTap: () => settingsSectionRoutes[entry.path]?.push(context),

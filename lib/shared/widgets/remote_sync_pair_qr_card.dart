@@ -104,7 +104,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
+              style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
             ),
           ),
         ],

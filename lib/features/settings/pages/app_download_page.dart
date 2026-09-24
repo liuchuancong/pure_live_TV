@@ -102,7 +102,7 @@ class AppDownloadPage extends ConsumerWidget {
                   padding: EdgeInsets.fromLTRB(20.w, 2.h, 20.w, 4.h),
                   child: Text(
                     i18n('update_renderer_desc'),
-                    style: TextStyle(fontSize: 13.sp, color: context.tvTheme.secondaryTextColor),
+                    style: TextStyle(fontSize: 14.sp, color: context.tvTheme.secondaryTextColor),
                   ),
                 ),
                 // One section per published ABI, the mobile update page's
@@ -139,7 +139,7 @@ class AppDownloadPage extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             i18n('update_package_ready'),
-                            style: TextStyle(fontSize: 13.sp, color: context.tvTheme.secondaryTextColor),
+                            style: TextStyle(fontSize: 14.sp, color: context.tvTheme.secondaryTextColor),
                           ),
                         ),
                       ],
@@ -152,7 +152,7 @@ class AppDownloadPage extends ConsumerWidget {
                       state.error,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13.sp, color: context.tvTheme.secondaryTextColor),
+                      style: TextStyle(fontSize: 14.sp, color: context.tvTheme.secondaryTextColor),
                     ),
                   ),
               ],

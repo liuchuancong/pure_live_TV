@@ -186,7 +186,7 @@ class WallpaperBadge extends StatelessWidget {
         color: Colors.black.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(6.sp),
       ),
-      child: Text(text, style: TextStyle(fontSize: 11.sp, color: Colors.white)),
+      child: Text(text, style: TextStyle(fontSize: 13.sp, color: Colors.white)),
     );
   }
 }

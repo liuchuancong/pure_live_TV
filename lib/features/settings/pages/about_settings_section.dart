@@ -52,7 +52,7 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
               icon: Icons.system_update_alt_rounded,
               trailing: newVersionHint == null
                   ? null
-                  : Text(i18n('new_version_found'), style: TextStyle(fontSize: 13.sp, color: context.tvTheme.focusColor)),
+                  : Text(i18n('new_version_found'), style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor)),
               onTap: () => const AppUpdateRoute().push(context),
             ),
           ],

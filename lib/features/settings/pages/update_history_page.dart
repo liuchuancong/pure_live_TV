@@ -242,7 +242,7 @@ Future<void> showReleaseNotesDialog({
                         padding: EdgeInsets.only(bottom: 12.sp),
                         child: Text(
                           i18n('version_published_at', args: <String, String>{'date': release.date}),
-                          style: TextStyle(fontSize: 13.sp, color: tvTheme.secondaryTextColor),
+                          style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
                         ),
                       ),
                     Text(

@@ -215,7 +215,7 @@ class _FollowLabel extends StatelessWidget {
         followed ? i18n('followed') : i18n('follow'),
         style: AppTextStyles.t14W500.copyWith(
           color: color,
-          fontSize: 13.sp * scale,
+          fontSize: 14.sp * scale,
           fontWeight: followed ? FontWeight.w600 : FontWeight.w500,
         ),
       ),
