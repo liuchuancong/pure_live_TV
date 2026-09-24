@@ -171,17 +171,24 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
           // The loading overlay covers both the initial start and every
           // later moment the surface provably has no picture: a source
           // opening, a line switch, an engine switch. The availability
-          // stream comes from the player facade, so the spinner shows
-          // over the black surface exactly while no frame exists and
-          // disappears the moment the new engine decodes one.
+          // stream comes from the player facade.
+          //
+          // Both signals must agree before a spinner is drawn: the state
+          // has to still be waiting (detail loading / opening / buffering)
+          // AND the surface must actually have no frame. media_core keeps
+          // `opening` until its playback verification passes, which on a
+          // slow source lands seconds after the first frame is already on
+          // screen — keying the spinner on the state alone pinned 缓冲中
+          // over a picture that was playing.
           if (manager != null)
             StreamBuilder<bool>(
               stream: manager.onPictureAvailable,
               initialData: manager.hasPicture,
               builder: (context, pictureSnapshot) {
                 final bool noPicture = !(pictureSnapshot.data ?? true);
+                final bool waiting = loadingDetail || (showLoading && noPicture);
 
-                if (showError || state.isOffline || !(showLoading || noPicture)) {
+                if (showError || state.isOffline || !waiting) {
                   return const SizedBox.shrink();
                 }
 
