@@ -271,6 +271,15 @@ class AppStatusView extends StatefulWidget {
   final String? buttonText;
   final Widget? buttonTextIcon;
   final VoidCallback? onTap;
+
+  /// An optional second action, painted to the right of the first one.
+  ///
+  /// Some empty states offer two ways out — the followed page retries the list
+  /// *and* offers search — and both belong next to the message they answer. A
+  /// second action pinned to the bottom of the page read as a stray control.
+  final String? secondaryButtonText;
+  final Widget? secondaryButtonIcon;
+  final VoidCallback? onSecondaryTap;
   final bool isMini;
   final Color? iconColor;
   final Color? titleColor;
@@ -284,6 +293,9 @@ class AppStatusView extends StatefulWidget {
     this.icon,
     this.buttonText,
     this.onTap,
+    this.secondaryButtonText,
+    this.secondaryButtonIcon,
+    this.onSecondaryTap,
     this.isMini = false,
     this.iconColor,
     this.titleColor,
@@ -367,15 +379,31 @@ class _AppStatusViewState extends State<AppStatusView> {
               style: AppTextStyles.t28.copyWith(color: widget.subtitleColor ?? tvTheme.secondaryTextColor),
             ),
           ],
-          if (!widget.isMini && widget.onTap != null) ...[
+          if (!widget.isMini && (widget.onTap != null || widget.onSecondaryTap != null)) ...[
             SizedBox(height: 24.sp),
-            TvButton(
-              title: finalButtonText,
-              icon: finalIcon,
-              autofocus: true,
-              iconPosition: TvIconPosition.left,
-              size: TvButtonSize.small,
-              onTap: widget.onTap,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.onTap != null)
+                  TvButton(
+                    title: finalButtonText,
+                    icon: finalIcon,
+                    autofocus: true,
+                    iconPosition: TvIconPosition.left,
+                    size: TvButtonSize.small,
+                    onTap: widget.onTap,
+                  ),
+                if (widget.onTap != null && widget.onSecondaryTap != null) SizedBox(width: 16.sp),
+                if (widget.onSecondaryTap != null)
+                  TvButton(
+                    title: widget.secondaryButtonText ?? i18n('search_live'),
+                    icon: widget.secondaryButtonIcon ?? Icon(Icons.search_rounded, size: 24.sp),
+                    iconPosition: TvIconPosition.left,
+                    size: TvButtonSize.small,
+                    isSecondary: true,
+                    onTap: widget.onSecondaryTap,
+                  ),
+              ],
             ),
           ],
         ],

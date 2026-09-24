@@ -85,6 +85,12 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
               favoriteState.offlineRooms.where(onSite).length;
     final int offlineForSite = favoriteState.offlineRooms.where(onSite).length;
 
+    // The second way out of the empty state: both branches offer search next to
+    // their own action.
+    final String searchLabel = i18n('empty_favorite_action');
+    final Widget searchIcon = Icon(Icons.search_rounded, size: 24.sp);
+    void goSearch() => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value);
+
     final AppStatusView status;
     if (globalTotal == 0) {
       status = AppStatusView(
@@ -94,6 +100,9 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
         subtitle: i18n('empty_favorite_online_subtitle'),
         buttonText: i18n('retry'),
         onTap: _retryRefresh,
+        secondaryButtonText: searchLabel,
+        secondaryButtonIcon: searchIcon,
+        onSecondaryTap: goSearch,
       );
     } else {
       final String title = switch (favoriteState.tabOnlineIndex) {
@@ -113,23 +122,13 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
         subtitle: subtitle,
         buttonText: canShowOffline ? i18n('favorite_show_offline') : i18n('retry'),
         onTap: canShowOffline ? () => ref.read(favoriteProvider.notifier).changeOnlineTab(2) : _retryRefresh,
+        secondaryButtonText: searchLabel,
+        secondaryButtonIcon: searchIcon,
+        onSecondaryTap: goSearch,
       );
     }
 
-    return Column(
-      children: [
-        Expanded(child: status),
-        Padding(
-          padding: EdgeInsets.only(bottom: 20.sp),
-          child: TvButton(
-            title: i18n('empty_favorite_action'),
-            icon: Icon(Icons.search_rounded, size: 18.sp),
-            size: TvButtonSize.small,
-            onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value),
-          ),
-        ),
-      ],
-    );
+    return status;
   }
 
   void _listenToFavoriteChanges() {
@@ -269,8 +268,10 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         emptyBuilder: (context, onRefresh) => _buildFavoriteEmpty(context, favoriteState, onRefresh),
+                        // The builder above draws its own empty state (with the
+                        // search action next to 刷新); EmptyScene.favorite stays as
+                        // the fallback for any path that reaches the view without it.
                         emptyScene: EmptyScene.favorite,
-                        onEmptyGoSearch: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: themeState.denseRoomLayout,
                           mainAxisSpacing: mainSpacing.w,
