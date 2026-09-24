@@ -250,16 +250,16 @@ class Sites {
         logo: logoOf(showroomSite),
         liveSite: ShowroomSite(),
       ),
-      chzzkSite => Site(
-        id: chzzkSite,
-        name: i18n('site_chzzk'),
-        logo: logoOf(chzzkSite),
-        liveSite: ChzzkSite(),
-      ),
+      chzzkSite => Site(id: chzzkSite, name: i18n('site_chzzk'), logo: logoOf(chzzkSite), liveSite: ChzzkSite()),
       kickSite => Site(id: kickSite, name: i18n('site_kick'), logo: logoOf(kickSite), liveSite: KickSite()),
       liveMeSite => Site(id: liveMeSite, name: i18n('site_liveme'), logo: logoOf(liveMeSite), liveSite: LiveMeSite()),
       tiktokSite => Site(id: tiktokSite, name: i18n('site_tiktok'), logo: logoOf(tiktokSite), liveSite: TikTokSite()),
-      youtubeSite => Site(id: youtubeSite, name: i18n('site_youtube'), logo: logoOf(youtubeSite), liveSite: YouTubeSite()),
+      youtubeSite => Site(
+        id: youtubeSite,
+        name: i18n('site_youtube'),
+        logo: logoOf(youtubeSite),
+        liveSite: YouTubeSite(),
+      ),
       bigoSite => Site(id: bigoSite, name: i18n('site_bigo'), logo: logoOf(bigoSite), liveSite: BigoSite()),
       pandaLiveSite => Site(
         id: pandaLiveSite,
@@ -267,12 +267,7 @@ class Sites {
         logo: logoOf(pandaLiveSite),
         liveSite: PandaLiveSite(),
       ),
-      popkonSite => Site(
-        id: popkonSite,
-        name: i18n('site_popkontv'),
-        logo: logoOf(popkonSite),
-        liveSite: PopkonSite(),
-      ),
+      popkonSite => Site(id: popkonSite, name: i18n('site_popkontv'), logo: logoOf(popkonSite), liveSite: PopkonSite()),
       shopeeLiveSite => Site(
         id: shopeeLiveSite,
         name: i18n('site_shopeelive'),

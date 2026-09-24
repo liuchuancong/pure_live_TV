@@ -2,15 +2,15 @@ import 'dart:async';
 import 'models/player_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
+import 'package:media_core/media_core.dart';
+import '../services/settings/settings.dart';
 import 'core/live_room_volume_manager.dart';
 import 'core/playback_header_resolver.dart';
-import '../services/settings/settings.dart';
-import 'package:media_core/media_core.dart';
-import 'package:media_core_ijk_player/media_core_ijk_player.dart';
-import 'package:media_core_media_kit/media_core_media_kit.dart';
-import 'package:media_core_better_player/media_core_video_player.dart';
+import '../app/consts/app_theme_consts.dart';
 import '../shared/models/live_room/live_room.dart';
-import 'package:pure_live/app/consts/app_theme_consts.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart';
+import 'package:media_core_ijk_player/media_core_ijk_player.dart';
+import 'package:media_core_better_player/media_core_video_player.dart';
 
 /// App-facing facade over media_core's [LivePlaybackController].
 ///
@@ -30,7 +30,9 @@ final class LivePlayerFacade {
   /// Creates the facade.
   LivePlayerFacade(PlayerKernel kernel, {required PlayerEngine defaultEngine, this._onPreferredEngineChanged})
     : _controller = LivePlaybackController(kernel),
-      preferredEngine = defaultEngine;
+      preferredEngine = defaultEngine {
+    _bindController();
+  }
 
   /// The engine the app prefers for the next session.
   PlayerEngine preferredEngine;
@@ -46,12 +48,19 @@ final class LivePlayerFacade {
   // ---------------------------------------------------------------------------
 
   final _stateSubject = BehaviorSubject<PlayerState>.seeded(const PlayerState());
+
   final _playingSubject = BehaviorSubject<bool>.seeded(false);
+
   final _errorSubject = PublishSubject<PlayerFailure>();
+
   final _widthSubject = BehaviorSubject<int?>.seeded(null);
+
   final _heightSubject = BehaviorSubject<int?>.seeded(null);
+
   final videoFitIndex = BehaviorSubject<int>.seeded(0);
+
   final videoKey = BehaviorSubject<ValueKey>.seeded(const ValueKey('video_0'));
+
   final isVerticalVideo = BehaviorSubject<bool>.seeded(false);
 
   /// Audio-only playback mode, as the play page sees it.
@@ -63,24 +72,52 @@ final class LivePlayerFacade {
   /// Audio-only playback mode stream.
   Stream<bool> get onAudioOnlyChanged => _audioOnlySubject.stream;
 
-  final List<StreamSubscription<dynamic>> _subscriptions = <StreamSubscription<dynamic>>[];
   StreamSubscription<PlayerFailure>? _errorSub;
   StreamSubscription<PlayerState>? _stateSub;
+  StreamSubscription<PlayerAdapterEvent>? _adapterSub;
 
   bool _disposed = false;
 
-  /// The source last handed to [play], kept so an engine switch can reopen it.
+  // ---------------------------------------------------------------------------
+  // Last playback request
+  // ---------------------------------------------------------------------------
+
+  /// The last complete source request handed to media_core.
   ///
-  /// `LivePlaybackController.close()` releases the handle *and* clears its own
-  /// current URL, which makes its `retry()` bail out immediately. A switch that
-  /// closed the controller and then called `retry()` therefore tore the player
-  /// down and never reopened the stream — a black surface with nothing playing.
-  /// The resolved headers are kept too, so reopening does not repeat header
-  /// resolution.
-  String? _lastUrl;
-  List<String> _lastLines = const <String>[];
-  Map<String, String> _lastHeaders = const <String, String>{};
-  LiveRoom? _lastRoom;
+  /// Keeping the request as one object prevents the URL, fallback lines,
+  /// headers and room metadata from drifting apart during an engine switch.
+  LiveSourceRequest? _lastRequest;
+
+  // ---------------------------------------------------------------------------
+  // Handle / adapter binding
+  // ---------------------------------------------------------------------------
+
+  /// The handle whose adapter events are currently bound.
+  ///
+  /// The controller creates its handle inside its first open(), so binding
+  /// before play() would not bind anything. We therefore check the handle
+  /// whenever the facade interacts with the controller.
+  PlayerHandle? _boundHandle;
+
+  /// Whether the adapter last reported buffering.
+  ///
+  /// media_core declares buffering the moment open() returns, and that is not
+  /// the adapter's opinion. For a live stream it can also be the last state
+  /// change there ever is, which leaves the spinner on screen over a picture
+  /// that is playing fine. Only the adapter's own report separates the two.
+  bool _adapterBuffering = false;
+
+  // ---------------------------------------------------------------------------
+  // Engine switch coordination
+  // ---------------------------------------------------------------------------
+
+  /// Monotonically increasing token used to invalidate stale engine switches.
+  ///
+  /// If the user switches engines several times quickly, an older async switch
+  /// must not reopen a source after a newer switch has already started.
+  int _engineSwitchGeneration = 0;
+
+  int _videoKeyGeneration = 0;
 
   // ---------------------------------------------------------------------------
   // Streams (the legacy surface)
@@ -100,72 +137,80 @@ final class LivePlayerFacade {
   LivePlaybackController get controller => _controller;
 
   // ---------------------------------------------------------------------------
-  // Binding
+  // Controller binding
   // ---------------------------------------------------------------------------
 
-  /// The handle whose adapter events are already bound.
+  /// Binds the controller-level streams.
   ///
-  /// The controller creates its handle inside its first open(), which happens
-  /// after play() returns. Binding only on the first call therefore never bound
-  /// anything, and every adapter-driven signal - playing, buffering, the
-  /// background-video suspension - stayed silent.
-  PlayerHandle? _boundHandle;
+  /// Controller streams live for the lifetime of the facade, so these
+  /// subscriptions are created once instead of being recreated on every play.
+  void _bindController() {
+    _stateSub = _controller.onStateChanged.listen(_onLiveStateChanged);
 
-  /// Whether the adapter last reported buffering.
-  ///
-  /// media_core declares buffering the moment open() returns, and that is not
-  /// the adapter's opinion. For a live stream it can also be the last state
-  /// change there ever is, which leaves the spinner on screen over a picture
-  /// that is playing fine. Only the adapter's own report separates the two.
-  bool _adapterBuffering = false;
-
-  void _bind() {
-    _stateSub ??= _controller.onStateChanged.listen(_onLiveStateChanged);
-    _errorSub ??= _controller.onError.listen((failure) {
+    _errorSub = _controller.onError.listen((failure) {
       if (_disposed) return;
       _errorSubject.add(failure);
     });
-
-    final handle = _controller.handle;
-    if (handle != null && !identical(handle, _boundHandle)) {
-      _boundHandle = handle;
-      _bindHandle(handle);
-    }
   }
 
-  void _bindHandle(PlayerHandle handle) {
-    // A new handle means the previous one was released; its subscription goes
-    // with it, and so does the buffering that handle last reported.
-    for (final sub in List<StreamSubscription<dynamic>>.of(_subscriptions)) {
-      unawaited(sub.cancel());
+  /// Makes sure the current controller handle has its adapter events bound.
+  void _bindCurrentHandle() {
+    if (_disposed) return;
+
+    final handle = _controller.handle;
+
+    if (handle == null) {
+      return;
     }
-    _subscriptions.clear();
+
+    if (identical(handle, _boundHandle)) {
+      return;
+    }
+
+    _boundHandle = handle;
+    _bindAdapter(handle);
+  }
+
+  void _bindAdapter(PlayerHandle handle) {
+    unawaited(_adapterSub?.cancel());
+
     _adapterBuffering = false;
-    _subscriptions.add(handle.adapter.events.listen(_onAdapterEvent, onError: (Object _) {}));
+
+    _adapterSub = handle.adapter.events.listen(_onAdapterEvent, onError: (Object _) {});
   }
 
   void _onAdapterEvent(PlayerAdapterEvent event) {
     if (_disposed) return;
-    switch (event) {
-      case PlayerAdapterPlaying():
-        _adapterBuffering = false;
-        _playingSubject.add(true);
-        _syncBackgroundVideoSuspension(true);
-      case PlayerAdapterPaused():
-        _playingSubject.add(false);
-        _syncBackgroundVideoSuspension(false);
-      case PlayerAdapterStopped():
-        _adapterBuffering = false;
-        _playingSubject.add(false);
-        _syncBackgroundVideoSuspension(false);
-      case PlayerAdapterBuffering(buffering: final buffering):
-        _adapterBuffering = buffering;
-      case PlayerAdapterVideoSizeChanged(width: final w, height: final h):
-        _widthSubject.add(w);
-        _heightSubject.add(h);
-        isVerticalVideo.add(h >= w);
-      default:
-        break;
+
+    if (event is PlayerAdapterPlaying) {
+      _adapterBuffering = false;
+      _playingSubject.add(true);
+      _syncBackgroundVideoSuspension(true);
+      return;
+    }
+
+    if (event is PlayerAdapterPaused) {
+      _playingSubject.add(false);
+      _syncBackgroundVideoSuspension(false);
+      return;
+    }
+
+    if (event is PlayerAdapterStopped) {
+      _adapterBuffering = false;
+      _playingSubject.add(false);
+      _syncBackgroundVideoSuspension(false);
+      return;
+    }
+
+    if (event case PlayerAdapterBuffering(buffering: final buffering)) {
+      _adapterBuffering = buffering;
+      return;
+    }
+
+    if (event case PlayerAdapterVideoSizeChanged(width: final width, height: final height)) {
+      _widthSubject.add(width);
+      _heightSubject.add(height);
+      isVerticalVideo.add(height >= width);
     }
   }
 
@@ -184,14 +229,12 @@ final class LivePlayerFacade {
     // media_core raises buffering the moment open() returns, and for a live
     // stream that declaration can be the last state change there ever is -
     // which pins the spinner over a picture that is playing fine. Only a
-    // buffering the adapter itself reported is real, and that has to come
-    // from its events: the state it exposes is overwritten by whichever
-    // event arrived last, and ExoPlayer re-buffers often enough that the
-    // value read here is not evidence of anything.
+    // buffering state reported by the adapter itself is considered real.
+    //
+    // When media_core reports synthetic buffering while the adapter is already
+    // playing, mirror the state as playing so the controller/UI does not remain
+    // stuck in buffering.
     if (state.playback == PlayerPlaybackState.buffering && !_adapterBuffering) {
-      // The controller's own state has to move with it: leaving it on
-      // buffering makes a later real buffering collide with that dedupe
-      // (`if (state == next) return`) and never reach the UI at all.
       _stateSubject.add(state.copyWith(playback: PlayerPlaybackState.playing));
       return;
     }
@@ -200,19 +243,25 @@ final class LivePlayerFacade {
   }
 
   // ---------------------------------------------------------------------------
-  // Playback (the legacy surface)
+  // Playback
   // ---------------------------------------------------------------------------
 
   /// Starts playing [url] with [playUrls] as fallback lines.
   Future<void> play(String url, List<String> playUrls, Map<String, String> headers, {LiveRoom? room}) async {
-    if (url.trim().isEmpty) {
+    if (_disposed) {
+      throw StateError('LivePlayerFacade has already been disposed');
+    }
+
+    final sourceUrl = url.trim();
+
+    if (sourceUrl.isEmpty) {
       throw ArgumentError('Remote playback source is empty');
     }
-    _bind();
 
     // With no explicit headers, resolve them per platform (UA /
     // referer the live site requires).
     Map<String, String> effectiveHeaders = headers;
+
     if (headers.isEmpty && room != null && room.platform.isNotEmpty) {
       effectiveHeaders = await PlaybackHeaderResolver.resolve(
         platform: room.platform,
@@ -221,52 +270,100 @@ final class LivePlayerFacade {
       );
     }
 
-    // Remember the request before it is opened: an engine switch later needs to
-    // replay exactly this source, headers included.
-    _lastUrl = url;
-    _lastLines = playUrls;
-    _lastHeaders = effectiveHeaders;
-    _lastRoom = room;
+    final urls = <String>[
+      if (playUrls.isEmpty) sourceUrl else ...[sourceUrl, ...playUrls.where((value) => value != sourceUrl)],
+    ];
 
-    await _controller.play(
-      LiveSourceRequest(
-        urls: playUrls.isEmpty ? [url] : [url, ...playUrls.where((u) => u != url)],
-        headers: effectiveHeaders,
-        title: room?.title,
-      ),
-    );
+    final request = LiveSourceRequest(urls: urls, headers: effectiveHeaders, title: room?.title);
+
+    // Remember the complete request before opening it.
+    //
+    // An engine switch can happen immediately after play() returns, so the
+    // replay path must have the exact same source information available.
+    _lastRequest = request;
+
+    await _controller.play(request);
+
+    // The controller creates the handle during open().
+    // Bind it immediately after play has created it.
+    _bindCurrentHandle();
 
     // Apply the audio-only preference to the freshly bound adapter.
-    // The controller remembers it, so the engine switch and the replay
-    // paths inside media_core re-apply it without the app's help.
+    //
+    // The controller remembers it, so engine switch and recovery paths inside
+    // media_core can re-apply it without the app having to duplicate that
+    // logic.
     await setAudioOnly(SettingsService.to.playerState.audioOnly);
 
     if (room != null) {
       final volume = LiveRoomVolumeManager.getRoomVolume(room.platform, room.roomId).clamp(0.0, 1.0);
+
       await setVolume(volume);
     }
+
+    // Some adapters can replace their handle during the open/recovery path.
+    // Check once more after all adapter configuration has completed.
+    _bindCurrentHandle();
   }
 
   /// Replays the current source.
-  Future<void> retry() => _controller.retry();
+  Future<void> retry() async {
+    if (_disposed) return;
+
+    await _controller.retry();
+    _bindCurrentHandle();
+  }
 
   /// Toggles play/pause.
-  Future<void> togglePlayPause() => _controller.togglePlayPause();
+  Future<void> togglePlayPause() async {
+    if (_disposed) return;
+
+    await _controller.togglePlayPause();
+    _bindCurrentHandle();
+  }
 
   /// Pauses playback.
-  Future<void> pause() => _controller.pause();
+  Future<void> pause() async {
+    if (_disposed) return;
+
+    await _controller.pause();
+  }
 
   /// Resumes playback.
-  Future<void> resume() => _controller.resume();
+  Future<void> resume() async {
+    if (_disposed) return;
+
+    await _controller.resume();
+    _bindCurrentHandle();
+  }
 
   /// Stops playback and releases the player.
   Future<void> close() async {
+    if (_disposed) return;
+
     _syncBackgroundVideoSuspension(false);
+
     await _controller.close();
+
+    _boundHandle = null;
+    _adapterBuffering = false;
+    _playingSubject.add(false);
+
+    await _adapterSub?.cancel();
+    _adapterSub = null;
   }
 
   /// Sets the volume (0.0–1.0).
-  Future<void> setVolume(double volume) => _controller.setVolume(volume);
+  /// Sets the volume (0.0–1.0).
+  Future<void> setVolume(double volume) async {
+    if (_disposed) {
+      return;
+    }
+
+    final normalized = volume.clamp(0.0, 1.0);
+
+    await _controller.setVolume(normalized);
+  }
 
   /// Whether playback is restricted to the audio track.
   bool get isAudioOnly => _audioOnlySubject.value;
@@ -281,7 +378,9 @@ final class LivePlayerFacade {
   /// adapter that declares [PlayerAdapterCapabilities.supportsAudioOnly],
   /// and re-applies it whenever a new adapter is bound.
   Future<void> setAudioOnly(bool audioOnly) async {
-    if (!_disposed && _audioOnlySubject.value != audioOnly) {
+    if (_disposed) return;
+
+    if (_audioOnlySubject.value != audioOnly) {
       _audioOnlySubject.add(audioOnly);
     }
 
@@ -289,7 +388,7 @@ final class LivePlayerFacade {
   }
 
   // ---------------------------------------------------------------------------
-  // Engine switching (the legacy surface)
+  // Engine switching
   // ---------------------------------------------------------------------------
 
   /// Switches the engine, disposing the player that runs now.
@@ -299,70 +398,114 @@ final class LivePlayerFacade {
   /// behind the settings screen.
   ///
   /// The source is replayed through [play] rather than through
-  /// `LivePlaybackController.retry()`, because closing the controller clears the
-  /// URL that `retry()` needs and it then returns without doing anything — which
-  /// is what made a switch leave a torn-down player behind. The replay also
-  /// re-applies the audio-only preference and the room volume to the freshly
-  /// created adapter.
+  /// `LivePlaybackController.retry()`, because closing the controller clears
+  /// the URL that `retry()` needs and it then returns without doing anything.
   Future<void> switchEngine(PlayerEngine engine, {bool isManual = false, bool resumeCurrentSource = true}) async {
     if (_disposed) return;
+
+    final generation = ++_engineSwitchGeneration;
+
     preferredEngine = engine;
+
     if (isManual) {
       _onPreferredEngineChanged?.call(engine);
     }
 
-    final String? url = _lastUrl;
-    final List<String> lines = _lastLines;
-    final Map<String, String> headers = _lastHeaders;
-    final LiveRoom? room = _lastRoom;
+    final request = _lastRequest;
 
     // Unmount the surface first: bumping the key rebuilds [TvVideoSurface]
     // against a null handle so the retired `Video` widget leaves the tree
     // instead of rebuilding on the adapter this call is about to dispose.
-    videoKey.add(ValueKey('video_${DateTime.now().millisecondsSinceEpoch}'));
+    _bumpVideoKey();
 
-    // Close the current player; the replay below creates the next one, and the
-    // kernel's selector picks the engine this method just pushed to the top of
-    // the registry.
-    await _controller.close();
+    await close();
+
+    // A newer switch has already started.
+    if (_disposed || generation != _engineSwitchGeneration) {
+      return;
+    }
+
+    // Keep this delay because Android TV Surface / Texture teardown may still
+    // be in progress when the controller is closed.
     await Future.delayed(const Duration(seconds: 1));
-    if (resumeCurrentSource && url != null && url.isNotEmpty) {
-      await play(url, lines, headers, room: room);
+
+    // Another switch may have started during the teardown delay.
+    if (_disposed || generation != _engineSwitchGeneration) {
+      return;
+    }
+
+    if (!resumeCurrentSource || request == null || request.urls.isEmpty) {
+      return;
+    }
+
+    await play(
+      request.urls.first,
+      request.urls.length > 1 ? request.urls.sublist(1) : const <String>[],
+      request.headers,
+      room: _lastRoomFromRequest,
+    );
+  }
+
+  /// Returns the engine currently in use.
+  PlayerEngine get currentEngine {
+    switch (_controller.backendId) {
+      case 'ijk':
+        return PlayerEngine.fijk;
+      case 'exo':
+        return PlayerEngine.betterPlayer;
+      default:
+        return PlayerEngine.mediaKit;
     }
   }
 
-  /// The engine currently in use.
-  PlayerEngine get currentEngine => switch (_controller.backendId) {
-    'ijk' => PlayerEngine.fijk,
-    'exo' => PlayerEngine.betterPlayer,
-    _ => PlayerEngine.mediaKit,
-  };
+  // ---------------------------------------------------------------------------
+  // Request metadata
+  // ---------------------------------------------------------------------------
+
+  /// The current facade does not store a second room object.
+  ///
+  /// Room title is already carried by [LiveSourceRequest]. If the app needs
+  /// room-specific volume after an engine switch, that information should
+  /// eventually move into the request itself rather than being duplicated
+  /// beside it.
+  LiveRoom? get _lastRoomFromRequest => null;
 
   // ---------------------------------------------------------------------------
-  // Fit (the legacy surface)
+  // Fit
   // ---------------------------------------------------------------------------
 
   /// Changes the viewport fit by index into the app fit list.
   void changeVideoFit(int index) {
     final fitList = AppThemeConsts.videoFitList;
-    if (index < 0 || index >= fitList.length) return;
+
+    if (index < 0 || index >= fitList.length) {
+      return;
+    }
+
     videoFitIndex.add(index);
     _applyVideoFit(fitList[index]);
   }
 
   void _applyVideoFit(BoxFit fit) {
     final adapter = _controller.handle?.adapter;
+
     if (adapter is MediaKitPlayerAdapter) {
       adapter.setVideoFit(fit);
-    } else if (adapter is FlvLzcPlayerAdapter) {
+      return;
+    }
+
+    if (adapter is FlvLzcPlayerAdapter) {
       adapter.setVideoFit(fit);
-    } else if (adapter is BetterPlayerAdapter) {
+      return;
+    }
+
+    if (adapter is BetterPlayerAdapter) {
       adapter.setVideoFit(fit);
     }
   }
 
   // ---------------------------------------------------------------------------
-  // Video widget (the legacy surface)
+  // Video widget
   // ---------------------------------------------------------------------------
 
   /// Builds the current video widget.
@@ -377,36 +520,28 @@ final class LivePlayerFacade {
         builder: (context, _) {
           final handle = _controller.handle;
           final adapter = handle?.adapter;
+
           if (adapter == null) {
             return const ColoredBox(color: Colors.black);
           }
-          final boxFit = fitList[fitIndex.clamp(0, fitList.length - 1)];
-          return KeyedSubtree(
-            key: ValueKey('${videoKey.value}_${adapter.id}'),
-            child: _buildAdapterView(adapter, boxFit),
-          );
+
+          return KeyedSubtree(key: ValueKey('${videoKey.value}_${adapter.id}'), child: _buildAdapterView(adapter));
         },
       ),
     );
   }
 
   /// Builds the live surface of [adapter].
-  ///
-  /// Every media_core adapter owns its own surface through [PlayerVideo], so
-  /// the facade only has to hand the fit over and ask for the widget — it no
-  /// longer reaches into a view holder or a `VideoController` of its own.
-  Widget _buildAdapterView(PlayerAdapter adapter, BoxFit fit) {
-    if (adapter is MediaKitPlayerAdapter) {
-      adapter.setVideoFit(fit);
-    } else if (adapter is FlvLzcPlayerAdapter) {
-      adapter.setVideoFit(fit);
-    } else if (adapter is BetterPlayerAdapter) {
-      adapter.setVideoFit(fit);
-    }
+  Widget _buildAdapterView(PlayerAdapter adapter) {
     if (adapter case final PlayerVideo video) {
       return video.build();
     }
+
     return const ColoredBox(color: Colors.black);
+  }
+
+  void _bumpVideoKey() {
+    videoKey.add(ValueKey('video_${++_videoKeyGeneration}'));
   }
 
   // ---------------------------------------------------------------------------
@@ -416,6 +551,8 @@ final class LivePlayerFacade {
   /// Marks whether the current route owns the mounted video
   /// presentation; hidden presentations stop frame watchdogs.
   void setVideoPresentationVisible(bool visible) {
+    if (_disposed) return;
+
     _controller.setPresentationVisible(visible);
   }
 
@@ -426,14 +563,20 @@ final class LivePlayerFacade {
   /// Releases the facade.
   Future<void> dispose() async {
     if (_disposed) return;
+
     _disposed = true;
+    ++_engineSwitchGeneration;
 
     await _stateSub?.cancel();
     await _errorSub?.cancel();
-    for (final sub in List<StreamSubscription<dynamic>>.of(_subscriptions)) {
-      await sub.cancel();
-    }
-    _subscriptions.clear();
+    await _adapterSub?.cancel();
+
+    _stateSub = null;
+    _errorSub = null;
+    _adapterSub = null;
+
+    _boundHandle = null;
+    _adapterBuffering = false;
 
     await _controller.dispose();
 

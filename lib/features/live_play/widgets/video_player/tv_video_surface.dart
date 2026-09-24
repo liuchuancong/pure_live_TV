@@ -8,10 +8,10 @@ import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
-import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
-import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
-import 'package:pure_live/features/live_play/widgets/placeholder/not_living_video_widget.dart';
 import 'package:pure_live/features/live_play/widgets/video_player/audio_only_surface.dart';
+import 'package:pure_live/features/live_play/widgets/video_player/video_controller_panel.dart';
+import 'package:pure_live/features/live_play/widgets/placeholder/not_living_video_widget.dart';
+import 'package:pure_live/features/live_play/widgets/video_player/playback_failure_overlay.dart';
 
 /// Video surface: a Stack of the PlayerManager video layer, the flame_barrage
 /// overlay, loading/error overlays and an auto-hiding D-pad control panel.
@@ -105,26 +105,16 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // Show the spinner while the detail request or the player itself is
     // still working. Playback progress comes exclusively from media_core's
     // PlayerState; there is no local LivePlayStatus.
-    //
-    // Only the *first* connection of a room paints it. Switching quality or CDN
-    // line reopens the source on the same native player, so the reference client
-    // never shows an overlay there — it is what makes its switch read as a
-    // silent background update. The TV used to key this off the raw
-    // opening/buffering state, so every switch and every live re-buffer flashed a
-    // spinner (and, with it, a visible gap) over the picture.
     final bool showLoading =
-        !loadingDetail &&
         !state.isOffline &&
         !state.hasStartedPlayback &&
-        (state.playerState.opening || state.playerState.buffering);
+        (loadingDetail || state.playerState.opening || state.playerState.buffering);
 
     // A single error flag for the overlay: business failures (detail / stream
     // URL / play() throwing) surface through errorMessage or detailError;
     // terminal playback failures from media_core surface through
     // playerState.hasError (the controller also mirrors them into errorMessage
     // via ErrorFormatter).
-    // 离线不是错误：房间信息拿到了，只是没在播，所以走占位页而不是失败层。
-    // 判据来自 state（页面级按键处理用的是同一个 getter）。
     final bool showError = state.showFailureOverlay;
 
     // The video widget stays mounted for the whole session, and the surface is
@@ -224,11 +214,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                     ),
                     child: Row(
                       children: [
-                        TvCommonAvatar(
-                          avatarUrl: state.room!.avatar,
-                          fallbackName: state.room!.nick,
-                          radius: 30.sp,
-                        ),
+                        TvCommonAvatar(avatarUrl: state.room!.avatar, fallbackName: state.room!.nick, radius: 30.sp),
                         SizedBox(width: 14.sp),
                         Expanded(
                           child: Column(
@@ -236,9 +222,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                state.room!.title.trim().isNotEmpty
-                                    ? state.room!.title.trim()
-                                    : i18n('untitled_room'),
+                                state.room!.title.trim().isNotEmpty ? state.room!.title.trim() : i18n('untitled_room'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTextStyles.t28W600.copyWith(color: Colors.white),
@@ -328,8 +312,6 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         ),
       );
     } else if (state.isOffline) {
-      // 未开播：占位页自带两个可聚焦按钮（切换直播间 / 重新检测），
-      // 所以这里不再挂底部控制条——否则两套焦点互相抢。
       children.add(Positioned.fill(child: NotLivingVideoWidget(args: widget.args)));
     } else if (state.showControls) {
       // Flush to the bottom edge: the bar's own black band is the anchor, and
