@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:async';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:media_core/media_core.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -80,7 +79,6 @@ class AppInitializer {
       await Future<void>.delayed(const Duration(seconds: 3));
       await VersionUtil().checkUpdate();
     }());
-    MediaCoreLog.level = LogLevel.debug;
   }
 
   bool get isInitialized => _isInitialized;

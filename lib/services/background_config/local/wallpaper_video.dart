@@ -70,13 +70,24 @@ class WallpaperVideoStore {
 
 /// The video-output configuration every wallpaper player should use.
 ///
-/// `androidAttachSurfaceAfterVideoParameters: false` is the important part: it
-/// makes media_kit wait for the real video dimensions before attaching the
-/// Android surface, which is what stops the texture from coming up as a
-/// one-pixel (i.e. invisible) surface.
+/// This fork of media_kit always renders Android video through a
+/// `TextureRegistry.SurfaceProducer` and drives the surface from the decoded
+/// video parameters — `androidAttachSurfaceAfterVideoParameters` and
+/// `enableAndroidSurfaceProducer` have no consumer in it, so only the knobs
+/// that actually reach mpv are set here.
 VideoControllerConfiguration wallpaperVideoControllerConfiguration() =>
     VideoControllerConfiguration(
       hwdec: Platform.isMacOS ? 'no' : null,
       enableHardwareAcceleration: !Platform.isMacOS,
-      androidAttachSurfaceAfterVideoParameters: false,
     );
+
+/// Headers the wallpaper CDN expects on direct streams.
+///
+/// Mirrors the [WallpaperVideoStore.download] request: without them the CDN
+/// answers 403 and mpv never produces a frame — the background stays black
+/// with no other symptom.
+Map<String, String> wallpaperVideoHttpHeaders() => const <String, String>{
+  'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36',
+  'Referer': 'https://www.itab.link/',
+};

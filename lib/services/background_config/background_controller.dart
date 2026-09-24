@@ -28,6 +28,14 @@ class BackgroundController extends _$BackgroundController {
   Player? _videoPlayer;
   VideoController? _videoController;
 
+  /// Diagnostics subscriptions of the wallpaper player (load errors / first
+  /// decoded frame). A black background with no other symptom is mpv failing
+  /// to load the clip; without these that failure is completely silent.
+  final List<StreamSubscription<dynamic>> _wallpaperDiagSubs = [];
+
+  /// Whether the "clip decoded" line was already printed for this player.
+  bool _wallpaperReadyLogged = false;
+
   /// The controller the background layer renders; null until the player exists.
   VideoController? get videoController => _videoController;
 
@@ -170,6 +178,20 @@ class BackgroundController extends _$BackgroundController {
     _videoController = VideoController(player, configuration: wallpaperVideoControllerConfiguration());
     player.setVolume(0.0);
     player.setPlaylistMode(PlaylistMode.loop);
+
+    _wallpaperDiagSubs
+      ..clear()
+      ..add(player.stream.error.listen((error) {
+        debugPrint('[BGDIAG] wallpaper video error: $error');
+      }))
+      ..add(player.stream.videoParams.listen((params) {
+        final int w = params.w ?? 0;
+        final int h = params.h ?? 0;
+        if (_wallpaperReadyLogged || w <= 0 || h <= 0) return;
+        _wallpaperReadyLogged = true;
+        debugPrint('[BGDIAG] wallpaper video decoded: $w x $h');
+      }));
+    _wallpaperReadyLogged = false;
   }
 
   /// While the live/VOD player is active, the background shows a static poster.
@@ -253,6 +275,10 @@ class BackgroundController extends _$BackgroundController {
     final player = _videoPlayer;
     _videoPlayer = null;
     _videoController = null;
+    for (final sub in _wallpaperDiagSubs) {
+      unawaited(sub.cancel());
+    }
+    _wallpaperDiagSubs.clear();
     unawaited(player?.dispose());
   }
 
@@ -275,7 +301,10 @@ class BackgroundController extends _$BackgroundController {
       // configChanges rebuild: on the frame it was just created, it still sees
       // null, so notify once more so it can pick up the controller.
       if (created) _configStream.add(_model);
-      await _videoPlayer?.open(Media(src), play: !_playbackSuspended);
+      // The network fallback streams the CDN directly, and the CDN rejects
+      // requests without the browser-like headers the downloader uses.
+      final headers = _model.source == BackgroundSource.networkVideo ? wallpaperVideoHttpHeaders() : null;
+      await _videoPlayer?.open(Media(src, httpHeaders: headers), play: !_playbackSuspended);
       return;
     }
 
