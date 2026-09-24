@@ -30,9 +30,7 @@ class WallpaperRouteObserver extends NavigatorObserver {
 
   bool _isLiveRoute(Route<dynamic>? route) => route?.settings.name == livePlayRouteName;
 
-  void _sync(bool suspended, String reason) {
-    // TEMP DIAG — remove once the wallpaper churn is confirmed fixed.
-    debugPrint('[BGDIAG] observer $reason -> $suspended (latched=$_suspended)');
+  void _sync(bool suspended) {
     if (_suspended == suspended) return;
     _suspended = suspended;
     try {
@@ -43,38 +41,28 @@ class WallpaperRouteObserver extends NavigatorObserver {
     }
   }
 
-  /// TEMP DIAG — logs every navigation callback with the route name, so a
-  /// replay of the whole stack onto a freshly constructed observer is visible.
-  static void _diag(String cb, Route<dynamic>? route, Route<dynamic>? previous) {
-    debugPrint('[BGDIAG] obs this=${identityHashCode(wallpaperRouteObserver)} $cb route=${route?.settings.name} prev=${previous?.settings.name}');
-  }
-
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    _diag('didPush', route, previousRoute);
-    if (_isLiveRoute(route)) _sync(true, 'didPush');
+    if (_isLiveRoute(route)) _sync(true);
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    _diag('didPop', route, previousRoute);
-    if (_isLiveRoute(route)) _sync(false, 'didPop');
+    if (_isLiveRoute(route)) _sync(false);
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    _diag('didRemove', route, previousRoute);
-    if (_isLiveRoute(route)) _sync(false, 'didRemove');
+    if (_isLiveRoute(route)) _sync(false);
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    _diag('didReplace', newRoute, oldRoute);
     // Channel switching uses replace, so both routes are the player page:
     // `_sync(true)` is a no-op and the wallpaper stays suspended across the
     // handover instead of flickering.
     if (_isLiveRoute(newRoute) || _isLiveRoute(oldRoute)) {
-      _sync(_isLiveRoute(newRoute), 'didReplace');
+      _sync(_isLiveRoute(newRoute));
     }
   }
 }
