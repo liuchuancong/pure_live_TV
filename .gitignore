@@ -42,7 +42,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-
+/android/local.properties
 pubspec.lock
 key.properties
 **/*.keystore
