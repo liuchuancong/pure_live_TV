@@ -57,9 +57,17 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   ///   user knows the follows are safe;
   /// * the 未开播 tab has rooms the current tab hides → a 查看未开播 shortcut.
   ///
+  /// Both 重试 buttons run the provider's `refreshData` — the reference's
+  /// `controller.refreshData`, a network revalidation of the followed rooms —
+  /// not the paging core's local re-slice, which on an empty list is a no-op.
+  ///
   /// Under every layer sits a 去搜索 jump: the reference keeps search reachable
   /// from this page through its app-bar menu, and an empty favorites page is
   /// exactly where the user needs a way *to* rooms they don't follow yet.
+  /// The reference's 重试: a full network revalidation of the followed rooms,
+  /// not the paging core's local re-slice.
+  Future<void> _retryRefresh() => ref.read(favoriteProvider.notifier).refreshData();
+
   Widget _buildFavoriteEmpty(BuildContext context, FavoriteState favoriteState, VoidCallback onRefresh) {
     final List<Site> sites = ref.read(favoriteProvider.notifier).siteTabs;
     final String siteId = sites.isEmpty
@@ -83,7 +91,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
         title: i18n('empty_favorite_online_title'),
         subtitle: i18n('empty_favorite_online_subtitle'),
         buttonText: i18n('retry'),
-        onTap: onRefresh,
+        onTap: _retryRefresh,
       );
     } else {
       final String title = switch (favoriteState.tabOnlineIndex) {
@@ -102,7 +110,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
         title: title,
         subtitle: subtitle,
         buttonText: canShowOffline ? i18n('favorite_show_offline') : i18n('retry'),
-        onTap: canShowOffline ? () => ref.read(favoriteProvider.notifier).changeOnlineTab(2) : onRefresh,
+        onTap: canShowOffline ? () => ref.read(favoriteProvider.notifier).changeOnlineTab(2) : _retryRefresh,
       );
     }
 
