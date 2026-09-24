@@ -134,11 +134,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // old subtree survived until the next unrelated state change and kept
     // throwing "A ValueNotifier<int?> was used after being disposed".
     final Widget video = manager != null
-        ? StreamBuilder<ValueKey>(
-            stream: manager.videoKey.stream,
-            initialData: manager.videoKey.value,
-            builder: (context, _) => manager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList),
-          )
+        ? manager.getVideoWidget(state.fitIndex, fitList: kLivePlayFitList)
         : const ColoredBox(color: Colors.black);
 
     // Audio-only mode: the picture is replaced by the room panel, but the video

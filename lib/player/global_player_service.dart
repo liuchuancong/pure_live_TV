@@ -81,6 +81,17 @@ final class _FlvLzcFactory implements PlayerAdapterFactory {
   bool supports(String id) => id == BackendIds.fijk || id.isEmpty;
 }
 
+/// Creates a better_player adapter with the current settings.
+final class _BetterPlayerFactory implements PlayerAdapterFactory {
+  const _BetterPlayerFactory();
+
+  @override
+  PlayerAdapter create(String id) => BetterPlayerAdapter(id: id, capabilities: BetterPlayerAdapter.defaultCapabilities);
+
+  @override
+  bool supports(String id) => id == BackendIds.betterPlayer || id.isEmpty;
+}
+
 /// Media-core-backed global player service.
 ///
 /// The heavy orchestration (watchdogs, line / engine fallback,
@@ -164,7 +175,7 @@ class GlobalPlayerService {
       case PlayerEngine.betterPlayer:
         return PlayerAdapterRegistration(
           id: BackendIds.betterPlayer,
-          factory: const BetterPlayerAdapterFactory(),
+          factory: const _BetterPlayerFactory(),
           capabilities: BetterPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
