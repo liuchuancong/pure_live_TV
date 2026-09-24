@@ -210,6 +210,11 @@ class BackgroundController extends _$BackgroundController {
       } catch (_) {
         frame = null;
       }
+      // The capture is asynchronous, and playback can have ended while it was
+      // in flight. That branch already rebuilt (and resumed) the background
+      // player, so acting on the stale frame here would dispose the fresh
+      // player and leave the wallpaper black until the next rebuild.
+      if (!_playbackSuspended) return;
       if (frame != null && frame.isNotEmpty) {
         _posterFrame = frame;
         _disposeVideoPlayer();

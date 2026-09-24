@@ -191,7 +191,11 @@ final class LivePlayerFacade {
 
     if (event is PlayerAdapterPaused) {
       _playingSubject.add(false);
-      _syncBackgroundVideoSuspension(false);
+      // A pause is not the end of the room, and ExoPlayer reports one for every
+      // buffering hiccup (`onIsPlayingChanged` is playWhenReady && READY). Only
+      // [PlayerAdapterStopped] and close() release the background wallpaper:
+      // toggling it here tore the wallpaper's decoder down and rebuilt it on
+      // every rebuffer, which flickered on Android TV.
       return;
     }
 
