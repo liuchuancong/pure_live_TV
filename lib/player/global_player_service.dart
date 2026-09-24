@@ -63,7 +63,7 @@ final class _MediaKitFactory implements PlayerAdapterFactory {
   );
 
   @override
-  bool supports(String id) => id == 'mpv' || id.isEmpty;
+  bool supports(String id) => id == BackendIds.mediaKit || id.isEmpty;
 }
 
 /// Creates an ijkplayer (flv_lzc) adapter with the current settings.
@@ -78,7 +78,7 @@ final class _FlvLzcFactory implements PlayerAdapterFactory {
   );
 
   @override
-  bool supports(String id) => id == 'ijk' || id.isEmpty;
+  bool supports(String id) => id == BackendIds.fijk || id.isEmpty;
 }
 
 /// Media-core-backed global player service.
@@ -110,12 +110,9 @@ class GlobalPlayerService {
   /// Ensures the service is up on [defaultEngine].
   Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) async {
     if (_initialized) return;
-
     MediaKitPlayerAdapter.ensureInitialized();
-
     final kernel = PlayerKernel();
     _kernel = kernel;
-
     // Register the engines this app ships. Priority encodes the
     // fallback preference: the default engine first, the rest by
     // platform strength.
@@ -152,21 +149,21 @@ class GlobalPlayerService {
     switch (engine) {
       case PlayerEngine.mediaKit:
         return PlayerAdapterRegistration(
-          id: 'mpv',
+          id: BackendIds.mediaKit,
           factory: const _MediaKitFactory(),
           capabilities: MediaKitPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
       case PlayerEngine.fijk:
         return PlayerAdapterRegistration(
-          id: 'ijk',
+          id: BackendIds.fijk,
           factory: const _FlvLzcFactory(),
           capabilities: FlvLzcPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
       case PlayerEngine.betterPlayer:
         return PlayerAdapterRegistration(
-          id: 'exo',
+          id: BackendIds.betterPlayer,
           factory: const BetterPlayerAdapterFactory(),
           capabilities: BetterPlayerAdapter.defaultCapabilities,
           priority: priority,
