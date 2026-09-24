@@ -29,6 +29,22 @@ class LivePlayRepository {
     return await Sites.of(detail.normalizedPlatformId).liveSite.getPlayUrls(detail: detail, quality: quality);
   }
 
+  /// Refetches playback URLs when the player must retry on another engine.
+  ///
+  /// Routes through [LiveSite.resolvePlayUrlsForRecovery]: platforms that
+  /// declare `LivePlayRecoveryResolver` (signed, single-use URLs — huya,
+  /// douyu, youtube, …) reacquire a fresh signature here, while the others
+  /// simply resolve the normal URL list again. Returning an empty list
+  /// makes the player reuse the lines it already holds.
+  Future<List<String>> fetchPlayUrlsForRecovery(LiveRoom detail, LivePlayQuality quality) async {
+    final resolution = await Sites.of(detail.normalizedPlatformId).liveSite.resolvePlayUrlsForRecovery(
+          detail: detail,
+          quality: quality,
+        );
+
+    return resolution.urls;
+  }
+
   /// Creates the danmaku transport for this platform. Unsupported platforms get
   /// EmptyDanmaku from the site layer.
   LiveDanmaku createDanmaku(LiveRoom detail) {

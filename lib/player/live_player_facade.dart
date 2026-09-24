@@ -29,8 +29,9 @@ import 'package:media_core_better_player/media_core_video_player.dart';
 final class LivePlayerFacade {
   /// Creates the facade.
   LivePlayerFacade(PlayerKernel kernel, {required PlayerEngine defaultEngine, this._onPreferredEngineChanged})
-    : _controller = LivePlaybackController(kernel),
-      preferredEngine = defaultEngine {
+    : preferredEngine = defaultEngine {
+    _controller = LivePlaybackController(kernel, onEngineFallbackSources: _refreshEngineFallbackSources);
+
     // The app lifecycle is the source of truth the handle's lifecycle
     // state machine was always meant to consume: backgrounding auto-pauses
     // the live player, foregrounding re-arms it (without auto-play). The
@@ -50,7 +51,37 @@ final class LivePlayerFacade {
   /// The engine the app prefers for the next session.
   PlayerEngine preferredEngine;
 
-  final LivePlaybackController _controller;
+  /// Called before the sweep switches to [nextEngine], when every line
+  /// failed on the current engine.
+  ///
+  /// Signed live URLs are usually single-use — the first engine's attempt
+  /// consumes them — so the app should refetch fresh play URLs here and
+  /// return them. Return an empty list (or leave this null) to reuse the
+  /// lines the request already carries. The sweep restarts from line 0
+  /// with the refreshed URLs.
+  Future<List<String>> Function(String nextEngine)? onEngineFallbackUrls;
+
+  /// Headers the current request was built with, reused when the
+  /// engine-fallback resolver hands over fresh URLs.
+  Map<String, String> _lastHeaders = const <String, String>{};
+
+  Future<List<PlayerSource>> _refreshEngineFallbackSources(String nextEngine, List<PlayerSource> currentSources) async {
+    final resolver = onEngineFallbackUrls;
+
+    if (resolver == null) {
+      return const <PlayerSource>[];
+    }
+
+    final urls = await resolver(nextEngine);
+
+    if (urls.isEmpty) {
+      return const <PlayerSource>[];
+    }
+
+    return LiveSourceRequest.fromUrls(urls, headers: _lastHeaders).sources;
+  }
+
+  late final LivePlaybackController _controller;
 
   late final AppLifecycleDriver _appLifecycle;
 
@@ -78,6 +109,26 @@ final class LivePlayerFacade {
 
   final isVerticalVideo = BehaviorSubject<bool>.seeded(false);
 
+  /// Whether the current surface has a picture to show.
+  ///
+  /// False whenever there is provably nothing on screen - no player yet, a
+  /// source opening, an engine switch in progress, playback stopped - and
+  /// true once the adapter reports a decoded frame (video size) or a
+  /// playing state. The play page shows its loading overlay while this is
+  /// false instead of staring at a black surface.
+  final _pictureSubject = BehaviorSubject<bool>.seeded(false);
+
+  /// Picture-availability stream. See [_pictureSubject].
+  Stream<bool> get onPictureAvailable => _pictureSubject.stream;
+
+  /// Whether the current surface has a picture right now.
+  bool get hasPicture => _pictureSubject.value;
+
+  void _setPictureAvailable(bool available) {
+    if (_pictureSubject.value == available) return;
+    _pictureSubject.add(available);
+  }
+
   /// Audio-only playback mode, as the play page sees it.
   ///
   /// Seeded from the persisted setting so a room entered after a settings
@@ -89,6 +140,7 @@ final class LivePlayerFacade {
 
   StreamSubscription<PlayerFailure>? _errorSub;
   StreamSubscription<PlayerState>? _stateSub;
+  StreamSubscription<PlayerHandle>? _handleSub;
   StreamSubscription<PlayerAdapterEvent>? _adapterSub;
   StreamSubscription<PlayerBackendChange>? _backendChangeSub;
 
@@ -161,6 +213,17 @@ final class LivePlayerFacade {
       if (_disposed) return;
       _errorSubject.add(failure);
     });
+
+    // The controller swaps handles when an engine switch commits. The
+    // videoKey bump at that moment replaces the mounted surface exactly
+    // when the new engine already has a decoded frame, which is what
+    // keeps the engine-switch black flash to a single frame.
+    _handleSub = _controller.onHandleChanged.listen((_) {
+      if (_disposed) return;
+      _bindCurrentHandle();
+      _bumpVideoKey();
+      _setPictureAvailable(false);
+    });
   }
 
   /// Makes sure the current controller handle has its adapter events bound.
@@ -204,6 +267,7 @@ final class LivePlayerFacade {
     if (event is PlayerAdapterPlaying) {
       _adapterBuffering = false;
       _playingSubject.add(true);
+      _setPictureAvailable(true);
       return;
     }
 
@@ -220,6 +284,7 @@ final class LivePlayerFacade {
     if (event is PlayerAdapterStopped) {
       _adapterBuffering = false;
       _playingSubject.add(false);
+      _setPictureAvailable(false);
       return;
     }
 
@@ -232,6 +297,10 @@ final class LivePlayerFacade {
       _widthSubject.add(width);
       _heightSubject.add(height);
       isVerticalVideo.add(height >= width);
+
+      // A video-size report means a frame was decoded and laid out: the
+      // surface has a picture even if the playing event is still pending.
+      _setPictureAvailable(true);
     }
   }
 
@@ -249,6 +318,12 @@ final class LivePlayerFacade {
     if (state.playback == PlayerPlaybackState.buffering && !_adapterBuffering) {
       _stateSubject.add(state.copyWith(playback: PlayerPlaybackState.playing));
       return;
+    }
+
+    // An opening declaration means the surface is about to show nothing:
+    // a source is opening or a line/engine switch is in flight.
+    if (state.playback == PlayerPlaybackState.opening) {
+      _setPictureAvailable(false);
     }
 
     _stateSubject.add(state);
@@ -285,6 +360,8 @@ final class LivePlayerFacade {
     final urls = <String>[
       if (playUrls.isEmpty) sourceUrl else ...[sourceUrl, ...playUrls.where((value) => value != sourceUrl)],
     ];
+
+    _lastHeaders = effectiveHeaders;
 
     final request = LiveSourceRequest.fromUrls(urls, headers: effectiveHeaders, title: room?.title);
 
@@ -564,10 +641,12 @@ final class LivePlayerFacade {
 
     await _stateSub?.cancel();
     await _errorSub?.cancel();
+    await _handleSub?.cancel();
     await _adapterSub?.cancel();
 
     _stateSub = null;
     _errorSub = null;
+    _handleSub = null;
     _adapterSub = null;
 
     _boundHandle = null;
@@ -586,6 +665,7 @@ final class LivePlayerFacade {
     await _widthSubject.close();
     await _heightSubject.close();
     await isVerticalVideo.close();
+    await _pictureSubject.close();
     await videoFitIndex.close();
     await videoKey.close();
     await _audioOnlySubject.close();

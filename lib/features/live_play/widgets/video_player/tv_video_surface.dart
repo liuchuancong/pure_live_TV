@@ -168,19 +168,37 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         children: [
           videoLayer,
           DanmakuOverlay(args: widget.args),
-          if (showLoading && !showError)
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  tvInlineLoading(context, size: 36.sp),
-                  SizedBox(height: 12.sp),
-                  Text(
-                    loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
-                    style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+          // The loading overlay covers both the initial start and every
+          // later moment the surface provably has no picture: a source
+          // opening, a line switch, an engine switch. The availability
+          // stream comes from the player facade, so the spinner shows
+          // over the black surface exactly while no frame exists and
+          // disappears the moment the new engine decodes one.
+          if (manager != null)
+            StreamBuilder<bool>(
+              stream: manager.onPictureAvailable,
+              initialData: manager.hasPicture,
+              builder: (context, pictureSnapshot) {
+                final bool noPicture = !(pictureSnapshot.data ?? true);
+
+                if (showError || state.isOffline || !(showLoading || noPicture)) {
+                  return const SizedBox.shrink();
+                }
+
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      tvInlineLoading(context, size: 36.sp),
+                      SizedBox(height: 12.sp),
+                      Text(
+                        loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
+                        style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           // Room info and the wall clock in **one** floating card: avatar, title
           // and a metadata line (platform, streamer, audience) on the left, the

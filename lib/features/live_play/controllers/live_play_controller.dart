@@ -443,6 +443,19 @@ class LivePlayController extends _$LivePlayController {
 
     state = state.copyWith(playUrls: urls, lineIndex: line);
 
+    // Before the player escalates to another engine it asks this callback
+    // for fresh lines: signed URLs are single-use, so the second engine
+    // must not replay what the first engine already consumed. Platforms
+    // without a recovery resolver return an empty list and the existing
+    // lines are reused.
+    manager.onEngineFallbackUrls = (nextEngine) async {
+      try {
+        return await _repository.fetchPlayUrlsForRecovery(detail, quality);
+      } catch (_) {
+        return const <String>[];
+      }
+    };
+
     try {
       await manager.play(urls[line], urls, const <String, String>{}, room: detail);
     } on ArgumentError catch (e) {
