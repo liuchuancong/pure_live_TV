@@ -1,7 +1,7 @@
 {
-  "version": "3.0.3",
-  "version_num": 130003,
-  "version_desc": "-Feature:接入 20+ 个直播平台（YouTube Live、TikTok、Bigo、六间房、淘宝、京东、酷狗、虾皮、VK、Rumble 等），并修正 YY、CHZZK、微博的分类与人数显示。\n-Feature:新增纯音频模式：播放页底栏一键切换，只听声音、不渲染画面。\n-Feature:关注页改造：平台标签只列出有关注房间的平台，支持给房间设置标签并按标签筛选、排序。\n-Feature:新增斗鱼账号 Cookie 支持，手机远程页补齐斗鱼、淘宝等平台。\n-Fixed:在线更新按 ABI 与渲染器下载正确的安装包（此前会取到不存在的文件名）。\n-Fixed:关注列表不再只显示第一页，历史页滚动不再清空，每页条数统一为 20/40/60/80。\n-Fixed:电视输入法输入的内容可被识别；未知观众数不再显示成 0 人。\n-Fixed:播放列表跟随你打开它的列表（关注 / 热门 / 分区 / 搜索），补上观看历史，长按换台不再改写播放列表。\n-Intro: 播放页顶栏把房间信息与时间合并成一张卡，线路与清晰度只在底栏显示。\n-Intro: 切换直播间改为上下选择、OK 确认；长按关注的房间卡片可设置标签。",
+  "version": "3.0.4",
+  "version_num": 130004,
+  "version_desc": "-Feature:全部平台图标重制：47 个站点统一为 200×200 高清品牌图标，修复缺失、模糊与白边（斗鱼/虎牙/快手/YY/17LIVE/六间房/微博/京东/百度/TikTok 等）。\n-Feature:切换播放内核时自动重新获取播放地址，过期的流地址不再导致切换失败。\n-Feature:在线更新页显示各安装包体积，按架构与渲染器区分。\n-Fixed:修复画面已开始播放后「缓冲中」提示仍然显示的问题。\n-Fixed:修复动态壁纸在进出播放页时反复重建解码器导致的卡顿。\n-Fixed:修复微博空搜索、小红书深链跳转、首选平台越界等平台问题。\n-Intro: 移除系统动态取色功能，主题以手动选择为准。",
   "prerelease":false,
   "android_abis": ["arm64-v8a", "armeabi-v7a", "x86_64"],
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
