@@ -12,8 +12,12 @@ class PlatformSettingsSectionPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final favState = ref.watch(favoriteRoomControllerProvider);
     final fav = ref.read(favoriteRoomControllerProvider.notifier);
-    final siteIds = Sites.supportSites.map((s) => s.id).toList();
-    final siteNames = Sites.supportSites.map((s) => s.name).toList();
+    // Only platforms the user actually shows can be the preferred opening tab;
+    // fall back to the full catalog when nothing is visible yet.
+    final visible = Sites().availableSites();
+    final sites = visible.isEmpty ? Sites.supportSites : visible;
+    final siteIds = sites.map((s) => s.id).toList();
+    final siteNames = sites.map((s) => s.name).toList();
     final currentIndex = siteIds.indexOf(favState.preferPlatform).clamp(0, siteIds.length - 1);
 
     return Column(

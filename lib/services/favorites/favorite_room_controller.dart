@@ -33,6 +33,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     normalized = _normalizeSiteCatalogIds(normalized);
     normalized = _normalizeFavoriteRoomIdentities(normalized);
     normalized = _migrateSiteCatalog(normalized);
+    normalized = _normalizePreferredPlatform(normalized);
     if (normalized != initial) _persist(normalized);
     return normalized;
   }
@@ -117,6 +118,15 @@ class FavoriteRoomController extends _$FavoriteRoomController {
 
     if (_sameStrings(model.hotAreasList, normalized) && nextPrefer == model.preferPlatform) return model;
     return model.copyWith(hotAreasList: normalized, preferPlatform: nextPrefer);
+  }
+
+  /// The preferred platform must stay inside the visible tab selection: a
+  /// hidden platform can never be the tab the app opens on.
+  FavoriteSettingsModel _normalizePreferredPlatform(FavoriteSettingsModel model) {
+    if (model.hotAreasList.isNotEmpty && !model.hotAreasList.contains(model.preferPlatform)) {
+      return model.copyWith(preferPlatform: model.hotAreasList.first);
+    }
+    return model;
   }
 
   FavoriteSettingsModel _normalizeFavoriteRoomIdentities(FavoriteSettingsModel model) {
@@ -384,7 +394,8 @@ class FavoriteRoomController extends _$FavoriteRoomController {
 
   void changePreferPlatform(String name) {
     final normalized = name.trim().toLowerCase();
-    if (Sites.supportSites.map((e) => e.id).contains(normalized)) {
+    // Only a platform that is actually visible can become the opening tab.
+    if (state.hotAreasList.contains(normalized)) {
       _update(state.copyWith(preferPlatform: normalized));
     }
   }
@@ -416,8 +427,10 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     // are dropped. An import is the one place a foreign document can smuggle in a
     // room whose id is a placeholder ("0"/"null"/…) or the same room twice, and
     // the pass is what deletes them instead of leaving cards that can never play.
-    final imported = _normalizeFavoriteRoomIdentities(
-      _normalizeSiteCatalogIds(_normalizeDanmakuBlocks(FavoriteSettingsModel.fromJson(json))),
+    final imported = _normalizePreferredPlatform(
+      _normalizeFavoriteRoomIdentities(
+        _normalizeSiteCatalogIds(_normalizeDanmakuBlocks(FavoriteSettingsModel.fromJson(json))),
+      ),
     );
 
     _update(imported);
