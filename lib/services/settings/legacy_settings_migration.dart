@@ -28,7 +28,6 @@ class LegacySettingsMigration {
     try {
       return {
         "themeMode": HivePrefUtil.getString("themeMode"),
-        "enableDynamicTheme": HivePrefUtil.getBool("enableDynamicTheme"),
         "themeColorSwitch": HivePrefUtil.getString("themeColorSwitch"),
         "language": HivePrefUtil.getString("language"),
         "languageName": HivePrefUtil.getString("languageName"),

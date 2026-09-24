@@ -133,21 +133,19 @@ class TvThemeData {
     );
   }
 
-  /// Resolves this preset for the Material theme mode and the system dynamic
-  /// accent.
+  /// Resolves this preset for the Material theme mode.
   ///
   /// [brightness] comes from the theme-mode setting (follow system already resolves
-  /// to dark before this); [accent] is the dynamic-colour primary when
-  /// dynamic color is on.
+  /// to dark before this).
   ///
   /// A preset whose own brightness already matches the mode keeps its curated
-  /// surfaces (those palettes were tuned by hand and look right) and only
-  /// adopts the passed accent. The *other* mode is derived with [_deriveDark]
-  /// / [_deriveLight]: a hue-tinted ladder built in HSL, in the spirit of the
-  /// polished TV launchers — deep *coloured* backgrounds, not Material's grey
-  /// tone-6 neutrals, which read as mud next to a wallpaper.
-  TvThemeData resolveFor({Brightness brightness = Brightness.dark, Color? accent}) {
-    final Color seed = accent ?? focusColor;
+  /// surfaces (those palettes were tuned by hand and look right). The *other*
+  /// mode is derived with [_deriveDark] / [_deriveLight]: a hue-tinted ladder
+  /// built in HSL, in the spirit of the polished TV launchers — deep *coloured*
+  /// backgrounds, not Material's grey tone-6 neutrals, which read as mud next
+  /// to a wallpaper.
+  TvThemeData resolveFor({Brightness brightness = Brightness.dark}) {
+    final Color seed = focusColor;
     final bool nativeMode = isLight == (brightness == Brightness.light);
     if (nativeMode) {
       return copyWith(focusColor: seed).normalized();

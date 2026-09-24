@@ -42,15 +42,6 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 icon: Remix.palette_line,
                 onTap: () => const ThemePickerRoute().push(context),
               ),
-              // Desktop order: dynamic colour belongs with the theme rows, above
-              // the loading animation.
-              TvSettingsSwitchTile(
-                title: i18n('enable_dynamic_color'),
-                subtitle: i18n('enable_dynamic_color_subtitle'),
-                icon: Remix.magic_line,
-                value: themeState.enableDynamicTheme,
-                onChanged: (v) => theme.updateSettings(themeState.copyWith(enableDynamicTheme: v)),
-              ),
               // The animation row shows the animation itself, exactly as the mobile
               // page does: a name alone does not tell the user what they picked.
               TvSettingsRow(

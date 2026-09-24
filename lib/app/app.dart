@@ -1,10 +1,8 @@
 import 'package:dpad/dpad.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:go_transitions/go_transitions.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:material_ui/material_ui.dart' as material;
 import 'package:pure_live/shared/widgets/tv_scaffold.dart';
 import 'package:pure_live/app/consts/app_theme_consts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -45,76 +43,69 @@ class App extends ConsumerWidget {
     // inherited style and would otherwise lose the applied font.
     AppTextStyles.fontFamily = fontFamily;
 
-    return DynamicColorBuilder(
-      builder: (lightDynamic, darkDynamic) {
-        final systemScheme = themeSettings.enableDynamicTheme
-            ? (paletteBrightness == Brightness.dark ? darkDynamic : lightDynamic)
-            : null;
-        final resolvedTvTheme = currentTvTheme.resolveFor(brightness: paletteBrightness, accent: systemScheme?.primary);
+    final resolvedTvTheme = currentTvTheme.resolveFor(brightness: paletteBrightness);
 
-        return ScreenUtilPlusInit(
-          designSize: const Size(1920, 1080),
-          autoRebuild: false,
-          child: LocalizationsLocaleSync(
-            locale: appLocale,
-            child: MaterialApp.router(
-              routerConfig: router,
-              debugShowCheckedModeBanner: false,
-              builder: (context, child) {
-                final withDpad = Dpad.wrap(theme: const DpadThemeData(scrollDuration: Duration.zero))(context, child!);
+    return ScreenUtilPlusInit(
+      designSize: const Size(1920, 1080),
+      autoRebuild: false,
+      child: LocalizationsLocaleSync(
+        locale: appLocale,
+        child: MaterialApp.router(
+          routerConfig: router,
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            final withDpad = Dpad.wrap(theme: const DpadThemeData(scrollDuration: Duration.zero))(context, child!);
 
-                return FlutterSmartDialog.init()(
-                  context,
-                  MediaQuery(
-                    data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
-                    child: TvPaletteDefaults(
-                      theme: resolvedTvTheme,
-                      child: TvLocaleRebuilder(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [const TvAppBackground(), withDpad, const GlobalRoomPushOverlay()],
-                        ),
-                      ),
+            return FlutterSmartDialog.init()(
+              context,
+              MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+                child: TvPaletteDefaults(
+                  theme: resolvedTvTheme,
+                  child: TvLocaleRebuilder(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [const TvAppBackground(), withDpad, const GlobalRoomPushOverlay()],
                     ),
                   ),
-                );
+                ),
+              ),
+            );
+          },
+          locale: context.locale,
+          supportedLocales: context.supportedLocales,
+          localizationsDelegates: context.localizationDelegates,
+          theme: buildTvThemeData(
+            palette: resolvedTvTheme,
+            brightness: Brightness.light,
+            fontFamily: fontFamily,
+            baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
+            pageTransitions: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: GoTransitions.fadeUpwards,
+                TargetPlatform.iOS: GoTransitions.cupertino,
+                TargetPlatform.macOS: GoTransitions.cupertino,
               },
-              locale: context.locale,
-              supportedLocales: context.supportedLocales,
-              localizationsDelegates: context.localizationDelegates,
-              theme: buildTvThemeData(
-                palette: resolvedTvTheme,
-                brightness: Brightness.light,
-                fontFamily: fontFamily,
-                baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.light).textTheme),
-                pageTransitions: const PageTransitionsTheme(
-                  builders: {
-                    TargetPlatform.android: GoTransitions.fadeUpwards,
-                    TargetPlatform.iOS: GoTransitions.cupertino,
-                    TargetPlatform.macOS: GoTransitions.cupertino,
-                  },
-                ),
-                colorScheme: _schemeFor(resolvedTvTheme, systemScheme, Brightness.light),
-              ),
-              darkTheme: buildTvThemeData(
-                palette: resolvedTvTheme,
-                brightness: Brightness.dark,
-                fontFamily: fontFamily,
-                baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
-                pageTransitions: const PageTransitionsTheme(
-                  builders: {
-                    TargetPlatform.android: GoTransitions.fadeUpwards,
-                    TargetPlatform.iOS: GoTransitions.cupertino,
-                    TargetPlatform.macOS: GoTransitions.cupertino,
-                  },
-                ),
-                colorScheme: _schemeFor(resolvedTvTheme, systemScheme, Brightness.dark),
-              ),
-              themeMode: themeMode,
             ),
+            colorScheme: _schemeFor(resolvedTvTheme, Brightness.light),
           ),
-        );
-      },
+          darkTheme: buildTvThemeData(
+            palette: resolvedTvTheme,
+            brightness: Brightness.dark,
+            fontFamily: fontFamily,
+            baseTextTheme: _textThemeFor(fontSettings, ThemeData(brightness: Brightness.dark).textTheme),
+            pageTransitions: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: GoTransitions.fadeUpwards,
+                TargetPlatform.iOS: GoTransitions.cupertino,
+                TargetPlatform.macOS: GoTransitions.cupertino,
+              },
+            ),
+            colorScheme: _schemeFor(resolvedTvTheme, Brightness.dark),
+          ),
+          themeMode: themeMode,
+        ),
+      ),
     );
   }
 }
@@ -136,18 +127,14 @@ TextTheme _textThemeFor(FontSettingsModel? font, TextTheme base) {
   );
 }
 
-ColorScheme _schemeFor(TvThemeData tvTheme, material.ColorScheme? systemScheme, Brightness brightness) {
+ColorScheme _schemeFor(TvThemeData tvTheme, Brightness brightness) {
   final dark = brightness == Brightness.dark;
-  if (systemScheme == null) {
-    return ColorScheme.fromSeed(
-      seedColor: tvTheme.focusColor,
-      brightness: brightness,
-      primary: tvTheme.focusColor,
-      surface: dark ? tvTheme.backgroundColor : null,
-    );
-  }
-  final converted = toFlutterColorScheme(systemScheme);
-  return dark ? converted.copyWith(surface: tvTheme.backgroundColor) : converted;
+  return ColorScheme.fromSeed(
+    seedColor: tvTheme.focusColor,
+    brightness: brightness,
+    primary: tvTheme.focusColor,
+    surface: dark ? tvTheme.backgroundColor : null,
+  );
 }
 
 /// Syncs app language setting → EasyLocalization locale.

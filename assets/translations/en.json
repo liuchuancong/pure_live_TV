@@ -662,8 +662,6 @@
   "enable_countdown_close_subtitle": "Starts counting down immediately and closes the whole app; independent from room playback and auto sleep timers",
   "enable_dense_favorites_mode": "Dense Mode",
   "enable_dense_favorites_mode_subtitle": "Display more favorite rooms at once",
-  "enable_dynamic_color": "Dynamic Color",
-  "enable_dynamic_color_subtitle": "Enable Monet dynamic color",
   "enable_fullscreen_default": "Auto Full Screen",
   "enable_fullscreen_default_subtitle": "When enter live play, auto into full screen",
   "enable_load_more": "Enable Load More",

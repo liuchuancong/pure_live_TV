@@ -9,7 +9,6 @@ part of 'theme_settings_model.dart';
 _ThemeSettingsModel _$ThemeSettingsModelFromJson(Map<String, dynamic> json) =>
     _ThemeSettingsModel(
       themeModeName: json['themeModeName'] as String? ?? "System",
-      enableDynamicTheme: json['enableDynamicTheme'] as bool? ?? false,
       themeColor: json['themeColor'] == null
           ? Colors.blue
           : const HexColorConverter().fromJson(json['themeColor'] as String),
@@ -28,7 +27,6 @@ _ThemeSettingsModel _$ThemeSettingsModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ThemeSettingsModelToJson(_ThemeSettingsModel instance) =>
     <String, dynamic>{
       'themeModeName': instance.themeModeName,
-      'enableDynamicTheme': instance.enableDynamicTheme,
       'themeColor': const HexColorConverter().toJson(instance.themeColor),
       'languageName': instance.languageName,
       'crossAxisSpacing': instance.crossAxisSpacing,

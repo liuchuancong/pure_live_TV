@@ -657,8 +657,6 @@
   "enable_countdown_close_subtitle": "开启后立即开始倒计时；到时关闭整个应用，与直播间停止播放、自动助眠相互独立",
   "enable_dense_favorites_mode": "紧凑模式",
   "enable_dense_favorites_mode_subtitle": "关注页面可显示更多直播间",
-  "enable_dynamic_color": "动态取色",
-  "enable_dynamic_color_subtitle": "启用Monet壁纸动态取色",
   "enable_fullscreen_default": "自动全屏",
   "enable_fullscreen_default_subtitle": "当进入直播播放页，自动进入全屏",
   "enable_load_more": "允许上拉加载更多",

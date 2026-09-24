@@ -9,7 +9,6 @@ part 'theme_settings_model.g.dart';
 abstract class ThemeSettingsModel with _$ThemeSettingsModel {
   const factory ThemeSettingsModel({
     @Default("System") String themeModeName,
-    @Default(false) bool enableDynamicTheme,
 
     // Uses the shared HexColorConverter.
     @HexColorConverter() @Default(Colors.blue) Color themeColor,
