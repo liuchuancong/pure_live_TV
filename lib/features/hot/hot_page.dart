@@ -3,6 +3,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/hot/hot_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 class HotPage extends ConsumerStatefulWidget {
   const HotPage({super.key});
@@ -103,6 +104,7 @@ class _HotPageState extends ConsumerState<HotPage> {
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         emptyScene: EmptyScene.hot,
+                        onGoLogin: () => const AccountSettingsRoute().push(context),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: themeState.denseRoomLayout,
                           mainAxisSpacing: mainSpacing.w,

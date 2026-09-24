@@ -2,6 +2,7 @@
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 class AreaRoomsPage extends ConsumerStatefulWidget {
   final Site site;
@@ -93,6 +94,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           key: ValueKey('area_room_grid_${widget.site.id}_${widget.subCategory.areaId}'),
           param: _currentParam,
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
+          onGoLogin: () => const AccountSettingsRoute().push(context),
           emptyScene: EmptyScene.areaRooms,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: themeState.denseRoomLayout,

@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/favorite/favorite_provider.dart';
+import 'package:pure_live/features/favorite/model/favorite_state.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
@@ -47,6 +48,60 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   /// list had changed, so a room followed in the player only showed up after a
   /// tab switch or a restart. Pushing the fresh pool into the live core keeps
   /// both: the grid updates, the view is never torn down.
+  /// The favorite grid's empty state, layered like the mobile reference's
+  /// `_FavoriteEmptyState`:
+  ///
+  /// * nothing followed at all → 无已开播直播间, with a plain refresh;
+  /// * this platform tab holds no rooms → its own hint;
+  /// * rooms exist but the tag filter empties the list → "关注数据仍在", so the
+  ///   user knows the follows are safe;
+  /// * the 未开播 tab has rooms the current tab hides → a 查看未开播 shortcut.
+  Widget _buildFavoriteEmpty(BuildContext context, FavoriteState favoriteState, VoidCallback onRefresh) {
+    final List<Site> sites = ref.read(favoriteProvider.notifier).siteTabs;
+    final String siteId = sites.isEmpty
+        ? Sites.allSite
+        : sites[favoriteState.tabSiteIndex.clamp(0, sites.length - 1)].id;
+    bool onSite(LiveRoom room) => siteId == Sites.allSite || room.normalizedPlatformId == siteId.trim().toLowerCase();
+
+    final int globalTotal = favoriteState.onlineRooms.length + favoriteState.replayRooms.length + favoriteState.offlineRooms.length;
+    final int totalForSite = siteId == Sites.allSite
+        ? globalTotal
+        : favoriteState.onlineRooms.where(onSite).length +
+              favoriteState.replayRooms.where(onSite).length +
+              favoriteState.offlineRooms.where(onSite).length;
+    final int offlineForSite = favoriteState.offlineRooms.where(onSite).length;
+
+    if (globalTotal == 0) {
+      return AppStatusView(
+        type: AppStatusType.empty,
+        icon: Remix.heart_3_fill,
+        title: i18n('empty_favorite_online_title'),
+        subtitle: i18n('empty_favorite_online_subtitle'),
+        buttonText: i18n('retry'),
+        onTap: onRefresh,
+      );
+    }
+
+    final String title = switch (favoriteState.tabOnlineIndex) {
+      1 => i18n('favorite_empty_recording_title'),
+      2 => i18n('favorite_empty_offline_title'),
+      _ => i18n('favorite_empty_online_title'),
+    };
+    final String subtitle = totalForSite == 0
+        ? i18n('favorite_empty_platform_subtitle')
+        : i18n('favorite_empty_filter_subtitle', args: {'count': '$totalForSite'});
+    final bool canShowOffline = favoriteState.tabOnlineIndex != 2 && offlineForSite > 0;
+
+    return AppStatusView(
+      type: AppStatusType.empty,
+      icon: Remix.heart_3_fill,
+      title: title,
+      subtitle: subtitle,
+      buttonText: canShowOffline ? i18n('favorite_show_offline') : i18n('retry'),
+      onTap: canShowOffline ? () => ref.read(favoriteProvider.notifier).changeOnlineTab(2) : onRefresh,
+    );
+  }
+
   void _listenToFavoriteChanges() {
     ref.listen(favoriteProvider, (previous, next) {
       final param = _activeParam;
@@ -183,6 +238,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         ),
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+                        emptyBuilder: (context, onRefresh) => _buildFavoriteEmpty(context, favoriteState, onRefresh),
                         emptyScene: EmptyScene.favorite,
                         onEmptyGoSearch: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

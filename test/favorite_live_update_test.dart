@@ -164,4 +164,74 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 50));
   });
+
+  /// The favorite empty state layers by what is actually empty (the mobile
+  /// reference's `_FavoriteEmptyState`): nothing followed → a follow nudge;
+  /// rooms exist but not in this status tab → the per-tab title plus a
+  /// 查看未开播 shortcut when the 未开播 tab has rooms.
+  testWidgets('the favorite empty state follows the reference layering', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1920, 1080);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    Future<void> pumpWith(List<LiveRoom> rooms) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            favoriteRoomControllerProvider.overrideWith(() => _FakeFavoriteController(FavoriteSettingsModel(favoriteRooms: rooms))),
+          ],
+          child: ScreenUtilPlusInit(
+            designSize: const Size(1920, 1080),
+            autoRebuild: false,
+            minTextAdapt: false,
+            splitScreenMode: false,
+            child: MaterialApp(
+              builder: Dpad.wrap(),
+              theme: ThemeData(extensions: <ThemeExtension<dynamic>>[TvThemeExtension(theme: darkTvTheme)]),
+              home: const FavoritePage(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    // Nothing followed at all: the reference's follow nudge, not a filter title.
+    await pumpWith(<LiveRoom>[]);
+    expect(find.text('empty_favorite_online_title'), findsOneWidget);
+    expect(find.text('favorite_empty_online_title'), findsNothing);
+    expect(find.text('retry'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 50));
+
+    // One offline room: the 直播 tab is empty with a per-tab title, and the
+    // 查看未开播 shortcut is offered because the 未开播 tab has a room.
+    await pumpWith(<LiveRoom>[
+      LiveRoom(
+        roomId: 'off',
+        title: '离线房间',
+        nick: 'streamer off',
+        platform: 'bilibili',
+        liveStatus: LiveStatus.offline,
+        status: false,
+      ),
+    ]);
+    expect(find.text('favorite_empty_online_title'), findsOneWidget, reason: '当前筛选暂无已开播直播');
+    expect(find.text('favorite_show_offline'), findsOneWidget);
+
+    await tester.tap(find.text('favorite_show_offline'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('离线房间'), findsOneWidget, reason: 'the shortcut jumps to the 未开播 tab');
+
+    // The 录播 tab without recordings shows its own title.
+    await tester.tap(find.text('ui_replaying'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('favorite_empty_recording_title'), findsOneWidget, reason: '当前筛选暂无录播');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 50));
+  });
 }

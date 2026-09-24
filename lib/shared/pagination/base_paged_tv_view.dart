@@ -23,6 +23,11 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
   final VoidCallback? onEmptyGoSearch;
   final VoidCallback? onEmptyGoHot;
 
+  /// Where the built-in login-required status sends the user (account
+  /// settings). Null keeps the status buttonless: title and subtitle still
+  /// explain what happened, and pages that can navigate pass this.
+  final VoidCallback? onGoLogin;
+
   const BasePagedTvView({
     super.key,
     required this.param,
@@ -35,6 +40,7 @@ class BasePagedTvView<T> extends ConsumerStatefulWidget {
     this.emptyScene = EmptyScene.generic,
     this.onEmptyGoSearch,
     this.onEmptyGoHot,
+    this.onGoLogin,
   });
 
   @override
@@ -106,14 +112,17 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
 
     if (state.items.isEmpty) {
       if (state.controllerState.notLogin) {
+        // The reference's login status view: the platform hid its data behind a
+        // session, so the copy says so instead of reading as a network failure.
         return widget.notLoginBuilder != null
             ? widget.notLoginBuilder!(context)
             : AppStatusView(
-                type: AppStatusType.empty,
+                type: AppStatusType.notLogin,
                 icon: Icons.account_circle_outlined,
                 title: i18n('login_required_title'),
+                subtitle: i18n('login_required_subtitle'),
                 buttonText: i18n('go_to_login'),
-                onTap: () {},
+                onTap: widget.onGoLogin,
               );
       }
 

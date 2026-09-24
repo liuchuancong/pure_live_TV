@@ -4,6 +4,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/remote/index.dart';
 import 'package:pure_live/features/search/tv_search_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/app/router/app_router.dart';
 
 class TvSearchResultPage extends ConsumerStatefulWidget {
   final String keyword;
@@ -171,6 +172,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
         child: BasePagedTvView<LiveRoom>(
           param: _currentParam,
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
+          onGoLogin: () => const AccountSettingsRoute().push(context),
           emptyScene: EmptyScene.searchResult,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: themeState.denseRoomLayout,
