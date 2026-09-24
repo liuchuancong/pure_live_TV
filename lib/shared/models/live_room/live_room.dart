@@ -660,11 +660,15 @@ abstract class LiveRoom with _$LiveRoom {
   // ---------- Error fallback ----------
 
   /// Showable room built when the detail fetch fails: existing fields are kept
-  /// and the room is marked offline. The error message goes into [data] for the
+  /// and the room is left pending. The error message goes into [data] for the
   /// playback layer to read.
   LiveRoom getLiveRoomWithError({Object? error}) {
+    // A failed detail request is not evidence that a broadcast ended. Keep the
+    // last known identity/metadata, but make playback status pending, and drop
+    // the legacy "0" audience sentinel for the same reason.
     return copyWith(
-      liveStatus: isExplicitlyOfflineNow ? liveStatus : LiveStatus.offline,
+      liveStatus: isExplicitlyOfflineNow ? liveStatus : LiveStatus.unknown,
+      watching: watching.trim() == '0' ? '' : watching,
       data: error ?? data ?? Exception(i18n('room_info_load_failed')),
     );
   }
