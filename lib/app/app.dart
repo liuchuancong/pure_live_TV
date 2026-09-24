@@ -55,20 +55,23 @@ class App extends ConsumerWidget {
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
             // `longSelectDuration` is the d-pad layer's hold threshold for
-            // `onLongSelect`; its 500 ms default is what a remote press aimed at a
-            // card's context menu regularly misses — the press ends just under half
-            // a second, is treated as a select, and the room opens instead of the
-            // menu. 350 ms keeps a deliberate quick press (~200 ms) on the select
-            // side while an intended hold reads as a hold. The only long-press
-            // targets are the room and category cards (and the search chips), whose
-            // menus are all non-destructive.
+            // `onLongSelect`: a press held at least this long is a long press (its
+            // menu runs while the key is still down) and the release is dropped
+            // instead of being reported as a select. Keep it at the d-pad default —
+            // shortening it was tried and made ordinary presses (~300 ms) open the
+            // menu instead of the room, while a hold that *is* meant to reach the
+            // menu is comfortably past half a second on a remote.
+            //
+            // The cards additionally guard the release with `DpadLongPressGate`:
+            // a disturbed press can still report its release as a select, which
+            // used to open the room on the tail of a long press.
             //
             // `scrollDuration: Duration.zero` keeps the d-pad layer from animating
             // the reveal itself; the grids drive their own scrolling.
             final withDpad = Dpad.wrap(
               theme: const DpadThemeData(
                 scrollDuration: Duration.zero,
-                longSelectDuration: Duration(milliseconds: 350),
+                longSelectDuration: Duration(milliseconds: 500),
               ),
             )(context, child!);
 

@@ -4,8 +4,9 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/area_images/area_image_matcher.dart';
+import 'package:pure_live/shared/utils/dpad_long_press_gate.dart';
 
-class TvAreaCard extends StatelessWidget {
+class TvAreaCard extends StatefulWidget {
   const TvAreaCard({super.key, required this.area, required this.onTap, required this.onLongPress});
 
   final LiveArea area;
@@ -13,7 +14,17 @@ class TvAreaCard extends StatelessWidget {
   final VoidCallback onLongPress;
 
   @override
+  State<TvAreaCard> createState() => _TvAreaCardState();
+}
+
+class _TvAreaCardState extends State<TvAreaCard> {
+  /// Keeps a long press from also being reported as a select — see
+  /// [DpadLongPressGate]. The card is stateful for this alone.
+  final DpadLongPressGate _longPressGate = DpadLongPressGate();
+
+  @override
   Widget build(BuildContext context) {
+    final LiveArea area = widget.area;
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(24.sp);
     final displayImageUrl = area.areaPic;
@@ -92,8 +103,15 @@ class TvAreaCard extends StatelessWidget {
       // `DpadScroll.ensureVisible` (padded, and it walks every scrollable
       // ancestor). The extra `Scrollable.ensureVisible` here animated to a
       // second, different offset and made the grid jitter while moving.
-      onSelect: onTap,
-      onLongSelect: onLongPress,
+      onSelect: () {
+        // The long press owns this press; its release must not open the area.
+        if (_longPressGate.swallowSelect()) return;
+        widget.onTap();
+      },
+      onLongSelect: () {
+        _longPressGate.markLongPress();
+        widget.onLongPress();
+      },
       child: const SizedBox(),
     );
   }

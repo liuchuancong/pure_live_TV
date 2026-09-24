@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/services/cache/cache_controller.dart';
+import 'package:pure_live/shared/utils/dpad_long_press_gate.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
@@ -37,6 +38,10 @@ class TvRoomCard extends ConsumerStatefulWidget {
 
 class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   late bool _followed;
+
+  /// Keeps a long press from also being reported as a select — see
+  /// [DpadLongPressGate].
+  final DpadLongPressGate _longPressGate = DpadLongPressGate();
 
   @override
   void initState() {
@@ -311,6 +316,8 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
         final isLocked =
             SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
         if (isLocked) return;
+        // The long press owns this press; its release must not open the room.
+        if (_longPressGate.swallowSelect()) return;
         final onTap = widget.onTap;
         if (onTap != null) {
           onTap();
@@ -328,6 +335,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
               final isLocked =
                   SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
               if (isLocked) return;
+              _longPressGate.markLongPress();
               widget.onLongPress!.call();
             },
       child: const SizedBox(),
