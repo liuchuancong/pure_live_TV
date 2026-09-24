@@ -56,6 +56,10 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
   /// * rooms exist but the tag filter empties the list → "关注数据仍在", so the
   ///   user knows the follows are safe;
   /// * the 未开播 tab has rooms the current tab hides → a 查看未开播 shortcut.
+  ///
+  /// Under every layer sits a 去搜索 jump: the reference keeps search reachable
+  /// from this page through its app-bar menu, and an empty favorites page is
+  /// exactly where the user needs a way *to* rooms they don't follow yet.
   Widget _buildFavoriteEmpty(BuildContext context, FavoriteState favoriteState, VoidCallback onRefresh) {
     final List<Site> sites = ref.read(favoriteProvider.notifier).siteTabs;
     final String siteId = sites.isEmpty
@@ -71,8 +75,9 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
               favoriteState.offlineRooms.where(onSite).length;
     final int offlineForSite = favoriteState.offlineRooms.where(onSite).length;
 
+    final AppStatusView status;
     if (globalTotal == 0) {
-      return AppStatusView(
+      status = AppStatusView(
         type: AppStatusType.empty,
         icon: Remix.heart_3_fill,
         title: i18n('empty_favorite_online_title'),
@@ -80,25 +85,40 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
         buttonText: i18n('retry'),
         onTap: onRefresh,
       );
+    } else {
+      final String title = switch (favoriteState.tabOnlineIndex) {
+        1 => i18n('favorite_empty_recording_title'),
+        2 => i18n('favorite_empty_offline_title'),
+        _ => i18n('favorite_empty_online_title'),
+      };
+      final String subtitle = totalForSite == 0
+          ? i18n('favorite_empty_platform_subtitle')
+          : i18n('favorite_empty_filter_subtitle', args: {'count': '$totalForSite'});
+      final bool canShowOffline = favoriteState.tabOnlineIndex != 2 && offlineForSite > 0;
+
+      status = AppStatusView(
+        type: AppStatusType.empty,
+        icon: Remix.heart_3_fill,
+        title: title,
+        subtitle: subtitle,
+        buttonText: canShowOffline ? i18n('favorite_show_offline') : i18n('retry'),
+        onTap: canShowOffline ? () => ref.read(favoriteProvider.notifier).changeOnlineTab(2) : onRefresh,
+      );
     }
 
-    final String title = switch (favoriteState.tabOnlineIndex) {
-      1 => i18n('favorite_empty_recording_title'),
-      2 => i18n('favorite_empty_offline_title'),
-      _ => i18n('favorite_empty_online_title'),
-    };
-    final String subtitle = totalForSite == 0
-        ? i18n('favorite_empty_platform_subtitle')
-        : i18n('favorite_empty_filter_subtitle', args: {'count': '$totalForSite'});
-    final bool canShowOffline = favoriteState.tabOnlineIndex != 2 && offlineForSite > 0;
-
-    return AppStatusView(
-      type: AppStatusType.empty,
-      icon: Remix.heart_3_fill,
-      title: title,
-      subtitle: subtitle,
-      buttonText: canShowOffline ? i18n('favorite_show_offline') : i18n('retry'),
-      onTap: canShowOffline ? () => ref.read(favoriteProvider.notifier).changeOnlineTab(2) : onRefresh,
+    return Column(
+      children: [
+        Expanded(child: status),
+        Padding(
+          padding: EdgeInsets.only(bottom: 20.sp),
+          child: TvButton(
+            title: i18n('empty_favorite_action'),
+            icon: Icon(Icons.search_rounded, size: 18.sp),
+            size: TvButtonSize.small,
+            onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value),
+          ),
+        ),
+      ],
     );
   }
 

@@ -197,11 +197,19 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
     }
 
-    // Nothing followed at all: the reference's follow nudge, not a filter title.
+    // Nothing followed at all: the reference's follow nudge, not a filter title,
+    // plus the always-present 去搜索 jump towards rooms that are not followed yet.
     await pumpWith(<LiveRoom>[]);
     expect(find.text('empty_favorite_online_title'), findsOneWidget);
     expect(find.text('favorite_empty_online_title'), findsNothing);
     expect(find.text('retry'), findsOneWidget);
+    // `empty_favorite_action` sits in the built-in labels table, so it renders
+    // as its Chinese value even without loaded localizations.
+    expect(find.text('去搜索'), findsOneWidget, reason: '去搜索 stays reachable from an empty favorites page');
+
+    await tester.tap(find.text('去搜索'));
+    await tester.pump();
+    expect(tester.takeException(), isNull, reason: 'the search jump only moves the side menu');
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 50));
 
