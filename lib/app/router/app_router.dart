@@ -831,7 +831,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: appNavigatorKey,
     // Lets every page know when it is covered and uncovered again, so focus can
     // return to the item the user acted on after a pop.
-    observers: [tvRouteObserver, WallpaperRouteObserver()],
+    observers: [tvRouteObserver, wallpaperRouteObserver],
     initialLocation: AppRoutes.kInitial,
     redirect: (context, state) {
       final location = state.uri.path;

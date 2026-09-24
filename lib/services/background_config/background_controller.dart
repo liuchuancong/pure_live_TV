@@ -165,6 +165,8 @@ class BackgroundController extends _$BackgroundController {
   /// which is what made video wallpapers render black (or a single pixel).
   void _ensureVideoPlayer() {
     if (_videoPlayer != null) return;
+    // TEMP DIAG — remove once the wallpaper churn is confirmed fixed.
+    debugPrint('[BGDIAG] create player\n${_diagStack()}');
     final player = Player();
     _videoPlayer = player;
     _videoController = VideoController(player, configuration: wallpaperVideoControllerConfiguration());
@@ -196,6 +198,8 @@ class BackgroundController extends _$BackgroundController {
   /// below goes through [_model] instead of `state` to stay out of the
   /// Riverpod lifecycle assertion.
   Future<void> setPlaybackActive(bool active) async {
+    // TEMP DIAG — remove once the wallpaper churn is confirmed fixed.
+    debugPrint('[BGDIAG] setPlaybackActive($active) current=$_playbackSuspended video=${_videoPlayer != null}');
     if (_playbackSuspended == active) return;
     _playbackSuspended = active;
 
@@ -250,10 +254,18 @@ class BackgroundController extends _$BackgroundController {
 
   /// Fully releases the background player (forced-destroy path).
   void _disposeVideoPlayer() {
+    // TEMP DIAG — remove once the wallpaper churn is confirmed fixed.
+    debugPrint('[BGDIAG] dispose player had=${_videoPlayer != null}\n${_diagStack()}');
     final player = _videoPlayer;
     _videoPlayer = null;
     _videoController = null;
     unawaited(player?.dispose());
+  }
+
+  /// TEMP DIAG — compact caller stack for the wallpaper player lifecycle.
+  static String _diagStack() {
+    final frames = StackTrace.current.toString().split('\n');
+    return frames.skip(1).take(8).join('\n');
   }
 
   /// Also driven from the lifecycle path, so it reads [_model] only.
