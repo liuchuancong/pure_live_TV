@@ -11,6 +11,26 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
   String defaultAvatar =
       "https://img95.699pic.com/xsj/0q/x6/7p.jpg%21/fw/700/watermark/url/L3hzai93YXRlcl9kZXRhaWwyLnBuZw/align/southeast";
 
+  /// The subtitle a channel card shows: the group the channel was filed under,
+  /// which is the source label a TV viewer expects, or the playlist's own name
+  /// when it ships no groups so the line is never blank.
+  static String _sourceLabel(String? group, String fallback) {
+    final value = group?.trim() ?? '';
+    return value.isEmpty ? fallback : value;
+  }
+
+  /// Provider display names by id. The system hot list is imported from a file
+  /// called `hot`, which is not a name a viewer should read on a card.
+  Future<Map<String, String>> _providerNames() async {
+    final providers = await DbService.to.db.getAllProviders();
+    return {
+      for (final provider in providers)
+        provider.id: provider.id == FileUtils.systemHotProviderId || provider.name == 'hot'
+            ? i18n('hot')
+            : provider.name,
+    };
+  }
+
   /// Global IPTV request headers under the channel's own directives: a channel
   /// that carries its own UA/Referer/Cookie keeps them; a channel with none
   /// still plays with the configured ones instead of bare defaults.
@@ -83,7 +103,7 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
       LiveRoom(
         roomId: ch.id,
         title: ch.name,
-        nick: ch.groupTitle ?? '',
+        nick: _sourceLabel(ch.groupTitle, category.typeName),
         cover: ch.tvgLogo ?? '',
         area: ch.groupTitle ?? '',
         watching: '',
@@ -176,13 +196,14 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
       await AutoSyncScheduler.instance.loadHotResources();
     }
     channels = await IptvRepository().getChannels(FileUtils.systemHotProviderId);
+    final providerNames = await _providerNames();
     final items = <LiveRoom>[];
     for (final ch in channels) {
       items.add(
         LiveRoom(
           roomId: ch.id,
           title: ch.name,
-          nick: '',
+          nick: _sourceLabel(ch.groupTitle, providerNames[ch.providerId] ?? ''),
           cover: ch.tvgLogo ?? '',
           area: ch.groupTitle ?? '',
           watching: '',
@@ -273,11 +294,12 @@ class IptvSite implements LiveSite, LiveSiteRecordRoomResolver {
     final db = DbService.to.db;
     if (keyword.trim().isEmpty) return [];
     final matched = await db.searchChannelsByName(keyword);
+    final providerNames = await _providerNames();
     final items = matched.map((ch) {
       return LiveRoom(
         roomId: ch.id,
         title: ch.name,
-        nick: ch.groupTitle ?? '',
+        nick: _sourceLabel(ch.groupTitle, providerNames[ch.providerId] ?? ''),
         cover: ch.tvgLogo ?? '',
         area: ch.groupTitle ?? '',
         watching: '',

@@ -64,4 +64,22 @@ class GitHubMirror {
       jsdelivrFastly(filePath),
     ];
   }
+
+  /// The origin prefix of a raw file address.
+  static const String _originPrefix = 'https://raw.githubusercontent.com/';
+
+  /// Candidate URLs for an arbitrary address, without knowing the repository
+  /// up front: a `raw.githubusercontent.com` address expands into the mirror
+  /// pool, while any other host is returned unchanged so self-hosted playlists
+  /// keep their own address.
+  static List<String> candidatesFor(String url) {
+    final trimmed = url.trim();
+    if (!trimmed.startsWith(_originPrefix)) return [trimmed];
+    // owner/repo/branch/rest — the rest stays verbatim so its encoding and
+    // query string survive the round trip.
+    final parts = trimmed.substring(_originPrefix.length).split('/');
+    if (parts.length < 4 || parts.take(3).any((part) => part.isEmpty)) return [trimmed];
+    final mirror = GitHubMirror(owner: parts[0], repo: parts[1], branch: parts[2]);
+    return [trimmed, ...mirror.mirrors(parts.skip(3).join('/')).skip(1)];
+  }
 }

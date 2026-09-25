@@ -7,6 +7,7 @@ import 'package:pure_live/shared/platform/index.dart';
 import 'package:pure_live/app/bootstrap/index.dart';
 import 'package:pure_live/features/iptv/data/database.dart' as database;
 import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
+import 'package:pure_live/features/iptv/services/playlist_source_resolver.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 
@@ -32,7 +33,8 @@ class IptvSyncEngine {
         // The custom IPTV user agent is applied here as well as at the transport
         // layer so a playlist host that rejects the default agent can be fixed
         // from IPTV settings.
-        final content = await HttpClient.instance.getText(url, header: HttpClient.iptvHeaders());
+        final source = await PlaylistSourceResolver.resolve(url, headers: HttpClient.iptvHeaders());
+        final content = await HttpClient.instance.getText(source, header: HttpClient.iptvHeaders());
         final trimmed = content.trim();
         if (trimmed.isEmpty) return false;
         final ext = provider.type.startsWith('.') ? provider.type.toLowerCase() : '.${provider.type.toLowerCase()}';

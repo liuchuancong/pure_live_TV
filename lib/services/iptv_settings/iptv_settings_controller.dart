@@ -21,8 +21,9 @@ class IptvSettingsController extends _$IptvSettingsController {
   static const String autoSyncHoursIntervalKey = 'autoSyncHoursInterval';
 
   /// The built-in hot-list subscription, imported into the fixed system hot
-  /// provider when the recommendation list runs empty.
-  static const String defaultHotResourceUrl = 'https://iptv-org.github.io/iptv/countries/cn.m3u';
+  /// provider when the recommendation list runs empty. Stored as the canonical
+  /// raw address; the download races it through the GitHub mirrors.
+  static const String defaultHotResourceUrl = 'https://raw.githubusercontent.com/vbskycn/iptv/master/tv/iptv4.m3u';
 
   // Exposed as a reactive value for non-widget code such as the player core.
   SettingsValue<bool> get isAutoSyncEnabled => SettingsValue(() => state.isAutoSyncEnabled, setAutoSyncEnabled);

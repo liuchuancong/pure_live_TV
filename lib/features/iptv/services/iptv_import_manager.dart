@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:pure_live/features/iptv/models/channel.dart' as model;
 
 import 'playlist_channel_reconciler.dart';
+import 'playlist_source_resolver.dart';
 import 'iptv_confirm_dialog.dart';
 
 import 'package:drift/drift.dart' as drift;
@@ -61,7 +62,10 @@ class IptvImportManager {
       final path = Uri.tryParse(url.trim())?.path.toLowerCase() ?? '';
       var extension = path.endsWith('.txt') ? '.txt' : '.m3u';
       var file = File(p.join(temporary.path, 'input$extension'));
-      await HttpClient.instance.download(url, file.path, header: HttpClient.iptvHeaders());
+      // Only the transfer address changes; the extension sniffing above and the
+      // provider row below stay anchored to the canonical url.
+      final source = await PlaylistSourceResolver.resolve(url, headers: HttpClient.iptvHeaders());
+      await HttpClient.instance.download(source, file.path, header: HttpClient.iptvHeaders());
       final content = (await _decode(await file.readAsBytes())).trim();
       if (content.startsWith('#EXTM3U')) {
         extension = '.m3u';

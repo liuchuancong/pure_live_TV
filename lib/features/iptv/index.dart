@@ -16,4 +16,5 @@ export 'services/auto_sync_scheduler.dart';
 export 'services/iptv_import_manager.dart';
 export 'services/iptv_sync_engine.dart';
 export 'services/playlist_channel_reconciler.dart';
+export 'services/playlist_source_resolver.dart';
 export 'storage/playlist_storage.dart';
