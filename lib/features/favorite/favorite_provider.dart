@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/index.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/features/favorite/model/favorite_state.dart';
 
@@ -48,6 +48,25 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   /// room.
   String _selectedSiteId = Sites.allSite;
 
+  /// The status tab (0 live, 1 replay, 2 offline) the page shows.
+  ///
+  /// Held as a field for the same reason as [_selectedSiteId], and that matters
+  /// more here: this notifier rebuilds on every favourite change - a room being
+  /// followed, a player write-back - and starting each rebuild from a blank state
+  /// dropped the viewer back onto the live tab. Under a covered page that also
+  /// switched the grid out from under them, so returning from the player landed
+  /// on a tab whose core had never been re-sliced.
+  int _tabOnlineIndex = 0;
+
+  /// The tag the page filters by, held for the same reason as [_tabOnlineIndex].
+  String _selectedTagId = 'all';
+
+  /// The platform tab the page shows, for callers that key their own state by it.
+  String get activeSiteId => _selectedSiteId;
+
+  /// The status tab the page shows.
+  int get activeTabIndex => _tabOnlineIndex;
+
   /// The platform tabs the page draws. See [favoriteSitesForRooms].
   List<Site> get siteTabs => favoriteSitesForRooms(ref.read(favoriteRoomControllerProvider).favoriteRooms);
 
@@ -71,9 +90,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     final favState = ref.watch(favoriteRoomControllerProvider);
     // Rebuild when the audience display preference or the grid density change.
     final appState = ref.watch(appSettingsControllerProvider);
-    return _syncAndFilter(const FavoriteState(), favState).copyWith(
-      denseLayout: appState.enableDenseFavorites,
-    );
+    return _syncAndFilter(const FavoriteState(), favState).copyWith(denseLayout: appState.enableDenseFavorites);
   }
 
   void _listenEventBus() {
@@ -98,8 +115,9 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   void changeOnlineTab(int index) {
+    _tabOnlineIndex = index;
     final favState = ref.read(favoriteRoomControllerProvider);
-    state = _syncAndFilter(state.copyWith(tabOnlineIndex: index), favState);
+    state = _syncAndFilter(state, favState);
   }
 
   void changeSiteTab(int index) {
@@ -110,8 +128,9 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   void changeSelectedTag(String tagId) {
+    _selectedTagId = tagId;
     final favState = ref.read(favoriteRoomControllerProvider);
-    state = _syncAndFilter(state.copyWith(selectedTagId: tagId), favState);
+    state = _syncAndFilter(state, favState);
   }
 
   FavoriteState _syncAndFilter(FavoriteState currentState, FavoriteSettingsModel favState) {
@@ -155,11 +174,10 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     _selectedSiteId = activeSite?.id ?? Sites.allSite;
 
     // A tag deleted while it was the active filter must not keep filtering
-    // invisibly: the reference drops the same selection.
-    final String selectedTagId =
-        currentState.selectedTagId == 'all' || tagState.tags.any((tag) => tag.id == currentState.selectedTagId)
-        ? currentState.selectedTagId
-        : 'all';
+    // invisibly: the reference drops the same selection. The surviving selection
+    // is written back to the field, so the reset survives a rebuild too.
+    _selectedTagId =
+        _selectedTagId == 'all' || tagState.tags.any((tag) => tag.id == _selectedTagId) ? _selectedTagId : 'all';
 
     int getRoomTagScore(LiveRoom room) {
       final List<String> ids = tagController.getTagsForRoom(room);
@@ -185,16 +203,14 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     int tagScoreOf(LiveRoom room) => tagScoreMemo[room.identityKey] ??= getRoomTagScore(room);
 
     final audienceKeyMemo = <String, AudienceRankKey>{};
-    AudienceRankKey audienceKeyOf(LiveRoom room) =>
-        audienceKeyMemo[room.identityKey] ??=
-        room.audienceRankKey(
-          preferRealOnline: appState.preferRealOnlineCounts,
-          // Capability-aware: a platform that only publishes heat must keep
-          // ranking by that value even when concurrent mode is on.
-          platformEnabled:
-              LiveRoom.audienceCapabilityFor(room.normalizedPlatformId).supportsConcurrentOnline &&
-              appState.realOnlinePlatforms.contains(room.normalizedPlatformId),
-        );
+    AudienceRankKey audienceKeyOf(LiveRoom room) => audienceKeyMemo[room.identityKey] ??= room.audienceRankKey(
+      preferRealOnline: appState.preferRealOnlineCounts,
+      // Capability-aware: a platform that only publishes heat must keep
+      // ranking by that value even when concurrent mode is on.
+      platformEnabled:
+          LiveRoom.audienceCapabilityFor(room.normalizedPlatformId).supportsConcurrentOnline &&
+          appState.realOnlinePlatforms.contains(room.normalizedPlatformId),
+    );
 
     int byAudience(LiveRoom a, LiveRoom b) {
       final left = audienceKeyOf(a);
@@ -207,7 +223,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     }
 
     int sortRooms(LiveRoom a, LiveRoom b) {
-      if (selectedTagId == 'all') {
+      if (_selectedTagId == 'all') {
         return byAudience(a, b);
       }
       final int sa = tagScoreOf(a);
@@ -229,7 +245,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     // status list, on the selected platform — in the user's own tag order. Tags
     // no room on screen carries would filter to an empty grid.
     if (activeSite != null) {
-      final List<LiveRoom> target = switch (currentState.tabOnlineIndex) {
+      final List<LiveRoom> target = switch (_tabOnlineIndex) {
         0 => online,
         1 => replay,
         2 => offline,
@@ -250,7 +266,8 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
     return currentState.copyWith(
       tabSiteIndex: siteIndex,
-      selectedTagId: selectedTagId,
+      tabOnlineIndex: _tabOnlineIndex,
+      selectedTagId: _selectedTagId,
       onlineRooms: online,
       offlineRooms: offline,
       replayRooms: replay,
@@ -258,16 +275,25 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     );
   }
 
-  List<LiveRoom> getFilteredRooms() {
-    final List<LiveRoom> source = switch (state.tabOnlineIndex) {
-      0 => state.onlineRooms,
+  /// The rooms of one status tab, scoped to a platform tab and a tag.
+  ///
+  /// The page's grids live in their own paging cores, one per tab/platform/tag
+  /// combination, and each of them asks for its slice here. Asking for "the" slice
+  /// instead - the one the page happens to be showing - left every other core with
+  /// the pool it was last given, so a card that changed status stayed in its old
+  /// group until the page was reopened.
+  List<LiveRoom> roomsFor({required int tabIndex, required String siteId, required String tagId}) {
+    final List<LiveRoom> source = switch (tabIndex) {
       1 => state.replayRooms,
       2 => state.offlineRooms,
       _ => state.onlineRooms,
     };
 
-    return _inPageScope(source);
+    return _scoped(source, siteId: siteId, tagId: tagId);
   }
+
+  List<LiveRoom> getFilteredRooms() =>
+      roomsFor(tabIndex: _tabOnlineIndex, siteId: _selectedSiteId, tagId: _selectedTagId);
 
   /// The followed rooms that are live right now, in the scope the page shows
   /// (platform tab and tag).
@@ -291,27 +317,25 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   /// Applies the page's platform tab and tag filter to [source].
-  List<LiveRoom> _inPageScope(List<LiveRoom> source) {
-    final List<Site> sites = siteTabs;
-    if (state.tabSiteIndex < 0 || state.tabSiteIndex >= sites.length) {
-      return [];
-    }
+  List<LiveRoom> _inPageScope(List<LiveRoom> source) =>
+      _scoped(source, siteId: _selectedSiteId, tagId: _selectedTagId);
 
+  List<LiveRoom> _scoped(List<LiveRoom> source, {required String siteId, required String tagId}) {
     List<LiveRoom> rooms = source;
-    final activeSite = sites[state.tabSiteIndex];
-    if (activeSite.id != Sites.allSite) {
-      final String siteId = activeSite.id.trim().toLowerCase();
-      rooms = rooms.where((room) => room.normalizedPlatformId == siteId).toList();
+    final String normalizedSite = siteId.trim().toLowerCase();
+
+    if (normalizedSite.isNotEmpty && normalizedSite != Sites.allSite) {
+      rooms = rooms.where((room) => room.normalizedPlatformId == normalizedSite).toList();
     }
 
-    if (state.selectedTagId == 'all') {
+    if (tagId == 'all') {
       return rooms;
     }
 
     final tagController = ref.read(tagManagementControllerProvider.notifier);
     return rooms.where((room) {
       final List<String> ids = tagController.getTagsForRoom(room);
-      return ids.contains(state.selectedTagId);
+      return ids.contains(tagId);
     }).toList();
   }
 
@@ -396,9 +420,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       final futures = batchRooms.map(_refreshRoom).toList();
       final results = await Future.wait(futures);
 
-      ref.read(favoriteRoomControllerProvider.notifier).updateRooms(
-            results.whereType<LiveRoom>().toList(),
-          );
+      ref.read(favoriteRoomControllerProvider.notifier).updateRooms(results.whereType<LiveRoom>().toList());
     }
 
     final finalFavState = ref.read(favoriteRoomControllerProvider);
