@@ -168,6 +168,11 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
       factory: $LogViewerRoute._fromState,
     ),
     GoRouteData.$route(
+      path: '/settings/backup_browser',
+      hasOverriddenOnExit: false,
+      factory: $BackupBrowserRoute._fromState,
+    ),
+    GoRouteData.$route(
       path: '/iptv',
       hasOverriddenOnExit: false,
       factory: $IptvRoute._fromState,
@@ -835,6 +840,27 @@ mixin $LogViewerRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/settings/log_viewer');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin $BackupBrowserRoute on GoRouteData {
+  static BackupBrowserRoute _fromState(GoRouterState state) =>
+      const BackupBrowserRoute();
+
+  @override
+  String get location => GoRouteData.$location('/settings/backup_browser');
 
   @override
   void go(BuildContext context) => context.go(location);

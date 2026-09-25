@@ -42,6 +42,13 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
   late final Set<T> _selection;
   final ScrollController _scrollController = ScrollController();
 
+  /// The row the dialog opens on.
+  ///
+  /// Handed the focus explicitly, like [TvSelectDialog] does: without it the
+  /// remote lands on the dialog's own close button, and the list has no visible
+  /// highlight until the viewer finds it.
+  final FocusNode _firstNode = FocusNode(debugLabel: 'tv-multi-select/first');
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +58,7 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _firstNode.dispose();
     super.dispose();
   }
 
@@ -69,6 +77,7 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
       title: widget.title,
       confirmText: i18n('done'),
       cancelText: i18n('cancel'),
+      initialFocusNode: hasItems ? _firstNode : null,
       onConfirm: () => Navigator.of(context).pop(_selection),
       onCancel: () => Navigator.of(context).pop(),
       child: hasItems
@@ -87,10 +96,17 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
                   return TvDialogOptionTile(
                     title: item.title,
                     subtitle: item.subtitle,
+                    // The tick is the row's own mark (the circle below), never
+                    // `selected`: that flag paints the tile with the highlight of
+                    // the value in force, so ticking several rows — the default
+                    // here — filled the whole list with the same accent colour and
+                    // the focus cursor had nothing left to stand out with.
+                    selected: false,
                     icon: Icon(selected ? Icons.check_circle_rounded : Icons.circle_outlined),
-                    selected: selected,
                     // The circle above is this list's own state mark.
                     showCheck: false,
+                    autofocus: index == 0,
+                    focusNode: index == 0 ? _firstNode : null,
                     onTap: () => _toggle(item.value),
                   );
                 },

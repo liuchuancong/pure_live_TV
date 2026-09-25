@@ -15,8 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BackgroundConfigModel {
 
- BackgroundSource get source; BoxFit get boxFit; double get maskOpacity;/// 高斯模糊强度（sigma）；0 表示关闭。只作用于媒体类背景
-/// （图片/视频/海报帧），纯色与渐变模糊没有意义。
+ BackgroundSource get source; BoxFit get boxFit; double get maskOpacity;/// Gaussian blur strength (sigma); 0 disables it. Only media backgrounds
+/// (image / video / poster frame) are blurred - flat fills blur to nothing.
  double get blurSigma;@HexColorConverter() Color get solidColor;@HexColorListConverter() List<Color> get gradientColors; String? get assetImagePath; String? get localImagePath; String? get networkImageUrl; String get currentBoxImageBase64; String? get assetVideoPath; String? get localVideoPath; String? get networkVideoUrl;
 /// Create a copy of BackgroundConfigModel
 /// with the given fields replaced by the non-null parameter values.
@@ -229,8 +229,8 @@ class _BackgroundConfigModel implements BackgroundConfigModel {
 @override@JsonKey() final  BackgroundSource source;
 @override@JsonKey() final  BoxFit boxFit;
 @override@JsonKey() final  double maskOpacity;
-/// 高斯模糊强度（sigma）；0 表示关闭。只作用于媒体类背景
-/// （图片/视频/海报帧），纯色与渐变模糊没有意义。
+/// Gaussian blur strength (sigma); 0 disables it. Only media backgrounds
+/// (image / video / poster frame) are blurred - flat fills blur to nothing.
 @override@JsonKey() final  double blurSigma;
 @override@JsonKey()@HexColorConverter() final  Color solidColor;
  final  List<Color> _gradientColors;

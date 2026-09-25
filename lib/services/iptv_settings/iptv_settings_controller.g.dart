@@ -45,7 +45,7 @@ final class IptvSettingsControllerProvider
 }
 
 String _$iptvSettingsControllerHash() =>
-    r'41727daab0501bd56d68adb95f217adfad9d9962';
+    r'bd5da30edfb98aefbc1bcd9301bd06ca2233cc0f';
 
 /// IPTV auto-sync configuration.
 

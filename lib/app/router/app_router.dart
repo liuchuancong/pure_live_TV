@@ -70,6 +70,7 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsLocalBackup: (context) => const BackupManageSectionPage(),
   AppRoutes.kSettingsDeviceSync: (context) => const DeviceSyncSectionPage(),
   AppRoutes.kSettingsLogViewer: (context) => const LogViewerPage(),
+  AppRoutes.kSettingsBackupBrowser: (context) => const BackupBrowserSectionPage(),
   AppRoutes.kIptv: (context) => const IptvManageSectionPage(),
   AppRoutes.kIptvResources: (context) => const IptvResourcesSectionPage(),
   AppRoutes.kIptvImport: (context) => const IptvImportSectionPage(),
@@ -131,6 +132,7 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsLocalBackup: const LocalBackupRoute(),
   AppRoutes.kSettingsDeviceSync: const DeviceSyncRoute(),
   AppRoutes.kSettingsLogViewer: const LogViewerRoute(),
+  AppRoutes.kSettingsBackupBrowser: const BackupBrowserRoute(),
   AppRoutes.kIptv: const IptvRoute(),
   AppRoutes.kIptvResources: const IptvResourcesRoute(),
   AppRoutes.kIptvImport: const IptvImportRoute(),
@@ -381,6 +383,14 @@ class LogViewerRoute extends GoRouteData with $LogViewerRoute {
   Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
 }
 
+/// `kSettingsBackupBrowser`.
+class BackupBrowserRoute extends GoRouteData with $BackupBrowserRoute {
+  const BackupBrowserRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
+}
+
 /// `kIptv`.
 class IptvRoute extends GoRouteData with $IptvRoute {
   const IptvRoute();
@@ -596,6 +606,7 @@ class AboutRoute extends GoRouteData with $AboutRoute {
     TypedGoRoute<LocalBackupRoute>(path: AppRoutes.kSettingsLocalBackup),
     TypedGoRoute<DeviceSyncRoute>(path: AppRoutes.kSettingsDeviceSync),
     TypedGoRoute<LogViewerRoute>(path: AppRoutes.kSettingsLogViewer),
+    TypedGoRoute<BackupBrowserRoute>(path: AppRoutes.kSettingsBackupBrowser),
     TypedGoRoute<IptvRoute>(path: AppRoutes.kIptv),
     TypedGoRoute<IptvResourcesRoute>(path: AppRoutes.kIptvResources),
     TypedGoRoute<IptvImportRoute>(path: AppRoutes.kIptvImport),

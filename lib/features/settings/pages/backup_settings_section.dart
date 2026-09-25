@@ -3,7 +3,6 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/log_settings/log_settings_controller.dart';
@@ -103,20 +102,15 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
               icon: Icons.folder_outlined,
               onTap: () => const LocalBackupRoute().push(context),
             ),
+            // The same files, without a file system to reach: the phone page
+            // downloads a backup and uploads one back.
+            TvSettingsNavTile(
+              title: i18n('backup_browser_title'),
+              subtitle: i18nOr('backup_browser_entry_desc', '手机扫码下载备份，或把备份导回电视'),
+              icon: Icons.qr_code_2_rounded,
+              onTap: () => const BackupBrowserRoute().push(context),
+            ),
           ],
-        ),
-        SizedBox(height: 16.h),
-        // The same files, without a file system to reach: the phone page downloads
-        // a backup and uploads one back, which is the only way in for a file that
-        // never landed in this device's backup folder.
-        TvSettingsGroupTitle(title: i18n('backup_browser_title')),
-        Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.sync)),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          child: Text(
-            i18n('backup_browser_hint'),
-            style: TextStyle(fontSize: 14.sp, color: theme.secondaryTextColor),
-          ),
         ),
         SizedBox(height: 16.h),
         // log management

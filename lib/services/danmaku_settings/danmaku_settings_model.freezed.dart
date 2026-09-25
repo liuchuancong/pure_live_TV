@@ -15,8 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DanmakuSettingsModel {
 
- bool get hideDanmaku; bool get noEmojiMode; double get danmakuTopArea; double get danmakuArea; double get danmakuBottomArea; double get danmakuSpeed; double get danmakuFontSize; int get danmakuFontWeight; double get danmakuFontBorder; double get danmakuOpacity; bool get enableDanmakuDisplay; bool get enableDanmakuStroke; int get danmakuFps;/// 自动帧率（跟随屏幕刷新率）默认关闭：TV 盒子视频解码吃紧时,
-/// 120Hz 面板会把弹幕合成预算翻倍。关闭后走 danmakuFps（默认 60）。
+ bool get hideDanmaku; bool get noEmojiMode; double get danmakuTopArea; double get danmakuArea; double get danmakuBottomArea; double get danmakuSpeed; double get danmakuFontSize; int get danmakuFontWeight; double get danmakuFontBorder; double get danmakuOpacity; bool get enableDanmakuDisplay; bool get enableDanmakuStroke; int get danmakuFps;/// Auto frame rate (follow the display) defaults off: a 120Hz panel doubles
+/// the danmaku compositing budget on boxes whose video decode is already
+/// tight. When off, [danmakuFps] applies (60 by default).
  bool get danmakuAutoFps; bool get enableDanmakuTapInteraction; bool get enableDanmakuLongPressInteraction; bool get collapseRepeatedDanmaku; int get repeatedDanmakuWindowSeconds; int get danmakuInteractionMigration; String get savedDanmakuTemplate; String get danmakuFontFamilyName; bool get enablePipDanmaku; bool get pipDanmakuAutoScale; bool get pipDanmakuNoEmojiMode; bool get pipDanmakuUseOriginalColor; int get pipDanmakuColor; double get pipDanmakuFontSize; int get pipDanmakuFontWeight; double get pipDanmakuSpeed; double get pipDanmakuOpacity; double get pipDanmakuArea; int get pipDanmakuMaxVisibleCount; double get pipDanmakuEmitInterval; int get pipDanmakuFps; bool get pipDanmakuAutoFps; bool get filterDouyuSuspectedAutomatedMessages; bool get enableDanmakuSimilarityFilter; int get danmakuSimilarityThreshold; int get danmakuSimilarityCacheDuration; int get danmakuSimilarityMaxCacheSize;
 /// Create a copy of DanmakuSettingsModel
 /// with the given fields replaced by the non-null parameter values.
@@ -266,8 +267,9 @@ class _DanmakuSettingsModel implements DanmakuSettingsModel {
 @override@JsonKey() final  bool enableDanmakuDisplay;
 @override@JsonKey() final  bool enableDanmakuStroke;
 @override@JsonKey() final  int danmakuFps;
-/// 自动帧率（跟随屏幕刷新率）默认关闭：TV 盒子视频解码吃紧时,
-/// 120Hz 面板会把弹幕合成预算翻倍。关闭后走 danmakuFps（默认 60）。
+/// Auto frame rate (follow the display) defaults off: a 120Hz panel doubles
+/// the danmaku compositing budget on boxes whose video decode is already
+/// tight. When off, [danmakuFps] applies (60 by default).
 @override@JsonKey() final  bool danmakuAutoFps;
 @override@JsonKey() final  bool enableDanmakuTapInteraction;
 @override@JsonKey() final  bool enableDanmakuLongPressInteraction;

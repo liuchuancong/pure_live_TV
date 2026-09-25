@@ -214,6 +214,8 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsLocalBackup: 'local_backup',
   AppRoutes.kSettingsDeviceSync: 'remote_sync_receive',
   AppRoutes.kSettingsLogViewer: 'view_logs_in_browser',
+  // Titled like the backup row that opens it.
+  AppRoutes.kSettingsBackupBrowser: 'backup_browser_title',
   AppRoutes.kSettingsConfigPreview: 'config_preview',
   AppRoutes.kSettingsDanmuShield: 'danmaku_keyword_block',
   AppRoutes.kSettingsHotAreas: 'platform_display',

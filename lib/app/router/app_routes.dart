@@ -187,6 +187,10 @@ abstract final class AppRoutes {
   /// View the local log in a browser (QR + address served by the web remote)
   static const kSettingsLogViewer = "/settings/log_viewer";
 
+  /// Download or import a backup from a phone browser: the QR opens the web
+  /// remote's sync page, which handles the same backup file the app writes.
+  static const kSettingsBackupBrowser = "/settings/backup_browser";
+
   /// Per-platform cookie pages: every platform gets its own page, with both a
   /// QR (phone page or device sign-in) and manual input.
   static const kSettingsAccountBilibili = "/settings_account/bilibili";
