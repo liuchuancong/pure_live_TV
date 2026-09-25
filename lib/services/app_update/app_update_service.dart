@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/platform/race_http.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
@@ -12,7 +13,6 @@ import 'package:pure_live/shared/platform/file_utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/models/release_model/release_model.dart';
 
@@ -899,8 +899,12 @@ class AppUpdateController extends _$AppUpdateController {
 
     Directory? target;
     try {
-      final base = await AppPathManager().getDir(AppPathManager.dirDownload);
-      target = Directory('${base.path}${Platform.pathSeparator}update');
+      // Under the app documents dir on purpose: open_filex refuses to hand a
+      // package to the installer without the all-files-access grant unless the
+      // file lives under dataDir/getExternalFilesDir, and cache-resident APKs
+      // made Android 11+ phones and TVs fail to launch the installer at all.
+      final Directory documents = await getApplicationDocumentsDirectory();
+      target = Directory('${documents.path}${Platform.pathSeparator}update');
       if (!await target.exists()) await target.create(recursive: true);
     } catch (error) {
       _cancelDownload();
