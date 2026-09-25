@@ -158,9 +158,10 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
     final double crossSpacing = themeState.crossAxisSpacing;
     final double mainSpacing = themeState.mainAxisSpacing;
 
-    // The playlist this page hands the player is the live-only list - a room
-    // opened from the replay or offline tab still switches between live rooms.
-    final liveRooms = ref.read(favoriteProvider.notifier).getLiveRooms();
+    // The playlist mirrors the page's source: live, then replay, then offline,
+    // scoped to the platform tab — so up/down walks the same groups the page
+    // shows instead of only the live slice.
+    final liveRooms = ref.read(favoriteProvider.notifier).getPlaylistRooms();
 
     final currentParam = _getOrCreateParam(
       'fav_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}',

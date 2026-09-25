@@ -271,11 +271,24 @@ class FavoriteNotifier extends _$FavoriteNotifier {
 
   /// The followed rooms that are live right now, in the scope the page shows
   /// (platform tab and tag).
-  ///
-  /// This is what the player takes as its playlist: a room opened from this page
-  /// is switched with up/down against the live-only list, so opening a replay or an
-  /// offline card still moves between rooms that are actually live.
   List<LiveRoom> getLiveRooms() => _inPageScope(state.onlineRooms);
+
+  /// The page's full room list in display order — live, then replay, then
+  /// offline — scoped to the platform tab the page shows.
+  ///
+  /// This is what the player takes as its playlist: the playlist mirrors the
+  /// source the room was opened from, so switching walks the same three status
+  /// groups the page shows instead of only the live slice. A room opened from
+  /// the replay or offline tab therefore moves through its own group first.
+  List<LiveRoom> getPlaylistRooms() {
+    LiveRoom normalizeAudience(LiveRoom room) =>
+        room.copyWith(watching: int.tryParse(room.watching)?.toString() ?? '0');
+    return [
+      ..._inPageScope(state.onlineRooms).map(normalizeAudience),
+      ..._inPageScope(state.replayRooms).map(normalizeAudience),
+      ..._inPageScope(state.offlineRooms).map(normalizeAudience),
+    ];
+  }
 
   /// Applies the page's platform tab and tag filter to [source].
   List<LiveRoom> _inPageScope(List<LiveRoom> source) {
