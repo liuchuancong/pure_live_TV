@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -302,6 +303,12 @@ class BackupController extends _$BackupController {
     if (_restoreInProgress) throw StateError('A settings restore is already running');
     _restoreInProgress = true;
     try {
+      // Provider writes must not land while the widget tree is mid-build: a
+      // restore is driven from network handlers and frequently lands right as
+      // the user navigates, and tab flips resume provider subscriptions during
+      // TickerMode's build - a synchronous favorite write there crashes with
+      // "setState() called during build". End of frame is always safe.
+      await WidgetsBinding.instance.endOfFrame;
       importAllSettings(data);
     } finally {
       _restoreInProgress = false;
