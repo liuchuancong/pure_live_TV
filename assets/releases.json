@@ -1,5 +1,18 @@
 [
   {
+    "version": "3.0.5",
+    "title": "v3.0.5",
+    "date": "2026-09-25",
+    "github": "https://github.com/liuchuancong/pure_live_TV/releases/tag/v3.0.5",
+    "author": {
+      "name": "liuchuancong",
+      "avatar": "https://avatars.githubusercontent.com/u/36957912?v=4",
+      "profile": "https://github.com/liuchuancong"
+    },
+    "changelog": "",
+    "files": []
+  },
+  {
     "version": "3.0.4",
     "title": "v3.0.4",
     "date": "2026-09-24",
@@ -14,37 +27,37 @@
       {
         "name": "PureLive-TV-arm64-v8a-impeller",
         "size": "85.92mb",
-        "downloads": 7,
+        "downloads": 70,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.4/PureLive-TV-arm64-v8a-impeller.apk"
       },
       {
         "name": "PureLive-TV-arm64-v8a-skia",
         "size": "85.92mb",
-        "downloads": 3,
+        "downloads": 30,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.4/PureLive-TV-arm64-v8a-skia.apk"
       },
       {
         "name": "PureLive-TV-armeabi-v7a-impeller",
         "size": "73.2mb",
-        "downloads": 4,
+        "downloads": 43,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.4/PureLive-TV-armeabi-v7a-impeller.apk"
       },
       {
         "name": "PureLive-TV-armeabi-v7a-skia",
         "size": "73.2mb",
-        "downloads": 5,
+        "downloads": 22,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.4/PureLive-TV-armeabi-v7a-skia.apk"
       },
       {
         "name": "PureLive-TV-x86_64-impeller",
         "size": "87.67mb",
-        "downloads": 4,
+        "downloads": 9,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.4/PureLive-TV-x86_64-impeller.apk"
       },
       {
         "name": "PureLive-TV-x86_64-skia",
         "size": "87.67mb",
-        "downloads": 3,
+        "downloads": 9,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.4/PureLive-TV-x86_64-skia.apk"
       }
     ]
@@ -64,7 +77,7 @@
       {
         "name": "PureLive-TV-arm64-v8a-impeller",
         "size": "86.02mb",
-        "downloads": 110,
+        "downloads": 111,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.3/PureLive-TV-arm64-v8a-impeller.apk"
       },
       {
@@ -76,7 +89,7 @@
       {
         "name": "PureLive-TV-armeabi-v7a-impeller",
         "size": "73.38mb",
-        "downloads": 89,
+        "downloads": 91,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.3/PureLive-TV-armeabi-v7a-impeller.apk"
       },
       {
@@ -114,7 +127,7 @@
       {
         "name": "PureLive-TV-arm64-v8a-impeller",
         "size": "85.01mb",
-        "downloads": 132,
+        "downloads": 133,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.2/PureLive-TV-arm64-v8a-impeller.apk"
       },
       {
@@ -126,7 +139,7 @@
       {
         "name": "PureLive-TV-armeabi-v7a-impeller",
         "size": "72.24mb",
-        "downloads": 122,
+        "downloads": 123,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.2/PureLive-TV-armeabi-v7a-impeller.apk"
       },
       {
@@ -238,7 +251,7 @@
       {
         "name": "PureLive-TV-x86_64-impeller",
         "size": "87.78mb",
-        "downloads": 12,
+        "downloads": 13,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v3.0.0/PureLive-TV-x86_64-impeller.apk"
       },
       {
@@ -264,7 +277,7 @@
       {
         "name": "arm64-v8a",
         "size": "51.82mb",
-        "downloads": 9098,
+        "downloads": 9101,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v2.0.20/app-arm64-v8a-release.apk"
       },
       {
@@ -276,7 +289,7 @@
       {
         "name": "armeabi-v7a",
         "size": "50.6mb",
-        "downloads": 6319,
+        "downloads": 6324,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v2.0.20/app-armeabi-v7a-release.apk"
       },
       {
@@ -288,7 +301,7 @@
       {
         "name": "x86_64",
         "size": "53.72mb",
-        "downloads": 1347,
+        "downloads": 1348,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v2.0.20/app-x86_64-release.apk"
       },
       {
@@ -364,7 +377,7 @@
       {
         "name": "arm64-v8a",
         "size": "48.13mb",
-        "downloads": 549,
+        "downloads": 550,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v2.0.18/app-arm64-v8a-release.apk"
       },
       {
@@ -376,7 +389,7 @@
       {
         "name": "armeabi-v7a",
         "size": "46.88mb",
-        "downloads": 541,
+        "downloads": 542,
         "url": "https://github.com/liuchuancong/pure_live_TV/releases/download/v2.0.18/app-armeabi-v7a-release.apk"
       },
       {
