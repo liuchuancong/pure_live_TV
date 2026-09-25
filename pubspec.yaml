@@ -218,8 +218,3 @@ flutter:
     - assets/emo/images/bilibili/
     - assets/emo/json/
     - assets/fonts/fonts-manifest.json
-  # 自定义字体
-  fonts:
-    - family: PingFang
-      fonts:
-        - asset: assets/MiSans-Regular.ttf
