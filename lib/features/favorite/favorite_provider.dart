@@ -176,8 +176,9 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     // A tag deleted while it was the active filter must not keep filtering
     // invisibly: the reference drops the same selection. The surviving selection
     // is written back to the field, so the reset survives a rebuild too.
-    _selectedTagId =
-        _selectedTagId == 'all' || tagState.tags.any((tag) => tag.id == _selectedTagId) ? _selectedTagId : 'all';
+    _selectedTagId = _selectedTagId == 'all' || tagState.tags.any((tag) => tag.id == _selectedTagId)
+        ? _selectedTagId
+        : 'all';
 
     int getRoomTagScore(LiveRoom room) {
       final List<String> ids = tagController.getTagsForRoom(room);
@@ -264,6 +265,14 @@ class FavoriteNotifier extends _$FavoriteNotifier {
       visibleTagsList.addAll(tags);
     }
 
+    // A tag the shown list does not use must not keep filtering invisibly: the
+    // selection is re-resolved against the tags actually on screen, so a stale
+    // one (its chips are gone from the strip) cannot leave the grid showing a
+    // single room with nothing on screen explaining why.
+    if (_selectedTagId != 'all' && !visibleTagsList.any((tag) => tag.id == _selectedTagId)) {
+      _selectedTagId = 'all';
+    }
+
     return currentState.copyWith(
       tabSiteIndex: siteIndex,
       tabOnlineIndex: _tabOnlineIndex,
@@ -317,8 +326,7 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   }
 
   /// Applies the page's platform tab and tag filter to [source].
-  List<LiveRoom> _inPageScope(List<LiveRoom> source) =>
-      _scoped(source, siteId: _selectedSiteId, tagId: _selectedTagId);
+  List<LiveRoom> _inPageScope(List<LiveRoom> source) => _scoped(source, siteId: _selectedSiteId, tagId: _selectedTagId);
 
   List<LiveRoom> _scoped(List<LiveRoom> source, {required String siteId, required String tagId}) {
     List<LiveRoom> rooms = source;

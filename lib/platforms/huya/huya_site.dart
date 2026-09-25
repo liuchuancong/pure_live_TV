@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/platforms/huya/huya_utils.dart' as huya_utils;
 
-
 class HuyaSite
     implements
         LiveSite,
@@ -223,7 +222,9 @@ class HuyaSite
   @visibleForTesting
   static List<LivePlayQuality> parsePlayQualities(HuyaUrlDataModel data) {
     final playbackLines = List<HuyaLineModel>.unmodifiable(data.lines);
-    final rates = data.bitRates.isEmpty ? <HuyaBitRateModel>[HuyaBitRateModel(name: i18n('prefer_resolution_option_original'), bitRate: 0)] : data.bitRates;
+    final rates = data.bitRates.isEmpty
+        ? <HuyaBitRateModel>[HuyaBitRateModel(name: i18n('prefer_resolution_option_original'), bitRate: 0)]
+        : data.bitRates;
     final unique = <int, HuyaBitRateModel>{};
     for (final rate in rates) {
       if (rate.bitRate < 0 || rate.name.trim().isEmpty) continue;
@@ -585,8 +586,7 @@ class HuyaSite
     // them from the id alone reported a room that had answered perfectly well as
     // "room info failed to load", and the replay case then surfaced two steps
     // later as "no available quality".
-    final bool notBroadcasting =
-        isExplicitOfflineState(responseData?['liveStatus']) || responseData?['stream'] == null;
+    final bool notBroadcasting = isExplicitOfflineState(responseData?['liveStatus']) || responseData?['stream'] == null;
 
     if (statusCode == 200 && responseData != null && notBroadcasting) {
       return _buildRoomFromSnapshot(responseData, platform: platform, roomId: roomId);
@@ -748,23 +748,29 @@ class HuyaSite
 
   /// Room built from a snapshot that carries no playable `stream`.
   ///
-  /// The snapshot is still a room description - anchor, title, cover, area and
-  /// audience - so the room can be shown, but nothing in it can be played: the
-  /// live lines are gone with the `stream` object, and Huya's replay (a signed VOD
-  /// playlist in `liveData.hlsUrl`) is not wired up in this app. A `REPLAY`
-  /// snapshot therefore reports as an off-air room.
+  /// The snapshot is still a room description — anchor, title, cover, area and
+  /// audience — and its state is the platform's own answer, with one exception: a
+  /// `REPLAY` snapshot has no playable source in this app (Huya's record is a
+  /// signed VOD playlist this app never wired up), so it is reported off-air
+  /// instead of as a replay the player would only refuse to play.
   ///
-  /// Reporting it as a replay instead is what made the followed card sit under
-  /// 回放 while the player could only answer "not living": the card promised
-  /// playback the app could not deliver. Should replay playback ever be built,
-  /// this is where the playlist becomes a line - and the state can go back to
-  /// following the snapshot's own value.
+  /// The entry path and the refresh path share this builder. Reporting *every*
+  /// snapshot as off-air — which is what an unconditional "no stream, no play"
+  /// rule amounted to — filed live rooms under 未开播 the moment a refresh ran.
   LiveRoom _buildRoomFromSnapshot(Map<dynamic, dynamic> data, {required String platform, required String roomId}) {
     final liveData = data['liveData'] is Map
         ? Map<String, dynamic>.from(data['liveData'] as Map)
         : const <String, dynamic>{};
     final profile = data['profileInfo'] is Map ? data['profileInfo'] as Map : const <dynamic, dynamic>{};
     final audience = parseRoomAudience(liveData);
+    final normalizedLiveState = data['liveStatus']?.toString().trim().toUpperCase() ?? '';
+    final LiveStatus parsedState = parseHuyaLiveStatus(normalizedLiveState);
+
+    // A replay this app cannot play stays out of the replay bucket too, or the
+    // card advertises a recording the player then refuses to open. Should replay
+    // playback ever be built, this is the line to remove.
+    final bool replayWithoutSource = parsedState == LiveStatus.replay;
+
     return LiveRoom(
       cover: liveData['screenshot']?.toString() ?? '',
       watching: audience.popularity,
@@ -778,9 +784,9 @@ class HuyaSite
       avatar: profile['avatar180']?.toString() ?? '',
       introduction: liveData['introduction']?.toString() ?? '',
       notice: data['welcomeText']?.toString() ?? '',
-      isRecord: false,
-      status: false,
-      liveStatus: LiveStatus.offline,
+      isRecord: normalizedLiveState == 'REPLAY' && !replayWithoutSource,
+      status: normalizedLiveState == 'ON',
+      liveStatus: replayWithoutSource ? LiveStatus.offline : parsedState,
       platform: platform,
       link: 'https://www.huya.com/$roomId',
     );
@@ -833,11 +839,7 @@ class HuyaSite
     // The refresh path only needs the room description, so it accepts a snapshot
     // without a playable stream (an off-air or replay room) exactly as the entry
     // path does; one builder keeps the two from drifting apart.
-    return _buildRoomFromSnapshot(
-      decoded['data'] as Map,
-      platform: platform,
-      roomId: roomId,
-    );
+    return _buildRoomFromSnapshot(decoded['data'] as Map, platform: platform, roomId: roomId);
   }
 
   String? findRoomId(List list, int targetUid, int targetYyid) {
