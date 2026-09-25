@@ -494,7 +494,7 @@ final class LivePlayerFacade {
       _onPreferredEngineChanged?.call(engine);
     }
 
-    final request = _lastRequest;
+    var request = _lastRequest;
 
     // Unmount the surface first: the retired adapter's widget must leave
     // the tree before its texture is disposed.
@@ -506,7 +506,26 @@ final class LivePlayerFacade {
       return;
     }
 
-    await playRequest(request);
+    // Manual engine switch runs the same single-use-URL refresh as the
+    // sweep's engine fallback: the lines in the remembered request were
+    // consumed by the engine that just retired, so replaying them on the
+    // new engine fails on an expired signature before playback even
+    // starts. An empty or failed refresh keeps the existing lines.
+    final refresh = onEngineFallbackUrls;
+
+    if (refresh != null) {
+      try {
+        final fresh = await refresh(_backendIdOf(engine));
+
+        if (fresh.isNotEmpty) {
+          request = LiveSourceRequest.fromUrls(fresh, headers: _lastHeaders, title: request.title);
+        }
+      } catch (_) {
+        // Keep the remembered request; the sweep reports the failure.
+      }
+    }
+
+    await playRequest(request!);
   }
 
   /// Plays a previously built request as-is.
