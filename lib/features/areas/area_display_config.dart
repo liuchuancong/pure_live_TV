@@ -1,40 +1,42 @@
 import 'package:pure_live/shared/models/live_area/live_area.dart';
 import 'package:pure_live/shared/models/live_category/live_category.dart';
 
-/// 各站点的分区目录展示配置。
+/// Per-site display configuration for the areas directory.
 ///
-/// 站点 [`LiveSite.getCategores`] 统一返回两层结构（一级分类 + children）。
-/// 分区页默认按一级分类做二级 tab；但对分类很少的站点（bigo、zhanqi、
-/// showroom 这类只有一层，或一级下总共没几项的），一层 tab 反而把内容
-/// 切碎了 —— 把 children 全部平铺到一个列表里一次展示完更直观。
+/// [`LiveSite.getCategores`] always returns a two-level structure (top-level
+/// categories with children). The areas page shows a second tab bar per
+/// top-level category by default; for sites with only a handful of categories
+/// that tab layer fragments the content - rendering all children in one flat
+/// grid at once reads better.
 ///
-/// 在 [flatAreaSites] 里登记的平台走平铺展示；未登记的保持两层 tab。
-/// （单层站点无需登记 —— [shouldFlattenCategories] 会对它们自动平铺。）
+/// Sites listed in [flatAreaSites] render flat; unlisted sites keep the
+/// two-level tabs.
 const Set<String> flatAreaSites = <String>{
   'bigo',
   'zhanqi',
   'showroom',
 };
 
-/// 该站点的分区目录是否应平铺展示。
+/// Whether the areas directory of one site should render flat.
 ///
-/// 两种情形：
-/// * 站点只返回一个一级分类 —— 平铺等于把 children 直接铺开，一层空 tab
-///   没有信息量，自动生效；
-/// * 站点在 [flatAreaSites] 里登记 —— 分类虽有多组，但总量少，一次展示
-///   全部比切 tab 更直观。
+/// Two cases:
+/// * the site returns a single top-level category - flattening just spreads
+///   its children, and an empty tab layer carries no information, so this
+///   applies automatically;
+/// * the site is listed in [flatAreaSites] - several groups but few entries
+///   overall, showing everything at once beats switching tabs.
 bool shouldFlattenCategories(String siteId, List<LiveCategory> categories) =>
     categories.length <= 1 || isFlatAreaSite(siteId);
 
-/// 将站点的两层分类目录平铺为一个列表。
+/// Whether [siteId] opted into the flat directory rendering.
+bool isFlatAreaSite(String siteId) => flatAreaSites.contains(siteId.trim().toLowerCase());
+
+/// Flattens the two-level category directory into one list.
 ///
-/// 每个二级分类保留其所属一级分类的名字（[LiveArea.typeName] 已由站点层
-/// 填好），平铺只做展开不重排。
+/// Every entry keeps the name of its top-level group ([LiveArea.typeName] is
+/// filled by the site layer); flattening only expands, it never reorders.
 List<LiveArea> flattenCategories(List<LiveCategory> categories) {
   return <LiveArea>[
     for (final category in categories) ...category.children,
   ];
 }
-
-/// 该站点是否按平铺模式展示分区目录。
-bool isFlatAreaSite(String siteId) => flatAreaSites.contains(siteId.trim().toLowerCase());

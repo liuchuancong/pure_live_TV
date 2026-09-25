@@ -102,8 +102,9 @@ class AreasPlatformGridBridgeState extends ConsumerState<AreasPlatformGridBridge
           );
         }
 
-        // 分类很少的站点（见 area_display_config.flatAreaSites）把二级分类
-        // 平铺成一个列表一次展示；其余站点保持一级 tab + 二级网格的两层结构。
+        // Sites with few categories (see area_display_config.flatAreaSites)
+        // render all children in one flat grid; the rest keep the two-level
+        // top tab + sub grid structure.
         if (shouldFlattenCategories(widget.site.id, categories)) {
           final flat = flattenCategories(categories);
           return AreaGridView(labels: const [''], areas: <List<LiveArea>>[flat], flat: true);

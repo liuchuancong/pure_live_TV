@@ -270,7 +270,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         emptyBuilder: (context, onRefresh) => _buildFavoriteEmpty(context, favoriteState, onRefresh),
                         // The builder above draws its own empty state (with the
-                        // search action next to 刷新); EmptyScene.favorite stays as
+                        // search action next to the refresh one); EmptyScene.favorite stays as
                         // the fallback for any path that reaches the view without it.
                         emptyScene: EmptyScene.favorite,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

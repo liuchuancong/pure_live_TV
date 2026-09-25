@@ -10,8 +10,8 @@ class AreaGridView extends ConsumerStatefulWidget {
   final List<String> labels;
   final List<List<LiveArea>> areas;
 
-  /// 平铺模式：整个站点只有一个列表（[labels]/[areas] 各一项且 labels 为空串），
-  /// 不渲染二级分类 tab。
+  /// Flat mode: the whole site renders one list ([labels]/[areas] each carry a
+  /// single entry with an empty label) and no sub-category tab bar.
   final bool flat;
 
   const AreaGridView({super.key, required this.labels, required this.areas, this.flat = false});
