@@ -1,3 +1,4 @@
+import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/models/live_area/live_area.dart';
 import 'package:pure_live/shared/models/live_category/live_category.dart';
 
@@ -12,9 +13,36 @@ import 'package:pure_live/shared/models/live_category/live_category.dart';
 /// Sites listed in [flatAreaSites] render flat; unlisted sites keep the
 /// two-level tabs.
 const Set<String> flatAreaSites = <String>{
-  'bigo',
-  'zhanqi',
-  'showroom',
+  Sites.douyinSite,
+  Sites.yySite,
+  Sites.acfunSite,
+  Sites.kilakilaSite,
+  Sites.huajiaoSite,
+  Sites.weiboSite,
+  Sites.jdLiveSite,
+  Sites.soopSite,
+  Sites.picartoSite,
+  Sites.twitcastingSite,
+  Sites.inkeSite,
+  Sites.openrecSite,
+  Sites.ttingSite,
+  Sites.chzzkSite,
+  Sites.kickSite,
+  Sites.bigoSite,
+  Sites.pandaLiveSite,
+  Sites.popkonSite,
+  Sites.shopeeLiveSite,
+  Sites.vkVideoLiveSite,
+  Sites.nimoTvSite,
+  Sites.dailymotionSite,
+  Sites.rumbleSite,
+  Sites.goodgameSite,
+  Sites.fc2LiveSite,
+  Sites.steamBroadcastSite,
+  Sites.kugouLiveSite,
+  Sites.baiduLiveSite,
+  Sites.sixRoomSite,
+  Sites.lookLiveSite,
 };
 
 /// Whether the areas directory of one site should render flat.
@@ -36,7 +64,5 @@ bool isFlatAreaSite(String siteId) => flatAreaSites.contains(siteId.trim().toLow
 /// Every entry keeps the name of its top-level group ([LiveArea.typeName] is
 /// filled by the site layer); flattening only expands, it never reorders.
 List<LiveArea> flattenCategories(List<LiveCategory> categories) {
-  return <LiveArea>[
-    for (final category in categories) ...category.children,
-  ];
+  return <LiveArea>[for (final category in categories) ...category.children];
 }
