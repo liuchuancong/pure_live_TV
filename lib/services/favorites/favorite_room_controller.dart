@@ -491,24 +491,33 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     // hours, days or weeks old — so the imported rooms would sit in whichever
     // bucket the backup remembered. Ask for one verification pass: the event
     // reaches a favourites page that is already mounted, and a page that opens
-    // later takes the flag instead. (The reference does the same after its account
-    // download: restore the settings, then refresh the followed rooms.)
-    _statusRefreshRequested = true;
+    // later takes the pending flag instead. (The reference does the same after its
+    // account download: restore the settings, then refresh the followed rooms.)
+    requestStatusRefresh();
     EventBus.instance.emit('refresh_favorite_rooms', true);
   }
 
-  /// Whether an import left the followed list asking to be verified.
-  bool _statusRefreshRequested = false;
+  /// Key of the pending verification pass.
+  ///
+  /// In Hive rather than in this controller's state on purpose: the app launch
+  /// arms it before the favourites page - or this controller, which nothing keeps
+  /// alive until that page builds - exists, and an auto-disposed instance would
+  /// drop an in-memory flag on its way out.
+  static const String _statusRefreshPendingKey = 'favoriteStatusRefreshPending';
+
+  /// Asks for one verification pass over the followed rooms.
+  ///
+  /// Two callers, one pass: an import that just replaced the followed list, and
+  /// the app launching. Both leave the statuses on screen as old as the last time
+  /// someone looked, and the first visit to the favourites page re-asks the
+  /// platforms.
+  static void requestStatusRefresh() => HivePrefUtil.setBool(_statusRefreshPendingKey, true);
 
   /// Takes the pending verification request, if any.
-  ///
-  /// The favourites page calls this when it builds. The flag exists because an
-  /// import is driven from the settings side, where the favourites page (and its
-  /// listener on the event above) may not be alive yet.
-  bool consumeStatusRefreshRequest() {
-    if (!_statusRefreshRequested) return false;
+  static bool consumeStatusRefreshRequest() {
+    if (HivePrefUtil.getBool(_statusRefreshPendingKey) != true) return false;
 
-    _statusRefreshRequested = false;
+    HivePrefUtil.setBool(_statusRefreshPendingKey, false);
     return true;
   }
 

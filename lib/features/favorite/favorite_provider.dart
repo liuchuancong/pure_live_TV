@@ -80,10 +80,11 @@ class FavoriteNotifier extends _$FavoriteNotifier {
     _listenEventBus();
     _setupRefreshStrategy();
 
-    // A restore asks for one verification pass over the imported list; the event
-    // above only reaches this provider when the page is already up (see
-    // FavoriteRoomController.importFromJson).
-    if (ref.read(favoriteRoomControllerProvider.notifier).consumeStatusRefreshRequest()) {
+    // A verification pass is pending - the app just launched, or an import just
+    // replaced the followed list - and the event above only reaches this provider
+    // when the page is already up. Starting it here covers the page that comes up
+    // afterwards, which is where that pass is actually visible.
+    if (FavoriteRoomController.consumeStatusRefreshRequest()) {
       Future<void>.microtask(() => refreshData(scopeAll: true));
     }
 

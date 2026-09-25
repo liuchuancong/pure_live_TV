@@ -1,4 +1,5 @@
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -9,6 +10,11 @@ class StartupController extends _$StartupController {
   static StartupController get to => SettingsService.to.startup;
   @override
   bool build() {
+    // One verification pass per launch: the followed rooms were last checked
+    // whenever the viewer last looked, so the first visit to the favourites page
+    // re-asks the platforms. An import arms the same pending flag.
+    FavoriteRoomController.requestStatusRefresh();
+
     return HivePrefUtil.getBool('isFirstInApp') ?? true;
   }
 
