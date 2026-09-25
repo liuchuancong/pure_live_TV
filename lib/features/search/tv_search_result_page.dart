@@ -180,6 +180,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
           ),
           itemBuilder: (context, room, index) => TvRoomCard(
             room: room,
+            index: index,
             playlist: rooms,
             onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
           ),

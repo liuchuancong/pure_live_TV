@@ -32,16 +32,7 @@ class _AreasPageState extends ConsumerState<AreasPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TvTabBar(
-                  tabs: tabItems,
-                  currentIndex: platformState.currentPlatformIndex,
-                  onTabChange: (index) {
-                    ref.read(platformTabProvider.notifier).switchPlatform(index);
-                  },
-                  // OK twice on the platform tab refetches its category list — the
-                  // retry path for a platform whose directory request failed.
-                  onTabRefresh: (index) => ref.invalidate(getSiteCategoriesProvider(currentSite.id)),
-                ),
+                AreasPlatformTabs(tabs: tabItems, currentIndex: platformState.currentPlatformIndex, siteId: currentSite.id),
                 SizedBox(height: 16.sp),
                 Expanded(
                   child: TvTabView(
@@ -56,6 +47,41 @@ class _AreasPageState extends ConsumerState<AreasPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The platform tab bar of [AreasPage], with its refresh progress line.
+///
+/// A widget of its own so that the directory's loading flag rebuilds the bar and
+/// not the page: the grid below re-creates its paging params whenever the page
+/// (and with it the bridge under it) rebuilds, so a page-level flag made every
+/// reload happen twice — once against the stale catalogue, once against the fresh
+/// one — and reset the grid's scroll position each time.
+class AreasPlatformTabs extends ConsumerWidget {
+  const AreasPlatformTabs({super.key, required this.tabs, required this.currentIndex, required this.siteId});
+
+  final List<TvTabItemData> tabs;
+  final int currentIndex;
+  final String siteId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return TvTabBar(
+      tabs: tabs,
+      currentIndex: currentIndex,
+      // The line follows the directory request itself, so a reload nobody asked
+      // the bar for — the empty state's refresh button, the retry after a failure
+      // — shows on it too.
+      refreshing: ref.watch(getSiteCategoriesProvider(siteId).select((categories) => categories.isLoading)),
+      onTabChange: (index) {
+        ref.read(platformTabProvider.notifier).switchPlatform(index);
+      },
+      // OK twice on the platform tab refetches its category list — the retry path
+      // for a platform whose directory request failed. The returned future is the
+      // provider's own refetch, which is what holds the progress line until the
+      // directory answers.
+      onTabRefresh: (index) => ref.refresh(getSiteCategoriesProvider(siteId).future),
     );
   }
 }

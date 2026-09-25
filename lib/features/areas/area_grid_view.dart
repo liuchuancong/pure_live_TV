@@ -82,9 +82,12 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
             onTabChange: (index) {
               ref.read(categoryTabProvider.notifier).switchCategory(index);
             },
-            onTabRefresh: (index) {
-              ref.read(pagingCoreProvider(currentParam).notifier).refresh();
-            },
+            // Local reload: the platform's catalogue was fetched whole, so this
+            // re-slices the categories already in memory — the bar's own line
+            // covers its minimum visible time. The catalogue reload itself is not
+            // reflected here: that one shows on the platform bar above, and one
+            // refresh lights one line.
+            onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
           ),
         SizedBox(height: 20.sp),
         Expanded(

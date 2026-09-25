@@ -19,11 +19,14 @@ class TvRoomCard extends ConsumerStatefulWidget {
     this.onTap,
     this.showFollowedMark = true,
     this.playlist = const <LiveRoom>[],
+    this.index,
+    this.fit = BoxFit.cover,
   });
 
   final LiveRoom room;
   final VoidCallback? onLongPress;
   final VoidCallback? onTap;
+  final BoxFit fit;
 
   /// Whether the followed badge is shown.
   final bool showFollowedMark;
@@ -31,6 +34,10 @@ class TvRoomCard extends ConsumerStatefulWidget {
   /// The room list this card came from. Without an [onTap] it travels with the
   /// player and becomes the channel list.
   final List<LiveRoom> playlist;
+
+  /// The card's position in that list, which an IPTV card shows as its channel
+  /// number. Null keeps the platform avatar.
+  final int? index;
 
   @override
   ConsumerState<TvRoomCard> createState() => _TvRoomCardState();
@@ -65,15 +72,11 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   String get _audienceText {
     // Narrow selects: watching the whole models rebuilt every mounted card
     // whenever any unrelated setting (cache scan, any toggle) changed.
-    final preferRealOnline = ref.watch(
-      appSettingsControllerProvider.select((s) => s.preferRealOnlineCounts),
-    );
+    final preferRealOnline = ref.watch(appSettingsControllerProvider.select((s) => s.preferRealOnlineCounts));
     ref.watch(appSettingsControllerProvider.select((s) => s.realOnlinePlatforms));
     final value = widget.room.audienceValue(
       preferRealOnline: preferRealOnline,
-      platformEnabled: ref
-          .read(appSettingsControllerProvider.notifier)
-          .isRealOnlineEnabledFor(widget.room.platform),
+      platformEnabled: ref.read(appSettingsControllerProvider.notifier).isRealOnlineEnabledFor(widget.room.platform),
     );
     return readableCount(value);
   }
@@ -82,15 +85,16 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   /// as the channel list.
   void _openLivePlay() {
     if (!mounted) return;
-    LivePlayRoute(
-      LivePlayArgs.fromRoom(widget.room, playlist: widget.playlist),
-    ).push(context);
+    LivePlayRoute(LivePlayArgs.fromRoom(widget.room, playlist: widget.playlist)).push(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(24.sp);
+    // Evaluated once per build, outside the effects closure, so the effect
+    // never watches settings while a descendant is building.
+    final String audience = _audienceText;
 
     final List<DpadEffect> effects = [
       DpadScaleEffect(
@@ -101,33 +105,17 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       ),
       // Light palette: the 18px glow is a grey smear on white; crisp ring.
       tvTheme.isLight
-          ? DpadGlowEffect(
-              color: tvTheme.focusColor,
-              opacity: 1,
-              spreadRadius: 2.sp,
-              blurRadius: 0,
-            )
-          : DpadGlowEffect(
-              color: tvTheme.focusColor,
-              opacity: 0.75,
-              blurRadius: 18.sp,
-              spreadRadius: 1.5.sp,
-            ),
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
+          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
-        final bgColor = isFocused
-            ? tvTheme.focusedCardColor
-            : tvTheme.cardColor;
+        final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
         // Contrast with the card that is actually behind the text. The previous
         // rule (`focused ? backgroundColor : primaryTextColor`) worked only while
         // every focused card was white; on a light palette `backgroundColor` is
         // near-white, so a focused card showed near-white text on white.
-        final titleColor = isFocused
-            ? tvTheme.onFocusedCard
-            : tvTheme.primaryTextColor;
-        final subtitleColor = isFocused
-            ? tvTheme.onFocusedCardSecondary
-            : tvTheme.secondaryTextColor;
+        final titleColor = isFocused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
+        final subtitleColor = isFocused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
 
         return AnimatedContainer(
           duration: TvFocusStyle.focusDuration(isFocused),
@@ -135,10 +123,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,
-            border: Border.all(
-              color: isFocused ? tvTheme.focusColor : Colors.transparent,
-              width: 2.sp,
-            ),
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -146,6 +131,13 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
               // width the info row runs in its compact form so it still fits
               // the height the grid allots.
               final bool compact = constraints.maxWidth < 190.sp;
+              // A playlist ships no per-channel avatar, so an IPTV card numbers
+              // its channel instead: a position is what a TV viewer reads as the
+              // channel identity, while the shared placeholder would repeat one
+              // dead grey circle across every card of the list.
+              final int? channelNumber = widget.room.platform == Sites.iptvSite && widget.index != null
+                  ? widget.index! + 1
+                  : null;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -166,27 +158,17 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                             // re-keys the covers, so the refresh is visible instead of
                             // only freeing disk space.
                             cacheKey: coverCacheKey,
-                            fit: BoxFit.cover,
+                            fit: widget.room.platform == Sites.iptvSite ? BoxFit.contain : widget.fit,
                             // Decode covers at grid size and reuse the shared disk
                             // cache so scrolling back does not download again.
                             memCacheWidth: 640,
                             placeholder: (context, url) => Container(
                               color: tvTheme.cardColor,
-                              child: AppStatusView(
-                                type: AppStatusType.loading,
-                                title: "",
-                                subtitle: "",
-                                isMini: true,
-                              ),
+                              child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
                             ),
                             errorWidget: (context, url, error) {
                               debugPrint(error.toString());
-                              return AppStatusView(
-                                type: AppStatusType.error,
-                                title: "",
-                                subtitle: "",
-                                isMini: true,
-                              );
+                              return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
                             },
                           ),
                         ),
@@ -216,13 +198,14 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           ),
                         ),
                       if (widget.room.isRecord == false &&
-                          widget.room.liveStatus == LiveStatus.live)
+                          widget.room.liveStatus == LiveStatus.live &&
+                          audience.isNotEmpty)
                         Positioned(
                           right: 12.sp,
                           bottom: 12.sp,
                           child: TvButton(
                             excludeFocus: true,
-                            title: _audienceText,
+                            title: audience,
                             size: TvButtonSize.mini,
                             icon: Icon(Icons.whatshot_rounded, size: 20.sp),
                           ),
@@ -241,10 +224,19 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                       ),
                       child: Row(
                         children: [
-                          TvCommonAvatar(
-                            avatarUrl: widget.room.avatar,
-                            fallbackName: widget.room.nick,
-                            radius: compact ? 10.sp : null,
+                          // The leading keeps the avatar's footprint either way,
+                          // so titles stay aligned in a grid that mixes platforms.
+                          SizedBox(
+                            width: compact ? 20.sp : 56.sp,
+                            child: Center(
+                              child: channelNumber == null
+                                  ? TvCommonAvatar(
+                                      avatarUrl: widget.room.avatar,
+                                      fallbackName: widget.room.nick,
+                                      radius: compact ? 10.sp : null,
+                                    )
+                                  : NumberLeading(channelNumber, size: (compact ? 20 : 34).sp, color: titleColor),
+                            ),
                           ),
                           SizedBox(width: compact ? 8.sp : 16.sp),
                           Expanded(
@@ -261,11 +253,9 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                                 TvMarqueeText(
                                   text: widget.room.title,
                                   isFocused: isFocused,
-                                  style:
-                                      (compact
-                                              ? AppTextStyles.t14W700
-                                              : AppTextStyles.t22W700)
-                                          .copyWith(color: titleColor),
+                                  style: (compact ? AppTextStyles.t14W700 : AppTextStyles.t22W700).copyWith(
+                                    color: titleColor,
+                                  ),
                                 ),
                                 SizedBox(height: compact ? 2.sp : 4.sp),
                                 Flexible(
@@ -273,11 +263,9 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                                     widget.room.nick,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style:
-                                        (compact
-                                                ? AppTextStyles.t14W500
-                                                : AppTextStyles.t18W500)
-                                            .copyWith(color: subtitleColor),
+                                    style: (compact ? AppTextStyles.t14W500 : AppTextStyles.t18W500).copyWith(
+                                      color: subtitleColor,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -313,8 +301,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       // ancestor). The extra `Scrollable.ensureVisible` here animated to a
       // second, different offset and made the grid jitter while moving.
       onSelect: () {
-        final isLocked =
-            SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
+        final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
         if (isLocked) return;
         // The long press owns this press; its release must not open the room.
         if (_longPressGate.swallowSelect()) return;
@@ -332,8 +319,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       onLongSelect: widget.onLongPress == null
           ? null
           : () {
-              final isLocked =
-                  SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
+              final isLocked = SettingsService.to.container?.read(tvDialogLockProvider) ?? false;
               if (isLocked) return;
               _longPressGate.markLongPress();
               widget.onLongPress!.call();

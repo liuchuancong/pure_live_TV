@@ -124,6 +124,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           ),
           itemBuilder: (context, room, index) => TvRoomCard(
             room: room,
+            index: index,
             playlist: rooms,
             onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
           ),

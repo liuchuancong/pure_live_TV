@@ -1,9 +1,12 @@
+import 'dart:developer' as developer;
+
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/history/history_page_provider.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/services/history_settings/history_controller.dart';
+import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class HistoryPage extends ConsumerStatefulWidget {
@@ -14,6 +17,9 @@ class HistoryPage extends ConsumerStatefulWidget {
 }
 
 class _HistoryPageState extends ConsumerState<HistoryPage> {
+  /// One entry's lookup may not hold the whole pass hostage.
+  static const Duration _roomRefreshTimeout = Duration(seconds: 12);
+
   @override
   Widget build(BuildContext context) {
     final historyPageState = ref.watch(historyPageProvider);
@@ -55,9 +61,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                     onTabChange: (index) {
                       ref.read(historyPageProvider.notifier).changeSiteTab(index);
                     },
-                    // OK on the tab already in force refetches it — the second press
-                    // used to do nothing on this bar.
-                    onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
+                    // OK on the tab already in force re-verifies every entry against
+                    // its platform — the reference's history pull-to-refresh. The
+                    // returned future holds the bar's progress line meanwhile.
+                    onTabRefresh: (index) => _refreshHistoryRooms(),
                   ),
                   SizedBox(height: 16.sp),
                   Expanded(
@@ -82,6 +89,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
+                          index: index,
                           playlist: currentRooms,
                           onLongPress: () {
                             FavOperateUtil.toggleHistoryDeleteDialog(context, room);
@@ -96,6 +104,57 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           ],
         ),
     );
+  }
+
+  /// Re-verifies every history entry against its platform.
+  ///
+  /// The reference's history pull-to-refresh: one bounded pass over the whole
+  /// list — not only the platform tab on screen — asking each platform for the
+  /// room's current status. An entry whose lookup failed keeps its stored
+  /// snapshot ([HistoryController.applyRefreshedRooms] maps a null back onto the
+  /// entry it came from), so a network hiccup cannot rewrite a room as offline.
+  Future<void> _refreshHistoryRooms() async {
+    final snapshot = List<LiveRoom>.from(ref.read(historyControllerProvider).historyRooms);
+    if (snapshot.isEmpty) return;
+
+    final refreshState = ref.read(refreshConfigControllerProvider);
+    final concurrency = refreshState.maxConcurrentRefresh > 0 ? refreshState.maxConcurrentRefresh : 5;
+
+    final refreshed = await boundedAsyncMap<LiveRoom, LiveRoom>(
+      snapshot,
+      maxConcurrent: concurrency,
+      task: _refreshOneHistoryRoom,
+      shouldCancel: () => !mounted,
+    );
+    if (!mounted) return;
+
+    // The notifier is read after the await rather than held across it: the pass
+    // outlives the frame that started it, and the grid re-slices from the
+    // updated list on the rebuild this write triggers.
+    ref.read(historyControllerProvider.notifier).applyRefreshedRooms(snapshot, refreshed);
+  }
+
+  /// One entry's verification pass; null keeps the stored snapshot.
+  ///
+  /// [fetchRoomDetailForRefresh] is the guarded path the favourite refresh uses
+  /// for the same reason: the presentation-facing `LiveSite.getRoomDetail`
+  /// answers a failure with an offline-looking fallback room, which would
+  /// rewrite a still-live entry as offline.
+  Future<LiveRoom?> _refreshOneHistoryRoom(LiveRoom room) async {
+    if (room.platform.isEmpty || room.roomId.isEmpty) return null;
+    try {
+      final refreshed = await fetchRoomDetailForRefresh(
+        site: Sites.of(room.platform).liveSite,
+        roomId: room.roomId,
+        platform: room.platform,
+      ).timeout(_roomRefreshTimeout);
+      // Some platforms answer with another canonical id: re-binding keeps the
+      // identity the history list dedupes by.
+      return preserveHistoryMetadata(refreshed.copyWith(roomId: room.roomId, platform: room.platform), room);
+    } catch (e) {
+      developer.log('History room refresh failed for ${room.identityKey}: $e');
+      return null;
+    }
   }
 
   /// Clears the whole history after confirming how many entries are removed.

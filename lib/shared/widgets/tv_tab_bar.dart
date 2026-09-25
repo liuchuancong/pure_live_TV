@@ -54,7 +54,31 @@ class TvTabBar extends StatefulWidget {
   final List<TvTabItemData> tabs;
   final int currentIndex;
   final void Function(int index) onTabChange;
-  final void Function(int index)? onTabRefresh;
+
+  /// Pressing the tab that is already current: reload what it shows.
+  ///
+  /// The returned future drives the bar's progress line — it stays up until the
+  /// work actually finished, so an instant local reload, a slow fetch and a
+  /// failure all read correctly.
+  final Future<void> Function(int index)? onTabRefresh;
+
+  /// Whether the data behind this bar is being (re)loaded right now.
+  ///
+  /// Not every refresh is one this bar started: the favourites page runs an
+  /// auto-refresh timer and an import verification pass, a paged grid retries
+  /// from its empty state, and a platform catalogue reload can be asked for from
+  /// the bar above. Pages hand in the state their grid is fed from, so all of
+  /// those show on the same line.
+  final bool refreshing;
+
+  /// Whether this bar draws the refresh line at all.
+  ///
+  /// A page with two stacked bars keeps one line: the bar that sits above the
+  /// list carries the state, and the other one turns this off so a press of its
+  /// own does not light a second line — the refresh it starts still shows, on
+  /// the bar next to the list.
+  final bool showRefreshLine;
+
   final List<DpadEffect>? effects;
 
   /// Switch the tab as soon as focus lands on it, not only on OK.
@@ -85,6 +109,8 @@ class TvTabBar extends StatefulWidget {
     required this.onTabChange,
     this.effects,
     this.onTabRefresh,
+    this.refreshing = false,
+    this.showRefreshLine = true,
     this.switchOnFocus = false,
     this.onTabFocused,
     this.firstTabFocusNode,
@@ -97,6 +123,38 @@ class TvTabBar extends StatefulWidget {
 class _TvTabBarState extends State<TvTabBar> {
   /// Keys the individual tabs so the currently selected one can be revealed.
   final Map<String, GlobalKey> _tabKeys = <String, GlobalKey>{};
+
+  /// Whether this bar's own refresh is running — see [_handleRefresh].
+  bool _refreshing = false;
+
+  /// Least time the line stays up for a refresh this bar started.
+  ///
+  /// The local reloads (a re-slice of data already in memory, like the areas
+  /// sub-category bar) come back within a microtask, and a line that appears and
+  /// vanishes inside one frame reads as a glitch instead of as the feedback the
+  /// second press was asking for. Network refreshes outlast it on their own.
+  static const Duration _minRefreshVisible = Duration(milliseconds: 450);
+
+  /// Runs a refresh this bar started, with the progress line up meanwhile.
+  Future<void> _handleRefresh(int index) async {
+    final refresh = widget.onTabRefresh;
+    if (refresh == null || _refreshing) return;
+
+    // The bar owns this state on purpose: a page-level flag would rebuild the
+    // page, and the paged views key their controller by the `PagingParam` they
+    // build, so a rebuild mid-refresh traded the grid's scroll position for a
+    // progress line.
+    setState(() => _refreshing = true);
+    try {
+      await Future.wait<void>([refresh(index), Future<void>.delayed(_minRefreshVisible)]);
+    } catch (_) {
+      // A refresh reports failures where its data lives (a paging core keeps the
+      // error, the areas bridge its own view); swallowing here only keeps a
+      // thrown task from leaving the line up.
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
+    }
+  }
 
   @override
   void didUpdateWidget(TvTabBar oldWidget) {
@@ -147,115 +205,144 @@ class _TvTabBarState extends State<TvTabBar> {
 
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
-      child: Container(
-        width: double.infinity,
-        height: height,
-        alignment: Alignment.center,
-        color: Colors.transparent,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          shrinkWrap: true,
-          physics: const ClampingScrollPhysics(),
-          // The viewport must clip: Clip.none paints the whole bar outside a
-          // narrow container. The content padding keeps the first/last tab
-          // inside the scroll bounds so the focus scale is not sheared.
-          // Content padding instead of container padding: it scrolls with
-          // the items, so at min/max scroll extent the first/last tab keeps
-          // a margin inside the viewport and the focus scale (1.05) is not
-          // clipped by the viewport edge.
-          padding: EdgeInsets.symmetric(horizontal: 16.sp),
-          itemCount: widget.tabs.length,
-          itemBuilder: (context, index) {
-            final tab = widget.tabs[index];
-            final isSelected = widget.currentIndex == index;
+      child: Stack(
+        // The progress line is painted into the gap the pages keep under the bar
+        // (12-20 design px), so it never pushes the grid down while it shows.
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: double.infinity,
+            height: height,
+            alignment: Alignment.center,
+            color: Colors.transparent,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              // The viewport must clip: Clip.none paints the whole bar outside a
+              // narrow container. The content padding keeps the first/last tab
+              // inside the scroll bounds so the focus scale is not sheared.
+              // Content padding instead of container padding: it scrolls with
+              // the items, so at min/max scroll extent the first/last tab keeps
+              // a margin inside the viewport and the focus scale (1.05) is not
+              // clipped by the viewport edge.
+              padding: EdgeInsets.symmetric(horizontal: 16.sp),
+              itemCount: widget.tabs.length,
+              itemBuilder: (context, index) {
+                final tab = widget.tabs[index];
+                final isSelected = widget.currentIndex == index;
 
-            final dynamicEffects =
-                widget.effects ??
-                [
-                  // The shared focus language (scale + ring + halo); the fill
-                  // itself is the custom effect below, because a tab tints
-                  // instead of filling solid.
-                  // TvButton.medium runs 1.06; the bar matches it.
-                 ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06, glow: false),
-                  DpadCustomEffect((context, state, child) {
-                    final isFocused = state.focused;
+                final dynamicEffects =
+                    widget.effects ??
+                    [
+                      // The shared focus language (scale + ring + halo); the fill
+                      // itself is the custom effect below, because a tab tints
+                      // instead of filling solid.
+                      // TvButton.medium runs 1.06; the bar matches it.
+                      ...TvFocusStyle.effects(currentTvTheme, borderRadius, scale: 1.06, glow: false),
+                      DpadCustomEffect((context, state, child) {
+                        final isFocused = state.focused;
 
-                    // TvButton's states exactly: selected and focused fill
-                    // solid accent, idle keeps a translucent buttonSurface
-                    // pill, and the label is white t26W500 in every state.
-                    final Color bgColor;
-                    if (isSelected || isFocused) {
-                      bgColor = currentTvTheme.focusColor;
-                    } else {
-                      bgColor = currentTvTheme.buttonSurface.withValues(
-                        alpha: currentTvTheme.isLight ? 0.85 : 0.75,
-                      );
-                    }
-                    const Color foregroundColor = Colors.white;
-                    final TextStyle baseStyle = AppTextStyles.t26W500;
+                        // TvButton's states exactly: selected and focused fill
+                        // solid accent, idle keeps a translucent buttonSurface
+                        // pill, and the label is white t26W500 in every state.
+                        final Color bgColor;
+                        if (isSelected || isFocused) {
+                          bgColor = currentTvTheme.focusColor;
+                        } else {
+                          bgColor = currentTvTheme.buttonSurface.withValues(
+                            alpha: currentTvTheme.isLight ? 0.85 : 0.75,
+                          );
+                        }
+                        const Color foregroundColor = Colors.white;
+                        final TextStyle baseStyle = AppTextStyles.t26W500;
 
-                    return AnimatedContainer(
-                      duration: TvFocusStyle.focusDuration(isFocused),
-                      curve: TvFocusStyle.curve,
-                      height: height,
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.symmetric(horizontal: 28.w),
-                      decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
-                      child: IconTheme(
-                        data: IconThemeData(color: foregroundColor),
-                        child: DefaultTextStyle(
-                          style: baseStyle.copyWith(color: foregroundColor),
-                          child: child,
+                        return AnimatedContainer(
+                          duration: TvFocusStyle.focusDuration(isFocused),
+                          curve: TvFocusStyle.curve,
+                          height: height,
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(horizontal: 28.w),
+                          decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
+                          child: IconTheme(
+                            data: IconThemeData(color: foregroundColor),
+                            child: DefaultTextStyle(
+                              style: baseStyle.copyWith(color: foregroundColor),
+                              child: child,
+                            ),
+                          ),
+                        );
+                      }),
+                    ];
+
+                return Padding(
+                  key: _keyFor(index, tab),
+                  padding: EdgeInsets.symmetric(horizontal: 6.sp),
+                  child: DpadFocusable(
+                    effects: dynamicEffects,
+                    focusNode: index == 0 ? widget.firstTabFocusNode : null,
+                    onFocusChange: (focused) {
+                      if (!focused || !widget.switchOnFocus || index == widget.currentIndex) return;
+                      (widget.onTabFocused ?? widget.onTabChange)(index);
+                    },
+                    onSelect: () {
+                      if (index == widget.currentIndex) {
+                        _handleRefresh(index);
+                      } else {
+                        widget.onTabChange(index);
+                      }
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Fixed 24x24 icon slot (TvButton.medium's size): platform
+                        // logos differ in size and must align with the label.
+                        if (tab.icon != null) ...[
+                          SizedBox(width: 24.w, height: 24.w, child: Center(child: tab.icon)),
+                          SizedBox(width: 10.w),
+                        ],
+                        // Never wrap: ellipsize instead, so the pill stays one line.
+                        Center(
+                          child: Text(
+                            tab.title,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                ];
-
-            return Padding(
-              key: _keyFor(index, tab),
-              padding: EdgeInsets.symmetric(horizontal: 6.sp),
-              child: DpadFocusable(
-                effects: dynamicEffects,
-                focusNode: index == 0 ? widget.firstTabFocusNode : null,
-                onFocusChange: (focused) {
-                  if (!focused || !widget.switchOnFocus || index == widget.currentIndex) return;
-                  (widget.onTabFocused ?? widget.onTabChange)(index);
-                },
-                onSelect: () {
-                  if (index == widget.currentIndex) {
-                    widget.onTabRefresh?.call(index);
-                  } else {
-                    widget.onTabChange(index);
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Fixed 24x24 icon slot (TvButton.medium's size): platform
-                    // logos differ in size and must align with the label.
-                    if (tab.icon != null) ...[
-                      SizedBox(width: 24.w, height: 24.w, child: Center(child: tab.icon)),
-                      SizedBox(width: 10.w),
-                    ],
-                    // Never wrap: ellipsize instead, so the pill stays one line.
-                    Center(
-                      child: Text(
-                        tab.title,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Sits below the pills, in the gap the page leaves under this bar; the
+          // bar's own height is unchanged, so nothing below it moves.
+          if (widget.showRefreshLine && (widget.refreshing || _refreshing))
+            Positioned(left: 16.sp, right: 16.sp, bottom: -8.sp, child: const _TabRefreshLine()),
+        ],
       ),
+    );
+  }
+}
+
+/// The line a tab bar shows while a refresh it started is running.
+class _TabRefreshLine extends StatelessWidget {
+  const _TabRefreshLine();
+
+  @override
+  Widget build(BuildContext context) {
+    final currentTvTheme = context.tvTheme;
+    return LinearProgressIndicator(
+      minHeight: 4.sp,
+      borderRadius: BorderRadius.circular(2.sp),
+      color: currentTvTheme.focusColor,
+      // A faint track the moving segment reads against, instead of the line
+      // appearing out of nowhere.
+      backgroundColor: currentTvTheme.focusColor.withValues(alpha: currentTvTheme.isLight ? 0.16 : 0.22),
     );
   }
 }

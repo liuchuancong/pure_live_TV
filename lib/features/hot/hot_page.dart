@@ -94,6 +94,13 @@ class _HotPageState extends ConsumerState<HotPage> {
     // to watch history.
     final List<LiveRoom> rooms = ref.watch(pagingCoreProvider(currentParam).select((state) => state.items));
 
+    // What the bar's progress line follows: the core's own loading state, which
+    // covers a refetch this page did not start (the empty state's retry, the
+    // first load of a platform tab) as well as the double press on the bar.
+    final bool refreshing = ref.watch(
+      pagingCoreProvider(currentParam).select((state) => state.controllerState.pageLoading),
+    );
+
     return TvScaffold(
       child: Row(
           children: [
@@ -104,12 +111,13 @@ class _HotPageState extends ConsumerState<HotPage> {
                   TvTabBar(
                     tabs: tabItems,
                     currentIndex: tabsState.currentIndex,
+                    refreshing: refreshing,
                     onTabChange: (index) {
                       ref.read(hotTabsProvider.notifier).changeTab(index);
                     },
-                    onTabRefresh: (index) {
-                      ref.read(pagingCoreProvider(currentParam).notifier).refresh();
-                    },
+                    // The returned future keeps the bar's progress line up for as
+                    // long as the refetch runs.
+                    onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
                   ),
                   SizedBox(height: 16.sp),
                   Expanded(
@@ -131,6 +139,7 @@ class _HotPageState extends ConsumerState<HotPage> {
                         ),
                         itemBuilder: (context, room, index) => TvRoomCard(
                           room: room,
+                          index: index,
                           playlist: rooms,
                           onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
                         ),
