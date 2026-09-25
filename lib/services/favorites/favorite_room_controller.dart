@@ -42,9 +42,17 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   // identity helpers (LiveRoom / LiveArea)
   // ------------------------------------------------------------------
 
-  static LiveRoom _normalizedIdentityCopy(LiveRoom room) {
-    return room.copyWith(platform: room.normalizedPlatformId, roomId: room.normalizedRoomId);
-  }
+  /// The copy of a room this store keeps.
+  ///
+  /// Identity is normalized to the form every lookup and de-duplication compares,
+  /// and the playback payload is stripped: [LiveRoom.data] /
+  /// [LiveRoom.danmakuData] are session objects - a platform's line model, a
+  /// socket's connection arguments - which the player produces and a followed
+  /// card has no use for. They are excluded from the stored JSON already, and
+  /// dropping them here means they never travel with the card in memory either.
+  static LiveRoom _storedCopy(LiveRoom room) => room
+      .copyWith(platform: room.normalizedPlatformId, roomId: room.normalizedRoomId)
+      .withoutRuntimePayload();
 
   static bool _isValidFavoriteRoom(LiveRoom room) {
     final platform = room.normalizedPlatformId.trim();
@@ -135,7 +143,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     final normalized = <LiveRoom>[];
     final identities = <String>{};
     for (final room in model.favoriteRooms) {
-      final next = _normalizedIdentityCopy(room);
+      final next = _storedCopy(room);
       if (!_isValidFavoriteRoom(next)) continue;
       if (!identities.add(next.identityKey)) continue;
       normalized.add(next);
@@ -214,7 +222,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     final validRooms = <LiveRoom>[];
     final identities = <String>{};
     for (final room in state.favoriteRooms) {
-      final normalized = _normalizedIdentityCopy(room);
+      final normalized = _storedCopy(room);
       if (!_isValidFavoriteRoom(normalized)) continue;
       if (!identities.add(normalized.identityKey)) continue;
       validRooms.add(normalized);
@@ -229,7 +237,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   // ------------------------------------------------------------------
 
   bool addRoom(LiveRoom room) {
-    final normalized = _normalizedIdentityCopy(room);
+    final normalized = _storedCopy(room);
     if (!_isValidFavoriteRoom(normalized)) return false;
     if (isFavorite(normalized)) return false;
     _update(state.copyWith(favoriteRooms: [...state.favoriteRooms, normalized]));
@@ -246,34 +254,21 @@ class FavoriteRoomController extends _$FavoriteRoomController {
 
   /// Applies one refresh snapshot on top of the stored favourite entry.
   ///
-  /// Server-owned fields (status, title, cover, audience…) come from [refreshed];
-  /// everything a refresh payload does not carry (tags, the record flag, the
-  /// local identity) stays as the user's entry had it.
+  /// One rule, from [LiveRoom.withRefreshFrom]: a value the refresh carries wins,
+  /// and the stored entry fills whatever it left blank — the newer information
+  /// replaces the older, a value replaces an empty one.
   ///
-  /// The audience values need the merge direction spelled out: the stored entry
-  /// used to be the base of [LiveRoom.withAudienceFallbackFrom], which only
-  /// fills *empty* fields, so every refreshed viewer count was discarded as soon
-  /// as the stored card already had one. A card therefore kept a stale count and
-  /// the live ordering never moved after a refresh.
-  static LiveRoom mergeRefreshedRoom(LiveRoom stored, LiveRoom refreshed) {
-    final fresh = refreshed.withAudienceFallbackFrom(stored);
-
-    return stored.copyWith(
-      title: fresh.title,
-      nick: fresh.nick,
-      avatar: fresh.avatar,
-      cover: fresh.cover,
-      area: fresh.area,
-      introduction: fresh.introduction,
-      status: fresh.status,
-      liveStatus: fresh.liveStatus,
-      watching: fresh.watching,
-      popularity: fresh.popularity,
-      onlineViewers: fresh.onlineViewers,
-      totalViewers: fresh.totalViewers,
-      audienceMetricType: fresh.audienceMetricType,
-    );
-  }
+  /// The stored identity stays: a card is followed, tagged and looked up under
+  /// the id it was stored with, while a platform answers with its canonical id
+  /// (Douyin's web rid, Huya's channel id). The record/status flags do follow the
+  /// refresh: they are what a refresh exists to correct, and the card's badge and
+  /// status group are both read from them.
+  ///
+  /// The playback payload is dropped rather than merged: a followed room lives in
+  /// settings, and [LiveRoom.data] / [LiveRoom.danmakuData] are session objects
+  /// that only the player produces.
+  static LiveRoom mergeRefreshedRoom(LiveRoom stored, LiveRoom refreshed) =>
+      stored.withRefreshFrom(refreshed).withoutRuntimePayload();
 
   /// Applies a whole refresh batch with ONE state write and ONE persist:
   /// updateRoom per room re-encoded the entire favourite list to JSON on the
@@ -283,28 +278,83 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     var current = state.favoriteRooms;
     var changed = false;
     for (final room in rooms) {
-      final normalized = _normalizedIdentityCopy(room);
+      final normalized = _storedCopy(room);
       if (!_isValidFavoriteRoom(normalized)) continue;
-      final index = current.indexWhere((e) => e.hasSameIdentity(normalized));
-      if (index < 0) continue;
-      current = List<LiveRoom>.from(current);
-      current[index] = mergeRefreshedRoom(current[index], normalized);
+      final List<LiveRoom> next = _mergedOver(current, normalized);
+      if (identical(next, current)) continue;
+      current = next;
       changed = true;
     }
     if (changed) _update(state.copyWith(favoriteRooms: current));
   }
 
-  bool updateRoom(LiveRoom room) {
-    final normalized = _normalizedIdentityCopy(room);
+  /// Updates the followed entry for [room]; returns whether one was found.
+  ///
+  /// [openedAs] is the identity the room was opened under, which is not always
+  /// the one the platform answered with: Huya keeps a channel id beside the room
+  /// id and Douyin reports its web rid. Looking the card up under one key only
+  /// missed entries stored under the other, and a missed update is invisible —
+  /// the card simply kept the status it had, which is how an opened room that had
+  /// stopped broadcasting stayed under 正在直播.
+  ///
+  /// [unplayable] stores the card as an offline room. That is the app's own
+  /// verdict rather than the platform's: the room is not on air *and* no source
+  /// could be played for it (Huya's replay is one this app cannot play back), so
+  /// from the viewer's side there is nothing here. Stored this way the card sits
+  /// with the offline rooms instead of under a replay tab that cannot play
+  /// anything — while the room on screen keeps the platform's own state.
+  bool updateRoom(LiveRoom room, {LiveRoom? openedAs, bool unplayable = false}) {
+    final normalized = _storedCopy(unplayable ? _asUnplayable(room) : room);
     if (!_isValidFavoriteRoom(normalized)) return false;
-    final index = state.favoriteRooms.indexWhere((e) => e.hasSameIdentity(normalized));
-    if (index < 0) return false;
-    final updated = List<LiveRoom>.from(state.favoriteRooms);
-    // Locate by identity key, then overwrite with the refresh snapshot. Keeping
-    // the favourite refresh metadata in step is the caller's responsibility.
-    updated[index] = mergeRefreshedRoom(updated[index], normalized);
+
+    final List<LiveRoom> updated = _mergedOver(state.favoriteRooms, normalized, aliases: <LiveRoom>[?openedAs]);
+
+    if (identical(updated, state.favoriteRooms)) return false;
+
     _update(state.copyWith(favoriteRooms: updated));
     return true;
+  }
+
+  /// The stored shape of a room this app cannot play.
+  ///
+  /// Clearing the record flag is what moves it out of the replay bucket: a room
+  /// that is a replay *and* unplayable would otherwise stay filed as watchable.
+  static LiveRoom _asUnplayable(LiveRoom room) =>
+      room.copyWith(liveStatus: LiveStatus.offline, status: false, isRecord: false);
+
+  /// [rooms] with every entry matching [normalized] (or one of [aliases])
+  /// merged, or the same list when nothing matched.
+  ///
+  /// Every match is updated, not the first: a platform with two ids can have
+  /// been followed under each of them, and leaving the second copy alone kept
+  /// the room on screen twice with two different states.
+  static List<LiveRoom> _mergedOver(
+    List<LiveRoom> rooms,
+    LiveRoom normalized, {
+    List<LiveRoom> aliases = const <LiveRoom>[],
+  }) {
+    final Set<String> keys = <String>{
+      normalized.identityKey,
+      for (final LiveRoom alias in aliases) _storedCopy(alias).identityKey,
+    };
+
+    List<LiveRoom>? merged;
+
+    for (var index = 0; index < rooms.length; index++) {
+      final LiveRoom entry = rooms[index];
+
+      if (!keys.contains(entry.identityKey)) {
+        merged?.add(entry);
+        continue;
+      }
+
+      // The card keeps its own identity: a room followed under one of a
+      // platform's two ids must stay findable under that same id.
+      merged ??= List<LiveRoom>.of(rooms.sublist(0, index));
+      merged.add(mergeRefreshedRoom(entry, normalized));
+    }
+
+    return merged ?? rooms;
   }
 
   bool addArea(LiveArea area) {

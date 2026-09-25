@@ -25,6 +25,7 @@ class LivePlayState {
     this.hasStartedPlayback = false,
     this.switchingStream = false,
     this.isOffline = false,
+    this.fetchingDetail = false,
   });
 
   final LiveRoom? room;
@@ -70,6 +71,13 @@ class LivePlayState {
   /// "not living" placeholder with a channel switcher instead.
   final bool isOffline;
 
+  /// The site's room-detail request is in flight.
+  ///
+  /// The player seeds [room] from the playlist entry it was opened with, so the
+  /// info card renders immediately; this flag tells the page that the seeded
+  /// data is a hint and the site response is still pending.
+  final bool fetchingDetail;
+
   /// Whether a quality/line change is currently being resolved and opened.
   ///
   /// Only a small indicator inside the selector uses this; the picture and the
@@ -112,6 +120,7 @@ class LivePlayState {
     bool? hasStartedPlayback,
     bool? switchingStream,
     bool? isOffline,
+    bool? fetchingDetail,
   }) {
     return LivePlayState(
       room: clearRoom ? null : (room ?? this.room),
@@ -131,6 +140,7 @@ class LivePlayState {
       hasStartedPlayback: hasStartedPlayback ?? this.hasStartedPlayback,
       switchingStream: switchingStream ?? this.switchingStream,
       isOffline: isOffline ?? this.isOffline,
+      fetchingDetail: fetchingDetail ?? this.fetchingDetail,
     );
   }
 }

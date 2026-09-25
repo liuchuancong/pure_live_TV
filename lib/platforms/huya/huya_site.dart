@@ -577,9 +577,21 @@ class HuyaSite
     final statusCode = result is Map ? int.tryParse(result['status']?.toString() ?? '') : null;
     final responseData = result is Map && result['data'] is Map ? result['data'] as Map : null;
     final normalizedLiveState = responseData?['liveStatus']?.toString().trim().toUpperCase() ?? '';
-    if (statusCode == 200 && responseData != null && isExplicitOfflineState(responseData['liveStatus'])) {
-      return _buildInactiveRoom(responseData, platform: platform, roomId: roomId);
+
+    // Not broadcasting: either the platform says so outright, or the snapshot
+    // carries no `stream` object at all (an off-air room, or one whose broadcast
+    // only survives as a replay). Both are answered from the snapshot itself,
+    // which holds the anchor, the title, the cover and the audience. Building
+    // them from the id alone reported a room that had answered perfectly well as
+    // "room info failed to load", and the replay case then surfaced two steps
+    // later as "no available quality".
+    final bool notBroadcasting =
+        isExplicitOfflineState(responseData?['liveStatus']) || responseData?['stream'] == null;
+
+    if (statusCode == 200 && responseData != null && notBroadcasting) {
+      return _buildRoomFromSnapshot(responseData, platform: platform, roomId: roomId);
     }
+
     if (statusCode == 200 && responseData != null && responseData['stream'] != null) {
       dynamic data = responseData;
       var topSid = 0;
@@ -702,8 +714,14 @@ class HuyaSite
       if (!allowUiFallback) {
         throw const FormatException('Huya room playback metadata is unavailable');
       }
+
+      // Nothing usable came back: the request failed, or the body was not a room
+      // snapshot at all. The status code is the only clue left by the time the
+      // caller sees the error room, so it is logged here.
+      CoreLog.error('Huya room snapshot unavailable: room=$roomId status=$statusCode');
+
       {
-final currentRoom = Sites.currentRoom(platform, roomId);
+        final currentRoom = Sites.currentRoom(platform, roomId);
         if (currentRoom?.hasIdentity(platform: platform, roomId: roomId) == true) {
           return currentRoom!.getLiveRoomWithError();
         }
@@ -728,7 +746,20 @@ final currentRoom = Sites.currentRoom(platform, roomId);
     };
   }
 
-  LiveRoom _buildInactiveRoom(Map<dynamic, dynamic> data, {required String platform, required String roomId}) {
+  /// Room built from a snapshot that carries no playable `stream`.
+  ///
+  /// The snapshot is still a room description - anchor, title, cover, area and
+  /// audience - so the room can be shown, but nothing in it can be played: the
+  /// live lines are gone with the `stream` object, and Huya's replay (a signed VOD
+  /// playlist in `liveData.hlsUrl`) is not wired up in this app. A `REPLAY`
+  /// snapshot therefore reports as an off-air room.
+  ///
+  /// Reporting it as a replay instead is what made the followed card sit under
+  /// 回放 while the player could only answer "not living": the card promised
+  /// playback the app could not deliver. Should replay playback ever be built,
+  /// this is where the playlist becomes a line - and the state can go back to
+  /// following the snapshot's own value.
+  LiveRoom _buildRoomFromSnapshot(Map<dynamic, dynamic> data, {required String platform, required String roomId}) {
     final liveData = data['liveData'] is Map
         ? Map<String, dynamic>.from(data['liveData'] as Map)
         : const <String, dynamic>{};
@@ -798,30 +829,14 @@ final currentRoom = Sites.currentRoom(platform, roomId);
     if (decoded is! Map || statusCode != 200 || decoded['data'] is! Map) {
       throw const FormatException('Huya room metadata is unavailable');
     }
-    final data = decoded['data'] as Map;
-    final liveData = data['liveData'] is Map ? Map<String, dynamic>.from(data['liveData'] as Map) : <String, dynamic>{};
-    final profile = data['profileInfo'] is Map ? data['profileInfo'] as Map : const <dynamic, dynamic>{};
-    final audience = parseRoomAudience(liveData);
-    final state = data['liveStatus']?.toString().trim().toUpperCase() ?? '';
-    final liveStatus = parseHuyaLiveStatus(state);
-    return LiveRoom(
-      cover: liveData['screenshot']?.toString() ?? '',
-      watching: audience.popularity,
-      popularity: audience.popularity,
-      onlineViewers: audience.onlineViewers,
-      audienceMetricType: AudienceMetricType.popularity,
+
+    // The refresh path only needs the room description, so it accepts a snapshot
+    // without a playable stream (an off-air or replay room) exactly as the entry
+    // path does; one builder keeps the two from drifting apart.
+    return _buildRoomFromSnapshot(
+      decoded['data'] as Map,
+      platform: platform,
       roomId: roomId,
-      area: liveData['gameFullName']?.toString() ?? '',
-      title: liveData['introduction']?.toString() ?? '',
-      nick: profile['nick']?.toString() ?? '',
-      avatar: profile['avatar180']?.toString() ?? '',
-      introduction: liveData['introduction']?.toString() ?? '',
-      notice: data['welcomeText']?.toString() ?? '',
-      isRecord: state == 'REPLAY',
-      status: liveStatus == LiveStatus.live,
-      liveStatus: liveStatus,
-      platform: Sites.huyaSite,
-      link: 'https://www.huya.com/$roomId',
     );
   }
 

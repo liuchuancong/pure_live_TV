@@ -25,8 +25,18 @@ List<T> applyHistoryLimit<T>(Iterable<T> values, int limit) {
 /// Inserts into history, deduplicating by stable identity (platform:roomId).
 List<LiveRoom> upsertHistoryRoom(List<LiveRoom> current, LiveRoom room, {int limit = defaultHistoryLimit}) {
   final maxLength = normalizeHistoryLimit(limit);
-  final next = List<LiveRoom>.from(current)..removeWhere((entry) => entry.hasSameIdentity(room));
-  next.insert(0, room.copyWith(platform: room.normalizedPlatformId, roomId: room.normalizedRoomId));
+
+  // A history entry is a card, not a session: the platform payload the player
+  // produced (a line model, a socket's arguments) is stripped together with the
+  // identity normalization. History doubles as the channel list, and an entry
+  // seeded back into the player must not hand playback a stale payload that
+  // hides the answer it just received.
+  final entry = room
+      .copyWith(platform: room.normalizedPlatformId, roomId: room.normalizedRoomId)
+      .withoutRuntimePayload();
+
+  final next = List<LiveRoom>.from(current)..removeWhere((item) => item.hasSameIdentity(room));
+  next.insert(0, entry);
   if (maxLength != unlimitedHistoryLimit && next.length > maxLength) {
     next.removeRange(maxLength, next.length);
   }

@@ -9,11 +9,12 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:media_core/error/player_failure.dart';
 import 'package:media_core/error/error_formatter.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
+import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/features/live_play/controllers/danmaku_filters.dart';
+import 'package:pure_live/features/live_play/services/live_room_hint_cache.dart';
 import 'package:pure_live/features/live_play/services/live_play_repository.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 
@@ -40,6 +41,16 @@ class LivePlayController extends _$LivePlayController {
   /// Async bootstrap generation: stale callbacks are dropped after a retry or
   /// rebuild.
   int _generation = 0;
+
+  /// The session that currently owns the shared player.
+  ///
+  /// [LivePlayerFacade] is a global singleton, so a teardown that lands after
+  /// the next room has already started would stop *that* room's playback. A
+  /// channel switch pushes the new route first and disposes the old one when its
+  /// transition ends, and rapid up/down presses stack several of those teardowns
+  /// on top of the newest room. Only the owner releases the player; every
+  /// bootstrap claims it, and a retired session leaves it alone.
+  static LivePlayController? _playerOwner;
 
   /// How long a loading state may last before the UI calls it a failure.
   ///
@@ -72,11 +83,17 @@ class LivePlayController extends _$LivePlayController {
     });
 
     // Register the current-room lookup with the site layer, which needs it for
-    // viewer counts and error recovery.
+    // viewer counts and error recovery. It stays installed after this session
+    // ends, so it has to answer for a disposed controller too: reading the state
+    // of one throws, and that throw would surface inside a platform adapter.
+    // Identity is compared normalized - a list may spell a platform id in any
+    // case, and a raw comparison here silently disabled the recovery.
     Sites.currentRoomLookup = (platform, roomId) {
+      if (!ref.mounted) return null;
+
       final room = state.room;
 
-      return room != null && room.platform == platform && room.roomId == roomId ? room : null;
+      return room != null && room.hasIdentity(platform: platform, roomId: roomId) ? room : null;
     };
 
     // Microtask-deferred: build has no state yet while it runs, and reading
@@ -95,6 +112,17 @@ class LivePlayController extends _$LivePlayController {
 
     _armStallReport(restart: true);
 
+    // A new session gets its own end re-check: the room that just ended must not
+    // silence the one about to play.
+    _lastRoomRecheckAt = null;
+
+    // The room is on screen from the first frame, before any request: what the
+    // route carried, or the last metadata seen for this id. Waiting for the site
+    // response first left the whole screen black with no text for as long as
+    // that request took - and a switch made it worse, because every press
+    // replaced the session with another wait.
+    final seed = _seedRoom();
+
     // A fresh session (first room, or a new kernel) starts without a picture, so
     // the loading overlay is armed again. Switching quality or line never comes
     // through here, which is why the picture survives those.
@@ -104,6 +132,8 @@ class LivePlayController extends _$LivePlayController {
       hasStartedPlayback: false,
       switchingStream: false,
       isOffline: false,
+      room: seed,
+      fetchingDetail: true,
     );
 
     try {
@@ -118,31 +148,64 @@ class LivePlayController extends _$LivePlayController {
     if (!_isCurrent(generation)) return;
 
     _playerManager = GlobalPlayerService.instance.livePlayer;
+    _playerOwner = this;
     _bindPlayerStreams();
     _applyStoredVideoFit();
 
-    // Room details: the LiveRoom carried by the route only hints at platform and
-    // room id; the site response is authoritative.
-    LiveRoom detail;
+    // Room details: what the route or the cache carried is a snapshot from
+    // wherever the viewer came in, so the site response wins - but it is merged
+    // into the seed instead of dropped on top of it. A platform that fails the
+    // lookup answers with a room shaped shell that carries no metadata at all;
+    // taking that for the room is what blanked the card the viewer just tapped.
+    final LiveRoom fetched;
+    final LiveRoom detail;
 
     try {
-      detail = await _repository.fetchRoomDetail(hintRoom: args.room ?? _hintRoom());
+      fetched = await _repository.fetchRoomDetail(hintRoom: seed);
+      detail = fetched.withHintFallbackFrom(seed);
     } catch (e) {
       if (!_isCurrent(generation)) return;
 
       state = state.copyWith(
         detailError: i18n('get_room_info_failed_retry'),
         errorMessage: i18n('get_room_info_failed_retry'),
+        fetchingDetail: false,
+      );
+
+      return;
+    }
+    log('fetchRoomDetail: ${detail.toString()}', name: 'LivePlayController');
+    if (!_isCurrent(generation)) return;
+
+    // The platform could not identify the room and answered with a shell instead
+    // of a detail, with its reason where the room carries it. Nothing can be
+    // played from that - huya's qualities come straight out of the detail
+    // response - so the failure is reported as what it is. Carrying on used to
+    // surface it two steps later as "no available quality", blaming the stream
+    // for a lookup that never answered.
+    if (detail.isDetailFailureShell) {
+      _cancelStallReport();
+
+      log('room detail lookup failed: ${detail.identityKey}', name: 'LivePlayController');
+
+      state = state.copyWith(
+        detailError: i18n('get_room_info_failed_retry'),
+        errorMessage: i18n('get_room_info_failed_retry'),
+        fetchingDetail: false,
       );
 
       return;
     }
 
-    if (!_isCurrent(generation)) return;
+    LiveRoomHintCache.remember(detail);
 
-    state = state.copyWith(room: detail, clearDetailError: true);
+    state = state.copyWith(room: detail, clearDetailError: true, fetchingDetail: false);
 
-    _syncFollowedRoom(detail);
+    // Only a response that identified the room says anything about it; a failed
+    // lookup must not rewrite a followed card as offline.
+    if (fetched.hasMetadata) {
+      _syncFollowedRoom(detail);
+    }
 
     // Align the displayed volume with the volume remembered for the room; the
     // player restores the same value on start.
@@ -168,7 +231,7 @@ class LivePlayController extends _$LivePlayController {
     // platform's room state available (isPlayableNow covers live and replay).
     if (!detail.isPlayableNow) {
       _cancelStallReport();
-      state = state.copyWith(isOffline: true, clearErrorMessage: true);
+      state = state.copyWith(isOffline: true, clearErrorMessage: true, fetchingDetail: false);
       return;
     }
 
@@ -183,6 +246,43 @@ class LivePlayController extends _$LivePlayController {
     unawaited(ref.read(danmakuSessionControllerProvider(args).notifier).connectRoom(detail));
 
     await loadQualitiesAndPlay(detail, generation);
+  }
+
+  /// The room to draw while the site response is still on its way.
+  ///
+  /// The route's room is the freshest thing the caller had. An entry that
+  /// carries nothing but platform and room id — a link, a restored snapshot —
+  /// takes the last metadata seen for that id from the in-memory cache instead,
+  /// and only then falls back to the bare hint. Either way [state.room] is never
+  /// null, which is also what [Sites.currentRoom] answers the site layer with
+  /// when it recovers from its own failed lookup.
+  LiveRoom _seedRoom() {
+    final LiveRoom hint = args.room ?? _hintRoom();
+
+    // The rooms on either side of this one are the ones ↑/↓ can reach before
+    // anything has been fetched for them.
+    for (final room in args.playlist) {
+      LiveRoomHintCache.remember(room);
+    }
+
+    // A bootstrap that re-runs for the room already on screen (a refresh, a
+    // retry) keeps what the last response said: the route's snapshot is older
+    // than that by definition.
+    final LiveRoom? current = state.room;
+
+    if (current != null && current.hasMetadata && current.hasSameIdentity(hint)) return current;
+
+    if (hint.hasMetadata) {
+      LiveRoomHintCache.remember(hint);
+
+      return hint;
+    }
+
+    final LiveRoom seed = LiveRoomHintCache.lookup(hint.normalizedPlatformId, hint.normalizedRoomId) ?? hint;
+
+    LiveRoomHintCache.remember(seed);
+
+    return seed;
   }
 
   LiveRoom _hintRoom() => LiveRoom(roomId: args.roomId, platform: args.platform);
@@ -215,7 +315,7 @@ class LivePlayController extends _$LivePlayController {
   /// A room the platform cannot identify at all — an empty or placeholder id
   /// (`0`/`null`/`undefined`/`nan`/`none`) — is not a room: it is dropped instead
   /// of being kept as a card that can never play.
-  void _syncFollowedRoom(LiveRoom detail) {
+  void _syncFollowedRoom(LiveRoom detail, {bool unplayable = false}) {
     if (detail.platform.trim().isEmpty) return;
 
     final favorites = ref.read(favoriteRoomControllerProvider.notifier);
@@ -235,13 +335,38 @@ class LivePlayController extends _$LivePlayController {
       return;
     }
 
-    favorites.updateRoom(rebound);
+    // Both identities are tried: a platform that keeps two ids answers with the
+    // canonical one, and the card may have been followed under the other. The
+    // outcome is logged because a miss is otherwise invisible - the card simply
+    // keeps the status it already had, so an opened room that had stopped
+    // broadcasting stayed under 正在直播 with nothing to explain why.
+    final bool applied = favorites.updateRoom(rebound, openedAs: hint, unplayable: unplayable);
+
+    if (!applied) {
+      final String followed = favorites.state.favoriteRooms.map((room) => room.identityKey).join(', ');
+
+      log('followed room write-back missed: ${rebound.identityKey} not among [$followed]', name: 'LivePlayController');
+      return;
+    }
+
+    // The card's own state is logged, not this room's: "the list looks unchanged"
+    // and "the stored entry is stale" are the difference between a repaint problem
+    // and a write-back one, and only the stored card tells them apart.
+    final LiveRoom? card = favorites.getRoomById(rebound.normalizedRoomId, rebound.normalizedPlatformId);
+
+    log(
+      'followed room write-back applied: ${rebound.identityKey} '
+      '-> card(liveStatus: ${card?.liveStatus.name}, record: ${card?.isRecord}, '
+      'status: ${card?.status}, watching: ${card?.watching})',
+      name: 'LivePlayController',
+    );
   }
 
   /// Turns a load that never resolved into a failure the user can act on.
   ///
-  /// The actual playback state comes from media_core. Room-detail loading is
-  /// represented by [state.room] still being null.
+  /// The actual playback state comes from media_core; room-detail loading is
+  /// represented by [LivePlayState.fetchingDetail], because [state.room] is
+  /// seeded from the entry and is therefore never null.
   void _reportStalledLoad() {
     _stallReportTimer = null;
 
@@ -249,11 +374,20 @@ class LivePlayController extends _$LivePlayController {
 
     final playerState = state.playerState;
 
-    final loading = state.room == null || playerState.opening || playerState.buffering;
+    final loading = state.fetchingDetail || playerState.opening || playerState.buffering;
 
     if (!loading) return;
 
-    state = state.copyWith(errorMessage: i18n('multiview_play_failed'));
+    // Naming the step that stalled matters: the retry button re-runs the room
+    // bootstrap for a room-info stall and the player's own retry otherwise.
+    state = state.copyWith(
+      errorMessage: state.fetchingDetail ? i18n('get_room_info_failed_retry') : i18n('multiview_play_failed'),
+    );
+
+    // A stream can also die without saying so (a CDN that stops sending while the
+    // connection stays open), and a stall is the only sign of it. Asking the room
+    // settles which of the two happened.
+    _followRoomAfterPlaybackEnded();
   }
 
   void _bindPlayerStreams() {
@@ -264,7 +398,13 @@ class LivePlayController extends _$LivePlayController {
     _cancelSubscriptions();
 
     _subscriptions.addAll(<StreamSubscription<dynamic>>[
-      manager.onStateChanged.listen(_onPlayerStateChanged),
+      // The facade's state subject is a BehaviorSubject, so it replays the
+      // *previous* session's last state to every new subscriber. That value
+      // describes the room that just left (or a closed player), never this one:
+      // taking it for this session started it out "already playing", which
+      // suppressed the new room's loading spinner - and a card whose stream had
+      // just ended read as if *this* room had ended. Real states follow.
+      manager.onStateChanged.skip(1).listen(_onPlayerStateChanged),
       manager.onError.listen(_onPlayerError),
       manager.videoFitIndex.stream.listen((index) {
         if (index != state.fitIndex) {
@@ -297,6 +437,16 @@ class LivePlayController extends _$LivePlayController {
     } else if (playerState.hasError) {
       _cancelStallReport();
     }
+
+    // A live stream does not run out, so the player reporting the source ended is
+    // the broadcast ending. The room state has to follow it.
+    //
+    // A switch reopens the same source and the retired one can report itself
+    // completed on the way out, which is why an end that belongs to a switch is
+    // ignored - the room did not go anywhere there.
+    if (playerState.completed && !state.switchingStream) {
+      _followRoomAfterPlaybackEnded();
+    }
   }
 
   /// Keeps the screen awake for as long as the player route is open.
@@ -321,6 +471,107 @@ class LivePlayController extends _$LivePlayController {
     _cancelStallReport();
     Log.d(ErrorFormatter.format(failure));
     state = state.copyWith(errorMessage: ErrorFormatter.format(failure));
+
+    // The other way a session ends. Whether this failure is the broadcast ending
+    // or a local one, only the platform can say - and if the room did stop, the
+    // followed card has to say so.
+    _followRoomAfterPlaybackEnded();
+  }
+
+  /// When the room was last re-checked, and how close together two checks may be.
+  ///
+  /// Several events can announce the same end at once - a terminal failure, the
+  /// source completing, and the loading deadline landing in the same second - so
+  /// repeats inside the window are dropped instead of asking the platform again.
+  /// A one-shot guard would be wrong: one flaky start (a stalled open that the
+  /// watchdog reports) must not consume the check for the end that comes hours
+  /// later.
+  DateTime? _lastRoomRecheckAt;
+  static const Duration _roomRecheckCooldown = Duration(seconds: 15);
+
+  /// Checks what became of the room once its playback ended.
+  ///
+  /// A live stream ends because the broadcast did, and the room is the only place
+  /// that knows what it became: offline, a replay, or back on air a moment later.
+  /// Without this the followed card kept saying "live" until someone refreshed
+  /// the list by hand - and the viewer who just watched the stream end is the one
+  /// person who knows better.
+  ///
+  /// Fired by everything that can mean "this session is over": a terminal
+  /// playback failure, the player reporting the source completed, and the loading
+  /// deadline (a stream can also die without saying so).
+  void _followRoomAfterPlaybackEnded() {
+    if (!ref.mounted) return;
+
+    final LiveRoom? room = state.room;
+
+    if (room == null || room.isDetailFailureShell) return;
+
+    final DateTime now = DateTime.now();
+    final DateTime? last = _lastRoomRecheckAt;
+
+    if (last != null && now.difference(last) < _roomRecheckCooldown) return;
+
+    _lastRoomRecheckAt = now;
+
+    // The answer lands after a network round trip, and a retry, a refresh or a
+    // switch can start a new session in the meantime: what this check learned
+    // about the old one must not be written onto the new one.
+    unawaited(_recheckRoomState(room, _generation));
+  }
+
+  Future<void> _recheckRoomState(LiveRoom room, int generation) async {
+    final LiveRoom answer;
+
+    try {
+      answer = await _repository.fetchRoomDetail(hintRoom: room);
+    } catch (e) {
+      // The platform could not be asked: whatever is on screen is all there is.
+      log('room re-check failed: ${room.identityKey} ($e)', name: 'LivePlayController');
+      return;
+    }
+
+    if (!_isCurrent(generation) || answer.isDetailFailureShell || !answer.hasMetadata) return;
+
+    // A room description, not a session: the merge fills blanks from what this
+    // session already knows, and the answer owns the status.
+    final LiveRoom settled = answer.withHintFallbackFrom(room);
+
+    final bool stillLive = settled.isLiveNow;
+
+    // Written back either way - a room still on air simply refreshes its card -
+    // and a room that is not on air any more is stored as offline: this app has
+    // no source for it (a replay it cannot play, most of the time), so the card
+    // belongs with the offline rooms rather than under a replay tab.
+    _syncFollowedRoom(settled, unplayable: !stillLive);
+
+    if (stillLive) {
+      // Still live while this session's stream is over: a local failure. The
+      // failure screen is the way back in, so it must not be left empty.
+      if (state.errorMessage == null) {
+        state = state.copyWith(errorMessage: i18n('multiview_play_failed'));
+      }
+
+      return;
+    }
+
+    log(
+      'room ended while playing, state written back: ${settled.identityKey} (${settled.liveStatus.name})',
+      name: 'LivePlayController',
+    );
+
+    _cancelStallReport();
+
+    // The broadcast is over: the placeholder says what the room is now and offers
+    // the way out, which a frozen picture with a retry button does not.
+    state = state.copyWith(
+      room: settled,
+      isOffline: true,
+      clearErrorMessage: true,
+      clearDetailError: true,
+      fetchingDetail: false,
+      switchingStream: false,
+    );
   }
 
   void _teardown() {
@@ -332,16 +583,27 @@ class LivePlayController extends _$LivePlayController {
     _channelBannerTimer?.cancel();
     _channelBannerTimer = null;
 
-    // Leaving the room releases the wake lock even when a new room follows.
-    unawaited(WakelockPlus.disable().catchError((Object _) {}));
-
     final manager = _playerManager;
     _playerManager = null;
 
-    if (manager != null) {
-      // PlayerManager is a global singleton, so leaving a room stops this session.
-      unawaited(manager.close().catchError((Object e, StackTrace s) {}));
-    }
+    // PlayerManager is a global singleton, so releasing it stops whichever
+    // session is on it - which is not necessarily this one: a channel switch
+    // builds the next room before this route finishes leaving. A switch hands
+    // the player *and* the screen over to the next session, whose bootstrap
+    // re-arms the wake lock; only a session that leaves nothing running behind
+    // it releases either of them. Rapid ↑/↓ presses stack several of these
+    // teardowns, so a retired session must touch neither.
+    final owner = _playerOwner;
+
+    if (owner != this && (owner?.ref.mounted ?? false)) return;
+
+    _playerOwner = null;
+
+    unawaited(WakelockPlus.disable().catchError((Object _) {}));
+
+    if (manager == null) return;
+
+    unawaited(manager.close().catchError((Object e, StackTrace s) {}));
   }
 
   void _cancelSubscriptions() {
@@ -366,6 +628,30 @@ class LivePlayController extends _$LivePlayController {
     if (!_isCurrent(generation)) return;
 
     if (qualities.isEmpty) {
+      // A room that is not broadcasting has no quality *options* to be missing:
+      // when its platform serves no replay either, the honest answer is the "not
+      // living" placeholder - nothing failed, there is simply no stream - and it
+      // carries the actions that get the viewer out. The error overlay is kept
+      // for a live room whose quality list really did come back empty.
+      if (!detail.isLiveNow) {
+        _cancelStallReport();
+
+        // Landing here is the proof that there is nothing to watch, even when the
+        // platform calls the room a replay (Huya's replays are not playable by
+        // this app), so the followed card is stored as offline.
+        _syncFollowedRoom(detail, unplayable: true);
+
+        state = state.copyWith(
+          qualities: const <LivePlayQuality>[],
+          qualityIndex: 0,
+          isOffline: true,
+          fetchingDetail: false,
+          clearErrorMessage: true,
+        );
+
+        return;
+      }
+
       state = state.copyWith(
         qualities: const <LivePlayQuality>[],
         qualityIndex: 0,
@@ -543,7 +829,15 @@ class LivePlayController extends _$LivePlayController {
   Future<void> retry() async {
     final manager = _playerManager;
 
-    if (manager == null || !manager.initialized) {
+    // Nothing was ever handed to the player: a session still waiting on its room
+    // detail, one whose lookup came back as a shell, or one that arrived as an id
+    // with nothing known about it has no playback to replay. The bootstrap that
+    // is actually stuck is re-run instead.
+    final LiveRoom? room = state.room;
+    final bool neverReachedPlayback =
+        state.fetchingDetail || room == null || !room.hasMetadata || room.isDetailFailureShell;
+
+    if (manager == null || !manager.initialized || neverReachedPlayback) {
       await _bootstrap();
       return;
     }

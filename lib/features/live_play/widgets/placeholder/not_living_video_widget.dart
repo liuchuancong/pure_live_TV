@@ -110,7 +110,8 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
     final LivePlayState state = ref.watch(livePlayControllerProvider(widget.args));
     final TvThemeData tvTheme = context.tvTheme;
     final LiveRoom? room = state.room;
-    final String title = _roomTitle(room);
+    // Title, else streamer, else room id — never blank.
+    final String title = room?.displayTitle ?? i18n('untitled_room');
 
     return Focus(
       focusNode: _focusNode,
@@ -170,15 +171,6 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
         ),
       ),
     );
-  }
-
-  /// Title line: room title, else streamer, else room id — never blank.
-  static String _roomTitle(LiveRoom? room) {
-    for (final String candidate in <String>[room?.title ?? '', room?.nick ?? '', room?.roomId ?? '']) {
-      final String value = candidate.trim();
-      if (value.isNotEmpty) return value;
-    }
-    return i18n('untitled_room');
   }
 
   /// One action pill. [index] is the index-driven highlight; tapping moves the

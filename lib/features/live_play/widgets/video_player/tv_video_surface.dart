@@ -98,9 +98,16 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final tvTheme = context.tvTheme;
 
+    // The room is seeded as soon as the session starts, so this is what the
+    // info card draws from - before the site response, and after a failed one.
+    final LiveRoom? room = state.room;
+
     // Room-detail loading is a business-level concern: it is not a player
-    // state, so it is derived from LivePlayState's own fields.
-    final bool loadingDetail = state.room == null && state.detailError == null;
+    // state, so it is derived from LivePlayState's own fields. [room] is seeded
+    // from the entry, so the flag - not a null room - is what says the site
+    // response is still pending; the null check stays as the fallback for a
+    // session that has not run its bootstrap yet.
+    final bool loadingDetail = state.fetchingDetail || (state.room == null && state.detailError == null);
 
     // Show the spinner while the detail request or the player itself is
     // still working. Playback progress comes exclusively from media_core's
@@ -207,117 +214,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                 );
               },
             ),
-          // Room info and the wall clock in **one** floating card: avatar, title
-          // and a metadata line (platform, streamer, audience) on the left, the
-          // clock behind a divider on the right. Two cards side by side read as
-          // two unrelated read-outs instead of one room banner.
-          if (!showError && state.room != null && state.showControls)
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              child: IgnorePointer(
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(20.sp, 12.sp, 20.sp, 18.sp),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.black.withValues(alpha: 0.72), Colors.black.withValues(alpha: 0.0)],
-                    ),
-                  ),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.42),
-                      borderRadius: BorderRadius.circular(18.sp),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
-                    ),
-                    child: Row(
-                      children: [
-                        TvCommonAvatar(avatarUrl: state.room!.avatar, fallbackName: state.room!.nick, radius: 30.sp),
-                        SizedBox(width: 14.sp),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                state.room!.title.trim().isNotEmpty ? state.room!.title.trim() : i18n('untitled_room'),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t28W600.copyWith(color: Colors.white),
-                              ),
-                              SizedBox(height: 8.sp),
-                              Row(
-                                children: [
-                                  if (state.room!.platform.isNotEmpty) ...[
-                                    _InfoPill(
-                                      label: state.room!.platform.toUpperCase(),
-                                      accent: tvTheme.focusColor,
-                                      filled: true,
-                                    ),
-                                    SizedBox(width: 10.sp),
-                                  ],
-                                  if (state.room!.nick.isNotEmpty)
-                                    Flexible(
-                                      child: Text(
-                                        state.room!.nick,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
-                                      ),
-                                    ),
-                                  if (state.room!.nick.isNotEmpty && _audienceText(state.room!).isNotEmpty)
-                                    SizedBox(width: 10.sp),
-                                  if (_audienceText(state.room!).isNotEmpty)
-                                    _InfoPill(label: _audienceText(state.room!), icon: Icons.whatshot_rounded),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 18.sp),
-                        Container(width: 1.sp, height: 44.sp, color: Colors.white.withValues(alpha: 0.14)),
-                        SizedBox(width: 18.sp),
-                        // Wall clock: a live stream has no duration, so the time a
-                        // viewer glances up for is the time of day.
-                        Icon(RemixIcons.time_line, size: 24.sp, color: Colors.white70),
-                        SizedBox(width: 8.sp),
-                        TvDigitalClock(
-                          format: 'HH:mm',
-                          style: AppTextStyles.t28W600.copyWith(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ), // Channel name toast shown after an up/down switch.
-          if (state.showChannelBanner)
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 64.sp,
-              child: IgnorePointer(
-                child: Center(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(12.sp),
-                      border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.6)),
-                    ),
-                    child: Text(
-                      state.channelBanner!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t24W600.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // Room info, the channel toast and the failure overlay are painted by
+          // the outer stack, above this one: see [_RoomInfoBar].
         ],
       ),
     ];
@@ -340,6 +238,38 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
       children.add(Positioned(left: 0, right: 0, bottom: 0, child: VideoControllerPanel(args: widget.args)));
     }
 
+    // Room info and the channel toast paint last, above whichever overlay is up.
+    //
+    // The card is drawn whenever the room is known: while the site response is
+    // pending (the data is already there, and an up/down switch would otherwise
+    // be a black screen with a spinner), with the controls, and - most of all -
+    // under a failure overlay, which cannot name the room it is about. The toast
+    // sits under the card while the card is up instead of on top of it.
+    if (room != null && !state.isOffline && (state.showControls || state.fetchingDetail || showError)) {
+      children.add(
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _RoomInfoBar(room: room),
+              if (state.showChannelBanner)
+                Padding(
+                  padding: EdgeInsets.only(top: 10.sp),
+                  child: _ChannelBannerToast(text: state.channelBanner!),
+                ),
+            ],
+          ),
+        ),
+      );
+    } else if (state.showChannelBanner) {
+      children.add(
+        Positioned(left: 0, right: 0, top: 64.sp, child: _ChannelBannerToast(text: state.channelBanner!)),
+      );
+    }
+
     // The quality / line read-out that used to sit on the right edge is gone:
     // both live on the control bar, which is where the user picks them, and a
     // permanent copy over the picture is one more thing competing with the
@@ -347,5 +277,128 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // whose glyph turns into a ring while it applies.
 
     return Stack(fit: StackFit.expand, children: children);
+  }
+}
+
+/// Floating room card: avatar, room title, and a metadata line (platform,
+/// streamer, audience) with the wall clock behind a divider on the right.
+///
+/// Two separate cards side by side read as two unrelated read-outs instead of
+/// one room banner, which is why the clock lives in here.
+///
+/// Non-interactive on purpose: it is information, and the picture below it must
+/// stay reachable by the remote and the mouse.
+class _RoomInfoBar extends StatelessWidget {
+  const _RoomInfoBar({required this.room});
+
+  final LiveRoom room;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final String audience = _audienceText(room);
+
+    return IgnorePointer(
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20.sp, 12.sp, 20.sp, 18.sp),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.black.withValues(alpha: 0.72), Colors.black.withValues(alpha: 0.0)],
+          ),
+        ),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.42),
+            borderRadius: BorderRadius.circular(18.sp),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+          ),
+          child: Row(
+            children: [
+              TvCommonAvatar(avatarUrl: room.avatar, fallbackName: room.nick, radius: 30.sp),
+              SizedBox(width: 14.sp),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Falls back to the streamer and then to the room id: a room
+                    // whose title never arrived still has to be nameable, or an
+                    // error about it cannot be acted on.
+                    Text(
+                      room.displayTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t28W600.copyWith(color: Colors.white),
+                    ),
+                    SizedBox(height: 8.sp),
+                    Row(
+                      children: [
+                        if (room.platform.isNotEmpty) ...[
+                          _InfoPill(label: room.platform.toUpperCase(), accent: tvTheme.focusColor, filled: true),
+                          SizedBox(width: 10.sp),
+                        ],
+                        if (room.nick.isNotEmpty)
+                          Flexible(
+                            child: Text(
+                              room.nick,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                            ),
+                          ),
+                        if (room.nick.isNotEmpty && audience.isNotEmpty) SizedBox(width: 10.sp),
+                        if (audience.isNotEmpty) _InfoPill(label: audience, icon: Icons.whatshot_rounded),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 18.sp),
+              Container(width: 1.sp, height: 44.sp, color: Colors.white.withValues(alpha: 0.14)),
+              SizedBox(width: 18.sp),
+              // Wall clock: a live stream has no duration, so the time a viewer
+              // glances up for is the time of day.
+              Icon(RemixIcons.time_line, size: 24.sp, color: Colors.white70),
+              SizedBox(width: 8.sp),
+              TvDigitalClock(format: 'HH:mm', style: AppTextStyles.t28W600.copyWith(color: Colors.white)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Channel name pill shown for a couple of seconds after an up/down switch.
+class _ChannelBannerToast extends StatelessWidget {
+  const _ChannelBannerToast({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+
+    return IgnorePointer(
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(12.sp),
+            border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.6)),
+          ),
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.t24W600.copyWith(color: Colors.white),
+          ),
+        ),
+      ),
+    );
   }
 }

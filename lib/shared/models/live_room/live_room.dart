@@ -463,6 +463,42 @@ abstract class LiveRoom with _$LiveRoom {
   LiveStatus get effectiveLiveStatus =>
       liveStatus == LiveStatus.unknown ? (status ? LiveStatus.live : LiveStatus.offline) : liveStatus;
 
+  /// Whether the room carries anything a viewer could identify it by.
+  ///
+  /// A room built from a platform id alone (the hint a route carries) and the
+  /// shell a platform returns when its detail request fails both have none: the
+  /// avatar is deliberately not counted, because several sites hand out a
+  /// default one to rooms they know nothing about.
+  bool get hasMetadata =>
+      title.trim().isNotEmpty ||
+      nick.trim().isNotEmpty ||
+      cover.trim().isNotEmpty ||
+      area.trim().isNotEmpty ||
+      introduction.trim().isNotEmpty ||
+      notice.trim().isNotEmpty;
+
+  /// Whether this room is the shell a platform builds when its detail request
+  /// failed: the reason sits in [data] and nothing usable took its place.
+  ///
+  /// [getLiveRoomWithError] is the only producer - it keeps the last known
+  /// identity and metadata, and records the failure where the playback layer
+  /// reads it. A room that still carries a payload from an earlier response is
+  /// not a failure shell: there is something to play with.
+  bool get isDetailFailureShell => data is Exception;
+
+  /// One line naming this room: title, else streamer, else room id.
+  ///
+  /// Used where the room has to be identified before its title is known. An
+  /// error screen that cannot say which room failed is no help at all.
+  String get displayTitle {
+    for (final String candidate in <String>[title, nick, roomId]) {
+      final String value = candidate.trim();
+      if (value.isNotEmpty) return value;
+    }
+
+    return i18n('untitled_room');
+  }
+
   // ---------- Audience values ----------
 
   /// Parses audience text with 10^4/10^8 unit suffixes or comma separators.
@@ -627,6 +663,109 @@ abstract class LiveRoom with _$LiveRoom {
       result = result.copyWith(audienceMetricType: other.audienceMetricType);
     }
     return result;
+  }
+
+  /// Merges [fresh] over this room, field by field: a value [fresh] carries wins,
+  /// and this room fills whatever [fresh] left blank. In one line — the newer
+  /// information replaces the older, and a value replaces an empty one.
+  ///
+  /// Two things are deliberately outside the merge:
+  ///
+  /// * **Identity** (`roomId`, `platform`): a card is stored, tagged and looked
+  ///   up under the id it was followed with, and platforms answer with their
+  ///   canonical id, which can differ (Douyin reports its web rid). The caller
+  ///   decides which id survives.
+  /// * **The runtime payload** ([data], [danmakuData]): those belong to a
+  ///   playback session. A stored room is not one, and a card read back from
+  ///   settings must not carry them.
+  ///
+  /// Playback state (`status`, `liveStatus`, `isRecord`, the audience metric)
+  /// always follows [fresh]: there is no empty value to protect there, and
+  /// correcting it is the whole point of a refresh.
+  LiveRoom withRefreshFrom(LiveRoom fresh) {
+    if (identical(this, fresh)) return this;
+
+    /// [value] when it says anything, this room's own otherwise.
+    String keepIfEmpty(String value, String fallback) => value.trim().isEmpty ? fallback : value;
+
+    // The legacy audience field keeps "0" as "unknown" (see [_hasAudienceValue]).
+    String keepAudienceIfEmpty(String value, String fallback) => _hasAudienceValue(value) ? value : fallback;
+
+    return copyWith(
+      userId: keepIfEmpty(fresh.userId, userId),
+      link: keepIfEmpty(fresh.link, link),
+      title: keepIfEmpty(fresh.title, title),
+      nick: keepIfEmpty(fresh.nick, nick),
+      avatar: keepIfEmpty(fresh.avatar, avatar),
+      cover: keepIfEmpty(fresh.cover, cover),
+      area: keepIfEmpty(fresh.area, area),
+      watching: keepAudienceIfEmpty(fresh.watching, watching),
+      popularity: keepIfEmpty(fresh.popularity, popularity),
+      onlineViewers: keepIfEmpty(fresh.onlineViewers, onlineViewers),
+      totalViewers: keepIfEmpty(fresh.totalViewers, totalViewers),
+      followers: keepIfEmpty(fresh.followers, followers),
+      tagIds: fresh.tagIds.isEmpty ? tagIds : fresh.tagIds,
+      introduction: keepIfEmpty(fresh.introduction, introduction),
+      notice: keepIfEmpty(fresh.notice, notice),
+      status: fresh.status,
+      isRecord: fresh.isRecord,
+      liveStatus: fresh.liveStatus,
+      audienceMetricType: fresh.audienceMetricType == AudienceMetricType.unknown
+          ? audienceMetricType
+          : fresh.audienceMetricType,
+      catchUpUrl: fresh.catchUpUrl ?? catchUpUrl,
+      catchUpStart: fresh.catchUpStart ?? catchUpStart,
+      catchUpEnd: fresh.catchUpEnd ?? catchUpEnd,
+      catchUpMode: fresh.catchUpMode ?? catchUpMode,
+      catchUpSource: fresh.catchUpSource ?? catchUpSource,
+      catchUpDays: fresh.catchUpDays ?? catchUpDays,
+      catchUpCorrectionHours: fresh.catchUpCorrectionHours ?? catchUpCorrectionHours,
+      httpHeaders: fresh.httpHeaders.isEmpty ? httpHeaders : fresh.httpHeaders,
+    );
+  }
+
+  /// Drops the playback-session payload, leaving a room that is safe to keep in
+  /// settings: [data] and [danmakuData] are runtime objects (a line model, a
+  /// socket's connection arguments), they are excluded from the stored JSON, and
+  /// nothing should hold on to them once the session that produced them is over.
+  LiveRoom withoutRuntimePayload() =>
+      data == null && danmakuData == null ? this : copyWith(data: null, danmakuData: null);
+
+  /// Fills what a room-detail response left blank from [hint] — the room the
+  /// viewer entered with.
+  ///
+  /// The response wins wherever it has a value, exactly as in
+  /// [withRefreshFrom]. A response with no metadata at all is not a statement
+  /// about the broadcast: it is either the shell a platform builds when its
+  /// detail request failed, or a room reconstructed from an id, and both default
+  /// to `offline`. Taking those defaults at face value reported a live room as
+  /// ended and wiped the very card the viewer had just tapped, so the hint —
+  /// playback state included — is taken over whole.
+  LiveRoom withHintFallbackFrom(LiveRoom? hint) {
+    if (hint == null || identical(this, hint) || !hint.hasMetadata) return this;
+
+    // The payload stays with the answer. [data] is the platform's own handle on
+    // this room's stream, and one carried over from the hint - a list snapshot, or
+    // the line model of an earlier session - would send playback at expired URLs
+    // and hide the failed lookup the answer is reporting. The danmaku arguments
+    // are neither signed nor session-bound, so those are safe to fill in: a
+    // platform that only publishes them in its list responses would otherwise
+    // open the room without a danmaku connection.
+    final dynamic danmaku = danmakuData ?? hint.danmakuData;
+
+    // Nothing to show here: the hint is the room, only the identity the caller
+    // asked for is kept (a platform may answer with a different canonical id).
+    if (!hasMetadata) {
+      return hint.copyWith(roomId: roomId, platform: platform, data: data, danmakuData: danmaku);
+    }
+
+    // The hint is the base and this answer wins wherever it has a value - the
+    // other way round from [withRefreshFrom]'s usual caller, where the receiver
+    // is the older card. The identity stays this answer's, and so does the
+    // payload ([withRefreshFrom] leaves both alone).
+    return hint
+        .withRefreshFrom(this)
+        .copyWith(roomId: roomId, platform: platform, data: data, danmakuData: danmaku);
   }
 
   /// Sorts two rooms by the selected metric policy and then by stable room
