@@ -5,7 +5,7 @@
         <span class="text-sm sm:text-[15px] font-bold text-ios-text-h dark:text-gray-100">导入备份数据</span>
         <p class="text-[11px] sm:text-xs text-ios-gray dark:text-gray-400 mt-1">选择本地备份文件，覆盖当前电视配置</p>
       </div>
-      <input ref="fileUploadRef" type="file" accept=".json" class="hidden" @change="handleImport" />
+      <input ref="fileUploadRef" type="file" accept=".txt,.json" class="hidden" @change="handleImport" />
       <button class="w-full py-3 sm:py-3.5 bg-ios-blue text-white font-bold rounded-xl text-sm transition-all md:hover:scale-[1.01] active:scale-[0.98] cursor-pointer dark:shadow-[0_0_24px_4px_rgba(130,180,255,0.25)]" @click="fileUploadRef?.click()">选择备份文件导入</button>
     </div>
 
