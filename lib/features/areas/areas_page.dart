@@ -2,6 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/areas/area_grid_view.dart';
+import 'package:pure_live/features/areas/area_display_config.dart';
 import 'package:pure_live/features/areas/category_provider.dart';
 import 'package:pure_live/features/areas/platform_provider.dart';
 
@@ -99,6 +100,13 @@ class AreasPlatformGridBridgeState extends ConsumerState<AreasPlatformGridBridge
               onTap: () => ref.invalidate(getSiteCategoriesProvider(widget.site.id)),
             ),
           );
+        }
+
+        // 分类很少的站点（见 area_display_config.flatAreaSites）把二级分类
+        // 平铺成一个列表一次展示；其余站点保持一级 tab + 二级网格的两层结构。
+        if (shouldFlattenCategories(widget.site.id, categories)) {
+          final flat = flattenCategories(categories);
+          return AreaGridView(labels: const [''], areas: <List<LiveArea>>[flat], flat: true);
         }
 
         final List<String> labels = categories.map((e) => e.name).toList();

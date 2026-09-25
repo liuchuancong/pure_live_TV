@@ -10,7 +10,11 @@ class AreaGridView extends ConsumerStatefulWidget {
   final List<String> labels;
   final List<List<LiveArea>> areas;
 
-  const AreaGridView({super.key, required this.labels, required this.areas});
+  /// 平铺模式：整个站点只有一个列表（[labels]/[areas] 各一项且 labels 为空串），
+  /// 不渲染二级分类 tab。
+  final bool flat;
+
+  const AreaGridView({super.key, required this.labels, required this.areas, this.flat = false});
 
   @override
   ConsumerState<AreaGridView> createState() => _AreaGridViewState();
@@ -71,7 +75,7 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.labels.isNotEmpty)
+        if (widget.labels.isNotEmpty && !widget.flat)
           TvTabBar(
             tabs: secondTabItems,
             currentIndex: currentCategoryIndex,
@@ -85,7 +89,7 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
         SizedBox(height: 20.sp),
         Expanded(
           child: TvTabView(
-            memoryKey: "areas_sub_category_view_$currentCategoryIndex",
+            memoryKey: widget.flat ? "areas_flat_view" : "areas_sub_category_view_$currentCategoryIndex",
             verticalEdge: DpadEdgeBehavior.leave,
             horizontalEdge: DpadEdgeBehavior.stop,
             child: BasePagedTvView<LiveArea>(
