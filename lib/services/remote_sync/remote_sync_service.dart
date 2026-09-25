@@ -2,13 +2,15 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:bonsoir/bonsoir.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/utils/date_time_utils.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
+import 'package:pure_live/shared/dialog/backup_import_dialog.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
 
@@ -376,8 +378,29 @@ class RemoteSyncController extends _$RemoteSyncController {
   }
 
   Future<bool> _applySettings(Map<String, dynamic> settings) async {
+    // The viewer picks the modules before anything lands: an inbound document can
+    // come from another TV, from the phone or from the web page, and only the two
+    // TV kinds are trusted with the device's own player/theme/proxy setup. No UI
+    // to ask (a request arriving before the first frame) falls back to the
+    // document's own defaults.
+    final BuildContext? context = appNavigatorContext;
+    final Set<String> defaults = BackupController.defaultSections(settings);
+    final Set<String>? sections = context == null
+        ? defaults
+        : await showBackupImportPicker(
+            context,
+            modules: BackupController.importableSections(settings),
+            defaults: defaults,
+            sourceIsTv: BackupController.sourceIsTv(settings),
+          );
+
+    if (sections == null) {
+      debugPrint('[sync] applySettings cancelled');
+      return false;
+    }
+
     try {
-      await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings);
+      await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings, sections: sections);
       debugPrint('[sync] applySettings ok');
       return true;
     } catch (e, st) {

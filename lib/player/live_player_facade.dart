@@ -221,7 +221,6 @@ final class LivePlayerFacade {
       if (_disposed) return;
       _bindCurrentHandle();
       _bumpVideoKey();
-      _setPictureAvailable(false);
     });
   }
 
@@ -241,6 +240,18 @@ final class LivePlayerFacade {
 
     _boundHandle = handle;
     _bindAdapter(handle);
+
+    // Seed from the handle that is already running.
+    //
+    // Picture availability used to be driven purely by adapter events, and
+    // those are one-shot: for a handle that was opened and verified before
+    // the facade bound it, the Playing / video-size events have already
+    // fired and are never delivered again. The flag then stayed false, the
+    // loading overlay stayed up over a playing stream, and the app's 30s
+    // stall report turned that into a visible "playback failed". Reading
+    // the handle's own mirror at bind time removes the dependency on
+    // catching an event that has already passed.
+    _setPictureAvailable(handle.isPlaying);
   }
 
   void _bindAdapter(PlayerHandle handle) {
@@ -319,10 +330,26 @@ final class LivePlayerFacade {
       return;
     }
 
-    // An opening declaration means the surface is about to show nothing:
-    // a source is opening or a line/engine switch is in flight.
-    if (state.playback == PlayerPlaybackState.opening) {
-      _setPictureAvailable(false);
+    // Picture availability follows the controller's own state machine, so
+    // it does not depend on catching a one-shot adapter event: playing
+    // means frames are on screen, opening/idle/stopped means they are not.
+    // A synthetic buffering declaration is deliberately not treated as
+    // "no picture" - it is the state open() returns in, and the adapter's
+    // own report is what decides whether anything is actually buffering.
+    switch (state.playback) {
+      case PlayerPlaybackState.playing:
+        _setPictureAvailable(true);
+      case PlayerPlaybackState.opening:
+      case PlayerPlaybackState.idle:
+      case PlayerPlaybackState.stopped:
+        _setPictureAvailable(false);
+      case PlayerPlaybackState.paused:
+      case PlayerPlaybackState.buffering:
+      case PlayerPlaybackState.seeking:
+      case PlayerPlaybackState.stopping:
+      case PlayerPlaybackState.completed:
+      case PlayerPlaybackState.error:
+        break;
     }
 
     _stateSubject.add(state);

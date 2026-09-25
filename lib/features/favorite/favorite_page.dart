@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -179,14 +178,9 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
       ref.read(favoriteProvider);
 
       final notifier = ref.read(favoriteProvider.notifier);
-      final reAligned = <String>[];
 
       for (final grid in _grids.values) {
-        final rooms = notifier.roomsFor(
-          tabIndex: grid.spec.tabIndex,
-          siteId: grid.spec.siteId,
-          tagId: grid.spec.tagId,
-        );
+        final rooms = notifier.roomsFor(tabIndex: grid.spec.tabIndex, siteId: grid.spec.siteId, tagId: grid.spec.tagId);
 
         final core = ref.read(pagingCoreProvider(grid.param));
 
@@ -196,11 +190,6 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
         if (_rendersSameCards(core.allLocalItems, rooms)) continue;
 
         ref.read(pagingCoreProvider(grid.param).notifier).updateLocalPool(rooms);
-        reAligned.add('${grid.spec.key}=${rooms.length}');
-      }
-
-      if (reAligned.isNotEmpty) {
-        log('grids re-aligned: ${reAligned.join(', ')}', name: 'FavoritePage');
       }
     });
   }

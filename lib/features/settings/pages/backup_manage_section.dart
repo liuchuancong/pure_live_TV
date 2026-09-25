@@ -6,6 +6,7 @@ import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/dialog/backup_import_dialog.dart';
 
 
 /// The menu one backup row opens.
@@ -111,7 +112,25 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
 
   Future<void> _restore(File file) async {
     await _run(() async {
-      final ok = await ref.read(backupControllerProvider.notifier).recover(file);
+      final backup = ref.read(backupControllerProvider.notifier);
+      // The document is read first: which modules it carries, and whether it came
+      // from a TV, decide what the picker offers and starts with.
+      final data = await backup.readDocument(file);
+      if (data == null) {
+        if (mounted) setState(() => _result = i18n('ui_import_failed_or_file_not_found'));
+        return;
+      }
+      if (!mounted) return;
+
+      final sections = await showBackupImportPicker(
+        context,
+        modules: BackupController.importableSections(data),
+        defaults: BackupController.defaultSections(data),
+        sourceIsTv: BackupController.sourceIsTv(data),
+      );
+      if (sections == null) return; // cancelled: nothing is imported
+
+      final ok = await backup.recover(file, sections: sections);
       if (mounted) setState(() => _result = ok ? i18n('ui_imported') : i18n('ui_import_failed_or_file_not_found'));
     });
   }

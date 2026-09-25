@@ -36,14 +36,39 @@ class BackupController extends _$BackupController {
   ];
 
   /// Sections a document from a non-TV device (the phone app, the LAN web page)
-  /// is allowed to touch. A phone cannot know better than the TV about player
-  /// kernels, themes or proxy ports, so only user data travels.
+  /// is allowed to touch by default. A phone cannot know better than the TV about
+  /// player kernels, themes or proxy ports, so only user data travels — and the
+  /// user picks from the full list when an import asks (see [importableSections]).
   static const List<String> nonTvAcceptedSections = <String>[
     'favorite',
     'history',
     'cookie',
+    'iptv',
     'tags',
   ];
+
+  /// The sections a document can be asked to import, in the order the picker
+  /// lists them.
+  ///
+  /// A sectioned document offers exactly the sections it carries. A flat one
+  /// (the mobile app's format, or an older TV file) has no sections at all: its
+  /// keys are spread across the document, so every module is offered and each
+  /// controller reads its own keys out of the whole map.
+  static List<String> importableSections(Map<String, dynamic> data) {
+    if (data['backupVersion'] == null) return List<String>.unmodifiable(knownSections);
+    return List<String>.unmodifiable(knownSections.where((name) => data[name] is Map));
+  }
+
+  /// The sections an import applies when the user is not asked — and the ones a
+  /// picker starts with.
+  ///
+  /// A TV document restores everything it carries. Anything else starts from
+  /// [nonTvAcceptedSections]: the user data, never the device's own setup.
+  static Set<String> defaultSections(Map<String, dynamic> data) {
+    final available = importableSections(data);
+    if (sourceIsTv(data)) return available.toSet();
+    return nonTvAcceptedSections.where(available.contains).toSet();
+  }
 
   /// Whether [data] was produced by a TV build.
   ///
@@ -201,10 +226,18 @@ class BackupController extends _$BackupController {
     if (!recognized) throw const FormatException('No recognized backup settings');
   }
 
-  void importAllSettings(Map<String, dynamic> data) {
+  /// Applies [data], limited to [sections] when the user picked modules.
+  ///
+  /// Without [sections] the document's own default applies
+  /// ([defaultSections]): a TV backup restores everything it carries, anything
+  /// else only the user-data modules — a phone must not rewrite the TV's own
+  /// player, theme or proxy configuration.
+  void importAllSettings(Map<String, dynamic> data, {Set<String>? sections}) {
     validateBackupIdentity(data);
-    final version = data['backupVersion'];
+
     final s = SettingsService.to;
+    final chosen = sections ?? defaultSections(data);
+    final sectioned = data['backupVersion'] != null;
 
     final sectionParsers = <String, void Function(Map<String, dynamic>)>{
       'app': s.app.importFromJson,
@@ -224,63 +257,32 @@ class BackupController extends _$BackupController {
       'cookie': s.cookieManager.importFromJson,
     };
 
-    final sourceIsTv = BackupController.sourceIsTv(data);
-
-    // Non-TV source: only follows / history / cookies / tags may land — a phone
-    // must not rewrite the TV's own player, theme or proxy configuration.
-    if (!sourceIsTv) {
-      final tvParser = <String, void Function(Map<String, dynamic>)>{
-        'favorite': s.fav.importFromJson,
-        'history': s.history.importFromJson,
-        'cookie': s.cookieManager.importFromJson,
-      };
-      if (version == null) {
-        // Flat (mobile app) document: the accepted controllers read the whole map
-        // and pick their own keys; the tags live under the legacy key.
-        for (final parser in tvParser.values) {
-          parser(data);
-        }
-        final legacyTags = data['custom_tags_data'];
-        if (legacyTags is Map) {
-          s.tag.importFromJson(Map<String, dynamic>.from(legacyTags));
-        }
-        return;
-      }
-      // Sectioned document from a non-TV build.
-      for (final entry in tvParser.entries) {
-        if (data.containsKey(entry.key)) {
-          entry.value(Map<String, dynamic>.from(data[entry.key] ?? {}));
-        }
-      }
-      final tags = data['tags'];
-      if (tags is Map) {
-        s.tag.importFromJson(Map<String, dynamic>.from(tags));
-      }
-      return;
-    }
-
-    if (version == null) {
-      // Legacy flat backup: every controller reads the whole payload directly and
-      // falls back to defaults for keys that are missing.
-      for (final parser in sectionParsers.values) {
-        parser(data);
-      }
-      final legacyTags = data['custom_tags_data'];
-      if (legacyTags is Map) {
-        s.tag.importFromJson(Map<String, dynamic>.from(legacyTags));
-      }
-      return;
-    }
-
     for (final entry in sectionParsers.entries) {
-      if (data.containsKey(entry.key)) {
-        entry.value(Map<String, dynamic>.from(data[entry.key] ?? {}));
+      if (!chosen.contains(entry.key)) continue;
+
+      // A sectioned document hands each parser its own section. A flat one hands
+      // every parser the whole map to pick its keys from — that is exactly what
+      // the mobile app's document is: one flat map with no section headings.
+      final Map<String, dynamic> payload;
+
+      if (sectioned) {
+        final section = data[entry.key];
+        if (section is! Map) continue;
+        payload = Map<String, dynamic>.from(section);
+      } else {
+        payload = data;
       }
+
+      entry.value(payload);
     }
-    final tags = data['tags'];
-    if (tags is Map) {
-      s.tag.importFromJson(Map<String, dynamic>.from(tags));
-    }
+
+    if (!chosen.contains('tags')) return;
+
+    // The tag store is not one of [sectionParsers]: its own keys live under
+    // `tags` in a sectioned document and under the legacy `custom_tags_data` in
+    // a flat one.
+    final tags = sectioned ? data['tags'] : data['custom_tags_data'];
+    if (tags is Map) s.tag.importFromJson(Map<String, dynamic>.from(tags));
   }
 
   /// Writes the settings document into [file].
@@ -299,7 +301,7 @@ class BackupController extends _$BackupController {
   }
 
   /// Serializes restore runs so concurrent imports cannot interleave writes.
-  Future<void> restoreAllSettings(Map<String, dynamic> data) async {
+  Future<void> restoreAllSettings(Map<String, dynamic> data, {Set<String>? sections}) async {
     if (_restoreInProgress) throw StateError('A settings restore is already running');
     _restoreInProgress = true;
     try {
@@ -309,18 +311,32 @@ class BackupController extends _$BackupController {
       // TickerMode's build - a synchronous favorite write there crashes with
       // "setState() called during build". End of frame is always safe.
       await WidgetsBinding.instance.endOfFrame;
-      importAllSettings(data);
+      importAllSettings(data, sections: sections);
     } finally {
       _restoreInProgress = false;
     }
   }
 
-  Future<bool> recover(File file) async {
+  /// Reads and decodes a backup file, or null when it is not one.
+  ///
+  /// Separate from [recover] so a caller can look inside the document first —
+  /// the import picker needs the module list and the source before anything is
+  /// applied.
+  Future<Map<String, dynamic>?> readDocument(File file) async {
     try {
       final json = await file.readAsString();
       final data = jsonDecode(json);
-      if (data is! Map<String, dynamic>) return false;
-      await restoreAllSettings(data);
+      return data is Map<String, dynamic> ? data : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> recover(File file, {Set<String>? sections}) async {
+    try {
+      final data = await readDocument(file);
+      if (data == null) return false;
+      await restoreAllSettings(data, sections: sections);
       return true;
     } catch (_) {
       return false;
@@ -328,14 +344,13 @@ class BackupController extends _$BackupController {
   }
 
   /// Deletes the backup file and its parent directory after a restore.
-  Future<bool> recoverAndDelete(File file) async {
+  Future<bool> recoverAndDelete(File file, {Set<String>? sections}) async {
     var restored = false;
     try {
       if (!await file.exists()) return false;
-      final json = await file.readAsString();
-      final data = jsonDecode(json);
-      if (data is Map<String, dynamic>) {
-        await restoreAllSettings(data);
+      final data = await readDocument(file);
+      if (data != null) {
+        await restoreAllSettings(data, sections: sections);
         restored = true;
       }
     } catch (_) {

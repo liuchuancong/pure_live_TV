@@ -28,26 +28,17 @@ const toast = useToastStore()
 const fileUploadRef = ref(null)
 
 const handleExport = async () => {
+  // The api layer already saves what the TV sent, under the backup file name the
+  // app itself uses (purelive_<timestamp>.txt). Writing a second file here — it
+  // used to be a hand-rolled `tv-config-backup-*.json` blob — produced two
+  // downloads, and the JSON one was named in a way the TV's backup list does not
+  // recognise, so it could not be restored from there.
   const res = await api.exportBackup()
   if (!res.isOk) {
     toast.show(res.msg || '导出失败', 'error')
     return
   }
-  try {
-    const data = res.data || res
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `tv-config-backup-${Date.now()}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    toast.show('导出成功', 'success')
-  } catch {
-    toast.show('生成备份文件失败', 'error')
-  }
+  toast.show('导出成功：备份文件已下载，可直接导入电视', 'success')
 }
 
 const handleImport = async e => {

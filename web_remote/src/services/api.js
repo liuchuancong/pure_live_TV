@@ -166,7 +166,7 @@ export const api = {
     return httpPostJson('/api/iptv/headers', headerData)
   },
   exportBackup() {
-    return httpGet('/api/backup/export', {}, { responseType: FILE_RESPONSE_TYPE, downloadTag: 'pure_live_backup' })
+    return httpGet('/api/backup/export', {}, { responseType: FILE_RESPONSE_TYPE, downloadTag: 'purelive' })
   },
   importBackup(backupData) {
     return httpPostJson('/api/backup/import', backupData)

@@ -16,9 +16,11 @@ import 'package:pure_live/shared/common/http_header_policy.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/shared/utils/log.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
+import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/dialog/backup_import_dialog.dart';
 
 part 'tv_remote_receiver.g.dart';
 
@@ -429,8 +431,14 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       final body = await req.body;
       final settings = body is Map && body['settings'] is Map ? body['settings'] : body;
       if (settings is! Map) return _fail(res, msg: i18n('ui_parameter_error'));
+
+      final sections = await _askModules(settings.cast<String, dynamic>());
+      if (sections == null) return _fail(res, msg: i18n('cancel'));
+
       try {
-        await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings.cast<String, dynamic>());
+        await ref
+            .read(backupControllerProvider.notifier)
+            .restoreAllSettings(settings.cast<String, dynamic>(), sections: sections);
       } catch (error) {
         _addLog('Settings sync failed: $error', color: Colors.red);
         ToastUtil.show(i18n('remote_sync_receive_failed'));
@@ -469,26 +477,19 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
       if (settings == null) return _fail(res, msg: i18n('ui_parameter_error'));
 
+      // The phone's document is flat (danmaku, favorites, history, cookies,
+      // IPTV). Its modules are chosen the same way as any other import's, so the
+      // danmaku and IPTV parts it carries are no longer silently dropped — they
+      // start unticked instead, and the viewer decides.
+      final sections = await _askModules(settings);
+      if (sections == null) return _fail(res, msg: i18n('cancel'));
+
       try {
-        await backup.restoreAllSettings(settings);
-      } catch (_) {
-        // The flat document (danmaku, favorites, history, cookies, IPTV) is not
-        // a sectioned backup; hand each section the whole map so every parser
-        // picks its own keys out of it.
-        try {
-          await backup.restoreAllSettings(<String, dynamic>{
-            'backupVersion': 1,
-            'danmaku': settings,
-            'favorite': settings,
-            'history': settings,
-            'cookie': settings,
-            'iptv': settings,
-          });
-        } catch (error) {
-          _addLog('Phone sync failed: $error', color: Colors.red);
-          ToastUtil.show(i18n('remote_sync_receive_failed'));
-          return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
-        }
+        await backup.restoreAllSettings(settings, sections: sections);
+      } catch (error) {
+        _addLog('Phone sync failed: $error', color: Colors.red);
+        ToastUtil.show(i18n('remote_sync_receive_failed'));
+        return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
       }
       _addLog('Settings received from the phone (setSettings)');
       ToastUtil.show(i18n('remote_sync_receive_success'));
@@ -584,26 +585,37 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     });
 
     _app!.get('/api/backup/export', (req, res) {
+      // The document the device sync and the local backups use: the sectioned
+      // backup with its `platformIsTv` marker, written under the backup file name.
+      // It used to be wrapped in an envelope of its own, which only this page's
+      // import knew how to open — a file exported here could not be restored from
+      // the backup list, and re-importing it here classified it as a foreign one.
       final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
-      final backup = {'version': _appVersion, 'export_time': DateTime.now().toIso8601String(), 'config': settings};
-      final fileName = 'pure_live_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+      final fileName = BackupController.backupFileName(DateTime.now());
       res.headers.set('Content-Disposition', 'attachment; filename=$fileName');
-      res.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
+      res.headers.contentType = ContentType('text', 'plain', charset: 'utf-8');
       _addLog('Exported a configuration backup');
-      return backup;
+      return settings;
     });
 
     _app!.post('/api/backup/import', (req, res) async {
       final body = await req.body as Map<String, dynamic>?;
-      if (body == null || body['config'] == null) {
-        return _fail(res, msg: i18n('remote_bad_backup'));
-      }
+      if (body == null) return _fail(res, msg: i18n('remote_bad_backup'));
+
+      // The page posts back what it exported. Older pages wrapped the document in
+      // an envelope (`config`); a fresh export is the document itself.
+      final nested = body['config'];
+      final document = nested is Map ? Map<String, dynamic>.from(nested) : body;
+
+      final sections = await _askModules(document);
+      if (sections == null) return _fail(res, msg: i18n('cancel'));
+
       // Importing used to write the payload into the local cache, which nothing reads:
       // the page said success and the TV kept its old settings.
       try {
         await ref
             .read(backupControllerProvider.notifier)
-            .restoreAllSettings(Map<String, dynamic>.from(body['config'] as Map));
+            .restoreAllSettings(document, sections: sections);
       } catch (error) {
         _addLog('Backup import failed: $error', color: Colors.red);
         return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
@@ -682,6 +694,27 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     } else if (path.endsWith('.html')) {
       res.headers.contentType = ContentType('text', 'html', charset: 'utf-8');
     }
+  }
+
+  /// Asks the viewer which modules an inbound document should apply.
+  ///
+  /// Null when the dialog was cancelled — the caller then imports nothing. With
+  /// no UI to ask (a request arriving before the first frame) the document's own
+  /// defaults decide: a TV document restores everything it carries, anything else
+  /// only the user-data modules.
+  Future<Set<String>?> _askModules(Map<String, dynamic> document) async {
+    final BuildContext? context = appNavigatorContext;
+    final List<String> modules = BackupController.importableSections(document);
+    final Set<String> defaults = BackupController.defaultSections(document);
+
+    if (context == null) return defaults;
+
+    return showBackupImportPicker(
+      context,
+      modules: modules,
+      defaults: defaults,
+      sourceIsTv: BackupController.sourceIsTv(document),
+    );
   }
 
   void _addLog(String msg, {Color color = Colors.blue}) {
