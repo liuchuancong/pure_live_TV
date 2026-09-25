@@ -1,6 +1,5 @@
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pure_live/player/core/live_room_volume_manager.dart';
 
 part 'live_room.freezed.dart';
 part 'live_room.g.dart';
@@ -763,9 +762,7 @@ abstract class LiveRoom with _$LiveRoom {
     // other way round from [withRefreshFrom]'s usual caller, where the receiver
     // is the older card. The identity stays this answer's, and so does the
     // payload ([withRefreshFrom] leaves both alone).
-    return hint
-        .withRefreshFrom(this)
-        .copyWith(roomId: roomId, platform: platform, data: data, danmakuData: danmaku);
+    return hint.withRefreshFrom(this).copyWith(roomId: roomId, platform: platform, data: data, danmakuData: danmaku);
   }
 
   /// Sorts two rooms by the selected metric policy and then by stable room
@@ -789,12 +786,6 @@ abstract class LiveRoom with _$LiveRoom {
     if (valueOrder != 0) return valueOrder;
     return a.identityKey.compareTo(b.identityKey);
   }
-
-  // ---------- Remembered volume ----------
-
-  double getSavedVolume() => LiveRoomVolumeManager.getRoomVolume(platform, roomId);
-
-  Future<void> saveCurrentVolume(double volume) => LiveRoomVolumeManager.saveRoomVolume(platform, roomId, volume);
 
   // ---------- Error fallback ----------
 

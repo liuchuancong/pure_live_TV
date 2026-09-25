@@ -15,6 +15,7 @@ import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/common/http_header_policy.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/shared/utils/log.dart';
+import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -432,9 +433,13 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
         await ref.read(backupControllerProvider.notifier).restoreAllSettings(settings.cast<String, dynamic>());
       } catch (error) {
         _addLog('Settings sync failed: $error', color: Colors.red);
+        ToastUtil.show(i18n('remote_sync_receive_failed'));
         return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
       }
       _addLog('Settings sync received over the LAN');
+      // The phone gets the result in its own page; this TV has to say so too,
+      // otherwise whoever is watching it cannot tell the push landed.
+      ToastUtil.show(i18n('remote_sync_receive_success'));
       return _ok(res, msg: i18n('webdav_sync_success'));
     });
 
@@ -481,10 +486,12 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
           });
         } catch (error) {
           _addLog('Phone sync failed: $error', color: Colors.red);
+          ToastUtil.show(i18n('remote_sync_receive_failed'));
           return _fail(res, msg: i18n('ui_import_failed_or_file_not_found'));
         }
       }
       _addLog('Settings received from the phone (setSettings)');
+      ToastUtil.show(i18n('remote_sync_receive_success'));
       return _ok(res, data: true);
     });
 

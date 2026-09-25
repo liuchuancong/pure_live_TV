@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'package:media_core/media_core.dart';
 import '../services/settings/settings.dart';
-import 'core/live_room_volume_manager.dart';
 import 'core/playback_header_resolver.dart';
 import '../app/consts/app_theme_consts.dart';
 import '../shared/models/live_room/live_room.dart';
@@ -384,9 +383,7 @@ final class LivePlayerFacade {
     await setAudioOnly(SettingsService.to.playerState.audioOnly);
 
     if (room != null) {
-      final volume = LiveRoomVolumeManager.getRoomVolume(room.platform, room.roomId).clamp(0.0, 1.0);
-
-      await setVolume(volume);
+      await setVolume(1.0);
     }
 
     // Some adapters can replace their handle during the open/recovery path.

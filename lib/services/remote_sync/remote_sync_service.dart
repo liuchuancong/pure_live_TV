@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'package:bonsoir/bonsoir.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/shared/utils/toast_util.dart';
+import 'package:pure_live/shared/utils/date_time_utils.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
@@ -25,6 +28,15 @@ class RemoteSyncSnapshot {
   /// offers a manual choice.
   final List<String> localIps;
 
+  /// Result of the most recent inbound settings push (a phone sending its own
+  /// settings to this TV), empty until one arrives, formatted as message plus
+  /// time. A push only rewrites settings, so without this line the TV looks
+  /// exactly as it did before and the operator cannot tell whether it landed.
+  final String lastReceiveNotice;
+
+  /// Whether that push was applied.
+  final bool lastReceiveOk;
+
   const RemoteSyncSnapshot({
     this.started = false,
     this.qrData = '',
@@ -32,6 +44,8 @@ class RemoteSyncSnapshot {
     this.error,
     this.devices = const [],
     this.localIps = const [],
+    this.lastReceiveNotice = '',
+    this.lastReceiveOk = true,
   });
 }
 
@@ -57,6 +71,8 @@ class RemoteSyncController extends _$RemoteSyncController {
   bool _starting = false;
   bool _disposed = false;
   String? _lastError;
+  String _lastReceiveNotice = '';
+  bool _lastReceiveOk = true;
 
   /// Kept so the pages that call `kit.syncToDevice` / `kit.receiveFromQrOrAddress`
   /// keep working: this controller exposes the same methods.
@@ -332,6 +348,9 @@ class RemoteSyncController extends _$RemoteSyncController {
         try {
           final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
           await _write(request.response, {'code': 200, 'msg': 'ok', 'data': settings});
+          // The paired app imports this TV's settings: nothing changes here, so
+          // the toast is the only sign that the sync happened at all.
+          ToastUtil.show(i18n('remote_sync_send_success'));
         } catch (_) {
           await _write(request.response, {'code': 500, 'msg': 'Export settings failed', 'data': false});
         }
@@ -345,6 +364,7 @@ class RemoteSyncController extends _$RemoteSyncController {
           return;
         }
         final ok = await _applySettings(settings);
+        _announceReceive(ok);
         await _write(request.response, {
           'code': ok ? 200 : 500,
           'msg': ok ? 'ok' : 'apply settings failed',
@@ -364,6 +384,16 @@ class RemoteSyncController extends _$RemoteSyncController {
       debugPrint('[sync] applySettings failed: $e\n$st');
       return false;
     }
+  }
+
+  /// Reports an inbound settings push on the TV: a toast for the moment it
+  /// lands, and the line the device sync page keeps on screen afterwards.
+  void _announceReceive(bool ok) {
+    final String message = i18n(ok ? 'remote_sync_receive_success' : 'remote_sync_receive_failed');
+    _lastReceiveOk = ok;
+    _lastReceiveNotice = '$message · ${DateTimeUtils.parseTime(DateTime.now())}';
+    _publish();
+    ToastUtil.show(message);
   }
 
   Future<Object?> _readJson(HttpRequest request) async {
@@ -624,6 +654,8 @@ class RemoteSyncController extends _$RemoteSyncController {
       error: _running ? null : _lastError,
       devices: List.unmodifiable(_devices),
       localIps: localIpCandidates,
+      lastReceiveNotice: _lastReceiveNotice,
+      lastReceiveOk: _lastReceiveOk,
     );
   }
 }

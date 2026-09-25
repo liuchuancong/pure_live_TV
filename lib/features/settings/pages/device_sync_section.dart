@@ -102,6 +102,13 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                       address: snapshot.address,
                       error: snapshot.error,
                     ),
+                    // A phone that pushes its settings leaves the TV otherwise
+                    // unchanged, so the last result stays on screen: the toast
+                    // is usually gone by the time the operator looks up.
+                    if (snapshot.lastReceiveNotice.isNotEmpty) ...[
+                      SizedBox(height: 12.sp),
+                      _ReceiveNoticeRow(notice: snapshot.lastReceiveNotice, ok: snapshot.lastReceiveOk),
+                    ],
                     SizedBox(height: 20.sp),
                     _StepBullet(
                       icon: Icons.qr_code_scanner_rounded,
@@ -227,6 +234,10 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
   }
 }
 
+/// Status colours shared by the service pill and the receive notice.
+const Color _serviceOkColor = Color(0xFF4CAF50);
+const Color _serviceFailColor = Color(0xFFEF5350);
+
 /// Service status pill: dot + address/error + running label.
 class _ServiceStatusPill extends StatelessWidget {
   const _ServiceStatusPill({
@@ -243,7 +254,7 @@ class _ServiceStatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.tvTheme;
     final running = started;
-    final Color badgeColor = running ? const Color(0xFF4CAF50) : const Color(0xFFEF5350);
+    final Color badgeColor = running ? _serviceOkColor : _serviceFailColor;
     final String label = running ? i18n('ui_running') : i18n('ui_stopped');
 
     return Container(
@@ -276,6 +287,33 @@ class _ServiceStatusPill extends StatelessWidget {
           Text(label, style: AppTextStyles.t16W500.copyWith(color: badgeColor)),
         ],
       ),
+    );
+  }
+}
+
+/// Result of the last inbound settings push, kept on screen after the toast.
+class _ReceiveNoticeRow extends StatelessWidget {
+  const _ReceiveNoticeRow({required this.notice, required this.ok});
+
+  final String notice;
+  final bool ok;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = ok ? _serviceOkColor : _serviceFailColor;
+    return Row(
+      children: [
+        Icon(ok ? Icons.check_circle_rounded : Icons.error_outline_rounded, size: 20.sp, color: color),
+        SizedBox(width: 8.sp),
+        Expanded(
+          child: Text(
+            notice,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.t18W500.copyWith(color: color),
+          ),
+        ),
+      ],
     );
   }
 }

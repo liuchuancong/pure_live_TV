@@ -207,10 +207,6 @@ class LivePlayController extends _$LivePlayController {
       _syncFollowedRoom(detail);
     }
 
-    // Align the displayed volume with the volume remembered for the room; the
-    // player restores the same value on start.
-    state = state.copyWith(volume: detail.getSavedVolume().clamp(0.0, 1.0).toDouble());
-
     // Entering a room writes to watch history, which doubles as the channel list
     // when the route carried no playlist.
     try {
@@ -899,24 +895,6 @@ class LivePlayController extends _$LivePlayController {
 
     manager.changeVideoFit(stored);
   }
-
-  Future<void> setVolume(double volume) async {
-    final clamped = volume.clamp(0.0, 1.0).toDouble();
-
-    state = state.copyWith(volume: clamped);
-
-    await _playerManager?.setVolume(clamped);
-
-    final room = state.room;
-
-    if (room != null) {
-      unawaited(room.saveCurrentVolume(clamped).catchError((Object e, StackTrace s) {}));
-    }
-  }
-
-  Future<void> volumeUp() => setVolume(state.volume + 0.1);
-
-  Future<void> volumeDown() => setVolume(state.volume - 0.1);
 
   // =========================
   // Channel switching and the playlist.

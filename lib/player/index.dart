@@ -7,7 +7,6 @@
 // exports the app-facing surface: the facade, the kernel-registration
 // service and the app-specific helpers the features consume.
 
-export 'core/live_room_volume_manager.dart';
 export 'core/playback_proxy_policy.dart';
 export 'global_player_service.dart';
 export 'live_player_facade.dart';
