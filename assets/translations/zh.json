@@ -299,6 +299,8 @@
   "backup_recover": "备份与恢复",
   "backup_recover_desc": "一键导出您的本地配置或从云端导入",
   "backup_recover_subtitle": "创建备份与恢复",
+  "backup_browser_title": "手机扫码导入 / 导出备份",
+  "backup_browser_hint": "用手机相机扫码打开网页，在浏览器里下载或导入备份文件（与本地备份是同一种文件）",
   "backup_import_modules": "选择要导入的模块",
   "backup_source_tv": "来源 TV 设备",
   "backup_source_other": "来源非 TV 设备",
