@@ -41,9 +41,19 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
   int _lastLeftTapAt = 0;
   Timer? _leftTapTimer;
 
+  /// Channel switches are debounced: rapid presses accumulate their delta and
+  /// one session teardown commits the total, so mashing Down walks several
+  /// rooms instead of fighting the route replace mid-flight.
+  Timer? _channelDebounce;
+  int _pendingChannelDelta = 0;
+
+  /// The window rapid presses have to accumulate within.
+  static const Duration _channelDebounceWindow = Duration(milliseconds: 300);
+
   @override
   void dispose() {
     _leftTapTimer?.cancel();
+    _channelDebounce?.cancel();
     _focusNode.dispose();
     super.dispose();
   }
@@ -92,9 +102,22 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
       return KeyEventResult.ignored;
     }
 
-    // With the controls up, the control layer's own handler runs first; anything
-    // it does not use has already bubbled to here.
-    if (state.showControls) return KeyEventResult.ignored;
+    // With the controls up, the control layer runs first. It leaves Up/Down
+    // unhandled while no option list is open, so those arrive here: switch
+    // rooms with the same debounced accumulate-and-commit path as everywhere
+    // else. Left/Right/OK belong to the bar and are forwarded by returning
+    // ignored (they were already consumed when an option list is open).
+    if (state.showControls) {
+      if (key == LogicalKeyboardKey.arrowUp) {
+        _switchChannel(-1);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.arrowDown) {
+        _switchChannel(1);
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
 
     if (_isConfirm(key)) {
       controller.showControls();
@@ -120,8 +143,23 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
     return KeyEventResult.ignored;
   }
 
-  /// Switches channel by [delta] (-1 previous, 1 next).
+  /// Queues a channel switch by [delta] (-1 previous, 1 next).
+  ///
+  /// Presses inside [_channelDebounceWindow] accumulate into one commit, so a
+  /// rapid Down Down Down walks three rooms with a single session teardown
+  /// instead of racing the route replace with a navigation per press.
   void _switchChannel(int delta) {
+    _pendingChannelDelta += delta;
+    _channelDebounce?.cancel();
+    _channelDebounce = Timer(_channelDebounceWindow, _commitChannelSwitch);
+  }
+
+  /// Commits the accumulated channel delta: one route replace, one release.
+  void _commitChannelSwitch() {
+    final int delta = _pendingChannelDelta;
+    _pendingChannelDelta = 0;
+    if (delta == 0 || !mounted) return;
+
     final controller = ref.read(livePlayControllerProvider(widget.args).notifier);
     final rooms = controller.channelRooms;
     final target = controller.relativeChannel(delta);

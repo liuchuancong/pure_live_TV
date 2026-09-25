@@ -109,6 +109,16 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     };
     if (direction == null) return KeyEventResult.ignored;
 
+    // Up/Down on the plain bar (no option list open) are left unhandled on
+    // purpose: they bubble to the page key scope, which switches rooms. The
+    // bar only owns them while an option list is open, where they walk the
+    // bar/options zones.
+    if (_zone == _Zone.bar &&
+        (direction == TraversalDirection.up || direction == TraversalDirection.down) &&
+        _panel == _OptionsPanel.none) {
+      return KeyEventResult.ignored;
+    }
+
     _onDirection(direction, state);
     return KeyEventResult.handled;
   }

@@ -679,9 +679,10 @@ class LivePlayController extends _$LivePlayController {
     if (rooms.length < 2) return null;
 
     final current = channelIndex;
-    final raw = current + delta;
 
-    final next = raw < 0 ? rooms.length - 1 : (raw >= rooms.length ? 0 : raw);
+    // Proper modulo so an accumulated delta (rapid presses sum up) wraps
+    // correctly past both ends instead of snapping to an edge.
+    final next = ((current + delta) % rooms.length + rooms.length) % rooms.length;
 
     final target = rooms[next];
 
