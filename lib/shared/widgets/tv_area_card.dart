@@ -57,38 +57,48 @@ class _TvAreaCardState extends State<TvAreaCard> {
 
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 80.sp,
-                height: 80.sp,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12.sp)),
-                child: displayImageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: displayImageUrl,
-                        cacheManager: CustomImageCacheManager.instance,
-                        // Area artwork renders inside a small card: decode at that
-                        // size and keep the cached copy bounded.
-                        memCacheWidth: 320,
-                        fit: BoxFit.fill,
-                        placeholder: (context, url) =>
-                            AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
-                        errorWidget: (context, url, error) {
-                          // A dead/expired picture (borrowed matches included)
-                          // is dropped from the match cache; the next category
-                          // refresh picks another one.
-                          AreaImageMatcher.instance.reportBroken(url);
-                          return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
-                        },
-                      )
-                    : Center(
-                        child: Icon(Icons.live_tv_rounded, size: 50.sp, color: iconColor),
-                      ),
+              // The grid cell is tight (aspect 1.3): a fixed 80.sp tile plus a
+              // two-line name overflows it. Let the artwork flex and the name
+              // keep at most two lines, so any cell fits.
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12.sp)),
+                  child: displayImageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: displayImageUrl,
+                          cacheManager: CustomImageCacheManager.instance,
+                          // Area artwork renders inside a small card: decode at that
+                          // size and keep the cached copy bounded.
+                          memCacheWidth: 320,
+                          fit: BoxFit.fill,
+                          placeholder: (context, url) =>
+                              AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
+                          errorWidget: (context, url, error) {
+                            // A dead/expired picture (borrowed matches included)
+                            // is dropped from the match cache; the next category
+                            // refresh picks another one.
+                            AreaImageMatcher.instance.reportBroken(url);
+                            return AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true);
+                          },
+                        )
+                      : Center(
+                          child: Icon(Icons.live_tv_rounded, size: 50.sp, color: iconColor),
+                        ),
+                ),
               ),
-              SizedBox(height: 12.sp),
+              SizedBox(height: 10.sp),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12.sp),
-                child: Text(area.areaName, style: AppTextStyles.t20W600.copyWith(color: titleColor)),
+                child: Text(
+                  area.areaName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.t20W600.copyWith(color: titleColor),
+                ),
               ),
             ],
           ),
