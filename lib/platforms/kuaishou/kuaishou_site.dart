@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math' as math;
 
+import 'package:meta/meta.dart';
+
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:pure_live/shared/contracts/index.dart';
@@ -529,13 +531,77 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
 
   @override
   Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) async {
-    // Kuaishou cannot search anchors, only game categories, so this is hidden.
-    return [];
+    // The live-stream search answers anonymous visitors with "服务器繁忙", so a
+    // web search page never lists rooms. The streamer search stays public and
+    // reports whether each streamer is live, and its ids open the same /u/<id>
+    // rooms this site already resolves.
+    final result = await HttpClient.instance.getJson(
+      'https://live.kuaishou.com/live_api/search/author',
+      queryParameters: {'keyword': keyword, 'page': page, 'lssid': ''},
+      header: {
+        ...headers,
+        'Referer': 'https://live.kuaishou.com/search?keyword=${Uri.encodeQueryComponent(keyword)}',
+      },
+    );
+    return parseAuthorSearch(result).take(pageSize).toList(growable: false);
+  }
+
+  /// Parses the streamer-search payload into openable rooms.
+  ///
+  /// The response carries no viewer count, so [LiveRoom.watching] stays empty:
+  /// the card then shows "pending refresh" instead of a fabricated zero.
+  @visibleForTesting
+  static List<LiveRoom> parseAuthorSearch(dynamic json) {
+    final data = json is Map ? json['data'] : null;
+    final list = data is Map ? data['list'] : null;
+    if (list is! List) return const [];
+    final rooms = <LiveRoom>[];
+    for (final author in list) {
+      if (author is! Map) continue;
+      final id = author['id']?.toString().trim() ?? '';
+      if (id.isEmpty) continue;
+      final name = author['name']?.toString() ?? '';
+      final avatar = author['avatar']?.toString() ?? '';
+      final counts = author['counts'];
+      final banned = author['bannedStatus'];
+      final isBanned = banned is Map && banned['banned'] == true;
+      final isLive = author['living'] == true;
+      rooms.add(
+        LiveRoom(
+          platform: Sites.kuaishouSite,
+          roomId: id,
+          userId: id,
+          nick: name,
+          title: name,
+          avatar: avatar,
+          cover: avatar,
+          watching: '',
+          followers: counts is Map ? counts['fan']?.toString() ?? '0' : '0',
+          introduction: author['description']?.toString() ?? '',
+          link: 'https://live.kuaishou.com/u/$id',
+          status: isLive,
+          liveStatus: isBanned
+              ? LiveStatus.banned
+              : isLive
+              ? LiveStatus.live
+              : LiveStatus.offline,
+        ),
+      );
+    }
+    return rooms;
   }
 
   @override
   Future<List<LiveAnchorItem>> searchAnchors(String keyword, {int page = 1, int pageSize = 30}) async {
-    return [];
+    return [
+      for (final room in await searchRooms(keyword, page: page, pageSize: pageSize))
+        LiveAnchorItem(
+          roomId: room.roomId,
+          avatar: room.avatar,
+          userName: room.nick,
+          liveStatus: room.liveStatus == LiveStatus.live,
+        ),
+    ];
   }
 
   @override

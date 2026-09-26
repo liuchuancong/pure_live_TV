@@ -107,13 +107,6 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
         keepAlive: false,
         fetchAll: () => fetch(1, 12),
       );
-    } else if (siteId == Sites.kuaishouSite) {
-      _currentParam = PagingParam<LiveRoom>(
-        mode: PagingMode.serverAll,
-        pageSize: 12,
-        keepAlive: false,
-        fetchAll: () => fetch(1, 12),
-      );
     } else if (siteId == Sites.douyuSite || siteId == Sites.huyaSite || siteId == Sites.douyinSite) {
       final int fixedSize = switch (siteId) {
         Sites.douyuSite => 40,
