@@ -301,6 +301,13 @@ class _TvInputFieldState extends State<TvInputField> {
     if (existing != null) return existing;
 
     final native = NativeTextFieldController();
+    // Seed from the caller's controller. The platform field is created empty and
+    // the plugin only pushes what its own controller holds, so a value that
+    // already existed when this field was built (a stored cookie, the Douyu
+    // renewal pair) never reached the box: it looked empty while the page's own
+    // controller held the text. The mirror below only fires on later changes,
+    // which is why a freshly pushed value showed up and a stored one did not.
+    if (_controller.text.isNotEmpty) native.text = _controller.text;
     native.addListener(() {
       if (!identical(_nativeController, native)) return;
       if (_controller.text == native.text) return;

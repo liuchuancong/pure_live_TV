@@ -613,7 +613,7 @@
   "douyu_cookie_refresh_now": "立即续期",
   "douyu_cookie_refresh_ok": "续期成功，新 Cookie 已保存并生效（预计 {time} 到期）",
   "douyu_cookie_tip": "第 1 步 页面 Cookie：F12 → 任意斗鱼页面 → 复制完整 Cookie（含 dy_auth，约 7 天有效）。\n第 2 步 续期凭据（可选，但只有配上才能真正自动续期）：F12 → Network 面板搜索 https://passport.douyu.com/ → 打开该请求 → 从它的 Cookie 里把 LTP0 和 dy_did 分别填到下面两个输入框。\n填好后点「立即续期」可以马上验证是否有效。Cookie 仅保存在本机。",
-  "douyu_cookie_tip_lifetime": "Cookie 有 7 天时效；LTP0 与 dy_did 配好后，失效前会自动刷新，无需再手动粘贴。填完可点「立即续期」当场验证。Cookie 仅保存在本机。",
+  "douyu_cookie_tip_lifetime": "页面 Cookie 有 7 天时效。",
   "douyu_cookie_tip_step1": "第 1 步 · 页面 Cookie：随便打开一个斗鱼页面按 F12，在任意请求里复制完整 Cookie（含 dy_auth，约 7 天有效）。",
   "douyu_cookie_tip_step2": "第 2 步 · 续期凭据：F12 → Network 面板搜索 passport.douyu.com，打开该请求，从它的 Cookie 里复制 LTP0 和 dy_did（粘到下面的输入框会自动匹配填入）。",
   "douyu_cookie_valid": "登录态有效至 {time}",

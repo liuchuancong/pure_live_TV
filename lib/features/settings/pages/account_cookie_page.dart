@@ -574,8 +574,9 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                   focusNode: _ltp0Focus!,
                   label: i18n('douyu_ltp0_label'),
                   hint: i18n('douyu_ltp0_hint'),
-                  height: 120,
+                  height: 160,
                   maxLines: 1,
+                  hintAsPlaceholder: true,
                 ),
               ),
               Padding(
@@ -585,8 +586,9 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                   focusNode: _didFocus!,
                   label: i18n('douyu_did_label'),
                   hint: i18n('douyu_did_hint'),
-                  height: 120,
+                  height: 160,
                   maxLines: 1,
+                  hintAsPlaceholder: true,
                 ),
               ),
             ],
@@ -656,17 +658,15 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
   /// Where the renewal key and the device id are found.
   ///
   /// The reference makes the passport address tappable; a TV has no pointer, so
-  /// the address is a row a remote can reach instead.
+  /// the address is a row a remote can reach instead. The step-by-step copy that
+  /// used to sit above it is gone: the two inputs carry their own labels and
+  /// placeholders, and this row is only the way to the passport page.
   Widget _buildDouyuTip(TvThemeData theme) {
     final TextStyle body = AppTextStyles.t18W500.copyWith(color: theme.secondaryTextColor);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(i18n('douyu_cookie_tip_step1'), style: body),
-        SizedBox(height: 10.h),
-        Text(i18n('douyu_cookie_tip_step2'), style: body),
-        SizedBox(height: 12.h),
         TvButton(
           title: 'passport.douyu.com',
           size: TvButtonSize.small,
@@ -690,6 +690,7 @@ class _CookieField extends StatefulWidget {
     this.label,
     this.height = 230,
     this.maxLines,
+    this.hintAsPlaceholder = false,
   });
 
   final TextEditingController controller;
@@ -702,6 +703,13 @@ class _CookieField extends StatefulWidget {
 
   final double height;
   final int? maxLines;
+
+  /// Renders [hint] as the field's own placeholder instead of a line above it.
+  ///
+  /// The two Douyu inputs are short by design: a whole sentence drawn inside the
+  /// box left no room for the value, which then looked empty even when it was
+  /// set. As a placeholder the hint is still there while the box is empty.
+  final bool hintAsPlaceholder;
 
   @override
   State<_CookieField> createState() => _CookieFieldState();
@@ -756,10 +764,11 @@ class _CookieFieldState extends State<_CookieField> {
               widget.label!,
               style: TextStyle(color: text.withValues(alpha: 0.85), fontSize: 22.sp, fontWeight: FontWeight.w600),
             ),
-          Text(
-            widget.hint,
-            style: TextStyle(color: text.withValues(alpha: 0.4), fontSize: 22.sp, height: 1.4),
-          ),
+          if (!widget.hintAsPlaceholder)
+            Text(
+              widget.hint,
+              style: TextStyle(color: text.withValues(alpha: 0.4), fontSize: 22.sp, height: 1.4),
+            ),
           SizedBox(height: 6.h),
           Expanded(
             child: Align(
@@ -769,6 +778,7 @@ class _CookieFieldState extends State<_CookieField> {
               child: TvInputField(
                 controller: widget.controller,
                 focusNode: widget.focusNode,
+                hint: widget.hintAsPlaceholder ? widget.hint : null,
                 textAlign: TextAlign.start,
                 minLines: 1,
                 maxLines: widget.maxLines,

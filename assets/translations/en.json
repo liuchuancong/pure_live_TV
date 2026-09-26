@@ -618,7 +618,7 @@
   "douyu_cookie_refresh_now": "Renew now",
   "douyu_cookie_refresh_ok": "Renewed: the new cookie is saved and in use (valid until about {time})",
   "douyu_cookie_tip": "Step 1 — page cookie: F12 → any Douyu page → copy the whole cookie (with dy_auth, good for about 7 days).\nStep 2 — renewal credentials (optional, but this is what makes it renew itself): F12 → Network tab → search https://passport.douyu.com/ → open that request → copy LTP0 and dy_did into the two fields below.\nPress \"Renew now\" to verify them immediately. The cookie is stored on this device only.",
-  "douyu_cookie_tip_lifetime": "The cookie lasts 7 days; once LTP0 and dy_did are set it is renewed before it expires, so there is nothing to paste again. Press \"Renew now\" to verify. The cookie is stored on this device only.",
+  "douyu_cookie_tip_lifetime": "The page cookie lasts 7 days.",
   "douyu_cookie_tip_step1": "Step 1 · Page cookie: open any Douyu page, press F12 and copy the whole cookie from any request (it contains dy_auth, good for about 7 days).",
   "douyu_cookie_tip_step2": "Step 2 · Renewal credentials: in the Network tab search passport.douyu.com, open that request and copy LTP0 and dy_did from its cookie — pasting it below fills both fields automatically.",
   "douyu_cookie_valid": "Session valid until {time}",
