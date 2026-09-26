@@ -1,4 +1,5 @@
 import 'package:pure_live/services/index.dart';
+import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
@@ -84,6 +85,28 @@ class AccountSettingsSectionPage extends ConsumerWidget {
     ),
   ];
 
+  /// What a platform row says about its stored cookie.
+  ///
+  /// Douyu is the exception: a stored cookie is not the same as a working login
+  /// there — an expired one is a guest request whatever its length — so the row
+  /// follows the session the cookie actually carries. An expired cookie whose
+  /// renewal key is present still reads as signed in, because playback renews it
+  /// on its own.
+  static String _subtitleFor(CookieSite site, CookieModel cookies) {
+    final String value = site.read(cookies);
+
+    if (site.siteId != Sites.douyuSite) {
+      return value.isEmpty ? i18n('not_set') : i18n('cookie_state_set', args: {'count': '${value.length}'});
+    }
+
+    return switch (DouyuUtils.sessionState(value)) {
+      DouyuSessionState.none => i18n('not_set'),
+      DouyuSessionState.valid => i18n('cookie_saved_local'),
+      DouyuSessionState.expiredRefreshable => i18n('douyu_session_renewable'),
+      DouyuSessionState.guest || DouyuSessionState.expired => i18n('douyu_session_needs_cookie'),
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final CookieModel cookies = ref.watch(cookieControllerProvider);
@@ -112,9 +135,7 @@ class AccountSettingsSectionPage extends ConsumerWidget {
             for (final CookieSite site in sites.skip(1))
               TvSettingsNavTile(
                 title: i18n(site.titleKey),
-                subtitle: site.read(cookies).isEmpty
-                    ? i18n('not_set')
-                    : i18n('cookie_state_set', args: {'count': '${site.read(cookies).length}'}),
+                subtitle: _subtitleFor(site, cookies),
                 leading: SiteLogo(siteId: site.siteId),
                 onTap: () => settingsSectionRoutes[site.route]?.push(context),
               ),
