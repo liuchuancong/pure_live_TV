@@ -802,6 +802,23 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
+  fuzzywuzzy:
+    dependency: transitive
+    description:
+      name: fuzzywuzzy
+      sha256: "3004379ffd6e7f476a0c2091f38f16588dc45f67de7adf7c41aa85dec06b432c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
+  fvp:
+    dependency: transitive
+    description:
+      path: "packages/fvp"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
+    source: git
+    version: "0.38.1"
   glob:
     dependency: transitive
     description:
@@ -1118,8 +1135,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core"
-      ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
-      resolved-ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1127,8 +1144,17 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_better_player"
-      ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
-      resolved-ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
+    source: git
+    version: "0.1.0"
+  media_core_fvp:
+    dependency: "direct main"
+    description:
+      path: "packages/media_core_fvp"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1136,8 +1162,26 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_ijk_player"
-      ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
-      resolved-ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
+    source: git
+    version: "0.1.0"
+  media_core_live:
+    dependency: "direct main"
+    description:
+      path: "packages/media_core_live"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
+    source: git
+    version: "0.1.0"
+  media_core_logging:
+    dependency: "direct main"
+    description:
+      path: "packages/media_core_logging"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1145,27 +1189,45 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_media_kit"
-      ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
-      resolved-ref: "5e341736f7bd1c6237c4172f223020e79f49e7aa"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
+  media_core_memory:
+    dependency: transitive
+    description:
+      path: "packages/media_core_memory"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
+    source: git
+    version: "0.1.0"
+  media_core_native:
+    dependency: "direct main"
+    description:
+      path: "packages/media_core_native"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
+    source: git
+    version: "0.2.0"
   media_kit:
     dependency: "direct main"
     description:
-      path: media_kit
-      ref: main
-      resolved-ref: d13fc22ba1b19b45de3090c2d1b0f8a541b585a0
-      url: "https://github.com/Predidit/media-kit.git"
+      path: "packages/media_kit"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "1.1.11"
   media_kit_video:
     dependency: "direct main"
     description:
-      path: media_kit_video
-      ref: main
-      resolved-ref: d13fc22ba1b19b45de3090c2d1b0f8a541b585a0
-      url: "https://github.com/Predidit/media-kit.git"
+      path: "packages/media_kit_video"
+      ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      resolved-ref: "45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9"
+      url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "1.2.5"
   meta:
@@ -1989,6 +2051,46 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.3"
+  video_player:
+    dependency: transitive
+    description:
+      name: video_player
+      sha256: "8c837b570dccb9ae6ff73d2e0b03c7e708bfefd3bd1194faa7f3e7f200dfc399"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.14.0"
+  video_player_android:
+    dependency: transitive
+    description:
+      name: video_player_android
+      sha256: d27054dea34d748a44f06d433a57005d2aac69944485b0abbaed3303dbcfa3f1
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.12.2"
+  video_player_avfoundation:
+    dependency: transitive
+    description:
+      name: video_player_avfoundation
+      sha256: "2fc56e537324a19eb649fca991aa308ac961b5406292876fa657b062de461fd8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.12.0"
+  video_player_platform_interface:
+    dependency: transitive
+    description:
+      name: video_player_platform_interface
+      sha256: "92c0fbabe20c788e71fd10d26cea998d0d253282e65d145aed0818731cf593ce"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.9.0"
+  video_player_web:
+    dependency: transitive
+    description:
+      name: video_player_web
+      sha256: "9f3c00be2ef9b76a95d94ac5119fb843dca6f2c69e6c9968f6f2b6c9e7afbdeb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.0"
   visibility_detector:
     dependency: transitive
     description:

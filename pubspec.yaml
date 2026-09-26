@@ -107,60 +107,53 @@ dependencies:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_media_kit
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_core_fvp:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_fvp
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_core_live:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_live
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_core_native:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_native
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_core_logging:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_logging
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_better_player
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_ijk_player
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
-  # The video layer consumes media_core's adapters, but the wallpaper feature
-  # still drives media_kit / media_kit_video directly, so both are declared
-  # here instead of only being pulled in transitively.
-  #
-  # 两个包随 media_core 仓库一起维护(含 PureLive 补丁,
-  # 见 packages/media_kit_video/PURELIVE_PATCH.md),因此直接指向仓库内副本,
-  # 不再从 Predidit/media-kit 拉取。
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_kit
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
 
   media_kit_video:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_kit_video
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
+      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）
@@ -170,19 +163,6 @@ dependency_overrides:
   android_tv_text_field:
     path: plugins/built_in_kotlin/android_tv_text_field # 本地 AGP 9 内建 Kotlin 补丁（原生 TV 输入框）
   wakelock_plus: ^1.4.0 # media_kit 声明的版本覆盖
-  # 强制使用 media_core 仓库内的副本: media_kit 从 git 引用解析时, 只有 override
-  # 能保证整棵树只有一个来源。
-  media_kit:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_kit
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
-
-  media_kit_video:
-    git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_kit_video
-      ref: f5c2bc8e69a4f9f54694e08a2bef970219287594
 
 dev_dependencies:
   flutter_test:

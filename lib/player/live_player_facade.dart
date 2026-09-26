@@ -569,28 +569,30 @@ final class LivePlayerFacade {
   }
 
   /// The backend id [engine] is registered under.
-  String _backendIdOf(PlayerEngine engine) {
-    switch (engine) {
-      case PlayerEngine.fijk:
-        return BackendIds.fijk;
-      case PlayerEngine.betterPlayer:
-        return BackendIds.betterPlayer;
-      default:
-        return BackendIds.mediaKit;
-    }
-  }
+  ///
+  /// Exhaustive over [PlayerEngine] on purpose: a `default:` branch is how
+  /// `fvp` silently became `mpv` — the setting was stored and passed along
+  /// correctly, and then the last conversion turned "fvp" into "mpv". A switch
+  /// expression over the enum without a default makes the next engine a
+  /// compile error instead.
+  String _backendIdOf(PlayerEngine engine) => switch (engine) {
+    PlayerEngine.mediaKit => BackendIds.mediaKit,
+    PlayerEngine.fijk => BackendIds.fijk,
+    PlayerEngine.betterPlayer => BackendIds.betterPlayer,
+    PlayerEngine.fvp => BackendIds.fvp,
+  };
 
   /// Returns the engine currently in use.
-  PlayerEngine get currentEngine {
-    switch (_controller.backendId) {
-      case BackendIds.fijk:
-        return PlayerEngine.fijk;
-      case BackendIds.betterPlayer:
-        return PlayerEngine.betterPlayer;
-      default:
-        return PlayerEngine.mediaKit;
-    }
-  }
+  ///
+  /// The ids come from the library, so this one needs a fallback — but the
+  /// engines this app registers are all named, and an unlisted one used to be
+  /// reported as media_kit while it played.
+  PlayerEngine get currentEngine => switch (_controller.backendId) {
+    BackendIds.fijk => PlayerEngine.fijk,
+    BackendIds.betterPlayer => PlayerEngine.betterPlayer,
+    BackendIds.fvp => PlayerEngine.fvp,
+    _ => PlayerEngine.mediaKit,
+  };
 
   // ---------------------------------------------------------------------------
   // Request metadata
