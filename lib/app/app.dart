@@ -34,7 +34,9 @@ class App extends ConsumerWidget {
 
     final appLocale = AppThemeConsts.languages[themeSettings.languageName] ?? const Locale('zh');
 
-    // Text scale from font settings, clamped
+    // Text scale from font settings, clamped. The panel correction is applied
+    // per subtree (see TvTextScale): the same font scale must mean the same
+    // text size on a 720p TV and a 1080p one.
     final fontSettings = ref.watch(fontSettingsControllerProvider).value;
     final textScale = (fontSettings?.textScaleFactor ?? 1.0).clamp(_minTextScale, _maxTextScale);
     final fontFamily = _fontFamilyOf(fontSettings);
@@ -46,7 +48,7 @@ class App extends ConsumerWidget {
     final resolvedTvTheme = currentTvTheme.resolveFor(brightness: paletteBrightness);
 
     return ScreenUtilPlusInit(
-      designSize: const Size(1920, 1080),
+      designSize: TvTextScale.designSize,
       autoRebuild: false,
       child: LocalizationsLocaleSync(
         locale: appLocale,
@@ -78,7 +80,10 @@ class App extends ConsumerWidget {
             return FlutterSmartDialog.init()(
               context,
               MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+                // The panel correction rides along with the user's font scale, so
+                // a 720p TV keeps a 1080p TV's font sizes instead of shrinking
+                // every label by a third. See TvTextScale.
+                data: MediaQuery.of(context).copyWith(textScaler: TvTextScale.scalerFor(context, userScale: textScale)),
                 child: TvPaletteDefaults(
                   theme: resolvedTvTheme,
                   child: TvLocaleRebuilder(

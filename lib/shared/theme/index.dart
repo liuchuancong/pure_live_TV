@@ -1,5 +1,6 @@
 export 'styles/app_styles.dart';
 export 'styles/styles.dart';
+export 'tv_text_scale.dart';
 export 'themes/anime_theme.dart';
 export 'themes/blue_theme.dart';
 export 'themes/cyber_theme.dart';

@@ -297,7 +297,12 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: MediaQuery(
-                    data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(_listTextScale)),
+                    // Through TvTextScale: this subtree replaces the inherited
+                    // text scale, and a raw linear() would also drop the
+                    // small-panel legibility correction for these rows.
+                    data: MediaQuery.of(
+                      context,
+                    ).copyWith(textScaler: TvTextScale.scalerFor(context, userScale: _listTextScale)),
                     child: _buildRooms(rooms, rowIndex),
                   ),
                 ),
