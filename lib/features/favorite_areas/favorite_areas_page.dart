@@ -58,8 +58,11 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                       // key, so following or unfollowing one category rebuilt
                       // the view and reset focus and scroll position.
                       memoryKey: "fav_areas_tv_view_${areasState.tabSiteIndex}",
+                      // Left at the first column hands the remote to the home sidebar.
+                      // Stopping here left the rail reachable only through the tab bar above,
+                      // so a viewer browsing a grid had to go up first.
                       verticalEdge: DpadEdgeBehavior.leave,
-                      horizontalEdge: DpadEdgeBehavior.stop,
+                      horizontalEdge: DpadEdgeBehavior.leave,
                       child: BasePagedTvView<LiveArea>(
                         key: ValueKey('fav_areas_grid_${areasState.tabSiteIndex}'),
                         param: currentParam,

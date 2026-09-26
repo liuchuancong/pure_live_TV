@@ -73,8 +73,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                       // key, so clearing or adding one entry rebuilt the view
                       // and reset focus and scroll position.
                       memoryKey: "history_tv_view_${historyPageState.tabSiteIndex}",
+                      // Left at the first column hands the remote to the home sidebar.
+                      // Stopping here left the rail reachable only through the tab bar above,
+                      // so a viewer browsing a grid had to go up first.
                       verticalEdge: DpadEdgeBehavior.leave,
-                      horizontalEdge: DpadEdgeBehavior.stop,
+                      horizontalEdge: DpadEdgeBehavior.leave,
                       child: BasePagedTvView<LiveRoom>(
                         key: ValueKey('history_grid_${historyPageState.tabSiteIndex}'),
                         param: currentParam,

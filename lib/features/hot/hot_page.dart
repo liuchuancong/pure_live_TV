@@ -123,8 +123,11 @@ class _HotPageState extends ConsumerState<HotPage> {
                   Expanded(
                     child: TvTabView(
                       memoryKey: "hot_tab_view_content_${tabsState.currentIndex}",
+                      // Left at the first column hands the remote to the home sidebar.
+                      // Stopping here left the rail reachable only through the tab bar above,
+                      // so a viewer browsing a grid had to go up first.
                       verticalEdge: DpadEdgeBehavior.leave,
-                      horizontalEdge: DpadEdgeBehavior.stop,
+                      horizontalEdge: DpadEdgeBehavior.leave,
                       child: BasePagedTvView<LiveRoom>(
                         key: ValueKey('hot_site_${currentSite.id}'),
                         param: currentParam,

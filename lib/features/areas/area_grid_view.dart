@@ -93,8 +93,11 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
         Expanded(
           child: TvTabView(
             memoryKey: widget.flat ? "areas_flat_view" : "areas_sub_category_view_$currentCategoryIndex",
+            // Left at the first column hands the remote to the home sidebar.
+            // Stopping here left the rail reachable only through the tab bar above,
+            // so a viewer browsing a grid had to go up first.
             verticalEdge: DpadEdgeBehavior.leave,
-            horizontalEdge: DpadEdgeBehavior.stop,
+            horizontalEdge: DpadEdgeBehavior.leave,
             child: BasePagedTvView<LiveArea>(
               key: ValueKey('page_$currentCategoryIndex'),
               param: currentParam,

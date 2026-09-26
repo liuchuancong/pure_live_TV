@@ -369,8 +369,11 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
                     // memory and the scroll position the user was on.
                     memoryKey:
                         "fav_tv_view_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}",
+                    // Left at the first column hands the remote to the home sidebar.
+                    // Stopping here left the rail reachable only through the tab bar above,
+                    // so a viewer browsing a grid had to go up first.
                     verticalEdge: DpadEdgeBehavior.leave,
-                    horizontalEdge: DpadEdgeBehavior.stop,
+                    horizontalEdge: DpadEdgeBehavior.leave,
                     child: BasePagedTvView<LiveRoom>(
                       key: ValueKey(
                         'fav_grid_${favoriteState.tabOnlineIndex}_${favoriteState.tabSiteIndex}_${favoriteState.selectedTagId}',
