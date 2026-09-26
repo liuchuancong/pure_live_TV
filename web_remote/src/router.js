@@ -6,6 +6,7 @@ const SearchRemoteView = () => import('./views/SearchRemote.vue')
 const CookieRemoteView = () => import('./views/CookieRemote.vue')
 const AccountCookieView = () => import('./views/cookies/AccountCookie.vue')
 const BilibiliCookieView = () => import('./views/cookies/BilibiliCookie.vue')
+const DouyuCookieView = () => import('./views/cookies/DouyuCookie.vue')
 const DouyinCookieView = () => import('./views/cookies/DouyinCookie.vue')
 const SyncRemoteView = () => import('./views/SyncRemote.vue')
 const LogRemoteView = () => import('./views/LogRemote.vue')
@@ -39,7 +40,7 @@ const routes = [
     children: [
       { path: 'bilibili', component: BilibiliCookieView, meta: { title: '哔哩哔哩Cookie' } },
       { path: 'huya', component: AccountCookieView, props: { site: 'huya', siteName: '虎牙' }, meta: { title: '虎牙Cookie' } },
-      { path: 'douyu', component: AccountCookieView, props: { site: 'douyu', siteName: '斗鱼' }, meta: { title: '斗鱼Cookie' } },
+      { path: 'douyu', component: DouyuCookieView, meta: { title: '斗鱼Cookie' } },
       { path: 'douyin', component: DouyinCookieView, meta: { title: '抖音Cookie' } },
       { path: 'kuaishou', component: AccountCookieView, props: { site: 'kuaishou', siteName: '快手' }, meta: { title: '快手Cookie' } },
       { path: 'yy', component: AccountCookieView, props: { site: 'yy', siteName: 'YY' }, meta: { title: 'YY Cookie' } },

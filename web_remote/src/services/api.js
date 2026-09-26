@@ -141,6 +141,18 @@ export const api = {
   updateCookie(site, cookieData) {
     return httpPostJson('/api/cookie', { site, data: cookieData })
   },
+  // Douyu's login is three fields (the page cookie plus the passport request's
+  // LTP0 / dy_did), so its page reads and writes the session as a whole.
+  async getDouyuCookie() {
+    const res = await httpGet('/api/cookie/douyu')
+    return res.isOk ? (res.data ?? { cookie: '', ltp0: '', did: '', state: 'none', renewable: false, expiry: '' }) : { cookie: '', ltp0: '', did: '', state: 'none', renewable: false, expiry: '' }
+  },
+  updateDouyuCookie(payload) {
+    return httpPostJson('/api/cookie/douyu', payload)
+  },
+  refreshDouyuCookie(payload) {
+    return httpPostJson('/api/cookie/douyu/refresh', payload)
+  },
   async getDouyinCookie() {
     const res = await httpGet('/api/cookie/douyin')
     return res.isOk ? (res.data ?? { ttwid: '', cookie: '' }) : { ttwid: '', cookie: '' }

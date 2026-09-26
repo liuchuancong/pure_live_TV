@@ -7,6 +7,8 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/iptv/services/iptv_import_manager.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
+import 'package:pure_live/services/cookie_manager/cookie_value.dart';
+import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
@@ -117,7 +119,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       case 'huya':
         controller.setHuyaCookie(cookie);
       case 'douyu':
-        controller.setDouyuCookie(cookie);
+        _applyDouyuCookie(cookie: cookie);
       case 'douyin':
         controller.setDouyinCookie(cookie);
       case 'kuaishou':
@@ -132,6 +134,74 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
         return false;
     }
     return true;
+  }
+
+  /// The Douyu session as the phone's page edits it: the page cookie plus the
+  /// two values that let it renew itself.
+  ///
+  /// Douyu's login is three fields rather than one — `dy_auth` in the page
+  /// cookie is the session, while `LTP0` / `dy_did` come from the passport
+  /// request and are what renew it — so the phone cannot edit the cookie alone.
+  Map<String, dynamic> _douyuCookiePayload({bool? renewed}) {
+    final cookies = ref.read(cookieControllerProvider);
+    final String cookie = cookies.douyuCookie;
+    final DateTime? expiry = DouyuUtils.sessionExpiry(cookie);
+
+    return <String, dynamic>{
+      // Only the renewal route sets this, and the phone needs it to tell a
+      // renewal apart from a reason nothing was renewed.
+      'renewed': ?renewed,
+      'cookie': cookie,
+      'ltp0': cookies.douyuLtp0,
+      'did': cookies.douyuDid,
+      // Enough for the phone to say what the cookie is worth without repeating
+      // the session rules there.
+      'state': DouyuUtils.sessionState(cookie).name,
+      'renewable': DouyuUtils.canRefreshSession(cookie),
+      'expiry': expiry?.toIso8601String() ?? '',
+      'savedAt': cookies.douyuCookieSavedAt,
+    };
+  }
+
+  /// Applies a Douyu push from the phone, with the rules the TV page applies.
+  ///
+  /// Either cookie can arrive here: a passport paste only contributes the
+  /// renewal pair (it carries no session, so storing it as the play cookie would
+  /// sign the viewer out and get every play request answered with a bare 403),
+  /// and a stored cookie keeps the moment it was obtained, because its seven-day
+  /// lifetime has nothing else to count from.
+  void _applyDouyuCookie({String? cookie, String? ltp0, String? did}) {
+    final controller = ref.read(cookieControllerProvider.notifier);
+    final cookies = ref.read(cookieControllerProvider);
+
+    if (ltp0 != null || did != null) {
+      controller.setDouyuCredentials(
+        ltp0: ltp0 ?? cookies.douyuLtp0,
+        did: did ?? cookies.douyuDid,
+      );
+    }
+
+    if (cookie == null) return;
+
+    final String pasted = normalizeAccountCookie(cookie);
+
+    if (DouyuUtils.isCredentialOnly(pasted)) {
+      if (!DouyuUtils.hasSession(cookies.douyuCookie)) controller.setDouyuCookie('');
+      return;
+    }
+
+    controller.setDouyuCookie(DouyuUtils.resolveStoredCookie(pasted, cookies.douyuCookie));
+    controller.setDouyuCookieSavedAt(pasted.isEmpty ? 0 : DateTime.now().millisecondsSinceEpoch ~/ 1000);
+  }
+
+  /// When the renewed Douyu session is expected to end. `dy_auth` is opaque, so
+  /// its end is the recorded save time plus Douyu's seven-day rule.
+  String _douyuExpiryLabel() {
+    String two(int value) => value.toString().padLeft(2, '0');
+    final DateTime savedAt = DouyuUtils.storedSessionSavedAt() ?? DateTime.now();
+    final DateTime expiry = savedAt.add(DouyuUtils.webCookieLifetime);
+    return '${expiry.year}-${two(expiry.month)}-${two(expiry.day)} '
+        '${two(expiry.hour)}:${two(expiry.minute)}';
   }
 
   /// The phone scan page reads this cache through `GET /api/danmaku_filter`.
@@ -332,6 +402,74 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       _addLog('Cookie updated from the phone: $site');
       _broadcastWs({'type': 'cookie_push', 'site': site});
       return _ok(res, msg: i18n('ui_saved'));
+    });
+
+    // Douyu's page needs the renewal pair as well, and a way to test it, so it
+    // gets routes of its own next to the generic single-cookie ones above.
+    _app!.get('/api/cookie/douyu', (req, res) {
+      return _ok(res, data: _douyuCookiePayload());
+    });
+
+    _app!.post('/api/cookie/douyu', (req, res) async {
+      final body = await req.body as Map<String, dynamic>?;
+      if (body == null) return _fail(res, msg: i18n('remote_bad_request'));
+
+      _applyDouyuCookie(
+        cookie: body.containsKey('cookie') ? (body['cookie'] ?? '').toString() : null,
+        ltp0: body.containsKey('ltp0') ? (body['ltp0'] ?? '').toString() : null,
+        did: body.containsKey('did') ? (body['did'] ?? '').toString() : null,
+      );
+      _addLog('Douyu session updated from the phone');
+      _broadcastWs({'type': 'cookie_push', 'site': 'douyu'});
+      return _ok(res, msg: i18n('ui_saved'), data: _douyuCookiePayload());
+    });
+
+    // Renews the session now, so the viewer can check the pasted LTP0 / dy_did
+    // instead of waiting for the seven-day window to test them.
+    _app!.post('/api/cookie/douyu/refresh', (req, res) async {
+      final body = await req.body as Map<String, dynamic>?;
+      if (body == null) return _fail(res, msg: i18n('remote_bad_request'));
+
+      final String? ltp0 = body['ltp0']?.toString();
+      final String? did = body['did']?.toString();
+      final String posted = (body['cookie'] ?? '').toString().trim();
+      final String accountCookie = posted.isNotEmpty ? posted : ref.read(cookieControllerProvider).douyuCookie;
+
+      if (accountCookie.isEmpty) {
+        return _ok(res, msg: i18n('douyu_cookie_refresh_no_cookie'), data: _douyuCookiePayload(renewed: false));
+      }
+      if (!DouyuUtils.hasSession(accountCookie)) {
+        return _ok(res, msg: i18n('douyu_cookie_refresh_no_session'), data: _douyuCookiePayload(renewed: false));
+      }
+
+      final credentials = DouyuUtils.refreshCredentials(accountCookie, longTerm: ltp0, did: did);
+      if (credentials.longTerm == null || credentials.did == null) {
+        return _ok(res, msg: i18n('douyu_cookie_refresh_no_credentials'), data: _douyuCookiePayload(renewed: false));
+      }
+
+      // What was typed is what the viewer means by "use these values": store the
+      // pair before the renewal reads it back.
+      _applyDouyuCookie(ltp0: credentials.longTerm, did: credentials.did);
+
+      final String? renewed = await DouyuUtils.refreshSession(
+        accountCookie: accountCookie,
+        longTerm: credentials.longTerm,
+        did: credentials.did,
+        force: true,
+      );
+      if (!ref.mounted) return _fail(res, msg: i18n('remote_bad_request'));
+
+      if (renewed == null) {
+        return _ok(res, msg: i18n('douyu_cookie_refresh_no_change'), data: _douyuCookiePayload(renewed: false));
+      }
+
+      _addLog('Douyu session renewed from the phone');
+      _broadcastWs({'type': 'cookie_push', 'site': 'douyu'});
+      return _ok(
+        res,
+        msg: i18n('douyu_cookie_refresh_ok', args: {'time': _douyuExpiryLabel()}),
+        data: _douyuCookiePayload(renewed: true),
+      );
     });
 
     _app!.post('/api/cookie/douyin', (req, res) async {
