@@ -18,7 +18,7 @@ A third-party live stream aggregator built with Flutter, designed for Android TV
 </div>
 
 > **纯粹直播 TV** 是 [pure_live](https://github.com/liuchuancong/pure_live) 的电视版：只做一件事 —— 在电视上用遥控器舒服地看直播。全程无需触屏：方向键换台、OK 呼出控制栏、长按关注，支持 34 个直播平台与 IPTV 自定义源。
-
+> 📺 **其他客户端 请迁移至：<https://github.com/liuchuancong/pure_live>**
 ---
 
 ## 📺 支持站点
