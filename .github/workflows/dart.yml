@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name for the release'
+        description: 'Tag name for the release (leave empty to use the version in assets/version.json)'
         required: false
-        default: 'v3.0.5'
+        default: ''
       ref:
         description: 'Branch or tag to build (leave empty to use the triggering ref)'
         required: false
@@ -23,7 +23,11 @@ concurrency:
 
 jobs:
   build-android:
-    runs-on: macos-latest
+    # Android only: nothing here needs the macOS toolchain, and a Linux runner
+    # costs a tenth of a macOS minute and is usually faster for Gradle.
+    runs-on: ubuntu-latest
+    # A stuck Gradle daemon or a flaky download must not burn an hour of runner time.
+    timeout-minutes: 60
     permissions:
       contents: write
 
@@ -32,6 +36,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.ref || github.ref }}
+
+      # The tag is what the download paths are built from, so it is resolved before
+      # anything is built: a tag push uses its own tag, and a manual run that typed
+      # no tag falls back to assets/version.json instead of republishing the stale
+      # default this workflow used to carry.
+      - name: 解析发布标签
+        id: meta
+        run: |
+          tag="${{ github.event.inputs.tag_name }}"
+          if [ -z "$tag" ]; then
+            case "${{ github.ref }}" in
+              refs/tags/*) tag="${{ github.ref_name }}" ;;
+              *) tag="v$(jq -r '.version' assets/version.json)" ;;
+            esac
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "本次发布标签：$tag"
 
       - name: 下载Android keystore
         id: android_keystore
@@ -72,30 +93,52 @@ jobs:
       - name: 重命名 APK 文件
         run: |
           cd build/app/outputs/flutter-apk/
-          for f in app-*release.apk; do
+          count=0
+          for f in app-*-release.apk; do
             [ -e "$f" ] || continue
             abi=$(echo "$f" | grep -oE 'arm64-v8a|armeabi-v7a|x86_64' | head -1)
             if echo "$f" | grep -q 'skia'; then renderer='skia'; else renderer='impeller'; fi
             mv "$f" "PureLive-TV-${abi}-${renderer}.apk"
+            count=$((count + 1))
           done
           echo "==== 本次产物 ===="
           ls -lh PureLive-TV-*.apk
+          # A build whose artifacts are not named as expected must fail here, not
+          # publish a release with nothing in it.
+          if [ "$count" -eq 0 ]; then
+            echo "::error::没有找到 release APK，产物命名与预期不符"
+            exit 1
+          fi
 
       - name: 读取版本信息
         id: version
-        uses: juliangruber/read-file-action@v1
+        run: |
+          delim="EOF_${RANDOM}${RANDOM}"
+          {
+            echo "desc<<$delim"
+            jq -r '.version_desc' assets/version.json
+            echo "$delim"
+          } >> "$GITHUB_OUTPUT"
+
+      # Also on the run page: the release is the only place these APKs could be
+      # downloaded from, so a failed release step left the build with nowhere to go.
+      - name: 上传 APK 产物（运行页可下载）
+        uses: actions/upload-artifact@v4
         with:
-          path: assets/version.json
+          name: PureLive-TV-${{ steps.meta.outputs.tag }}
+          path: build/app/outputs/flutter-apk/PureLive-TV-*.apk
+          if-no-files-found: error
+          retention-days: 14
 
       - name: 上传至Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
-          name: ${{ github.event.inputs.tag_name || github.ref_name }}
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.tag }}
           body: |
-            📦 纯粹直播 ${{ github.event.inputs.tag_name || github.ref_name }}
+            📦 纯粹直播 ${{ steps.meta.outputs.tag }}
             本次更新内容：
-            ${{ fromJson(steps.version.outputs.content).version_desc }}
+            ${{ steps.version.outputs.desc }}
             📺 版本说明：
             • Impeller 版：新渲染器，文件名带 -impeller，推荐优先尝试
             • Skia 版：旧渲染器，文件名带 -skia，画面异常/黑屏时改用此版
@@ -107,6 +150,35 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Every download path in one place on the run page: the six APK URLs, the
+      # release page, and this run's artifacts.
+      - name: 汇总下载路径
+        run: |
+          tag="${{ steps.meta.outputs.tag }}"
+          base="https://github.com/${{ github.repository }}/releases/download/$tag"
+          {
+            echo "## 📦 $tag 下载路径"
+            echo ""
+            for f in build/app/outputs/flutter-apk/PureLive-TV-*.apk; do
+              [ -e "$f" ] || continue
+              name=$(basename "$f")
+              echo "- [$name]($base/$name) · $(du -h "$f" | cut -f1)"
+            done
+            echo ""
+            echo "- Release 页面：https://github.com/${{ github.repository }}/releases/tag/$tag"
+            echo "- 本次运行的构建产物：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: 输出任务状态
         if: always()
         run: echo "🍏 Build status is ${{ job.status }}."
+
+  # The app reads its download paths from assets/releases.json, and that index only
+  # lists a release once it exists. This refreshes it after the APKs are published by
+  # calling the manual index workflow instead of copying its steps, so the two cannot
+  # drift apart.
+  update-release-index:
+    needs: build-android
+    permissions:
+      contents: write
+    uses: ./.github/workflows/build_release.yml

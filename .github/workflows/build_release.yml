@@ -1,12 +1,19 @@
 name: 手动更新历史发布数据
 
 on:
+  # The manual button, and the tail of build-android-Tv: that workflow calls this
+  # file once the APKs are published, so a new release's download paths reach
+  # assets/releases.json without anyone pressing the button.
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
+  # Static on purpose: a called workflow inherits the caller's `github.workflow`,
+  # so a group built from it would be shared with build-android-Tv and deadlock the
+  # release run against itself.
   group: release-index-main
   cancel-in-progress: false
 
