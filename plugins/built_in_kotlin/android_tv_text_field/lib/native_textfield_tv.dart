@@ -119,7 +119,10 @@ class _NativeTextFieldState extends State<NativeTextField> {
   }
 
   void _onControllerTextChanged() {
-    if (!_controller.isUpdatingFromNative) _syncToNative();
+    // Before the platform view exists there is no instance to write to: the call
+    // only comes back as INVALID_INSTANCE, and creation pushes whatever the
+    // controller holds at that point anyway.
+    if (!_controller.isUpdatingFromNative && _platformViewReady) _syncToNative();
   }
 
   /// Whether the platform view exists yet.

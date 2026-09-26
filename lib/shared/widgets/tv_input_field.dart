@@ -89,6 +89,10 @@ class _TvInputFieldState extends State<TvInputField> {
   /// The native route's controller wrapper over [_controller].
   NativeTextFieldController? _nativeController;
 
+  /// The Dart-to-platform half of the [_nativeController] bridge, removed on
+  /// dispose.
+  VoidCallback? _mirrorToNative;
+
   /// The flutter fallback's editing state: true once OK or a tap activated the
   /// field, false while it only holds focus (arrows keep walking the layout).
   bool _editing = false;
@@ -113,6 +117,8 @@ class _TvInputFieldState extends State<TvInputField> {
   void dispose() {
     _focusNode.removeListener(_handleFocusChanged);
     if (_ownsFocusNode) _focusNode.dispose();
+    final mirror = _mirrorToNative;
+    if (mirror != null) _controller.removeListener(mirror);
     if (_ownsController) _controller.dispose();
     super.dispose();
   }
@@ -284,6 +290,12 @@ class _TvInputFieldState extends State<TvInputField> {
   /// [_controller] - the controller the caller passed in and reads back. Without
   /// the mirror anything typed on a TV keyboard stayed invisible to callers: the
   /// history page kept re-reading the value it had set itself.
+  ///
+  /// The other direction matters just as much and used to be missing: a value
+  /// set in Dart (the phone pushing a cookie, a paste filling the renewal pair)
+  /// only ever reached [_controller], so the platform field kept showing its own
+  /// text while callers already read the new one — the box looked empty with the
+  /// status and character count beside it already updated.
   NativeTextFieldController _nativeControllerOf() {
     final existing = _nativeController;
     if (existing != null) return existing;
@@ -300,6 +312,18 @@ class _TvInputFieldState extends State<TvInputField> {
         composing: TextRange.empty,
       );
     });
+
+    // Writing the native controller pushes the text to the platform view (the
+    // plugin's own listener forwards it), so a Dart-side set becomes visible
+    // there. The guards above keep the two listeners from looping.
+    void mirrorToNative() {
+      if (!identical(_nativeController, native)) return;
+      if (native.text == _controller.text) return;
+      native.text = _controller.text;
+    }
+
+    _controller.addListener(mirrorToNative);
+    _mirrorToNative = mirrorToNative;
     _nativeController = native;
     return native;
   }
