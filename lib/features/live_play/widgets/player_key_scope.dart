@@ -209,9 +209,9 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
   Widget build(BuildContext context) {
     return PopScope(
       // Back closes what is on screen before it leaves the player: an option
-      // list, then the side panel, then the controls — and only then the page.
-      // Leaving straight from a visible panel made the remote feel
-      // unpredictable.
+      // list, then the side panel, then the controls and the room card — and
+      // only then the page. Leaving straight from a visible panel made the
+      // remote feel unpredictable.
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
@@ -221,8 +221,8 @@ class _PlayerKeyScopeState extends ConsumerState<PlayerKeyScope> {
           controller.toggleSidePanel();
           return;
         }
-        if (state.showControls) {
-          controller.toggleControls();
+        if (state.showControls || state.showRoomInfo) {
+          controller.dismissOverlays();
           return;
         }
         if (mounted) Navigator.of(context).pop();

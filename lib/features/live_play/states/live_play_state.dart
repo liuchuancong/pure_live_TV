@@ -17,6 +17,7 @@ class LivePlayState {
     required this.playerState,
     this.errorMessage,
     this.showControls = false,
+    this.showRoomInfo = false,
     this.fitIndex = 0,
     this.volume = 1.0,
     this.showSidePanel = false,
@@ -47,7 +48,14 @@ class LivePlayState {
   /// as room-detail or stream-url requests are not player playback states.
   final String? errorMessage;
 
+  /// The bottom control bar: quality, lines, fit, audio mode.
   final bool showControls;
+
+  /// The room card at the top: title, platform, streamer, audience, clock.
+  ///
+  /// Separate from [showControls] so that entering a room can show what is
+  /// playing without the control bar covering the bottom of the picture.
+  final bool showRoomInfo;
   final int fitIndex;
   final double volume;
   final bool showSidePanel;
@@ -111,6 +119,7 @@ class LivePlayState {
     String? errorMessage,
     bool clearErrorMessage = false,
     bool? showControls,
+    bool? showRoomInfo,
     int? fitIndex,
     double? volume,
     bool? showSidePanel,
@@ -132,6 +141,7 @@ class LivePlayState {
       playerState: playerState ?? this.playerState,
       errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
       showControls: showControls ?? this.showControls,
+      showRoomInfo: showRoomInfo ?? this.showRoomInfo,
       fitIndex: fitIndex ?? this.fitIndex,
       volume: volume ?? this.volume,
       showSidePanel: showSidePanel ?? this.showSidePanel,

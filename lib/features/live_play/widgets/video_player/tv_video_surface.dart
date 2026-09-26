@@ -242,10 +242,11 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     //
     // The card is drawn whenever the room is known: while the site response is
     // pending (the data is already there, and an up/down switch would otherwise
-    // be a black screen with a spinner), with the controls, and - most of all -
-    // under a failure overlay, which cannot name the room it is about. The toast
-    // sits under the card while the card is up instead of on top of it.
-    if (room != null && !state.isOffline && (state.showControls || state.fetchingDetail || showError)) {
+    // be a black screen with a spinner), with the controls, on its own for a few
+    // seconds after entry, and - most of all - under a failure overlay, which
+    // cannot name the room it is about. The toast sits under the card while the
+    // card is up instead of on top of it.
+    if (room != null && !state.isOffline && (state.showRoomInfo || state.showControls || state.fetchingDetail || showError)) {
       children.add(
         Positioned(
           left: 0,

@@ -235,10 +235,12 @@ class LivePlayController extends _$LivePlayController {
 
     state = state.copyWith(isOffline: false);
 
-    // A TV room is always fullscreen, so the controls are never pinned: they
-    // appear for a few seconds on entry (quality and line switching are then one
-    // press away) and hide themselves again.
-    showControls();
+    // A TV room is always fullscreen, so nothing is pinned on entry: the room
+    // card comes up for a few seconds (what is playing, and the clock) and hides
+    // itself again. The control bar is one OK press away and stays down on
+    // purpose - it covers the bottom of the picture, which is the one thing the
+    // viewer just asked to watch.
+    showRoomInfo();
     _holdScreenAwake();
 
     unawaited(ref.read(danmakuSessionControllerProvider(args).notifier).connectRoom(detail));
@@ -1011,23 +1013,26 @@ class LivePlayController extends _$LivePlayController {
   }
 
   // =========================
-  // controls visibility (TV auto-hide)
+  // overlay visibility (TV auto-hide)
   // =========================
 
-  Timer? _controlsHideTimer;
+  Timer? _overlayHideTimer;
 
+  /// Shows the control bar, and the room card with it.
   void showControls() {
-    state = state.copyWith(showControls: true);
+    state = state.copyWith(showControls: true, showRoomInfo: true);
 
     _armControlsHide();
   }
 
-  void toggleControls() {
-    if (state.showControls) {
-      _dismissControls();
-    } else {
-      showControls();
-    }
+  /// Shows the room card on its own, without the control bar.
+  ///
+  /// Used on entry: the bar is a deliberate action, the card is what the room
+  /// looks like.
+  void showRoomInfo() {
+    state = state.copyWith(showRoomInfo: true);
+
+    _armControlsHide();
   }
 
   void keepControlsAlive() => _armControlsHide();
@@ -1037,17 +1042,18 @@ class LivePlayController extends _$LivePlayController {
   }
 
   void _armControlsHide() {
-    _controlsHideTimer?.cancel();
+    _overlayHideTimer?.cancel();
 
-    _controlsHideTimer = Timer(const Duration(seconds: 5), _dismissControls);
+    _overlayHideTimer = Timer(const Duration(seconds: 5), dismissOverlays);
   }
 
-  void _dismissControls() {
-    _controlsHideTimer?.cancel();
-    _controlsHideTimer = null;
+  /// Takes the overlays down: the control bar and the room card alike.
+  void dismissOverlays() {
+    _overlayHideTimer?.cancel();
+    _overlayHideTimer = null;
 
     if (ref.mounted) {
-      state = state.copyWith(showControls: false);
+      state = state.copyWith(showControls: false, showRoomInfo: false);
     }
   }
 }
