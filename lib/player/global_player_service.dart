@@ -5,8 +5,10 @@ import 'models/player_engine.dart';
 import 'core/playback_proxy_policy.dart';
 import '../services/settings/settings.dart';
 import 'package:media_core/media_core.dart';
+import 'package:media_core_native/media_core_native.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart';
 import 'package:media_core_ijk_player/media_core_ijk_player.dart';
+import 'package:media_core_fvp/media_core_fvp.dart';
 import 'package:media_core_better_player/media_core_video_player.dart';
 
 /// Builds the media_kit adapter configuration from the persisted engine
@@ -47,6 +49,24 @@ FijkPlayerConfig buildFijkPlayerConfig() {
   );
 }
 
+/// Builds the fvp (libmdk) adapter configuration from the persisted engine
+/// switches.
+///
+/// fvp is the Android backup engine: it ships a current FFmpeg plus the
+/// platform hardware decoders, so it recovers sources the bundled libmpv drops
+/// (legacy codec-id-12 HEVC FLV, for example). The adapter applies the Android
+/// audio-backend order and the legacy-HEVC software rule itself; they are
+/// visible here only because they are configuration.
+FvpPlayerConfig buildFvpPlayerConfig() {
+  final settings = SettingsService.to.playerState;
+  return FvpPlayerConfig(
+    // A loopback/private input must never be sent through the proxy.
+    proxyUrlResolver: ({required bool privateInput}) =>
+        PlaybackProxyPolicy.currentNativeUrl(privateInput: privateInput),
+    enableCodec: settings.enableCodec,
+  );
+}
+
 /// Creates a media_kit adapter with the current settings.
 ///
 /// Registered under the app's historical backend id `mpv`
@@ -64,6 +84,18 @@ final class _MediaKitFactory implements PlayerAdapterFactory {
 
   @override
   bool supports(String id) => id == BackendIds.mediaKit || id.isEmpty;
+}
+
+/// Creates an fvp adapter with the current settings.
+final class _FvpFactory implements PlayerAdapterFactory {
+  const _FvpFactory();
+
+  @override
+  PlayerAdapter create(String id) =>
+      FvpPlayerAdapter(id: id, capabilities: FvpPlayerAdapter.defaultCapabilities, config: buildFvpPlayerConfig());
+
+  @override
+  bool supports(String id) => id == BackendIds.fvp || id.isEmpty;
 }
 
 /// Creates an ijkplayer (flv_lzc) adapter with the current settings.
@@ -113,6 +145,37 @@ class GlobalPlayerService {
 
   bool get initialized => _initialized;
 
+  PlatformProvider? _platformProvider;
+
+  /// What the platform probe learned about this device.
+  ///
+  /// [PlatformDeviceProfile.unknown] until [loadPlatformProvider] ran; an
+  /// unknown profile reports itself as unreported and deliberately behaves like
+  /// a healthy device, so a caller that tunes work down must say so explicitly.
+  PlatformDeviceProfile get deviceProfile => _platformProvider?.device ?? PlatformDeviceProfile.unknown;
+
+  /// Probes the platform once and keeps the result.
+  ///
+  /// The kernel takes it as its [PlatformProvider], which is how the adapters
+  /// learn the core count, the RAM ceiling and the codec list; the app reads the
+  /// same profile for its own policies (the danmaku frame budget). Safe to call
+  /// early and more than once.
+  Future<void> loadPlatformProvider() async {
+    if (_platformProvider != null) return;
+
+    try {
+      final provider = await NativePlatformProvider.load();
+
+      _platformProvider = provider;
+
+      _kernel?.attachPlatformProvider(provider);
+    } catch (error, stackTrace) {
+      // A probe that failed must not tune playback down, and it must not fail
+      // startup either: the kernel keeps its unreported defaults.
+      log('GlobalPlayerService: platform probe failed: $error', name: 'GlobalPlayerService', error: error, stackTrace: stackTrace);
+    }
+  }
+
   /// The live player facade features consume.
   ///
   /// Null until [initialize] completed.
@@ -122,7 +185,9 @@ class GlobalPlayerService {
   Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) async {
     if (_initialized) return;
     MediaKitPlayerAdapter.ensureInitialized();
+    await loadPlatformProvider();
     final kernel = PlayerKernel();
+    if (_platformProvider != null) kernel.attachPlatformProvider(_platformProvider!);
     _kernel = kernel;
     // Register the engines this app ships. Priority encodes the
     // fallback preference: the default engine first, the rest by
@@ -177,6 +242,13 @@ class GlobalPlayerService {
           id: BackendIds.betterPlayer,
           factory: const _BetterPlayerFactory(),
           capabilities: BetterPlayerAdapter.defaultCapabilities,
+          priority: priority,
+        );
+      case PlayerEngine.fvp:
+        return PlayerAdapterRegistration(
+          id: BackendIds.fvp,
+          factory: const _FvpFactory(),
+          capabilities: FvpPlayerAdapter.defaultCapabilities,
           priority: priority,
         );
     }

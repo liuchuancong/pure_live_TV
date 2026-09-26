@@ -10,8 +10,9 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:media_core_media_kit/media_core_media_kit.dart';
+import 'package:media_core_logging/media_core_logging.dart';
 import 'package:pure_live/player/core/playback_proxy_policy.dart';
+import 'package:pure_live/player/global_player_service.dart';
 
 class AppInitializer {
   static final AppInitializer _instance = AppInitializer._internal();
@@ -61,10 +62,10 @@ class AppInitializer {
     // build can be diagnosed from the device.
     unawaited(Log.init());
 
-    // Warm up the device profile: the danmaku frame budget is resolved on the UI
-    // side and can run before the player initializes (profile still `unknown`,
-    // so the low-end cap would not apply). Probe it once here.
-    unawaited(DevicePlaybackProfile.ensureLoaded());
+    // Probe the platform once, early: the player kernel takes the result when it
+    // is created later, and the danmaku frame budget reads it before the first
+    // player exists.
+    unawaited(GlobalPlayerService.instance.loadPlatformProvider());
 
     // Danmaku sockets reuse the proxy policy configured for API and image traffic.
     configureWebSocketProxyRouting((uri) => PlaybackProxyPolicy.currentDirective());
@@ -83,18 +84,25 @@ class AppInitializer {
       await VersionUtil().checkUpdate();
     }());
 
+    // Taobao Live was retired; its account cookie is dropped once so it cannot
+    // be re-exported by a later backup.
+    HivePrefUtil.remove('taobaoCookie');
+
     // Android 17 gates sockets to a local-network proxy behind
     // ACCESS_LOCAL_NETWORK, so an existing PC/router proxy asks for it on every
     // launch. Deferred past the first frames: the request needs an attached
-    // activity and must not compete with startup.
-    unawaited(() async {
-      await Future<void>.delayed(const Duration(seconds: 2));
-      final proxy = SettingsService.to.proxyState;
-      await LocalNetworkAccess.ensureForProxies([
-        (enabled: proxy.enableAppProxy, host: proxy.appProxyHost),
-        (enabled: proxy.enableProxy, host: proxy.proxyHost),
-      ]);
-    }());
+    // activity and must not compete with startup. The permission only exists on
+    // Android, so no timer is scheduled anywhere else.
+    if (Platform.isAndroid) {
+      unawaited(() async {
+        await Future<void>.delayed(const Duration(seconds: 2));
+        final proxy = SettingsService.to.proxyState;
+        await LocalNetworkAccess.ensureForProxies([
+          (enabled: proxy.enableAppProxy, host: proxy.appProxyHost),
+          (enabled: proxy.enableProxy, host: proxy.proxyHost),
+        ]);
+      }());
+    }
 
     // media_core is silent by default; diagnostics are turned on for debug
     // builds only, so a release build prints nothing unless it opts in.

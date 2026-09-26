@@ -9,6 +9,7 @@ class PlayerConsts {
     BackendIds.mediaKit: PlayerEngineConfig(engine: PlayerEngine.mediaKit, nameKey: 'player_mpv'),
     BackendIds.fijk: PlayerEngineConfig(engine: PlayerEngine.fijk, nameKey: 'player_ijk'),
     BackendIds.betterPlayer: PlayerEngineConfig(engine: PlayerEngine.betterPlayer, nameKey: 'player_exo'),
+    BackendIds.fvp: PlayerEngineConfig(engine: PlayerEngine.fvp, nameKey: 'player_fvp'),
   };
 
   static PlayerEngine? engineOf(String id) {

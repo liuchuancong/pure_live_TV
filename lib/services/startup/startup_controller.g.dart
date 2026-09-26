@@ -41,7 +41,7 @@ final class StartupControllerProvider
   }
 }
 
-String _$startupControllerHash() => r'f3caadc1873df13064269e876bfc90aebebc503b';
+String _$startupControllerHash() => r'3885fec5d2b874622501db0012cdc473194fc32c';
 
 abstract class _$StartupController extends $Notifier<bool> {
   bool build();

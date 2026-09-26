@@ -3,6 +3,7 @@ import 'models/player_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart' hide Rx;
 import 'package:media_core/media_core.dart';
+import 'package:media_core_live/media_core_live.dart';
 import '../services/settings/settings.dart';
 import 'core/playback_header_resolver.dart';
 import '../app/consts/app_theme_consts.dart';

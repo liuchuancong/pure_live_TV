@@ -1,5 +1,5 @@
 import 'package:flame_barrage/flame_barrage.dart';
-import 'package:media_core_media_kit/media_core_media_kit.dart';
+import 'package:pure_live/player/global_player_service.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 
@@ -60,7 +60,7 @@ int resolveDanmakuFps(DanmakuSettingsModel settings, {double? refreshRate}) {
 /// danmaku smoothness for video frames. The manual setting is an explicit
 /// user choice and is left alone here.
 int _lowEndCapped(int fps) {
-  if (!DevicePlaybackProfile.current.lowEnd) return fps;
+  if (!GlobalPlayerService.instance.deviceProfile.isLowEnd) return fps;
   return fps > 30 ? 30 : fps;
 }
 
