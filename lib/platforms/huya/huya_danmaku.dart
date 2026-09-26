@@ -191,11 +191,13 @@ class HuyaDanmaku implements LiveDanmaku {
     if (uri == 1400) {
       final messageNotice = HYMessage();
       messageNotice.readFrom(TarsInputStream(Uint8List.fromList(payload)));
-      final color = messageNotice.bulletFormat.fontColor;
       onMessage?.call(
         LiveMessage(
           type: LiveMessageType.chat,
-          color: color <= 0 ? LiveMessageColor.white : LiveMessageColor.numberToColor(color),
+          // Huya ships ordinary danmaku in its own blue; a screenful of tinted
+          // text is hard to read on a TV, so chat lines stay white like every
+          // other platform's.
+          color: LiveMessageColor.white,
           message: messageNotice.content,
           userName: messageNotice.userInfo.nickName,
           userId: messageNotice.userInfo.uid.toString(),
