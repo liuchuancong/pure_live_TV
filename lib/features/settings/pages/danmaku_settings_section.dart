@@ -226,18 +226,6 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               ],
             ],
           ),
-          SizedBox(height: 20.sp),
-          TvSettingsGroupTitle(title: i18n('danmaku_screen_interaction')),
-          TvSettingsCard(
-            children: [
-              TvSettingsSwitchTile(
-                title: i18n('danmaku_filter_bot'),
-                icon: Icons.smart_toy_outlined,
-                value: state.filterDouyuSuspectedAutomatedMessages,
-                onChanged: (v) => update((s) => s.copyWith(filterDouyuSuspectedAutomatedMessages: v)),
-              ),
-            ],
-          ),
         ],
       ),
     );

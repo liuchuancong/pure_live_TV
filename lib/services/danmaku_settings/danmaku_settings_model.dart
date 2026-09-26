@@ -99,6 +99,9 @@ abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
     @Default(30) int pipDanmakuFps,
     @Default(true) bool pipDanmakuAutoFps,
     // Message filtering
+    // Douyu's bot filter is part of its decoder now (only chat carrying the
+    // `if=1` fan flag is kept), so this no longer has a switch; the field stays
+    // for backups and for the site adapter's constructor.
     @Default(true) bool filterDouyuSuspectedAutomatedMessages,
     @Default(false) bool enableDanmakuSimilarityFilter,
     @Default(85) int danmakuSimilarityThreshold,
