@@ -54,36 +54,11 @@ subprojects {
 
 subprojects {
     afterEvaluate {
-         if (project.name != "app") {
+        if (project.name != "app") {
             extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.apply {
+                compileSdkVersion(37)
                 if (namespace.isNullOrBlank()) {
                     namespace = project.group.toString()
-                }
-            }
-        }
-        tasks.matching { it.name.contains("process", ignoreCase = true) && it.name.contains("Manifest") }.configureEach {
-            doLast {
-                val targetVersionCode = pubspecVersionCode
-                
-                outputs.files.forEach { outputDir ->
-                    if (outputDir.exists()) {
-                        outputDir.walkTopDown().forEach { file ->
-                            if (file.name == "AndroidManifest.xml") {
-                                try {
-                                    val content = file.readText(Charsets.UTF_8)
-                                    val pattern = "android:versionCode=\"\\d+\""
-                                    val regex = pattern.toRegex()
-
-                                    if (regex.containsMatchIn(content)) {
-                                        val replacement = "android:versionCode=\"$targetVersionCode\""
-                                        val updatedContent = content.replace(regex, replacement)
-                                        file.writeText(updatedContent, Charsets.UTF_8)
-                                        println(">>> [PUBSPEC_SYNC] Found: ${file.absolutePath} -> Fixed to $targetVersionCode")
-                                    }
-                                } catch (e: Exception) { }
-                            }
-                        }
-                    }
                 }
             }
         }

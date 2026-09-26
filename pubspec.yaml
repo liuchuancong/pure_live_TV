@@ -106,54 +106,54 @@ dependencies:
   media_core:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core_media_kit
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core_media_kit
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_core_fvp:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core_fvp
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core_fvp
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_core_live:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core_live
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core_live
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_core_native:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core_native
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core_native
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_core_logging:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core_logging
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core_logging
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core_better_player
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core_better_player
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_core_ijk_player
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_core_ijk_player
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_kit
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_kit
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
 
   media_kit_video:
     git:
       url: https://github.com/liuchuancong/media_core.git
-      path: packages/media_kit_video
-      ref: 45033b5c9c8ba3e6ed76b5b195bf786dd36ce3f9
+      path: ./packages/media_kit_video
+      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）

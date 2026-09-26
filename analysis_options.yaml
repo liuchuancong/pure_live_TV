@@ -13,7 +13,6 @@ analyzer:
     # Vendored plugin snapshots keep their upstream sources and only their
     # Android registrars are patched; the app quality gate covers the code this
     # repository maintains.
-    - plugins/flv_lzc/**
     - plugins/built_in_kotlin/**
     - plugins/flame_barrage/**
     - third_party/**
