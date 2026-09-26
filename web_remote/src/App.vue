@@ -10,7 +10,7 @@
         </div>
 
         <span class="text-base font-bold text-ios-text-h tracking-tight">
-          {{ route.meta.title || 'PureLive TV' }}
+          {{ route.meta.title || '纯粹直播' }}
         </span>
       </div>
 

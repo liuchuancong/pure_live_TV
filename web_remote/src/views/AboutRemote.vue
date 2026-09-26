@@ -5,7 +5,7 @@
         <img :src="AppIcon" alt="App Icon" class="w-full h-full object-contain shrink-0 rounded-xl" />
       </div>
       <div>
-        <h3 class="text-xl font-bold text-ios-text-h dark:text-white">PureLive TV</h3>
+        <h3 class="text-xl font-bold text-ios-text-h dark:text-white">纯粹直播</h3>
         <p class="text-xs text-ios-gray dark:text-gray-400 font-mono mt-1">Version v{{ remoteVersion }}</p>
       </div>
       <a href="https://github.com/liuchuancong/pure_live_TV" target="_blank" class="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-xl transition-all hover:bg-zinc-200 dark:hover:bg-white/10 active:scale-[0.98] cursor-pointer">
@@ -22,7 +22,7 @@
           </div>
           <span class="font-medium text-ios-text-h dark:text-gray-200">程序主页</span>
         </div>
-        <a href="https://github.com/liuchuancong/pure_live_TV" target="_blank" class="text-ios-gray dark:text-gray-400 font-mono text-right">PureLive TV</a>
+        <a href="https://github.com/liuchuancong/pure_live_TV" target="_blank" class="text-ios-gray dark:text-gray-400 font-mono text-right">纯粹直播</a>
       </div>
       <div class="p-4 flex items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02] transition-colors">
         <div class="flex items-center gap-3">

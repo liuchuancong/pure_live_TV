@@ -21,7 +21,7 @@ const routes = [
     path: '/',
     name: 'dashboard',
     component: DashboardView,
-    meta: { title: 'PureLive TV' }
+    meta: { title: '纯粹直播' }
   },
   {
     path: '/movie',
