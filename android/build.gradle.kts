@@ -2,12 +2,18 @@ import com.android.build.gradle.BaseExtension
 import java.util.Properties
 import java.io.File
 
+// The 16 KB page-size fplayer rebuild is not published to any remote repository:
+// it ships inside the flv_lzc package, under its own android/libs Maven layout.
+// Gradle resolves the *app's* runtime classpath against the repositories of the
+// project that owns the configuration, so the plugin's own `repositories {}`
+// block cannot help here — the app has to declare that repository itself. The
+// path is read from the plugin project instead of a copy inside this repository,
+// so a version bump in the package is picked up automatically.
+val flvLibs = rootProject.project(":flv_lzc").projectDir.resolve("libs")
+
 allprojects {
     repositories {
-        // The vendored flv_lzc ships its 16 KB page-size compatible AAR in the
-        // plugin, so the artifact must resolve from that directory instead of a
-        // remote repository.
-        maven(rootProject.file("../plugins/flv_lzc/android/libs")) {
+        maven(flvLibs) {
             content {
                 includeModule("io.github.flutterplayer", "fplayer-core")
             }
