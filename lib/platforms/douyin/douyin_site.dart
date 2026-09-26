@@ -217,8 +217,19 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
     return items;
   }
 
+  /// Room ids the recommend feed has already delivered.
+  ///
+  /// `webcast/feed` has no cursor, offset or page parameter: every request is a
+  /// fresh random draw. Asking for the next page therefore re-samples, and the
+  /// grid would append rooms it already shows — with the paging core filling a
+  /// window from stacked server pages that never ends. Ids are dropped as they
+  /// are delivered, a draw that brings nothing new ends the list, and page 1
+  /// (a refresh) starts the sampling over.
+  static final Set<String> _deliveredRecommendRoomIds = <String>{};
+
   @override
   Future<List<LiveRoom>> getRecommendRooms({int page = 1, int pageSize = 30}) async {
+    if (page <= 1) _deliveredRecommendRoomIds.clear();
     try {
       final result = await HttpClient.instance.getJson(
         "https://live.douyin.com/webcast/feed/",
@@ -233,7 +244,9 @@ class DouyinSite implements LiveSite, LiveSiteRecordRoomResolver, LiveSiteRoomRe
         },
         header: await getRequestHeaders(),
       );
-      return parseRecommendRooms(result);
+      return parseRecommendRooms(
+        result,
+      ).where((room) => _deliveredRecommendRoomIds.add(room.roomId)).toList(growable: false);
     } catch (e) {
       throw Exception(e.toString());
     }

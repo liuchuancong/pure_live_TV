@@ -39,9 +39,18 @@ class PagingCore<T> extends _$PagingCore<T> {
     childAspectRatio: 1.3,
   );
 
-  final Map<int, List<T>> _bigPageCache = {};
+  /// Rows accumulated from the fixed-size source, in fetch order. The server's
+  /// real page size need not equal [fixedServerSize] — douyin's category
+  /// endpoint answers with 15 rows no matter what was asked — so windows are
+  /// sliced by what actually arrived, never by an assumed page size.
+  final List<T> _fixedBuffer = <T>[];
 
-  static const int _maxCachePages = 20;
+  /// The next server page to request; advanced only after a page is committed,
+  /// so a load invalidated by a refresh leaves no gap in the sequence.
+  int _fixedNextBigPage = firstPageKey;
+
+  /// Set once a server page comes back empty: the source has no more rows.
+  bool _fixedServerExhausted = false;
 
   bool _loadingMore = false;
 
@@ -62,7 +71,7 @@ class PagingCore<T> extends _$PagingCore<T> {
 
     ref.onDispose(() {
       scrollController.dispose();
-      _bigPageCache.clear();
+      _fixedBuffer.clear();
       _loadedPageSet.clear();
     });
     Future.microtask(() => refresh());
@@ -257,14 +266,6 @@ class PagingCore<T> extends _$PagingCore<T> {
     );
   }
 
-  void _putCache(int page, List<T> data) {
-    if (_bigPageCache.length >= _maxCachePages && !_bigPageCache.containsKey(page)) {
-      _bigPageCache.remove(_bigPageCache.keys.first);
-    }
-
-    _bigPageCache[page] = data;
-  }
-
   Future<void> _refreshLocalReactive() async {
     state = state.copyWith(
       controllerState: state.controllerState.copyWith(pageLoading: true, pageError: false, pageEmpty: false),
@@ -425,7 +426,9 @@ class PagingCore<T> extends _$PagingCore<T> {
   }
 
   Future<void> _refreshFixed() async {
-    _bigPageCache.clear();
+    _fixedBuffer.clear();
+    _fixedNextBigPage = firstPageKey;
+    _fixedServerExhausted = false;
 
     state = state.copyWith(
       items: [],
@@ -437,6 +440,15 @@ class PagingCore<T> extends _$PagingCore<T> {
     await _loadFixed(firstPageKey);
   }
 
+  /// Fills the window for [pageKey] from stacked server pages.
+  ///
+  /// The server's page size is whatever the server sends: douyin's category
+  /// endpoint answers with 15 rows, douyu's varies. Deriving the next request
+  /// from an assumed size therefore requested pages that had already been read
+  /// and mistook a short page for the end of the list, so the window is
+  /// measured in rows that actually arrived instead — keep requesting until
+  /// they cover `pageKey * pageSize`, the source runs out, or the request is
+  /// invalidated.
   Future<void> _loadFixed(int pageKey) async {
     final token = _requestToken;
 
@@ -446,71 +458,43 @@ class PagingCore<T> extends _$PagingCore<T> {
     if (!isNetworkOk) return;
 
     final ps = state.pageSize;
-
+    final int wanted = pageKey * ps;
     final prevPage = state.currentPage;
 
-    final globalStart = (pageKey - 1) * ps;
-
-    final globalEnd = globalStart + ps;
-
-    final List<T> combined = [];
-
     try {
-      int offset = globalStart;
+      while (!_fixedServerExhausted && _fixedBuffer.length < wanted) {
+        final bigData = await fetchFixed!(_fixedNextBigPage, fixedServerPageSize);
 
-      while (offset < globalEnd) {
-        final bigPage = (offset ~/ fixedServerPageSize) + 1;
-
-        List<T> bigData;
-
-        if (_bigPageCache.containsKey(bigPage)) {
-          bigData = _bigPageCache[bigPage]!;
-        } else {
-          bigData = await fetchFixed!(bigPage, fixedServerPageSize);
-
-          if (!ref.mounted || token != _requestToken) {
-            return;
-          }
-
-          _putCache(bigPage, bigData);
+        if (!ref.mounted || token != _requestToken) {
+          return;
         }
 
         if (bigData.isEmpty) {
+          _fixedServerExhausted = true;
           break;
         }
 
-        final innerStart = offset % fixedServerPageSize;
-
-        if (innerStart >= bigData.length) {
-          break;
-        }
-
-        final remainNeed = globalEnd - offset;
-
-        final remainData = bigData.length - innerStart;
-
-        final take = remainNeed < remainData ? remainNeed : remainData;
-
-        combined.addAll(bigData.sublist(innerStart, innerStart + take));
-
-        offset += take;
-
-        if (bigData.length < fixedServerPageSize) {
-          break;
-        }
+        _fixedBuffer.addAll(bigData);
+        _fixedNextBigPage++;
       }
 
       if (!ref.mounted || token != _requestToken) {
         return;
       }
 
+      final int shown = _fixedBuffer.length < wanted ? _fixedBuffer.length : wanted;
+
       state = state.copyWith(
-        items: pageKey == firstPageKey ? List<T>.of(combined) : [...state.items, ...combined],
+        // A source that ran out mid-window leaves a short page: everything that
+        // did arrive stays visible instead of being dropped.
+        items: List<T>.of(_fixedBuffer.sublist(0, shown)),
         currentPage: pageKey,
-        canLoadMore: combined.length >= ps,
+        // One wasted request at the real end is the cheaper mistake; only an
+        // empty page proves the source is done.
+        canLoadMore: _fixedBuffer.length > shown || !_fixedServerExhausted,
         controllerState: state.controllerState.copyWith(
           pageLoading: false,
-          pageEmpty: pageKey == firstPageKey && combined.isEmpty,
+          pageEmpty: pageKey == firstPageKey && shown == 0,
           pageError: false,
           errorMsg: "",
         ),
