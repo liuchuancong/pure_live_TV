@@ -107,22 +107,22 @@ dependencies:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core
-      ref: 80518cdbbea88ab866e83a8f490d1a7642559da1
+      ref: 5e341736f7bd1c6237c4172f223020e79f49e7aa
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_media_kit
-      ref: 80518cdbbea88ab866e83a8f490d1a7642559da1
+      ref: 5e341736f7bd1c6237c4172f223020e79f49e7aa
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_better_player
-      ref: 80518cdbbea88ab866e83a8f490d1a7642559da1
+      ref: 5e341736f7bd1c6237c4172f223020e79f49e7aa
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: packages/media_core_ijk_player
-      ref: 80518cdbbea88ab866e83a8f490d1a7642559da1
+      ref: 5e341736f7bd1c6237c4172f223020e79f49e7aa
   # The video layer consumes media_core's adapters, but the wallpaper feature
   # still drives media_kit / media_kit_video directly, so both are declared
   # here instead of only being pulled in transitively.
