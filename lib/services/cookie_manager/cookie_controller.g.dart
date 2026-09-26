@@ -44,7 +44,7 @@ final class CookieControllerProvider
   }
 }
 
-String _$cookieControllerHash() => r'821206d26b658f292d04b06f16a2e1ec73f1d649';
+String _$cookieControllerHash() => r'66b00b1560b184b7a24f68aa1cb424adc0eddf94';
 
 /// Normalizes and validates per-platform cookie values.
 

@@ -9,6 +9,8 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/platforms/douyu/douyu_danmaku.dart';
 import 'package:pure_live/shared/utils/live_quality_label.dart';
+import 'package:pure_live/shared/utils/core_error.dart';
+import 'package:pure_live/shared/utils/core_log.dart';
 
 
 class DouyuSite
@@ -282,6 +284,11 @@ class DouyuSite
     if (roomId.trim().isEmpty) {
       throw const DouyuPlayApiException('room id is empty');
     }
+    // A pasted cookie is good for seven days and then stops being a login:
+    // renew it here, on the path that actually needs one, instead of failing the
+    // room as a guest because the token aged out.
+    await DouyuUtils.ensureFreshSession();
+
     Object? lastError;
     for (var attempt = 0; attempt < 2; attempt++) {
       try {
@@ -295,6 +302,17 @@ class DouyuSite
         return parsePlayResponse(result);
       } catch (error) {
         lastError = error;
+        CoreLog.w(
+          'Douyu play request failed (attempt ${attempt + 1}): $error'
+          '${error is HttpError && error.statusCode != 0 ? ' status=${error.statusCode}' : ''}'
+          '${error is HttpError && error.responseBody != null ? ' body=${error.responseBody}' : ''}'
+          '${error is HttpError && error.responseHeaders['x-request-id'] != null ? ' requestId=${error.responseHeaders['x-request-id']}' : ''}'
+          ' | ${DouyuUtils.requestShape(roomId)}',
+        );
+        // The first attempt is also the cheapest way to learn the cookie is
+        // stale: renew it (the long-term key is the only thing that can) and let
+        // the retry use the fresh one.
+        await DouyuUtils.ensureFreshSession(force: true);
       }
     }
     throw DouyuPlayApiException('H5 play request failed after retry', cause: lastError);
