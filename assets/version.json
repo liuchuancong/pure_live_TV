@@ -1,7 +1,7 @@
 {
-  "version": "3.0.5",
-  "version_num": 130005,
-  "version_desc": "-Feature:直播页进房即显示房间信息（标题/主播/头像/人气/公告），详情请求失败时也会标明是哪个房间，回放与未开播按真实原因呈现，不再误报「无可用清晰度」。\n-Feature:关注状态实时回写：房间下播后卡片自动归入离线或回放，同一房间的两种平台 id 都能命中；各状态页签的网格自动对齐，不必再手动切页签才刷新；快速上下换台不再黑屏。\n-Feature:备份导入前先勾选模块：非 TV 备份默认只勾关注/历史/Cookie/IPTV/标签，TV 备份默认全选；备份页新增手机扫码入口，可在浏览器下载或导入与本地备份同一种文件。\n-Feature:IPTV 播放列表按镜像池竞速取源并校验正文，频道卡显示来源分组与频道号。\n-Feature:标签栏新增刷新进度线，历史页二次按下对整表重新校验平台状态；分区目录平铺与卡片布局修复。\n-Fixed:切换播放内核时自动重新获取播放地址，过期的流地址不再导致切换失败。\n-Fixed:安装包下载到应用文档目录，修复部分设备安装器无法起动的问题。\n-Fixed:音量不再被历史房间记忆压低（移除按房间记忆音量）；设备同步页补上接收结果提示。\n-Intro: 移除未使用的 PingFang/MiSans 静态字体；本地备份、设备同步与网页导出的备份统一为同一种文件格式。",
+  "version": "3.0.6",
+  "version_num": 130007,
+  "version_desc": "-Feature:修复分页加载,添加fvp播放器,优化UI",
   "prerelease":false,
   "android_abis": ["arm64-v8a", "armeabi-v7a", "x86_64"],
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"

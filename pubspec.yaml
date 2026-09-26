@@ -1,7 +1,7 @@
 name: pure_live
 description: 纯粹直播,一款开源的第三方多平台直播聚合播放器.
 publish_to: none
-version: 3.0.5+6
+version: 3.0.6+7
 
 environment:
   sdk: ^3.12.0
@@ -107,53 +107,53 @@ dependencies:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_media_kit
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_core_fvp:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_fvp
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_core_live:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_live
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_core_native:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_native
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_core_logging:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_logging
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_better_player
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_ijk_player
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_kit
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
 
   media_kit_video:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_kit_video
-      ref: 8b21529e64dd1cb3ccc1ffb3a3ee8b1ca3154e3c
+      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）

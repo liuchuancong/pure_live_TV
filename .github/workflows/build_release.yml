@@ -1,4 +1,4 @@
-name: 手动更新历史发布数据
+name: 更新历史发布数据
 
 on:
   # The manual button, and the tail of build-android-Tv: that workflow calls this
