@@ -134,17 +134,8 @@ class PlaybackHeaderResolver {
       case Sites.missevanSite:
         headers = MissevanApi.playHeaders;
         break;
-      case Sites.openrecSite:
-        headers = OpenrecApi.headers;
-        break;
-      case Sites.ttingSite:
-        headers = TtingApi.playHeaders;
-        break;
       case Sites.xiaohongshuSite:
         headers = XiaohongshuApi.headers;
-        break;
-      case Sites.huajiaoSite:
-        headers = HuajiaoApi.headers;
         break;
       case Sites.kilakilaSite:
         headers = KilakilaApi.playHeaders;
@@ -181,9 +172,6 @@ class PlaybackHeaderResolver {
         break;
       case Sites.pandaLiveSite:
         headers = PandaLiveApi.mediaHeaders(roomId);
-        break;
-      case Sites.popkonSite:
-        headers = PopkonApi.mediaHeaders(roomId);
         break;
       default:
         headers = const <String, String>{};

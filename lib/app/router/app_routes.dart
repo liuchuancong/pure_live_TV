@@ -201,7 +201,6 @@ abstract final class AppRoutes {
   static const kSettingsAccountKuaishou = "/settings_account/kuaishou";
   static const kSettingsAccountTwitch = "/settings_account/twitch";
   static const kSettingsAccountSoop = "/settings_account/soop";
-  static const kSettingsAccountTaobao = "/settings_account/taobao";
 }
 
 class AreaRoomsArgs {

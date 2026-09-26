@@ -50,7 +50,6 @@ const supportSites = [
   { id: 'kuaishou', name: '快手', icon: kuaishouIcon },
   { id: 'yy', name: 'YY', icon: yyIcon },
   { id: 'soop', name: 'SOOP', icon: soopIcon },
-  { id: 'twitch', name: 'Twitch', icon: twitchIcon },
-  { id: 'taobao', name: '淘宝直播', badge: '淘', badgeClass: 'bg-orange-500/15 text-orange-500' }
+  { id: 'twitch', name: 'Twitch', icon: twitchIcon }
 ]
 </script>

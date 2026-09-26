@@ -35,6 +35,12 @@ class HivePrefUtil {
     return _readable?.get(key);
   }
 
+  /// Drops a stored preference.
+  ///
+  /// Used for credentials of retired platforms: nothing reads them any more,
+  /// and they must not survive into a backup of this device.
+  static void remove(String key) => _readable?.delete(key);
+
   static void setObject(String key, dynamic value) {
     _box.put(key, jsonEncode(value));
   }

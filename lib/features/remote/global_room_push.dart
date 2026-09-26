@@ -55,6 +55,12 @@ class _GlobalRoomPushOverlayState extends ConsumerState<GlobalRoomPushOverlay> {
     final router = ref.read(routerProvider);
     final keyword = input.trim();
     try {
+      // A retired platform's link parses to a platform this build no longer
+      // ships; say so instead of ending in the generic parse failure.
+      if (Sites.isRetiredLink(keyword)) {
+        if (mounted) ToastUtil.show(i18n('platform_retired'));
+        return;
+      }
       final engine = ref.read(urlParseEngineProvider);
       final result = await engine.parse(keyword);
       if (result.length >= 2) {

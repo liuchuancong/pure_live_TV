@@ -25,8 +25,6 @@ class AppSettingsController extends _$AppSettingsController {
     Sites.acfunSite,
     Sites.picartoSite,
     Sites.twitcastingSite,
-    Sites.openrecSite,
-    Sites.ttingSite,
   ];
 
   @override

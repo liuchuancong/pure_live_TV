@@ -17,39 +17,35 @@ A third-party live stream aggregator built with Flutter, designed for Android TV
 
 </div>
 
-> **纯粹直播 TV** 是 [pure_live](https://github.com/liuchuancong/pure_live) 的电视版：只做一件事 —— 在电视上用遥控器舒服地看直播。全程无需触屏：方向键换台、OK 呼出控制栏、长按关注，支持 45 个直播平台与 IPTV 自定义源。
+> **纯粹直播 TV** 是 [pure_live](https://github.com/liuchuancong/pure_live) 的电视版：只做一件事 —— 在电视上用遥控器舒服地看直播。全程无需触屏：方向键换台、OK 呼出控制栏、长按关注，支持 34 个直播平台与 IPTV 自定义源。
 
 ---
 
 ## 📺 支持站点
 
-**45 个直播站点 + IPTV 自定义直播源，共 46 个适配器。** 与移动版共用同一套平台层，各站分区、搜索、弹幕与人数口径保持一致。
+**34 个直播站点 + IPTV 自定义直播源，共 35 个适配器。** 与移动版共用同一套平台层，各站分区、搜索、弹幕与人数口径保持一致。
 
-### 🇨🇳 国内平台（20 站）
+### 🇨🇳 国内平台（18 站）
 
 | | | |
 | --- | --- | --- |
 | <img src="assets/images/bilibili_2.png" width="26"/> **哔哩哔哩** | <img src="assets/images/douyu.png" width="26"/> **斗鱼** | <img src="assets/images/huya.png" width="26"/> **虎牙** |
 | <img src="assets/images/douyin.png" width="26"/> **抖音** | <img src="assets/images/kuaishou.png" width="26"/> **快手** | <img src="assets/images/yy.png" width="26"/> **YY 直播** |
 | <img src="assets/images/cc.png" width="26"/> **网易 CC** | <img src="assets/images/acfun.png" width="26"/> **AcFun** | <img src="assets/images/missevan.png" width="26"/> **猫耳 FM** |
-| <img src="assets/images/inke.png" width="26"/> **映客** | <img src="assets/images/kilakila.png" width="26"/> **克拉克拉** | <img src="assets/images/huajiao.png" width="26"/> **花椒直播** |
-| <img src="assets/images/xiaohongshu.png" width="26"/> **小红书** | <img src="assets/images/weibo.png" width="26"/> **微博直播** | <img src="assets/images/jd.png" width="26"/> **京东直播** |
-| <img src="assets/images/taobao.png" width="26"/> **淘宝直播** | <img src="assets/images/kugou.png" width="26"/> **酷狗直播** | <img src="assets/images/baidu.png" width="26"/> **百度直播** |
-| <img src="assets/images/sixroom.png" width="26"/> **六间房** | <img src="assets/images/look.png" width="26"/> **LOOK 直播** | |
+| <img src="assets/images/inke.png" width="26"/> **映客** | <img src="assets/images/kilakila.png" width="26"/> **克拉克拉** | <img src="assets/images/xiaohongshu.png" width="26"/> **小红书** |
+| <img src="assets/images/weibo.png" width="26"/> **微博直播** | <img src="assets/images/jd.png" width="26"/> **京东直播** | <img src="assets/images/kugou.png" width="26"/> **酷狗直播** |
+| <img src="assets/images/baidu.png" width="26"/> **百度直播** | <img src="assets/images/sixroom.png" width="26"/> **六间房** | <img src="assets/images/look.png" width="26"/> **LOOK 直播** |
 
-### 🌍 海外平台（25 站）
+### 🌍 海外平台（16 站）
 
 | | | |
 | --- | --- | --- |
 | <img src="assets/images/twitch.png" width="26"/> **Twitch** | <img src="assets/images/soop.png" width="26"/> **SOOP Live** | <img src="assets/images/youtube.png" width="26"/> **YouTube Live** |
 | <img src="assets/images/tiktok.png" width="26"/> **TikTok LIVE** | <img src="assets/images/kick.png" width="26"/> **Kick** | <img src="assets/images/chzzk.png" width="26"/> **CHZZK** |
 | <img src="assets/images/bigo.png" width="26"/> **Bigo Live** | <img src="assets/images/17live.png" width="26"/> **17LIVE** | <img src="assets/images/liveme.png" width="26"/> **LiveMe** |
-| <img src="assets/images/showroom.png" width="26"/> **SHOWROOM** | <img src="assets/images/niconico.png" width="26"/> **niconico** | <img src="assets/images/openrec.png" width="26"/> **OPENREC** |
-| <img src="assets/images/ttinglive.png" width="26"/> **TTingLive** | <img src="assets/images/picarto.png" width="26"/> **Picarto** | <img src="assets/images/twitcasting.png" width="26"/> **TwitCasting** |
-| <img src="assets/images/dailymotion.png" width="26"/> **Dailymotion** | <img src="assets/images/rumble.png" width="26"/> **Rumble** | <img src="assets/images/vk.png" width="26"/> **VK Video Live** |
-| <img src="assets/images/goodgame.png" width="26"/> **GoodGame** | <img src="assets/images/fc2.png" width="26"/> **FC2 Live** | <img src="assets/images/steam.png" width="26"/> **Steam 直播** |
-| <img src="assets/images/panda.png" width="26"/> **PandaTV** | <img src="assets/images/popkon.png" width="26"/> **PopkonTV** | <img src="assets/images/shopee.png" width="26"/> **Shopee Live** |
-| <img src="assets/images/nimo.png" width="26"/> **NimoTV** | | |
+| <img src="assets/images/showroom.png" width="26"/> **SHOWROOM** | <img src="assets/images/niconico.png" width="26"/> **niconico** | <img src="assets/images/picarto.png" width="26"/> **Picarto** |
+| <img src="assets/images/twitcasting.png" width="26"/> **TwitCasting** | <img src="assets/images/fc2.png" width="26"/> **FC2 Live** | <img src="assets/images/steam.png" width="26"/> **Steam 直播** |
+| <img src="assets/images/panda.png" width="26"/> **PandaTV** | | |
 
 ### 📡 IPTV / 自定义直播源
 
@@ -95,7 +91,7 @@ A third-party live stream aggregator built with Flutter, designed for Android TV
 
 ### 🎬 多平台聚合
 
-- 聚合 45 个直播平台，按平台与分区浏览；支持隐藏不常看的平台，节省加载
+- 聚合 34 个直播平台，按平台与分区浏览；支持隐藏不常看的平台，节省加载
 - 跨平台搜索，观看历史、热门推荐一键直达
 - 关注列表支持 **标签分组**：给房间设置标签，按标签筛选、置顶排序；平台页签只显示真正有关注的平台
 
@@ -110,6 +106,7 @@ A third-party live stream aggregator built with Flutter, designed for Android TV
 设置中可随时切换播放内核，遇到黑屏、卡顿或硬解兼容问题时换一个即可：
 
 - **MPV**（media_kit，默认）
+- **FVP**（libmdk，自带新版 FFmpeg 与各平台硬解，用来兜住 MPV 放不了的老式封装，比如 codec-id-12 的 HEVC FLV）
 - EXOPlayer
 - IJKPlayer
 
@@ -171,7 +168,7 @@ A third-party live stream aggregator built with Flutter, designed for Android TV
 | 安装提示解析包错误 | 选错了架构，电视盒子优先选 `arm64-v8a` |
 | 提示"未安装"且无报错 | 系统低于 Android 7.0，请改用 v2.0.20 |
 | 安装后被杀毒软件拦截 | 开源软件无签名白名单所致，自行斟酌后放行 |
-| 播放黑屏 / 花屏 | 切换渲染器（Impeller ↔ Skia）或播放内核（MPV ↔ EXO ↔ IJK） |
+| 播放黑屏 / 花屏 | 切换渲染器（Impeller ↔ Skia）或播放内核（MPV ↔ FVP ↔ EXO ↔ IJK） |
 | 在线更新下载失败 | 更新页有多条镜像下载源，可手动切换；也可直接到 Releases 下载 |
 
 ---

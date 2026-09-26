@@ -48,9 +48,6 @@ class Sites {
   static const String missevanSite = 'missevan';
   static const String inkeSite = 'inke';
   static const String kilakilaSite = 'kilakila';
-  static const String huajiaoSite = 'huajiao';
-  static const String openrecSite = 'openrec';
-  static const String ttingSite = 'ttinglive';
   static const String xiaohongshuSite = 'xiaohongshu';
   static const String showroomSite = 'showroom';
   static const String chzzkSite = 'chzzk';
@@ -60,17 +57,9 @@ class Sites {
   static const String youtubeSite = 'youtube';
   static const String bigoSite = 'bigo';
   static const String pandaLiveSite = 'pandalive';
-  static const String popkonSite = 'popkontv';
-  static const String shopeeLiveSite = 'shopeelive';
-  static const String vkVideoLiveSite = 'vkvideolive';
-  static const String nimoTvSite = 'nimotv';
-  static const String dailymotionSite = 'dailymotion';
-  static const String rumbleSite = 'rumble';
-  static const String goodgameSite = 'goodgame';
   static const String fc2LiveSite = 'fc2live';
   static const String steamBroadcastSite = 'steambroadcast';
   static const String jdLiveSite = 'jdlive';
-  static const String taobaoLiveSite = 'taobaolive';
   static const String kugouLiveSite = 'kugoulive';
   static const String baiduLiveSite = 'baidulive';
   static const String lookLiveSite = 'looklive';
@@ -95,9 +84,6 @@ class Sites {
     missevanSite,
     inkeSite,
     kilakilaSite,
-    huajiaoSite,
-    openrecSite,
-    ttingSite,
     xiaohongshuSite,
     showroomSite,
     chzzkSite,
@@ -107,17 +93,9 @@ class Sites {
     youtubeSite,
     bigoSite,
     pandaLiveSite,
-    popkonSite,
-    shopeeLiveSite,
-    vkVideoLiveSite,
-    nimoTvSite,
-    dailymotionSite,
-    rumbleSite,
-    goodgameSite,
     fc2LiveSite,
     steamBroadcastSite,
     jdLiveSite,
-    taobaoLiveSite,
     kugouLiveSite,
     baiduLiveSite,
     sixRoomSite,
@@ -149,9 +127,6 @@ class Sites {
     missevanSite: '$_assetRoot/missevan.png',
     inkeSite: '$_assetRoot/inke.png',
     kilakilaSite: '$_assetRoot/kilakila.png',
-    huajiaoSite: '$_assetRoot/huajiao.png',
-    openrecSite: '$_assetRoot/openrec.png',
-    ttingSite: '$_assetRoot/ttinglive.png',
     xiaohongshuSite: '$_assetRoot/xiaohongshu.png',
     niconicoSite: '$_assetRoot/niconico.png',
     weiboSite: '$_assetRoot/weibo.png',
@@ -159,17 +134,9 @@ class Sites {
     chzzkSite: '$_assetRoot/chzzk.png',
     kickSite: '$_assetRoot/kick.png',
     pandaLiveSite: '$_assetRoot/panda.png',
-    popkonSite: '$_assetRoot/popkon.png',
-    shopeeLiveSite: '$_assetRoot/shopee.png',
-    vkVideoLiveSite: '$_assetRoot/vk.png',
-    nimoTvSite: '$_assetRoot/nimo.png',
-    dailymotionSite: '$_assetRoot/dailymotion.png',
-    rumbleSite: '$_assetRoot/rumble.png',
-    goodgameSite: '$_assetRoot/goodgame.png',
     fc2LiveSite: '$_assetRoot/fc2.png',
     steamBroadcastSite: '$_assetRoot/steam.png',
     jdLiveSite: '$_assetRoot/jd.png',
-    taobaoLiveSite: '$_assetRoot/taobao.png',
     kugouLiveSite: '$_assetRoot/kugou.png',
     baiduLiveSite: '$_assetRoot/baidu.png',
     lookLiveSite: '$_assetRoot/look.png',
@@ -188,7 +155,60 @@ class Sites {
   static String logoOf(String id) {
     final normalizedId = id.trim().toLowerCase();
 
+    // Retired platforms keep a neutral badge so saved follows still render.
+    if (retiredSiteIds.contains(normalizedId)) return '$_assetRoot/logo.png';
+
     return _logos[normalizedId] ?? '$_assetRoot/logo.png';
+  }
+
+  /// Platforms retired upstream in 3.2.8 (hard to maintain, niche or no longer
+  /// usable) and removed here for the same reasons.
+  ///
+  /// Saved follows, history and links for them stay readable: their `site_*`
+  /// names are kept, [logoOf] hands out the neutral badge, and opening one is
+  /// refused with `platform_retired` instead of failing as unknown.
+  static const Set<String> retiredSiteIds = {
+    'huajiao',
+    'openrec',
+    'ttinglive',
+    'popkontv',
+    'shopeelive',
+    'vkvideolive',
+    'nimotv',
+    'dailymotion',
+    'rumble',
+    'goodgame',
+    'taobaolive',
+  };
+
+  static bool isRetired(String id) => retiredSiteIds.contains(id.trim().toLowerCase());
+
+  /// Web hosts of the retired platforms, so a shared link can be answered with
+  /// the retired message instead of being ignored as unrecognised text.
+  static const Set<String> _retiredHosts = {
+    'huajiao.com',
+    'openrec.tv',
+    'flextv.co.kr',
+    'ttinglive.com',
+    'popkontv.com',
+    'goodgame.ru',
+    'vkvideo.ru',
+    'vkplay.live',
+    'dailymotion.com',
+    'dai.ly',
+    'rumble.com',
+    'nimo.tv',
+    'shopee.co.id',
+    'taobao.com',
+    'm.tb.cn',
+  };
+
+  static bool isRetiredLink(String text) {
+    for (final match in RegExp(r'https?://[^\s]+', caseSensitive: false).allMatches(text)) {
+      final host = Uri.tryParse(match.group(0)!)?.host.toLowerCase() ?? '';
+      if (_retiredHosts.any((h) => host == h || host.endsWith('.$h'))) return true;
+    }
+    return false;
   }
 
   static bool isSupported(String id) {
@@ -246,19 +266,6 @@ class Sites {
         logo: logoOf(kilakilaSite),
         liveSite: KilakilaSite(),
       ),
-      huajiaoSite => Site(
-        id: huajiaoSite,
-        name: i18n('site_huajiao'),
-        logo: logoOf(huajiaoSite),
-        liveSite: HuajiaoSite(),
-      ),
-      openrecSite => Site(
-        id: openrecSite,
-        name: 'mellow-fan (OPENREC)',
-        logo: logoOf(openrecSite),
-        liveSite: OpenrecSite(),
-      ),
-      ttingSite => Site(id: ttingSite, name: 'FLEX TV (TTingLive)', logo: logoOf(ttingSite), liveSite: TtingSite()),
       xiaohongshuSite => Site(
         id: xiaohongshuSite,
         name: i18n('site_xiaohongshu'),
@@ -288,33 +295,6 @@ class Sites {
         logo: logoOf(pandaLiveSite),
         liveSite: PandaLiveSite(),
       ),
-      popkonSite => Site(id: popkonSite, name: i18n('site_popkontv'), logo: logoOf(popkonSite), liveSite: PopkonSite()),
-      shopeeLiveSite => Site(
-        id: shopeeLiveSite,
-        name: i18n('site_shopeelive'),
-        logo: logoOf(shopeeLiveSite),
-        liveSite: ShopeeLiveSite(),
-      ),
-      vkVideoLiveSite => Site(
-        id: vkVideoLiveSite,
-        name: i18n('site_vkvideolive'),
-        logo: logoOf(vkVideoLiveSite),
-        liveSite: VkVideoLiveSite(),
-      ),
-      nimoTvSite => Site(id: nimoTvSite, name: i18n('site_nimotv'), logo: logoOf(nimoTvSite), liveSite: NimoTvSite()),
-      dailymotionSite => Site(
-        id: dailymotionSite,
-        name: i18n('site_dailymotion'),
-        logo: logoOf(dailymotionSite),
-        liveSite: DailymotionSite(),
-      ),
-      rumbleSite => Site(id: rumbleSite, name: i18n('site_rumble'), logo: logoOf(rumbleSite), liveSite: RumbleSite()),
-      goodgameSite => Site(
-        id: goodgameSite,
-        name: i18n('site_goodgame'),
-        logo: logoOf(goodgameSite),
-        liveSite: GoodGameSite(),
-      ),
       fc2LiveSite => Site(id: fc2LiveSite, name: i18n('site_fc2live'), logo: logoOf(fc2LiveSite), liveSite: Fc2Site()),
       steamBroadcastSite => Site(
         id: steamBroadcastSite,
@@ -323,12 +303,6 @@ class Sites {
         liveSite: SteamBroadcastSite(),
       ),
       jdLiveSite => Site(id: jdLiveSite, name: i18n('site_jdlive'), logo: logoOf(jdLiveSite), liveSite: JdLiveSite()),
-      taobaoLiveSite => Site(
-        id: taobaoLiveSite,
-        name: i18n('site_taobaolive'),
-        logo: logoOf(taobaoLiveSite),
-        liveSite: TaobaoLiveSite(),
-      ),
       kugouLiveSite => Site(
         id: kugouLiveSite,
         name: i18n('site_kugoulive'),
@@ -386,10 +360,7 @@ class Sites {
       missevanSite,
       inkeSite,
       kilakilaSite,
-      huajiaoSite,
-      openrecSite,
-      ttingSite,
-      xiaohongshuSite,
+            xiaohongshuSite,
       showroomSite,
       chzzkSite,
       kickSite,
@@ -398,18 +369,10 @@ class Sites {
       youtubeSite,
       bigoSite,
       pandaLiveSite,
-      popkonSite,
-      shopeeLiveSite,
-      vkVideoLiveSite,
-      nimoTvSite,
-      dailymotionSite,
-      rumbleSite,
-      goodgameSite,
-      fc2LiveSite,
+                    fc2LiveSite,
       steamBroadcastSite,
       jdLiveSite,
-      taobaoLiveSite,
-      kugouLiveSite,
+        kugouLiveSite,
       baiduLiveSite,
       sixRoomSite,
       lookLiveSite,

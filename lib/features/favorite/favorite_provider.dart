@@ -361,6 +361,9 @@ class FavoriteNotifier extends _$FavoriteNotifier {
   /// followed room as offline. Returning `null` keeps the stored snapshot (status
   /// included) instead of publishing a guess.
   Future<LiveRoom?> _refreshRoom(LiveRoom room) async {
+    // A retired platform has no adapter left, so its stored snapshot stands.
+    if (Sites.isRetired(room.platform)) return null;
+
     try {
       final refreshed = await fetchRoomDetailForRefresh(
         site: Sites.of(room.platform).liveSite,

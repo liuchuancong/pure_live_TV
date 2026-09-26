@@ -188,11 +188,13 @@ class LivePlayController extends _$LivePlayController {
 
       log('room detail lookup failed: ${detail.identityKey}', name: 'LivePlayController');
 
-      state = state.copyWith(
-        detailError: i18n('get_room_info_failed_retry'),
-        errorMessage: i18n('get_room_info_failed_retry'),
-        fetchingDetail: false,
+      // A retired platform has no adapter to ask: report that instead of
+      // "room info failed", which would read as a temporary hiccup.
+      final String failure = i18n(
+        Sites.isRetired(detail.platform) ? 'platform_retired' : 'get_room_info_failed_retry',
       );
+
+      state = state.copyWith(detailError: failure, errorMessage: failure, fetchingDetail: false);
 
       return;
     }

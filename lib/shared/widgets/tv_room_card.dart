@@ -85,6 +85,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   /// as the channel list.
   void _openLivePlay() {
     if (!mounted) return;
+    // A saved follow of a retired platform stays on the page (history and the
+    // saved list must remain readable) but cannot be played.
+    if (Sites.isRetired(widget.room.platform)) {
+      ToastUtil.show(i18n('platform_retired'));
+      return;
+    }
     LivePlayRoute(LivePlayArgs.fromRoom(widget.room, playlist: widget.playlist)).push(context);
   }
 

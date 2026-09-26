@@ -44,8 +44,7 @@ const routes = [
       { path: 'kuaishou', component: AccountCookieView, props: { site: 'kuaishou', siteName: '快手' }, meta: { title: '快手Cookie' } },
       { path: 'yy', component: AccountCookieView, props: { site: 'yy', siteName: 'YY' }, meta: { title: 'YY Cookie' } },
       { path: 'soop', component: AccountCookieView, props: { site: 'soop', siteName: 'SOOP' }, meta: { title: 'SOOP Cookie' } },
-      { path: 'twitch', component: AccountCookieView, props: { site: 'twitch', siteName: 'Twitch' }, meta: { title: 'Twitch Cookie' } },
-      { path: 'taobao', component: AccountCookieView, props: { site: 'taobao', siteName: '淘宝直播' }, meta: { title: '淘宝直播Cookie' } }
+      { path: 'twitch', component: AccountCookieView, props: { site: 'twitch', siteName: 'Twitch' }, meta: { title: 'Twitch Cookie' } }
     ]
   },
   {

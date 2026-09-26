@@ -162,17 +162,20 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     Sites.youtubeSite, // v6
     Sites.bigoSite, // v7
     Sites.pandaLiveSite, // v8
-    Sites.popkonSite, // v9
-    Sites.shopeeLiveSite, // v10
-    Sites.vkVideoLiveSite, // v11
-    Sites.nimoTvSite, // v12
-    Sites.dailymotionSite, // v13
-    Sites.rumbleSite, // v14
-    Sites.goodgameSite, // v15
+    // v9-v15 introduced platforms retired upstream in 3.2.8. The slots stay so
+    // later versions keep their numbers; Sites.isRetired keeps them out of the
+    // catalog below.
+    'popkontv', // v9
+    'shopeelive', // v10
+    'vkvideolive', // v11
+    'nimotv', // v12
+    'dailymotion', // v13
+    'rumble', // v14
+    'goodgame', // v15
     Sites.fc2LiveSite, // v16
     Sites.steamBroadcastSite, // v17
     Sites.jdLiveSite, // v18
-    Sites.taobaoLiveSite, // v19
+    'taobaolive', // v19 (retired in 3.2.8)
     Sites.kugouLiveSite, // v20
     Sites.baiduLiveSite, // v21
     Sites.sixRoomSite, // v22
@@ -196,6 +199,7 @@ class FavoriteRoomController extends _$FavoriteRoomController {
     }
     final granted = model.siteCatalogMigration < 3 ? 0 : model.siteCatalogMigration - 3;
     for (final id in _catalogAdditions.skip(granted.clamp(0, _catalogAdditions.length))) {
+      if (Sites.isRetired(id)) continue;
       if (seen.add(id)) updated.add(id);
     }
     return model.copyWith(hotAreasList: updated, siteCatalogMigration: _siteCatalogVersion);

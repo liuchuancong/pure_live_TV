@@ -238,6 +238,9 @@ Map<String, String> _labels = {
   'niconico_category_totu': '凸待',
   'niconico_category_vtuber': 'VTuber',
 
+  // retired platform (saved follows and links)
+  'platform_retired': '该平台已下线，无法再打开，可在关注列表中取消关注',
+
   // http errors
   'http_error_400': '请求错误(400)',
   'http_error_401': '未授权(401)',
