@@ -49,7 +49,7 @@
             spellcheck="false"
             placeholder="passport 请求 Cookie 里的 LTP0"
             class="w-full px-3.5 py-3.5 bg-ios-bg dark:bg-ios-bg border border-ios-border/10 dark:border-ios-border/20 rounded-xl text-[15px] font-medium text-ios-text-h dark:text-ios-text-h outline-none transition-all focus:border-ios-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] placeholder:text-ios-text/40 shadow-inner"
-            @input="handleFieldInput"
+            @input="handleCredentialInput"
           />
         </div>
         <div class="space-y-1.5">
@@ -62,7 +62,7 @@
             spellcheck="false"
             placeholder="同一个请求 Cookie 里的 dy_did（32 位十六进制）"
             class="w-full px-3.5 py-3.5 bg-ios-bg dark:bg-ios-bg border border-ios-border/10 dark:border-ios-border/20 rounded-xl text-[15px] font-medium text-ios-text-h dark:text-ios-text-h outline-none transition-all focus:border-ios-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] placeholder:text-ios-text/40 shadow-inner"
-            @input="handleFieldInput"
+            @input="handleCredentialInput"
           />
         </div>
       </div>
@@ -224,6 +224,21 @@ function absorbCredentials() {
 
 function handleCookieInput() {
   absorbCredentials()
+  handleFieldInput()
+}
+
+/// A whole passport cookie pasted into one of the credential boxes fills both.
+///
+/// The pair is what the viewer pasted, and typing a bare value never contains
+/// an `=`, so this only fires for a full cookie string pasted in the wrong box.
+function handleCredentialInput() {
+  const source = [ltp0.value, did.value].find(text => text.includes('LTP0=') || text.includes('dy_did='))
+  if (source) {
+    const token = cookieField(source, 'LTP0')
+    if (token) ltp0.value = token
+    const device = cookieField(source, 'dy_did')
+    if (device) did.value = device
+  }
   handleFieldInput()
 }
 
