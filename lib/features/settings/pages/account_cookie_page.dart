@@ -196,22 +196,16 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     final String pasted = _controller.text;
     if (pasted.trim().isEmpty) return;
 
-    final String? ltp0 = _douyuField(pasted, DouyuUtils.longTermTokenName);
+    final credentials = DouyuUtils.credentialsIn(pasted);
+    final String? ltp0 = credentials.ltp0;
     if (ltp0 != null && ltp0 != _ltp0Controller!.text) {
       _ltp0Controller!.text = ltp0;
     }
 
-    final String? did = _douyuField(pasted, DouyuUtils.deviceIdName);
+    final String? did = credentials.did;
     if (did != null && did != _didController!.text) {
       _didController!.text = did;
     }
-  }
-
-  /// Reads one field, tolerating a whole `Cookie: a=b; c=d` header line.
-  static String? _douyuField(String cookie, String name) {
-    final String header = cookie.replaceFirst(RegExp(r'^\s*Cookie:\s*', caseSensitive: false), '');
-    final String? value = DouyuUtils.cookieField(header, name)?.trim();
-    return value == null || value.isEmpty ? null : value;
   }
 
   void _saveDouyu() {
@@ -395,15 +389,17 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
   @override
   Widget build(BuildContext context) {
     ref.listen(cookieControllerProvider, (previous, next) {
-      if (previous == null) return;
-
+      // Anything written from outside this page (the phone pushing a cookie, a
+      // clear on another screen) has to show up in the box. The stored value is
+      // compared with what the box holds instead of with the listener's
+      // `previous`: a provider that was rebuilt in between reports a null
+      // previous, and the push would then go silently unshown.
       final String value = widget.platform.read(next);
 
-      if (value != widget.platform.read(previous) && value != _baseline) {
+      if (!_dirty && value != _baseline) {
         setState(() {
           _baseline = value;
           _controller.text = value;
-          _dirty = false;
           _message = _isDouyu
               ? _douyuSessionSummary(value)
               : (value.isEmpty ? i18n('clear_success') : i18n('cookie_saved'));

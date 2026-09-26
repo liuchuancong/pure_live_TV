@@ -81,10 +81,15 @@ request.interceptors.response.use(
     }
   },
   error => {
+    // The TV answers a rejected request with its own 4xx/5xx plus a `msg` saying
+    // why (参数错误 / unknown site …). Replacing that with a generic string made
+    // every failure look identical and hid the reason from the page.
+    const body = error.response?.data
+    const serverMsg = body && typeof body === 'object' && typeof body.msg === 'string' ? body.msg : ''
     return {
       isOk: false,
       code: error.response?.status ?? -99,
-      msg: '网络请求失败',
+      msg: serverMsg || '网络请求失败',
       data: null
     }
   }

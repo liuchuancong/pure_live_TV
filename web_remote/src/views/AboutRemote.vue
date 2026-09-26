@@ -6,7 +6,7 @@
       </div>
       <div>
         <h3 class="text-xl font-bold text-ios-text-h dark:text-white">PureLive TV</h3>
-        <p class="text-xs text-ios-gray dark:text-gray-400 font-mono mt-1">Version {{ remoteVersion }} (Build 202606)</p>
+        <p class="text-xs text-ios-gray dark:text-gray-400 font-mono mt-1">Version v{{ remoteVersion }}</p>
       </div>
       <a href="https://github.com/liuchuancong/pure_live_TV" target="_blank" class="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-xl transition-all hover:bg-zinc-200 dark:hover:bg-white/10 active:scale-[0.98] cursor-pointer">
         <GithubIcon class="w-4 h-4 text-ios-text-h dark:text-gray-200" />

@@ -19,7 +19,7 @@
         v-model="cookieData"
         placeholder="F12 打开任意斗鱼页面请求，复制完整 Cookie..."
         class="w-full h-32 sm:h-36 p-3 sm:p-3.5 bg-ios-bg dark:bg-ios-bg border border-ios-border/10 dark:border-ios-border/20 rounded-xl text-sm sm:text-[15px] font-medium text-ios-text-h dark:text-ios-text-h outline-none resize-none transition-all focus:border-ios-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] placeholder:text-ios-text/40 shadow-inner"
-        @input="handleFieldInput"
+        @input="handleCookieInput"
       ></textarea>
       <div class="flex items-center justify-between px-0.5 text-[10px] sm:text-[11px] text-ios-gray dark:text-ios-gray font-medium">
         <div class="flex items-center gap-2">
@@ -166,16 +166,56 @@ const stateDotClass = computed(() => {
   return 'bg-ios-border/60'
 })
 
-/// Sends all three fields: the TV applies the same rules the TV page does, so a
-/// pasted passport cookie only contributes the renewal pair there.
-async function syncSession() {
-  const res = await api.updateDouyuCookie({
-    cookie: cookieData.value.trim(),
-    ltp0: ltp0.value.trim(),
-    did: did.value.trim()
-  })
+/// Sends the session, letting the TV apply the same rules the TV page does.
+///
+/// The renewal pair is only sent when it has something to say: an empty field
+/// means "this page has nothing to contribute", not "erase what the TV holds" —
+/// pasting a page cookie while the pair sits empty used to wipe the stored one.
+/// Clearing is therefore explicit, through [clearCredentials].
+async function syncSession({ clearCredentials: clearingCredentials = false } = {}) {
+  const payload = { cookie: cookieData.value.trim() }
+  if (clearingCredentials) {
+    payload.ltp0 = ''
+    payload.did = ''
+  } else {
+    if (ltp0.value.trim()) payload.ltp0 = ltp0.value.trim()
+    if (did.value.trim()) payload.did = did.value.trim()
+  }
+  const res = await api.updateDouyuCookie(payload)
   if (res.isOk && res.data) applyState(res.data)
   return res
+}
+
+/// One field of a `a=b; c=d` cookie string, or null. Mirrors the TV's own rule,
+/// including a pasted `Cookie: a=b; c=d` header line.
+function cookieField(cookie, name) {
+  const header = cookie.replace(/^\s*Cookie:\s*/i, '')
+  const wanted = name.toLowerCase()
+  for (const piece of header.split(';')) {
+    const separator = piece.indexOf('=')
+    if (separator <= 0) continue
+    if (piece.slice(0, separator).trim().toLowerCase() !== wanted) continue
+    const value = piece.slice(separator + 1).trim()
+    if (value) return value
+  }
+  return null
+}
+
+/// Copies `LTP0` / `dy_did` out of whatever was pasted into the page-cookie box,
+/// so a passport cookie only needs one paste instead of a manual split. Fills
+/// what it finds and never clears a field, exactly like the TV's page.
+function absorbCredentials() {
+  const text = cookieData.value
+  if (!text.trim()) return
+  const token = cookieField(text, 'LTP0')
+  if (token && token !== ltp0.value) ltp0.value = token
+  const device = cookieField(text, 'dy_did')
+  if (device && device !== did.value) did.value = device
+}
+
+function handleCookieInput() {
+  absorbCredentials()
+  handleFieldInput()
 }
 
 function handleFieldInput() {
@@ -192,7 +232,7 @@ function clearCookieField() {
 function clearCredentials() {
   ltp0.value = ''
   did.value = ''
-  if (autoSync.value) syncSession()
+  if (autoSync.value) syncSession({ clearCredentials: true })
 }
 
 async function submitCookie() {
@@ -225,7 +265,15 @@ async function renewNow() {
 async function submitClear() {
   if (!window.confirm('清除电视上的斗鱼 Cookie？LTP0 与 dy_did 会保留。')) return
   cookieData.value = ''
-  const res = await syncSession()
+  // An empty cookie on its own is not a session, and the TV keeps a stored login
+  // rather than reading that as a wipe — so the clear has to say so.
+  const res = await api.updateDouyuCookie({
+    cookie: '',
+    clear: true,
+    ...(ltp0.value.trim() ? { ltp0: ltp0.value.trim() } : {}),
+    ...(did.value.trim() ? { did: did.value.trim() } : {})
+  })
+  if (res.isOk && res.data) applyState(res.data)
   toast.show(res.isOk ? '已清除' : res.msg || '清除失败', res.isOk ? 'success' : 'error')
 }
 

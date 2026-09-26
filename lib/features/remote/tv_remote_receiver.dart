@@ -18,6 +18,8 @@ import 'package:pure_live/shared/common/http_header_policy.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:pure_live/shared/utils/log.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
+import 'package:pure_live/shared/utils/version_util.dart';
+import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -36,7 +38,11 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
   HttpServer? _server;
   final List<WebSocket> _wsClients = [];
   static const int _maxPortRetry = 100;
-  static const String _appVersion = '1.0.0';
+
+  /// The installed TV build, as the phone's pages report it. Hardcoding this
+  /// made the web remote show its own placeholder version instead of the build
+  /// the viewer is actually running.
+  static String get _appVersion => '${VersionUtil.version}+${VersionUtil.buildNumber}';
 
   /// Identity the LAN protocol reports for this device, so the mobile app's
   /// device list can name it instead of showing a bare address.
@@ -134,6 +140,15 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
         return false;
     }
     return true;
+  }
+
+  /// Tells the viewer a cookie landed. By the time a write arrives the phone may
+  /// be on another platform's page, so the toast names the platform instead of
+  /// relying on the TV showing that page — otherwise a sync that worked looks
+  /// exactly like one that never happened.
+  void _announceCookiePush(String site) {
+    final String name = site.trim().isEmpty ? '' : Sites.of(site).name.trim();
+    ToastUtil.show(name.isEmpty ? i18n('cookie_saved') : '$name · ${i18n('cookie_saved')}');
   }
 
   /// The Douyu session as the phone's page edits it: the page cookie plus the
@@ -401,6 +416,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       }
       _addLog('Cookie updated from the phone: $site');
       _broadcastWs({'type': 'cookie_push', 'site': site});
+      _announceCookiePush(site);
       return _ok(res, msg: i18n('ui_saved'));
     });
 
@@ -414,13 +430,36 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       final body = await req.body as Map<String, dynamic>?;
       if (body == null) return _fail(res, msg: i18n('remote_bad_request'));
 
+      // The phone's "clear the session" action. An empty cookie on its own is not
+      // a paste the TV may act on (a page cookie is a login and must not be wiped
+      // by an empty box), so the page says so explicitly. The renewal pair stays:
+      // it belongs to the login, not to the seven-day session.
+      final clear = body['clear'] == true || body['clear'] == 'true';
+      if (clear) {
+        final controller = ref.read(cookieControllerProvider.notifier);
+        controller.setDouyuCookie('');
+        controller.setDouyuCookieSavedAt(0);
+        _addLog('Douyu session cleared from the phone');
+        _broadcastWs({'type': 'cookie_push', 'site': 'douyu'});
+        _announceCookiePush('douyu');
+        return _ok(res, msg: i18n('ui_saved'), data: _douyuCookiePayload());
+      }
+
+      // A pasted passport cookie already carries `LTP0` / `dy_did`, exactly like
+      // a paste on the TV's own page, so they are read out of the text when the
+      // phone did not split them into fields itself. Explicit fields win, and an
+      // absent one is left alone rather than cleared.
+      final String pasted = body.containsKey('cookie') ? (body['cookie'] ?? '').toString() : '';
+      final credentials = DouyuUtils.credentialsIn(pasted);
+
       _applyDouyuCookie(
-        cookie: body.containsKey('cookie') ? (body['cookie'] ?? '').toString() : null,
-        ltp0: body.containsKey('ltp0') ? (body['ltp0'] ?? '').toString() : null,
-        did: body.containsKey('did') ? (body['did'] ?? '').toString() : null,
+        cookie: body.containsKey('cookie') ? pasted : null,
+        ltp0: body.containsKey('ltp0') ? (body['ltp0'] ?? '').toString() : credentials.ltp0,
+        did: body.containsKey('did') ? (body['did'] ?? '').toString() : credentials.did,
       );
       _addLog('Douyu session updated from the phone');
       _broadcastWs({'type': 'cookie_push', 'site': 'douyu'});
+      _announceCookiePush('douyu');
       return _ok(res, msg: i18n('ui_saved'), data: _douyuCookiePayload());
     });
 
@@ -483,6 +522,7 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       if (cookie.isNotEmpty) _setCookieForSite('douyin', cookie);
       _addLog('Douyin cookie updated');
       _broadcastWs({'type': 'cookie_push', 'site': 'douyin'});
+      _announceCookiePush('douyin');
       return _ok(res, msg: i18n('ui_saved'));
     });
 

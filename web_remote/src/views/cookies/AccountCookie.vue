@@ -62,9 +62,11 @@ onMounted(async () => {
 function handleCookieInput() {
   if (!autoSync.value) return
   if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    const val = cookieData.value.trim()
-    api.updateCookie(props.site, val)
+  // The result has to be read: an auto-sync that fails silently leaves the viewer
+  // believing the cookie reached the TV.
+  debounceTimer = setTimeout(async () => {
+    const res = await api.updateCookie(props.site, cookieData.value.trim())
+    if (!res.isOk) toast.show(res.msg || `${props.siteName} 同步失败`, 'error')
   }, 400)
 }
 

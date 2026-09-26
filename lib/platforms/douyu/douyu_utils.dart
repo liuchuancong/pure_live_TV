@@ -214,6 +214,23 @@ class DouyuUtils {
     return null;
   }
 
+  /// The renewal pair as it appears in whatever was pasted into a cookie box:
+  /// `LTP0` and `dy_did`, either as a bare `a=b; c=d` string or as a whole
+  /// `Cookie: a=b; c=d` header line, which is what devtools hands a viewer.
+  ///
+  /// Only the fields actually found come back non-null. A page cookie carries
+  /// neither, and reading "absent" as "clear it" would silently turn the renewal
+  /// off, so callers keep what they already hold.
+  static ({String? ltp0, String? did}) credentialsIn(String pasted) {
+    final header = pasted.replaceFirst(RegExp(r'^\s*Cookie:\s*', caseSensitive: false), '');
+    String? read(String name) {
+      final value = cookieField(header, name)?.trim() ?? '';
+      return value.isEmpty ? null : value;
+    }
+
+    return (ltp0: read(longTermTokenName), did: read(deviceIdName));
+  }
+
   /// The session token the account cookie carries, if any.
   ///
   /// The web flavour's `dy_auth` counts: a pasted `www.douyu.com` cookie is a
