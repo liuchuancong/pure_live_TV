@@ -1412,6 +1412,7 @@
   "permission_battery_title": "需要忽略电池优化",
   "permission_cancel": "取消",
   "permission_denied": "未获得文件选择器所需的系统存储权限",
+  "local_network_permission_denied": "未获得本机网络访问权限，使用局域网代理（电脑/路由器）前请在系统设置中允许。",
   "permission_go_enable": "去开启",
   "permission_notification_content": "为了在后台播放时显示控制条并防止直播中断，我们需要开启通知权限。",
   "permission_notification_title": "需要通知权限",

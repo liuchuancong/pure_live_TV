@@ -4,6 +4,7 @@ import 'package:hive_ce/hive_ce.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/services/index.dart';
+import 'package:pure_live/shared/platform/local_network_access.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -80,6 +81,19 @@ class AppInitializer {
       if (!SettingsService.to.appState.enableAutoCheckUpdate) return;
       await Future<void>.delayed(const Duration(seconds: 3));
       await VersionUtil().checkUpdate();
+    }());
+
+    // Android 17 gates sockets to a local-network proxy behind
+    // ACCESS_LOCAL_NETWORK, so an existing PC/router proxy asks for it on every
+    // launch. Deferred past the first frames: the request needs an attached
+    // activity and must not compete with startup.
+    unawaited(() async {
+      await Future<void>.delayed(const Duration(seconds: 2));
+      final proxy = SettingsService.to.proxyState;
+      await LocalNetworkAccess.ensureForProxies([
+        (enabled: proxy.enableAppProxy, host: proxy.appProxyHost),
+        (enabled: proxy.enableProxy, host: proxy.proxyHost),
+      ]);
     }());
 
     // media_core is silent by default; diagnostics are turned on for debug

@@ -3,6 +3,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
+import 'package:pure_live/shared/platform/local_network_access.dart';
 
 // proxy_settings_controller.dart
 
@@ -70,6 +71,16 @@ class ProxySettingsController extends _$ProxySettingsController {
     if (appProxyChanged) {
       _refreshDioConnections();
     }
+    _ensureLocalNetworkAccess();
+  }
+
+  /// An enabled proxy on the PC or router is a local-network address, which
+  /// Android 17 gates behind ACCESS_LOCAL_NETWORK.
+  void _ensureLocalNetworkAccess() {
+    LocalNetworkAccess.ensureForProxies([
+      (enabled: state.enableAppProxy, host: state.appProxyHost),
+      (enabled: state.enableProxy, host: state.proxyHost),
+    ]);
   }
 
   void _persist() {

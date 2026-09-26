@@ -19,6 +19,8 @@ build warning and misleads readers into thinking it still has an effect.
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.INTERNET" />
+	<!-- Android 17: sockets to a LAN proxy (PC Clash, soft router) need this. -->
+	<uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 	<!--
 	The app checks for updates itself and hands the downloaded APK to the
 	system package installer, which Android 8+ gates behind this permission.
