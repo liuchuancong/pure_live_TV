@@ -48,7 +48,7 @@
             autocomplete="off"
             spellcheck="false"
             placeholder="passport 请求 Cookie 里的 LTP0"
-            class="w-full px-3 py-2.5 bg-ios-bg dark:bg-ios-bg border border-ios-border/10 dark:border-ios-border/20 rounded-xl text-sm font-medium text-ios-text-h dark:text-ios-text-h outline-none transition-all focus:border-ios-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] placeholder:text-ios-text/40 shadow-inner"
+            class="w-full px-3.5 py-3.5 bg-ios-bg dark:bg-ios-bg border border-ios-border/10 dark:border-ios-border/20 rounded-xl text-[15px] font-medium text-ios-text-h dark:text-ios-text-h outline-none transition-all focus:border-ios-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] placeholder:text-ios-text/40 shadow-inner"
             @input="handleFieldInput"
           />
         </div>
@@ -61,12 +61,12 @@
             autocomplete="off"
             spellcheck="false"
             placeholder="同一个请求 Cookie 里的 dy_did（32 位十六进制）"
-            class="w-full px-3 py-2.5 bg-ios-bg dark:bg-ios-bg border border-ios-border/10 dark:border-ios-border/20 rounded-xl text-sm font-medium text-ios-text-h dark:text-ios-text-h outline-none transition-all focus:border-ios-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] placeholder:text-ios-text/40 shadow-inner"
+            class="w-full px-3.5 py-3.5 bg-ios-bg dark:bg-ios-bg border border-ios-border/10 dark:border-ios-border/20 rounded-xl text-[15px] font-medium text-ios-text-h dark:text-ios-text-h outline-none transition-all focus:border-ios-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] placeholder:text-ios-text/40 shadow-inner"
             @input="handleFieldInput"
           />
         </div>
       </div>
-      <p class="px-0.5 text-[10px] sm:text-[11px] text-ios-gray dark:text-ios-gray font-medium leading-relaxed">页面 Cookie 有 7 天时效；配好 LTP0 与 dy_did 后失效前会自动续期，也可以点「立即续期」当场验证。两段 Cookie 不要混用：passport 那段只用来续期。</p>
+      <p class="px-0.5 text-[10px] sm:text-[11px] text-ios-gray dark:text-ios-gray font-medium leading-relaxed">页面 Cookie 有 7 天时效。</p>
     </div>
 
     <!-- 操作按钮 -->
@@ -121,10 +121,19 @@ async function loadSession() {
   applyState(data)
 }
 
+/// Adopts the session the TV reports, fields included.
+///
+/// The credential pair lives in the TV's store, not in this page: reading it
+/// back is what makes the two boxes show the session actually in effect
+/// instead of whatever was typed here last (and an empty box then means the TV
+/// really has nothing).
 function applyState(data) {
   state.value = data.state || 'none'
   renewable.value = data.renewable === true
   expiry.value = data.expiry || ''
+  if (typeof data.cookie === 'string' && data.cookie !== cookieData.value) cookieData.value = data.cookie
+  if (typeof data.ltp0 === 'string' && data.ltp0 !== ltp0.value) ltp0.value = data.ltp0
+  if (typeof data.did === 'string' && data.did !== did.value) did.value = data.did
 }
 
 const stateTitle = computed(() => {
