@@ -154,6 +154,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                   // of the cell instead: the artwork yields, the content does not.
                   Expanded(
                     child: Stack(
+                      // The cover must fill the box, not preserve its own aspect
+                      // ratio: a loose Stack hands the image a tight *height* and
+                      // a loose width, and RenderImage then keeps the ratio — so
+                      // once an enlarged font shortened this box, the artwork
+                      // narrowed as well and stopped reaching the card edge.
+                      fit: StackFit.expand,
                       children: [
                         Container(
                           clipBehavior: Clip.antiAlias,
