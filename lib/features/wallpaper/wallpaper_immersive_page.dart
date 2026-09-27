@@ -1,21 +1,21 @@
 import 'dart:async';
-
 import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_sequence.dart';
+import 'package:pure_live/services/background_config/background_blur.dart';
 import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
-import 'package:pure_live/services/background_config/background_blur.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
+
 
 /// Full-screen wallpaper viewer, a route of its own with no permanent buttons.
 ///

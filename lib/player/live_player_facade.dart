@@ -6,6 +6,8 @@ import 'package:media_core/media_core.dart';
 import 'package:media_core_live/media_core_live.dart';
 import '../services/settings/settings.dart';
 import 'core/playback_header_resolver.dart';
+import 'core/flv_legacy_hevc_relay.dart';
+import 'core/playback_proxy_policy.dart';
 import '../app/consts/app_theme_consts.dart';
 import '../shared/models/live_room/live_room.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart';
@@ -61,58 +63,102 @@ final class LivePlayerFacade {
   /// with the refreshed URLs.
   Future<List<String>> Function(String nextEngine)? onEngineFallbackUrls;
 
-  /// When a leased source's URL stops working (Douyu's anonymous original
-  /// quality carries `expire=300`), for the renewal that happens underneath the
-  /// stream. Assigned by the live page: only it can ask the site layer, and the
-  /// lease has to keep the room *and* the quality the player was opened with.
-  DateTime? Function(String url)? onLeaseRefreshAt;
-
-  /// Fetches fresh lines for that same room and quality.
-  ///
-  /// An expiring FLV is renewed with a URL that has never been opened, which is
-  /// exactly what the recovery resolver already does. Returning an empty list
-  /// leaves the current connection in place for the player's own recovery.
-  Future<List<String>> Function()? onLeaseRenewalUrls;
-
   /// Headers the current request was built with, reused when the
   /// engine-fallback resolver hands over fresh URLs.
   Map<String, String> _lastHeaders = const <String, String>{};
 
-  /// Attaches an [FlvSpliceLease] when the site declares one for [source]'s URL,
-  /// so the relay can renew it while the stream keeps playing.
+  /// CDNs observed serving legacy "codec id 12" HEVC FLV.
   ///
-  /// The renewer prefers the same line when the fresh list still has it: the
-  /// splice already follows the room's timestamps, and a different CDN of the
-  /// same room carries the same content.
-  PlayerSource _withFlvSpliceLease(PlayerSource source, List<String> lines) {
-    final refreshAtFor = onLeaseRefreshAt;
-    final renewUrls = onLeaseRenewalUrls;
+  /// The bundled libmpv ships FFmpeg 7.1, which only learned that spelling in
+  /// 8.0 and therefore drops the video stream (audio keeps playing). Such a
+  /// source is routed through a local rewrite relay that changes the tag header
+  /// only; ordinary FLV keeps its direct connection. Which CDNs do this is
+  /// deployment knowledge (and depends on individual broadcasters' encoders),
+  /// so the list lives with the app, not in the player.
+  static const Set<String> _legacyHevcFlvHosts = <String>{
+    '.livetech.shopee.co.id',
+    '.livestream.shopee.co.id',
+    '.17app.co',
+  };
 
-    if (refreshAtFor == null || renewUrls == null) return source;
+  /// Relays started for the sources of the current request. Each one owns the
+  /// CDN connection for the player, so it lives exactly as long as the lines it
+  /// was built for: a new request (or teardown) retires them all.
+  final List<FlvLegacyHevcRelay> _sourceRelays = <FlvLegacyHevcRelay>[];
 
+  /// Routes one source through the rewrite relay when its host needs it.
+  ///
+  /// A relay that cannot start is not fatal: the source keeps its direct URL
+  /// and behaves exactly as it would without this interception.
+  Future<PlayerSource> _interceptSource(PlayerSource source) async {
     final url = source.uri.toString();
-    final refreshAt = refreshAtFor(url);
 
-    if (refreshAt == null) return source;
+    if (!FlvLegacyHevcRelay.appliesTo(url, hostSuffixes: _legacyHevcFlvHosts)) {
+      return source;
+    }
 
-    final lineIndex = lines.indexOf(url);
+    try {
+      final relay = await FlvLegacyHevcRelay.start(
+        url,
+        source.hasHeaders ? source.headers!.values : const <String, String>{},
+        findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
+        hostSuffixes: _legacyHevcFlvHosts,
+      );
 
-    return source.withFlvSpliceLease(
-      FlvSpliceLease(
-        refreshAt: refreshAt,
-        renew: (current) async {
-          final available = (await renewUrls()).where((value) => value.trim().isNotEmpty).toList(growable: false);
+      _sourceRelays.add(relay);
 
-          if (available.isEmpty) {
-            throw StateError('No renewed FLV source');
-          }
+      // The relay holds the source headers and carries them upstream itself;
+      // handing them to a loopback request would only leak them into the
+      // native player's logs. media_core treats the loopback URI as a private
+      // input, so the native proxy never sees it either.
+      return source.copyWith(uri: relay.inputUri, headers: null);
+    } catch (error) {
+      debugPrint('FlvLegacyHevcRelay start failed: $error');
 
-          final next = lineIndex >= 0 && lineIndex < available.length ? available[lineIndex] : available.first;
+      return source;
+    }
+  }
 
-          return FlvLeasedSource(Uri.parse(next), refreshAt: refreshAtFor(next));
-        },
-      ),
-    );
+  Future<List<PlayerSource>> _interceptSources(List<PlayerSource> sources) async {
+    final intercepted = <PlayerSource>[];
+
+    for (final source in sources) {
+      intercepted.add(await _interceptSource(source));
+    }
+
+    return List<PlayerSource>.unmodifiable(intercepted);
+  }
+
+  /// Retires every relay of the request being replaced, if any.
+  Future<void> _closeSourceRelays() async {
+    final relays = List<FlvLegacyHevcRelay>.of(_sourceRelays);
+
+    _sourceRelays.clear();
+
+    for (final relay in relays) {
+      await relay.close();
+    }
+  }
+
+  /// The engine a request may start on.
+  ///
+  /// The legacy-HEVC hosts serve a stream whose FLV spelling the ExoPlayer and
+  /// ijkplayer demuxers cannot read at all: Media3's `FlvExtractor` knows only
+  /// classic FLV with AVC/AAC, and the FFmpeg inside flv_lzc is 4.0, older than
+  /// the 6.1 that learned Enhanced FLV. A request carrying one of those hosts
+  /// therefore starts on media_kit — whose libmpv reads the rewritten stream —
+  /// instead of spending an attempt on an engine that cannot play it. The sweep
+  /// still escalates from there; an explicit engine switch is left alone.
+  String _startBackendFor(List<String> urls) {
+    final preferred = _backendIdOf(preferredEngine);
+
+    if (preferred == BackendIds.mediaKit || preferred == BackendIds.fvp) {
+      return preferred;
+    }
+
+    final legacyHevc = urls.any((url) => FlvLegacyHevcRelay.appliesTo(url, hostSuffixes: _legacyHevcFlvHosts));
+
+    return legacyHevc ? BackendIds.mediaKit : preferred;
   }
 
   Future<List<PlayerSource>> _refreshEngineFallbackSources(String nextEngine, List<PlayerSource> currentSources) async {
@@ -128,7 +174,7 @@ final class LivePlayerFacade {
       return const <PlayerSource>[];
     }
 
-    return LiveSourceRequest.fromUrls(urls, headers: _lastHeaders).sources;
+    return _interceptSources(LiveSourceRequest.fromUrls(urls, headers: _lastHeaders).sources);
   }
 
   late final LivePlaybackController _controller;
@@ -440,14 +486,14 @@ final class LivePlayerFacade {
 
     _lastHeaders = effectiveHeaders;
 
-    // A source whose URL expires mid-stream is opened through a relay that
-    // renews the URL underneath it, so the lease travels with the source.
-    // Everything the relay needs is resolved here, where the line list is known.
+    // A new request replaces the old lines, so the relays that served them are
+    // retired first; the sources of this request get their own.
+    await _closeSourceRelays();
+
     final request = LiveSourceRequest(
-      sources: LiveSourceRequest.fromUrls(urls, headers: effectiveHeaders, title: room?.title)
-          .sources
-          .map((source) => _withFlvSpliceLease(source, urls))
-          .toList(growable: false),
+      sources: await _interceptSources(
+        LiveSourceRequest.fromUrls(urls, headers: effectiveHeaders, title: room?.title).sources,
+      ),
       title: room?.title,
     );
 
@@ -459,7 +505,7 @@ final class LivePlayerFacade {
 
     // Pin the engine the user chose: the explicit preference cannot lose a
     // tie-break. Close/play ordering is the controller queue's job now.
-    await _controller.play(request, preferredBackend: _backendIdOf(preferredEngine));
+    await _controller.play(request, preferredBackend: _startBackendFor(urls));
 
     // The controller creates the handle during open(). Bind whatever is
     // current after the queued task settled.
@@ -513,6 +559,7 @@ final class LivePlayerFacade {
   Future<void> close() async {
     if (_disposed) return;
     await _controller.close();
+    await _closeSourceRelays();
     _boundHandle = null;
     _adapterBuffering = false;
     _playingSubject.add(false);
@@ -602,7 +649,16 @@ final class LivePlayerFacade {
         final fresh = await refresh(_backendIdOf(engine));
 
         if (fresh.isNotEmpty) {
-          request = LiveSourceRequest.fromUrls(fresh, headers: _lastHeaders, title: request.title);
+          // Fresh lines replace the remembered ones, so the relays of those are
+          // retired and the new lines get their own.
+          await _closeSourceRelays();
+
+          request = LiveSourceRequest(
+            sources: await _interceptSources(
+              LiveSourceRequest.fromUrls(fresh, headers: _lastHeaders, title: request.title).sources,
+            ),
+            title: request.title,
+          );
         }
       } catch (_) {
         // Keep the remembered request; the sweep reports the failure.
@@ -743,6 +799,8 @@ final class LivePlayerFacade {
     if (_disposed) return;
 
     _disposed = true;
+
+    await _closeSourceRelays();
 
     await _stateSub?.cancel();
     await _errorSub?.cancel();

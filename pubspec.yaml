@@ -107,53 +107,55 @@ dependencies:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_media_kit
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
   media_core_fvp:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_fvp
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
   media_core_live:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_live
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
   media_core_native:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_native
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
   media_core_logging:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_logging
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_better_player
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_ijk_player
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      ref: 34b3cca52323e775e4defe13fc53246be59b4b2b
+  # Imported directly by the wallpaper / background code (and available through
+  # the media_core_media_kit adapter's re-export, which pins the same revision);
+  # declared here because a direct import should come from a direct dependency.
   media_kit:
     git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_kit
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
-
+      url: https://github.com/Predidit/media-kit.git
+      ref: 803c4a27912091db6f839d48d1b984a0d9f588c7
+      path: ./media_kit
   media_kit_video:
     git:
-      url: https://github.com/liuchuancong/media_core.git
-      path: ./packages/media_kit_video
-      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      url: https://github.com/Predidit/media-kit.git
+      ref: 803c4a27912091db6f839d48d1b984a0d9f588c7
+      path: ./media_kit_video
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）
