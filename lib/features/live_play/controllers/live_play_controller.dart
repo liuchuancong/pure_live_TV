@@ -751,6 +751,8 @@ class LivePlayController extends _$LivePlayController {
       }
     };
 
+    _bindLeaseRenewal(detail, quality);
+
     try {
       await manager.play(urls[line], urls, const <String, String>{}, room: detail);
     } on ArgumentError catch (e) {
@@ -762,6 +764,27 @@ class LivePlayController extends _$LivePlayController {
 
       state = state.copyWith(errorMessage: i18n('stream_start_failed'));
     }
+  }
+
+  /// Lets the player renew a source whose URL expires mid-stream (Douyu's
+  /// anonymous original quality carries `expire=300`): the lease says when, and
+  /// the recovery resolver — which already reacquires signed, single-use URLs —
+  /// supplies the replacement for the same room and quality.
+  void _bindLeaseRenewal(LiveRoom detail, LivePlayQuality? quality) {
+    final manager = _playerManager;
+
+    if (manager == null) return;
+
+    manager.onLeaseRefreshAt = quality == null ? null : (url) => _repository.playUrlRefreshAt(detail, url);
+    manager.onLeaseRenewalUrls = quality == null
+        ? null
+        : () async {
+            try {
+              return await _repository.fetchPlayUrlsForRecovery(detail, quality);
+            } catch (_) {
+              return const <String>[];
+            }
+          };
   }
 
   // =========================
@@ -804,6 +827,14 @@ class LivePlayController extends _$LivePlayController {
     _armStallReport(restart: true);
 
     state = state.copyWith(lineIndex: index, clearErrorMessage: true, switchingStream: true);
+
+    final detail = state.room;
+    final qualities = state.qualities;
+    final quality = qualities.isEmpty
+        ? null
+        : qualities[state.qualityIndex.clamp(0, qualities.length - 1)];
+
+    if (detail != null) _bindLeaseRenewal(detail, quality);
 
     try {
       await manager.play(urls[index], urls, const <String, String>{}, room: state.room);

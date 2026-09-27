@@ -269,6 +269,19 @@ extension LiveSitePlayUrlResolution on LiveSite {
     }
     return resolvePlayUrls(detail: detail, quality: quality);
   }
+
+  /// When [url] stops starting new connections, for the platforms that declare
+  /// a transport lease ([LivePlayLeaseMetadata]).
+  ///
+  /// `null` keeps the ordinary error-driven path, so a site that knows nothing
+  /// about its URL lifetimes answers nothing and nothing changes.
+  DateTime? playUrlRefreshAt(String url) {
+    final site = this;
+    if (site is LivePlayLeaseMetadata) {
+      return (site as LivePlayLeaseMetadata).getPlayUrlRefreshAt(url);
+    }
+    return null;
+  }
 }
 
 /// Optional fast metadata path used by favourites/background verification.

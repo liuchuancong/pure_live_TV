@@ -61,9 +61,59 @@ final class LivePlayerFacade {
   /// with the refreshed URLs.
   Future<List<String>> Function(String nextEngine)? onEngineFallbackUrls;
 
+  /// When a leased source's URL stops working (Douyu's anonymous original
+  /// quality carries `expire=300`), for the renewal that happens underneath the
+  /// stream. Assigned by the live page: only it can ask the site layer, and the
+  /// lease has to keep the room *and* the quality the player was opened with.
+  DateTime? Function(String url)? onLeaseRefreshAt;
+
+  /// Fetches fresh lines for that same room and quality.
+  ///
+  /// An expiring FLV is renewed with a URL that has never been opened, which is
+  /// exactly what the recovery resolver already does. Returning an empty list
+  /// leaves the current connection in place for the player's own recovery.
+  Future<List<String>> Function()? onLeaseRenewalUrls;
+
   /// Headers the current request was built with, reused when the
   /// engine-fallback resolver hands over fresh URLs.
   Map<String, String> _lastHeaders = const <String, String>{};
+
+  /// Attaches an [FlvSpliceLease] when the site declares one for [source]'s URL,
+  /// so the relay can renew it while the stream keeps playing.
+  ///
+  /// The renewer prefers the same line when the fresh list still has it: the
+  /// splice already follows the room's timestamps, and a different CDN of the
+  /// same room carries the same content.
+  PlayerSource _withFlvSpliceLease(PlayerSource source, List<String> lines) {
+    final refreshAtFor = onLeaseRefreshAt;
+    final renewUrls = onLeaseRenewalUrls;
+
+    if (refreshAtFor == null || renewUrls == null) return source;
+
+    final url = source.uri.toString();
+    final refreshAt = refreshAtFor(url);
+
+    if (refreshAt == null) return source;
+
+    final lineIndex = lines.indexOf(url);
+
+    return source.withFlvSpliceLease(
+      FlvSpliceLease(
+        refreshAt: refreshAt,
+        renew: (current) async {
+          final available = (await renewUrls()).where((value) => value.trim().isNotEmpty).toList(growable: false);
+
+          if (available.isEmpty) {
+            throw StateError('No renewed FLV source');
+          }
+
+          final next = lineIndex >= 0 && lineIndex < available.length ? available[lineIndex] : available.first;
+
+          return FlvLeasedSource(Uri.parse(next), refreshAt: refreshAtFor(next));
+        },
+      ),
+    );
+  }
 
   Future<List<PlayerSource>> _refreshEngineFallbackSources(String nextEngine, List<PlayerSource> currentSources) async {
     final resolver = onEngineFallbackUrls;
@@ -390,7 +440,16 @@ final class LivePlayerFacade {
 
     _lastHeaders = effectiveHeaders;
 
-    final request = LiveSourceRequest.fromUrls(urls, headers: effectiveHeaders, title: room?.title);
+    // A source whose URL expires mid-stream is opened through a relay that
+    // renews the URL underneath it, so the lease travels with the source.
+    // Everything the relay needs is resolved here, where the line list is known.
+    final request = LiveSourceRequest(
+      sources: LiveSourceRequest.fromUrls(urls, headers: effectiveHeaders, title: room?.title)
+          .sources
+          .map((source) => _withFlvSpliceLease(source, urls))
+          .toList(growable: false),
+      title: room?.title,
+    );
 
     // Remember the complete request before opening it.
     //

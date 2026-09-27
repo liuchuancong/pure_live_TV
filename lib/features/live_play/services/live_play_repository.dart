@@ -50,4 +50,16 @@ class LivePlayRepository {
   LiveDanmaku createDanmaku(LiveRoom detail) {
     return Sites.of(detail.normalizedPlatformId).liveSite.getDanmaku();
   }
+
+  /// When [url] stops starting new connections, for platforms that declare a
+  /// transport lease ([LivePlayLeaseMetadata]). `null` — the usual answer —
+  /// means the source has no known expiry and keeps the error-driven path.
+  DateTime? playUrlRefreshAt(LiveRoom detail, String url) {
+    try {
+      return Sites.of(detail.normalizedPlatformId).liveSite.playUrlRefreshAt(url);
+    } catch (_) {
+      // A lease is an optimisation; it must never fail the stream it describes.
+      return null;
+    }
+  }
 }
