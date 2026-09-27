@@ -814,8 +814,8 @@ packages:
     dependency: transitive
     description:
       path: "packages/fvp"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.38.1"
@@ -1135,8 +1135,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1144,8 +1144,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_better_player"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1153,8 +1153,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_fvp"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1162,8 +1162,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_ijk_player"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1171,8 +1171,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_live"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1180,8 +1180,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_logging"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1189,8 +1189,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_media_kit"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1198,8 +1198,8 @@ packages:
     dependency: transitive
     description:
       path: "packages/media_core_memory"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1207,8 +1207,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_native"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.2.0"
@@ -1216,8 +1216,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_kit"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "1.1.11"
@@ -1225,8 +1225,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_kit_video"
-      ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
-      resolved-ref: "5f7d0a3c1a0d2bcd8bdef4f6df874bca0bcfdabc"
+      ref: fee416ca9d0eab48d2890324531366a27c729c65
+      resolved-ref: fee416ca9d0eab48d2890324531366a27c729c65
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "1.2.5"
