@@ -40,6 +40,13 @@ class RemoteSyncSnapshot {
   /// Whether that push was applied.
   final bool lastReceiveOk;
 
+  /// Code the other device must present, shown on screen and carried by the
+  /// QR; empty while the service is stopped.
+  final String pairingCode;
+
+  /// Account cookies travel only when the user opts in on this device.
+  final bool includeAccounts;
+
   const RemoteSyncSnapshot({
     this.started = false,
     this.qrData = '',
@@ -49,6 +56,8 @@ class RemoteSyncSnapshot {
     this.localIps = const [],
     this.lastReceiveNotice = '',
     this.lastReceiveOk = true,
+    this.pairingCode = '',
+    this.includeAccounts = false,
   });
 }
 
@@ -76,6 +85,15 @@ class RemoteSyncController extends _$RemoteSyncController {
   String? _lastError;
   String _lastReceiveNotice = '';
   bool _lastReceiveOk = true;
+
+  /// Regenerated every time the server starts, so a code seen once is useless
+  /// after the service was stopped.
+  String _pairingCode = '';
+  bool _includeAccounts = false;
+
+  /// Asks the user whether [remoteAddress] may read ('export') or overwrite
+  /// ('import') this device's settings. Requests are refused without it.
+  Future<bool> Function(String action, String remoteAddress)? confirmRequest;
 
   /// Kept so the pages that call `kit.syncToDevice` / `kit.receiveFromQrOrAddress`
   /// keep working: this controller exposes the same methods.
@@ -140,6 +158,7 @@ class RemoteSyncController extends _$RemoteSyncController {
   Future<void> stop() async {
     debugPrint('[sync] stop() called, running=$_running');
     _running = false;
+    _pairingCode = '';
 
     _cleanupTimer?.cancel();
     _cleanupTimer = null;
@@ -291,6 +310,7 @@ class RemoteSyncController extends _$RemoteSyncController {
     }
     _server = server;
     _localPort = port;
+    _pairingCode = RemoteSyncProtocol.newPairingCode();
     server.listen(_handleRequest, onError: (_) {}, onDone: () {});
 
     _cleanupTimer?.cancel();
@@ -302,15 +322,9 @@ class RemoteSyncController extends _$RemoteSyncController {
     final response = request.response;
     final path = request.uri.path;
 
+    // No CORS headers: a web page in a browser on the network must not be able
+    // to read this device's settings.
     response.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
-    if (request.method == 'OPTIONS') {
-      response.statusCode = HttpStatus.ok;
-      await response.close();
-      return;
-    }
     try {
       if (path == RemoteSyncProtocol.apiStatus) {
         await _handleStatus(request);
@@ -348,10 +362,28 @@ class RemoteSyncController extends _$RemoteSyncController {
   }
 
   Future<void> _handleSettings(HttpRequest request) async {
+    if (!RemoteSyncProtocol.pairingCodesMatch(
+      _pairingCode,
+      request.headers.value(RemoteSyncProtocol.pairingHeader),
+    )) {
+      request.response.statusCode = HttpStatus.forbidden;
+      await _write(request.response, {'code': 403, 'msg': 'Pairing code required', 'data': false});
+      return;
+    }
+    // Account cookies and this device's own setup are at stake, so reading them
+    // is confirmed by the operator. A push asks through the module picker in
+    // [_applySettings] instead, which can refuse the request the same way.
+    if (request.method == 'GET' && !await _confirm('export', request)) {
+      request.response.statusCode = HttpStatus.forbidden;
+      await _write(request.response, {'code': 403, 'msg': 'Rejected on the device', 'data': false});
+      return;
+    }
     switch (request.method) {
       case 'GET':
         try {
-          final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
+          final settings = ref
+              .read(backupControllerProvider.notifier)
+              .exportAllSettings(includeSensitiveData: _includeAccounts);
           await _write(request.response, {'code': 200, 'msg': 'ok', 'data': settings});
           // The paired app imports this TV's settings: nothing changes here, so
           // the toast is the only sign that the sync happened at all.
@@ -377,6 +409,20 @@ class RemoteSyncController extends _$RemoteSyncController {
         });
       default:
         await _methodNotAllowed(request.response);
+    }
+  }
+
+  /// Asks the page (which owns the UI) to confirm an inbound request. No page
+  /// is listening when the sync page is closed — and the service is stopped
+  /// with it — so an unanswered request is refused.
+  Future<bool> _confirm(String action, HttpRequest request) async {
+    final ask = confirmRequest;
+    if (ask == null || _disposed) return false;
+    final remote = request.connectionInfo?.remoteAddress.address ?? '';
+    try {
+      return await ask(action, remote);
+    } catch (_) {
+      return false;
     }
   }
 
@@ -590,15 +636,19 @@ class RemoteSyncController extends _$RemoteSyncController {
   // Outgoing sync
   // ---------------------------------------------------------------------------
 
-  Future<bool> syncToDevice(RemoteSyncDevice device) => syncToAddress(device.ip, device.port);
+  Future<bool> syncToDevice(RemoteSyncDevice device, {String? code}) =>
+      syncToAddress(device.ip, device.port, code: code);
 
-  Future<bool> syncToAddress(String ip, int port) async {
+  Future<bool> syncToAddress(String ip, int port, {String? code}) async {
     try {
-      final settings = ref.read(backupControllerProvider.notifier).exportAllSettings();
+      final settings = ref
+          .read(backupControllerProvider.notifier)
+          .exportAllSettings(includeSensitiveData: _includeAccounts);
       final client = HttpClient();
       try {
         final request = await client.postUrl(Uri.parse('http://$ip:$port${RemoteSyncProtocol.apiSettings}'));
         request.headers.contentType = ContentType('application', 'json', charset: 'utf-8');
+        if (code != null && code.isNotEmpty) request.headers.set(RemoteSyncProtocol.pairingHeader, code);
         request.write(jsonEncode(RemoteSyncProtocol.settingsPacket(settings: settings)));
         final response = await request.close();
         final body = await utf8.decoder.bind(response).join();
@@ -613,10 +663,11 @@ class RemoteSyncController extends _$RemoteSyncController {
     }
   }
 
-  Future<bool> receiveFromAddress(String ip, int port) async {
+  Future<bool> receiveFromAddress(String ip, int port, {String? code}) async {
     final client = HttpClient();
     try {
       final request = await client.getUrl(Uri.parse('http://$ip:$port${RemoteSyncProtocol.apiSettings}'));
+      if (code != null && code.isNotEmpty) request.headers.set(RemoteSyncProtocol.pairingHeader, code);
       final response = await request.close();
       final body = await utf8.decoder.bind(response).join();
 
@@ -632,41 +683,48 @@ class RemoteSyncController extends _$RemoteSyncController {
     }
   }
 
-  Future<bool> receiveFromQrOrAddress(String value) async {
+  Future<bool> receiveFromQrOrAddress(String value, {String? code}) async {
     final parsed = RemoteSyncProtocol.parseQr(value);
     if (parsed == null) return false;
-    return receiveFromAddress(parsed.ip, parsed.port);
+    return receiveFromAddress(parsed.ip, parsed.port, code: code ?? parsed.code);
   }
 
-  Future<bool> syncByAddress(String value) async {
+  Future<bool> syncByAddress(String value, {String? code}) async {
     final parsed = RemoteSyncProtocol.parseHttpAddress(value);
     if (parsed == null) return false;
-    return syncToAddress(parsed.ip, parsed.port);
+    return syncToAddress(parsed.ip, parsed.port, code: code);
   }
 
-  Future<bool> syncByQr(String value) async {
+  Future<bool> syncByQr(String value, {String? code}) async {
     final parsed = RemoteSyncProtocol.parseQr(value);
     if (parsed == null) return false;
-    return syncToAddress(parsed.ip, parsed.port);
+    return syncToAddress(parsed.ip, parsed.port, code: code ?? parsed.code);
   }
 
-  Future<bool> receiveByQr(String value) async {
+  Future<bool> receiveByQr(String value, {String? code}) async {
     final parsed = RemoteSyncProtocol.parseQr(value);
     if (parsed == null) return false;
-    return receiveFromAddress(parsed.ip, parsed.port);
+    return receiveFromAddress(parsed.ip, parsed.port, code: code ?? parsed.code);
+  }
+
+  /// Account cookies travel only when the user opts in here.
+  void setIncludeAccounts(bool value) {
+    if (_includeAccounts == value) return;
+    _includeAccounts = value;
+    _publish();
   }
 
   // ---------------------------------------------------------------------------
   // Publish
   // ---------------------------------------------------------------------------
 
-  /// `purelive://ip:port/sync`, built by interpolation and validated: the QR
-  /// must carry the live address or it is useless to the phone, and a degenerate
-  /// payload (an empty host once rendered as bare `purelive://`) must not be
-  /// published as if pairing were possible.
+  /// `purelive://ip:port/sync?code=NNNNNN`, built by interpolation and
+  /// validated: the QR must carry the live address or it is useless to the
+  /// phone, and a degenerate payload (an empty host once rendered as bare
+  /// `purelive://`) must not be published as if pairing were possible.
   String _buildQrData() {
-    if (_localIp.isEmpty || _localPort <= 0) return '';
-    final payload = 'purelive://$_localIp:$_localPort/sync';
+    if (_localIp.isEmpty || _localPort <= 0 || _pairingCode.isEmpty) return '';
+    final payload = RemoteSyncProtocol.createQrUri(ip: _localIp, port: _localPort, code: _pairingCode).toString();
     return payload.contains('://$_localIp:') ? payload : '';
   }
 
@@ -682,6 +740,8 @@ class RemoteSyncController extends _$RemoteSyncController {
       localIps: localIpCandidates,
       lastReceiveNotice: _lastReceiveNotice,
       lastReceiveOk: _lastReceiveOk,
+      pairingCode: _running ? _pairingCode : '',
+      includeAccounts: _includeAccounts,
     );
   }
 }

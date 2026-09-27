@@ -7,6 +7,7 @@ import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/remote_sync_pair_qr_card.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
+import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 
 /// Device sync — the TV end of the LAN sync (39888), and nothing else.
@@ -24,6 +25,52 @@ class DeviceSyncSectionPage extends ConsumerStatefulWidget {
 class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
   bool _syncing = false;
 
+  @override
+  void initState() {
+    super.initState();
+    ref.read(remoteSyncControllerProvider.notifier).confirmRequest = _confirmIncoming;
+  }
+
+  @override
+  void dispose() {
+    final notifier = ref.read(remoteSyncControllerProvider.notifier);
+    if (identical(notifier.confirmRequest, _confirmIncoming)) notifier.confirmRequest = null;
+    super.dispose();
+  }
+
+  /// Another device asks to read ('export') or overwrite ('import') this TV's
+  /// settings. The service refuses the request without an answer.
+  Future<bool> _confirmIncoming(String action, String remoteAddress) async {
+    if (!mounted) return false;
+    final allowed = await TvDialogUtils.showConfirm(
+      context: context,
+      title: i18n('remote_sync'),
+      message: i18n(
+        action == 'import' ? 'remote_sync_incoming_import' : 'remote_sync_incoming_export',
+        args: {'address': remoteAddress},
+      ),
+    );
+    return allowed == true;
+  }
+
+  /// The code is shown next to the QR on the device the settings come from;
+  /// it is the only thing a request needs besides the address.
+  Future<String?> _askPairingCode() async {
+    final input = await TvDialogUtils.showInput(
+      context: context,
+      title: i18n('remote_sync_pairing_code'),
+      hintText: i18n('remote_sync_pairing_code_hint'),
+      maxLength: RemoteSyncProtocol.pairingCodeLength,
+    );
+    final code = RemoteSyncProtocol.normalizePairingCode(input);
+    if (input == null) return null;
+    if (code.length != RemoteSyncProtocol.pairingCodeLength) {
+      ToastUtil.show(i18n('remote_sync_pairing_code_invalid'));
+      return null;
+    }
+    return code;
+  }
+
   Future<void> _pullByAddress() async {
     final kit = ref.read(remoteSyncControllerProvider.notifier).kit;
     if (_syncing) return;
@@ -34,10 +81,12 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
     );
     if (input == null || input.trim().isEmpty) return;
     if (!mounted) return;
+    final code = await _askPairingCode();
+    if (code == null || !mounted) return;
     setState(() => _syncing = true);
     // receiveFromQrOrAddress does a real GET /api/remote-sync/settings and
     // applies it — it is not just a /status reachability check.
-    final ok = await kit.receiveFromQrOrAddress(input.trim());
+    final ok = await kit.receiveFromQrOrAddress(input.trim(), code: code);
     if (!mounted) return;
     setState(() => _syncing = false);
     ToastUtil.show(ok ? i18n('webdav_sync_success') : i18n('ui_import_failed_or_file_not_found'));
@@ -45,8 +94,12 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
 
   Future<void> _pullFrom(RemoteSyncDevice device) async {
     if (_syncing) return;
+    final code = await _askPairingCode();
+    if (code == null || !mounted) return;
     setState(() => _syncing = true);
-    final ok = await ref.read(remoteSyncControllerProvider.notifier).receiveFromAddress(device.ip, device.port);
+    final ok = await ref
+        .read(remoteSyncControllerProvider.notifier)
+        .receiveFromAddress(device.ip, device.port, code: code);
     if (!mounted) return;
     setState(() => _syncing = false);
     ToastUtil.show(
@@ -102,6 +155,13 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                       address: snapshot.address,
                       error: snapshot.error,
                     ),
+                    // The code a request must carry; it is also inside the QR,
+                    // so a scanning phone never types it. Devices that are
+                    // already discovered have to ask the operator for it.
+                    if (snapshot.pairingCode.isNotEmpty) ...[
+                      SizedBox(height: 14.sp),
+                      _PairingCodeRow(code: snapshot.pairingCode),
+                    ],
                     // A phone that pushes its settings leaves the TV otherwise
                     // unchanged, so the last result stays on screen: the toast
                     // is usually gone by the time the operator looks up.
@@ -217,6 +277,22 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
         ),
         SizedBox(height: 16.h),
 
+        // -- what this device hands out ------------------------------------------
+        TvSettingsGroupTitle(title: i18nOr('remote_sync_share', 'Sharing')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSwitchTile(
+              title: i18n('remote_sync_include_accounts'),
+              subtitle: i18n('remote_sync_include_accounts_hint'),
+              icon: Icons.cookie_outlined,
+              value: snapshot.includeAccounts,
+              onChanged: (value) =>
+                  ref.read(remoteSyncControllerProvider.notifier).setIncludeAccounts(value),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+
         // -- import --------------------------------------------------------------
         TvSettingsGroupTitle(title: i18nOr('remote_sync_import', 'Import')),
         TvSettingsCard(
@@ -228,6 +304,34 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
               onSelect: _syncing ? null : () => unawaited(_pullByAddress()),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+/// The 6-digit code every settings request must carry. Shown large: it is read
+/// off the screen and typed on the other device.
+class _PairingCodeRow extends StatelessWidget {
+  const _PairingCodeRow({required this.code});
+
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    return Row(
+      children: [
+        Icon(Icons.pin_rounded, size: 22.sp, color: theme.secondaryTextColor),
+        SizedBox(width: 10.sp),
+        Text(
+          i18n('remote_sync_pairing_code'),
+          style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor),
+        ),
+        SizedBox(width: 12.sp),
+        Text(
+          code,
+          style: AppTextStyles.t20W700.copyWith(color: theme.focusColor, letterSpacing: 4),
         ),
       ],
     );

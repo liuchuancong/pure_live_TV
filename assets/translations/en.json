@@ -2620,5 +2620,13 @@
   "block_entry_empty": "This field cannot be empty",
   "block_entry_duplicate": "This entry already exists",
   "block_entry_invalid": "Invalid entry",
-  "block_delete_confirm": "Delete this block entry?"
+  "block_delete_confirm": "Delete this block entry?",
+  "remote_sync_pairing_code": "Pairing code",
+  "remote_sync_pairing_code_hint": "Enter the 6-digit code shown on the other device",
+  "remote_sync_pairing_code_invalid": "The pairing code has 6 digits",
+  "remote_sync_share": "Sharing",
+  "remote_sync_include_accounts": "Include account cookies",
+  "remote_sync_include_accounts_hint": "Hands this device's platform login cookies to the other device; enable only between trusted devices",
+  "remote_sync_incoming_import": "{address} wants to replace this device's settings with its own. Allow?",
+  "remote_sync_incoming_export": "{address} wants to read this device's settings. Allow?"
 }

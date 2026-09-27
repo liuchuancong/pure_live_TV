@@ -2620,5 +2620,13 @@
   "block_entry_empty": "内容不能为空",
   "block_entry_duplicate": "该条目已存在",
   "block_entry_invalid": "条目无效",
-  "block_delete_confirm": "确定要删除这条屏蔽项吗？"
+  "block_delete_confirm": "确定要删除这条屏蔽项吗？",
+  "remote_sync_pairing_code": "配对码",
+  "remote_sync_pairing_code_hint": "输入对方设备上显示的 6 位配对码",
+  "remote_sync_pairing_code_invalid": "配对码应为 6 位数字",
+  "remote_sync_share": "向外提供",
+  "remote_sync_include_accounts": "同步账号 Cookie",
+  "remote_sync_include_accounts_hint": "开启后本机会把各平台登录 Cookie 交给对方，只在信任的设备之间开启",
+  "remote_sync_incoming_import": "{address} 想把本机设置换成它的设置，是否允许？",
+  "remote_sync_incoming_export": "{address} 想读取本机设置，是否允许？"
 }
