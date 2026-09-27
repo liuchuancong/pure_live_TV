@@ -39,7 +39,14 @@ class DouyuSite
   /// The URL carries no absolute time, so the issue time is remembered when it
   /// is resolved.
   static final Map<String, DateTime> _issuedAt = {};
-  static const Duration _leaseRefreshLead = Duration(seconds: 45);
+  /// How long before the lease ends the replacement is fetched, connected and
+  /// waiting. The switch itself happens at the new connection's first keyframe,
+  /// so this is the budget for "resolve a fresh URL, connect, read to a
+  /// keyframe" plus slack for a slow play API — never the cut itself.
+  static const Duration _leaseRefreshLead = Duration(seconds: 90);
+
+  /// Lease assumed for a link that states none (`expire=0` behind a signed-in
+  /// session), which is only used when the cookie page asks for it.
   static const Duration _defaultLeaseSeconds = Duration(minutes: 5);
 
   /// The lease [url] states, or null when nothing says and the viewer has not
@@ -83,7 +90,8 @@ class DouyuSite
   DateTime? getPlayUrlRefreshAt(String url, {DateTime? now}) {
     final invalidAt = getPlayUrlInvalidAt(url, now: now);
     if (invalidAt == null) return null;
-    // Short leases keep three quarters of their lifetime.
+    // Short leases keep three quarters of their lifetime: a 300 s lease is
+    // renewed 75 s early, which the 90 s ceiling never cuts short.
     final quarter = Duration(milliseconds: _leaseFor(url)!.inMilliseconds ~/ 4);
     return invalidAt.subtract(quarter < _leaseRefreshLead ? quarter : _leaseRefreshLead);
   }
