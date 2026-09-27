@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
+import 'package:pure_live/shared/common/api_proxy_policy.dart';
 
 /// How a random-image API hands over its picture.
 ///
@@ -372,7 +373,7 @@ final Dio _dio = Dio(
     followRedirects: true,
     headers: {'User-Agent': _kDesktopUa},
   ),
-);
+)..httpClientAdapter = ApiProxyPolicy.dioAdapter;
 
 final Random _random = Random();
 

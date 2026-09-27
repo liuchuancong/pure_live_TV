@@ -11,7 +11,7 @@ import 'package:media_core_logging/media_core_logging.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:pure_live/player/core/playback_proxy_policy.dart';
+import 'package:pure_live/shared/common/api_proxy_policy.dart';
 import 'package:pure_live/shared/platform/local_network_access.dart';
 
 class AppInitializer {
@@ -43,7 +43,10 @@ class AppInitializer {
     // Image cache setup is not needed for the first frame: run it in the
     // background so startup is not blocked (the getter falls back to the
     // default cache until it is ready).
-    unawaited(CustomImageCacheManager.initialize());
+    //
+    // The provider runs per image request, so the interface-proxy switch applies
+    // to cached images too without re-initializing the cache.
+    unawaited(CustomImageCacheManager.initialize(proxyDirectiveProvider: ApiProxyPolicy.currentDirective));
 
     container = ProviderContainer();
     SettingsService.to.init(container);
@@ -68,7 +71,7 @@ class AppInitializer {
     unawaited(GlobalPlayerService.instance.loadPlatformProvider());
 
     // Danmaku sockets reuse the proxy policy configured for API and image traffic.
-    configureWebSocketProxyRouting((uri) => PlaybackProxyPolicy.currentDirective());
+    configureWebSocketProxyRouting(ApiProxyPolicy.directiveFor);
 
     // Version info plus the startup update check.
     //

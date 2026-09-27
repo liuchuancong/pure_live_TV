@@ -4,7 +4,7 @@ import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
 import 'package:pure_live/shared/utils/core_error.dart';
 import 'package:pure_live/shared/utils/custom_interceptor.dart';
-import 'package:pure_live/shared/common/proxy_routing.dart';
+import 'package:pure_live/shared/common/api_proxy_policy.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
@@ -26,14 +26,9 @@ class HttpClient {
         createHttpClient: () {
           final client = io.HttpClient();
           client.idleTimeout = const Duration(seconds: 30);
-          client.findProxy = (uri) {
-            final proxyCtrl = SettingsService.to.proxy;
-            return buildProxyDirective(
-              enabled: proxyCtrl.enableAppProxy.value,
-              host: proxyCtrl.appProxyHost.value,
-              port: proxyCtrl.appProxyPort.value,
-            );
-          };
+          // The interface-proxy switch, shared with every client that builds
+          // its own Dio: see [ApiProxyPolicy].
+          client.findProxy = ApiProxyPolicy.directiveFor;
           return client;
         },
       )

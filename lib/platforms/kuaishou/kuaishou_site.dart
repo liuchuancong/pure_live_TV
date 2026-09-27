@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:pure_live/shared/common/api_proxy_policy.dart';
 import 'package:pure_live/shared/contracts/index.dart';
 import 'package:pure_live/shared/models/index.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
@@ -372,7 +373,7 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
   }
 
   Future getCookie(String url) async {
-    final dio = Dio();
+    final dio = Dio()..httpClientAdapter = ApiProxyPolicy.dioAdapter;
     final cookieJar = CookieJar();
     dio.interceptors.add(CookieManager(cookieJar));
     await dio.get(url);

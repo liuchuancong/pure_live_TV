@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:pure_live/shared/common/api_proxy_policy.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/platform/race_http.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
@@ -648,7 +649,8 @@ class AppUpdateController extends _$AppUpdateController {
   }
 
   Dio _dioForApi() =>
-      Dio(BaseOptions(connectTimeout: const Duration(seconds: 12), receiveTimeout: const Duration(seconds: 12)));
+      Dio(BaseOptions(connectTimeout: const Duration(seconds: 12), receiveTimeout: const Duration(seconds: 12)))
+        ..httpClientAdapter = ApiProxyPolicy.dioAdapter;
 
   // ---------------------------------------------------------------------------
   // Release history (assets/releases.json through the repo mirrors)
@@ -904,7 +906,11 @@ class AppUpdateController extends _$AppUpdateController {
     final candidates = downloadCandidates(url, preferGivenUrl: preferGivenUrl);
 
     _cancelToken = CancelToken();
-    _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 30)));
+    // The APK download is an interface request like any other: behind a
+    // configured interface proxy it has to go through it (the mirrors are
+    // often only reachable that way).
+    _dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 20), receiveTimeout: const Duration(minutes: 30)))
+      ..httpClientAdapter = ApiProxyPolicy.dioAdapter;
     _patchState(
       phase: AppUpdatePhase.downloading,
       receivedBytes: 0,
