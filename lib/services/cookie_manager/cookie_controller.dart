@@ -21,6 +21,7 @@ class CookieController extends _$CookieController {
   SettingsValue<String> get douyuLtp0 => SettingsValue(() => state.douyuLtp0);
   SettingsValue<String> get douyuDid => SettingsValue(() => state.douyuDid);
   SettingsValue<int> get douyuCookieSavedAt => SettingsValue(() => state.douyuCookieSavedAt);
+  SettingsValue<bool> get douyuForceRenewal => SettingsValue(() => state.douyuForceRenewal);
   SettingsValue<String> get douyinCookie => SettingsValue(() => state.douyinCookie);
   SettingsValue<String> get kuaishouCookie => SettingsValue(() => state.kuaishouCookie);
   SettingsValue<String> get yyCookie => SettingsValue(() => state.yyCookie);
@@ -37,6 +38,7 @@ class CookieController extends _$CookieController {
       douyuLtp0: HivePrefUtil.getString('douyuLtp0') ?? '',
       douyuDid: HivePrefUtil.getString('douyuDid') ?? '',
       douyuCookieSavedAt: HivePrefUtil.getInt('douyuCookieSavedAt') ?? 0,
+      douyuForceRenewal: HivePrefUtil.getBool('douyuForceRenewal') ?? false,
       douyinCookie: normalizeAccountCookie(HivePrefUtil.getString('douyinCookie') ?? ''),
       kuaishouCookie: normalizeAccountCookie(HivePrefUtil.getString('kuaishouCookie') ?? ''),
       yyCookie: normalizeAccountCookie(HivePrefUtil.getString('yyCookie') ?? ''),
@@ -61,6 +63,7 @@ class CookieController extends _$CookieController {
       douyuLtp0: normalizeAccountCookie(model.douyuLtp0),
       douyuDid: normalizeAccountCookie(model.douyuDid),
       douyuCookieSavedAt: model.douyuCookieSavedAt,
+      douyuForceRenewal: model.douyuForceRenewal,
       douyinCookie: normalizeAccountCookie(model.douyinCookie),
       kuaishouCookie: normalizeAccountCookie(model.kuaishouCookie),
       yyCookie: normalizeAccountCookie(model.yyCookie),
@@ -111,6 +114,13 @@ class CookieController extends _$CookieController {
     _persist(state);
   }
 
+  /// Renews a Douyu stream that states no lease (see [CookieModel.douyuForceRenewal]).
+  void setDouyuForceRenewal(bool value) {
+    if (value == state.douyuForceRenewal) return;
+    state = state.copyWith(douyuForceRenewal: value);
+    _persist(state);
+  }
+
   void setDouyinCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(douyinCookie: v), cookie);
 
   void setKuaishouCookie(String cookie) => _setPlatformCookie((m, v) => m.copyWith(kuaishouCookie: v), cookie);
@@ -143,6 +153,7 @@ class CookieController extends _$CookieController {
     HivePrefUtil.setString('douyuLtp0', model.douyuLtp0);
     HivePrefUtil.setString('douyuDid', model.douyuDid);
     HivePrefUtil.setInt('douyuCookieSavedAt', model.douyuCookieSavedAt);
+    HivePrefUtil.setBool('douyuForceRenewal', model.douyuForceRenewal);
     HivePrefUtil.setString('douyinCookie', model.douyinCookie);
     HivePrefUtil.setString('kuaishouCookie', model.kuaishouCookie);
     HivePrefUtil.setString('yyCookie', model.yyCookie);
@@ -167,6 +178,7 @@ class CookieController extends _$CookieController {
       'douyuLtp0': normalizeAccountCookie((json['douyuLtp0'] ?? '') as String),
       'douyuDid': normalizeAccountCookie((json['douyuDid'] ?? '') as String),
       'douyuCookieSavedAt': (json['douyuCookieSavedAt'] ?? 0) as int,
+      'douyuForceRenewal': json['douyuForceRenewal'] == true,
       'douyinCookie': normalizeAccountCookie((json['douyinCookie'] ?? '') as String),
       'kuaishouCookie': normalizeAccountCookie((json['kuaishouCookie'] ?? '') as String),
       'bilibiliUid': (json['bilibiliUid'] ?? 0) as int,

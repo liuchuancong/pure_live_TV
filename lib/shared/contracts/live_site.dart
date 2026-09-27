@@ -145,6 +145,15 @@ abstract interface class LivePlayRecoveryResolver {
   });
 }
 
+/// Opt-in marker: the platform's CDN closes the **open** connection when the
+/// URL lease ends, so the source has to be renewed underneath the stream.
+///
+/// Implementing this is what lets the app hand a source to the splicer. A
+/// platform whose lease only stops *new* connections — a signed URL that keeps
+/// streaming, like Huya's — implements nothing here: its reconnect path is the
+/// recovery resolver, and a relay would only add a hop for no gain.
+abstract interface class LivePlaySpliceableLease {}
+
 /// Optional lease metadata for short-lived signed playback URLs.
 ///
 /// A player can refresh the token before this timestamp rather than waiting for
@@ -282,6 +291,10 @@ extension LiveSitePlayUrlResolution on LiveSite {
     }
     return null;
   }
+
+  /// Whether this platform's lease ends the open connection, which is the only
+  /// case worth renewing underneath the stream.
+  bool get playUrlLeaseEndsStream => this is LivePlaySpliceableLease;
 }
 
 /// Optional fast metadata path used by favourites/background verification.

@@ -588,6 +588,14 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                   hintAsPlaceholder: true,
                 ),
               ),
+              TvSettingsSwitchTile(
+                title: i18n('douyu_force_renewal'),
+                subtitle: i18n('douyu_force_renewal_hint'),
+                icon: Icons.autorenew_rounded,
+                value: ref.watch(cookieControllerProvider).douyuForceRenewal,
+                onChanged: (value) =>
+                    ref.read(cookieControllerProvider.notifier).setDouyuForceRenewal(value),
+              ),
             ],
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),

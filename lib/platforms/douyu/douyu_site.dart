@@ -21,23 +21,50 @@ class DouyuSite
         LivePlayUrlResolver,
         LivePlayRecoveryResolver,
         LivePlayUrlCursorResolver,
-        LivePlayLeaseMetadata {
+        LivePlayLeaseMetadata,
+        LivePlaySpliceableLease {
   @override
   String id = Sites.douyuSite;
 
-  /// Anonymous original-quality URLs carry `expire=300`: the CDN closes the
-  /// stream 300 s after the URL was issued. The URL has no absolute time, so
-  /// the issue time is remembered when it is resolved.
+  /// Douyu closes the open connection when the URL's lease ends. Anonymous
+  /// original quality says so in the URL (`expire=300`); a signed-in session
+  /// gets `expire=0` and no number at all, while the CDN still cuts the
+  /// connection on its own schedule.
+  ///
+  /// Treating such a link as [_defaultLeaseSeconds] is opt-in
+  /// ([CookieModel.douyuForceRenewal] on the cookie page): the renewal runs
+  /// underneath the stream, so it costs one resolve and one loopback hop per
+  /// interval, which is only worth paying where the cut is actually seen.
+  ///
+  /// The URL carries no absolute time, so the issue time is remembered when it
+  /// is resolved.
   static final Map<String, DateTime> _issuedAt = {};
   static const Duration _leaseRefreshLead = Duration(seconds: 45);
+  static const Duration _defaultLeaseSeconds = Duration(minutes: 5);
 
-  static int? _expireSeconds(String url) {
-    final value = int.tryParse(Uri.tryParse(url)?.queryParameters['expire'] ?? '');
-    return value != null && value > 0 ? value : null;
+  /// The lease [url] states, or null when nothing says and the viewer has not
+  /// asked for the forced renewal.
+  static Duration? _leaseFor(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !uri.path.toLowerCase().endsWith('.flv')) return null;
+    final stated = int.tryParse(uri.queryParameters['expire'] ?? '');
+    if (stated != null && stated > 0) return Duration(seconds: stated);
+    return _forceRenewal ? _defaultLeaseSeconds : null;
+  }
+
+  /// Whether the cookie page asked for a stream that states no lease to be
+  /// renewed anyway.
+  static bool get _forceRenewal {
+    try {
+      return SettingsService.to.cookieManager.douyuForceRenewal.v;
+    } catch (_) {
+      // No settings store (a unit test, a headless run): keep the direct stream.
+      return false;
+    }
   }
 
   static void _rememberIssued(String url, DateTime at) {
-    if (_expireSeconds(url) == null) return;
+    if (_leaseFor(url) == null) return;
     _issuedAt.remove(url);
     _issuedAt[url] = at;
     while (_issuedAt.length > 64) {
@@ -47,9 +74,9 @@ class DouyuSite
 
   @override
   DateTime? getPlayUrlInvalidAt(String url, {DateTime? now}) {
-    final expire = _expireSeconds(url);
-    if (expire == null) return null;
-    return (_issuedAt[url] ?? now ?? DateTime.now()).toUtc().add(Duration(seconds: expire));
+    final lease = _leaseFor(url);
+    if (lease == null) return null;
+    return (_issuedAt[url] ?? now ?? DateTime.now()).toUtc().add(lease);
   }
 
   @override
@@ -57,7 +84,7 @@ class DouyuSite
     final invalidAt = getPlayUrlInvalidAt(url, now: now);
     if (invalidAt == null) return null;
     // Short leases keep three quarters of their lifetime.
-    final quarter = Duration(seconds: _expireSeconds(url)! ~/ 4);
+    final quarter = Duration(milliseconds: _leaseFor(url)!.inMilliseconds ~/ 4);
     return invalidAt.subtract(quarter < _leaseRefreshLead ? quarter : _leaseRefreshLead);
   }
 

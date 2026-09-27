@@ -385,16 +385,17 @@ class FlvSpliceRelay {
   /// The loopback URI the native player should open.
   Uri get inputUri => Uri(scheme: 'http', host: '127.0.0.1', port: _server.port, path: '/$_secret/live.flv');
 
-  /// Plain FLV over HTTP(S) whose `expire` lease closes the open connection
-  /// (Douyu). Leases that only stop *new* connections (a signed FLV that keeps
-  /// streaming) and every other input keep their direct native connection.
+  /// Plain FLV over HTTP(S) with a lease this app knows about. The lease is the
+  /// opt-in: the caller only attaches one for platforms whose CDN closes the
+  /// open connection when it ends (Douyu — `expire=300` anonymously, and the
+  /// same schedule behind a signed-in `expire=0` link). Leases that only stop
+  /// *new* connections never reach this relay, and every other input keeps its
+  /// direct native connection.
   static bool appliesTo(String url, {required DateTime? refreshAt}) {
     if (refreshAt == null) return false;
     final uri = Uri.tryParse(url);
     if (uri == null || !const <String>{'http', 'https'}.contains(uri.scheme.toLowerCase())) return false;
-    if (!uri.path.toLowerCase().endsWith('.flv')) return false;
-    final expire = int.tryParse(uri.queryParameters['expire'] ?? '');
-    return expire != null && expire > 0;
+    return uri.path.toLowerCase().endsWith('.flv');
   }
 
   /// Binds the loopback server for [initial].

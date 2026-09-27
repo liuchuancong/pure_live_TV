@@ -779,16 +779,22 @@ class LivePlayController extends _$LivePlayController {
 
     if (manager == null) return;
 
-    manager.onLeaseRefreshAt = quality == null ? null : (url) => _repository.playUrlRefreshAt(detail, url);
-    manager.onLeaseRenewalUrls = quality == null
-        ? null
-        : () async {
-            try {
-              return await _repository.fetchPlayUrlsForRecovery(detail, quality);
-            } catch (_) {
-              return const <String>[];
-            }
-          };
+    // Only a lease that ends the connection earns a relay; a signed URL that
+    // merely stops accepting new connections keeps its direct stream.
+    if (quality == null || !_repository.leaseEndsStream(detail)) {
+      manager.onLeaseRefreshAt = null;
+      manager.onLeaseRenewalUrls = null;
+      return;
+    }
+
+    manager.onLeaseRefreshAt = (url) => _repository.playUrlRefreshAt(detail, url);
+    manager.onLeaseRenewalUrls = () async {
+      try {
+        return await _repository.fetchPlayUrlsForRecovery(detail, quality);
+      } catch (_) {
+        return const <String>[];
+      }
+    };
   }
 
   Future<void> changeQuality(int index) async {

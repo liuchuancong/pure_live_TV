@@ -54,6 +54,16 @@ class LivePlayRepository {
   /// When [url] stops starting new connections, for platforms that declare a
   /// transport lease ([LivePlayLeaseMetadata]). `null` — the usual answer —
   /// means the source has no known expiry and keeps the error-driven path.
+  /// Whether this platform's lease ends the open connection, i.e. whether the
+  /// source is worth renewing underneath the stream (see [LivePlaySpliceableLease]).
+  bool leaseEndsStream(LiveRoom detail) {
+    try {
+      return Sites.of(detail.normalizedPlatformId).liveSite.playUrlLeaseEndsStream;
+    } catch (_) {
+      return false;
+    }
+  }
+
   DateTime? playUrlRefreshAt(LiveRoom detail, String url) {
     try {
       return Sites.of(detail.normalizedPlatformId).liveSite.playUrlRefreshAt(url);

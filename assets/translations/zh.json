@@ -2628,5 +2628,7 @@
   "remote_sync_include_accounts": "同步账号 Cookie",
   "remote_sync_include_accounts_hint": "开启后本机会把各平台登录 Cookie 交给对方，只在信任的设备之间开启",
   "remote_sync_incoming_import": "{address} 想把本机设置换成它的设置，是否允许？",
-  "remote_sync_incoming_export": "{address} 想读取本机设置，是否允许？"
+  "remote_sync_incoming_export": "{address} 想读取本机设置，是否允许？",
+  "douyu_force_renewal": "每 4 分钟强制换源",
+  "douyu_force_renewal_hint": "登录后的链接不带时效（expire=0），斗鱼仍会自行断开；开启后约每 4 分钟静默取一条新链接、在关键帧处接上，画面不中断。只在确实遇到“每 5 分钟断一次”时打开。"
 }
