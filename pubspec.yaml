@@ -107,53 +107,53 @@ dependencies:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_media_kit
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_core_fvp:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_fvp
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_core_live:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_live
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_core_native:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_native
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_core_logging:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_logging
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_better_player
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_ijk_player
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_kit
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
 
   media_kit_video:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_kit_video
-      ref: a68b4663aa0e3cdcb0e25ed6425cbaba42e58fc4
+      ref: 26ddc67c2b3dc0e9aef4366f6f3f736f29d8f940
   android_tv_text_field: ^1.0.0
 
 # 依赖覆盖（强制指定版本）
