@@ -192,7 +192,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   String _fitLabel(LivePlayState state) => kLivePlayFitLabels[state.fitIndex.clamp(0, kLivePlayFitLabels.length - 1)];
 
   String _engineLabel() {
-    final key = ref.read(playerSettingsControllerProvider).videoPlayerKey;
+    final key = _activeEngineKey();
     return i18n(PlayerConsts.names[key] ?? PlayerConsts.names[PlayerConsts.defaultKey] ?? key);
   }
 
@@ -287,11 +287,19 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     });
   }
 
-  /// The kernel key actually in force: the stored one, or the default when the
-  /// stored key is unknown to this build.
+  /// The kernel key actually in force.
+  ///
+  /// The engine the running player is on, which an automatic fallback can move
+  /// away from the stored preference — the bar used to name the *preference*,
+  /// so a room that had fallen back to fvp still called itself mpv. Only when
+  /// nothing is running does the stored key answer, falling back to the default
+  /// when this build does not know it.
   String _activeEngineKey() {
     final String stored = ref.read(playerSettingsControllerProvider).videoPlayerKey;
-    return PlayerConsts.engines.containsKey(stored) ? stored : PlayerConsts.defaultKey;
+    final String preferred = PlayerConsts.engines.containsKey(stored) ? stored : PlayerConsts.defaultKey;
+    final PlayerEngine? running = GlobalPlayerService.instance.livePlayer?.currentEngine;
+
+    return running == null ? preferred : PlayerConsts.keyOf(running);
   }
 
   void _closePanel() => setState(() {

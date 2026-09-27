@@ -30,6 +30,21 @@ class PlayerConsts {
     return engineConfigs[key]?.engine;
   }
 
+  /// The stored key for [engine] — the inverse of [getEngine].
+  ///
+  /// Needed wherever the *running* kernel has to be named: an automatic engine
+  /// fallback can move playback away from the stored preference, and the UI has
+  /// to translate that engine back into the key the settings use.
+  static String keyOf(PlayerEngine engine) {
+    for (final entry in engineConfigs.entries) {
+      if (entry.value.engine == engine) {
+        return entry.key;
+      }
+    }
+
+    return defaultKey;
+  }
+
   static String getKeyByI18nKey(String i18nKey) {
     for (final entry in engineConfigs.entries) {
       if (entry.value.nameKey == i18nKey) {
