@@ -7,6 +7,7 @@ import 'package:media_core_live/media_core_live.dart';
 import '../services/settings/settings.dart';
 import 'core/playback_header_resolver.dart';
 import 'core/flv_legacy_hevc_relay.dart';
+import 'core/flv_splice_relay.dart';
 import 'core/playback_proxy_policy.dart';
 import '../app/consts/app_theme_consts.dart';
 import '../shared/models/live_room/live_room.dart';
@@ -63,6 +64,19 @@ final class LivePlayerFacade {
   /// with the refreshed URLs.
   Future<List<String>> Function(String nextEngine)? onEngineFallbackUrls;
 
+  /// When a leased source's URL stops working (Douyu's anonymous original
+  /// quality carries `expire=300`), for the renewal that happens underneath the
+  /// stream. Assigned by the live page: only it can ask the site layer, and the
+  /// lease has to keep the room *and* the quality the player was opened with.
+  DateTime? Function(String url)? onLeaseRefreshAt;
+
+  /// Fetches fresh lines for that same room and quality.
+  ///
+  /// An expiring FLV is renewed with a URL that has never been opened, which is
+  /// exactly what the recovery resolver already does. Returning an empty list
+  /// leaves the current connection in place for the player's own recovery.
+  Future<List<String>> Function()? onLeaseRenewalUrls;
+
   /// Headers the current request was built with, reused when the
   /// engine-fallback resolver hands over fresh URLs.
   Map<String, String> _lastHeaders = const <String, String>{};
@@ -86,12 +100,26 @@ final class LivePlayerFacade {
   /// was built for: a new request (or teardown) retires them all.
   final List<FlvLegacyHevcRelay> _sourceRelays = <FlvLegacyHevcRelay>[];
 
-  /// Routes one source through the rewrite relay when its host needs it.
+  /// Splicers started for sources whose URL lease ends mid-playback. Same
+  /// lifetime rule as [_sourceRelays], for the same reason.
+  final List<FlvSpliceRelay> _spliceRelays = <FlvSpliceRelay>[];
+
+  /// Routes one source through the relay it needs, if any.
+  ///
+  /// A source whose URL lease ends mid-playback is spliced first: the relay
+  /// renews the URL underneath one continuous stream, so the player never sees
+  /// the cut (and never reopens the line, which is where a CDN or a decoder
+  /// failure would otherwise burn the line). Only sources that carry no lease
+  /// fall through to the rewrite relay.
   ///
   /// A relay that cannot start is not fatal: the source keeps its direct URL
   /// and behaves exactly as it would without this interception.
-  Future<PlayerSource> _interceptSource(PlayerSource source) async {
+  Future<PlayerSource> _interceptSource(PlayerSource source, List<String> lines) async {
     final url = source.uri.toString();
+
+    final spliced = await _interceptLeasedSource(source, lines);
+
+    if (spliced != null) return spliced;
 
     if (!FlvLegacyHevcRelay.appliesTo(url, hostSuffixes: _legacyHevcFlvHosts)) {
       return source;
@@ -119,11 +147,66 @@ final class LivePlayerFacade {
     }
   }
 
+  /// Routes a source whose URL stops working mid-stream (Douyu's anonymous
+  /// original quality carries `expire=300`) through the splicer.
+  ///
+  /// Returns `null` when this source has no lease the app knows about; the
+  /// caller then decides whether the rewrite relay applies. The lease comes
+  /// from the live page, which alone can resolve a replacement for the same
+  /// room and quality.
+  Future<PlayerSource?> _interceptLeasedSource(PlayerSource source, List<String> lines) async {
+    final refreshAtFor = onLeaseRefreshAt;
+    final renewUrls = onLeaseRenewalUrls;
+
+    if (refreshAtFor == null || renewUrls == null) return null;
+
+    final url = source.uri.toString();
+    final refreshAt = refreshAtFor(url);
+
+    if (!FlvSpliceRelay.appliesTo(url, refreshAt: refreshAt)) return null;
+
+    // Keep the line the viewer is on when the fresh list still has it: the
+    // splice follows the room's timestamps, and another CDN of the same room
+    // carries the same content.
+    final lineIndex = lines.indexOf(url);
+
+    try {
+      final relay = await FlvSpliceRelay.start(
+        FlvLeasedSource(source.uri, refreshAt: refreshAt),
+        renew: (current) async {
+          final available = (await renewUrls()).where((value) => value.trim().isNotEmpty).toList(growable: false);
+
+          if (available.isEmpty) {
+            throw StateError('No renewed FLV source');
+          }
+
+          final next = lineIndex >= 0 && lineIndex < available.length ? available[lineIndex] : available.first;
+
+          return FlvLeasedSource(Uri.parse(next), refreshAt: refreshAtFor(next));
+        },
+        headers: source.hasHeaders ? source.headers!.values : const <String, String>{},
+        findProxy: (_) => PlaybackProxyPolicy.currentDirective(),
+      );
+
+      _spliceRelays.add(relay);
+
+      // The relay holds the source headers and carries them upstream itself;
+      // handing them to a loopback request would only leak them into the
+      // native player's logs.
+      return source.copyWith(uri: relay.inputUri, headers: null);
+    } catch (error) {
+      debugPrint('FlvSpliceRelay start failed: $error');
+
+      return null;
+    }
+  }
+
   Future<List<PlayerSource>> _interceptSources(List<PlayerSource> sources) async {
+    final lines = sources.map((source) => source.uri.toString()).toList(growable: false);
     final intercepted = <PlayerSource>[];
 
     for (final source in sources) {
-      intercepted.add(await _interceptSource(source));
+      intercepted.add(await _interceptSource(source, lines));
     }
 
     return List<PlayerSource>.unmodifiable(intercepted);
@@ -132,11 +215,17 @@ final class LivePlayerFacade {
   /// Retires every relay of the request being replaced, if any.
   Future<void> _closeSourceRelays() async {
     final relays = List<FlvLegacyHevcRelay>.of(_sourceRelays);
+    final splicers = List<FlvSpliceRelay>.of(_spliceRelays);
 
     _sourceRelays.clear();
+    _spliceRelays.clear();
 
     for (final relay in relays) {
       await relay.close();
+    }
+
+    for (final splicer in splicers) {
+      await splicer.close();
     }
   }
 
