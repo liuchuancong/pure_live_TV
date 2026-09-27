@@ -13,6 +13,7 @@ import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/shared/dialog/backup_import_dialog.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
+import 'package:pure_live/shared/platform/local_network_access.dart';
 
 part 'remote_sync_service.g.dart';
 
@@ -109,6 +110,8 @@ class RemoteSyncController extends _$RemoteSyncController {
     _starting = true;
     _lastError = null;
     try {
+      // Android 17 blocks LAN sockets without the local-network permission.
+      if (!await LocalNetworkAccess.ensure()) return;
       await _refreshNetworkInfo();
       if (_disposed) return;
       if (_localIp.isEmpty) {

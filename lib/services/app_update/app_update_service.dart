@@ -174,9 +174,26 @@ List<ReleaseModel> parseReleaseHistoryPayload(Object? decoded) {
   }
   releases.sort((left, right) {
     final byDate = right.date.compareTo(left.date);
-    return byDate != 0 ? byDate : right.version.compareTo(left.version);
+    return byDate != 0 ? byDate : compareReleaseVersions(right.version, left.version);
   });
   return releases;
+}
+
+/// Numeric comparison of dotted versions, so 3.0.10 sorts after 3.0.9 when two
+/// releases share a date. Non-numeric parts fall back to text order.
+int compareReleaseVersions(String left, String right) {
+  List<String> parts(String value) => value.trim().replaceFirst(RegExp(r'^[vV]'), '').split(RegExp(r'[.+-]'));
+  final a = parts(left);
+  final b = parts(right);
+  for (var i = 0; i < a.length || i < b.length; i++) {
+    final x = i < a.length ? a[i] : '0';
+    final y = i < b.length ? b[i] : '0';
+    final nx = int.tryParse(x);
+    final ny = int.tryParse(y);
+    final byPart = nx != null && ny != null ? nx.compareTo(ny) : x.compareTo(y);
+    if (byPart != 0) return byPart;
+  }
+  return 0;
 }
 
 /// Release notes stripped of markdown the TV view cannot draw. Manifests embed
