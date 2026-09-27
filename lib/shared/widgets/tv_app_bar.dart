@@ -92,10 +92,15 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
       return const SizedBox.shrink();
     }
 
+    // The bar holds the back button and the title, both drawn at the app font
+    // scale: a fixed 66.sp bar let an enlarged back button run over its own
+    // edge, so the bar follows the text and keeps its chrome together.
+    final double textScale = TvTextScale.factorOf(context);
+
     return Container(
       width: double.infinity,
-      height: 66.sp,
-      padding: EdgeInsets.symmetric(horizontal: 16.sp),
+      height: 66.sp * textScale,
+      padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
       alignment: Alignment.centerLeft,
       color: Colors.transparent,
       child: Row(
@@ -106,7 +111,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
               size: TvButtonSize.mini,
               autofocus: false,
               focusNode: widget.backFocusNode,
-              icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.sp),
+              icon: Icon(Icons.arrow_back_ios_new_rounded, size: 24.sp * textScale),
               onTap: () async {
                 if (widget.beforeBack != null) {
                   final shouldPop = await widget.beforeBack!();
@@ -117,7 +122,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
                 }
               },
             ),
-            SizedBox(width: 16.sp),
+            SizedBox(width: 16.sp * textScale),
           ],
           Expanded(
             child:
@@ -130,7 +135,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
                 ),
           ),
           if (widget.actions != null) ...[
-            SizedBox(width: 16.sp),
+            SizedBox(width: 16.sp * textScale),
             Row(mainAxisSize: MainAxisSize.min, children: widget.actions!),
           ],
         ],

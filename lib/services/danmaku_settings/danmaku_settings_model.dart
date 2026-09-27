@@ -72,9 +72,13 @@ abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
     @Default(true) bool enableDanmakuDisplay,
     @Default(true) bool enableDanmakuStroke,
     @Default(60) int danmakuFps,
-    /// Auto frame rate (follow the display) defaults off: a 120Hz panel doubles
-    /// the danmaku compositing budget on boxes whose video decode is already
-    /// tight. When off, [danmakuFps] applies (60 by default).
+    /// Auto frame rate: follow the display's refresh rate instead of [danmakuFps].
+    ///
+    /// The stored default is on (see DanmakuSettingsController.build) — a panel
+    /// the engine can keep up with is the whole budget it has, and a fixed 60 on
+    /// a 120Hz panel is a loss of smoothness for nothing. This factory default
+    /// stays off for documents that predate the field, so an imported backup or
+    /// a peer keeps the choice it was saved with.
     @Default(false) bool danmakuAutoFps,
     @Default(true) bool enableDanmakuTapInteraction,
     @Default(true) bool enableDanmakuLongPressInteraction,

@@ -133,10 +133,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // Dense layouts hand the card a much narrower cell; below this
-              // width the info row runs in its compact form so it still fits
-              // the height the grid allots.
-              final bool compact = constraints.maxWidth < 190.sp;
+              // Text boxes inside the card follow the app font setting, and so
+              // does the decision to run the info row in its compact form: a card
+              // whose labels are drawn 60% larger is effectively narrower, so the
+              // threshold moves with the text instead of the cell alone.
+              final double textScale = TvTextScale.factorOf(context);
+              final bool compact = constraints.maxWidth < 190.sp * textScale;
               // A playlist ships no per-channel avatar, so an IPTV card numbers
               // its channel instead: a position is what a TV viewer reads as the
               // channel identity, while the shared placeholder would repeat one
@@ -145,13 +147,15 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                   ? widget.index! + 1
                   : null;
               return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Stack(
-                    children: [
-                      AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: Container(
+                  // The cover takes the height the info row leaves. A fixed 16:9
+                  // box pinned it, so an enlarged app font pushed the labels out
+                  // of the cell instead: the artwork yields, the content does not.
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Container(
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(24.sp),
@@ -178,117 +182,125 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                             },
                           ),
                         ),
-                      ),
 
-                      if (widget.showFollowedMark && _followed)
-                        Positioned(
-                          left: 12.sp,
-                          top: 12.sp,
-                          child: TvButton(
-                            excludeFocus: true,
-                            title: i18n('followed'),
-                            size: TvButtonSize.mini,
-                            icon: Icon(Icons.favorite, size: 18.sp),
+                        if (widget.showFollowedMark && _followed)
+                          Positioned(
+                            left: 12.sp,
+                            top: 12.sp,
+                            child: TvButton(
+                              excludeFocus: true,
+                              title: i18n('followed'),
+                              size: TvButtonSize.mini,
+                              icon: Icon(Icons.favorite, size: 18.sp * textScale),
+                            ),
                           ),
-                        ),
 
-                      if (widget.room.isRecord == true)
-                        Positioned(
-                          right: 12.sp,
-                          top: 12.sp,
-                          child: TvButton(
-                            title: i18n('ui_replay'),
-                            excludeFocus: true,
-                            size: TvButtonSize.mini,
-                            icon: Icon(Icons.videocam_rounded, size: 20.sp),
+                        if (widget.room.isRecord == true)
+                          Positioned(
+                            right: 12.sp,
+                            top: 12.sp,
+                            child: TvButton(
+                              title: i18n('ui_replay'),
+                              excludeFocus: true,
+                              size: TvButtonSize.mini,
+                              icon: Icon(Icons.videocam_rounded, size: 20.sp * textScale),
+                            ),
                           ),
-                        ),
-                      if (widget.room.isRecord == false &&
-                          widget.room.liveStatus == LiveStatus.live &&
-                          audience.isNotEmpty)
-                        Positioned(
-                          right: 12.sp,
-                          bottom: 12.sp,
-                          child: TvButton(
-                            excludeFocus: true,
-                            title: audience,
-                            size: TvButtonSize.mini,
-                            icon: Icon(Icons.whatshot_rounded, size: 20.sp),
+                        if (widget.room.isRecord == false &&
+                            widget.room.liveStatus == LiveStatus.live &&
+                            audience.isNotEmpty)
+                          Positioned(
+                            right: 12.sp,
+                            bottom: 12.sp,
+                            child: TvButton(
+                              excludeFocus: true,
+                              title: audience,
+                              size: TvButtonSize.mini,
+                              icon: Icon(Icons.whatshot_rounded, size: 20.sp * textScale),
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                  // The info row takes whatever height the cover leaves: it can
-                  // never overflow the cell, and the dense aspect ratios keep this
-                  // area tall enough for its contents.
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        left: 10.sp,
-                        top: compact ? 6.sp : 16.sp,
-                        right: compact ? 10.sp : 16.sp,
-                      ),
-                      child: Row(
-                        children: [
-                          // The leading keeps the avatar's footprint either way,
-                          // so titles stay aligned in a grid that mixes platforms.
-                          SizedBox(
-                            width: compact ? 20.sp : 56.sp,
-                            child: Center(
-                              child: channelNumber == null
-                                  ? TvCommonAvatar(
-                                      avatarUrl: widget.room.avatar,
-                                      fallbackName: widget.room.nick,
-                                      radius: compact ? 10.sp : null,
-                                    )
-                                  : NumberLeading(channelNumber, size: (compact ? 20 : 34).sp, color: titleColor),
-                            ),
+                  // The info row is sized by its own two lines rather than by
+                  // whatever the cover leaves: the cover above already flexes, so
+                  // the labels always get the room their font scale asks for.
+                  // Only the vertical spacing follows the font: height is what
+                  // the taller labels need, while width is contested by the
+                  // leading and the chip, which give way to the title instead.
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: 10.sp,
+                      top: (compact ? 6.sp : 16.sp) * textScale,
+                      right: compact ? 10.sp : 16.sp,
+                      bottom: (compact ? 6.sp : 8.sp) * textScale,
+                    ),
+                    child: Row(
+                      children: [
+                        // The leading keeps the avatar's footprint either way,
+                        // so titles stay aligned in a grid that mixes platforms.
+                        SizedBox(
+                          width: compact ? 20.sp : 56.sp,
+                          child: Center(
+                            child: channelNumber == null
+                                ? TvCommonAvatar(
+                                    avatarUrl: widget.room.avatar,
+                                    fallbackName: widget.room.nick,
+                                    radius: compact ? 10.sp : null,
+                                  )
+                                : NumberLeading(channelNumber, size: (compact ? 20 : 34).sp, color: titleColor),
                           ),
-                          SizedBox(width: compact ? 8.sp : 16.sp),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Dense cells are short, so compact runs one
-                                // step smaller on both lines. The title keeps
-                                // its natural height (its focused marquee needs
-                                // it) and the nick is the flexible one: when
-                                // the cell cannot fit both lines the nick
-                                // compresses first instead of overflowing.
-                                TvMarqueeText(
-                                  text: widget.room.title,
-                                  isFocused: isFocused,
-                                  style: (compact ? AppTextStyles.t14W700 : AppTextStyles.t22W700).copyWith(
-                                    color: titleColor,
-                                  ),
+                        ),
+                        SizedBox(width: compact ? 8.sp : 16.sp),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Dense cells are short, so compact runs one
+                              // step smaller on both lines. Both lines are a
+                              // single line tall — [TvMarqueeText] sizes its own
+                              // box from the font it is drawn at — so the column
+                              // is exactly as tall as the text scale needs and
+                              // neither line can be squeezed.
+                              TvMarqueeText(
+                                text: widget.room.title,
+                                isFocused: isFocused,
+                                style: (compact ? AppTextStyles.t14W700 : AppTextStyles.t22W700).copyWith(
+                                  color: titleColor,
                                 ),
-                                SizedBox(height: compact ? 2.sp : 4.sp),
-                                Flexible(
-                                  child: Text(
-                                    widget.room.nick,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: (compact ? AppTextStyles.t14W500 : AppTextStyles.t18W500).copyWith(
-                                      color: subtitleColor,
-                                    ),
-                                  ),
+                              ),
+                              SizedBox(height: (compact ? 2.sp : 4.sp) * textScale),
+                              Text(
+                                widget.room.nick,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: (compact ? AppTextStyles.t14W500 : AppTextStyles.t18W500).copyWith(
+                                  color: subtitleColor,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          // The platform chip is the first casualty of a narrow
-                          // card: the title keeps its space instead.
-                          if (!compact) ...[
-                            SizedBox(width: 12.sp),
-                            TvButton(
+                        ),
+                        // The platform chip is the first casualty of a narrow
+                        // card: the title keeps its space instead.
+                        if (!compact) ...[
+                          SizedBox(width: 12.sp),
+                          // The chip is a badge, the title is the content. Its
+                          // label grows with the app font too, so it is capped
+                          // here: unbounded, a 160% font let the chip take the
+                          // whole row and squeezed the title down to a couple
+                          // of glyphs.
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 140.sp),
+                            child: TvButton(
                               excludeFocus: true,
                               title: widget.room.platform.toUpperCase(),
                               size: TvButtonSize.mini,
                             ),
-                          ],
+                          ),
                         ],
-                      ),
+                      ],
                     ),
                   ),
                 ],

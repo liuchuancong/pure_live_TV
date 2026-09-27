@@ -48,7 +48,13 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
       enableDanmakuDisplay: HivePrefUtil.getBool('enableDanmakuDisplay') ?? true,
       enableDanmakuStroke: HivePrefUtil.getBool('enableDanmakuStroke') ?? true,
       danmakuFps: (HivePrefUtil.getInt('danmakuFps') ?? 60).clamp(30, 240),
-      danmakuAutoFps: HivePrefUtil.getBool('danmakuAutoFps') ?? false,
+      // Follow the panel by default: the engine cannot step more often than the
+      // display refreshes, so a fixed 60 only ever costs smoothness on a 120Hz
+      // panel (and asking for more, as the fps slider allows, changes nothing).
+      // Boxes that cannot take it are capped by the device profile in
+      // buildDanmakuConfig/resolveDanmakuFps, not by this default. A stored
+      // choice still wins.
+      danmakuAutoFps: HivePrefUtil.getBool('danmakuAutoFps') ?? true,
       enableDanmakuTapInteraction: HivePrefUtil.getBool('enableDanmakuTapInteraction') ?? true,
       enableDanmakuLongPressInteraction: HivePrefUtil.getBool('enableDanmakuLongPressInteraction') ?? true,
       collapseRepeatedDanmaku: HivePrefUtil.getBool('collapseRepeatedDanmaku') ?? false,

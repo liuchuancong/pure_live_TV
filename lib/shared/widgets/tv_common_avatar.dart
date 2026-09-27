@@ -28,6 +28,10 @@ class TvCommonAvatar extends StatelessWidget {
         decoration: BoxDecoration(shape: BoxShape.circle, color: tvTheme.secondaryTextColor.withValues(alpha: 0.25)),
         child: Text(
           text,
+          // The initial is sized from the circle it fills, like an icon does, so
+          // it opts out of the app text scale: scaled on top of that it painted
+          // past the edge of the circle and was cut off by the oval.
+          textScaler: TextScaler.noScaling,
           style: TextStyle(fontSize: r * 0.8, fontWeight: FontWeight.bold, color: tvTheme.primaryTextColor),
         ),
       );

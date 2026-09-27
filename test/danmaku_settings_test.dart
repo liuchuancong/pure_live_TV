@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +16,32 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart'
 /// stored on the legacy 4-32 "level" scale while `BarrageConfig.baseSpeed` is px/s (so a
 /// level of 8 froze the danmaku), and the bottom inset was handed a 0.0-0.8 *ratio* while
 /// `bottomAreaDistance` is measured in pixels (so the slider did nothing at all).
+/// The `lib/` of the flame_barrage the app resolves, or null when it cannot be
+/// located (a published package is inside the pub cache the lock file names).
+Directory? _resolvedFlameBarrageLib() {
+  const String vendored = 'plugins/flame_barrage/lib';
+  if (Directory(vendored).existsSync()) return Directory(vendored);
+
+  final File packageConfig = File('.dart_tool/package_config.json');
+  if (!packageConfig.existsSync()) return null;
+  try {
+    final Map<String, dynamic> decoded =
+        jsonDecode(packageConfig.readAsStringSync()) as Map<String, dynamic>;
+    for (final dynamic entry in decoded['packages'] as List<dynamic>) {
+      final Map<String, dynamic> package = entry as Map<String, dynamic>;
+      if (package['name'] != 'flame_barrage') continue;
+      // The rootUri has no trailing slash, so `resolve('lib')` would replace its
+      // last segment instead of appending: join the paths instead.
+      final Uri root = packageConfig.parent.uri.resolve(package['rootUri'] as String);
+      final Directory lib = Directory(p.join(root.toFilePath(windows: Platform.isWindows), 'lib'));
+      return lib.existsSync() ? lib : null;
+    }
+  } catch (_) {
+    return null;
+  }
+  return null;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -51,8 +80,25 @@ void main() {
       // The derived metrics move with the font size, and the caps stay in place.
       expect(config.trackHeight, closeTo(27 * 1.55, 0.001));
       expect(config.emojiSize, closeTo(27 * 1.3, 0.001));
-      expect(config.maxVisibleCount, 48);
+      // TV tuning: the engine is asked for what the box can afford. An unprobed
+    // device (the test environment) is treated as capable.
+    expect(config.maxVisibleCount, 64);
       expect(config.emitInterval, 0.05);
+      expect(config.rasterizeItems, isTrue, reason: 'every frame blits a bitmap instead of re-drawing text');
+      expect(config.pictureCacheMaxSize, 256);
+      expect(config.rasterCacheMaxBytes, 32 * 1024 * 1024);
+    });
+
+    test('a weak GPU is handed a smaller budget', () {
+      final config = buildDanmakuConfig(distinctive(), lowEndDevice: true);
+
+      expect(config.maxVisibleCount, 40, reason: 'bitmap blits per frame');
+      expect(config.emitInterval, 0.1, reason: 'fewer messages shaped per second');
+      expect(config.pictureCacheMaxSize, 96);
+      expect(config.rasterCacheMaxBytes, 12 * 1024 * 1024);
+      // The heavy switch is never traded away: keeping vectors would put back the
+      // per-frame text and stroke cost this budget exists to avoid.
+      expect(config.rasterizeItems, isTrue);
     });
 
     test('out-of-range values cannot reach the renderer', () {
@@ -138,10 +184,17 @@ void main() {
 
   group('flame_barrage api coverage', () {
     test('every BarrageConfig field is read by the engine', () {
-      final File config = File('plugins/flame_barrage/lib/src/core/barrage_config.dart');
-      final Directory plugin = Directory('plugins/flame_barrage/lib');
-      if (!config.existsSync() || !plugin.existsSync()) {
+      // The package the app actually resolves, not a vendored snapshot: it went
+      // to pub.dev as 0.0.7 and a stale copy under plugins/ made this guard skip
+      // silently — which is exactly when a setting can stop taking effect.
+      final Directory? plugin = _resolvedFlameBarrageLib();
+      if (plugin == null) {
         markTestSkipped('flame_barrage sources not found relative to ${Directory.current.path}');
+        return;
+      }
+      final File config = File('${plugin.path}/src/core/barrage_config.dart');
+      if (!config.existsSync()) {
+        markTestSkipped('resolved flame_barrage has no barrage_config.dart at ${plugin.path}');
         return;
       }
 

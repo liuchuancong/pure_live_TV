@@ -39,7 +39,7 @@ class TvButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeTheme = context.tvTheme;
-    final (height, padding, baseTextStyle, iconSize, space) = _getSizeConfig();
+    final (height, padding, baseTextStyle, iconSize, space) = _getSizeConfig(context);
 
     final borderRadius = iconPosition == TvIconPosition.top || iconPosition == TvIconPosition.bottom
         ? BorderRadius.circular(16.w)
@@ -133,12 +133,43 @@ class TvButton extends StatelessWidget {
     return btn;
   }
 
-  (double, EdgeInsets, TextStyle, double, double) _getSizeConfig() {
+  /// Geometry of each size: design pixels multiplied by the app font scale.
+  ///
+  /// The label is a `.sp` style and the inherited scaler multiplies it again, so
+  /// a button measured in panel units alone clipped its own label once the font
+  /// was enlarged, and looked untouched next to text the user had just made
+  /// bigger. `.w` keeps it proportional to the panel, `factorOf` to its label.
+  (double, EdgeInsets, TextStyle, double, double) _getSizeConfig(BuildContext context) {
+    final double scale = TvTextScale.factorOf(context);
     return switch (size) {
-      TvButtonSize.large => (80.0.w, EdgeInsets.symmetric(horizontal: 40.w), AppTextStyles.t32W500, 32.0.w, 14.0.w),
-      TvButtonSize.medium => (64.0.w, EdgeInsets.symmetric(horizontal: 28.w), AppTextStyles.t26W500, 24.0.w, 10.0.w),
-      TvButtonSize.small => (54.0.w, EdgeInsets.symmetric(horizontal: 24.w), AppTextStyles.t20W500, 20.0.w, 8.0.w),
-      TvButtonSize.mini => (44.0.w, EdgeInsets.symmetric(horizontal: 20.w), AppTextStyles.t18W500, 18.0.w, 7.0.w),
+      TvButtonSize.large => (
+        80.0.w * scale,
+        EdgeInsets.symmetric(horizontal: 40.w * scale),
+        AppTextStyles.t32W500,
+        32.0.w * scale,
+        14.0.w * scale,
+      ),
+      TvButtonSize.medium => (
+        64.0.w * scale,
+        EdgeInsets.symmetric(horizontal: 28.w * scale),
+        AppTextStyles.t26W500,
+        24.0.w * scale,
+        10.0.w * scale,
+      ),
+      TvButtonSize.small => (
+        54.0.w * scale,
+        EdgeInsets.symmetric(horizontal: 24.w * scale),
+        AppTextStyles.t20W500,
+        20.0.w * scale,
+        8.0.w * scale,
+      ),
+      TvButtonSize.mini => (
+        44.0.w * scale,
+        EdgeInsets.symmetric(horizontal: 20.w * scale),
+        AppTextStyles.t18W500,
+        18.0.w * scale,
+        7.0.w * scale,
+      ),
     };
   }
 

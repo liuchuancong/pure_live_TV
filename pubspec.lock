@@ -580,10 +580,10 @@ packages:
     dependency: "direct main"
     description:
       name: flame_barrage
-      sha256: "62475c0e4983d504bc2f6ef8c50dea5db7edd1c9b6bfc21ab4fce1b28a61abe5"
+      sha256: "704a7eeacee75ceb4dd1ab006bf7b0de97e5cf00174e27d2001ba65191d751e8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.6"
+    version: "0.0.7"
   flutter:
     dependency: "direct main"
     description: flutter

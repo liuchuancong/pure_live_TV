@@ -69,7 +69,7 @@ dependencies:
   markdown_widget: ^2.3.2+8           # 更新页更新日志的 Markdown 渲染
 
   wakelock_plus: ^1.4.0               # 播放时保持屏幕常亮
-  flame_barrage: 0.0.6
+  flame_barrage: ^0.0.7
 
   # 文件选择、打开、权限
   open_filex: ^4.7.0                  # 调用第三方APP打开本地文件

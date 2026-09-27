@@ -59,7 +59,11 @@ class RemoteSyncQrCard extends ConsumerWidget {
               height: 18.sp,
               child: error == null
                   ? const CircularProgressIndicator(strokeWidth: 2)
-                  : Icon(Icons.error_outline_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
+                  : Icon(
+                      Icons.error_outline_rounded,
+                      size: 18.sp * TvTextScale.factorOf(context),
+                      color: tvTheme.secondaryTextColor,
+                    ),
             ),
             SizedBox(width: 10.sp),
             Expanded(

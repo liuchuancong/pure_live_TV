@@ -42,7 +42,11 @@ class _ExitConfirmDialog extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.favorite_rounded, size: 24.sp, color: tvTheme.focusColor),
+              Icon(
+                Icons.favorite_rounded,
+                size: 24.sp * TvTextScale.factorOf(context),
+                color: tvTheme.focusColor,
+              ),
               SizedBox(width: 8.sp),
               Text(
                 i18n('support_donate'),

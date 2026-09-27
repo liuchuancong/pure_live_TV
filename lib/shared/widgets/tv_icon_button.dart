@@ -51,7 +51,8 @@ class TvIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeTheme = context.tvTheme;
-    final (boxSize, iconSize) = _getSizeConfig();
+    final double textScale = TvTextScale.factorOf(context);
+    final (boxSize, iconSize) = _getSizeConfig(textScale);
     final bool captioned = label != null && label!.trim().isNotEmpty;
     // Square either way: the caption shares the tile with the glyph instead of
     // growing it, so the collapsed rail stays a grid of equal squares. A caption
@@ -106,7 +107,7 @@ class TvIconButton extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           child,
-                          SizedBox(height: 2.sp),
+                          SizedBox(height: 2.sp * textScale),
                           Text(
                             label!,
                             maxLines: 1,
@@ -134,12 +135,17 @@ class TvIconButton extends StatelessWidget {
     );
   }
 
-  (double, double) _getSizeConfig() {
+  /// Tile and glyph, in design pixels multiplied by the app font scale.
+  ///
+  /// The caption under the glyph is a `.sp` label, so the square that holds it
+  /// has to grow with it: a fixed tile cut the caption and left the rail's icons
+  /// untouched next to text the user had enlarged.
+  (double, double) _getSizeConfig(double textScale) {
     return switch (size) {
-      TvIconButtonSize.large => (80.0.w, 40.0.w),
-      TvIconButtonSize.medium => (64.0.w, 32.0.w),
-      TvIconButtonSize.small => (50.0.w, 24.0.w),
-      TvIconButtonSize.mini => (38.0.w, 18.0.w),
+      TvIconButtonSize.large => (80.0.w * textScale, 40.0.w * textScale),
+      TvIconButtonSize.medium => (64.0.w * textScale, 32.0.w * textScale),
+      TvIconButtonSize.small => (50.0.w * textScale, 24.0.w * textScale),
+      TvIconButtonSize.mini => (38.0.w * textScale, 18.0.w * textScale),
     };
   }
 }

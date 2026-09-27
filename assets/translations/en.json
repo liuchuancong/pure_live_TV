@@ -498,7 +498,7 @@
   "danmaku_font_size": "Danmaku font size",
   "danmaku_font_weight": "Danmaku font weight",
   "danmaku_fps": "Danmaku FPS",
-  "danmaku_fps_policy_desc": "On: follows the global Power saving, Balanced, or Highest tier immediately. Off: uses only this manual frame rate.",
+  "danmaku_fps_policy_desc": "On: danmaku follows the display refresh rate (60 on a 60Hz TV, 120 on a 120Hz panel), capped at 30 on low-end devices. Off: uses only the manual frame rate here.",
   "danmaku_keyword_block": "Danmaku Keyword Block",
   "danmaku_keyword_blocked": "Keyword added to the danmaku block list",
   "danmaku_list": "Danmaku List",

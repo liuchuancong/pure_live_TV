@@ -322,7 +322,10 @@ class _AppStatusViewState extends State<AppStatusView> {
     final tvTheme = context.tvTheme;
     final setting = SettingsService.to;
     final Color parsedColor = setting.themeState.loadingStyleColor ?? widget.iconColor ?? tvTheme.focusColor;
-    final double size = widget.isMini ? 32.sp : 48.sp;
+    // The empty state's sentences follow the app font, and so do its loader
+    // and artwork: a fixed disc would sit beside text twice its size.
+    final double textScale = TvTextScale.factorOf(context);
+    final double size = (widget.isMini ? 32.sp : 48.sp) * textScale;
     return tvInlineLoading(context, size: size, color: parsedColor);
   }
 
@@ -342,13 +345,16 @@ class _AppStatusViewState extends State<AppStatusView> {
     final String finalButtonText = widget.buttonText ?? i18n('status_retry_button');
     final Widget finalIcon =
         widget.buttonTextIcon ??
-        Icon(widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded, size: 24.sp);
+        Icon(
+          widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded,
+          size: 24.sp * TvTextScale.factorOf(context),
+        );
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(widget.isMini ? 8.sp : 22.sp),
+            padding: EdgeInsets.all((widget.isMini ? 8.sp : 22.sp) * TvTextScale.factorOf(context)),
             // Accent-tinted disc instead of a grey-on-grey circle: the empty
             // state is the page's voice, it should carry the palette.
             decoration: BoxDecoration(
@@ -358,11 +364,11 @@ class _AppStatusViewState extends State<AppStatusView> {
             ),
             child: Icon(
               widget.icon ?? (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
-              size: widget.isMini ? 36.sp : 64.sp,
+              size: (widget.isMini ? 36.sp : 64.sp) * TvTextScale.factorOf(context),
               color: widget.iconColor ?? tvTheme.focusColor,
             ),
           ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
-          if (!widget.isMini) SizedBox(height: 12.h),
+          if (!widget.isMini) SizedBox(height: 12.h * TvTextScale.factorOf(context)),
           if (!widget.isMini || finalTitle.isNotEmpty) ...[
             Text(
               finalTitle,
@@ -373,14 +379,14 @@ class _AppStatusViewState extends State<AppStatusView> {
             ),
           ],
           if (!widget.isMini || finalSubtitle.isNotEmpty) ...[
-            SizedBox(height: 6.sp),
+            SizedBox(height: 6.sp * TvTextScale.factorOf(context)),
             Text(
               finalSubtitle,
               style: AppTextStyles.t28.copyWith(color: widget.subtitleColor ?? tvTheme.secondaryTextColor),
             ),
           ],
           if (!widget.isMini && (widget.onTap != null || widget.onSecondaryTap != null)) ...[
-            SizedBox(height: 24.sp),
+            SizedBox(height: 24.sp * TvTextScale.factorOf(context)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -397,7 +403,9 @@ class _AppStatusViewState extends State<AppStatusView> {
                 if (widget.onSecondaryTap != null)
                   TvButton(
                     title: widget.secondaryButtonText ?? i18n('search_live'),
-                    icon: widget.secondaryButtonIcon ?? Icon(Icons.search_rounded, size: 24.sp),
+                    icon:
+                        widget.secondaryButtonIcon ??
+                        Icon(Icons.search_rounded, size: 24.sp * TvTextScale.factorOf(context)),
                     iconPosition: TvIconPosition.left,
                     size: TvButtonSize.small,
                     isSecondary: true,

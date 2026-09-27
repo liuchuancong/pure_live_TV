@@ -59,4 +59,27 @@ class TvTextScale {
   /// the correction.
   static TextScaler scalerFor(BuildContext context, {double userScale = 1}) =>
       TextScaler.linear(userScale * legibilityLift(context));
+
+  /// The factor the inherited text scaler applies to any font size, i.e. the
+  /// setting the whole app is currently rendering text at.
+  ///
+  /// Every box that exists *because* of text has to follow it. A line box, the
+  /// gap between two lines, or the height of a button holding a label, derived
+  /// from `.sp` alone stays put while the glyphs inside it grow — the label is
+  /// then clipped, and the control stops looking like the peer of the text next
+  /// to it. That is how the room/area cards and the home buttons broke. `.sp`
+  /// covers the panel; this covers the text.
+  ///
+  /// `scale(1.0)` is the right value for a box: the scaler is linear in the
+  /// sizes this app uses, so a design-pixel length becomes `length * factor`.
+  static double factorOf(BuildContext context) => MediaQuery.textScalerOf(context).scale(1.0);
+}
+
+/// Lengths that have to track the text around them.
+///
+/// `.sp` follows the panel; `.ts(context)` follows the font the user set. Read
+/// `44.ts(context)` as "the 44 design pixels this label needs at the current
+/// font scale".
+extension TvTextScaledLength on num {
+  double ts(BuildContext context) => toDouble() * TvTextScale.factorOf(context);
 }

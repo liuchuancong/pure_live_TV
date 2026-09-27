@@ -494,7 +494,7 @@
   "danmaku_font_size": "弹幕字号",
   "danmaku_font_weight": "弹幕字重",
   "danmaku_fps": "弹幕帧率",
-  "danmaku_fps_policy_desc": "开启：跟随通用里的省电、均衡或最高档位并立即生效；关闭：仅使用这里的手动帧率。",
+  "danmaku_fps_policy_desc": "开启：弹幕跟随屏幕刷新率（60Hz 电视即 60fps，120Hz 面板则 120fps），低端设备上限 30fps；关闭：仅使用这里的手动帧率。",
   "danmaku_keyword_block": "弹幕关键词屏蔽",
   "danmaku_keyword_blocked": "关键词已加入弹幕屏蔽列表",
   "danmaku_list": "弹幕列表",

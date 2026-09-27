@@ -30,6 +30,9 @@ class _TvAreaCardState extends State<TvAreaCard> {
 
     final borderRadius = BorderRadius.circular(18.sp);
     final imageRadius = BorderRadius.circular(12.sp);
+    // The label grows with the app font setting, so the room it needs and the
+    // gap above it have to grow with it too.
+    final double textScale = TvTextScale.factorOf(context);
 
     final List<DpadEffect> effects = [
       DpadScaleEffect(
@@ -57,14 +60,25 @@ class _TvAreaCardState extends State<TvAreaCard> {
           ),
           child: Padding(
             padding: EdgeInsets.all(9.sp),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // The grid cell is tight (aspect 1.3): a fixed 80.sp tile plus a
-                // two-line name overflows it. Let the artwork flex and the name
-                // keep at most two lines, so any cell fits.
-                Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // How many lines of the label this cell can hold. The name is
+                // sized by its text, so a cell too small for two lines would
+                // paint the second one over the artwork: it gets one ellipsised
+                // line instead. The line height is exact — the style pins
+                // `height: 1.15`, so a line is `fontSize * 1.15` at the scale
+                // the text is drawn at.
+                final double nameLineHeight = 15.sp * 1.15 * textScale;
+                final double nameGap = 8.sp * textScale;
+                final int nameLines = constraints.maxHeight - nameGap >= nameLineHeight * 2 ? 2 : 1;
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // The artwork is what flexes: it takes whatever height is left
+                    // after the name, so an enlarged app font shrinks the tile
+                    // instead of pushing the label out of the cell.
+                    Expanded(
                   child: Center(
                     child: AspectRatio(
                       aspectRatio: 1,
@@ -114,15 +128,16 @@ class _TvAreaCardState extends State<TvAreaCard> {
                     ),
                   ),
                 ),
-                SizedBox(height: 8.sp),
-                SizedBox(
-                  height: 32.sp,
-                  child: Center(
-                    child: Padding(
+                    SizedBox(height: nameGap),
+                    // The name is sized by the text it holds, never by a fixed
+                    // box: the old `SizedBox(height: 32.sp)` clipped a two-line
+                    // name even at 100% and hid it completely once the app font
+                    // was enlarged. [nameLines] keeps it bounded either way.
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4.sp),
                       child: Text(
                         area.areaName,
-                        maxLines: 2,
+                        maxLines: nameLines,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: AppTextStyles.t20W600.copyWith(
@@ -133,9 +148,9 @@ class _TvAreaCardState extends State<TvAreaCard> {
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         );

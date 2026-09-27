@@ -102,7 +102,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       });
     });
 
-    final sidebarWidth = isExpanded ? 200.sp : 110.sp;
+    // The rail holds labels, and every control in it is drawn at the app font
+    // scale, so its width and its vertical rhythm follow the text: a fixed rail
+    // cut the menu names off, and left the icons the only thing that changed
+    // size when the user enlarged the font.
+    final double textScale = TvTextScale.factorOf(context);
+    final sidebarWidth = (isExpanded ? 200.sp : 110.sp) * textScale;
 
     final cacheableTypes = [
       TvMenuType.favorite,
@@ -133,6 +138,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             DpadRegion(
               child: AnimatedContainer(
+                // Named for the tests that pin the rail's width to the font
+                // setting: the sidebar is not otherwise identifiable from outside.
+                key: const Key('home-sidebar'),
                 duration: const Duration(milliseconds: 150),
                 curve: Curves.easeOutCubic,
                 width: sidebarWidth,
@@ -141,92 +149,110 @@ class _HomePageState extends ConsumerState<HomePage> {
                 // from the menu column. The scrim keeps icons readable; the
                 // background bleeds through instead of a flat card block.
                 color: currentTvTheme.backgroundColor.withValues(alpha: 0.62),
-                padding: EdgeInsets.symmetric(vertical: 24.sp),
-                child: Column(
-                  children: [
-                    // The clock sits above the backup entry, as the sidebar's
-                    // header: a TV left on the home screen is a wall clock too.
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 6.sp),
-                      child: TvDigitalClock(
-                        format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
-                        style: AppTextStyles.t20W600.copyWith(
-                          color: currentTvTheme.primaryTextColor,
-                          height: 1,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ),
-                    if (isExpanded)
-                      TvDigitalClock(
-                        format: 'yyyy/MM/dd',
-                        style: AppTextStyles.t14W500.copyWith(color: currentTvTheme.secondaryTextColor, height: 1),
-                      ),
-                    SizedBox(height: 15.sp),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 14.sp),
-                      child: _buildAdaptiveItem(
-                        ref: ref,
-                        item: AppMenuItem(
-                          index: TvMenuType.settings.value,
-                          title: i18n('backup_manage'),
-                          shortTitle: i18n('menu_short_backup'),
-                          icon: Icons.backup_outlined,
-                        ),
-                        isExpanded: isExpanded,
-                        isSelected: false,
-                        // The sidebar slot the mobile app spent on account now
-                        // opens the settings page's backup directly.
-                        onTap: () => const BackupRoute().push(context),
-                      ),
-                    ),
-                    const Spacer(),
-                    ...List.generate(menuList.length, (index) {
-                      final item = menuList[index];
-                      final isSelected = currentIndex == item.index;
+                padding: EdgeInsets.symmetric(vertical: 24.sp * textScale),
+                // The rail scrolls once its entries are taller than the panel: at
+                // 160% ten destinations no longer fit a 1080p screen (and on a
+                // 720p one they never did), and a clipped rail would hide both the
+                // destinations and the way back out. `IntrinsicHeight` keeps the
+                // spacers below working exactly as before while the content still
+                // fits, and collapses them when it does not.
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          children: [
+                            // The clock sits above the backup entry, as the sidebar's
+                            // header: a TV left on the home screen is a wall clock too.
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 6.sp * textScale),
+                              child: TvDigitalClock(
+                                format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
+                                style: AppTextStyles.t20W600.copyWith(
+                                  color: currentTvTheme.primaryTextColor,
+                                  height: 1,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ),
+                            if (isExpanded)
+                              TvDigitalClock(
+                                format: 'yyyy/MM/dd',
+                                style: AppTextStyles.t14W500.copyWith(color: currentTvTheme.secondaryTextColor, height: 1),
+                              ),
+                            SizedBox(height: 15.sp * textScale),
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                              child: _buildAdaptiveItem(
+                                ref: ref,
+                                item: AppMenuItem(
+                                  index: TvMenuType.settings.value,
+                                  title: i18n('backup_manage'),
+                                  shortTitle: i18n('menu_short_backup'),
+                                  icon: Icons.backup_outlined,
+                                ),
+                                isExpanded: isExpanded,
+                                isSelected: false,
+                                textScale: textScale,
+                                // The sidebar slot the mobile app spent on account now
+                                // opens the settings page's backup directly.
+                                onTap: () => const BackupRoute().push(context),
+                              ),
+                            ),
+                            const Spacer(),
+                            ...List.generate(menuList.length, (index) {
+                              final item = menuList[index];
+                              final isSelected = currentIndex == item.index;
 
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 14.sp),
-                        child: _buildAdaptiveItem(
-                          ref: ref,
-                          item: item,
-                          isExpanded: isExpanded,
-                          isSelected: isSelected,
-                          focusNode: _nodeFor(item.index),
-                          onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                                child: _buildAdaptiveItem(
+                                  ref: ref,
+                                  item: item,
+                                  isExpanded: isExpanded,
+                                  isSelected: isSelected,
+                                  textScale: textScale,
+                                  focusNode: _nodeFor(item.index),
+                                  onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
+                                ),
+                              );
+                            }),
+                            const Spacer(),
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                              child: TvIconButton(
+                                icon: AnimatedRotation(
+                                  turns: isExpanded ? 0.5 : 0.0,
+                                  duration: const Duration(milliseconds: 250),
+                                  curve: Curves.easeOutCubic,
+                                  child: const Icon(Icons.arrow_forward_ios_rounded),
+                                ),
+                                // Expanded already spells every entry out; collapsed is
+                                // the state where the arrow needs a name.
+                                label: isExpanded ? null : i18n('menu_short_expand'),
+                                size: TvIconButtonSize.medium,
+                                isSecondary: true,
+                                onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
+                              ),
+                            ),
+                            _buildAdaptiveItem(
+                              ref: ref,
+                              item: mySettingsItem,
+                              isExpanded: isExpanded,
+                              isSelected: currentIndex == mySettingsItem.index,
+                              textScale: textScale,
+                              focusNode: _nodeFor(mySettingsItem.index),
+                              // Settings opens as its own page (title bar, back button
+                              // and the configuration-preview action), like the desktop
+                              // app, instead of swapping the content pane.
+                              onTap: () => const SettingsMenuRoute().push(context),
+                            ),
+                          ],
                         ),
-                      );
-                    }),
-                    const Spacer(),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 14.sp),
-                      child: TvIconButton(
-                        icon: AnimatedRotation(
-                          turns: isExpanded ? 0.5 : 0.0,
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeOutCubic,
-                          child: const Icon(Icons.arrow_forward_ios_rounded),
-                        ),
-                        // Expanded already spells every entry out; collapsed is
-                        // the state where the arrow needs a name.
-                        label: isExpanded ? null : i18n('menu_short_expand'),
-                        size: TvIconButtonSize.medium,
-                        isSecondary: true,
-                        onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
                       ),
                     ),
-                    _buildAdaptiveItem(
-                      ref: ref,
-                      item: mySettingsItem,
-                      isExpanded: isExpanded,
-                      isSelected: currentIndex == mySettingsItem.index,
-                      focusNode: _nodeFor(mySettingsItem.index),
-                      // Settings opens as its own page (title bar, back button
-                      // and the configuration-preview action), like the desktop
-                      // app, instead of swapping the content pane.
-                      onTap: () => const SettingsMenuRoute().push(context),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -301,15 +327,16 @@ class _HomePageState extends ConsumerState<HomePage> {
     required bool isExpanded,
     required bool isSelected,
     required VoidCallback onTap,
+    required double textScale,
     FocusNode? focusNode,
   }) {
     if (isExpanded) {
       return Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 16.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
         child: TvButton(
           title: item.title,
-          icon: Icon(item.icon, size: 32.sp),
+          icon: Icon(item.icon, size: 32.sp * textScale),
           iconPosition: TvIconPosition.left,
           size: TvButtonSize.mini,
           isSecondary: !isSelected,

@@ -81,7 +81,11 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
           // Version comparison row.
           Row(
             children: [
-              Icon(Icons.system_update_alt_rounded, size: 28.sp, color: theme.focusColor),
+              Icon(
+                Icons.system_update_alt_rounded,
+                size: 28.sp * TvTextScale.factorOf(context),
+                color: theme.focusColor,
+              ),
               SizedBox(width: 12.sp),
               Expanded(
                 child: RichText(

@@ -41,6 +41,11 @@ class NumberLeading extends StatelessWidget {
         child: Text(
           text,
           textAlign: TextAlign.center,
+          // The glyph is sized from [size] to fill the box the caller reserved,
+          // so it opts out of the app text scale: scaling it again painted the
+          // number past the edge of its own square and clipped it. A caller that
+          // wants the badge to follow the font passes a larger [size].
+          textScaler: TextScaler.noScaling,
           style: TextStyle(
             color: resolved,
             fontSize: size * scale,

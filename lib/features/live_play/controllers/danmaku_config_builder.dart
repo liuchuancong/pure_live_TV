@@ -6,15 +6,38 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart'
 /// The danmaku settings the engine can render, as one [BarrageConfig]. Every
 /// appearance setting the UI exposes must map here. Units: `baseSpeed` is
 /// pixels per second, `bottomAreaDistance` a pixel inset.
+///
+/// The performance knobs are not user settings — they are what a TV can afford,
+/// so they follow the device profile instead of one number for every box:
+///
+/// * `fps` follows the panel's refresh rate (see [resolveDanmakuFps]): the engine
+///   can never step more often than the display refreshes, so asking for more is
+///   not a speed-up, and asking for less only costs smoothness.
+/// * `rasterizeItems` stays on: each message is rasterized once and every frame
+///   then blits one textured quad, instead of re-running its text and stroke
+///   ops on every frame. This is the single biggest win on TV hardware.
+/// * `maxVisibleCount` is the number of bitmap blits per frame — 40 on a weak
+///   GPU, 64 on a box with room to spare.
+/// * `emitInterval` is a *ceiling* on how fast messages are admitted, not a
+///   rate: a quiet room is unaffected, a burst is paced. 50ms keeps a busy chat
+///   readable, 100ms is headroom for the weakest boxes.
+/// * `pictureCacheMaxSize` / `rasterCacheMaxBytes` bound the bitmap caches (one
+///   bitmap per distinct message, ~40 KB at 1080p/20px). Both are a texture
+///   budget: a few MB on a 2 GB box, ~10 MB on a box that can spare it.
 BarrageConfig buildDanmakuConfig(
   DanmakuSettingsModel settings, {
   String? fontFamily,
   double? refreshRate,
+  bool? lowEndDevice,
 }) {
   final double fontSize = settings.danmakuFontSize;
+  // An unprobed device reports itself as healthy, so a box that never answered
+  // the probe keeps the full pipeline rather than being tuned down blindly.
+  // [lowEndDevice] overrides the probe (tests pin both branches with it).
+  final bool lowEnd = lowEndDevice ?? GlobalPlayerService.instance.deviceProfile.isLowEnd;
+
   return BarrageConfig(
-    // 50ms admit interval plus a visible cap keeps layout and paint cost low.
-    emitInterval: 0.05,
+    emitInterval: lowEnd ? 0.1 : 0.05,
     fontFamily: fontFamily,
     fontSize: fontSize,
     area: settings.danmakuArea.clamp(DanmakuSettingsModel.minArea, DanmakuSettingsModel.maxArea),
@@ -30,7 +53,12 @@ BarrageConfig buildDanmakuConfig(
     showStroke: settings.enableDanmakuStroke,
     noEmojiMode: settings.noEmojiMode,
     fps: resolveDanmakuFps(settings, refreshRate: refreshRate),
-    maxVisibleCount: 48,
+    maxVisibleCount: lowEnd ? 40 : 64,
+    // Spelled out rather than left to the package default: this is the switch the
+    // whole TV tuning rests on, and it must not follow a future default change.
+    rasterizeItems: true,
+    pictureCacheMaxSize: lowEnd ? 96 : 256,
+    rasterCacheMaxBytes: lowEnd ? 12 * 1024 * 1024 : 32 * 1024 * 1024,
     trackHeight: (fontSize * 1.55).clamp(24.0, 64.0).toDouble(),
     emojiSize: (fontSize * 1.3).clamp(16.0, 48.0).toDouble(),
   );

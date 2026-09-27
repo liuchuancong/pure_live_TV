@@ -63,11 +63,14 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
         final Color titleColor = focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
         final Color subtitleColor = focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
         final Color iconColor = focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
+        // The row's labels follow the app font, and so does the chrome that
+        // frames them: icon, gaps and the switch beside them.
+        final double textScale = TvTextScale.factorOf(context);
 
         return Transform.scale(
           scale: pressed ? 0.98 : 1.0,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
+            padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale, vertical: 14.sp * textScale),
             // Accent glow on dark palettes, crisp ring on light ones — same
             // focus look as TvRoomCard.
             decoration: BoxDecoration(
@@ -93,15 +96,15 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                     final double trailingMaxWidth = constraints.maxWidth * 0.55;
                     final double minContentHeight = 30.sp + 4.sp + 22.sp;
                     return Container(
-                      constraints: BoxConstraints(minHeight: minContentHeight),
+                      constraints: BoxConstraints(minHeight: minContentHeight * textScale),
                       alignment: Alignment.centerLeft,
                       child: Row(
                         children: [
                           if (widget.leading != null)
                             widget.leading!
                           else if (widget.icon != null)
-                            Icon(widget.icon, size: 30.sp, color: iconColor),
-                          if (hasLeading) SizedBox(width: 16.sp),
+                            Icon(widget.icon, size: 30.sp * textScale, color: iconColor),
+                          if (hasLeading) SizedBox(width: 16.sp * textScale),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +161,7 @@ Widget tvSettingsChevron(BuildContext context, bool focused) {
   final tvTheme = context.tvTheme;
   return Icon(
     Icons.chevron_right_rounded,
-    size: 30.sp,
+    size: 30.sp * TvTextScale.factorOf(context),
     color: focused ? tvTheme.onFocusedCard : tvTheme.secondaryTextColor,
   );
 }
@@ -181,8 +184,12 @@ Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
           ),
         ),
       ),
-      SizedBox(width: 8.sp),
-      Icon(Icons.expand_more_rounded, size: 28.sp, color: focused ? tvTheme.onFocusedCard : tvTheme.secondaryTextColor),
+      SizedBox(width: 8.sp * TvTextScale.factorOf(context)),
+      Icon(
+        Icons.expand_more_rounded,
+        size: 28.sp * TvTextScale.factorOf(context),
+        color: focused ? tvTheme.onFocusedCard : tvTheme.secondaryTextColor,
+      ),
     ],
   );
 }
@@ -201,23 +208,26 @@ class TvSettingsSwitchIndicator extends StatelessWidget {
 
     // Synchronous on purpose: implicit animations run on this subtree's
     // ticker, which a covering page mutes — a mid-fade switch would freeze.
+    // A control beside a label that follows the app font: it grows with it,
+    // otherwise a small switch sits next to text twice its size.
+    final double textScale = TvTextScale.factorOf(context);
     return SizedBox(
-      width: 62.sp,
-      height: 34.sp,
+      width: 62.sp * textScale,
+      height: 34.sp * textScale,
       child: Container(
         decoration: BoxDecoration(
           color: value ? on.withValues(alpha: focused ? 0.35 : 0.22) : Colors.transparent,
-          border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.sp),
-          borderRadius: BorderRadius.circular(6.sp),
+          border: Border.all(color: value ? on : off.withValues(alpha: 0.6), width: 2.sp * textScale),
+          borderRadius: BorderRadius.circular(6.sp * textScale),
         ),
-        padding: EdgeInsets.all(3.sp),
+        padding: EdgeInsets.all(3.sp * textScale),
         child: Align(
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            width: 24.sp,
+            width: 24.sp * textScale,
             decoration: BoxDecoration(
               color: value ? on : off.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(3.sp),
+              borderRadius: BorderRadius.circular(3.sp * textScale),
             ),
           ),
         ),

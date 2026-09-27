@@ -199,8 +199,11 @@ class _TvTabBarState extends State<TvTabBar> {
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
     // TvButton.medium's geometry (64.w pill, t26 label, 24.w icon), the same
-    // size the sidebar's menu buttons use.
-    final double height = 64.0.w;
+    // size the sidebar's menu buttons use — and, like them, multiplied by the
+    // app font scale: the label is a `.sp` size the scaler grows again, so a
+    // panel-sized pill clipped it once the user enlarged the font.
+    final double textScale = TvTextScale.factorOf(context);
+    final double height = 64.0.w * textScale;
     final borderRadius = BorderRadius.circular(height / 2);
 
     return DpadRegion(
@@ -226,7 +229,7 @@ class _TvTabBarState extends State<TvTabBar> {
               // the items, so at min/max scroll extent the first/last tab keeps
               // a margin inside the viewport and the focus scale (1.05) is not
               // clipped by the viewport edge.
-              padding: EdgeInsets.symmetric(horizontal: 16.sp),
+              padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
               itemCount: widget.tabs.length,
               itemBuilder: (context, index) {
                 final tab = widget.tabs[index];
@@ -262,7 +265,7 @@ class _TvTabBarState extends State<TvTabBar> {
                           curve: TvFocusStyle.curve,
                           height: height,
                           alignment: Alignment.center,
-                          padding: EdgeInsets.symmetric(horizontal: 28.w),
+                          padding: EdgeInsets.symmetric(horizontal: 28.w * textScale),
                           decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
                           child: IconTheme(
                             data: IconThemeData(color: foregroundColor),
@@ -277,7 +280,7 @@ class _TvTabBarState extends State<TvTabBar> {
 
                 return Padding(
                   key: _keyFor(index, tab),
-                  padding: EdgeInsets.symmetric(horizontal: 6.sp),
+                  padding: EdgeInsets.symmetric(horizontal: 6.sp * textScale),
                   child: DpadFocusable(
                     effects: dynamicEffects,
                     focusNode: index == 0 ? widget.firstTabFocusNode : null,
@@ -297,11 +300,17 @@ class _TvTabBarState extends State<TvTabBar> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Fixed 24x24 icon slot (TvButton.medium's size): platform
-                        // logos differ in size and must align with the label.
+                        // 24x24 icon slot (TvButton.medium's size), scaled with the
+                        // label: platform logos differ in size and must align with
+                        // it. A tab item's icon is built without a context, so the
+                        // slot scales whatever it is given.
                         if (tab.icon != null) ...[
-                          SizedBox(width: 24.w, height: 24.w, child: Center(child: tab.icon)),
-                          SizedBox(width: 10.w),
+                          SizedBox(
+                            width: 24.w * textScale,
+                            height: 24.w * textScale,
+                            child: Center(child: FittedBox(fit: BoxFit.contain, child: tab.icon)),
+                          ),
+                          SizedBox(width: 10.w * textScale),
                         ],
                         // Never wrap: ellipsize instead, so the pill stays one line.
                         Center(
