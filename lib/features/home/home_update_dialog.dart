@@ -6,6 +6,7 @@ import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
 import 'package:pure_live/shared/platform/file_utils.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Home-page update dialog: shown once per session, after the startup check,
@@ -17,10 +18,14 @@ class HomeUpdateDialog {
     if (_shownThisSession) return;
     _shownThisSession = true;
 
-    // Waits a beat after the first frame so it does not cover the startup transition.
-    await Future<void>.delayed(const Duration(milliseconds: 1200));
-    if (!context.mounted) return;
-    if (!VersionUtil.isHasNewVersion) return;
+    if (!SettingsService.to.appState.enableAutoCheckUpdate) return;
+
+    // Waits for the startup check to say something. Sampling the verdict a beat
+    // after the first frame always read "no update": the check is deferred a few
+    // seconds past those frames, so its answer was never in yet.
+    final hasUpdate = await VersionUtil.verdict();
+
+    if (!context.mounted || !hasUpdate) return;
 
     await TvDialogUtils.show(
       context: context,

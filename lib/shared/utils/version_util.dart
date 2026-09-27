@@ -118,7 +118,32 @@ class VersionUtil {
     onHasNewVersionChanged?.call(value);
   }
 
-  Future<bool> checkUpdate() async {
+  /// The check the app already started.
+  ///
+  /// A second caller joins it instead of starting another fetch, and the home
+  /// dialog awaits it instead of reading a verdict that has not been reached.
+  static Future<bool>? _checkInFlight;
+
+  /// Runs the update check, joining one that is already running.
+  Future<bool> checkUpdate() => _checkInFlight ??= _runCheckUpdate().whenComplete(() => _checkInFlight = null);
+
+  /// Waits for a running check and reports its verdict.
+  ///
+  /// Used by the home dialog: the startup check is deliberately deferred past
+  /// the first frames, so reading [isHasNewVersion] right after startup always
+  /// says "no update". [timeout] only covers a check that never answers (a dead
+  /// network); the dialog then stays away, as it does for "no update".
+  static Future<bool> verdict({Duration timeout = const Duration(seconds: 15)}) async {
+    final running = _checkInFlight;
+
+    if (running != null) {
+      await running.timeout(timeout, onTimeout: () => false);
+    }
+
+    return hasNewVersion();
+  }
+
+  Future<bool> _runCheckUpdate() async {
     if (_cachedVersionJson != null) {
       try {
         _applyVersionData(_cachedVersionJson!);
