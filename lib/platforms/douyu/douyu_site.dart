@@ -346,8 +346,7 @@ class DouyuSite
           'Douyu play request failed (attempt ${attempt + 1}): $error'
           '${error is HttpError && error.statusCode != 0 ? ' status=${error.statusCode}' : ''}'
           '${error is HttpError && error.responseBody != null ? ' body=${error.responseBody}' : ''}'
-          '${error is HttpError && error.responseHeaders['x-request-id'] != null ? ' requestId=${error.responseHeaders['x-request-id']}' : ''}'
-          ' | ${DouyuUtils.requestShape(roomId)}',
+          '${error is HttpError && error.responseHeaders['x-request-id'] != null ? ' requestId=${error.responseHeaders['x-request-id']}' : ''}',
         );
         // The first attempt is also the cheapest way to learn the cookie is
         // stale: renew it (the long-term key is the only thing that can) and let

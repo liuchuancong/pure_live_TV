@@ -238,10 +238,6 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
 
     cookies.setDouyuCookie(effective);
     cookies.setDouyuCredentials(ltp0: ltp0, did: did);
-    // douyu.com issues `dy_auth` for seven days and the header the viewer pasted
-    // does not carry that deadline: recording the moment is the only way to know
-    // when to renew it.
-    cookies.setDouyuCookieSavedAt(effective.isEmpty ? 0 : DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
     setState(() {
       _baseline = effective;
@@ -320,7 +316,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
         _controller.text = renewed;
       }
 
-      _message = i18n('douyu_cookie_refresh_ok', args: {'time': _douyuExpiryLabel()});
+      _message = i18n('douyu_cookie_refresh_ok', args: {'time': _douyuExpiryLabel(renewed)});
     });
   }
 
@@ -330,30 +326,31 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
   /// token) looks identical to a working one in the editor, and the difference
   /// only shows up later as "why is this room a guest room".
   static String _douyuSessionSummary(String cookie) {
-    final DouyuSessionState state = DouyuUtils.sessionState(cookie);
+    final String state = DouyuUtils.sessionStateName(cookie);
     final DateTime? expiry = DouyuUtils.sessionExpiry(cookie);
     final String at = expiry == null ? '' : _formatExpiry(expiry);
 
     return switch (state) {
-      DouyuSessionState.none => i18n('douyu_cookie_cleared'),
-      DouyuSessionState.guest => i18n('douyu_cookie_guest'),
-      // The web cookie's token is opaque: its end comes from the recorded save
-      // time and Douyu's seven-day rule, so say that instead of a bare expiry.
-      DouyuSessionState.valid => expiry == null
+      'none' => i18n('douyu_cookie_cleared'),
+      'guest' => i18n('douyu_cookie_guest'),
+      // The web `dy_auth` is opaque: no endpoint says when it ends, so the page
+      // says that instead of a bare expiry.
+      'valid' => expiry == null
           ? i18n('douyu_cookie_valid_no_expiry')
           : DouyuUtils.canRefreshSession(cookie)
           ? i18n('douyu_cookie_valid_auto_renew', args: {'time': at})
           : i18n('douyu_cookie_valid_needs_repaste', args: {'time': at}),
-      DouyuSessionState.expiredRefreshable => i18n('douyu_cookie_expired_refreshable', args: {'time': at}),
-      DouyuSessionState.expired => i18n('douyu_cookie_expired', args: {'time': at}),
+      'expiredRefreshable' => i18n('douyu_cookie_expired_refreshable', args: {'time': at}),
+      _ => i18n('douyu_cookie_expired', args: {'time': at}),
     };
   }
 
-  /// When the session is expected to end. The web `dy_auth` is opaque, so its
-  /// end is the recorded save time plus Douyu's seven-day rule.
-  static String _douyuExpiryLabel() {
-    final DateTime savedAt = DouyuUtils.storedSessionSavedAt() ?? DateTime.now();
-    return _formatExpiry(savedAt.add(DouyuUtils.webCookieLifetime));
+  /// When the session is expected to end. Only the H5 cookie carries a deadline
+  /// the app can read; a fresh web `dy_auth` is described by Douyu's seven-day
+  /// rule, which is what a renewal starts over.
+  static String _douyuExpiryLabel(String cookie) {
+    final DateTime? expiry = DouyuUtils.sessionExpiry(cookie);
+    return _formatExpiry(expiry ?? DateTime.now().add(DouyuUtils.webCookieLifetime));
   }
 
   static String _formatExpiry(DateTime expiry) {
@@ -423,10 +420,10 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     // guest request whatever its length, so the badge follows the session the
     // cookie actually carries. One that is expired but carries the renewal key
     // stays "configured", because playback renews it on its own.
-    final DouyuSessionState? douyuSession = _isDouyu ? DouyuUtils.sessionState(current) : null;
+    final String? douyuSession = _isDouyu ? DouyuUtils.sessionStateName(current) : null;
     final bool configured = douyuSession == null
         ? current.isNotEmpty
-        : (douyuSession == DouyuSessionState.valid || douyuSession == DouyuSessionState.expiredRefreshable);
+        : (douyuSession == 'valid' || douyuSession == 'expiredRefreshable');
     final theme = context.tvTheme;
 
     return PopScope(

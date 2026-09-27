@@ -171,20 +171,17 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
       'did': cookies.douyuDid,
       // Enough for the phone to say what the cookie is worth without repeating
       // the session rules there.
-      'state': DouyuUtils.sessionState(cookie).name,
+      'state': DouyuUtils.sessionStateName(cookie),
       'renewable': DouyuUtils.canRefreshSession(cookie),
       'expiry': expiry?.toIso8601String() ?? '',
-      'savedAt': cookies.douyuCookieSavedAt,
     };
   }
 
   /// Applies a Douyu push from the phone, with the rules the TV page applies.
   ///
   /// Either cookie can arrive here: a passport paste only contributes the
-  /// renewal pair (it carries no session, so storing it as the play cookie would
-  /// sign the viewer out and get every play request answered with a bare 403),
-  /// and a stored cookie keeps the moment it was obtained, because its seven-day
-  /// lifetime has nothing else to count from.
+  /// renewal pair, because storing it as the play cookie would sign the viewer
+  /// out and get every play request answered with a bare 403.
   void _applyDouyuCookie({String? cookie, String? ltp0, String? did}) {
     final controller = ref.read(cookieControllerProvider.notifier);
     final cookies = ref.read(cookieControllerProvider);
@@ -206,15 +203,15 @@ class TvRemoteReceiver extends _$TvRemoteReceiver {
     }
 
     controller.setDouyuCookie(DouyuUtils.resolveStoredCookie(pasted, cookies.douyuCookie));
-    controller.setDouyuCookieSavedAt(pasted.isEmpty ? 0 : DateTime.now().millisecondsSinceEpoch ~/ 1000);
   }
 
-  /// When the renewed Douyu session is expected to end. `dy_auth` is opaque, so
-  /// its end is the recorded save time plus Douyu's seven-day rule.
+  /// When the renewed Douyu session is expected to end. Only the H5 cookie
+  /// carries a deadline the app can read; a fresh web `dy_auth` is described by
+  /// Douyu's seven-day rule, which is what a renewal starts over.
   String _douyuExpiryLabel() {
     String two(int value) => value.toString().padLeft(2, '0');
-    final DateTime savedAt = DouyuUtils.storedSessionSavedAt() ?? DateTime.now();
-    final DateTime expiry = savedAt.add(DouyuUtils.webCookieLifetime);
+    final DateTime? known = DouyuUtils.sessionExpiry(ref.read(cookieControllerProvider).douyuCookie);
+    final DateTime expiry = known ?? DateTime.now().add(DouyuUtils.webCookieLifetime);
     return '${expiry.year}-${two(expiry.month)}-${two(expiry.day)} '
         '${two(expiry.hour)}:${two(expiry.minute)}';
   }

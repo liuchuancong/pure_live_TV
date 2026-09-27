@@ -99,11 +99,11 @@ class AccountSettingsSectionPage extends ConsumerWidget {
       return value.isEmpty ? i18n('not_set') : i18n('cookie_state_set', args: {'count': '${value.length}'});
     }
 
-    return switch (DouyuUtils.sessionState(value)) {
-      DouyuSessionState.none => i18n('not_set'),
-      DouyuSessionState.valid => i18n('cookie_saved_local'),
-      DouyuSessionState.expiredRefreshable => i18n('douyu_session_renewable'),
-      DouyuSessionState.guest || DouyuSessionState.expired => i18n('douyu_session_needs_cookie'),
+    return switch (DouyuUtils.sessionStateName(value)) {
+      'none' => i18n('not_set'),
+      'valid' => i18n('cookie_saved_local'),
+      'expiredRefreshable' => i18n('douyu_session_renewable'),
+      _ => i18n('douyu_session_needs_cookie'),
     };
   }
 
