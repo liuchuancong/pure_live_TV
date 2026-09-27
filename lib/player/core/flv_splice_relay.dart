@@ -5,7 +5,16 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:media_core_logging/media_core_logging.dart';
 import 'package:pure_live/player/core/flv_tag_framer.dart';
+
+/// Where the splicer reports: the same hub the playback diagnostics use, so a
+/// "did it renew?" question is answered by the log the viewer already watches.
+final LogModule _log = MediaCoreLog.of(LogCategory.source);
+
+/// `host/path` of [url] — never its query: the query carries the lease, the
+/// signature and the device id, and a log line outlives all three.
+String _describe(Uri url) => '${url.host}${url.path}';
 
 /// A live FLV source whose URL stops working at a known time.
 ///
@@ -217,7 +226,7 @@ class FlvSpliceSession {
       next = await _renew(_source);
       reader = await _open(next.url);
     } on Object catch (error) {
-      debugPrint('FlvSpliceSession: renew failed: $error');
+      _log.warning('splice: renewal failed, keeping the current upstream', error: error);
       return false;
     }
     if (_cancelled) {
@@ -254,11 +263,14 @@ class FlvSpliceSession {
         if (FlvTag.isKeyframe(tag) && (_lastVideo == null || raw + offset > _lastVideo!)) keyframe = tag;
       }
     } on Object catch (error) {
-      debugPrint('FlvSpliceSession: new upstream unusable: $error');
+      _log.warning('splice: new upstream unusable, keeping the current one', error: error);
       await reader.cancel();
       return false;
     }
     final switchAt = FlvTag.timestamp(keyframe) + offset!;
+
+    // Position the old stream had reached, for the "gap" the switch costs.
+    final int? previousVideo = _lastVideo;
 
     if (!oldEnded) {
       // Deliver the old stream up to the new keyframe.
@@ -292,6 +304,17 @@ class FlvSpliceSession {
     }
     _forward(keyframe, offset);
     _onRenewed?.call(next);
+
+    _log.info(
+      'splice: switched to a renewed upstream',
+      fields: <String, Object?>{
+        'switch': _switches,
+        'gapMs': previousVideo == null ? null : switchAt - previousVideo,
+        'offsetMs': offset,
+        'upstream': _describe(next.url),
+      },
+    );
+
     return true;
   }
 
@@ -404,6 +427,17 @@ class FlvSpliceRelay {
       serving = relay._serve(request).whenComplete(() => relay._serving.remove(serving));
       relay._serving.add(serving);
     });
+
+    final refreshAt = initial.refreshAt;
+    _log.info(
+      'splice: relay armed',
+      fields: <String, Object?>{
+        'upstream': _describe(initial.url),
+        'local': relay.inputUri.port,
+        'renewInMs': refreshAt?.difference(DateTime.now()).inMilliseconds,
+      },
+    );
+
     return relay;
   }
 
@@ -460,7 +494,7 @@ class FlvSpliceRelay {
     try {
       await session.run();
     } on Object catch (error) {
-      debugPrint('FlvSpliceRelay: session ended: $error');
+      _log.warning('splice: session ended', error: error);
       if (!started) {
         try {
           response.statusCode = HttpStatus.badGateway;
@@ -549,7 +583,7 @@ class _HttpFlvTagReader implements FlvTagReader {
       if (_error != null) {
         // A reset or truncated body ends this connection like a clean close;
         // the session decides whether a new URL follows.
-        debugPrint('FlvSpliceRelay: upstream ended with $_error');
+        _log.debug('splice: upstream connection ended', fields: <String, Object?>{'error': '$_error'});
         return null;
       }
       if (_done) return null;
