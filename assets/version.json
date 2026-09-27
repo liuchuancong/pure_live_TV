@@ -1,7 +1,7 @@
 {
-  "version": "3.0.6",
-  "version_num": 130007,
-  "version_desc": "-Feature:修复分页加载,添加fvp播放器,优化UI",
+  "version": "3.0.7",
+  "version_num": 130008,
+  "version_desc": "-Feature:修复斗鱼播放视频卡顿,优化弹幕",
   "prerelease":false,
   "android_abis": ["arm64-v8a", "armeabi-v7a", "x86_64"],
   "download_url": "https://github.com/liuchuancong/pure_live_TV/releases"
