@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/features/music/widgets/music_video_card.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_api.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/music_video_card.dart';
+import 'package:pure_live/modules/media/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/bilibili_music_models.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 /// Video mode sections. The section rail lives in the home sidebar; this file

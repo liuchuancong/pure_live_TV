@@ -1,5 +1,5 @@
 import 'package:pure_live/platforms/bilibili/bilibili_site.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/bilibili_music_models.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 

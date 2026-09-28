@@ -1,30 +1,30 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/features/music/music_player_controller.dart';
-import 'package:pure_live/features/music/widgets/music_video_card.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_api.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/music_player_controller.dart';
+import 'package:pure_live/modules/media/music_video_card.dart';
+import 'package:pure_live/modules/media/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/bilibili_music_models.dart';
 
-/// One archive's page in video mode: cover, title, stats, description, the
-/// part (part) list and the related row — the same information newBV's detail
-/// screen leads with, laid out for a 1080p TV grid.
-class VideoDetailPage extends ConsumerStatefulWidget {
-  const VideoDetailPage({super.key, required this.archive});
+/// One archive's track list (its parts), with Play all starting the queue.
+///
+/// The route may arrive from a grid card that only knows the archive summary;
+/// the parts are fetched here, before anything can play, so every queue entry
+/// carries a real cid.
+class MusicArchivePage extends ConsumerStatefulWidget {
+  const MusicArchivePage({super.key, required this.archive});
 
   final MusicArchive archive;
 
   @override
-  ConsumerState<VideoDetailPage> createState() => _VideoDetailPageState();
+  ConsumerState<MusicArchivePage> createState() => _MusicArchivePageState();
 }
 
-class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
+class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
   MusicArchive? _detail;
-  List<MusicArchive> _related = [];
   String? _error;
 
   @override
@@ -42,19 +42,13 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
       if (!mounted) return;
       setState(() => _error = e.toString());
     }
-    try {
-      final related = await BilibiliMusicApi.instance.getRelatedVideos(aid: widget.archive.aid);
-      if (!mounted) return;
-      setState(() => _related = related);
-    } catch (_) {
-      // The related row is a bonus; its failure must not blank the page.
-    }
   }
 
-  void _play(List<MusicTrack> tracks, int startIndex) {
-    // Video mode keeps the picture on.
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex, audioOnly: false);
-    const VideoPlayerRoute().push(context);
+  void _playAll(List<MusicTrack> tracks, int startIndex) {
+    // Music mode listens: the queue starts audio-only, and the player page's
+    // toggle brings the picture back on demand.
+    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex, audioOnly: true);
+    const MusicPlayerRoute().push(context);
   }
 
   @override
@@ -65,9 +59,15 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     final tracks = archive.tracks;
 
     return TvPageScaffold(
-      title: i18n('video_detail_title'),
+      title: i18n('music_archive_title'),
       child: _error != null
-          ? Center(child: AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error))
+          ? Center(
+              child: AppStatusView(
+                type: AppStatusType.error,
+                title: i18n('load_failed'),
+                subtitle: _error,
+              ),
+            )
           : _detail == null
               ? Center(child: AppStatusView(type: AppStatusType.loading, title: '', subtitle: ''))
               : Padding(
@@ -155,7 +155,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                         ),
                       ),
                       SizedBox(width: 32.sp),
-                      // Right column: parts on top, related below.
+                      // Right column: the parts.
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,54 +173,33 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                     title: i18n('music_play_all'),
                                     icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
                                     size: TvButtonSize.mini,
-                                    onTap: () => _play(tracks, 0),
+                                    onTap: () => _playAll(tracks, 0),
                                   ),
                                 ],
                               ),
                             ),
                             Expanded(
-                              flex: 3,
-                              child: ListView.separated(
-                                padding: EdgeInsets.only(bottom: 16.sp),
-                                itemCount: tracks.length,
-                                separatorBuilder: (_, _) => SizedBox(height: 8.sp),
-                                itemBuilder: (context, index) => _PartTile(
-                                  track: tracks[index],
-                                  index: index,
-                                  onTap: () => _play(tracks, index),
-                                ),
-                              ),
+                              child: tracks.length == 1 && tracks.first.part.cid == 0
+                                  ? Center(
+                                      child: Text(
+                                        i18n('music_archive_no_parts'),
+                                        style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                                      ),
+                                    )
+                                  : ListView.separated(
+                                      padding: EdgeInsets.only(bottom: 16.sp),
+                                      itemCount: tracks.length,
+                                      separatorBuilder: (_, _) => SizedBox(height: 8.sp),
+                                      itemBuilder: (context, index) {
+                                        final track = tracks[index];
+                                        return _PartTile(
+                                          track: track,
+                                          index: index,
+                                          onTap: () => _playAll(tracks, index),
+                                        );
+                                      },
+                                    ),
                             ),
-                            if (_related.isNotEmpty) ...[
-                              Padding(
-                                padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
-                                child: Text(
-                                  i18n('video_related_title'),
-                                  style: AppTextStyles.t20W600.copyWith(color: accent),
-                                ),
-                              ),
-                              Expanded(
-                                child: DpadRegion(
-                                  horizontalEdge: DpadEdgeBehavior.leave,
-                                  child: ListView.separated(
-                                    scrollDirection: Axis.horizontal,
-                                    padding: EdgeInsets.only(bottom: 16.sp),
-                                    itemCount: _related.length,
-                                    separatorBuilder: (_, _) => SizedBox(width: 12.sp),
-                                    itemBuilder: (context, index) {
-                                      final related = _related[index];
-                                      return SizedBox(
-                                        width: 260.sp,
-                                        child: MusicVideoCard(
-                                          archive: related,
-                                          onTap: () => VideoDetailRoute(related).push(context),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),

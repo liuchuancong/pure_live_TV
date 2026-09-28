@@ -1,20 +1,16 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/features/settings/pages/account_cookie_page.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
 
-/// Bilibili: the account page, so it has more than the other platforms.
-///
-/// QR sign-in is the app's own device-QR sign-in: the QR is shown **directly in
-/// the left column** ([BilibiliQrLoginView]) and polls until the phone
-/// confirms, because that is a *login*, not a cookie to paste. manual input stays
-/// available underneath, and a signed-in account can be logged out here.
+/// Bilibili: the account page. QR sign-in only — the manual cookie paste was
+/// removed, because that flow invited broken logins; the device-QR sign-in
+/// writes the session the moment the phone confirms, and a signed-in account
+/// can log out here.
 class AccountBilibiliPage extends ConsumerStatefulWidget {
   const AccountBilibiliPage({super.key});
 
@@ -34,54 +30,87 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
     final theme = context.tvTheme;
     final bool logined = cookies.bilibiliCookie.isNotEmpty;
 
-    return AccountCookiePage(
-      platform: CookiePlatform(
-        siteId: Sites.bilibiliSite,
-        name: i18n('site_bilibili'),
-        hint: i18n('cookie_hint', args: {'name': i18n('site_bilibili')}),
-        read: (model) => model.bilibiliCookie,
-        apply: (value) => ref.read(cookieControllerProvider.notifier).setBilibiliCookie(value),
-      ),
-      // The left column is the sign-in itself: the QR is on screen the moment
-      // the page opens, no dialog to enter first.
-      loginPanel: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TvSettingsGroupTitle(title: i18n('qr_login')),
-          TvSettingsCard(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(16.sp),
-                child: BilibiliQrLoginView(
-                  onLogined: () {
-                    if (mounted) setState(() => _message = i18n('logined'));
-                  },
-                ),
-              ),
-              if (logined)
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-                  child: Row(
+    return TvPageScaffold(
+      title: i18n('site_bilibili'),
+      child: Padding(
+        padding: EdgeInsets.all(24.sp),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left column is the sign-in itself: the QR is on screen the
+            // moment the page opens, no dialog to enter first.
+            SizedBox(
+              width: 420.sp,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TvSettingsGroupTitle(title: i18n('qr_login')),
+                  TvSettingsCard(
                     children: [
-                      Expanded(
-                        child: Text(
-                          account.name.isNotEmpty
-                              ? account.name
-                              : (cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined')),
-                          style: AppTextStyles.t20W500.copyWith(color: theme.secondaryTextColor),
+                      Padding(
+                        padding: EdgeInsets.all(16.sp),
+                        child: BilibiliQrLoginView(
+                          onLogined: () {
+                            if (mounted) setState(() => _message = i18n('logined'));
+                          },
                         ),
                       ),
                     ],
                   ),
-                ),
-            ],
-          ),
-          if (_message.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(left: 16.sp, top: 10.sp),
-              child: Text(_message, style: AppTextStyles.t20W500.copyWith(color: theme.focusColor)),
+                  if (_message.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.only(left: 16.sp, top: 10.sp),
+                      child: Text(_message, style: AppTextStyles.t20W500.copyWith(color: theme.focusColor)),
+                    ),
+                ],
+              ),
             ),
-        ],
+            SizedBox(width: 32.sp),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TvSettingsGroupTitle(title: i18n('site_bilibili')),
+                  TvSettingsCard(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(16.sp),
+                        child: Row(
+                          children: [
+                            Icon(Icons.account_circle_outlined, size: 44.sp, color: theme.focusColor),
+                            SizedBox(width: 14.sp),
+                            Expanded(
+                              child: Text(
+                                logined
+                                    ? (account.name.isNotEmpty
+                                          ? account.name
+                                          : (cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined')))
+                                    : i18n('not_logined'),
+                                style: AppTextStyles.t20W600.copyWith(color: theme.primaryTextColor),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (logined) ...[
+                    SizedBox(height: 16.sp),
+                    TvButton(
+                      title: i18n('logout'),
+                      icon: Icon(Icons.logout_rounded, size: 26.sp),
+                      isSecondary: true,
+                      onTap: () {
+                        ref.read(cookieControllerProvider.notifier).setBilibiliCookie('');
+                        if (mounted) setState(() => _message = '');
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

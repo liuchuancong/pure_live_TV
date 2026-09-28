@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/bilibili_music_models.dart';
 import 'package:pure_live/exports/common_export.dart';
 
 part 'music_library_controller.g.dart';

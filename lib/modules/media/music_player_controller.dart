@@ -8,9 +8,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/player/models/player_engine.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_api.dart';
-import 'package:pure_live/features/music/music_library_controller.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/bilibili_music_api.dart';
+import 'package:pure_live/modules/music/music_library_controller.dart';
+import 'package:pure_live/modules/media/bilibili_music_models.dart';
 
 part 'music_player_controller.g.dart';
 

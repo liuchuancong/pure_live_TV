@@ -2692,5 +2692,7 @@
   "douyu_force_renewal_hint": "A signed-in link states no lease (`expire=0`) while Douyu still closes it on its own. When on, a fresh link is fetched about every 4 minutes and spliced in at a keyframe, so playback never breaks. Turn it on only if you actually see the five-minute cut.",
   "bili_login_required": "Sign in to bilibili first",
   "bili_login_hint": "Music and video modes need a bilibili login",
-  "bili_login_action": "Scan to sign in"
+  "bili_login_action": "Scan to sign in",
+  "mode_picker_title": "Choose a mode",
+  "not_logined": "Not signed in"
 }

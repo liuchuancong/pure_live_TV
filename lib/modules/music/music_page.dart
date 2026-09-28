@@ -6,11 +6,11 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/features/music/music_library_controller.dart';
-import 'package:pure_live/features/music/music_player_controller.dart';
-import 'package:pure_live/features/music/widgets/music_video_card.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_api.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
+import 'package:pure_live/modules/music/music_library_controller.dart';
+import 'package:pure_live/modules/media/music_player_controller.dart';
+import 'package:pure_live/modules/media/music_video_card.dart';
+import 'package:pure_live/modules/media/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/bilibili_music_models.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 /// Music mode sections. The section rail itself lives in the home sidebar —

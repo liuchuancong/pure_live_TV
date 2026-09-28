@@ -1,7 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
-import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/index.dart';
+import 'package:pure_live/modules/music/index.dart';
+import 'package:pure_live/modules/video/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';

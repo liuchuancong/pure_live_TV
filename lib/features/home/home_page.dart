@@ -9,8 +9,9 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/areas/areas_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/features/history/history_page.dart';
-import 'package:pure_live/features/music/music_page.dart';
-import 'package:pure_live/features/video/video_home_page.dart';
+import 'package:pure_live/modules/music/music_page.dart';
+import 'package:pure_live/modules/media/index.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:pure_live/features/search/tv_search_page.dart';
 import 'package:pure_live/features/favorite/favorite_page.dart';
 import 'package:pure_live/features/home/exit_confirm_dialog.dart';
@@ -59,8 +60,97 @@ class _HomePageState extends ConsumerState<HomePage> {
       isSelected: true,
       textScale: textScale,
       focusNode: _modeFocusNode,
-      onTap: () => ref.read(appModeControllerProvider.notifier).cycle(),
+      onTap: _showModeDialog,
     );
+  }
+
+  /// The mode picker dialog (bmsc's login-placeholder spirit: an explicit
+  /// choice, not a blind cycle). Picking a different mode first closes
+  /// whatever the previous module was playing — the speakers pass cleanly.
+  Future<void> _showModeDialog() async {
+    final current = ref.read(appModeControllerProvider);
+    final selected = await showDialog<AppMode>(
+      context: context,
+      builder: (context) {
+        final tvTheme = context.tvTheme;
+        final accent = tvTheme.focusColor;
+        return Dialog(
+          backgroundColor: tvTheme.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24.sp),
+            side: BorderSide(color: accent.withValues(alpha: 0.5)),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(24.sp),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  i18n('mode_picker_title'),
+                  style: AppTextStyles.t22W700.copyWith(color: tvTheme.primaryTextColor),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16.sp),
+                for (final (mode, icon) in [
+                  (AppMode.live, Icons.live_tv_rounded),
+                  (AppMode.video, Icons.movie_outlined),
+                  (AppMode.music, Icons.library_music_outlined),
+                ])
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.sp),
+                    child: TvFocusable(
+                      autofocus: mode == current,
+                      onTap: () => Navigator.pop(context, mode),
+                      builder: (context, focused, child) {
+                        final isSelected = mode == current;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          height: 72.sp,
+                          padding: EdgeInsets.symmetric(horizontal: 20.sp),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? accent.withValues(alpha: 0.18)
+                                : focused
+                                    ? accent.withValues(alpha: 0.08)
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(14.sp),
+                            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(icon, size: 30.sp, color: isSelected ? accent : tvTheme.secondaryTextColor),
+                              SizedBox(width: 14.sp),
+                              Expanded(
+                                child: Text(
+                                  i18n(switch (mode) {
+                                    AppMode.live => 'mode_live',
+                                    AppMode.video => 'mode_video',
+                                    AppMode.music => 'mode_music',
+                                  }),
+                                  style: AppTextStyles.t20W600.copyWith(
+                                    color: isSelected ? accent : tvTheme.primaryTextColor,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected) Icon(Icons.check_rounded, size: 26.sp, color: accent),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (selected == null || selected == current) return;
+    // Switching modules closes the previous one's playback entirely: music
+    // stops (queue dropped), live rooms were never playing on this screen.
+    await ref.read(musicPlayerControllerProvider.notifier).stop();
+    ref.read(appModeControllerProvider.notifier).setMode(selected);
   }
 
   /// The active mode's own rail entries. Live reuses the configured side menu;
@@ -95,17 +185,17 @@ class _HomePageState extends ConsumerState<HomePage> {
         ];
         final selected = ref.watch(musicSectionIndexProvider);
         return [
-          for (final (index, (labelKey, icon)) in labels.indexed)
+          for (final (index2, (labelKey, icon)) in labels.indexed)
             Padding(
               padding: EdgeInsets.only(bottom: 14.sp * textScale),
               child: _buildAdaptiveItem(
                 ref: ref,
-                item: AppMenuItem(index: index, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
+                item: AppMenuItem(index: index2, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
                 isExpanded: isExpanded,
-                isSelected: selected == index,
+                isSelected: selected == index2,
                 textScale: textScale,
-                focusNode: _sectionNode('music_$index'),
-                onTap: () => ref.read(musicSectionIndexProvider.notifier).change(index),
+                focusNode: _sectionNode('music_$index2'),
+                onTap: () => ref.read(musicSectionIndexProvider.notifier).change(index2),
               ),
             ),
         ];

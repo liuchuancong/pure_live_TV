@@ -6,7 +6,7 @@ import 'package:flame_barrage/flame_barrage.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:media_core/core/player_state.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/features/music/music_player_controller.dart';
+import 'package:pure_live/modules/media/music_player_controller.dart';
 import 'package:media_core/error/player_failure.dart';
 import 'package:media_core/error/error_formatter.dart';
 import 'package:pure_live/services/settings/settings.dart';
