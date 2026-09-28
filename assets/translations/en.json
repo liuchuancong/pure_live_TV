@@ -2787,5 +2787,7 @@
   "video_search_live_badge": "LIVE",
   "video_search_live_online": "watching",
   "video_order_newest": "Newest",
-  "video_order_most_played": "Most played"
+  "video_order_most_played": "Most played",
+  "music_seek_back": "Back 10s",
+  "music_seek_forward": "Forward 10s"
 }

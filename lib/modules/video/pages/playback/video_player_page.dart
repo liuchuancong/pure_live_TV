@@ -68,20 +68,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   Timer? _progressTimer;
   String? _lastTrackId;
 
-  /// newBV's seek acceleration: repeated presses inside the window grow the
-  /// step, so a long skip needs no dozen presses.
-  DateTime _lastSeekAt = DateTime.fromMillisecondsSinceEpoch(0);
-  int _seekStep = 10;
-
-  int _seekDelta(int direction) {
-    final now = DateTime.now();
-    _seekStep = now.difference(_lastSeekAt) < const Duration(milliseconds: 200)
-        ? (_seekStep + 5).clamp(10, 60)
-        : 10;
-    _lastSeekAt = now;
-    return direction * _seekStep;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -265,11 +251,11 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      controller.seekBy(-_seekDelta(-1));
+      controller.seekAccelerated(-1);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-      controller.seekBy(_seekDelta(1));
+      controller.seekAccelerated(1);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -748,6 +734,22 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.next(),
                   ),
+                  SizedBox(width: 12.sp),
+                  TvIconButton(
+                    icon: const Icon(Icons.replay_10_rounded),
+                    label: i18n('music_seek_back'),
+                    size: TvIconButtonSize.large,
+                    isSecondary: true,
+                    onTap: () => controller.seekAccelerated(-1),
+                  ),
+                  SizedBox(width: 12.sp),
+                  TvIconButton(
+                    icon: const Icon(Icons.forward_10_rounded),
+                    label: i18n('music_seek_forward'),
+                    size: TvIconButtonSize.large,
+                    isSecondary: true,
+                    onTap: () => controller.seekAccelerated(1),
+                  ),
                   SizedBox(width: 40.sp),
                   TvButton(
                     title: '${state.speed}x',
@@ -839,16 +841,6 @@ class _ProgressBar extends ConsumerStatefulWidget {
 
 class _ProgressBarState extends ConsumerState<_ProgressBar> {
   final FocusNode _node = FocusNode();
-  DateTime _lastSeekAt = DateTime.fromMillisecondsSinceEpoch(0);
-  int _seekStep = 10;
-
-  int _seekDelta(int direction) {
-    final now = DateTime.now();
-    _seekStep = now.difference(_lastSeekAt) < const Duration(milliseconds: 200) ? (_seekStep + 5).clamp(10, 60) : 10;
-    _lastSeekAt = now;
-    return direction * _seekStep;
-  }
-
   @override
   void dispose() {
     _node.dispose();
@@ -869,11 +861,11 @@ class _ProgressBarState extends ConsumerState<_ProgressBar> {
         if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
         final controller = ref.read(musicPlayerControllerProvider.notifier);
         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          controller.seekBy(-_seekDelta(-1));
+          controller.seekAccelerated(-1);
           return KeyEventResult.handled;
         }
         if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-          controller.seekBy(_seekDelta(1));
+          controller.seekAccelerated(1);
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;

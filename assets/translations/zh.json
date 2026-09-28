@@ -2787,5 +2787,7 @@
   "video_search_live_badge": "直播",
   "video_search_live_online": "人观看",
   "video_order_newest": "最新发布",
-  "video_order_most_played": "最多播放"
+  "video_order_most_played": "最多播放",
+  "music_seek_back": "快退10秒",
+  "music_seek_forward": "快进10秒"
 }

@@ -103,11 +103,11 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      controller.seekBy(-10);
+      controller.seekAccelerated(-1);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-      controller.seekBy(10);
+      controller.seekAccelerated(1);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -545,6 +545,14 @@ class _ControlBar extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TvIconButton(
+                    icon: const Icon(Icons.replay_10_rounded),
+                    label: i18n('music_seek_back'),
+                    size: TvIconButtonSize.large,
+                    isSecondary: true,
+                    onTap: () => controller.seekAccelerated(-1),
+                  ),
+                  SizedBox(width: 12.sp),
+                  TvIconButton(
                     icon: const Icon(Icons.skip_previous_rounded),
                     label: i18n('music_prev'),
                     size: TvIconButtonSize.large,
@@ -566,6 +574,14 @@ class _ControlBar extends ConsumerWidget {
                     size: TvIconButtonSize.large,
                     isSecondary: true,
                     onTap: () => controller.next(),
+                  ),
+                  SizedBox(width: 12.sp),
+                  TvIconButton(
+                    icon: const Icon(Icons.forward_10_rounded),
+                    label: i18n('music_seek_forward'),
+                    size: TvIconButtonSize.large,
+                    isSecondary: true,
+                    onTap: () => controller.seekAccelerated(1),
                   ),
                   SizedBox(width: 40.sp),
                   TvButton(
@@ -636,11 +652,11 @@ class _ProgressBarState extends ConsumerState<_ProgressBar> {
         if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
         final controller = ref.read(musicPlayerControllerProvider.notifier);
         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          controller.seekBy(-10);
+          controller.seekAccelerated(-1);
           return KeyEventResult.handled;
         }
         if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-          controller.seekBy(10);
+          controller.seekAccelerated(1);
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;

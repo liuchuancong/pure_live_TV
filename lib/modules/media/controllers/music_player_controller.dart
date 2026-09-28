@@ -307,6 +307,19 @@ class MusicPlayerController extends _$MusicPlayerController {
     await seekTo(handle.position + Duration(seconds: seconds));
   }
 
+  /// Seek with newBV's press acceleration: repeated presses inside 200ms grow
+  /// the step from 10s up to 60s, so a long skip needs no dozen presses. The
+  /// transport-row 快退/快进 buttons and the hidden-state arrows share this.
+  DateTime _accelLastAt = DateTime.fromMillisecondsSinceEpoch(0);
+  int _accelStep = 10;
+
+  Future<void> seekAccelerated(int direction) async {
+    final now = DateTime.now();
+    _accelStep = now.difference(_accelLastAt) < const Duration(milliseconds: 200) ? (_accelStep + 5).clamp(10, 60) : 10;
+    _accelLastAt = now;
+    await seekBy(direction * _accelStep);
+  }
+
   /// Toggles the picture off (music listening) and back on. mpv drops the
   /// video track in place, so no re-open is needed; the player page paints the
   /// cover over the idle surface.
