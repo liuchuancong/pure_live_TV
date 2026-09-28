@@ -26,7 +26,7 @@ const defaultVideoGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
   crossAxisCount: 4,
   mainAxisSpacing: 12.0,
   crossAxisSpacing: 24.0,
-  childAspectRatio: 1.15,
+  childAspectRatio: 1.0,
 );
 
 /// Content of one video section. Login is enforced by the home shell's
