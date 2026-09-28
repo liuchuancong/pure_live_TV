@@ -11,10 +11,10 @@ import 'package:pure_live/modules/media/controllers/music_player_controller.dart
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 
-/// One archive's page in video mode, newBV's detail screen for a 1080p TV
-/// grid: cover, title, stats, description, the interaction row (like / coin /
-/// fav / triple / watch later / comments), the part (分P) list and the
-/// related row. The UP row opens the shared user-space page.
+/// One archive's page in video mode, newBV's detail screen restyled for the
+/// TV grid: a poster with the gradient scrim and cover badges, the avatar-led
+/// UP row, the interaction chips and the part (分P) list, all in the shared
+/// focused-card palette. The UP row opens the user-space page.
 class VideoDetailPage extends ConsumerStatefulWidget {
   const VideoDetailPage({super.key, required this.archive});
 
@@ -105,259 +105,320 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
       title: i18n('video_detail_title'),
       child: _error != null && _detail == null
           ? Center(child: AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error))
-          : _detail == null && widget.archive.bvid.isEmpty
-              ? Center(child: AppStatusView(type: AppStatusType.loading, title: '', subtitle: ''))
-              : Padding(
-                  padding: EdgeInsets.all(24.sp),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left column: the archive itself.
-                      SizedBox(
-                        width: 420.sp,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16.sp),
-                              child: AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: CachedNetworkImage(
-                                  imageUrl: archive.cover,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 720,
+          : Padding(
+              padding: EdgeInsets.all(24.sp),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ------------------------------------------- the archive poster
+                  SizedBox(
+                    width: 460.sp,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Poster with the scrim: the title reads over the
+                          // artwork, the badges anchor the corners.
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(24.sp),
+                            child: Stack(
+                              children: [
+                                AspectRatio(
+                                  aspectRatio: 16 / 10,
+                                  child: CachedNetworkImage(
+                                    imageUrl: archive.cover,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 900,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            SizedBox(height: 16.sp),
-                            Text(
-                              archive.title,
-                              style: AppTextStyles.t22W700.copyWith(color: tvTheme.primaryTextColor, height: 1.35),
-                            ),
-                            SizedBox(height: 10.sp),
-                            TvFocusable(
-                              onTap: archive.upMid > 0
-                                  ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
-                                  : null,
-                              builder: (context, focused, child) => AnimatedContainer(
-                                duration: const Duration(milliseconds: 120),
-                                padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 6.sp),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.sp),
-                                  border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.person_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                    SizedBox(width: 6.sp),
-                                    Expanded(
-                                      child: Text(
-                                        archive.upName,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                                Positioned.fill(
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        stops: const [0.35, 1.0],
+                                        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.82)],
                                       ),
                                     ),
-                                    Icon(Icons.chevron_right_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 6.sp),
-                            Row(
-                              children: [
-                                Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                SizedBox(width: 6.sp),
-                                Text(
-                                  readableCount(archive.playCount.toString()),
-                                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                                ),
-                                SizedBox(width: 16.sp),
-                                Icon(Icons.format_quote_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                SizedBox(width: 6.sp),
-                                Text(
-                                  readableCount(archive.barrageCount.toString()),
-                                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                                ),
-                                if (archive.publishDate.isNotEmpty) ...[
-                                  SizedBox(width: 16.sp),
-                                  Text(
-                                    archive.publishDate,
-                                    style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            SizedBox(height: 14.sp),
-                            // --------------------------------- the interaction row
-                            Wrap(
-                              spacing: 10.sp,
-                              runSpacing: 10.sp,
-                              children: [
-                                TvButton(
-                                  key: const ValueKey('detail_like'),
-                                  title: i18n('video_action_like'),
-                                  icon: Icon(
-                                    _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                                    size: 22.sp,
-                                  ),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: !_liked,
-                                  onTap: () => _runAction(
-                                    () async {
-                                      await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
-                                      setState(() => _liked = !_liked);
-                                    },
-                                    'video_action_liked',
                                   ),
                                 ),
-                                TvButton(
-                                  title: i18n('video_action_coin'),
-                                  icon: Icon(Icons.toll_rounded, size: 22.sp),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: true,
-                                  onTap: () => _runAction(
-                                    () => BilibiliUgcApi.instance.addCoin(archive.aid),
-                                    'video_action_coined',
+                                if (archive.tname.isNotEmpty)
+                                  Positioned(
+                                    left: 14.sp,
+                                    top: 14.sp,
+                                    child: TvButton(excludeFocus: true, title: archive.tname, size: TvButtonSize.mini),
                                   ),
-                                ),
-                                TvButton(
-                                  title: i18n('video_action_fav'),
-                                  icon: Icon(
-                                    _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
-                                    size: 22.sp,
-                                  ),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: !_favoured,
-                                  onTap: () => _runAction(
-                                    () async {
-                                      await BilibiliUgcApi.instance.favDeal(aid: archive.aid, addFolderIds: const []);
-                                      await _loadStates(archive.aid);
-                                    },
-                                    'video_action_faved',
-                                  ),
-                                ),
-                                TvButton(
-                                  title: i18n('video_action_triple'),
-                                  icon: Icon(Icons.recommend_rounded, size: 22.sp),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: true,
-                                  onTap: () => _runAction(
-                                    () => BilibiliUgcApi.instance.tripleAction(archive.aid),
-                                    'video_action_trpled',
-                                  ),
-                                ),
-                                TvButton(
-                                  title: i18n('video_action_toview'),
-                                  icon: Icon(Icons.watch_later_outlined, size: 22.sp),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: true,
-                                  onTap: () => _runAction(
-                                    () => BilibiliUgcApi.instance.addToView(archive.aid),
-                                    'video_action_toviewed',
-                                  ),
-                                ),
-                                TvButton(
-                                  title: i18n('video_comments_title'),
-                                  icon: Icon(Icons.comment_outlined, size: 22.sp),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: true,
-                                  onTap: () => UgcCommentsRoute(
-                                    UgcCommentsArgs(oid: archive.aid, title: archive.title),
-                                  ).push(context),
-                                ),
-                              ],
-                            ),
-                            if (archive.description.isNotEmpty) ...[
-                              SizedBox(height: 12.sp),
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  child: Text(
-                                    archive.description,
-                                    style: AppTextStyles.t16W500.copyWith(
-                                      color: tvTheme.secondaryTextColor,
-                                      height: 1.5,
+                                if (archive.duration > 0)
+                                  Positioned(
+                                    right: 14.sp,
+                                    bottom: 46.sp,
+                                    child: TvButton(
+                                      excludeFocus: true,
+                                      title: MusicVideoCard.formatDuration(archive.duration),
+                                      size: TvButtonSize.mini,
                                     ),
                                   ),
+                                Positioned(
+                                  left: 14.sp,
+                                  right: 14.sp,
+                                  bottom: 12.sp,
+                                  child: Text(
+                                    archive.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.t20W700.copyWith(color: Colors.white, height: 1.35),
+                                  ),
                                 ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 16.sp),
+                          // The UP row: avatar-led, opens the user space.
+                          TvFocusable(
+                            onTap: archive.upMid > 0
+                                ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
+                                : null,
+                            builder: (context, focused, child) => AnimatedContainer(
+                              duration: const Duration(milliseconds: 120),
+                              padding: EdgeInsets.all(12.sp),
+                              decoration: BoxDecoration(
+                                color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+                                borderRadius: BorderRadius.circular(20.sp),
+                                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
                               ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 32.sp),
-                      // Right column: parts on top, related below.
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
                               child: Row(
                                 children: [
-                                  Text(
-                                    '${i18n('music_tracks_title')}（${tracks.length}）',
-                                    style: AppTextStyles.t20W600.copyWith(color: accent),
+                                  TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName),
+                                  SizedBox(width: 12.sp),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          archive.upName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTextStyles.t16W700.copyWith(
+                                            color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${i18n('video_action_played')} ${readableCount(archive.playCount.toString())} · ${archive.publishDate}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTextStyles.t14W500.copyWith(
+                                            color: focused
+                                                ? tvTheme.onFocusedCardSecondary
+                                                : tvTheme.secondaryTextColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  const Spacer(),
-                                  TvButton(
-                                    title: i18n('music_play_all'),
-                                    icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
-                                    size: TvButtonSize.mini,
-                                    onTap: () => _play(tracks, 0),
-                                  ),
+                                  Icon(Icons.chevron_right_rounded, size: 24.sp, color: tvTheme.secondaryTextColor),
                                 ],
                               ),
                             ),
-                            Expanded(
-                              flex: 3,
-                              child: ListView.separated(
-                                padding: EdgeInsets.only(bottom: 16.sp),
-                                itemCount: tracks.length,
-                                separatorBuilder: (_, _) => SizedBox(height: 8.sp),
-                                itemBuilder: (context, index) => _PartTile(
-                                  track: tracks[index],
-                                  index: index,
-                                  onTap: () => _play(tracks, index),
+                          ),
+                          SizedBox(height: 14.sp),
+                          // Interaction chips.
+                          Wrap(
+                            spacing: 10.sp,
+                            runSpacing: 10.sp,
+                            children: [
+                              _ActionChip(
+                                icon: _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
+                                label: i18n('video_action_like'),
+                                active: _liked,
+                                onTap: () => _runAction(
+                                  () async {
+                                    await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
+                                    setState(() => _liked = !_liked);
+                                  },
+                                  'video_action_liked',
                                 ),
                               ),
-                            ),
-                            if (_related.isNotEmpty) ...[
-                              Padding(
-                                padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
-                                child: Text(
-                                  i18n('video_related_title'),
-                                  style: AppTextStyles.t20W600.copyWith(color: accent),
+                              _ActionChip(
+                                icon: Icons.toll_rounded,
+                                label: i18n('video_action_coin'),
+                                onTap: () => _runAction(
+                                  () => BilibiliUgcApi.instance.addCoin(archive.aid),
+                                  'video_action_coined',
                                 ),
                               ),
-                              Expanded(
-                                child: DpadRegion(
-                                  horizontalEdge: DpadEdgeBehavior.leave,
-                                  child: ListView.separated(
-                                    scrollDirection: Axis.horizontal,
-                                    padding: EdgeInsets.only(bottom: 16.sp),
-                                    itemCount: _related.length,
-                                    separatorBuilder: (_, _) => SizedBox(width: 12.sp),
-                                    itemBuilder: (context, index) {
-                                      final related = _related[index];
-                                      return SizedBox(
-                                        width: 260.sp,
-                                        child: MusicVideoCard(
-                                          archive: related,
-                                          onTap: () => VideoDetailRoute(related).push(context),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                              _ActionChip(
+                                icon: _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
+                                label: i18n('video_action_fav'),
+                                active: _favoured,
+                                onTap: () => _runAction(
+                                  () async {
+                                    await BilibiliUgcApi.instance.favDeal(aid: archive.aid, addFolderIds: const []);
+                                    await _loadStates(archive.aid);
+                                  },
+                                  'video_action_faved',
                                 ),
+                              ),
+                              _ActionChip(
+                                icon: Icons.recommend_rounded,
+                                label: i18n('video_action_triple'),
+                                onTap: () => _runAction(
+                                  () => BilibiliUgcApi.instance.tripleAction(archive.aid),
+                                  'video_action_trpled',
+                                ),
+                              ),
+                              _ActionChip(
+                                icon: Icons.watch_later_outlined,
+                                label: i18n('video_action_toview'),
+                                onTap: () => _runAction(
+                                  () => BilibiliUgcApi.instance.addToView(archive.aid),
+                                  'video_action_toviewed',
+                                ),
+                              ),
+                              _ActionChip(
+                                icon: Icons.comment_outlined,
+                                label: i18n('video_comments_title'),
+                                onTap: archive.aid > 0
+                                    ? () => UgcCommentsRoute(
+                                          UgcCommentsArgs(oid: archive.aid, title: archive.title),
+                                        ).push(context)
+                                    : null,
                               ),
                             ],
+                          ),
+                          if (archive.description.isNotEmpty) ...[
+                            SizedBox(height: 14.sp),
+                            Text(
+                              archive.description,
+                              style: AppTextStyles.t14W500.copyWith(
+                                color: tvTheme.secondaryTextColor,
+                                height: 1.55,
+                              ),
+                            ),
                           ],
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  SizedBox(width: 32.sp),
+                  // --------------------------------- parts and related videos
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
+                          child: Row(
+                            children: [
+                              Text(
+                                '${i18n('music_tracks_title')}（${tracks.length}）',
+                                style: AppTextStyles.t20W600.copyWith(color: accent),
+                              ),
+                              const Spacer(),
+                              TvButton(
+                                title: i18n('music_play_all'),
+                                icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                                size: TvButtonSize.mini,
+                                onTap: () => _play(tracks, 0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 3,
+                          child: ListView.separated(
+                            padding: EdgeInsets.only(bottom: 16.sp),
+                            itemCount: tracks.length,
+                            separatorBuilder: (_, _) => SizedBox(height: 8.sp),
+                            itemBuilder: (context, index) => _PartTile(
+                              track: tracks[index],
+                              index: index,
+                              onTap: () => _play(tracks, index),
+                            ),
+                          ),
+                        ),
+                        if (_related.isNotEmpty) ...[
+                          Padding(
+                            padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
+                            child: Text(
+                              i18n('video_related_title'),
+                              style: AppTextStyles.t20W600.copyWith(color: accent),
+                            ),
+                          ),
+                          Expanded(
+                            child: DpadRegion(
+                              horizontalEdge: DpadEdgeBehavior.leave,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.only(bottom: 16.sp),
+                                itemCount: _related.length,
+                                separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+                                itemBuilder: (context, index) {
+                                  final related = _related[index];
+                                  return SizedBox(
+                                    width: 300.sp,
+                                    child: MusicVideoCard(
+                                      archive: related,
+                                      onTap: () => VideoDetailRoute(related).push(context),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+}
+
+/// One interaction chip: a compact icon+label pill in the focused palette.
+class _ActionChip extends StatelessWidget {
+  const _ActionChip({required this.icon, required this.label, this.active = false, this.onTap});
+
+  final IconData icon;
+  final String label;
+  final bool active;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    return TvFocusable(
+      onTap: onTap,
+      builder: (context, focused, child) => AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
+        decoration: BoxDecoration(
+          color: active
+              ? accent.withValues(alpha: 0.2)
+              : focused
+                  ? tvTheme.focusedCardColor
+                  : tvTheme.cardColor,
+          borderRadius: BorderRadius.circular(24.sp),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 22.sp, color: active ? accent : tvTheme.secondaryTextColor),
+            SizedBox(width: 8.sp),
+            Text(
+              label,
+              style: AppTextStyles.t14W600.copyWith(
+                color: active ? accent : (focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -383,8 +444,8 @@ class _PartTile extends StatelessWidget {
           height: 76.sp,
           padding: EdgeInsets.symmetric(horizontal: 16.sp),
           decoration: BoxDecoration(
-            color: tvTheme.cardColor,
-            borderRadius: BorderRadius.circular(14.sp),
+            color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+            borderRadius: BorderRadius.circular(18.sp),
             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
           ),
           child: Row(
@@ -393,7 +454,9 @@ class _PartTile extends StatelessWidget {
                 width: 40.sp,
                 child: Text(
                   '${index + 1}',
-                  style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.t18W500.copyWith(
+                    color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
+                  ),
                 ),
               ),
               Expanded(
@@ -401,13 +464,17 @@ class _PartTile extends StatelessWidget {
                   track.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t18W500.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t18W500.copyWith(
+                    color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+                  ),
                 ),
               ),
               SizedBox(width: 12.sp),
               Text(
                 MusicVideoCard.formatDuration(track.part.duration > 0 ? track.part.duration : track.archive.duration),
-                style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                style: AppTextStyles.t16W500.copyWith(
+                  color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
+                ),
               ),
             ],
           ),

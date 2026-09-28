@@ -2796,5 +2796,6 @@
   "music_default_play_mode": "Default play mode",
   "music_default_play_mode_desc": "Order for new queues",
   "music_default_audio_only": "Audio-only by default",
-  "music_default_audio_only_desc": "Play sound without rendering video"
+  "music_default_audio_only_desc": "Play sound without rendering video",
+  "video_action_played": "Views"
 }
