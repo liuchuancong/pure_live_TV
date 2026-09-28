@@ -200,6 +200,22 @@ class BilibiliMusicApi {
   /// preferred (every TV decodes it), audio at the highest ordinary bitrate.
   /// Every quality tier the answer offers also lands in [MusicPlayUrls.videoOptions],
   /// so the player page can switch quality without another request.
+  /// The stream's first usable URL, skipping the mcdn edges when a backup
+  /// offers one. Those hosts (`*.mcdn.bilivideo.cn`, IP-encoded, odd ports)
+  /// often accept the TCP connection but never stream to a plain HTTPS client —
+  /// the player then sits on an "opened" source that delivers nothing.
+  static String bestUrlOf(Map<dynamic, dynamic> stream) {
+    final candidates = <String>[
+      stream['baseUrl']?.toString() ?? '',
+      for (final url in (stream['backupUrl'] as List?) ?? const <dynamic>[]) url.toString(),
+    ].where((url) => url.isNotEmpty).toList();
+    for (final url in candidates) {
+      final host = Uri.tryParse(url)?.host ?? '';
+      if (!host.contains('mcdn')) return url;
+    }
+    return candidates.isEmpty ? '' : candidates.first;
+  }
+
   MusicPlayUrls? _pickDashStreams(Map<dynamic, dynamic> dash, {required int servedQuality}) {
     final videos = (dash['video'] as List?) ?? const [];
     final audios = (dash['audio'] as List?) ?? const [];
@@ -221,7 +237,7 @@ class BilibiliMusicApi {
     if (tiers.isEmpty) return null;
 
     final picked = byQuality[tiers.first]!;
-    final videoUrl = picked['baseUrl']?.toString() ?? '';
+    final videoUrl = bestUrlOf(picked);
     if (videoUrl.isEmpty) return null;
     List<String> backupsOf(Map<dynamic, dynamic> v) => [
       for (final url in (v['backupUrl'] as List?) ?? const <dynamic>[])
@@ -231,7 +247,7 @@ class BilibiliMusicApi {
       for (final id in tiers)
         MusicStreamOption(
           quality: id,
-          url: byQuality[id]!['baseUrl']?.toString() ?? '',
+          url: bestUrlOf(byQuality[id]!),
           codecs: byQuality[id]!['codecs']?.toString() ?? '',
           backupUrls: backupsOf(byQuality[id]!),
         ),
@@ -252,7 +268,7 @@ class BilibiliMusicApi {
     final audio = pickAudio();
     return MusicPlayUrls(
       videoUrl: videoUrl,
-      audioUrl: audio?['baseUrl']?.toString(),
+      audioUrl: audio == null ? null : bestUrlOf(audio),
       videoBackupUrls: backupsOf(picked),
       quality: tiers.first,
       videoOptions: options,

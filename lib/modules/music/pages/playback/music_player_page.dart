@@ -10,6 +10,7 @@ import 'package:flutter_lyric/flutter_lyric.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/player/models/player_engine.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
@@ -42,6 +43,10 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
   bool _controlsVisible = true;
   bool _queueOpen = false;
 
+  /// Whether the next bar activation should land in the seek zone — the
+  /// hidden-state arrow seeks raise the bar with the keyboard already there.
+  bool _activateInSeekZone = false;
+
   /// The bar hides itself over the picture; every key the page or the bar
   /// handles re-arms this.
   Timer? _autoHideTimer;
@@ -73,13 +78,15 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     });
   }
 
-  void _showControls() {
+  void _showControls({bool inSeekZone = false}) {
+    _activateInSeekZone = inSeekZone;
     if (!_controlsVisible) setState(() => _controlsVisible = true);
     _armAutoHide();
   }
 
   void _hideControls() {
     _autoHideTimer?.cancel();
+    _activateInSeekZone = false;
     if (_controlsVisible) setState(() => _controlsVisible = false);
     _rootNode.requestFocus();
   }
@@ -129,10 +136,12 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       controller.seekAccelerated(-1);
+      _showControls(inSeekZone: true);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
       controller.seekAccelerated(1);
+      _showControls(inSeekZone: true);
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -316,6 +325,7 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                     excluding: !_controlsVisible || _queueOpen,
                     child: _ControlBar(
                       active: _controlsVisible && !_queueOpen,
+                      activateInSeekZone: _activateInSeekZone,
                       onQueue: _openQueue,
                       onInteraction: _armAutoHide,
                       onPickLyric: _showLyricPicker,
@@ -644,6 +654,7 @@ enum _BarZone { bar, seek }
 class _ControlBar extends ConsumerStatefulWidget {
   const _ControlBar({
     required this.active,
+    required this.activateInSeekZone,
     required this.onQueue,
     required this.onInteraction,
     required this.onPickLyric,
@@ -652,6 +663,10 @@ class _ControlBar extends ConsumerStatefulWidget {
 
   /// Whether the controls are on screen; becoming active takes the keyboard.
   final bool active;
+
+  /// Consumed at activation: a seek-raised bar opens with the keyboard in the
+  /// seek zone, so the following arrows keep seeking instead of walking rows.
+  final bool activateInSeekZone;
 
   final VoidCallback onQueue;
 
@@ -672,7 +687,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
   int _index = 2;
   _BarZone _zone = _BarZone.bar;
 
-  static const int _itemCount = 10;
+  static const int _itemCount = 13;
 
   @override
   void initState() {
@@ -684,7 +699,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
   void didUpdateWidget(_ControlBar old) {
     super.didUpdateWidget(old);
     if (!old.active && widget.active) {
-      _zone = _BarZone.bar;
+      _zone = widget.activateInSeekZone ? _BarZone.seek : _BarZone.bar;
       _takeFocus();
     }
   }
@@ -780,6 +795,23 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
         widget.onPickLyric();
       case 9:
         widget.onSwitchCore();
+      case 10:
+      case 11:
+        final libraryController = ref.read(musicLibraryControllerProvider.notifier);
+        final current = ref.read(musicPlayerControllerProvider).current;
+        if (current == null) return;
+        if (index == 10) {
+          libraryController.toggleFavorite(current.archive);
+        } else if (current.archive.upMid > 0) {
+          libraryController.toggleFollowUp(
+            MusicUp(mid: current.archive.upMid, name: current.archive.upName, face: current.archive.upFace),
+          );
+        }
+      case 12:
+        final heartTrack = ref.read(musicPlayerControllerProvider).current;
+        if (heartTrack != null) {
+          ref.read(musicLibraryControllerProvider.notifier).toggleLikeSong(heartTrack);
+        }
     }
   }
 
@@ -806,8 +838,14 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(musicPlayerControllerProvider);
+    final library = ref.watch(musicLibraryControllerProvider);
     final tvTheme = context.tvTheme;
     final bool seekZone = _zone == _BarZone.seek;
+    final track = state.current;
+    final bool followingAlbum = track != null && library.isFavorite(track.archive.bvid);
+    final bool followingUp = track != null && track.archive.upMid > 0 && library.isFollowingUp(track.archive.upMid);
+    // The song-level heart: what the 喜欢 list on the music page collects.
+    final bool liked = track != null && library.isSongLiked(track.id);
 
     return Focus(
       focusNode: _node,
@@ -971,6 +1009,48 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                         onTap: () => _activateAt(9),
                       ),
                     ),
+                    _excluded(
+                      TvButton(
+                        title: i18n(followingAlbum ? 'music_unfollow_album' : 'music_follow_album'),
+                        icon: Icon(
+                          followingAlbum ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          size: 22.sp,
+                        ),
+                        size: TvButtonSize.mini,
+                        isSecondary: !followingAlbum,
+                        selected: _index == 10,
+                        onTap: () => _activateAt(10),
+                      ),
+                    ),
+                    if (track != null && track.archive.upMid > 0)
+                      _excluded(
+                        TvButton(
+                          title: i18n(followingUp ? 'music_unfollow_up' : 'music_follow_up'),
+                          icon: Icon(
+                            followingUp ? Icons.person_remove_outlined : Icons.person_add_alt_outlined,
+                            size: 22.sp,
+                          ),
+                          size: TvButtonSize.mini,
+                          isSecondary: !followingUp,
+                          selected: _index == 11,
+                          onTap: () => _activateAt(11),
+                        ),
+                      ),
+                    if (track != null)
+                      _excluded(
+                        TvButton(
+                          title: i18n('music_likes'),
+                          icon: Icon(
+                            liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            size: 22.sp,
+                            color: liked ? const Color(0xFFEF5350) : null,
+                          ),
+                          size: TvButtonSize.mini,
+                          isSecondary: !liked,
+                          selected: _index == 12,
+                          onTap: () => _activateAt(12),
+                        ),
+                      ),
                   ],
                 ),
               ],
@@ -1212,6 +1292,10 @@ class _LyricPickerDialog extends StatelessWidget {
                     title: candidate.title,
                     subtitle: '$source${candidate.artist.isEmpty ? '' : ' · ${candidate.artist}'}',
                     selected: index == selected,
+                    // The list builds late (network candidates): without an
+                    // explicit focus target the dialog's guard ran before any
+                    // row existed and the remote landed nowhere.
+                    autofocus: index == (selected >= 0 ? selected : 0),
                     onTap: () => Navigator.of(context).pop(candidate),
                   ),
                 );

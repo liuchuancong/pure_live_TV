@@ -21,7 +21,12 @@ class TvQrCodeCard extends StatelessWidget {
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(24.sp);
 
-    return Column(
+    // ScaleDown, not clip: a compact slot (a settings card, a player panel)
+    // gets a smaller whole card instead of a bottom-clipped one.
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           decoration: BoxDecoration(
@@ -76,6 +81,7 @@ class TvQrCodeCard extends StatelessWidget {
           ),
         ],
       ],
+      ),
     );
   }
 }

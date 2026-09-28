@@ -493,16 +493,26 @@ class MusicPlayerController extends _$MusicPlayerController {
     if (!audioOnly && _playingLocalFile) {
       final position = handle?.position ?? Duration.zero;
       final track = state.current;
-      final urls = _currentUrls;
       final bvid = _currentBvid;
-      if (track != null && urls != null && bvid != null) {
+      if (track != null && bvid != null) {
+        // The cached file carries no picture: say it is loading instead of
+        // leaving the toggle silent while the network pair re-opens.
+        state = state.copyWith(resolving: true);
         try {
-          await _openUrls(track, urls, bvid);
+          // The answer that fed the cache may be hours old, and a stale DASH
+          // audio URL is exactly the silent-video failure — the picture
+          // streams while the expired audio 403s. Re-resolve instead of
+          // replaying the stored answer.
+          var fresh = await modulePlayUrlResolver?.call(track);
+          fresh ??= await _api.getPlayUrls(bvid: bvid, cid: track.part.cid);
+          await _openUrls(track, fresh, bvid);
           await _restorePosition(position);
           return;
         } catch (_) {
           state = state.copyWith(audioOnly: true);
           return;
+        } finally {
+          if (ref.mounted) state = state.copyWith(resolving: false);
         }
       }
     }
