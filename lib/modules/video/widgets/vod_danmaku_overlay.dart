@@ -77,7 +77,7 @@ class VodDanmakuOverlayState extends ConsumerState<VodDanmakuOverlay> {
 
   @override
   void didUpdateWidget(VodDanmakuOverlay oldWidget) {
-    super.didUpdateWidget(old);
+    super.didUpdateWidget(oldWidget);
     if (oldWidget.cid != widget.cid) _load();
   }
 
