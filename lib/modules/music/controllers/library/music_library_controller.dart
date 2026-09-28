@@ -11,16 +11,25 @@ part 'music_library_controller.g.dart';
 /// JSON string lists so the library survives restarts — the part that makes
 /// music mode an application instead of a demo.
 class MusicLibraryState {
-  const MusicLibraryState({this.favorites = const [], this.recents = const []});
+  const MusicLibraryState({this.favorites = const [], this.recents = const [], this.followedUps = const []});
 
   final List<MusicArchive> favorites;
   final List<MusicArchive> recents;
 
+  /// Followed uploaders (作者), separate from the album favorites.
+  final List<MusicUp> followedUps;
+
   /// Reactive favorite check for widgets holding the state.
   bool isFavorite(String bvid) => favorites.any((a) => a.bvid == bvid);
 
-  MusicLibraryState copyWith({List<MusicArchive>? favorites, List<MusicArchive>? recents}) {
-    return MusicLibraryState(favorites: favorites ?? this.favorites, recents: recents ?? this.recents);
+  bool isFollowingUp(int mid) => followedUps.any((u) => u.mid == mid);
+
+  MusicLibraryState copyWith({List<MusicArchive>? favorites, List<MusicArchive>? recents, List<MusicUp>? followedUps}) {
+    return MusicLibraryState(
+      favorites: favorites ?? this.favorites,
+      recents: recents ?? this.recents,
+      followedUps: followedUps ?? this.followedUps,
+    );
   }
 }
 
@@ -33,6 +42,7 @@ class MusicLibraryController extends _$MusicLibraryController {
     return MusicLibraryState(
       favorites: _load('musicFavorites'),
       recents: _load('musicRecents'),
+      followedUps: _loadUps('musicFollowedUps'),
     );
   }
 
@@ -80,6 +90,21 @@ class MusicLibraryController extends _$MusicLibraryController {
     _persist('musicRecents', const []);
   }
 
+  /// Follow / unfollow an uploader. Front-insert on follow, keyed by mid.
+  void toggleFollowUp(MusicUp up) {
+    final next = List<MusicUp>.from(state.followedUps);
+    final existing = next.indexWhere((u) => u.mid == up.mid);
+    if (existing >= 0) {
+      next.removeAt(existing);
+      ToastUtil.show(i18n('music_up_unfollowed'));
+    } else {
+      next.insert(0, up);
+      ToastUtil.show(i18n('music_up_followed'));
+    }
+    state = state.copyWith(followedUps: List.unmodifiable(next));
+    _persistUps('musicFollowedUps', next);
+  }
+
   List<MusicArchive> _load(String key) {
     try {
       final raw = HivePrefUtil.getStringList(key) ?? const [];
@@ -94,5 +119,22 @@ class MusicLibraryController extends _$MusicLibraryController {
 
   void _persist(String key, List<MusicArchive> list) {
     HivePrefUtil.setStringList(key, [for (final a in list) jsonEncode(a.toJson())]);
+  }
+
+  List<MusicUp> _loadUps(String key) {
+    try {
+      final raw = HivePrefUtil.getStringList(key) ?? const [];
+      return [
+        for (final entry in raw)
+          if (jsonDecode(entry) case final Map<String, dynamic> map)
+            if (MusicUp.fromJson(map).mid > 0) MusicUp.fromJson(map),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  void _persistUps(String key, List<MusicUp> list) {
+    HivePrefUtil.setStringList(key, [for (final u in list) jsonEncode(u.toJson())]);
   }
 }
