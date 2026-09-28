@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
 import 'package:pure_live/modules/video/api/video_pgc_api.dart';
 import 'package:pure_live/modules/video/pages/discover/video_pgc_page.dart';
+import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';
 import 'package:pure_live/modules/video/pages/personal/video_personal_page.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+
 
 /// Video mode sections. The section rail lives in the home sidebar; this file
 /// builds section content only, so the mode swaps the whole navigation.
@@ -38,12 +39,13 @@ class VideoSectionView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     _ensurePgcResolver();
-    final themeState = ref.watch(themeSettingsControllerProvider);
-    final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: themeState.denseRoomLayout,
-      mainAxisSpacing: themeState.mainAxisSpacing.w,
-      crossAxisSpacing: themeState.crossAxisSpacing.w,
-      childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout) + 0.14,
+    // newBV's home grid: a fixed 4 columns with its own spacing — the card
+    // carries its own aspect (the 1.6:1 cover plus the info block), so the
+    // shared room-card aspect no longer applies here.
+    const gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 4,
+      mainAxisSpacing: 12.0,
+      crossAxisSpacing: 24.0,
     );
 
     return switch (section) {
@@ -84,8 +86,10 @@ class _PagedGridTabState<W extends _PagedGridTab> extends ConsumerState<W> {
       param: param,
       getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
       gridDelegate: widget.gridDelegate,
-      itemBuilder: (context, archive, index) =>
-          MusicVideoCard(archive: archive, onTap: () => VideoDetailRoute(archive).push(context)),
+      itemBuilder: (context, archive, index) => VideoCard(
+        archive: archive,
+        onTap: () => VideoDetailRoute(archive).push(context),
+      ),
     );
   }
 }
