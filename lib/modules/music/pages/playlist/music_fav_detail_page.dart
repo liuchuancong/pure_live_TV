@@ -9,20 +9,40 @@ import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
-/// One synced playlist's track table (bmsc's fav detail): play all with the
-/// excluded parts filtered out, per-track download state, and the 排除分P
+/// One synced playlist's track table (bmsc's fav detail): an in-list search
+/// filter, play all with the excluded parts filtered out, and the 排除分P
 /// toggle on the focused tile.
-class MusicFavDetailPage extends ConsumerWidget {
+class MusicFavDetailPage extends ConsumerStatefulWidget {
   const MusicFavDetailPage({super.key, required this.folder});
 
   final FavFolder folder;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MusicFavDetailPage> createState() => _MusicFavDetailPageState();
+}
+
+class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
+  final TextEditingController _filter = TextEditingController();
+
+  @override
+  void dispose() {
+    _filter.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final folder = widget.folder;
     final sync = ref.watch(musicPlaylistSyncControllerProvider);
     final tvTheme = context.tvTheme;
+    final keyword = _filter.text.trim().toLowerCase();
+    final sources = sync.folderTracks[folder.id] ?? const <MusicArchive>[];
     final tracks = <MusicTrack>[
-      for (final archive in sync.folderTracks[folder.id] ?? const <MusicArchive>[]) ...archive.tracks,
+      for (final archive in sources)
+        if (keyword.isEmpty ||
+            archive.title.toLowerCase().contains(keyword) ||
+            archive.upName.toLowerCase().contains(keyword))
+          ...archive.tracks,
     ];
 
     return TvPageScaffold(
@@ -37,6 +57,17 @@ class MusicFavDetailPage extends ConsumerWidget {
                 Text(
                   '${tracks.length} ${i18n('music_tracks_unit')}',
                   style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                ),
+                SizedBox(width: 16.sp),
+                SizedBox(
+                  width: 320.sp,
+                  child: TvInputField(
+                    controller: _filter,
+                    hint: i18n('music_playlist_filter_hint'),
+                    height: 56.sp,
+                    maxLines: 1,
+                    onChanged: (_) => setState(() {}),
+                  ),
                 ),
                 SizedBox(width: 16.sp),
                 Text(

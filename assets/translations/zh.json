@@ -2778,5 +2778,6 @@
   "video_subtitle_on": "字幕开",
   "video_subtitle_off": "字幕关",
   "video_aspect_fill": "填满",
-  "video_aspect_fit": "适应"
+  "video_aspect_fit": "适应",
+  "music_playlist_filter_hint": "在歌单内搜索"
 }
