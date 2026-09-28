@@ -2781,5 +2781,9 @@
   "video_aspect_fit": "适应",
   "music_playlist_filter_hint": "在歌单内搜索",
   "video_personal_bangumi": "我的追番",
-  "video_bangumi_empty": "还没有追番"
+  "video_bangumi_empty": "还没有追番",
+  "video_search_type_live": "直播",
+  "video_search_live_empty": "没有找到直播间",
+  "video_search_live_badge": "直播",
+  "video_search_live_online": "人观看"
 }
