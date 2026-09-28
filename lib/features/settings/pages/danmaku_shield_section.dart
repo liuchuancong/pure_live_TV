@@ -222,7 +222,7 @@ class _BlockEntryAddDialogState extends ConsumerState<BlockEntryAddDialog> {
             if (_error.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: 10.sp),
-                child: Text(_error, style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor)),
+                child: Text(_error, style: TextStyle(fontSize: 16.sp, color: context.tvTheme.focusColor)),
               ),
           ],
         ),
@@ -256,7 +256,7 @@ class BlockEntryDetailDialog extends StatelessWidget {
             SizedBox(height: 16.sp),
             Text(
               i18nOr('block_delete_confirm', '确定要删除这条屏蔽项吗？'),
-              style: TextStyle(fontSize: 15.sp, color: context.tvTheme.secondaryTextColor),
+              style: TextStyle(fontSize: 17.sp, color: context.tvTheme.secondaryTextColor),
             ),
           ],
         ),

@@ -53,7 +53,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...'),
-                    style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
+                    style: TextStyle(fontSize: 16.sp, color: tvTheme.secondaryTextColor),
                   ),
                 ),
               ],
@@ -108,7 +108,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
+              style: TextStyle(fontSize: 16.sp, color: tvTheme.secondaryTextColor),
             ),
           ),
         ],

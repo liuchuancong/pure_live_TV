@@ -167,7 +167,7 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           label,
-          style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
+          style: TextStyle(fontSize: 17.sp, color: tvTheme.secondaryTextColor),
         ),
       ),
     );
@@ -242,12 +242,12 @@ Future<void> showReleaseNotesDialog({
                         padding: EdgeInsets.only(bottom: 12.sp),
                         child: Text(
                           i18n('version_published_at', args: <String, String>{'date': release.date}),
-                          style: TextStyle(fontSize: 14.sp, color: tvTheme.secondaryTextColor),
+                          style: TextStyle(fontSize: 16.sp, color: tvTheme.secondaryTextColor),
                         ),
                       ),
                     Text(
                       notes.isEmpty ? i18n('update_no_notes') : notes,
-                      style: TextStyle(fontSize: 16.sp, height: 1.5, color: tvTheme.primaryTextColor),
+                      style: TextStyle(fontSize: 18.sp, height: 1.5, color: tvTheme.primaryTextColor),
                     ),
                   ],
                 ),
@@ -257,7 +257,7 @@ Future<void> showReleaseNotesDialog({
               SizedBox(height: 16.sp),
               Text(
                 i18n('update_assets'),
-                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
+                style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
               ),
               SizedBox(height: 10.sp),
               Wrap(

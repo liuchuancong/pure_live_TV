@@ -58,7 +58,7 @@ class _ExitConfirmDialog extends StatelessWidget {
           Text(
             i18nOr('exit_donate_message', '项目全程开源免费，无任何付费门槛。若是本应用给您带来便利，欢迎微信扫码请开发者喝瓶牛奶，支持后续更新维护。'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18.sp, height: 1.5, color: tvTheme.secondaryTextColor),
+            style: TextStyle(fontSize: 20.sp, height: 1.5, color: tvTheme.secondaryTextColor),
           ),
         ],
       ),

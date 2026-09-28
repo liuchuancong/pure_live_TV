@@ -142,7 +142,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
                         textAlign: TextAlign.center,
                         style: AppTextStyles.t20W600.copyWith(
                           color: titleColor,
-                          fontSize: 15.sp,
+                          fontSize: 17.sp,
                           height: 1.15,
                           fontWeight: isFocused ? FontWeight.w700 : FontWeight.w600,
                         ),

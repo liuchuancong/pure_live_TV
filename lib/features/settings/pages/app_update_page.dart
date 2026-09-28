@@ -170,7 +170,7 @@ class AppUpdatePage extends ConsumerWidget {
                     : state.historyError != null
                     ? i18n('update_history_failed')
                     : i18n('update_no_history'),
-                style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
+                style: TextStyle(fontSize: 17.sp, color: tvTheme.secondaryTextColor),
               ),
             ),
           ),
@@ -224,7 +224,7 @@ class _UpdateHeroHeader extends StatelessWidget {
               ),
               child: Text(
                 'v$version+$buildNumber',
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: tvTheme.focusColor),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: tvTheme.focusColor),
               ),
             ),
           ],

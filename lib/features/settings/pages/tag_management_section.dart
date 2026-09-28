@@ -98,7 +98,7 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
               child: Text(
                 _result,
-                style: TextStyle(fontSize: 14.sp, color: context.tvTheme.focusColor),
+                style: TextStyle(fontSize: 16.sp, color: context.tvTheme.focusColor),
               ),
             ),
         ],
@@ -194,7 +194,7 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
                 padding: EdgeInsets.only(top: 10.sp),
                 child: Text(
                   _error,
-                  style: TextStyle(fontSize: 14.sp, color: tvTheme.focusColor),
+                  style: TextStyle(fontSize: 16.sp, color: tvTheme.focusColor),
                 ),
               ),
           ],
@@ -231,7 +231,7 @@ class _TagDetailDialog extends StatelessWidget {
               SizedBox(height: 8.sp),
               Text(
                 tag.description,
-                style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
+                style: TextStyle(fontSize: 17.sp, color: tvTheme.secondaryTextColor),
               ),
             ],
           ],

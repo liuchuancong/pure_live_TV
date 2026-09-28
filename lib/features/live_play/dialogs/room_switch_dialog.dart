@@ -354,7 +354,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 18.sp,
+                  fontSize: 20.sp,
                   height: 1.15,
                   fontWeight: i == _tabIndex ? FontWeight.w600 : FontWeight.w400,
                   color: i == _tabIndex ? accent : Colors.white70,

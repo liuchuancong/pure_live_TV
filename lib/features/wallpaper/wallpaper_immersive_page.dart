@@ -248,7 +248,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
                       ),
                       child: Text(
                         i18nOr('wallpaper_immersive_hint', '↑↓ 切换 · OK 设为壁纸 · 返回退出'),
-                        style: TextStyle(fontSize: 18.sp, color: Colors.white),
+                        style: TextStyle(fontSize: 20.sp, color: Colors.white),
                       ),
                     ),
                   ),

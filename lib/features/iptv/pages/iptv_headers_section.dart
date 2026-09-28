@@ -101,7 +101,7 @@ class _IptvHeadersSectionPageState extends ConsumerState<IptvHeadersSectionPage>
         if (_status.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.w, top: 10.h),
-            child: Text(_status, style: TextStyle(fontSize: 14.sp, color: theme.focusColor)),
+            child: Text(_status, style: TextStyle(fontSize: 16.sp, color: theme.focusColor)),
           ),
       ],
     );

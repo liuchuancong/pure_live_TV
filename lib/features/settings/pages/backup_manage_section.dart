@@ -212,12 +212,12 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
           if (_result.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
-              child: Text(_result, style: TextStyle(fontSize: 14.sp, color: theme.focusColor)),
+              child: Text(_result, style: TextStyle(fontSize: 16.sp, color: theme.focusColor)),
             ),
           if (_busy)
             Padding(
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
-              child: Text(i18n('ui_exporting'), style: TextStyle(fontSize: 14.sp, color: theme.primaryTextColor)),
+              child: Text(i18n('ui_exporting'), style: TextStyle(fontSize: 16.sp, color: theme.primaryTextColor)),
             ),
         ],
       ),

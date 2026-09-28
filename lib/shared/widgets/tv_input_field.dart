@@ -471,7 +471,7 @@ class _TvTextFieldFallbackState extends State<_TvTextFieldFallback> {
           hintText: widget.hint,
           hintStyle: TextStyle(color: widget.hintColor, fontSize: 24.sp),
           isDense: true,
-          counterStyle: TextStyle(color: widget.hintColor, fontSize: 16.sp),
+          counterStyle: TextStyle(color: widget.hintColor, fontSize: 18.sp),
           contentPadding: EdgeInsets.symmetric(vertical: 2.sp),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,

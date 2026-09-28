@@ -160,7 +160,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
             padding: EdgeInsets.only(left: 16.w, top: 10.h),
             child: Text(
               _status,
-              style: TextStyle(fontSize: 14.sp, color: theme.focusColor),
+              style: TextStyle(fontSize: 16.sp, color: theme.focusColor),
             ),
           ),
       ],

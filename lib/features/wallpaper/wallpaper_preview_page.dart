@@ -619,7 +619,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               Expanded(
                 child: Text(
                   _title(item),
-                  style: TextStyle(fontSize: 18.sp, color: Colors.white, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 20.sp, color: Colors.white, fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -627,7 +627,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               if (!widget.args.isApiMode && items.length > 1)
                 Text(
                   '${_index + 1}/${items.length}',
-                  style: TextStyle(fontSize: 18.sp, color: Colors.white70),
+                  style: TextStyle(fontSize: 20.sp, color: Colors.white70),
                 ),
               if (_isVideo) ...[
                 SizedBox(width: 18.sp),
@@ -660,7 +660,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           children: [
             Text(
               i18nOr('wallpaper_preview_hint', '←→ 选择按钮 · OK 确认 · 返回退出'),
-              style: TextStyle(fontSize: 16.sp, color: Colors.white70),
+              style: TextStyle(fontSize: 18.sp, color: Colors.white70),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -807,7 +807,7 @@ class _PreviewActionButtonState extends State<_PreviewActionButton> {
                 SizedBox(width: 10.sp),
                 Text(
                   widget.action.label,
-                  style: TextStyle(fontSize: 18.sp, color: foreground, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 20.sp, color: foreground, fontWeight: FontWeight.w600),
                 ),
               ],
             ),

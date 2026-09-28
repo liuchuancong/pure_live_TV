@@ -4,6 +4,12 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 class AppTextStyles {
   AppTextStyles._();
 
+  /// Legibility floor for the small tiers (2026-09): 14/16/18sp were drafted
+  /// too small to read from a couch, so each of those tiers renders two steps
+  /// larger — `t14` returns 16sp, `t16` 18sp, `t18` 20sp. Token names keep
+  /// their drafted sizes; primary copy should prefer t20 and up.
+  static double _floorLift(double size) => size + 2;
+
   /// The applied app font, set by App when it builds the theme.
   ///
   /// Widgets that install an [AppTextStyles] style as a `DefaultTextStyle`
@@ -12,38 +18,38 @@ class AppTextStyles {
   /// inherits it, these do not.
   static String? fontFamily;
 
-  // ==================== 14sp ====================
-  static TextStyle get t14W100 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w100, fontFamily: fontFamily);
-  static TextStyle get t14W200 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w200, fontFamily: fontFamily);
-  static TextStyle get t14W300 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w300, fontFamily: fontFamily);
-  static TextStyle get t14 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400, fontFamily: fontFamily); // normal
-  static TextStyle get t14W500 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, fontFamily: fontFamily); // medium
-  static TextStyle get t14W600 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, fontFamily: fontFamily); // semiBold
-  static TextStyle get t14W700 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, fontFamily: fontFamily); // bold
-  static TextStyle get t14W800 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w800, fontFamily: fontFamily);
-  static TextStyle get t14W900 => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w900, fontFamily: fontFamily);
+  // ==================== 14sp (renders 16sp, see _floorLift) ====================
+  static TextStyle get t14W100 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w100, fontFamily: fontFamily);
+  static TextStyle get t14W200 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w200, fontFamily: fontFamily);
+  static TextStyle get t14W300 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w300, fontFamily: fontFamily);
+  static TextStyle get t14 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w400, fontFamily: fontFamily); // normal
+  static TextStyle get t14W500 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w500, fontFamily: fontFamily); // medium
+  static TextStyle get t14W600 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w600, fontFamily: fontFamily); // semiBold
+  static TextStyle get t14W700 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w700, fontFamily: fontFamily); // bold
+  static TextStyle get t14W800 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w800, fontFamily: fontFamily);
+  static TextStyle get t14W900 => TextStyle(fontSize: _floorLift(14).sp, fontWeight: FontWeight.w900, fontFamily: fontFamily);
 
-  // ==================== 16sp ====================
-  static TextStyle get t16W100 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w100, fontFamily: fontFamily);
-  static TextStyle get t16W200 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w200, fontFamily: fontFamily);
-  static TextStyle get t16W300 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w300, fontFamily: fontFamily);
-  static TextStyle get t16 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w400, fontFamily: fontFamily);
-  static TextStyle get t16W500 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500, fontFamily: fontFamily);
-  static TextStyle get t16W600 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: fontFamily);
-  static TextStyle get t16W700 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, fontFamily: fontFamily);
-  static TextStyle get t16W800 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800, fontFamily: fontFamily);
-  static TextStyle get t16W900 => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w900, fontFamily: fontFamily);
+  // ==================== 16sp (renders 18sp, see _floorLift) ====================
+  static TextStyle get t16W100 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w100, fontFamily: fontFamily);
+  static TextStyle get t16W200 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w200, fontFamily: fontFamily);
+  static TextStyle get t16W300 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w300, fontFamily: fontFamily);
+  static TextStyle get t16 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w400, fontFamily: fontFamily);
+  static TextStyle get t16W500 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w500, fontFamily: fontFamily);
+  static TextStyle get t16W600 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w600, fontFamily: fontFamily);
+  static TextStyle get t16W700 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w700, fontFamily: fontFamily);
+  static TextStyle get t16W800 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w800, fontFamily: fontFamily);
+  static TextStyle get t16W900 => TextStyle(fontSize: _floorLift(16).sp, fontWeight: FontWeight.w900, fontFamily: fontFamily);
 
-  // ==================== 18sp ====================
-  static TextStyle get t18W100 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w100, fontFamily: fontFamily);
-  static TextStyle get t18W200 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w200, fontFamily: fontFamily);
-  static TextStyle get t18W300 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w300, fontFamily: fontFamily);
-  static TextStyle get t18 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w400, fontFamily: fontFamily);
-  static TextStyle get t18W500 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w500, fontFamily: fontFamily);
-  static TextStyle get t18W600 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, fontFamily: fontFamily);
-  static TextStyle get t18W700 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, fontFamily: fontFamily);
-  static TextStyle get t18W800 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w800, fontFamily: fontFamily);
-  static TextStyle get t18W900 => TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w900, fontFamily: fontFamily);
+  // ==================== 18sp (renders 20sp, see _floorLift) ====================
+  static TextStyle get t18W100 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w100, fontFamily: fontFamily);
+  static TextStyle get t18W200 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w200, fontFamily: fontFamily);
+  static TextStyle get t18W300 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w300, fontFamily: fontFamily);
+  static TextStyle get t18 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w400, fontFamily: fontFamily);
+  static TextStyle get t18W500 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w500, fontFamily: fontFamily);
+  static TextStyle get t18W600 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w600, fontFamily: fontFamily);
+  static TextStyle get t18W700 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w700, fontFamily: fontFamily);
+  static TextStyle get t18W800 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w800, fontFamily: fontFamily);
+  static TextStyle get t18W900 => TextStyle(fontSize: _floorLift(18).sp, fontWeight: FontWeight.w900, fontFamily: fontFamily);
 
   // ==================== 20sp ====================
   static TextStyle get t20W100 => TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w100, fontFamily: fontFamily);

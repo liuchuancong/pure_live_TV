@@ -191,7 +191,7 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
                   _fileName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15.sp, color: tvTheme.secondaryTextColor),
+                  style: TextStyle(fontSize: 17.sp, color: tvTheme.secondaryTextColor),
                 ),
               ),
             ],
@@ -215,7 +215,7 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 18.sp,
               color: failed ? tvTheme.secondaryTextColor : tvTheme.primaryTextColor,
             ),
           ),
