@@ -189,17 +189,34 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           ),
                         ),
 
-                        if (widget.showFollowedMark && _followed)
-                          Positioned(
-                            left: 12.sp,
-                            top: 12.sp,
-                            child: TvButton(
-                              excludeFocus: true,
-                              title: i18n('followed'),
-                              size: TvButtonSize.mini,
-                              icon: Icon(Icons.favorite, size: 18.sp * textScale),
-                            ),
+                        // The corner badges live on the cover: the platform
+                        // badge anchors the top-left corner, the followed
+                        // marker sits beside it. A Wrap, not a Row, so a long
+                        // platform name next to the marker folds to a second
+                        // line instead of painting past the card edge.
+                        Positioned(
+                          left: 12.sp,
+                          top: 12.sp,
+                          child: Wrap(
+                            spacing: 8.sp,
+                            runSpacing: 6.sp,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              TvButton(
+                                excludeFocus: true,
+                                title: widget.room.platform.toUpperCase(),
+                                size: TvButtonSize.mini,
+                              ),
+                              if (widget.showFollowedMark && _followed)
+                                TvButton(
+                                  excludeFocus: true,
+                                  title: i18n('followed'),
+                                  size: TvButtonSize.mini,
+                                  icon: Icon(Icons.favorite, size: 18.sp * textScale),
+                                ),
+                            ],
                           ),
+                        ),
 
                         if (widget.room.isRecord == true)
                           Positioned(
@@ -233,7 +250,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                   // the labels always get the room their font scale asks for.
                   // Only the vertical spacing follows the font: height is what
                   // the taller labels need, while width is contested by the
-                  // leading and the chip, which give way to the title instead.
+                  // leading, which gives way to the title instead.
                   Padding(
                     padding: EdgeInsets.only(
                       left: 10.sp,
@@ -288,24 +305,6 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                             ],
                           ),
                         ),
-                        // The platform chip is the first casualty of a narrow
-                        // card: the title keeps its space instead.
-                        if (!compact) ...[
-                          SizedBox(width: 12.sp),
-                          // The chip is a badge, the title is the content. Its
-                          // label grows with the app font too, so it is capped
-                          // here: unbounded, a 160% font let the chip take the
-                          // whole row and squeezed the title down to a couple
-                          // of glyphs.
-                          ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: 140.sp),
-                            child: TvButton(
-                              excludeFocus: true,
-                              title: widget.room.platform.toUpperCase(),
-                              size: TvButtonSize.mini,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),
