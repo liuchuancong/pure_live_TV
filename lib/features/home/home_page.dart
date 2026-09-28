@@ -175,23 +175,26 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
         ];
       case AppMode.music:
-        const labels = [
-          ('music_favorites', Icons.favorite_border),
-          ('music_recents', Icons.history_rounded),
-          ('music_playlists', Icons.playlist_add_check_rounded),
-          ('music_dynamics', Icons.dynamic_feed_outlined),
-          ('music_history', Icons.cloud_queue_outlined),
-          ('music_tab_ranking', Icons.leaderboard_outlined),
-          ('music_tab_search', Icons.search_rounded),
+        // (title key, collapsed caption key) — the collapsed rail clips a
+        // four-character label to "最近…", so every entry names its own
+        // two-character caption; the expanded rail paints the full title.
+        const labels = <(String, String, IconData)>[
+          ('music_favorites', 'music_short_favorites', Icons.favorite_border),
+          ('music_recents', 'music_short_recents', Icons.history_rounded),
+          ('music_playlists', 'music_short_playlists', Icons.playlist_add_check_rounded),
+          ('music_dynamics', 'music_short_dynamics', Icons.dynamic_feed_outlined),
+          ('music_history', 'music_short_history', Icons.cloud_queue_outlined),
+          ('music_tab_ranking', 'music_short_ranking', Icons.leaderboard_outlined),
+          ('music_tab_search', 'music_short_search', Icons.search_rounded),
         ];
         final selected = ref.watch(musicSectionIndexProvider);
         return [
-          for (final (index2, (labelKey, icon)) in labels.indexed)
+          for (final (index2, (labelKey, shortKey, icon)) in labels.indexed)
             Padding(
               padding: EdgeInsets.only(bottom: 14.sp * textScale),
               child: _buildAdaptiveItem(
                 ref: ref,
-                item: AppMenuItem(index: index2, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
+                item: AppMenuItem(index: index2, title: i18n(labelKey), shortTitle: i18n(shortKey), icon: icon),
                 isExpanded: isExpanded,
                 isSelected: selected == index2,
                 textScale: textScale,
@@ -235,6 +238,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// selected section, with music pinning its resident mini player bar.
   Widget _buildModePane(AppMode mode) {
     if (mode == AppMode.music) {
+      // Once per run — the controller guards repeats: the resume option
+      // restores the last queue the first time the music pane shows.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ref.read(musicPlayerControllerProvider.notifier).maybeResumeLastSession();
+      });
       final sectionIndex = ref.watch(musicSectionIndexProvider);
       return BilibiliLoginGate(
         child: Column(
@@ -330,7 +338,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     // cut the menu names off, and left the icons the only thing that changed
     // size when the user enlarged the font.
     final double textScale = TvTextScale.factorOf(context);
-    final sidebarWidth = (isExpanded ? 200.sp : 110.sp) * textScale;
+    // Expanded carries the small pill (icon + four-character name) with margin;
+    // collapsed keeps the 64dp icon tile.
+    final sidebarWidth = (isExpanded ? 216.sp : 110.sp) * textScale;
 
     // The top-left button switches the whole app between live / music / video.
     // Music and video own their own UI stacks; the live rail's destinations
@@ -553,9 +563,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
         child: TvButton(
           title: item.title,
-          icon: Icon(item.icon, size: 32.sp * textScale),
+          icon: Icon(item.icon, size: 36.sp * textScale),
           iconPosition: TvIconPosition.left,
-          size: TvButtonSize.mini,
+          size: TvButtonSize.small,
           isSecondary: !isSelected,
           selected: isSelected,
           useFadedFocus: true,

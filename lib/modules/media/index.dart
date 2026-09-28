@@ -20,4 +20,5 @@ export 'pages/ugc_comments_page.dart';
 export 'pages/ugc_dynamics_page.dart';
 export 'pages/ugc_user_space_page.dart';
 export 'widgets/bilibili_login_gate.dart';
+export 'widgets/handle_video_surface.dart';
 export 'widgets/music_video_card.dart';

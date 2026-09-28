@@ -14,6 +14,7 @@ import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 import 'package:pure_live/modules/video/widgets/vod_danmaku_overlay.dart';
@@ -404,7 +405,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                 children: [
                   // ------------------------------------------------ the picture
                   if (controller.handle != null)
-                    MediaPlayerView(handle: controller.handle!, fit: _aspectFill ? BoxFit.cover : BoxFit.contain)
+                    HandleVideoSurface(handle: controller.handle!, fit: _aspectFill ? BoxFit.cover : BoxFit.contain)
                   else
                     _IdleSurface(track: track, resolving: state.resolving),
 

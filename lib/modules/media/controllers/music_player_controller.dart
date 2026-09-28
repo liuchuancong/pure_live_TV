@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:media_core/media_core.dart';
@@ -9,6 +11,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/music/services/music_audio_cache.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
@@ -105,6 +108,125 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// Stops the auto-advance when every track fails in a row.
   int _consecutiveFailures = 0;
   final Random _random = Random();
+
+  // ------------------------------------------------------------- last session
+
+  /// Hive key of the queue snapshot the resume option restores.
+  static const String _sessionKey = 'musicLastSession';
+
+  /// The engine the music player asks the kernel for, persisted across
+  /// sessions and switchable from the play page's dialog. The default is the
+  /// same engine every music session has used.
+  static String _preferredBackend = HivePrefUtil.getString('musicBackend') ?? BackendIds.mediaKit;
+  static String get preferredBackend => _preferredBackend;
+
+  /// Plays the current track through [backendId], from the position playing
+  /// now. A track that is not open just records the choice for the next open.
+  Future<void> switchBackend(String backendId) async {
+    if (backendId == _preferredBackend) return;
+    _preferredBackend = backendId;
+    HivePrefUtil.setString('musicBackend', backendId);
+
+    final position = _handle?.position ?? Duration.zero;
+    final track = state.current;
+    if (track == null || _currentUrls == null || _currentBvid == null) return;
+    await _ignoreCancelled(() => _openUrls(track, _currentUrls!, _currentBvid!));
+    await _restorePosition(position);
+  }
+
+  /// The resume option fires once per app run, on the music pane's first build.
+  bool _resumeAttempted = false;
+
+  /// Keeps the saved position fresh while a track is playing: a force-kill
+  /// then replays at most one heartbeat interval.
+  Timer? _sessionHeartbeat;
+
+  void _ensureSessionHeartbeat() {
+    _sessionHeartbeat ??= Timer.periodic(const Duration(seconds: 10), (_) {
+      if (_handle != null && _handle!.isPlaying && state.hasQueue) _persistSession();
+    });
+  }
+
+  /// Snapshots queue, current index, rate and position into Hive.
+  ///
+  /// Archives are stored deduped (a 20-part album is one archive entry) and the
+  /// queue order as `bvid#page` refs, so restoring rebuilds every track from
+  /// its archive's part list.
+  void _persistSession() {
+    try {
+      final queue = state.queue;
+      if (queue.isEmpty) return;
+      final archives = <String, MusicArchive>{};
+      final order = <String>[];
+      for (final track in queue) {
+        archives[track.archive.bvid] = track.archive;
+        order.add('${track.archive.bvid}#${track.part.page}');
+      }
+      HivePrefUtil.setString(
+        _sessionKey,
+        jsonEncode({
+          'archives': [for (final archive in archives.values) archive.toJson()],
+          'order': order,
+          'index': state.index < 0 ? 0 : state.index,
+          'speed': state.speed,
+          'positionMs': _handle?.position.inMilliseconds ?? 0,
+        }),
+      );
+    } catch (_) {
+      // A failed snapshot only costs the resume convenience.
+    }
+  }
+
+  ({List<MusicTrack> tracks, int index, double speed, Duration position})? _loadSession() {
+    try {
+      final raw = HivePrefUtil.getString(_sessionKey);
+      if (raw == null || raw.isEmpty) return null;
+      final json = jsonDecode(raw);
+      if (json is! Map<String, dynamic>) return null;
+      final archives = <String, MusicArchive>{
+        for (final entry in (json['archives'] as List?) ?? const <dynamic>[])
+          if (entry is Map<String, dynamic>) entry['bvid']?.toString() ?? '': MusicArchive.fromJson(entry),
+      };
+      final tracks = <MusicTrack>[];
+      for (final ref in (json['order'] as List?) ?? const <dynamic>[]) {
+        final parts = ref?.toString().split('#');
+        if (parts == null || parts.length != 2) continue;
+        final archive = archives[parts[0]];
+        if (archive == null) continue;
+        final page = int.tryParse(parts[1]) ?? 1;
+        final part =
+            archive.parts.where((p) => p.page == page).firstOrNull ?? (archive.parts.isEmpty ? null : archive.parts.first);
+        if (part == null) continue;
+        tracks.add(MusicTrack(archive: archive, part: part));
+      }
+      if (tracks.isEmpty) return null;
+      final index = (int.tryParse(json['index']?.toString() ?? '') ?? 0).clamp(0, tracks.length - 1);
+      final speed = double.tryParse(json['speed']?.toString() ?? '') ?? 1.0;
+      final position = Duration(milliseconds: int.tryParse(json['positionMs']?.toString() ?? '') ?? 0);
+      return (tracks: tracks, index: index, speed: speed, position: position);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Restores the last session when the music setting asks for it and nothing
+  /// plays yet: rebuilds the saved queue, reopens the current track and seeks
+  /// to the stored position.
+  Future<void> maybeResumeLastSession() async {
+    if (_resumeAttempted) return;
+    _resumeAttempted = true;
+    if (HivePrefUtil.getString('musicResumeOnOpen') != 'true') return;
+    if (state.hasQueue || _handle != null) return;
+    final session = _loadSession();
+    if (session == null) return;
+    state = state.copyWith(
+      queue: List.unmodifiable(session.tracks),
+      index: session.index,
+      speed: session.speed,
+      error: '',
+    );
+    await _openCurrent(session.position);
+  }
 
   /// The rate steps the player page cycles through.
   static const List<double> speedSteps = [1.0, 1.25, 1.5, 2.0];
@@ -290,6 +412,8 @@ class MusicPlayerController extends _$MusicPlayerController {
     }
     if (handle.isPlaying) {
       await handle.pause();
+      // Paused is where a session is usually left: snapshot the position now.
+      _persistSession();
     } else {
       await _ignoreCancelled(handle.play);
     }
@@ -316,6 +440,7 @@ class MusicPlayerController extends _$MusicPlayerController {
       if (target > duration) target = duration;
     }
     await _ignoreCancelled(() => handle.seek(target));
+    _persistSession();
   }
 
   Future<void> seekBy(int seconds) async {
@@ -350,42 +475,44 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// A re-open that fails keeps the sound and puts the mode back: a video stream
   /// that is expired or refused is not a dead track, and letting it reach the
   /// failure path is what made "显示画面" skip to the next song.
+  /// Switches between 纯音乐 and 显示画面 without touching the stream.
+  ///
+  /// Both views share one player: the DASH pair (or the mp4) is always opened
+  /// whole, so the toggle is the native video-track switch — instant, and the
+  /// position never moves (the reference client's behaviour). The one reopen
+  /// left is audio-only playing the locally cached file, which carries no
+  /// picture: showing it needs the network pair.
   Future<void> toggleAudioOnly() async {
     final audioOnly = !state.audioOnly;
     final handle = _handle;
     state = state.copyWith(audioOnly: audioOnly);
 
-    if (audioOnly) {
-      try {
-        await handle?.setAudioOnly(true);
-      } catch (_) {
-        state = state.copyWith(audioOnly: false);
+    if (!audioOnly && _playingLocalFile) {
+      final position = handle?.position ?? Duration.zero;
+      final track = state.current;
+      final urls = _currentUrls;
+      final bvid = _currentBvid;
+      if (track != null && urls != null && bvid != null) {
+        try {
+          await _openUrls(track, urls, bvid);
+          await _restorePosition(position);
+          return;
+        } catch (_) {
+          state = state.copyWith(audioOnly: true);
+          return;
+        }
       }
-      return;
     }
 
-    final urls = _currentUrls;
-    final track = state.current;
-    final bvid = _currentBvid;
-    if (urls == null || !urls.isDash || urls.audioUrl == null || track == null || bvid == null) {
-      // Nothing cached to rebuild a video track from: let the adapter try, and
-      // stay on the lyrics view when it cannot.
-      try {
-        await handle?.setAudioOnly(false);
-      } catch (_) {
-        state = state.copyWith(audioOnly: true);
-      }
-      return;
-    }
-
-    final position = handle?.position ?? Duration.zero;
     try {
-      await _openUrls(track, urls, bvid);
-      await _restorePosition(position);
+      await handle?.setAudioOnly(audioOnly);
     } catch (_) {
-      await _degradeToAudioOnly(position);
+      state = state.copyWith(audioOnly: !audioOnly);
     }
   }
+
+  /// Whether the open source is the cache's local file rather than the network.
+  bool _playingLocalFile = false;
 
   /// Drops back to the audio stream at [position] after the picture could not be
   /// opened, keeping the track playing.
@@ -437,6 +564,9 @@ class MusicPlayerController extends _$MusicPlayerController {
   /// channel switch calls it.
   Future<void> pauseForLive() async {
     if (_handle == null && !state.hasQueue) return;
+    // Snapshot before the handle goes away: live playback then owns the
+    // speakers with the last music position still on record.
+    _persistSession();
     _generation++;
     await _releaseHandle();
     state = state.copyWith(resolving: false, quality: 0);
@@ -444,7 +574,9 @@ class MusicPlayerController extends _$MusicPlayerController {
 
   // ------------------------------------------------------------- internals
 
-  Future<void> _openCurrent() async {
+  /// Opens the current queue entry. [startAt] is the resume position the
+  /// last-session restore asks for; a plain track start opens from zero.
+  Future<void> _openCurrent([Duration? startAt]) async {
     final generation = ++_generation;
     final track = state.current;
     if (track == null) return;
@@ -481,9 +613,12 @@ class MusicPlayerController extends _$MusicPlayerController {
       if (generation != _generation) return;
 
       await _openUrls(repairedTrack(), urls, bvid);
+      await _restorePosition(startAt ?? Duration.zero);
       _consecutiveFailures = 0;
       // Recently played: only a track that actually opened counts as played.
       ref.read(musicLibraryControllerProvider.notifier).recordPlay(repairedTrack().archive);
+      _persistSession();
+      _ensureSessionHeartbeat();
     } catch (error) {
       if (generation != _generation) return;
       _consecutiveFailures++;
@@ -506,11 +641,25 @@ class MusicPlayerController extends _$MusicPlayerController {
     _currentBvid = bvid;
 
     final headers = await _api.streamHeaders(bvid);
-    final audioOnlySource = state.audioOnly && urls.audioUrl != null;
+
+    // 纯音乐 prefers the cached file: once a track has been heard, replaying it
+    // asks nothing from the network. The file carries no picture, so the video
+    // view always streams (and keeps the cache warm for the next listen).
+    _playingLocalFile = false;
+    String openUrl = urls.videoUrl;
+    var openProtocol = SourceProtocol.https;
+    if (state.audioOnly) {
+      final File? cached = await MusicAudioCache.instance.cachedFile(track.id);
+      if (cached != null) {
+        openUrl = cached.path;
+        openProtocol = SourceProtocol.file;
+        _playingLocalFile = true;
+      }
+    }
 
     final handle = await kernel.create(
       config: const PlayerConfig(name: 'music', autoPlay: true),
-      preferredBackend: BackendIds.mediaKit,
+      preferredBackend: _preferredBackend,
     );
     _handle = handle;
 
@@ -518,7 +667,10 @@ class MusicPlayerController extends _$MusicPlayerController {
     // URI: the video plays as the primary source and the audio rides along on
     // mpv's audio-file input. Both CDN requests need the same headers, so they
     // are appended to the player-wide http-header-fields as well.
-    if (!audioOnlySource && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
+    // 纯音乐 plays the cached file with no attachment (there is nothing to
+    // attach to — the file is the finished audio); everything else rides the
+    // DASH pair with the audio attached.
+    if (!_playingLocalFile && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
       final adapter = handle.adapter;
       if (adapter is MediaKitPlayerAdapter) {
         // media_kit's Player proxy does not surface setProperty/command; the
@@ -551,12 +703,26 @@ class MusicPlayerController extends _$MusicPlayerController {
 
     final source = PlayerSource(
       id: SourceId('music_${track.id}_${DateTime.now().millisecondsSinceEpoch}'),
-      uri: Uri.parse(audioOnlySource ? urls.audioUrl! : urls.videoUrl),
-      protocol: SourceProtocol.https,
+      uri: Uri.parse(openUrl),
+      protocol: openProtocol,
       headers: SourceHeaders(headers),
       title: track.title,
     );
     await handle.open(source, autoPlay: true);
+
+    // 纯音乐 is the native video-track switch on the just-opened stream, not a
+    // different source: toggling back is then instant and seamless.
+    if (state.audioOnly) {
+      try {
+        await handle.setAudioOnly(true);
+      } catch (_) {}
+    }
+
+    // Warm the cache for the next play of this track while the network stream
+    // runs. Skipped when this session already plays the cached file.
+    if (!_playingLocalFile && state.audioOnly && urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
+      MusicAudioCache.instance.prefetch(trackId: track.id, url: urls.audioUrl!, headers: headers);
+    }
 
     _events?.cancel();
     _events = handle.adapterEvents.listen(_onAdapterEvent);

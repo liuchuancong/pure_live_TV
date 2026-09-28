@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
@@ -70,18 +69,13 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
                   ),
                 ),
                 SizedBox(width: 16.sp),
-                Text(
-                  i18n('music_excluded_hint'),
-                  style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                ),
+                Text(i18n('music_excluded_hint'), style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor)),
                 const Spacer(),
                 TvButton(
                   title: i18n('music_play_all'),
                   icon: Icon(Icons.play_circle_fill_rounded, size: 26.sp),
                   size: TvButtonSize.mini,
-                  onTap: tracks.isEmpty
-                      ? null
-                      : () => _playAll(context, ref, tracks),
+                  onTap: tracks.isEmpty ? null : () => _playAll(context, ref, tracks),
                 ),
                 SizedBox(width: 12.sp),
                 TvButton(
@@ -170,10 +164,7 @@ class _TrackRow extends StatelessWidget {
           children: [
             SizedBox(
               width: 44.sp,
-              child: Text(
-                '${index + 1}',
-                style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
-              ),
+              child: Text('${index + 1}', style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor)),
             ),
             Expanded(
               child: Column(

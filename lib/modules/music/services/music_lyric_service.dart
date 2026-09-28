@@ -1,9 +1,27 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:pure_live/platforms/bilibili/bilibili_site.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 import 'package:pure_live/shared/utils/string_similarity.dart';
+
+/// One selectable lyric for a track: where it came from and whose song it says
+/// it is. The picker dialog lists these; the one the viewer picks becomes the
+/// track's default.
+class MusicLyricCandidate {
+  const MusicLyricCandidate({required this.source, required this.title, required this.lyric, this.artist = ''});
+
+  /// Short source label shown as the row's badge.
+  final String source;
+
+  /// The song name the candidate claims to be.
+  final String title;
+  final String artist;
+  final String lyric;
+
+  bool sameLyric(MusicLyricCandidate other) => lyric.trim() == other.lyric.trim();
+}
 
 /// Lyrics for music mode, ported from the bilibilimusic reference project's
 /// chain plus the netease fallback this app already had:
@@ -28,6 +46,44 @@ class MusicLyricService {
   static final MusicLyricService instance = MusicLyricService._();
 
   final Map<String, String?> _cache = {};
+
+  static const String _cacheBox = 'musicLyricCacheV1';
+  static const String _manualBox = 'musicLyricManualV1';
+
+  /// The lyric the viewer picked by hand, or null. Highest priority: a manual
+  /// choice outranks every automatic source, for this track and every future
+  /// session.
+  String? manualLyric(String title) {
+    final query = cleanTitle(title);
+    if (query.isEmpty) return null;
+    return _readBox(_manualBox, query);
+  }
+
+  /// Remembers [lyric] as the viewer's choice for [title].
+  void saveManualLyric(String title, String lyric) {
+    final query = cleanTitle(title);
+    if (query.isEmpty) return;
+    _writeBox(_manualBox, query, lyric);
+    _cache[title] = lyric;
+  }
+
+  /// Reads one of the persistent lyric boxes. Hive is opened lazily: the music
+  /// page may be the first thing that touches them.
+  static String? _readBox(String name, String key) {
+    try {
+      if (!Hive.isBoxOpen(name)) Hive.openBox<String>(name);
+      return Hive.box<String>(name).get(key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static void _writeBox(String name, String key, String value) {
+    try {
+      if (!Hive.isBoxOpen(name)) Hive.openBox<String>(name);
+      Hive.box<String>(name).put(key, value);
+    } catch (_) {}
+  }
 
   /// Shares the buvid and WBI key caches with the live/music sites.
   final BiliBiliSite _site = BiliBiliSite();
@@ -70,6 +126,20 @@ class MusicLyricService {
       return null;
     }
 
+    // A hand-picked lyric outranks the chain, across sessions.
+    final manual = manualLyric(title);
+    if (manual != null) {
+      _cache[key] = manual;
+      return manual;
+    }
+
+    // What an earlier session already fetched: no network on a replay.
+    final stored = _readBox(_cacheBox, query);
+    if (stored != null) {
+      _cache[key] = stored;
+      return stored;
+    }
+
     String? lyric;
     try {
       lyric = await _fetchBgmLyric(query, aid: aid, bvid: bvid, cid: cid);
@@ -77,7 +147,92 @@ class MusicLyricService {
     lyric ??= await _fetchLrcApiLyric(query, hint);
     lyric ??= await _fetchNeteaseLyric(query, hint);
     _cache[key] = lyric;
+    // Misses persist too: a lyric-less track must not refetch on every open.
+    if (lyric != null) _writeBox(_cacheBox, query, lyric);
     return lyric;
+  }
+
+  /// Every candidate the chain can name for the track, for the picker dialog.
+  ///
+  /// Unlike [fetchLyric] this does not stop at the first hit: the netease search
+  /// list and the LRC-endpoint candidate lists are walked, each entry's lyric is
+  /// fetched (network, capped), and duplicates of an already-collected body are
+  /// dropped. The manual choice, when there is one, leads the list so the
+  /// current default stays visible and re-pickable.
+  Future<List<MusicLyricCandidate>> fetchLyricCandidates(
+    String title, {
+    String hint = '',
+    int aid = 0,
+    String bvid = '',
+    int cid = 0,
+    int perSourceLimit = 6,
+  }) async {
+    final query = cleanTitle(title);
+    if (query.isEmpty) return const [];
+
+    final candidates = <MusicLyricCandidate>[];
+    void add(String source, String songTitle, String artist, String? lyric) {
+      final text = _normalize(lyric ?? '');
+      if (text == null) return;
+      final candidate = MusicLyricCandidate(source: source, title: songTitle, artist: artist, lyric: text);
+      if (candidates.any((existing) => candidate.sameLyric(existing))) return;
+      candidates.add(candidate);
+    }
+
+    final manual = manualLyric(title);
+    if (manual != null) {
+      candidates.add(MusicLyricCandidate(source: 'manual', title: query, lyric: manual));
+    }
+
+    try {
+      final bgm = await _fetchBgmLyric(query, aid: aid, bvid: bvid, cid: cid);
+      if (bgm != null) add('B站BGM', query, '', bgm);
+    } catch (_) {}
+
+    // The LRC list endpoint answers with candidates; each entry names its own
+    // song, so the picker can show what it actually found. The plain-text
+    // endpoint answers with one body.
+    for (final api in _lrcApis) {
+      final url = api.url
+          .replaceFirst('{title}', Uri.encodeQueryComponent(query))
+          .replaceFirst('{artist}', Uri.encodeQueryComponent(hint));
+      final body = await _probe(url, header: _headers);
+      if (body == null) continue;
+      if (api.json) {
+        final decoded = _decode(body);
+        final data = decoded is Map ? decoded['data'] : null;
+        if (data is List) {
+          var taken = 0;
+          for (final entry in data) {
+            if (taken >= perSourceLimit) break;
+            if (entry is! Map) continue;
+            final lrc = entry['lrc']?.toString() ?? '';
+            if (lrc.isEmpty) continue;
+            add('LRC', entry['title']?.toString() ?? query, entry['artist']?.toString() ?? '', lrc);
+            taken++;
+          }
+          continue;
+        }
+      }
+      final single = verified(query, _normalize(body));
+      if (single != null) add('LRC', query, '', single);
+    }
+
+    // The netease search list, lyric fetched per hit up to the cap.
+    final songs = await _searchSongs(query, hint, limit: perSourceLimit);
+    for (final song in songs) {
+      final body = await _probe(
+        _withQuery('https://music.163.com/api/song/lyric', {'id': song.id, 'lv': '1', 'kv': '1', 'tv': '-1'}),
+        header: _headers,
+      );
+      if (body == null) continue;
+      final result = _decode(body);
+      final lrc = result is Map ? result['lrc'] : null;
+      final lyric = lrc is Map ? lrc['lyric']?.toString() ?? '' : '';
+      add('网易云', song.name, song.artist, lyric);
+    }
+
+    return candidates;
   }
 
   /// One body from an endpoint the chain is allowed to find nothing at.
@@ -227,11 +382,31 @@ class MusicLyricService {
     return verified(query, _normalize(lyric));
   }
 
-  /// The id of the search hit whose name actually is the track, or `null`.
+  /// One netease search hit: the id plus the names the picker shows.
+  ({String id, String name, String artist})? _asSongHit(Object? song, String query) {
+    if (song is! Map) return null;
+    final name = song['name']?.toString() ?? '';
+    if (!plausible(query, name)) return null;
+    final id = song['id']?.toString() ?? '';
+    if (id.isEmpty) return null;
+    final artists = song['artists'];
+    final artist = artists is List && artists.isNotEmpty && artists.first is Map
+        ? (artists.first as Map)['name']?.toString() ?? ''
+        : '';
+    return (id: id, name: name, artist: artist);
+  }
+
+  /// The search hits whose name actually is the track, best first.
   ///
   /// The top hit used to be taken as-is: searching a part name like 「002. 可能」
   /// ranks 不可能 first, and the page then played a different song's words.
-  Future<int?> _searchSongId(String query, String hint) async {
+  Future<List<({String id, String name, String artist})>> _searchSongs(
+    String query,
+    String hint, {
+    int limit = 6,
+  }) async {
+    final hits = <({String id, String name, String artist})>[];
+    final seen = <String>{};
     for (final text in [query, if (hint.isNotEmpty && hint != query) '$query $hint']) {
       final body = await _probe(
         _withQuery('https://music.163.com/api/search/get/web', {'s': text, 'type': '1', 'limit': '10'}),
@@ -242,13 +417,19 @@ class MusicLyricService {
       final resultData = result is Map ? result['result'] : null;
       final songs = (resultData is Map ? resultData['songs'] as List? : null) ?? const [];
       for (final song in songs) {
-        if (song is! Map) continue;
-        if (!plausible(query, song['name']?.toString() ?? '')) continue;
-        final id = int.tryParse(song['id']?.toString() ?? '');
-        if (id != null) return id;
+        final hit = _asSongHit(song, query);
+        if (hit == null || !seen.add(hit.id)) continue;
+        hits.add(hit);
+        if (hits.length >= limit) return hits;
       }
+      if (hits.isNotEmpty) break;
     }
-    return null;
+    return hits;
+  }
+
+  Future<int?> _searchSongId(String query, String hint) async {
+    final hits = await _searchSongs(query, hint, limit: 1);
+    return hits.isEmpty ? null : int.tryParse(hits.first.id);
   }
 
   /// Drops an LRC whose own `[ti:]` tag names another song.

@@ -13,6 +13,7 @@ class MusicSettingsSectionPage extends ConsumerWidget {
 
   static const String _playModeKey = 'musicDefaultPlayMode';
   static const String _audioOnlyKey = 'musicDefaultAudioOnly';
+  static const String _resumeKey = 'musicResumeOnOpen';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +26,7 @@ class MusicSettingsSectionPage extends ConsumerWidget {
       MusicPlayMode.random => 2,
     };
     final audioOnly = HivePrefUtil.getString(_audioOnlyKey) != 'false';
+    final resumeOnOpen = HivePrefUtil.getString(_resumeKey) == 'true';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,6 +59,13 @@ class MusicSettingsSectionPage extends ConsumerWidget {
               icon: audioOnly ? Remix.headphone_line : Remix.film_line,
               value: audioOnly,
               onChanged: (v) => HivePrefUtil.setString(_audioOnlyKey, v ? 'true' : 'false'),
+            ),
+            TvSettingsSwitchTile(
+              title: i18n('music_resume_on_open'),
+              subtitle: i18n('music_resume_on_open_desc'),
+              icon: Remix.play_circle_line,
+              value: resumeOnOpen,
+              onChanged: (v) => HivePrefUtil.setString(_resumeKey, v ? 'true' : 'false'),
             ),
           ],
         ),

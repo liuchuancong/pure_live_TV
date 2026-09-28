@@ -207,6 +207,24 @@ class MusicTrack {
   String get title => part.title;
 }
 
+/// A followed uploader — the 作者 side of the music 关注 page. Stored by mid,
+/// so a follow survives the archive rows it was made from.
+class MusicUp {
+  const MusicUp({required this.mid, required this.name, this.face = ''});
+
+  final int mid;
+  final String name;
+  final String face;
+
+  Map<String, dynamic> toJson() => {'mid': mid, 'name': name, 'face': face};
+
+  factory MusicUp.fromJson(Map<String, dynamic> json) => MusicUp(
+    mid: int.tryParse(json['mid']?.toString() ?? '') ?? 0,
+    name: json['name']?.toString() ?? '',
+    face: json['face']?.toString() ?? '',
+  );
+}
+
 /// One DASH video rendition (a quality/codec candidate). The playurl answer
 /// carries them all at once, so switching quality re-opens a URL from here
 /// instead of asking the API again.

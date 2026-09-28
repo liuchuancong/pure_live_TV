@@ -1,22 +1,22 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
+import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
-import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
-import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
+import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// Music mode sections. The section rail itself lives in the home sidebar —
 /// this file only builds section content, so the mode swaps the whole
@@ -33,7 +33,10 @@ class MusicSectionView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return switch (section) {
-      MusicSection.favorites => _SongListSection(key: const ValueKey('music_favorites'), section: MusicSection.favorites),
+      MusicSection.favorites => _SongListSection(
+        key: const ValueKey('music_favorites'),
+        section: MusicSection.favorites,
+      ),
       MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
       MusicSection.playlists => const MusicFavFoldersPage(key: ValueKey('music_playlists')),
       MusicSection.dynamics => const UgcDynamicsPage(key: ValueKey('music_dynamics')),
@@ -90,7 +93,9 @@ class _SongListSection extends ConsumerWidget {
           child: Row(
             children: [
               Text(
-                '${i18n(isFavorites ? 'music_favorites' : 'music_recents')}（${archives.length}）',
+                // The list shows every track of every archive flattened, so the
+                // count must be the row count, not the archive count.
+                '${i18n(isFavorites ? 'music_favorites' : 'music_recents')}（${tracks.length}）',
                 style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor),
               ),
               const Spacer(),
@@ -118,7 +123,7 @@ class _SongListSection extends ConsumerWidget {
             verticalEdge: DpadEdgeBehavior.leave,
             horizontalEdge: DpadEdgeBehavior.leave,
             child: ListView.separated(
-              padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp),
+              padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
               itemCount: tracks.length,
               separatorBuilder: (_, _) => SizedBox(height: 4.sp),
               itemBuilder: (context, index) {
@@ -179,8 +184,8 @@ class _SongRow extends ConsumerWidget {
             color: isCurrent
                 ? accent.withValues(alpha: 0.14)
                 : focused
-                    ? tvTheme.cardColor
-                    : Colors.transparent,
+                ? tvTheme.cardColor
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12.sp),
             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
           ),
@@ -190,10 +195,7 @@ class _SongRow extends ConsumerWidget {
                 width: 44.sp,
                 child: isCurrent
                     ? Icon(Icons.graphic_eq_rounded, size: 26.sp, color: accent)
-                    : Text(
-                        '${index + 1}',
-                        style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
-                      ),
+                    : Text('${index + 1}', style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor)),
               ),
               SizedBox(width: 8.sp),
               ClipRRect(
@@ -217,9 +219,7 @@ class _SongRow extends ConsumerWidget {
                       track.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t18W600.copyWith(
-                        color: isCurrent ? accent : tvTheme.primaryTextColor,
-                      ),
+                      style: AppTextStyles.t18W600.copyWith(color: isCurrent ? accent : tvTheme.primaryTextColor),
                     ),
                     SizedBox(height: 3.sp),
                     Text(
@@ -233,9 +233,7 @@ class _SongRow extends ConsumerWidget {
               ),
               SizedBox(width: 12.sp),
               Text(
-                MusicVideoCard.formatDuration(
-                  track.part.duration > 0 ? track.part.duration : track.archive.duration,
-                ),
+                MusicVideoCard.formatDuration(track.part.duration > 0 ? track.part.duration : track.archive.duration),
                 style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
               ),
             ],
@@ -374,10 +372,7 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
                             children: [
                               Icon(Icons.local_fire_department_rounded, size: 26.sp, color: accent),
                               SizedBox(width: 8.sp),
-                              Text(
-                                i18n('video_search_hotwords'),
-                                style: AppTextStyles.t20W600.copyWith(color: accent),
-                              ),
+                              Text(i18n('video_search_hotwords'), style: AppTextStyles.t20W600.copyWith(color: accent)),
                             ],
                           ),
                           SizedBox(height: 16.sp),
@@ -446,10 +441,8 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
                         childAspectRatio:
                             ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout) + 0.14,
                       ),
-                      itemBuilder: (context, archive, index) => MusicVideoCard(
-                        archive: archive,
-                        onTap: () => MusicArchiveRoute(archive).push(context),
-                      ),
+                      itemBuilder: (context, archive, index) =>
+                          MusicVideoCard(archive: archive, onTap: () => MusicArchiveRoute(archive).push(context)),
                     );
                   },
                 ),
@@ -476,142 +469,142 @@ class MusicMiniBar extends ConsumerWidget {
     final track = state.current;
     final isFavorite = track != null && library.isFavorite(track.archive.bvid);
 
-    return Container(
-      margin: EdgeInsets.all(12.sp),
-      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
-      decoration: BoxDecoration(
-        color: tvTheme.cardColor,
-        borderRadius: BorderRadius.circular(20.sp),
-        border: Border.all(color: accent.withValues(alpha: 0.35)),
-      ),
-      child: StreamBuilder<PlaybackState>(
-        stream: controller.playbackStream,
-        builder: (context, snapshot) {
-          final playback = snapshot.data;
-          final position = playback?.position ?? Duration.zero;
-          final duration = playback?.duration ?? Duration.zero;
-          final isPlaying = playback?.isPlaying ?? false;
-          final progress = duration > Duration.zero ? (position.inMilliseconds / duration.inMilliseconds) : 0.0;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  // Info half opens the full player.
-                  Expanded(
-                    child: TvFocusable(
-                      onTap: () => const MusicPlayerRoute().push(context),
-                      builder: (context, focused, child) {
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 6.sp),
-                          decoration: BoxDecoration(
-                            color: focused ? accent.withValues(alpha: 0.18) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12.sp),
-                            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                          ),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10.sp),
-                                child: CachedNetworkImage(
-                                  imageUrl: track?.archive.cover ?? '',
-                                  width: 88.sp,
-                                  height: 56.sp,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 320,
-                                  errorWidget: (_, _, _) =>
-                                      Icon(Icons.music_note_rounded, size: 28.sp, color: accent),
+    // The bar is its own navigation region: it shares the home content pane's
+    // region with the section headers, and "region first" then pinned up/down
+    // between 播放全部 and the bar's buttons — the section's nested list region
+    // never got a turn. With the bar separated, leaving either side falls to
+    // the cross-region search, which lands on the list rows.
+    return DpadRegion(
+      child: Container(
+        margin: EdgeInsets.all(12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
+        decoration: BoxDecoration(
+          color: tvTheme.cardColor,
+          borderRadius: BorderRadius.circular(20.sp),
+          border: Border.all(color: accent.withValues(alpha: 0.35)),
+        ),
+        child: StreamBuilder<PlaybackState>(
+          stream: controller.playbackStream,
+          builder: (context, snapshot) {
+            final playback = snapshot.data;
+            final position = playback?.position ?? Duration.zero;
+            final duration = playback?.duration ?? Duration.zero;
+            final isPlaying = playback?.isPlaying ?? false;
+            final progress = duration > Duration.zero ? (position.inMilliseconds / duration.inMilliseconds) : 0.0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    // Info half opens the full player.
+                    Expanded(
+                      child: TvFocusable(
+                        onTap: () => const MusicPlayerRoute().push(context),
+                        builder: (context, focused, child) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 120),
+                            padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 6.sp),
+                            decoration: BoxDecoration(
+                              color: focused ? accent.withValues(alpha: 0.18) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12.sp),
+                              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.sp),
+                                  child: CachedNetworkImage(
+                                    imageUrl: track?.archive.cover ?? '',
+                                    width: 88.sp,
+                                    height: 56.sp,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 320,
+                                    errorWidget: (_, _, _) =>
+                                        Icon(Icons.music_note_rounded, size: 28.sp, color: accent),
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 14.sp),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      track?.title ?? i18n('music_player_title'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.t18W700.copyWith(color: tvTheme.primaryTextColor),
-                                    ),
-                                    SizedBox(height: 2.sp),
-                                    Text(
-                                      track?.archive.upName ?? '',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                                    ),
-                                  ],
+                                SizedBox(width: 14.sp),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        track?.title ?? i18n('music_player_title'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.t18W700.copyWith(color: tvTheme.primaryTextColor),
+                                      ),
+                                      SizedBox(height: 2.sp),
+                                      Text(
+                                        track?.archive.upName ?? '',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 12.sp),
-                              Text(
-                                '${MusicVideoCard.formatDuration(position.inSeconds)} / ${MusicVideoCard.formatDuration(duration.inSeconds)}',
-                                style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                              ),
-                            ],
-                          ),
-                        );
+                                SizedBox(width: 12.sp),
+                                Text(
+                                  '${MusicVideoCard.formatDuration(position.inSeconds)} / ${MusicVideoCard.formatDuration(duration.inSeconds)}',
+                                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 8.sp),
+                    TvIconButton(
+                      icon: Icon(
+                        isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        color: isFavorite ? accent : null,
+                      ),
+                      size: TvIconButtonSize.medium,
+                      onTap: () {
+                        if (track != null) {
+                          ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(track.archive);
+                        }
                       },
                     ),
-                  ),
-                  SizedBox(width: 8.sp),
-                  TvIconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                      color: isFavorite ? accent : null,
+                    SizedBox(width: 6.sp),
+                    TvIconButton(
+                      icon: const Icon(Icons.skip_previous_rounded),
+                      size: TvIconButtonSize.medium,
+                      isSecondary: true,
+                      onTap: () => controller.previous(),
                     ),
-                    size: TvIconButtonSize.medium,
-                    onTap: () {
-                      if (track != null) {
-                        ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(track.archive);
-                      }
-                    },
-                  ),
-                  SizedBox(width: 6.sp),
-                  TvIconButton(
-                    icon: const Icon(Icons.skip_previous_rounded),
-                    size: TvIconButtonSize.medium,
-                    isSecondary: true,
-                    onTap: () => controller.previous(),
-                  ),
-                  SizedBox(width: 6.sp),
-                  TvIconButton(
-                    icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                    size: TvIconButtonSize.large,
-                    onTap: () => controller.togglePlayPause(),
-                  ),
-                  SizedBox(width: 6.sp),
-                  TvIconButton(
-                    icon: const Icon(Icons.skip_next_rounded),
-                    size: TvIconButtonSize.medium,
-                    isSecondary: true,
-                    onTap: () => controller.next(),
-                  ),
-                  SizedBox(width: 6.sp),
-                  TvIconButton(
-                    icon: const Icon(Icons.lyrics_outlined),
-                    label: i18n('music_lyrics'),
-                    size: TvIconButtonSize.medium,
-                    isSecondary: true,
-                    onTap: () => const MusicPlayerRoute().push(context),
-                  ),
-                ],
-              ),
-              SizedBox(height: 6.sp),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(3.sp),
-                child: LinearProgressIndicator(
-                  value: progress.clamp(0.0, 1.0),
-                  minHeight: 6.sp,
-                  backgroundColor: tvTheme.secondaryTextColor.withValues(alpha: 0.25),
-                  color: accent,
+                    SizedBox(width: 6.sp),
+                    TvIconButton(
+                      icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                      size: TvIconButtonSize.large,
+                      onTap: () => controller.togglePlayPause(),
+                    ),
+                    SizedBox(width: 6.sp),
+                    TvIconButton(
+                      icon: const Icon(Icons.skip_next_rounded),
+                      size: TvIconButtonSize.medium,
+                      isSecondary: true,
+                      onTap: () => controller.next(),
+                    ),
+                    SizedBox(width: 6.sp),
+                  ],
                 ),
-              ),
-            ],
-          );
-        },
+                SizedBox(height: 6.sp),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(3.sp),
+                  child: LinearProgressIndicator(
+                    value: progress.clamp(0.0, 1.0),
+                    minHeight: 6.sp,
+                    backgroundColor: tvTheme.secondaryTextColor.withValues(alpha: 0.25),
+                    color: accent,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

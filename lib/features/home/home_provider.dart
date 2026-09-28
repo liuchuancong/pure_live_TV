@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/app_export.dart';
 import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
@@ -16,21 +17,33 @@ part 'home_provider.g.dart';
 /// against live rooms.
 enum AppMode { live, video, music }
 
-/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+/// The app-wide mode, persisted: the TV boots into whatever mode was last
+/// used instead of always live.
 @riverpod
 class AppModeController extends _$AppModeController {
   @override
-  AppMode build() => AppMode.live;
+  AppMode build() {
+    final saved = HivePrefUtil.getString('appMode');
+    for (final mode in AppMode.values) {
+      if (mode.name == saved) return mode;
+    }
+    return AppMode.live;
+  }
 
-  void setMode(AppMode mode) => state = mode;
+  void setMode(AppMode mode) {
+    state = mode;
+    HivePrefUtil.setString('appMode', mode.name);
+  }
 
   /// The single top-left button cycles 直播 → 视频 → 音乐: one OK press moves
   /// on, no submenu needed on a remote.
-  void cycle() => state = switch (state) {
-    AppMode.live => AppMode.video,
-    AppMode.video => AppMode.music,
-    AppMode.music => AppMode.live,
-  };
+  void cycle() => setMode(
+        switch (state) {
+          AppMode.live => AppMode.video,
+          AppMode.video => AppMode.music,
+          AppMode.music => AppMode.live,
+        },
+      );
 }
 
 /// Selected music-mode sidebar section (index into [MusicSection.values]).
