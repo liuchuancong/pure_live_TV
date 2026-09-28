@@ -1,4 +1,3 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -9,25 +8,19 @@ import 'package:pure_live/platforms/bilibili_music/bilibili_music_api.dart';
 import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
-/// The video mode home: bilibili UGC browsing in the same bar-over-grid shape
-/// as the live pages, so the remote behaves identically.
-///
-/// The grids show the same archives the music mode shows — a video here plays
-/// with the picture on, through the shared VOD engine.
-class VideoHomePage extends ConsumerStatefulWidget {
-  const VideoHomePage({super.key});
+/// Video mode sections. The section rail lives in the home sidebar; this file
+/// builds section content only, so the mode swaps the whole navigation.
+enum VideoSection { feed, popular, ranking, search }
+
+/// Content of one video section. Login is enforced by the home shell's
+/// [BilibiliLoginGate], not here.
+class VideoSectionView extends ConsumerWidget {
+  const VideoSectionView({super.key, required this.section});
+
+  final VideoSection section;
 
   @override
-  ConsumerState<VideoHomePage> createState() => _VideoHomePageState();
-}
-
-class _VideoHomePageState extends ConsumerState<VideoHomePage> {
-  int _tabIndex = 0;
-
-  static const _tabKeys = ['video_tab_recommend', 'video_tab_popular', 'video_tab_ranking', 'video_tab_search'];
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeSettingsControllerProvider);
     final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: themeState.denseRoomLayout,
@@ -36,32 +29,12 @@ class _VideoHomePageState extends ConsumerState<VideoHomePage> {
       childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout) + 0.14,
     );
 
-    return TvScaffold(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TvTabBar(
-            tabs: [for (final key in _tabKeys) TvTabItemData(title: i18n(key))],
-            currentIndex: _tabIndex,
-            onTabChange: (index) => setState(() => _tabIndex = index),
-          ),
-          SizedBox(height: 16.sp),
-          Expanded(
-            child: TvTabView(
-              memoryKey: 'video_tab_view_$_tabIndex',
-              verticalEdge: DpadEdgeBehavior.leave,
-              horizontalEdge: DpadEdgeBehavior.leave,
-              child: switch (_tabIndex) {
-                0 => _FeedTab(gridDelegate: gridDelegate),
-                1 => _PopularTab(gridDelegate: gridDelegate),
-                2 => _RankingTab(gridDelegate: gridDelegate),
-                _ => const _VideoSearchTab(),
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+    return switch (section) {
+      VideoSection.feed => _FeedTab(key: const ValueKey('video_feed'), gridDelegate: gridDelegate),
+      VideoSection.popular => _PopularTab(key: const ValueKey('video_popular'), gridDelegate: gridDelegate),
+      VideoSection.ranking => _RankingTab(key: const ValueKey('video_ranking'), gridDelegate: gridDelegate),
+      VideoSection.search => const _VideoSearchTab(key: ValueKey('video_search')),
+    };
   }
 }
 
@@ -69,7 +42,7 @@ class _VideoHomePageState extends ConsumerState<VideoHomePage> {
 /// carries a fetch closure, and a fresh instance per build would re-key
 /// `pagingCoreProvider(param)` and reset the list.
 abstract class _PagedGridTab extends ConsumerStatefulWidget {
-  const _PagedGridTab({required this.gridDelegate});
+  const _PagedGridTab({super.key, required this.gridDelegate});
 
   final SliverGridDelegateWithFixedCrossAxisCount gridDelegate;
 
@@ -97,7 +70,7 @@ class _PagedGridTabState<W extends _PagedGridTab> extends ConsumerState<W> {
 }
 
 class _FeedTab extends _PagedGridTab {
-  const _FeedTab({required super.gridDelegate});
+  const _FeedTab({super.key, required super.gridDelegate});
 
   @override
   String get tabKey => 'feed';
@@ -115,7 +88,7 @@ class _FeedTab extends _PagedGridTab {
 }
 
 class _PopularTab extends _PagedGridTab {
-  const _PopularTab({required super.gridDelegate});
+  const _PopularTab({super.key, required super.gridDelegate});
 
   @override
   String get tabKey => 'popular';
@@ -133,7 +106,7 @@ class _PopularTab extends _PagedGridTab {
 }
 
 class _RankingTab extends _PagedGridTab {
-  const _RankingTab({required super.gridDelegate});
+  const _RankingTab({super.key, required super.gridDelegate});
 
   @override
   String get tabKey => 'ranking';
@@ -152,7 +125,7 @@ class _RankingTab extends _PagedGridTab {
 
 /// Search over the whole video site, same endpoint as the music search.
 class _VideoSearchTab extends ConsumerStatefulWidget {
-  const _VideoSearchTab();
+  const _VideoSearchTab({super.key});
 
   @override
   ConsumerState<_VideoSearchTab> createState() => _VideoSearchTabState();

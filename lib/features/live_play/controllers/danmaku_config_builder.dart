@@ -11,8 +11,9 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart'
 /// so they follow the device profile instead of one number for every box:
 ///
 /// * `fps` follows the panel's refresh rate (see [resolveDanmakuFps]): the engine
-///   can never step more often than the display refreshes, so asking for more is
-///   not a speed-up, and asking for less only costs smoothness.
+///   integrates scroll positions against real elapsed time, so a lower `fps`
+///   only costs smoothness, never speed — but a step budget above the panel's
+///   refresh rate is wasted work.
 /// * `rasterizeItems` stays on: each message is rasterized once and every frame
 ///   then blits one textured quad, instead of re-running its text and stroke
 ///   ops on every frame. This is the single biggest win on TV hardware.
@@ -24,6 +25,11 @@ import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart'
 /// * `pictureCacheMaxSize` / `rasterCacheMaxBytes` bound the bitmap caches (one
 ///   bitmap per distinct message, ~40 KB at 1080p/20px). Both are a texture
 ///   budget: a few MB on a 2 GB box, ~10 MB on a box that can spare it.
+///
+/// Style and lane-geometry changes applied through [BarrageConfig.copyWith]
+/// restyle the on-screen messages immediately (the engine re-lays-out and
+/// re-bakes them in place), so setting switches show up without waiting for
+/// current messages to scroll off.
 BarrageConfig buildDanmakuConfig(
   DanmakuSettingsModel settings, {
   String? fontFamily,
@@ -61,6 +67,16 @@ BarrageConfig buildDanmakuConfig(
     rasterCacheMaxBytes: lowEnd ? 12 * 1024 * 1024 : 32 * 1024 * 1024,
     trackHeight: (fontSize * 1.55).clamp(24.0, 64.0).toDouble(),
     emojiSize: (fontSize * 1.3).clamp(16.0, 48.0).toDouble(),
+    // Burst dispatch and overflow behaviour, user-tunable.
+    realtimeMode: settings.danmakuRealtimeMode,
+    maxPendingCount: settings.danmakuMaxPendingCount,
+    maxPendingAge: Duration(seconds: settings.danmakuMaxPendingAge),
+    overlapSafeGap: settings.danmakuOverlapSafeGap,
+    fixedDuration: Duration(seconds: settings.danmakuFixedDuration),
+    // Shadow rendering, user-tunable (baked once per message, not a per-frame cost).
+    showShadow: settings.danmakuShowShadow,
+    shadowBlur: settings.danmakuShadowBlur,
+    letterSpacing: settings.danmakuLetterSpacing,
   );
 }
 

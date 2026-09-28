@@ -30,13 +30,131 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  /// One stable node for the top-left mode button, so the opening highlight
-  /// can claim it when a non-live mode is active.
+  /// One stable node for the mode switch button, so the opening highlight can
+  /// claim it when a non-live mode is active.
   final FocusNode _modeFocusNode = FocusNode();
 
   /// One stable node per side-menu entry, so the opening highlight can be aimed
   /// at the *selected* entry instead of whichever widget sits top-left.
   final Map<int, FocusNode> _menuFocusNodes = {};
+
+  /// One stable node per music/video section entry.
+  final Map<String, FocusNode> _sectionFocusNodes = {};
+
+  FocusNode _sectionNode(String key) => _sectionFocusNodes.putIfAbsent(key, FocusNode.new);
+
+  /// The mode switch button (in the old backup slot): shows the active mode,
+  /// one OK press cycles 直播 → 视频 → 音乐.
+  Widget _buildModeButton(AppMode mode, bool isExpanded, double textScale) {
+    final (String label, String short, IconData icon) = switch (mode) {
+      AppMode.live => (i18n('mode_live'), i18n('menu_short_mode_live'), Icons.live_tv_rounded),
+      AppMode.video => (i18n('mode_video'), i18n('menu_short_mode_video'), Icons.movie_outlined),
+      AppMode.music => (i18n('mode_music'), i18n('menu_short_mode_music'), Icons.library_music_outlined),
+    };
+
+    return _buildAdaptiveItem(
+      ref: ref,
+      item: AppMenuItem(index: -1, title: label, shortTitle: short, icon: icon),
+      isExpanded: isExpanded,
+      isSelected: true,
+      textScale: textScale,
+      focusNode: _modeFocusNode,
+      onTap: () => ref.read(appModeControllerProvider.notifier).cycle(),
+    );
+  }
+
+  /// The active mode's own rail entries. Live reuses the configured side menu;
+  /// music and video carry their fixed section lists, selected through their
+  /// section-index providers.
+  List<Widget> _buildModeRailItems(AppMode mode, bool isExpanded, double textScale) {
+    switch (mode) {
+      case AppMode.live:
+        final menuList = ref.watch(sideMenuListProvider);
+        final currentIndex = ref.watch(sideMenuIndexProvider);
+        return [
+          for (final item in menuList)
+            Padding(
+              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+              child: _buildAdaptiveItem(
+                ref: ref,
+                item: item,
+                isExpanded: isExpanded,
+                isSelected: currentIndex == item.index,
+                textScale: textScale,
+                focusNode: _nodeFor(item.index),
+                onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
+              ),
+            ),
+        ];
+      case AppMode.music:
+        const labels = [
+          ('music_favorites', Icons.favorite_border),
+          ('music_recents', Icons.history_rounded),
+          ('music_tab_ranking', Icons.leaderboard_outlined),
+          ('music_tab_search', Icons.search_rounded),
+        ];
+        final selected = ref.watch(musicSectionIndexProvider);
+        return [
+          for (final (index, (labelKey, icon)) in labels.indexed)
+            Padding(
+              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+              child: _buildAdaptiveItem(
+                ref: ref,
+                item: AppMenuItem(index: index, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
+                isExpanded: isExpanded,
+                isSelected: selected == index,
+                textScale: textScale,
+                focusNode: _sectionNode('music_$index'),
+                onTap: () => ref.read(musicSectionIndexProvider.notifier).change(index),
+              ),
+            ),
+        ];
+      case AppMode.video:
+        const labels = [
+          ('video_tab_recommend', Icons.explore_outlined),
+          ('video_tab_popular', Icons.local_fire_department_outlined),
+          ('video_tab_ranking', Icons.leaderboard_outlined),
+          ('video_tab_search', Icons.search_rounded),
+        ];
+        final selected = ref.watch(videoSectionIndexProvider);
+        return [
+          for (final (index, (labelKey, icon)) in labels.indexed)
+            Padding(
+              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+              child: _buildAdaptiveItem(
+                ref: ref,
+                item: AppMenuItem(index: index, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
+                isExpanded: isExpanded,
+                isSelected: selected == index,
+                textScale: textScale,
+                focusNode: _sectionNode('video_$index'),
+                onTap: () => ref.read(videoSectionIndexProvider.notifier).change(index),
+              ),
+            ),
+        ];
+    }
+  }
+
+  /// The full content pane for the non-live modes: login gate first (the bmsc
+  /// pattern — a lock placeholder that opens the QR login page), then the
+  /// selected section, with music pinning its resident mini player bar.
+  Widget _buildModePane(AppMode mode) {
+    if (mode == AppMode.music) {
+      final sectionIndex = ref.watch(musicSectionIndexProvider);
+      return BilibiliLoginGate(
+        child: Column(
+          children: [
+            Expanded(child: MusicSectionView(section: MusicSection.values[sectionIndex.clamp(0, 3)])),
+            const MusicMiniBar(),
+          ],
+        ),
+      );
+    }
+    final sectionIndex = ref.watch(videoSectionIndexProvider);
+    return BilibiliLoginGate(
+      child: VideoSectionView(section: VideoSection.values[sectionIndex.clamp(0, 3)]),
+    );
+  }
 
   FocusNode _nodeFor(int index) => _menuFocusNodes.putIfAbsent(index, FocusNode.new);
 
@@ -52,6 +170,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void dispose() {
     for (final node in _menuFocusNodes.values) {
+      node.dispose();
+    }
+    for (final node in _sectionFocusNodes.values) {
       node.dispose();
     }
     _modeFocusNode.dispose();
@@ -176,15 +297,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                       child: IntrinsicHeight(
                         child: Column(
                           children: [
-                            // The top-left mode button: one OK press cycles
-                            // live → music → video. It sits above everything so
-                            // the remote can always find its way back.
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 14.sp * textScale),
-                              child: _buildModeButton(appMode, isExpanded, textScale),
-                            ),
-                            // The clock sits above the backup entry, as the sidebar's
-                            // header: a TV left on the home screen is a wall clock too.
+                            // The clock sits at the sidebar's header: a TV left
+                            // on the home screen is a wall clock too.
                             Padding(
                               padding: EdgeInsets.only(bottom: 6.sp * textScale),
                               child: TvDigitalClock(
@@ -202,45 +316,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 style: AppTextStyles.t14W500.copyWith(color: currentTvTheme.secondaryTextColor, height: 1),
                               ),
                             SizedBox(height: 15.sp * textScale),
+                            // The mode switch lives where the backup shortcut
+                            // used to: one OK press cycles 直播 → 视频 → 音乐,
+                            // and the whole rail + content pane follow.
                             Padding(
                               padding: EdgeInsets.only(bottom: 14.sp * textScale),
-                              child: _buildAdaptiveItem(
-                                ref: ref,
-                                item: AppMenuItem(
-                                  index: TvMenuType.settings.value,
-                                  title: i18n('backup_manage'),
-                                  shortTitle: i18n('menu_short_backup'),
-                                  icon: Icons.backup_outlined,
-                                ),
-                                isExpanded: isExpanded,
-                                isSelected: false,
-                                textScale: textScale,
-                                // The sidebar slot the mobile app spent on account now
-                                // opens the settings page's backup directly.
-                                onTap: () => const BackupRoute().push(context),
-                              ),
+                              child: _buildModeButton(appMode, isExpanded, textScale),
                             ),
                             const Spacer(),
-                            // The live destinations belong to live mode only;
-                            // music and video draw their own content panes.
-                            if (isLiveMode)
-                              ...List.generate(menuList.length, (index) {
-                              final item = menuList[index];
-                              final isSelected = currentIndex == item.index;
-
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: 14.sp * textScale),
-                                child: _buildAdaptiveItem(
-                                  ref: ref,
-                                  item: item,
-                                  isExpanded: isExpanded,
-                                  isSelected: isSelected,
-                                  textScale: textScale,
-                                  focusNode: _nodeFor(item.index),
-                                  onTap: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(item.index),
-                                ),
-                              );
-                            }),
+                            // The rail below the switch is the active mode's
+                            // own navigation: live destinations, music library
+                            // sections or video sections.
+                            ..._buildModeRailItems(appMode, isExpanded, textScale),
                             const Spacer(),
                             Padding(
                               padding: EdgeInsets.only(bottom: 14.sp * textScale),
@@ -283,12 +370,13 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: DpadRegion(
                 child: Padding(
                   padding: EdgeInsets.all(8.sp),
-                  // Music and video own the whole pane; only live mode runs the
-                  // keep-alive home stack below.
+                  // Music and video own the whole pane (their own rail above,
+                  // login-gated content below); only live mode runs the
+                  // keep-alive home stack.
                   child: !isLiveMode
                       ? Container(
                           key: ValueKey('mode_${appMode.name}'),
-                          child: _buildModeContent(appMode)
+                          child: _buildModePane(appMode)
                               .animate()
                               .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
                               .scale(
@@ -361,44 +449,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   /// The top-left button: shows the active mode, one OK press cycles to the
   /// next. Deliberately not an [AppMenuItem] — it carries no menu index.
-  Widget _buildModeButton(AppMode mode, bool isExpanded, double textScale) {
-    final (String label, String short, IconData icon) = switch (mode) {
-      AppMode.live => (i18n('mode_live'), i18n('menu_short_mode_live'), Icons.live_tv_rounded),
-      AppMode.music => (i18n('mode_music'), i18n('menu_short_mode_music'), Icons.library_music_outlined),
-      AppMode.video => (i18n('mode_video'), i18n('menu_short_mode_video'), Icons.movie_outlined),
-    };
-
-    if (isExpanded) {
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
-        child: TvButton(
-          title: label,
-          icon: Icon(icon, size: 32.sp * textScale),
-          iconPosition: TvIconPosition.left,
-          size: TvButtonSize.mini,
-          focusNode: _modeFocusNode,
-          onTap: () => ref.read(appModeControllerProvider.notifier).cycle(),
-        ),
-      );
-    }
-
-    return TvIconButton(
-      icon: Icon(icon),
-      label: short,
-      size: TvIconButtonSize.medium,
-      focusNode: _modeFocusNode,
-      onTap: () => ref.read(appModeControllerProvider.notifier).cycle(),
-    );
-  }
-
-  /// The full content pane for the non-live modes.
-  Widget _buildModeContent(AppMode mode) => switch (mode) {
-    AppMode.live => const SizedBox.shrink(), // handled by the live stack
-    AppMode.music => const MusicPage(),
-    AppMode.video => const VideoHomePage(),
-  };
-
   Widget _buildAdaptiveItem({
     required WidgetRef ref,
     required AppMenuItem item,

@@ -42,7 +42,7 @@ final class DanmakuSettingsControllerProvider
 }
 
 String _$danmakuSettingsControllerHash() =>
-    r'c24adfa6afad4a60c51fd3318fdaabdf654e9bd0';
+    r'2fe535fc598a964344c1f7019b6bf2af3ca6f249';
 
 abstract class _$DanmakuSettingsController
     extends $Notifier<DanmakuSettingsModel> {

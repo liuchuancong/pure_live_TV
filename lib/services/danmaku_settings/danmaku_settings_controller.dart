@@ -47,6 +47,14 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
       danmakuOpacity: (HivePrefUtil.getDouble('danmakuOpacity') ?? 1.0).clamp(0.05, 1.0),
       enableDanmakuDisplay: HivePrefUtil.getBool('enableDanmakuDisplay') ?? true,
       enableDanmakuStroke: HivePrefUtil.getBool('enableDanmakuStroke') ?? true,
+      danmakuRealtimeMode: HivePrefUtil.getBool('danmakuRealtimeMode') ?? false,
+      danmakuShowShadow: HivePrefUtil.getBool('danmakuShowShadow') ?? false,
+      danmakuShadowBlur: (HivePrefUtil.getDouble('danmakuShadowBlur') ?? 2.0).clamp(0.0, 20.0),
+      danmakuLetterSpacing: (HivePrefUtil.getDouble('danmakuLetterSpacing') ?? 0.0).clamp(0.0, 8.0),
+      danmakuFixedDuration: (HivePrefUtil.getInt('danmakuFixedDuration') ?? 4).clamp(1, 15),
+      danmakuOverlapSafeGap: (HivePrefUtil.getDouble('danmakuOverlapSafeGap') ?? 40.0).clamp(0.0, 120.0),
+      danmakuMaxPendingCount: (HivePrefUtil.getInt('danmakuMaxPendingCount') ?? 120).clamp(30, 400),
+      danmakuMaxPendingAge: (HivePrefUtil.getInt('danmakuMaxPendingAge') ?? 5).clamp(1, 30),
       danmakuFps: (HivePrefUtil.getInt('danmakuFps') ?? 60).clamp(30, 240),
       // Follow the panel by default: the engine cannot step more often than the
       // display refreshes, so a fixed 60 only ever costs smoothness on a 120Hz
@@ -180,6 +188,14 @@ class DanmakuSettingsController extends _$DanmakuSettingsController {
     HivePrefUtil.setDouble('danmakuOpacity', state.danmakuOpacity);
     HivePrefUtil.setBool('enableDanmakuDisplay', state.enableDanmakuDisplay);
     HivePrefUtil.setBool('enableDanmakuStroke', state.enableDanmakuStroke);
+    HivePrefUtil.setBool('danmakuRealtimeMode', state.danmakuRealtimeMode);
+    HivePrefUtil.setBool('danmakuShowShadow', state.danmakuShowShadow);
+    HivePrefUtil.setDouble('danmakuShadowBlur', state.danmakuShadowBlur);
+    HivePrefUtil.setDouble('danmakuLetterSpacing', state.danmakuLetterSpacing);
+    HivePrefUtil.setInt('danmakuFixedDuration', state.danmakuFixedDuration);
+    HivePrefUtil.setDouble('danmakuOverlapSafeGap', state.danmakuOverlapSafeGap);
+    HivePrefUtil.setInt('danmakuMaxPendingCount', state.danmakuMaxPendingCount);
+    HivePrefUtil.setInt('danmakuMaxPendingAge', state.danmakuMaxPendingAge);
     HivePrefUtil.setInt('danmakuFps', state.danmakuFps);
     HivePrefUtil.setBool('danmakuAutoFps', state.danmakuAutoFps);
     HivePrefUtil.setBool('enableDanmakuTapInteraction', state.enableDanmakuTapInteraction);

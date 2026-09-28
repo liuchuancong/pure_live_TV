@@ -8,13 +8,13 @@ import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 part 'home_provider.g.dart';
 
-/// Top-level app modes, switched by the button at the top-left of the sidebar.
-///
-/// Live keeps the classic room UI; music and video are the bilibili UGC modes
-/// over the same VOD playback engine — video shows the picture, music listens
-/// without it. Each mode owns its own UI stack and its playback is exclusive:
-/// opening a live room pauses music/video, and starting a track pauses live.
-enum AppMode { live, music, video }
+/// Top-level app modes, switched by the button at the top of the sidebar
+/// (where the backup shortcut used to sit). Live keeps the classic room UI;
+/// music and video are the bilibili UGC modes over the same VOD playback
+/// engine — video shows the picture, music listens without it. Each mode owns
+/// the whole navigation rail and content pane; their playback is exclusive
+/// against live rooms.
+enum AppMode { live, video, music }
 
 /// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
 @riverpod
@@ -24,13 +24,31 @@ class AppModeController extends _$AppModeController {
 
   void setMode(AppMode mode) => state = mode;
 
-  /// The single top-left button cycles the three modes: one OK press moves on,
-  /// no submenu needed on a remote.
+  /// The single top-left button cycles 直播 → 视频 → 音乐: one OK press moves
+  /// on, no submenu needed on a remote.
   void cycle() => state = switch (state) {
-    AppMode.live => AppMode.music,
-    AppMode.music => AppMode.video,
-    AppMode.video => AppMode.live,
+    AppMode.live => AppMode.video,
+    AppMode.video => AppMode.music,
+    AppMode.music => AppMode.live,
   };
+}
+
+/// Selected music-mode sidebar section (index into [MusicSection.values]).
+@riverpod
+class MusicSectionIndex extends _$MusicSectionIndex {
+  @override
+  int build() => 0;
+
+  void change(int index) => state = index;
+}
+
+/// Selected video-mode sidebar section (index into [VideoSection.values]).
+@riverpod
+class VideoSectionIndex extends _$VideoSectionIndex {
+  @override
+  int build() => 0;
+
+  void change(int index) => state = index;
 }
 
 /// Side-menu destinations.

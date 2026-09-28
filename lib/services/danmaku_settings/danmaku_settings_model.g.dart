@@ -21,6 +21,17 @@ _DanmakuSettingsModel _$DanmakuSettingsModelFromJson(
   danmakuOpacity: (json['danmakuOpacity'] as num?)?.toDouble() ?? 1.0,
   enableDanmakuDisplay: json['enableDanmakuDisplay'] as bool? ?? true,
   enableDanmakuStroke: json['enableDanmakuStroke'] as bool? ?? true,
+  danmakuRealtimeMode: json['danmakuRealtimeMode'] as bool? ?? false,
+  danmakuShowShadow: json['danmakuShowShadow'] as bool? ?? false,
+  danmakuShadowBlur: (json['danmakuShadowBlur'] as num?)?.toDouble() ?? 2.0,
+  danmakuLetterSpacing:
+      (json['danmakuLetterSpacing'] as num?)?.toDouble() ?? 0.0,
+  danmakuFixedDuration: (json['danmakuFixedDuration'] as num?)?.toInt() ?? 4,
+  danmakuOverlapSafeGap:
+      (json['danmakuOverlapSafeGap'] as num?)?.toDouble() ?? 40.0,
+  danmakuMaxPendingCount:
+      (json['danmakuMaxPendingCount'] as num?)?.toInt() ?? 120,
+  danmakuMaxPendingAge: (json['danmakuMaxPendingAge'] as num?)?.toInt() ?? 5,
   danmakuFps: (json['danmakuFps'] as num?)?.toInt() ?? 60,
   danmakuAutoFps: json['danmakuAutoFps'] as bool? ?? false,
   enableDanmakuTapInteraction:
@@ -78,6 +89,14 @@ Map<String, dynamic> _$DanmakuSettingsModelToJson(
   'danmakuOpacity': instance.danmakuOpacity,
   'enableDanmakuDisplay': instance.enableDanmakuDisplay,
   'enableDanmakuStroke': instance.enableDanmakuStroke,
+  'danmakuRealtimeMode': instance.danmakuRealtimeMode,
+  'danmakuShowShadow': instance.danmakuShowShadow,
+  'danmakuShadowBlur': instance.danmakuShadowBlur,
+  'danmakuLetterSpacing': instance.danmakuLetterSpacing,
+  'danmakuFixedDuration': instance.danmakuFixedDuration,
+  'danmakuOverlapSafeGap': instance.danmakuOverlapSafeGap,
+  'danmakuMaxPendingCount': instance.danmakuMaxPendingCount,
+  'danmakuMaxPendingAge': instance.danmakuMaxPendingAge,
   'danmakuFps': instance.danmakuFps,
   'danmakuAutoFps': instance.danmakuAutoFps,
   'enableDanmakuTapInteraction': instance.enableDanmakuTapInteraction,

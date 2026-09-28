@@ -71,6 +71,28 @@ abstract class DanmakuSettingsModel with _$DanmakuSettingsModel {
     @Default(1.0) double danmakuOpacity,
     @Default(true) bool enableDanmakuDisplay,
     @Default(true) bool enableDanmakuStroke,
+    /// Burst dispatch: bypass `emitInterval` pacing and flush the waiting
+    /// queue every logic frame (`BarrageConfig.realtimeMode`). On = lowest
+    /// latency during floods, denser screen; off = paced, calmer.
+    @Default(false) bool danmakuRealtimeMode,
+    /// Paragraph shadow under the text (`BarrageConfig.showShadow`).
+    @Default(false) bool danmakuShowShadow,
+    /// Shadow blur radius in logical pixels (`BarrageConfig.shadowBlur`).
+    @Default(2.0) double danmakuShadowBlur,
+    /// Extra glyph spacing in logical pixels (`BarrageConfig.letterSpacing`).
+    @Default(0.0) double danmakuLetterSpacing,
+    /// Dwell time of pinned (top/bottom) danmaku, in seconds
+    /// (`BarrageConfig.fixedDuration`).
+    @Default(4) int danmakuFixedDuration,
+    /// Minimum clearance between consecutive danmaku in one lane, in logical
+    /// pixels (`BarrageConfig.overlapSafeGap`).
+    @Default(40.0) double danmakuOverlapSafeGap,
+    /// Queue cap before the oldest waiting message is dropped
+    /// (`BarrageConfig.maxPendingCount`).
+    @Default(120) int danmakuMaxPendingCount,
+    /// Age in seconds after which a waiting message is dropped instead of
+    /// shown (`BarrageConfig.maxPendingAge`).
+    @Default(5) int danmakuMaxPendingAge,
     @Default(60) int danmakuFps,
     /// Auto frame rate: follow the display's refresh rate instead of [danmakuFps].
     ///

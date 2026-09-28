@@ -44,7 +44,7 @@ final class AppModeControllerProvider
   }
 }
 
-String _$appModeControllerHash() => r'86b40446a8af766755184bde8a25e5350e02ccad';
+String _$appModeControllerHash() => r'7601803f989e967178fbe4380ba1d6de4d6ff768';
 
 /// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
 
@@ -59,6 +59,122 @@ abstract class _$AppModeController extends $Notifier<AppMode> {
             as $ClassProviderElement<
               AnyNotifier<AppMode, AppMode>,
               AppMode,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// Selected music-mode sidebar section (index into [MusicSection.values]).
+
+@ProviderFor(MusicSectionIndex)
+final musicSectionIndexProvider = MusicSectionIndexProvider._();
+
+/// Selected music-mode sidebar section (index into [MusicSection.values]).
+final class MusicSectionIndexProvider
+    extends $NotifierProvider<MusicSectionIndex, int> {
+  /// Selected music-mode sidebar section (index into [MusicSection.values]).
+  MusicSectionIndexProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'musicSectionIndexProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$musicSectionIndexHash();
+
+  @$internal
+  @override
+  MusicSectionIndex create() => MusicSectionIndex();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$musicSectionIndexHash() => r'32fcba090186c5b398739776561d37b00600bb1a';
+
+/// Selected music-mode sidebar section (index into [MusicSection.values]).
+
+abstract class _$MusicSectionIndex extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// Selected video-mode sidebar section (index into [VideoSection.values]).
+
+@ProviderFor(VideoSectionIndex)
+final videoSectionIndexProvider = VideoSectionIndexProvider._();
+
+/// Selected video-mode sidebar section (index into [VideoSection.values]).
+final class VideoSectionIndexProvider
+    extends $NotifierProvider<VideoSectionIndex, int> {
+  /// Selected video-mode sidebar section (index into [VideoSection.values]).
+  VideoSectionIndexProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'videoSectionIndexProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$videoSectionIndexHash();
+
+  @$internal
+  @override
+  VideoSectionIndex create() => VideoSectionIndex();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$videoSectionIndexHash() => r'cae7836dec2d67428afee6141291c003905d599d';
+
+/// Selected video-mode sidebar section (index into [VideoSection.values]).
+
+abstract class _$VideoSectionIndex extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
               Object?,
               Object?
             >;

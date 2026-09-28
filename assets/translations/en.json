@@ -2680,5 +2680,8 @@
   "remote_sync_incoming_import": "{address} wants to replace this device's settings with its own. Allow?",
   "remote_sync_incoming_export": "{address} wants to read this device's settings. Allow?",
   "douyu_force_renewal": "Renew the source every 4 minutes",
-  "douyu_force_renewal_hint": "A signed-in link states no lease (`expire=0`) while Douyu still closes it on its own. When on, a fresh link is fetched about every 4 minutes and spliced in at a keyframe, so playback never breaks. Turn it on only if you actually see the five-minute cut."
+  "douyu_force_renewal_hint": "A signed-in link states no lease (`expire=0`) while Douyu still closes it on its own. When on, a fresh link is fetched about every 4 minutes and spliced in at a keyframe, so playback never breaks. Turn it on only if you actually see the five-minute cut.",
+  "bili_login_required": "Sign in to bilibili first",
+  "bili_login_hint": "Music and video modes need a bilibili login",
+  "bili_login_action": "Scan to sign in"
 }

@@ -13,131 +13,26 @@ import 'package:pure_live/platforms/bilibili_music/bilibili_music_api.dart';
 import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
-/// Music mode, laid out like a desktop QQ music client: a left library rail
-/// (Favorites / Recently played / Leaderboard / search), the section content (a song list for the
-/// library sections, grids for discovery), and the resident player bar pinned
-/// to the bottom.
-class MusicPage extends ConsumerStatefulWidget {
-  const MusicPage({super.key});
+/// Music mode sections. The section rail itself lives in the home sidebar —
+/// this file only builds section content, so the mode swaps the whole
+/// navigation instead of nesting its own.
+enum MusicSection { favorites, recents, ranking, search }
 
-  @override
-  ConsumerState<MusicPage> createState() => _MusicPageState();
-}
+/// Content of one music section. The section rail lives in the home sidebar;
+/// login is enforced by the home shell's BilibiliLoginGate, not here.
+class MusicSectionView extends ConsumerWidget {
+  const MusicSectionView({super.key, required this.section});
 
-enum _MusicSection { favorites, recents, ranking, search }
-
-class _MusicPageState extends ConsumerState<MusicPage> {
-  _MusicSection _section = _MusicSection.favorites;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-
-    return TvScaffold(
-      child: Column(
-        children: [
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _MusicRail(
-                  current: _section,
-                  onSelect: (section) => setState(() => _section = section),
-                ),
-                VerticalDivider(width: 1.sp, color: tvTheme.secondaryTextColor.withValues(alpha: 0.25)),
-                Expanded(child: _buildSection()),
-              ],
-            ),
-          ),
-          const _MusicMiniBar(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSection() {
-    return switch (_section) {
-      _MusicSection.favorites => const _SongListSection(key: ValueKey('music_favorites'), section: _MusicSection.favorites),
-      _MusicSection.recents => const _SongListSection(key: ValueKey('music_recents'), section: _MusicSection.recents),
-      _MusicSection.ranking => const _RankingSection(key: ValueKey('music_ranking')),
-      _MusicSection.search => const _SearchSection(key: ValueKey('music_search')),
-    };
-  }
-}
-
-/// The left rail: the library's own destinations with live counts, the QQ
-/// music sidebar's shape.
-class _MusicRail extends ConsumerWidget {
-  const _MusicRail({required this.current, required this.onSelect});
-
-  final _MusicSection current;
-  final ValueChanged<_MusicSection> onSelect;
+  final MusicSection section;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tvTheme = context.tvTheme;
-    final library = ref.watch(musicLibraryControllerProvider);
-    final accent = tvTheme.focusColor;
-
-    Widget entry(_MusicSection section, IconData icon, String label, [int count = 0]) {
-      final selected = current == section;
-      return Padding(
-        padding: EdgeInsets.only(bottom: 6.sp),
-        child: TvFocusable(
-          onTap: () => onSelect(section),
-          builder: (context, focused, child) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              curve: Curves.easeOutCubic,
-              height: 64.sp,
-              margin: EdgeInsets.symmetric(horizontal: 8.sp),
-              padding: EdgeInsets.symmetric(horizontal: 14.sp),
-              decoration: BoxDecoration(
-                color: selected
-                    ? accent.withValues(alpha: 0.18)
-                    : focused
-                        ? tvTheme.cardColor
-                        : Colors.transparent,
-                borderRadius: BorderRadius.circular(14.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-              ),
-              child: Row(
-                children: [
-                  Icon(icon, size: 26.sp, color: selected ? accent : tvTheme.secondaryTextColor),
-                  SizedBox(width: 12.sp),
-                  Expanded(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t18W600.copyWith(color: selected ? accent : tvTheme.primaryTextColor),
-                    ),
-                  ),
-                  if (count > 0)
-                    Text('$count', style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
-                ],
-              ),
-            );
-          },
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: 220.sp,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(vertical: 12.sp),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            entry(_MusicSection.favorites, Icons.favorite_border, i18n('music_favorites'), library.favorites.length),
-            entry(_MusicSection.recents, Icons.history_rounded, i18n('music_recents'), library.recents.length),
-            entry(_MusicSection.ranking, Icons.leaderboard_outlined, i18n('music_tab_ranking')),
-            entry(_MusicSection.search, Icons.search_rounded, i18n('music_tab_search')),
-          ],
-        ),
-      ),
-    );
+    return switch (section) {
+      MusicSection.favorites => _SongListSection(key: const ValueKey('music_favorites'), section: MusicSection.favorites),
+      MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
+      MusicSection.ranking => const _RankingSection(key: ValueKey('music_ranking')),
+      MusicSection.search => const _SearchSection(key: ValueKey('music_search')),
+    };
   }
 }
 
@@ -146,7 +41,7 @@ class _MusicRail extends ConsumerWidget {
 class _SongListSection extends ConsumerWidget {
   const _SongListSection({super.key, required this.section});
 
-  final _MusicSection section;
+  final MusicSection section;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -154,8 +49,8 @@ class _SongListSection extends ConsumerWidget {
     final libraryController = ref.read(musicLibraryControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
-    final archives = section == _MusicSection.favorites ? library.favorites : library.recents;
-    final isFavorites = section == _MusicSection.favorites;
+    final archives = section == MusicSection.favorites ? library.favorites : library.recents;
+    final isFavorites = section == MusicSection.favorites;
 
     final tracks = [for (final archive in archives) ...archive.tracks];
 
@@ -483,8 +378,8 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
 /// The resident bottom player bar, QQ music's shape: cover, title over
 /// singer, progress line with times, then heart / prev / play / next and the
 /// entry into the full-screen player with lyrics.
-class _MusicMiniBar extends ConsumerWidget {
-  const _MusicMiniBar();
+class MusicMiniBar extends ConsumerWidget {
+  const MusicMiniBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

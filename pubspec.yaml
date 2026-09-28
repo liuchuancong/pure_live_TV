@@ -70,7 +70,7 @@ dependencies:
 
   flutter_lyric: ^3.0.8
   wakelock_plus: ^1.4.0               # 播放时保持屏幕常亮
-  flame_barrage: ^0.0.7
+  flame_barrage: ^0.0.8
 
   # 文件选择、打开、权限
   open_filex: ^4.7.0                  # 调用第三方APP打开本地文件

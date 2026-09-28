@@ -1,5 +1,6 @@
 export 'package:remixicon/remixicon.dart';
 export 'app_status_view.dart';
+export 'bilibili_login_gate.dart';
 export 'tv_app_bar.dart';
 export 'tv_area_card.dart';
 export 'tv_button.dart';
