@@ -6,17 +6,20 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/music/music_library_controller.dart';
-import 'package:pure_live/modules/media/music_player_controller.dart';
-import 'package:pure_live/modules/media/music_video_card.dart';
-import 'package:pure_live/modules/media/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/bilibili_music_models.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
+import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
+import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 /// Music mode sections. The section rail itself lives in the home sidebar —
 /// this file only builds section content, so the mode swaps the whole
 /// navigation instead of nesting its own.
-enum MusicSection { favorites, recents, ranking, search }
+enum MusicSection { favorites, recents, playlists, dynamics, history, ranking, search }
 
 /// Content of one music section. The section rail lives in the home sidebar;
 /// login is enforced by the home shell's BilibiliLoginGate, not here.
@@ -30,6 +33,9 @@ class MusicSectionView extends ConsumerWidget {
     return switch (section) {
       MusicSection.favorites => _SongListSection(key: const ValueKey('music_favorites'), section: MusicSection.favorites),
       MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
+      MusicSection.playlists => const MusicFavFoldersPage(key: ValueKey('music_playlists')),
+      MusicSection.dynamics => const UgcDynamicsPage(key: ValueKey('music_dynamics')),
+      MusicSection.history => const MusicCloudHistoryPage(key: ValueKey('music_history')),
       MusicSection.ranking => const _RankingSection(key: ValueKey('music_ranking')),
       MusicSection.search => const _SearchSection(key: ValueKey('music_search')),
     };

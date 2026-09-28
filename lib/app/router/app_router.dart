@@ -886,6 +886,71 @@ class VideoPlayerRoute extends GoRouteData with $VideoPlayerRoute {
   Widget build(BuildContext context, GoRouterState state) => const VideoPlayerPage();
 }
 
+/// One PGC season's episode page. `$extra` is the feed card the tile had.
+@TypedGoRoute<VideoSeasonRoute>(path: AppRoutes.kVideoSeason)
+class VideoSeasonRoute extends GoRouteData with $VideoSeasonRoute {
+  VideoSeasonRoute(this.$extra);
+
+  final Object $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final extra = $extra;
+    return extra is PgcItem ? VideoSeasonPage(item: extra) : const SizedBox.shrink();
+  }
+}
+
+/// The shared comments page over one archive's oid.
+@TypedGoRoute<UgcCommentsRoute>(path: AppRoutes.kUgcComments)
+class UgcCommentsRoute extends GoRouteData with $UgcCommentsRoute {
+  UgcCommentsRoute(this.$extra);
+
+  final Object $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final extra = $extra;
+    return extra is UgcCommentsArgs
+        ? UgcCommentsPage(oid: extra.oid, type: extra.type, title: extra.title)
+        : const SizedBox.shrink();
+  }
+}
+
+/// The shared user-space page over one UP's mid.
+@TypedGoRoute<UgcUserSpaceRoute>(path: AppRoutes.kUgcUserSpace)
+class UgcUserSpaceRoute extends GoRouteData with $UgcUserSpaceRoute {
+  UgcUserSpaceRoute(this.mid, this.name);
+
+  final int mid;
+  final String name;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => UgcUserSpacePage(mid: mid, name: name);
+}
+
+/// One synced playlist's track table. `$extra` is the folder card.
+@TypedGoRoute<MusicFavDetailRoute>(path: AppRoutes.kMusicFavDetail)
+class MusicFavDetailRoute extends GoRouteData with $MusicFavDetailRoute {
+  MusicFavDetailRoute(this.$extra);
+
+  final Object $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final extra = $extra;
+    return extra is FavFolder ? MusicFavDetailPage(folder: extra) : const SizedBox.shrink();
+  }
+}
+
+/// The arguments [UgcCommentsRoute] carries through `$extra`.
+class UgcCommentsArgs {
+  const UgcCommentsArgs({required this.oid, required this.title, this.type = 1});
+
+  final int oid;
+  final String title;
+  final int type;
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final isFirstInApp = ref.watch(startupControllerProvider);
 

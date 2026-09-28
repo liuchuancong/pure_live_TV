@@ -31,6 +31,10 @@ List<RouteBase> get $appRoutes => [
   $musicPlayerRoute,
   $videoDetailRoute,
   $videoPlayerRoute,
+  $videoSeasonRoute,
+  $ugcCommentsRoute,
+  $ugcUserSpaceRoute,
+  $musicFavDetailRoute,
 ];
 
 RouteBase get $settingsShellRoute => ShellRouteData.$route(
@@ -1974,4 +1978,131 @@ mixin $VideoPlayerRoute on GoRouteData {
 
   @override
   void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $videoSeasonRoute => GoRouteData.$route(
+  path: '/video_season',
+  hasOverriddenOnExit: false,
+  factory: $VideoSeasonRoute._fromState,
+);
+
+mixin $VideoSeasonRoute on GoRouteData {
+  static VideoSeasonRoute _fromState(GoRouterState state) =>
+      VideoSeasonRoute(state.extra as Object);
+
+  VideoSeasonRoute get _self => this as VideoSeasonRoute;
+
+  @override
+  String get location => GoRouteData.$location('/video_season');
+
+  @override
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
+
+  @override
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location, extra: _self.$extra);
+
+  @override
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
+}
+
+RouteBase get $ugcCommentsRoute => GoRouteData.$route(
+  path: '/ugc_comments',
+  hasOverriddenOnExit: false,
+  factory: $UgcCommentsRoute._fromState,
+);
+
+mixin $UgcCommentsRoute on GoRouteData {
+  static UgcCommentsRoute _fromState(GoRouterState state) =>
+      UgcCommentsRoute(state.extra as Object);
+
+  UgcCommentsRoute get _self => this as UgcCommentsRoute;
+
+  @override
+  String get location => GoRouteData.$location('/ugc_comments');
+
+  @override
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
+
+  @override
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location, extra: _self.$extra);
+
+  @override
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
+}
+
+RouteBase get $ugcUserSpaceRoute => GoRouteData.$route(
+  path: '/ugc_user_space',
+  hasOverriddenOnExit: false,
+  factory: $UgcUserSpaceRoute._fromState,
+);
+
+mixin $UgcUserSpaceRoute on GoRouteData {
+  static UgcUserSpaceRoute _fromState(GoRouterState state) => UgcUserSpaceRoute(
+    int.parse(state.uri.queryParameters['mid']!),
+    state.uri.queryParameters['name']!,
+  );
+
+  UgcUserSpaceRoute get _self => this as UgcUserSpaceRoute;
+
+  @override
+  String get location => GoRouteData.$location(
+    '/ugc_user_space',
+    queryParams: {'mid': _self.mid.toString(), 'name': _self.name},
+  );
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $musicFavDetailRoute => GoRouteData.$route(
+  path: '/music_fav_detail',
+  hasOverriddenOnExit: false,
+  factory: $MusicFavDetailRoute._fromState,
+);
+
+mixin $MusicFavDetailRoute on GoRouteData {
+  static MusicFavDetailRoute _fromState(GoRouterState state) =>
+      MusicFavDetailRoute(state.extra as Object);
+
+  MusicFavDetailRoute get _self => this as MusicFavDetailRoute;
+
+  @override
+  String get location => GoRouteData.$location('/music_fav_detail');
+
+  @override
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
+
+  @override
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location, extra: _self.$extra);
+
+  @override
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
 }

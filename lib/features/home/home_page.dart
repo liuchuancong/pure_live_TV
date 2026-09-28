@@ -180,6 +180,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         const labels = [
           ('music_favorites', Icons.favorite_border),
           ('music_recents', Icons.history_rounded),
+          ('music_playlists', Icons.playlist_add_check_rounded),
+          ('music_dynamics', Icons.dynamic_feed_outlined),
+          ('music_history', Icons.cloud_queue_outlined),
           ('music_tab_ranking', Icons.leaderboard_outlined),
           ('music_tab_search', Icons.search_rounded),
         ];
@@ -204,7 +207,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           ('video_tab_recommend', Icons.explore_outlined),
           ('video_tab_popular', Icons.local_fire_department_outlined),
           ('video_tab_ranking', Icons.leaderboard_outlined),
+          ('video_tab_region', Icons.category_outlined),
+          ('video_tab_pgc', Icons.live_tv_outlined),
+          ('video_dynamics', Icons.dynamic_feed_outlined),
           ('video_tab_search', Icons.search_rounded),
+          ('video_personal', Icons.person_outline_rounded),
         ];
         final selected = ref.watch(videoSectionIndexProvider);
         return [
@@ -234,7 +241,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       return BilibiliLoginGate(
         child: Column(
           children: [
-            Expanded(child: MusicSectionView(section: MusicSection.values[sectionIndex.clamp(0, 3)])),
+            Expanded(child: MusicSectionView(section: MusicSection.values[sectionIndex.clamp(0, MusicSection.values.length - 1)])),
             const MusicMiniBar(),
           ],
         ),
@@ -242,7 +249,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
     final sectionIndex = ref.watch(videoSectionIndexProvider);
     return BilibiliLoginGate(
-      child: VideoSectionView(section: VideoSection.values[sectionIndex.clamp(0, 3)]),
+      child: VideoSectionView(section: VideoSection.values[sectionIndex.clamp(0, VideoSection.values.length - 1)]),
     );
   }
 

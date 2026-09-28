@@ -172,20 +172,24 @@ class MusicArchive {
 
 /// One part (part) of an archive — the unit the queue plays.
 class MusicPart {
-  const MusicPart({required this.cid, required this.page, required this.title, required this.duration});
+  const MusicPart({required this.cid, required this.page, required this.title, required this.duration, this.epId = 0});
 
   final int cid;
   final int page;
   final String title;
   final int duration;
 
-  Map<String, dynamic> toJson() => {'cid': cid, 'page': page, 'title': title, 'duration': duration};
+  /// PGC episodes play through the pgc playurl endpoint instead; 0 = plain UGC.
+  final int epId;
+
+  Map<String, dynamic> toJson() => {'cid': cid, 'page': page, 'title': title, 'duration': duration, 'epId': epId};
 
   factory MusicPart.fromJson(Map<String, dynamic> json) => MusicPart(
     cid: int.tryParse(json['cid']?.toString() ?? '') ?? 0,
     page: int.tryParse(json['page']?.toString() ?? '') ?? 1,
     title: json['title']?.toString() ?? '',
     duration: int.tryParse(json['duration']?.toString() ?? '') ?? 0,
+    epId: int.tryParse(json['epId']?.toString() ?? '') ?? 0,
   );
 }
 

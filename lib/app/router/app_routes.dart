@@ -33,6 +33,18 @@ abstract final class AppRoutes {
   /// Video mode: the full-screen player
   static const kVideoPlayer = "/video_player";
 
+  /// Video mode: one PGC season's episode list
+  static const kVideoSeason = "/video_season";
+
+  /// The shared bilibili comments page (music and video)
+  static const kUgcComments = "/ugc_comments";
+
+  /// The shared bilibili user-space page (music and video)
+  static const kUgcUserSpace = "/ugc_user_space";
+
+  /// Music mode: one synced playlist's track table
+  static const kMusicFavDetail = "/music_fav_detail";
+
   /// Search
   static const kSearch = "/search";
 

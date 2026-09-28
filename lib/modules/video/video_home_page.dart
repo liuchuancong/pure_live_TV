@@ -3,14 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/music_video_card.dart';
-import 'package:pure_live/modules/media/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
+import 'package:pure_live/modules/video/api/video_pgc_api.dart';
+import 'package:pure_live/modules/video/pages/discover/video_pgc_page.dart';
+import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
+import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';
+import 'package:pure_live/modules/video/pages/personal/video_personal_page.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 /// Video mode sections. The section rail lives in the home sidebar; this file
 /// builds section content only, so the mode swaps the whole navigation.
-enum VideoSection { feed, popular, ranking, search }
+enum VideoSection { recommend, popular, ranking, region, pgc, dynamics, search, personal }
 
 /// Content of one video section. Login is enforced by the home shell's
 /// [BilibiliLoginGate], not here.
@@ -19,8 +26,18 @@ class VideoSectionView extends ConsumerWidget {
 
   final VideoSection section;
 
+  /// The video module owns the PGC endpoints; the shared VOD engine asks this
+  /// hook for episode urls. Idempotent.
+  void _ensurePgcResolver() {
+    MusicPlayerController.modulePlayUrlResolver ??= (track) async {
+      if (track.part.epId <= 0) return null;
+      return VideoPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    _ensurePgcResolver();
     final themeState = ref.watch(themeSettingsControllerProvider);
     final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: themeState.denseRoomLayout,
@@ -30,10 +47,14 @@ class VideoSectionView extends ConsumerWidget {
     );
 
     return switch (section) {
-      VideoSection.feed => _FeedTab(key: const ValueKey('video_feed'), gridDelegate: gridDelegate),
+      VideoSection.recommend => _FeedTab(key: const ValueKey('video_feed'), gridDelegate: gridDelegate),
       VideoSection.popular => _PopularTab(key: const ValueKey('video_popular'), gridDelegate: gridDelegate),
       VideoSection.ranking => _RankingTab(key: const ValueKey('video_ranking'), gridDelegate: gridDelegate),
-      VideoSection.search => const _VideoSearchTab(key: ValueKey('video_search')),
+      VideoSection.region => const VideoRegionPage(key: ValueKey('video_region')),
+      VideoSection.pgc => const VideoPgcPage(key: ValueKey('video_pgc')),
+      VideoSection.dynamics => const UgcDynamicsPage(key: ValueKey('video_dynamics')),
+      VideoSection.search => const VideoSearchSection(key: ValueKey('video_search')),
+      VideoSection.personal => const VideoPersonalSection(key: ValueKey('video_personal')),
     };
   }
 }
@@ -121,104 +142,4 @@ class _RankingTab extends _PagedGridTab {
 
   @override
   ConsumerState<_RankingTab> createState() => _PagedGridTabState<_RankingTab>();
-}
-
-/// Search over the whole video site, same endpoint as the music search.
-class _VideoSearchTab extends ConsumerStatefulWidget {
-  const _VideoSearchTab({super.key});
-
-  @override
-  ConsumerState<_VideoSearchTab> createState() => _VideoSearchTabState();
-}
-
-class _VideoSearchTabState extends ConsumerState<_VideoSearchTab> {
-  final TextEditingController _controller = TextEditingController();
-  final Map<String, PagingParam<MusicArchive>> _params = {};
-  String _submittedKeyword = '';
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submit(String keyword) {
-    final trimmed = keyword.trim();
-    if (trimmed.isEmpty) return;
-    setState(() => _submittedKeyword = trimmed);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final themeState = ref.watch(themeSettingsControllerProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 560.sp,
-              child: TvInputField(
-                controller: _controller,
-                hint: i18n('video_search_hint'),
-                height: 64.sp,
-                maxLines: 1,
-                onSubmitted: _submit,
-              ),
-            ),
-            SizedBox(width: 16.sp),
-            TvButton(
-              title: i18n('search_live'),
-              icon: Icon(Icons.search_rounded, size: 28.sp),
-              size: TvButtonSize.mini,
-              onTap: () => _submit(_controller.text),
-            ),
-          ],
-        ),
-        SizedBox(height: 12.sp),
-        Expanded(
-          child: _submittedKeyword.isEmpty
-              ? Center(
-                  child: Text(
-                    i18n('music_search_empty_hint'),
-                    style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
-                  ),
-                )
-              : Builder(
-                  builder: (context) {
-                    final keyword = _submittedKeyword;
-                    final param = _params.putIfAbsent(
-                      keyword,
-                      () => PagingParam<MusicArchive>(
-                        mode: PagingMode.serverRemote,
-                        pageSize: 20,
-                        keepAlive: true,
-                        fetchRemote: (page, size) =>
-                            BilibiliMusicApi.instance.searchVideos(keyword, page: page, pageSize: size),
-                      ),
-                    );
-                    return BasePagedTvView<MusicArchive>(
-                      key: ValueKey('video_search_$keyword'),
-                      param: param,
-                      getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: themeState.denseRoomLayout,
-                        mainAxisSpacing: themeState.mainAxisSpacing.w,
-                        crossAxisSpacing: themeState.crossAxisSpacing.w,
-                        childAspectRatio:
-                            ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout) + 0.14,
-                      ),
-                      itemBuilder: (context, archive, index) => MusicVideoCard(
-                        archive: archive,
-                        onTap: () => VideoDetailRoute(archive).push(context),
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
 }
