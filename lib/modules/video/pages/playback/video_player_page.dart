@@ -44,6 +44,12 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   final FocusNode _playNode = FocusNode();
   bool _controlsVisible = true;
   bool _partsOpen = false;
+  bool _commentsOpen = false;
+  final ScrollController _commentsScroll = ScrollController();
+  final List<CommentItem> _comments = [];
+  bool _commentsLoading = false;
+  bool _commentsHasMore = true;
+  int _commentsPage = 0;
   bool _qualityOpen = false;
   bool _danmakuOn = true;
   bool _danmakuSettingsOpen = false;
@@ -95,6 +101,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   @override
   void dispose() {
     _progressTimer?.cancel();
+    _commentsScroll.dispose();
     WakelockPlus.disable().catchError((Object _) {});
     _rootNode.dispose();
     _playNode.dispose();
@@ -224,6 +231,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         setState(() => _danmakuSettingsOpen = false);
         return KeyEventResult.handled;
       }
+      if (_commentsOpen) {
+        _closeComments();
+        return KeyEventResult.handled;
+      }
       if (_partsOpen) {
         _closeParts();
         return KeyEventResult.handled;
@@ -237,6 +248,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
 
     if (_qualityOpen) return KeyEventResult.ignored;
     if (_danmakuSettingsOpen) return KeyEventResult.ignored;
+    if (_commentsOpen) return KeyEventResult.ignored;
     if (_partsOpen) return KeyEventResult.ignored;
 
     if (_controlsVisible) {
@@ -274,6 +286,42 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     });
   }
 
+  /// In-player comments (newBV's player comments): pages the shared reply API
+  /// for the open archive into the side panel.
+  Future<void> _loadComments(int oid) async {
+    if (_commentsLoading || oid <= 0) return;
+    _commentsLoading = true;
+    try {
+      final page = _commentsPage + 1;
+      final (roots, _, hasMore) = await BilibiliUgcApi.instance.getComments(oid: oid, page: page, hot: true);
+      if (!mounted) return;
+      setState(() {
+        _comments.addAll(roots);
+        _commentsPage = page;
+        _commentsHasMore = hasMore;
+        _commentsLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _commentsLoading = false);
+    }
+  }
+
+  void _openComments(MusicTrack? track) {
+    final oid = track?.archive.aid ?? 0;
+    if (oid <= 0) return;
+    setState(() {
+      _commentsOpen = true;
+      if (_commentsPage == 0) _loadComments(oid);
+    });
+  }
+
+  void _closeComments() {
+    setState(() => _commentsOpen = false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _controlsVisible) _playNode.requestFocus();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(musicPlayerControllerProvider);
@@ -282,13 +330,15 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     final track = state.current;
 
     return PopScope(
-      canPop: !_anyMenuOpen && !_partsOpen && !_controlsVisible,
+      canPop: !_anyMenuOpen && !_commentsOpen && !_partsOpen && !_controlsVisible,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (_qualityOpen) {
           setState(() => _qualityOpen = false);
         } else if (_danmakuSettingsOpen) {
           setState(() => _danmakuSettingsOpen = false);
+        } else if (_commentsOpen) {
+          _closeComments();
         } else if (_partsOpen) {
           _closeParts();
         } else if (_controlsVisible) {
@@ -399,14 +449,16 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     left: 48.sp,
                     right: 48.sp,
                     child: IgnorePointer(
-                      ignoring: !_controlsVisible || _anyMenuOpen || _partsOpen,
+                      ignoring: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen,
                       child: ExcludeFocus(
-                        excluding: !_controlsVisible || _anyMenuOpen || _partsOpen,
+                        excluding: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen,
                         child: _ControlBar(
                           playNode: _playNode,
                           onOpenParts: () => setState(() => _partsOpen = true),
                           onOpenQuality: () => setState(() => _qualityOpen = true),
                           onOpenDanmakuSettings: () => setState(() => _danmakuSettingsOpen = true),
+                          commentsEnabled: track != null && track.archive.aid > 0,
+                          onOpenComments: () => _openComments(track),
                           danmakuOn: _danmakuOn,
                           subtitleOn: _subtitleOn,
                           aspectFill: _aspectFill,
@@ -419,6 +471,24 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       ),
                     ),
                   ),
+
+                  // ----------------------------------------------- comments panel
+                  if (_commentsOpen && track != null)
+                    Positioned(
+                      top: 100.sp,
+                      bottom: 100.sp,
+                      right: 48.sp,
+                      width: 620.sp,
+                      child: _CommentsPanel(
+                        oid: track.archive.aid,
+                        comments: _comments,
+                        scroll: _commentsScroll,
+                        loading: _commentsLoading,
+                        hasMore: _commentsHasMore,
+                        onLoadMore: () => _loadComments(track.archive.aid),
+                        onClose: _closeComments,
+                      ),
+                    ),
 
                   // -------------------------------------------------- parts panel
                   if (_partsOpen)
@@ -583,6 +653,8 @@ class _ControlBar extends ConsumerWidget {
     required this.onOpenParts,
     required this.onOpenQuality,
     required this.onOpenDanmakuSettings,
+    required this.commentsEnabled,
+    required this.onOpenComments,
     required this.danmakuOn,
     required this.subtitleOn,
     required this.aspectFill,
@@ -595,6 +667,8 @@ class _ControlBar extends ConsumerWidget {
   final VoidCallback onOpenParts;
   final VoidCallback onOpenQuality;
   final VoidCallback onOpenDanmakuSettings;
+  final bool commentsEnabled;
+  final VoidCallback onOpenComments;
   final bool danmakuOn;
   final bool subtitleOn;
   final bool aspectFill;
@@ -709,6 +783,16 @@ class _ControlBar extends ConsumerWidget {
                     onTap: onToggleDanmaku,
                   ),
                   SizedBox(width: 12.sp),
+                  if (commentsEnabled) ...[
+                    TvButton(
+                      title: i18n('video_comments_title'),
+                      icon: Icon(Icons.comment_outlined, size: 22.sp),
+                      size: TvButtonSize.mini,
+                      isSecondary: true,
+                      onTap: onOpenComments,
+                    ),
+                    SizedBox(width: 12.sp),
+                  ],
                   TvButton(
                     title: i18n('video_danmaku_settings'),
                     icon: Icon(Icons.tune_rounded, size: 22.sp),
@@ -1276,6 +1360,138 @@ class _DanmakuOverlayState extends ConsumerState<_DanmakuOverlay> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+/// The in-player comments panel, newBV's player comments: a right-side sheet
+/// paging the hot replies of the open archive. UGC only — PGC has no aid.
+class _CommentsPanel extends StatelessWidget {
+  const _CommentsPanel({
+    required this.oid,
+    required this.comments,
+    required this.scroll,
+    required this.loading,
+    required this.hasMore,
+    required this.onLoadMore,
+    required this.onClose,
+  });
+
+  final int oid;
+  final List<CommentItem> comments;
+  final ScrollController scroll;
+  final bool loading;
+  final bool hasMore;
+  final VoidCallback onLoadMore;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(24.sp),
+        border: Border.all(color: accent.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20.sp),
+            child: Row(
+              children: [
+                Icon(Icons.comment_outlined, size: 28.sp, color: accent),
+                SizedBox(width: 10.sp),
+                Expanded(
+                  child: Text(
+                    i18n('video_comments_title'),
+                    style: AppTextStyles.t20W600.copyWith(color: Colors.white),
+                  ),
+                ),
+                TvIconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  size: TvIconButtonSize.small,
+                  isSecondary: true,
+                  onTap: onClose,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: comments.isEmpty && loading
+                ? Center(
+                    child: SizedBox(
+                      width: 40.sp,
+                      height: 40.sp,
+                      child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: scroll,
+                    padding: EdgeInsets.only(left: 16.sp, right: 16.sp, bottom: 16.sp),
+                    itemCount: comments.length + (hasMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index >= comments.length) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (scroll.hasClients && scroll.position.extentAfter < 300) onLoadMore();
+                        });
+                        return Padding(
+                          padding: EdgeInsets.all(14.sp),
+                          child: Center(
+                            child: loading
+                                ? SizedBox(
+                                    width: 26.sp,
+                                    height: 26.sp,
+                                    child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        );
+                      }
+                      final comment = comments[index];
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 8.sp),
+                        padding: EdgeInsets.all(12.sp),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(12.sp),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    comment.uname,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.t14W600.copyWith(color: accent),
+                                  ),
+                                ),
+                                Icon(Icons.thumb_up_alt_outlined, size: 16.sp, color: Colors.white54),
+                                SizedBox(width: 4.sp),
+                                Text(
+                                  readableCount(comment.like.toString()),
+                                  style: AppTextStyles.t14W500.copyWith(color: Colors.white54),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 6.sp),
+                            Text(
+                              comment.content,
+                              style: AppTextStyles.t14W500.copyWith(color: Colors.white, height: 1.4),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
