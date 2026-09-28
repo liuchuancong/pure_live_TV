@@ -452,9 +452,6 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
   }
 }
 
-/// The resident bottom player bar, QQ music's shape: cover, title over
-/// singer, progress line with times, then heart / prev / play / next and the
-/// entry into the full-screen player with lyrics.
 class MusicMiniBar extends ConsumerWidget {
   const MusicMiniBar({super.key});
 
@@ -468,12 +465,6 @@ class MusicMiniBar extends ConsumerWidget {
     final accent = tvTheme.focusColor;
     final track = state.current;
     final isFavorite = track != null && library.isFavorite(track.archive.bvid);
-
-    // The bar is its own navigation region: it shares the home content pane's
-    // region with the section headers, and "region first" then pinned up/down
-    // between 播放全部 and the bar's buttons — the section's nested list region
-    // never got a turn. With the bar separated, leaving either side falls to
-    // the cross-region search, which lands on the list rows.
     return DpadRegion(
       child: Container(
         margin: EdgeInsets.all(12.sp),
@@ -496,7 +487,6 @@ class MusicMiniBar extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    // Info half opens the full player.
                     Expanded(
                       child: TvFocusable(
                         onTap: () => const MusicPlayerRoute().push(context),
@@ -515,8 +505,8 @@ class MusicMiniBar extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(10.sp),
                                   child: CachedNetworkImage(
                                     imageUrl: track?.archive.cover ?? '',
-                                    width: 88.sp,
-                                    height: 56.sp,
+                                    width: 124.sp,
+                                    height: 80.sp,
                                     fit: BoxFit.cover,
                                     memCacheWidth: 320,
                                     errorWidget: (_, _, _) =>

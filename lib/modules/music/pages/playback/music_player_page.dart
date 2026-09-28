@@ -9,6 +9,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_lyric/flutter_lyric.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
@@ -147,6 +148,59 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     _armAutoHide();
   }
 
+  /// Bumped when a lyric is picked by hand, so the now-playing view rebuilds
+  /// and loads it.
+  int _lyricRevision = 0;
+
+  /// Lists every lyric the chain can find for the current track and lets the
+  /// viewer pick one; the pick is remembered and used for every later play.
+  Future<void> _showLyricPicker() async {
+    final track = ref.read(musicPlayerControllerProvider).current;
+    if (track == null || !mounted) return;
+
+    final MusicLyricCandidate? picked = await TvDialogUtils.show<MusicLyricCandidate>(
+      context: context,
+      builder: (_) => _LyricPickerDialog(track: track),
+    );
+
+    if (picked == null || !mounted) return;
+
+    MusicLyricService.instance.saveManualLyric(track.title, picked.lyric);
+    setState(() => _lyricRevision++);
+    ToastUtil.show(i18n('music_lyric_picked'));
+  }
+
+  /// Moves music playback onto another engine, re-opening the current track
+  /// where it is playing now.
+  Future<void> _showCorePicker() async {
+    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final String? picked = await TvDialogUtils.showSelect<String>(
+      context: context,
+      title: i18n('music_core_title'),
+      items: [
+        TvSelectItem(value: BackendIds.mediaKit, title: i18n('player_mpv')),
+        TvSelectItem(
+          value: BackendIds.fijk,
+          title: i18n('player_ijk'),
+          subtitle: i18n('music_core_dash_hint'),
+        ),
+        TvSelectItem(
+          value: BackendIds.betterPlayer,
+          title: i18nOr('player_better_player', 'Exo 播放器'),
+          subtitle: i18n('music_core_dash_hint'),
+        ),
+        TvSelectItem(
+          value: BackendIds.fvp,
+          title: i18n('player_fvp'),
+          subtitle: i18n('music_core_dash_hint'),
+        ),
+      ],
+      selectedValue: MusicPlayerController.preferredBackend,
+      onSelected: (value) => unawaited(controller.switchBackend(value)),
+    );
+    if (picked != null && mounted) ToastUtil.show(i18n('music_core_switched'));
+  }
+
   // --------------------------------------------------------------------- build
 
   @override
@@ -193,7 +247,7 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
               if (controller.handle != null && !state.audioOnly)
                 HandleVideoSurface(handle: controller.handle!, fit: BoxFit.contain)
               else if (track != null)
-                _NowPlayingView(track: track, resolving: state.resolving)
+                _NowPlayingView(track: track, resolving: state.resolving, lyricRevision: _lyricRevision)
               else
                 _IdleSurface(track: track, resolving: state.resolving),
 
@@ -264,6 +318,8 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                       active: _controlsVisible && !_queueOpen,
                       onQueue: _openQueue,
                       onInteraction: _armAutoHide,
+                      onPickLyric: _showLyricPicker,
+                      onSwitchCore: _showCorePicker,
                     ),
                   ),
                 ),
@@ -336,10 +392,14 @@ class _IdleSurface extends StatelessWidget {
 /// the cover travels out of the centre instead of the page jumping between two
 /// unrelated layouts.
 class _NowPlayingView extends ConsumerStatefulWidget {
-  const _NowPlayingView({required this.track, required this.resolving});
+  const _NowPlayingView({required this.track, required this.resolving, this.lyricRevision = 0});
 
   final MusicTrack track;
   final bool resolving;
+
+  /// Bumped when the viewer picks a lyric by hand; the view then reloads, and
+  /// the fetch finds the manual choice first.
+  final int lyricRevision;
 
   @override
   ConsumerState<_NowPlayingView> createState() => _NowPlayingViewState();
@@ -361,7 +421,7 @@ class _NowPlayingViewState extends ConsumerState<_NowPlayingView> {
   @override
   void didUpdateWidget(_NowPlayingView old) {
     super.didUpdateWidget(old);
-    if (old.track.id != widget.track.id) _setup();
+    if (old.track.id != widget.track.id || old.lyricRevision != widget.lyricRevision) _setup();
   }
 
   void _setup() {
@@ -582,7 +642,13 @@ enum _BarZone { bar, seek }
 /// activates: no per-button focus ring to lose, and no d-pad hop that can land
 /// on a button next to the one the ring was on.
 class _ControlBar extends ConsumerStatefulWidget {
-  const _ControlBar({required this.active, required this.onQueue, required this.onInteraction});
+  const _ControlBar({
+    required this.active,
+    required this.onQueue,
+    required this.onInteraction,
+    required this.onPickLyric,
+    required this.onSwitchCore,
+  });
 
   /// Whether the controls are on screen; becoming active takes the keyboard.
   final bool active;
@@ -591,6 +657,9 @@ class _ControlBar extends ConsumerStatefulWidget {
 
   /// Every key the bar consumes re-arms the page's auto-hide countdown.
   final VoidCallback onInteraction;
+
+  final VoidCallback onPickLyric;
+  final VoidCallback onSwitchCore;
 
   @override
   ConsumerState<_ControlBar> createState() => _ControlBarState();
@@ -603,7 +672,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
   int _index = 2;
   _BarZone _zone = _BarZone.bar;
 
-  static const int _itemCount = 8;
+  static const int _itemCount = 10;
 
   @override
   void initState() {
@@ -707,6 +776,10 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
         unawaited(controller.toggleAudioOnly());
       case 7:
         widget.onQueue();
+      case 8:
+        widget.onPickLyric();
+      case 9:
+        widget.onSwitchCore();
     }
   }
 
@@ -876,6 +949,26 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                         isSecondary: true,
                         selected: _index == 7,
                         onTap: () => _activateAt(7),
+                      ),
+                    ),
+                    _excluded(
+                      TvButton(
+                        title: i18n('music_lyric_pick'),
+                        icon: Icon(Icons.lyrics_outlined, size: 22.sp),
+                        size: TvButtonSize.mini,
+                        isSecondary: true,
+                        selected: _index == 8,
+                        onTap: () => _activateAt(8),
+                      ),
+                    ),
+                    _excluded(
+                      TvButton(
+                        title: i18n('music_core_title'),
+                        icon: Icon(Icons.tune_rounded, size: 22.sp),
+                        size: TvButtonSize.mini,
+                        isSecondary: true,
+                        selected: _index == 9,
+                        onTap: () => _activateAt(9),
                       ),
                     ),
                   ],
@@ -1052,6 +1145,80 @@ class _QueuePanel extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The lyric picker: every candidate the chain found, one row each with the
+/// source and the song name it claims. The row in force (the viewer's last
+/// manual pick) is marked; picking a row remembers it for every later play of
+/// this track.
+class _LyricPickerDialog extends StatelessWidget {
+  const _LyricPickerDialog({required this.track});
+
+  final MusicTrack track;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.tvTheme;
+    final service = MusicLyricService.instance;
+
+    return TvDialog(
+      title: i18n('music_lyric_pick'),
+      child: SizedBox(
+        width: 720.sp,
+        height: 560.sp,
+        child: FutureBuilder<List<MusicLyricCandidate>>(
+          future: service.fetchLyricCandidates(
+            track.title,
+            hint: track.archive.title,
+            aid: track.archive.aid,
+            bvid: track.archive.bvid,
+            cid: track.part.cid,
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  SizedBox(height: 16.sp),
+                  Text(i18n('ui_loading'), style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor)),
+                ],
+              );
+            }
+
+            final candidates = snapshot.data ?? const <MusicLyricCandidate>[];
+            if (candidates.isEmpty) {
+              return Center(
+                child: Text(i18n('music_lyric_none'), style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor)),
+              );
+            }
+
+            final String current = service.manualLyric(track.title) ?? '';
+            final int selected = candidates.indexWhere((c) => c.lyric.trim() == current.trim());
+
+            return ListView.builder(
+              itemCount: candidates.length,
+              itemBuilder: (context, index) {
+                final candidate = candidates[index];
+                final String source = candidate.source == 'manual'
+                    ? i18n('music_lyric_manual_source')
+                    : candidate.source;
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 10.sp),
+                  child: TvDialogOptionTile(
+                    title: candidate.title,
+                    subtitle: '$source${candidate.artist.isEmpty ? '' : ' · ${candidate.artist}'}',
+                    selected: index == selected,
+                    onTap: () => Navigator.of(context).pop(candidate),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
