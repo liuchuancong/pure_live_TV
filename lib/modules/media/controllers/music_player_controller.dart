@@ -692,27 +692,31 @@ class MusicPlayerController extends _$MusicPlayerController {
       // own property helper takes.
       final native = adapter.player.platform;
       if (native != null) {
+        // Each write stands alone: one rejection must not silently skip the
+        // rest (an audio-file without its headers answers 403, and the DASH
+        // video stream has no audio of its own to fall back to).
+        // ignore: avoid_dynamic_calls
+        await (native as dynamic).setProperty('audio-file', attachedAudio).catchError((Object _) {});
+        // The header list survives on a reused player: clear it, then one
+        // `add` per header (a comma-bearing UA would split if the whole list
+        // went through one string).
         try {
           // ignore: avoid_dynamic_calls
-          await (native as dynamic).setProperty('audio-file', attachedAudio);
-          final userAgent = headers['user-agent'] ?? '';
-          final referer = headers['referer'] ?? '';
-          // The header list survives on a reused player: clear it, then one
-          // `add` per header (a comma-bearing UA would split if the whole list
-          // went through one string).
-          // ignore: avoid_dynamic_calls
           await (native as dynamic).setProperty('http-header-fields', '');
-          if (userAgent.isNotEmpty) {
+        } catch (_) {}
+        final userAgent = headers['user-agent'] ?? '';
+        final referer = headers['referer'] ?? '';
+        if (userAgent.isNotEmpty) {
+          try {
             // ignore: avoid_dynamic_calls
             await (native as dynamic).command(['add', 'http-header-fields', 'User-Agent: $userAgent']);
-          }
-          if (referer.isNotEmpty) {
+          } catch (_) {}
+        }
+        if (referer.isNotEmpty) {
+          try {
             // ignore: avoid_dynamic_calls
             await (native as dynamic).command(['add', 'http-header-fields', 'Referer: $referer']);
-          }
-        } catch (_) {
-          // Best-effort: without the attached audio mpv still plays the
-          // video stream's own audio when one exists.
+          } catch (_) {}
         }
       }
     }
@@ -733,13 +737,14 @@ class MusicPlayerController extends _$MusicPlayerController {
       rethrow;
     }
 
-    // 纯音乐 is the native video-track switch on the just-opened stream, not a
-    // different source: toggling back is then instant and seamless.
-    if (state.audioOnly) {
-      try {
-        await handle.setAudioOnly(true);
-      } catch (_) {}
-    }
+    // 纯音乐/显示画面 is the native video-track switch on the just-opened
+    // stream, not a different source: toggling back is then instant and
+    // seamless. Applied on EVERY open, both ways — a reused player keeps
+    // `vid=no` from an earlier audio-only track, and video mode that never
+    // turned it back on would show a dead surface for the rest of the queue.
+    try {
+      await handle.setAudioOnly(state.audioOnly);
+    } catch (_) {}
 
     // Warm the cache for the next play of this track while the network stream
     // runs. Skipped when this session already plays the cached file.
