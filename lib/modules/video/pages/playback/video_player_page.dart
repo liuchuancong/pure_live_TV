@@ -238,9 +238,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         );
   }
 
-  void _showControls({bool takeFocus = true}) {
+  void _showControls() {
     setState(() => _controlsVisible = true);
-    if (!takeFocus) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _controlsVisible) _playNode.requestFocus();
     });
@@ -304,19 +303,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     if (_partsOpen) return KeyEventResult.ignored;
 
     if (_controlsVisible) {
+      // The bar owns left/right/OK/now — only Up reaches here (bubbled, the
+      // bar zone returns it ignored): it opens the parts list.
       if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
         setState(() => _partsOpen = true);
-        return KeyEventResult.handled;
-      }
-      // Left/right reach this handler only while the root still holds the
-      // keyboard — the seek-raised bar shows without taking it, so repeated
-      // presses keep seeking here instead of walking the buttons.
-      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-        controller.seekAccelerated(-1);
-        return KeyEventResult.handled;
-      }
-      if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-        controller.seekAccelerated(1);
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
@@ -867,9 +857,14 @@ class _IdleSurface extends StatelessWidget {
   }
 }
 
-/// Bottom controls: progress row plus the transport row. The whole bar is
-/// driven by the playback stream so the glyphs never go stale.
-class _ControlBar extends ConsumerWidget {
+/// Bottom controls, live_play's index-driven model: the bar holds ONE focus
+/// node and owns every key while visible — left/right walk the buttons (with
+/// wrap), OK activates the highlighted one, down drops into the seek strip
+/// where left/right seek and up returns. The buttons themselves never take
+/// focus; they only draw the highlight, so nothing fights the bar.
+enum _BarZone { bar, seek }
+
+class _ControlBar extends ConsumerStatefulWidget {
   const _ControlBar({
     required this.playNode,
     required this.onOpenParts,
@@ -893,6 +888,8 @@ class _ControlBar extends ConsumerWidget {
     required this.onToggleBottomLine,
   });
 
+  /// The bar's single key owner. The page requests it when the controls rise,
+  /// so focus lands inside the bar instead of fighting it.
   final FocusNode playNode;
   final VoidCallback onOpenParts;
   final VoidCallback onOpenQuality;
@@ -918,6 +915,16 @@ class _ControlBar extends ConsumerWidget {
   final bool showBottomLine;
   final VoidCallback onToggleBottomLine;
 
+  @override
+  ConsumerState<_ControlBar> createState() => _ControlBarState();
+}
+
+class _ControlBarState extends ConsumerState<_ControlBar> {
+  _BarZone _zone = _BarZone.bar;
+  int _index = 1; // the play button: the first thing a viewer reaches for.
+
+  static const int _itemCount = 18;
+
   static String _timeLabel(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -925,207 +932,363 @@ class _ControlBar extends ConsumerWidget {
     return h > 0 ? '$h:$m:$s' : '$m:$s';
   }
 
+  bool _isConfirm(LogicalKeyboardKey key) =>
+      key == LogicalKeyboardKey.select ||
+      key == LogicalKeyboardKey.enter ||
+      key == LogicalKeyboardKey.numpadEnter ||
+      key == LogicalKeyboardKey.gameButtonA;
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+    if (!mounted) return KeyEventResult.ignored;
+
+    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    final key = event.logicalKey;
+
+    if (_isConfirm(key)) {
+      if (_zone == _BarZone.seek) {
+        setState(() => _zone = _BarZone.bar);
+        return KeyEventResult.handled;
+      }
+      _activateIndex(_index);
+      return KeyEventResult.handled;
+    }
+
+    switch (key) {
+      case LogicalKeyboardKey.arrowLeft:
+      case LogicalKeyboardKey.arrowRight:
+        final int delta = key == LogicalKeyboardKey.arrowLeft ? -1 : 1;
+        if (_zone == _BarZone.seek) {
+          controller.seekAccelerated(delta);
+        } else {
+          setState(() => _index = (_index + delta + _itemCount) % _itemCount);
+        }
+        return KeyEventResult.handled;
+      case LogicalKeyboardKey.arrowDown:
+        if (_zone == _BarZone.bar) {
+          setState(() => _zone = _BarZone.seek);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      case LogicalKeyboardKey.arrowUp:
+        if (_zone == _BarZone.seek) {
+          setState(() => _zone = _BarZone.bar);
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      default:
+        return KeyEventResult.ignored;
+    }
+  }
+
+  /// Runs the action behind [index]. Taps report the button they hit, the
+  /// remote reports the highlighted one, so both paths share one list.
+  void _activateIndex(int index) {
+    final controller = ref.read(musicPlayerControllerProvider.notifier);
+    switch (index) {
+      case 0:
+        unawaited(controller.previous());
+      case 1:
+        unawaited(controller.togglePlayPause());
+      case 2:
+        unawaited(controller.next());
+      case 3:
+        unawaited(controller.seekAccelerated(-1));
+      case 4:
+        unawaited(controller.seekAccelerated(1));
+      case 5:
+        unawaited(controller.cycleSpeed());
+      case 6:
+        widget.onLike();
+      case 7:
+        widget.onCoin();
+      case 8:
+        widget.onFav();
+      case 9:
+        widget.onToggleBottomLine();
+      case 10:
+        widget.onOpenQuality();
+      case 11:
+        widget.onOpenParts();
+      case 12:
+        widget.onToggleDanmaku();
+      case 13:
+        if (widget.commentsEnabled) widget.onOpenComments();
+      case 14:
+        widget.onSendDanmaku?.call();
+      case 15:
+        widget.onOpenDanmakuSettings();
+      case 16:
+        widget.onToggleSubtitle?.call();
+      case 17:
+        widget.onToggleAspect();
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     final state = ref.watch(musicPlayerControllerProvider);
     final tvTheme = context.tvTheme;
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 18.sp),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(24.sp),
-        border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
-      ),
-      child: StreamBuilder<PlaybackState>(
-        stream: controller.playbackStream,
-        builder: (context, snapshot) {
-          final playback = snapshot.data;
-          final position = playback?.position ?? Duration.zero;
-          final duration = playback?.duration ?? Duration.zero;
-          final isPlaying = playback?.isPlaying ?? (controller.handle?.isPlaying ?? false);
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // The progress itself lives on the thin line at the screen's
-              // bottom edge; the panel only labels the two ends.
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(_timeLabel(position), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
-                  Text(_timeLabel(duration), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
-                ],
+    return Focus(
+      focusNode: widget.playNode,
+      onKeyEvent: _onKey,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 18.sp),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(24.sp),
+          border: Border.all(
+            color: tvTheme.focusColor.withValues(alpha: _zone == _BarZone.seek ? 0.9 : 0.35),
+            width: _zone == _BarZone.seek ? 2.sp : 1.sp,
+          ),
+        ),
+        child: StreamBuilder<PlaybackState>(
+          // One stream drives the whole bar: the times, the seek strip and the
+          // play/pause glyph never go stale.
+          stream: controller.playbackStream,
+          builder: (context, snapshot) {
+            final playback = snapshot.data;
+            final position = playback?.position ?? Duration.zero;
+            final duration = playback?.duration ?? Duration.zero;
+            final isPlaying = playback?.isPlaying ?? (controller.handle?.isPlaying ?? false);
+
+            final buttons = <({String label, Widget icon, bool active, bool secondary, VoidCallback? onTap})>[
+              (
+                label: i18n('music_prev'),
+                icon: const Icon(Icons.skip_previous_rounded),
+                active: false,
+                secondary: true,
+                onTap: () => controller.previous(),
               ),
-              SizedBox(height: 16.sp),
-              // A Wrap, not a Row: the feature buttons grow with every new
-              // capability and a fixed row overflowed the bar (304px) on TV.
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 12.sp,
-                runSpacing: 10.sp,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  TvIconButton(
-                    icon: const Icon(Icons.skip_previous_rounded),
-                    label: i18n('music_prev'),
-                    size: TvIconButtonSize.large,
-                    isSecondary: true,
-                    onTap: () => controller.previous(),
-                  ),
-                  SizedBox(width: 20.sp),
-                  TvIconButton(
-                    icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                    label: i18n('music_play'),
-                    size: TvIconButtonSize.large,
-                    focusNode: playNode,
-                    onTap: () => controller.togglePlayPause(),
-                  ),
-                  TvIconButton(
-                    icon: const Icon(Icons.skip_next_rounded),
-                    label: i18n('music_next'),
-                    size: TvIconButtonSize.large,
-                    isSecondary: true,
-                    onTap: () => controller.next(),
-                  ),
-                  TvIconButton(
-                    icon: const Icon(Icons.replay_10_rounded),
-                    label: i18n('music_seek_back'),
-                    size: TvIconButtonSize.large,
-                    isSecondary: true,
-                    onTap: () => controller.seekAccelerated(-1),
-                  ),
-                  SizedBox(width: 12.sp),
-                  TvIconButton(
-                    icon: const Icon(Icons.forward_10_rounded),
-                    label: i18n('music_seek_forward'),
-                    size: TvIconButtonSize.large,
-                    isSecondary: true,
-                    onTap: () => controller.seekAccelerated(1),
-                  ),
-                  TvButton(
-                    title: '${state.speed}x',
-                    icon: Icon(Icons.speed_rounded, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: () => controller.cycleSpeed(),
-                  ),
-                  TvButton(
-                    title: i18n('video_action_like'),
-                    icon: Icon(
-                      liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                      size: 22.sp,
-                      color: liked ? const Color(0xFFEF5350) : null,
+              (
+                label: i18n('music_play'),
+                icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                active: true,
+                secondary: false,
+                onTap: () => controller.togglePlayPause(),
+              ),
+              (
+                label: i18n('music_next'),
+                icon: const Icon(Icons.skip_next_rounded),
+                active: false,
+                secondary: true,
+                onTap: () => controller.next(),
+              ),
+              (
+                label: i18n('music_seek_back'),
+                icon: const Icon(Icons.replay_10_rounded),
+                active: false,
+                secondary: true,
+                onTap: () => controller.seekAccelerated(-1),
+              ),
+              (
+                label: i18n('music_seek_forward'),
+                icon: const Icon(Icons.forward_10_rounded),
+                active: false,
+                secondary: true,
+                onTap: () => controller.seekAccelerated(1),
+              ),
+              (
+                label: '${state.speed}x',
+                icon: Icon(Icons.speed_rounded, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: () => controller.cycleSpeed(),
+              ),
+              (
+                label: i18n('video_action_like'),
+                icon: Icon(
+                  widget.liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
+                  size: 22.sp,
+                  color: widget.liked ? const Color(0xFFEF5350) : null,
+                ),
+                active: widget.liked,
+                secondary: !widget.liked,
+                onTap: widget.onLike,
+              ),
+              (
+                label: i18n('video_action_coin'),
+                icon: Icon(Icons.toll_rounded, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.onCoin,
+              ),
+              (
+                label: i18n('video_action_fav'),
+                icon: Icon(
+                  widget.favoured ? Icons.star_rounded : Icons.star_outline_rounded,
+                  size: 22.sp,
+                  color: widget.favoured ? const Color(0xFFFFCA28) : null,
+                ),
+                active: widget.favoured,
+                secondary: !widget.favoured,
+                onTap: widget.onFav,
+              ),
+              (
+                label: i18n('video_progress_toggle'),
+                icon: Icon(
+                  widget.showBottomLine
+                      ? Icons.align_vertical_bottom_rounded
+                      : Icons.vertical_align_bottom_rounded,
+                  size: 22.sp,
+                ),
+                active: false,
+                secondary: true,
+                onTap: widget.onToggleBottomLine,
+              ),
+              (
+                label: BilibiliMusicApi.qualityLabel(state.quality).isEmpty
+                    ? i18n('video_quality')
+                    : BilibiliMusicApi.qualityLabel(state.quality),
+                icon: Icon(Icons.high_quality_outlined, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.onOpenQuality,
+              ),
+              (
+                label: i18n('music_tracks_title'),
+                icon: Icon(Icons.playlist_play_rounded, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.onOpenParts,
+              ),
+              (
+                label: i18n(widget.danmakuOn ? 'video_danmaku_on' : 'video_danmaku_off'),
+                icon: Icon(Icons.subtitles_outlined, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.onToggleDanmaku,
+              ),
+              (
+                label: i18n('video_comments_title'),
+                icon: Icon(Icons.comment_outlined, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.commentsEnabled ? widget.onOpenComments : null,
+              ),
+              (
+                label: i18n('video_danmaku_send'),
+                icon: Icon(Icons.edit_outlined, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.onSendDanmaku,
+              ),
+              (
+                label: i18n('video_danmaku_settings'),
+                icon: Icon(Icons.tune_rounded, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.onOpenDanmakuSettings,
+              ),
+              (
+                label: i18n(widget.subtitleOn ? 'video_subtitle_on' : 'video_subtitle_off'),
+                icon: Icon(Icons.closed_caption_outlined, size: 22.sp),
+                active: widget.subtitleOn,
+                secondary: !widget.subtitleOn,
+                onTap: widget.onToggleSubtitle,
+              ),
+              (
+                label: i18n(widget.aspectFill ? 'video_aspect_fill' : 'video_aspect_fit'),
+                icon: Icon(Icons.aspect_ratio_rounded, size: 22.sp),
+                active: false,
+                secondary: true,
+                onTap: widget.onToggleAspect,
+              ),
+            ];
+
+            final double progress = duration > Duration.zero
+                ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                : 0.0;
+            final bool seekZone = _zone == _BarZone.seek;
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // The seek strip: times at the two ends, the strip between them
+                // is the seek zone — down from the bar lands here, and it grows
+                // its accent edge while active.
+                Row(
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 120.sp),
+                      child: Text(_timeLabel(position), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
                     ),
-                    size: TvButtonSize.mini,
-                    isSecondary: !liked,
-                    onTap: onLike,
-                  ),
-                  TvButton(
-                    title: i18n('video_action_coin'),
-                    icon: Icon(Icons.toll_rounded, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onCoin,
-                  ),
-                  TvButton(
-                    title: i18n('video_action_fav'),
-                    icon: Icon(
-                      favoured ? Icons.star_rounded : Icons.star_outline_rounded,
-                      size: 22.sp,
-                      color: favoured ? const Color(0xFFFFCA28) : null,
+                    SizedBox(width: 16.sp),
+                    Expanded(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 120),
+                        height: seekZone ? 18.sp : 10.sp,
+                        margin: EdgeInsets.symmetric(vertical: seekZone ? 4.sp : 8.sp),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(9.sp),
+                          border: Border.all(
+                            color: seekZone ? tvTheme.focusColor : Colors.white24,
+                            width: seekZone ? 2.sp : 1.sp,
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: progress,
+                              child: Container(
+                                margin: EdgeInsets.all(2.sp),
+                                decoration: BoxDecoration(
+                                  color: tvTheme.focusColor,
+                                  borderRadius: BorderRadius.circular(7.sp),
+                                ),
+                              ),
+                            ),
+                            if (seekZone)
+                              Align(
+                                alignment:
+                                    Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ??
+                                        Alignment.centerLeft,
+                                child: Container(width: 4.sp, color: Colors.white),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
-                    size: TvButtonSize.mini,
-                    isSecondary: !favoured,
-                    onTap: onFav,
-                  ),
-                  TvButton(
-                    title: i18n('video_progress_toggle'),
-                    icon: Icon(
-                      showBottomLine ? Icons.align_vertical_bottom_rounded : Icons.vertical_align_bottom_rounded,
-                      size: 22.sp,
+                    SizedBox(width: 16.sp),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 120.sp),
+                      child: Text(_timeLabel(duration), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
                     ),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onToggleBottomLine,
-                  ),
-                  TvButton(
-                    title: BilibiliMusicApi.qualityLabel(state.quality).isEmpty
-                        ? i18n('video_quality')
-                        : BilibiliMusicApi.qualityLabel(state.quality),
-                    icon: Icon(Icons.high_quality_outlined, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onOpenQuality,
-                  ),
-                  TvButton(
-                    title: i18n('music_tracks_title'),
-                    icon: Icon(Icons.playlist_play_rounded, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onOpenParts,
-                  ),
-                  SizedBox(width: 12.sp),
-                  TvButton(
-                    title: i18n(danmakuOn ? 'video_danmaku_on' : 'video_danmaku_off'),
-                    icon: Icon(Icons.subtitles_outlined, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onToggleDanmaku,
-                  ),
-                  SizedBox(width: 12.sp),
-                  if (commentsEnabled) ...[
-                    TvButton(
-                      title: i18n('video_comments_title'),
-                      icon: Icon(Icons.comment_outlined, size: 22.sp),
-                      size: TvButtonSize.mini,
-                      isSecondary: true,
-                      onTap: onOpenComments,
-                    ),
-                    SizedBox(width: 12.sp),
                   ],
-                  TvButton(
-                    title: i18n('video_danmaku_send'),
-                    icon: Icon(Icons.edit_outlined, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onSendDanmaku,
-                  ),
-                  SizedBox(width: 12.sp),
-                  TvButton(
-                    title: i18n('video_danmaku_settings'),
-                    icon: Icon(Icons.tune_rounded, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onOpenDanmakuSettings,
-                  ),
-                  SizedBox(width: 12.sp),
-                  TvButton(
-                    title: i18n(subtitleOn ? 'video_subtitle_on' : 'video_subtitle_off'),
-                    icon: Icon(Icons.closed_caption_outlined, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: !subtitleOn,
-                    onTap: onToggleSubtitle,
-                  ),
-                  SizedBox(width: 12.sp),
-                  TvButton(
-                    title: i18n(aspectFill ? 'video_aspect_fill' : 'video_aspect_fit'),
-                    icon: Icon(Icons.aspect_ratio_rounded, size: 22.sp),
-                    size: TvButtonSize.mini,
-                    isSecondary: true,
-                    onTap: onToggleAspect,
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
+                ),
+                SizedBox(height: 16.sp),
+                // A Wrap, not a Row: the feature buttons grow with every new
+                // capability and a fixed row overflowed the bar (304px) on TV.
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12.sp,
+                  runSpacing: 10.sp,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    for (var i = 0; i < buttons.length; i++)
+                      ExcludeFocus(
+                        child: TvButton(
+                          title: buttons[i].label,
+                          icon: buttons[i].icon,
+                          size: TvButtonSize.mini,
+                          isSecondary: !buttons[i].active,
+                          selected: _index == i,
+                          onTap: buttons[i].onTap,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 }
-
-/// The part list over the player. OK jumps; Up closed it via the page root.
 class _PartListPanel extends ConsumerWidget {
   const _PartListPanel({required this.onClose});
 
