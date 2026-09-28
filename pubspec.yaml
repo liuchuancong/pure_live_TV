@@ -68,6 +68,7 @@ dependencies:
   qr_flutter: ^4.1.0                  # 生成二维码图片
   markdown_widget: ^2.3.2+8           # 更新页更新日志的 Markdown 渲染
 
+  flutter_lyric: ^3.0.8
   wakelock_plus: ^1.4.0               # 播放时保持屏幕常亮
   flame_barrage: ^0.0.7
 

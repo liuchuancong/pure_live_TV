@@ -6,6 +6,7 @@ import 'package:flame_barrage/flame_barrage.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:media_core/core/player_state.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/features/music/music_player_controller.dart';
 import 'package:media_core/error/player_failure.dart';
 import 'package:media_core/error/error_formatter.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -109,6 +110,11 @@ class LivePlayController extends _$LivePlayController {
 
   Future<void> _bootstrap() async {
     final generation = ++_generation;
+
+    // The speakers pass to the live room: music mode must not keep playing
+    // under a stream that just opened. The queue itself survives so the music
+    // tab can resume it after the live session ends.
+    unawaited(ref.read(musicPlayerControllerProvider.notifier).pauseForLive());
 
     _armStallReport(restart: true);
 
@@ -339,7 +345,7 @@ class LivePlayController extends _$LivePlayController {
     // canonical one, and the card may have been followed under the other. The
     // outcome is logged because a miss is otherwise invisible - the card simply
     // keeps the status it already had, so an opened room that had stopped
-    // broadcasting stayed under 正在直播 with nothing to explain why.
+    // broadcasting stayed under the live badge with nothing to explain why.
     final bool applied = favorites.updateRoom(rebound, openedAs: hint, unplayable: unplayable);
 
     if (!applied) {

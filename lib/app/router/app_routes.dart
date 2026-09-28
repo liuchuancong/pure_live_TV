@@ -21,6 +21,18 @@ abstract final class AppRoutes {
 
   static const String kLivePlayName = 'live_play';
 
+  /// Music mode: an archive's track list
+  static const kMusicArchive = "/music_archive";
+
+  /// Music mode: the full-screen player
+  static const kMusicPlayer = "/music_player";
+
+  /// Video mode: an archive's detail page
+  static const kVideoDetail = "/video_detail";
+
+  /// Video mode: the full-screen player
+  static const kVideoPlayer = "/video_player";
+
   /// Search
   static const kSearch = "/search";
 

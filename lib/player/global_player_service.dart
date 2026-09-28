@@ -181,6 +181,13 @@ class GlobalPlayerService {
   /// Null until [initialize] completed.
   LivePlayerFacade? get livePlayer => _livePlayer;
 
+  /// The kernel every player runs on.
+  ///
+  /// Null until [initialize] completed. VOD consumers (the music mode) create
+  /// their own [PlayerHandle] on this kernel instead of building a second one,
+  /// so the engine registrations and the platform probe stay shared.
+  PlayerKernel? get kernel => _kernel;
+
   /// Ensures the service is up on [defaultEngine].
   Future<void> initialize({PlayerEngine defaultEngine = PlayerEngine.mediaKit}) async {
     if (_initialized) return;

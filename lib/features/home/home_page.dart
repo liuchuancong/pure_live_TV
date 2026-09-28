@@ -9,6 +9,8 @@ import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/areas/areas_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/features/history/history_page.dart';
+import 'package:pure_live/features/music/music_page.dart';
+import 'package:pure_live/features/video/video_home_page.dart';
 import 'package:pure_live/features/search/tv_search_page.dart';
 import 'package:pure_live/features/favorite/favorite_page.dart';
 import 'package:pure_live/features/home/exit_confirm_dialog.dart';
@@ -28,6 +30,10 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  /// One stable node for the top-left mode button, so the opening highlight
+  /// can claim it when a non-live mode is active.
+  final FocusNode _modeFocusNode = FocusNode();
+
   /// One stable node per side-menu entry, so the opening highlight can be aimed
   /// at the *selected* entry instead of whichever widget sits top-left.
   final Map<int, FocusNode> _menuFocusNodes = {};
@@ -48,6 +54,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     for (final node in _menuFocusNodes.values) {
       node.dispose();
     }
+    _modeFocusNode.dispose();
     super.dispose();
   }
 
@@ -109,6 +116,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     final double textScale = TvTextScale.factorOf(context);
     final sidebarWidth = (isExpanded ? 200.sp : 110.sp) * textScale;
 
+    // The top-left button switches the whole app between live / music / video.
+    // Music and video own their own UI stacks; the live rail's destinations
+    // below the button only render while live is active.
+    final AppMode appMode = ref.watch(appModeControllerProvider);
+    final bool isLiveMode = appMode == AppMode.live;
+
     final cacheableTypes = [
       TvMenuType.favorite,
       TvMenuType.hot,
@@ -133,7 +146,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       // opens with the remote on follows (or whatever the menu lands on) instead of
       // on the header widgets above the list.
       child: TvScaffold(
-        openingFocus: _nodeFor(currentIndex),
+        openingFocus: isLiveMode ? _nodeFor(currentIndex) : null,
         child: Row(
           children: [
             DpadRegion(
@@ -163,6 +176,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                       child: IntrinsicHeight(
                         child: Column(
                           children: [
+                            // The top-left mode button: one OK press cycles
+                            // live → music → video. It sits above everything so
+                            // the remote can always find its way back.
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                              child: _buildModeButton(appMode, isExpanded, textScale),
+                            ),
                             // The clock sits above the backup entry, as the sidebar's
                             // header: a TV left on the home screen is a wall clock too.
                             Padding(
@@ -201,7 +221,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                               ),
                             ),
                             const Spacer(),
-                            ...List.generate(menuList.length, (index) {
+                            // The live destinations belong to live mode only;
+                            // music and video draw their own content panes.
+                            if (isLiveMode)
+                              ...List.generate(menuList.length, (index) {
                               final item = menuList[index];
                               final isSelected = currentIndex == item.index;
 
@@ -260,7 +283,22 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: DpadRegion(
                 child: Padding(
                   padding: EdgeInsets.all(8.sp),
-                  child: effectiveKeepAlive
+                  // Music and video own the whole pane; only live mode runs the
+                  // keep-alive home stack below.
+                  child: !isLiveMode
+                      ? Container(
+                          key: ValueKey('mode_${appMode.name}'),
+                          child: _buildModeContent(appMode)
+                              .animate()
+                              .fadeIn(duration: 200.ms, curve: Curves.easeOutCubic)
+                              .scale(
+                                begin: const Offset(0.95, 0.95),
+                                end: const Offset(1.0, 1.0),
+                                duration: 250.ms,
+                                curve: Curves.easeOutCubic,
+                              ),
+                        )
+                      : effectiveKeepAlive
                       ? Stack(
                           children: [
                             Visibility(
@@ -320,6 +358,46 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     );
   }
+
+  /// The top-left button: shows the active mode, one OK press cycles to the
+  /// next. Deliberately not an [AppMenuItem] — it carries no menu index.
+  Widget _buildModeButton(AppMode mode, bool isExpanded, double textScale) {
+    final (String label, String short, IconData icon) = switch (mode) {
+      AppMode.live => (i18n('mode_live'), i18n('menu_short_mode_live'), Icons.live_tv_rounded),
+      AppMode.music => (i18n('mode_music'), i18n('menu_short_mode_music'), Icons.library_music_outlined),
+      AppMode.video => (i18n('mode_video'), i18n('menu_short_mode_video'), Icons.movie_outlined),
+    };
+
+    if (isExpanded) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
+        child: TvButton(
+          title: label,
+          icon: Icon(icon, size: 32.sp * textScale),
+          iconPosition: TvIconPosition.left,
+          size: TvButtonSize.mini,
+          focusNode: _modeFocusNode,
+          onTap: () => ref.read(appModeControllerProvider.notifier).cycle(),
+        ),
+      );
+    }
+
+    return TvIconButton(
+      icon: Icon(icon),
+      label: short,
+      size: TvIconButtonSize.medium,
+      focusNode: _modeFocusNode,
+      onTap: () => ref.read(appModeControllerProvider.notifier).cycle(),
+    );
+  }
+
+  /// The full content pane for the non-live modes.
+  Widget _buildModeContent(AppMode mode) => switch (mode) {
+    AppMode.live => const SizedBox.shrink(), // handled by the live stack
+    AppMode.music => const MusicPage(),
+    AppMode.video => const VideoHomePage(),
+  };
 
   Widget _buildAdaptiveItem({
     required WidgetRef ref,

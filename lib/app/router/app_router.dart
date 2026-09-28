@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pure_live/features/index.dart';
+import 'package:pure_live/platforms/bilibili_music/bilibili_music_models.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
@@ -832,6 +833,55 @@ class LivePlayRoute extends GoRouteData with $LivePlayRoute {
         : (extra is LivePlayArgs ? extra : const LivePlayArgs(platform: '', roomId: ''));
     return LivePlayPage(args: args);
   }
+}
+
+/// The music-mode track list of one archive. `$extra` carries the archive the
+/// grid card had; the page fetches the parts itself before anything plays.
+@TypedGoRoute<MusicArchiveRoute>(path: AppRoutes.kMusicArchive)
+class MusicArchiveRoute extends GoRouteData with $MusicArchiveRoute {
+  MusicArchiveRoute(this.$extra);
+
+  final Object $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final extra = $extra;
+    return extra is MusicArchive ? MusicArchivePage(archive: extra) : const SizedBox.shrink();
+  }
+}
+
+/// The music-mode full-screen player. Playback state lives in the
+/// music-player controller, so the route carries nothing.
+@TypedGoRoute<MusicPlayerRoute>(path: AppRoutes.kMusicPlayer)
+class MusicPlayerRoute extends GoRouteData with $MusicPlayerRoute {
+  const MusicPlayerRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const MusicPlayerPage();
+}
+
+/// The video-mode detail page of one archive. `$extra` carries the archive the
+/// grid card had; parts and related videos are fetched by the page itself.
+@TypedGoRoute<VideoDetailRoute>(path: AppRoutes.kVideoDetail)
+class VideoDetailRoute extends GoRouteData with $VideoDetailRoute {
+  VideoDetailRoute(this.$extra);
+
+  final Object $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final extra = $extra;
+    return extra is MusicArchive ? VideoDetailPage(archive: extra) : const SizedBox.shrink();
+  }
+}
+
+/// The video-mode full-screen player (newBV layer scheme).
+@TypedGoRoute<VideoPlayerRoute>(path: AppRoutes.kVideoPlayer)
+class VideoPlayerRoute extends GoRouteData with $VideoPlayerRoute {
+  const VideoPlayerRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const VideoPlayerPage();
 }
 
 final routerProvider = Provider<GoRouter>((ref) {

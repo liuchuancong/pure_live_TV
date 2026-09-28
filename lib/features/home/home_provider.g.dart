@@ -8,6 +8,64 @@ part of 'home_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+
+@ProviderFor(AppModeController)
+final appModeControllerProvider = AppModeControllerProvider._();
+
+/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+final class AppModeControllerProvider
+    extends $NotifierProvider<AppModeController, AppMode> {
+  /// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+  AppModeControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appModeControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appModeControllerHash();
+
+  @$internal
+  @override
+  AppModeController create() => AppModeController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AppMode value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AppMode>(value),
+    );
+  }
+}
+
+String _$appModeControllerHash() => r'86b40446a8af766755184bde8a25e5350e02ccad';
+
+/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+
+abstract class _$AppModeController extends $Notifier<AppMode> {
+  AppMode build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AppMode, AppMode>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AppMode, AppMode>,
+              AppMode,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 /// Side menu entries in the order configured in settings, limited to the
 /// visible ones. An empty configuration shows every entry in default order.
 

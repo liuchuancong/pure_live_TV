@@ -27,6 +27,10 @@ List<RouteBase> get $appRoutes => [
   $wallpaperItemsRoute,
   $wallpaperPreviewRoute,
   $livePlayRoute,
+  $musicArchiveRoute,
+  $musicPlayerRoute,
+  $videoDetailRoute,
+  $videoPlayerRoute,
 ];
 
 RouteBase get $settingsShellRoute => ShellRouteData.$route(
@@ -1854,4 +1858,120 @@ mixin $LivePlayRoute on GoRouteData {
   @override
   void replace(BuildContext context) =>
       context.replace(location, extra: _self.$extra);
+}
+
+RouteBase get $musicArchiveRoute => GoRouteData.$route(
+  path: '/music_archive',
+  hasOverriddenOnExit: false,
+  factory: $MusicArchiveRoute._fromState,
+);
+
+mixin $MusicArchiveRoute on GoRouteData {
+  static MusicArchiveRoute _fromState(GoRouterState state) =>
+      MusicArchiveRoute(state.extra as Object);
+
+  MusicArchiveRoute get _self => this as MusicArchiveRoute;
+
+  @override
+  String get location => GoRouteData.$location('/music_archive');
+
+  @override
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
+
+  @override
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location, extra: _self.$extra);
+
+  @override
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
+}
+
+RouteBase get $musicPlayerRoute => GoRouteData.$route(
+  path: '/music_player',
+  hasOverriddenOnExit: false,
+  factory: $MusicPlayerRoute._fromState,
+);
+
+mixin $MusicPlayerRoute on GoRouteData {
+  static MusicPlayerRoute _fromState(GoRouterState state) =>
+      const MusicPlayerRoute();
+
+  @override
+  String get location => GoRouteData.$location('/music_player');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $videoDetailRoute => GoRouteData.$route(
+  path: '/video_detail',
+  hasOverriddenOnExit: false,
+  factory: $VideoDetailRoute._fromState,
+);
+
+mixin $VideoDetailRoute on GoRouteData {
+  static VideoDetailRoute _fromState(GoRouterState state) =>
+      VideoDetailRoute(state.extra as Object);
+
+  VideoDetailRoute get _self => this as VideoDetailRoute;
+
+  @override
+  String get location => GoRouteData.$location('/video_detail');
+
+  @override
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
+
+  @override
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location, extra: _self.$extra);
+
+  @override
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
+}
+
+RouteBase get $videoPlayerRoute => GoRouteData.$route(
+  path: '/video_player',
+  hasOverriddenOnExit: false,
+  factory: $VideoPlayerRoute._fromState,
+);
+
+mixin $VideoPlayerRoute on GoRouteData {
+  static VideoPlayerRoute _fromState(GoRouterState state) =>
+      const VideoPlayerRoute();
+
+  @override
+  String get location => GoRouteData.$location('/video_player');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
 }

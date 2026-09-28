@@ -8,6 +8,31 @@ import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 part 'home_provider.g.dart';
 
+/// Top-level app modes, switched by the button at the top-left of the sidebar.
+///
+/// Live keeps the classic room UI; music and video are the bilibili UGC modes
+/// over the same VOD playback engine — video shows the picture, music listens
+/// without it. Each mode owns its own UI stack and its playback is exclusive:
+/// opening a live room pauses music/video, and starting a track pauses live.
+enum AppMode { live, music, video }
+
+/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+@riverpod
+class AppModeController extends _$AppModeController {
+  @override
+  AppMode build() => AppMode.live;
+
+  void setMode(AppMode mode) => state = mode;
+
+  /// The single top-left button cycles the three modes: one OK press moves on,
+  /// no submenu needed on a remote.
+  void cycle() => state = switch (state) {
+    AppMode.live => AppMode.music,
+    AppMode.music => AppMode.video,
+    AppMode.video => AppMode.live,
+  };
+}
+
 /// Side-menu destinations.
 ///
 /// The value is the identity that flows through
