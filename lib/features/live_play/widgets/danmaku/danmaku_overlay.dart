@@ -1,7 +1,7 @@
 import 'package:flame_barrage/flame_barrage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/features/live_play/controllers/danmaku_config_builder.dart';
+import 'package:pure_live/player/danmaku_config_builder.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/services/index.dart';

@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/features/live_play/controllers/danmaku_config_builder.dart';
+import 'package:pure_live/player/danmaku_config_builder.dart';
 import 'package:pure_live/features/live_play/controllers/danmaku_option_steps.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 

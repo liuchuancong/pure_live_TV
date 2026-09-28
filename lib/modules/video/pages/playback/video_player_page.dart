@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_core/media_core.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
@@ -15,6 +16,7 @@ import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
+import 'package:pure_live/modules/video/widgets/vod_danmaku_overlay.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// The video-mode player, modelled on newBV's layer scheme:
@@ -52,11 +54,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   int _commentsPage = 0;
   bool _qualityOpen = false;
   bool _danmakuOn = true;
-  bool _danmakuSettingsOpen = false;
-  bool _danmakuHalfArea = false;
-  double _danmakuOpacity = 1.0;
   bool _subtitleOn = false;
   bool _aspectFill = false;
+  final GlobalKey<VodDanmakuOverlayState> _danmakuKey = GlobalKey();
 
   // Per-part player extras: subtitles, online count, progress heartbeat.
   List<SubtitleCue> _subtitleCues = const [];
@@ -72,6 +72,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   void initState() {
     super.initState();
     WakelockPlus.enable().catchError((Object _) {});
+    EmojiManager().preload('bilibili');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _playNode.requestFocus();
     });
@@ -180,7 +181,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     _rootNode.requestFocus();
   }
 
-  bool get _anyMenuOpen => _qualityOpen || _danmakuSettingsOpen;
+  bool get _anyMenuOpen => _qualityOpen;
 
   KeyEventResult _onRootKey(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
@@ -213,10 +214,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         setState(() => _qualityOpen = false);
         return KeyEventResult.handled;
       }
-      if (_danmakuSettingsOpen) {
-        setState(() => _danmakuSettingsOpen = false);
-        return KeyEventResult.handled;
-      }
       if (_commentsOpen) {
         _closeComments();
         return KeyEventResult.handled;
@@ -233,7 +230,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     }
 
     if (_qualityOpen) return KeyEventResult.ignored;
-    if (_danmakuSettingsOpen) return KeyEventResult.ignored;
     if (_commentsOpen) return KeyEventResult.ignored;
     if (_partsOpen) return KeyEventResult.ignored;
 
@@ -308,6 +304,71 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     });
   }
 
+  /// TV send-danmaku flow: a dialog with the soft keyboard, then the web
+  /// send endpoint; the comment is echoed locally on success.
+  Future<void> _showSendDialog(MusicTrack track) async {
+    final api = BilibiliUgcApi.instance;
+    if (!api.isLoggedIn) {
+      ToastUtil.show(i18n('video_action_need_login'));
+      return;
+    }
+    final controller = TextEditingController();
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final tvTheme = context.tvTheme;
+        return Dialog(
+          backgroundColor: tvTheme.cardColor,
+          insetPadding: EdgeInsets.symmetric(horizontal: 460.sp, vertical: 280.sp),
+          child: Padding(
+            padding: EdgeInsets.all(24.sp),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  i18n('video_danmaku_send'),
+                  style: AppTextStyles.t20W700.copyWith(color: tvTheme.primaryTextColor),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16.sp),
+                TvInputField(
+                  controller: controller,
+                  hint: i18n('video_danmaku_send_hint'),
+                  height: 64.sp,
+                  maxLines: 1,
+                  onSubmitted: (value) => Navigator.pop(context, value.trim().isNotEmpty),
+                ),
+                SizedBox(height: 16.sp),
+                TvButton(
+                  title: i18n('send'),
+                  icon: Icon(Icons.send_rounded, size: 24.sp),
+                  onTap: controller.text.trim().isNotEmpty ? () => Navigator.pop(context, true) : null,
+                ),
+                SizedBox(height: 4.sp),
+                Text(
+                  i18n('video_danmaku_send_rules'),
+                  style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    final text = controller.text.trim();
+    controller.dispose();
+    if (sent != true || text.isEmpty) return;
+    try {
+      await api.sendDanmaku(aid: track.archive.aid, cid: track.part.cid, message: text, bvid: track.archive.bvid);
+      _danmakuKey.currentState?.inject(text);
+      if (mounted) ToastUtil.show(i18n('video_danmaku_sent'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(musicPlayerControllerProvider);
@@ -321,8 +382,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         if (didPop) return;
         if (_qualityOpen) {
           setState(() => _qualityOpen = false);
-        } else if (_danmakuSettingsOpen) {
-          setState(() => _danmakuSettingsOpen = false);
         } else if (_commentsOpen) {
           _closeComments();
         } else if (_partsOpen) {
@@ -351,11 +410,12 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
 
                   // ---------------------------------------------------- danmaku
                   if (_danmakuOn && controller.handle != null && track != null && track.part.cid > 0)
-                    _DanmakuOverlay(
+                    VodDanmakuOverlay(
+                      key: _danmakuKey,
                       handle: controller.handle!,
                       cid: track.part.cid,
-                      halfArea: _danmakuHalfArea,
-                      opacity: _danmakuOpacity,
+                      aid: track.archive.aid,
+                      bvid: track.archive.bvid,
                     ),
 
                   // --------------------------------------------------- subtitle
@@ -442,7 +502,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                           playNode: _playNode,
                           onOpenParts: () => setState(() => _partsOpen = true),
                           onOpenQuality: () => setState(() => _qualityOpen = true),
-                          onOpenDanmakuSettings: () => setState(() => _danmakuSettingsOpen = true),
+                          onOpenDanmakuSettings: () => const DanmakuSettingsRoute().push(context),
+                          onSendDanmaku: (track == null || track.part.cid <= 0) ? null : () => _showSendDialog(track),
                           commentsEnabled: track != null && track.archive.aid > 0,
                           onOpenComments: () => _openComments(track),
                           danmakuOn: _danmakuOn,
@@ -495,26 +556,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       child: _QualityMenu(onClose: () => setState(() => _qualityOpen = false)),
                     ),
 
-                  // ------------------------------------------- danmaku settings
-                  if (_danmakuSettingsOpen)
-                    Positioned(
-                      top: 100.sp,
-                      right: 48.sp,
-                      width: 360.sp,
-                      child: _DanmakuSettingsPanel(
-                        halfArea: _danmakuHalfArea,
-                        opacity: _danmakuOpacity,
-                        onToggleArea: () => setState(() => _danmakuHalfArea = !_danmakuHalfArea),
-                        onCycleOpacity: () => setState(
-                          () => _danmakuOpacity = _danmakuOpacity >= 1.0
-                              ? 0.7
-                              : _danmakuOpacity >= 0.7
-                                  ? 0.45
-                                  : 1.0,
-                        ),
-                        onClose: () => setState(() => _danmakuSettingsOpen = false),
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -641,6 +682,7 @@ class _ControlBar extends ConsumerWidget {
     required this.onOpenDanmakuSettings,
     required this.commentsEnabled,
     required this.onOpenComments,
+    required this.onSendDanmaku,
     required this.danmakuOn,
     required this.subtitleOn,
     required this.aspectFill,
@@ -655,6 +697,7 @@ class _ControlBar extends ConsumerWidget {
   final VoidCallback onOpenDanmakuSettings;
   final bool commentsEnabled;
   final VoidCallback onOpenComments;
+  final VoidCallback? onSendDanmaku;
   final bool danmakuOn;
   final bool subtitleOn;
   final bool aspectFill;
@@ -795,6 +838,14 @@ class _ControlBar extends ConsumerWidget {
                     ),
                     SizedBox(width: 12.sp),
                   ],
+                  TvButton(
+                    title: i18n('video_danmaku_send'),
+                    icon: Icon(Icons.edit_outlined, size: 22.sp),
+                    size: TvButtonSize.mini,
+                    isSecondary: true,
+                    onTap: onSendDanmaku,
+                  ),
+                  SizedBox(width: 12.sp),
                   TvButton(
                     title: i18n('video_danmaku_settings'),
                     icon: Icon(Icons.tune_rounded, size: 22.sp),
@@ -1088,277 +1139,6 @@ class _QualityMenu extends ConsumerWidget {
   }
 }
 
-/// The danmaku settings panel: area (full / top half) and opacity, cycled —
-/// the TV stand-in for newBV's danmaku menu.
-class _DanmakuSettingsPanel extends StatelessWidget {
-  const _DanmakuSettingsPanel({
-    required this.halfArea,
-    required this.opacity,
-    required this.onToggleArea,
-    required this.onCycleOpacity,
-    required this.onClose,
-  });
-
-  final bool halfArea;
-  final double opacity;
-  final VoidCallback onToggleArea;
-  final VoidCallback onCycleOpacity;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(20.sp),
-        border: Border.all(color: accent.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16.sp),
-            child: Row(
-              children: [
-                Icon(Icons.tune_rounded, size: 26.sp, color: accent),
-                SizedBox(width: 10.sp),
-                Expanded(
-                  child: Text(i18n('video_danmaku_settings'), style: AppTextStyles.t18W600.copyWith(color: Colors.white)),
-                ),
-                TvIconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  size: TvIconButtonSize.small,
-                  isSecondary: true,
-                  onTap: onClose,
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 8.sp),
-            child: TvFocusable(
-              onTap: onToggleArea,
-              builder: (context, focused, child) => AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                height: 56.sp,
-                padding: EdgeInsets.symmetric(horizontal: 14.sp),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(12.sp),
-                  border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        i18n('video_danmaku_area'),
-                        style: AppTextStyles.t16W500.copyWith(color: Colors.white),
-                      ),
-                    ),
-                    Text(
-                      i18n(halfArea ? 'video_danmaku_area_half' : 'video_danmaku_area_full'),
-                      style: AppTextStyles.t14W500.copyWith(color: accent),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 12.sp),
-            child: TvFocusable(
-              onTap: onCycleOpacity,
-              builder: (context, focused, child) => AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                height: 56.sp,
-                padding: EdgeInsets.symmetric(horizontal: 14.sp),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(12.sp),
-                  border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        i18n('video_danmaku_opacity'),
-                        style: AppTextStyles.t16W500.copyWith(color: Colors.white),
-                      ),
-                    ),
-                    Text(
-                      '${(opacity * 100).toStringAsFixed(0)}%',
-                      style: AppTextStyles.t14W500.copyWith(color: accent),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Minimal scroll danmaku for VOD, synced to the player position.
-///
-/// The full XML segment list (`/x/v1/dm/list.so`) is fetched once per part and
-/// parsed with a line matcher; the overlay then walks the items against the
-/// handle position on a timer and flies the active ones across lanes. Not
-/// newBV's segmented protobuf engine — a TV-readable stand-in with the same
-/// look, none of the memory footprint.
-class _DanmakuOverlay extends ConsumerStatefulWidget {
-  const _DanmakuOverlay({required this.handle, required this.cid, required this.halfArea, required this.opacity});
-
-  final PlayerHandle handle;
-  final int cid;
-  final bool halfArea;
-  final double opacity;
-
-  @override
-  ConsumerState<_DanmakuOverlay> createState() => _DanmakuOverlayState();
-}
-
-class _DanmakuOverlayState extends ConsumerState<_DanmakuOverlay> {
-  static const double _laneHeight = 34;
-  static const double _travelSeconds = 9;
-
-  List<({double time, String text, int lane})> _items = [];
-  int _scanIndex = 0;
-  final List<({String text, double startedAt, int lane})> _flying = [];
-  Timer? _timer;
-
-  static final RegExp _line = RegExp(r'<d p="([^"]+)"[^>]*>([^<]+)</d>');
-  static final RegExp _htmlTag = RegExp(r'<[^>]+>');
-  static final Map<String, String> _entities = {
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&apos;': "'",
-    '&amp;': '&',
-  };
-
-  String _unescape(String raw) {
-    var text = raw;
-    for (final entry in _entities.entries) {
-      text = text.replaceAll(entry.key, entry.value);
-    }
-    return text.replaceAll(_htmlTag, '');
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-    _timer = Timer.periodic(const Duration(milliseconds: 120), (_) => _tick());
-  }
-
-  @override
-  void didUpdateWidget(_DanmakuOverlay old) {
-    super.didUpdateWidget(old);
-    if (old.cid != widget.cid) _load();
-  }
-
-  Future<void> _load() async {
-    _items = const [];
-    _scanIndex = 0;
-    _flying.clear();
-    try {
-      final xml = await HttpClient.instance.getText(
-        'https://api.bilibili.com/x/v1/dm/list.so?oid=${widget.cid}',
-        header: {'user-agent': 'Mozilla/5.0', 'referer': 'https://www.bilibili.com/'},
-      );
-      final parsed = <({double time, String text, int lane})>[];
-      for (final match in _line.allMatches(xml)) {
-        final fields = match.group(1)?.split(',') ?? const [];
-        final time = double.tryParse(fields.elementAtOrNull(0) ?? '') ?? -1;
-        final mode = int.tryParse(fields.elementAtOrNull(1) ?? '') ?? 1;
-        if (time < 0 || mode > 3) continue;
-        final text = _unescape(match.group(2) ?? '').trim();
-        if (text.isEmpty) continue;
-        parsed.add((time: time, text: text, lane: text.hashCode.abs() % 6));
-      }
-      parsed.sort((a, b) => a.time.compareTo(b.time));
-      if (!mounted) return;
-      setState(() => _items = parsed);
-    } catch (_) {
-      // No danmaku is a silent degradation — the video itself is the content.
-    }
-  }
-
-  void _tick() {
-    if (_items.isEmpty && _flying.isEmpty) return;
-    final now = widget.handle.position.inMilliseconds / 1000.0;
-    // Expired first: the build below only renders what is still on screen.
-    _flying.removeWhere((item) => now - item.startedAt > _travelSeconds);
-    // Advance the scan pointer past everything already off screen.
-    while (_scanIndex < _items.length && _items[_scanIndex].time < now - _travelSeconds) {
-      _scanIndex++;
-    }
-    // Launch everything that just came due.
-    while (_scanIndex < _items.length && _items[_scanIndex].time <= now) {
-      final item = _items[_scanIndex];
-      // A seek backwards rewinds time; items due in the future stay pending.
-      if (now - item.time < 0.5) {
-        _flying.add((text: item.text, startedAt: item.time, lane: item.lane));
-        if (_flying.length > 60) _flying.removeAt(0);
-      }
-      _scanIndex++;
-    }
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final now = widget.handle.position.inMilliseconds / 1000.0;
-    return IgnorePointer(
-      child: Opacity(
-        opacity: widget.opacity,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final w = constraints.maxWidth;
-            final laneCount = widget.halfArea ? 3 : 6;
-            final topInset = widget.halfArea ? 8.sp : 16.sp;
-            // The bullet starts one text-length off the right edge and exits
-            // past the left edge, the classic scroll travel.
-            const enter = 300.0;
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                for (final item in _flying)
-                  if (now >= item.startedAt && now - item.startedAt <= _travelSeconds)
-                    Positioned(
-                      right: (now - item.startedAt) / _travelSeconds * (w + enter) - enter,
-                      top: topInset + (item.lane % laneCount) * _laneHeight.sp,
-                      child: Text(
-                        item.text,
-                        style: AppTextStyles.t18W700.copyWith(
-                          color: Colors.white,
-                          shadows: [Shadow(color: Colors.black.withValues(alpha: 0.8), blurRadius: 3)],
-                        ),
-                      ),
-                    ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-/// The in-player comments panel, newBV's player comments: a right-side sheet
-/// paging the hot replies of the open archive. UGC only — PGC has no aid.
 class _CommentsPanel extends StatelessWidget {
   const _CommentsPanel({
     required this.oid,

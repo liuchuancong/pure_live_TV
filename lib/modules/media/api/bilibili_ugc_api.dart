@@ -355,6 +355,24 @@ class BilibiliUgcApi {
   Future<void> likeComment({required int oid, required int rpid, required bool like}) =>
       _post('https://api.bilibili.com/x/v2/reply/action', {'oid': '$oid', 'type': '1', 'rpid': '$rpid', 'action': like ? '1' : '0'});
 
+  /// Posts one danmaku comment to the archive's current part
+  /// (`x/v2/dm/send`), the web shape with the csrf token.
+  Future<void> sendDanmaku({required int aid, required int cid, required String message, String? bvid}) async {
+    _post('https://api.bilibili.com/x/v2/dm/send', {
+      'aid': '$aid',
+      'cid': '$cid',
+      'bvid': bvid ?? '',
+      'message': message,
+      'mode': '1',
+      'fontsize': '25',
+      'color': '16777215',
+      'pool': '0',
+      'plat': '1',
+      'progress': '0',
+      'rnd': '${DateTime.now().millisecondsSinceEpoch ~/ 1000}',
+    });
+  }
+
   // -------------------------------------------------------------------- search
 
   /// The trending search words (`x/web-interface/search/square`).
