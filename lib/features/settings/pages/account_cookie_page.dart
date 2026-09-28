@@ -38,7 +38,13 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
   @override
   void initState() {
     super.initState();
-    unawaited(_startPhoneBridge());
+    // Post-frame, not now: starting the bridge writes its provider (the
+    // loading state), and a write during this page's first build throws
+    // "Tried to modify a provider while the widget tree was building" — which
+    // used to take the whole page down with it, QR included.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_startPhoneBridge());
+    });
   }
 
   Future<void> _startPhoneBridge() async {
