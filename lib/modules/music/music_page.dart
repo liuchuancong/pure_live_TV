@@ -10,6 +10,8 @@ import 'package:pure_live/modules/music/controllers/library/music_library_contro
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
@@ -291,11 +293,26 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
   final TextEditingController _controller = TextEditingController();
   final Map<String, PagingParam<MusicArchive>> _params = {};
   String _submittedKeyword = '';
+  List<Hotword> _hotwords = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHotwords();
+  }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadHotwords() async {
+    try {
+      final words = await BilibiliUgcApi.instance.getHotwords();
+      if (!mounted) return;
+      setState(() => _hotwords = words);
+    } catch (_) {}
   }
 
   void _submit(String keyword) {
@@ -307,6 +324,7 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
     final themeState = ref.watch(themeSettingsControllerProvider);
 
     return Column(
@@ -338,10 +356,70 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
         ),
         Expanded(
           child: _submittedKeyword.isEmpty
-              ? Center(
-                  child: Text(
-                    i18n('music_search_empty_hint'),
-                    style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+              ? DpadRegion(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(24.sp),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_hotwords.isEmpty)
+                          Center(
+                            child: Text(
+                              i18n('music_search_empty_hint'),
+                              style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                            ),
+                          )
+                        else ...[
+                          Row(
+                            children: [
+                              Icon(Icons.local_fire_department_rounded, size: 26.sp, color: accent),
+                              SizedBox(width: 8.sp),
+                              Text(
+                                i18n('video_search_hotwords'),
+                                style: AppTextStyles.t20W600.copyWith(color: accent),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.sp),
+                          Wrap(
+                            spacing: 12.sp,
+                            runSpacing: 12.sp,
+                            children: [
+                              for (final (index, word) in _hotwords.indexed)
+                                TvFocusable(
+                                  autofocus: index == 0,
+                                  onTap: () => _submit(word.keyword),
+                                  builder: (context, focused, child) => AnimatedContainer(
+                                    duration: const Duration(milliseconds: 120),
+                                    padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 10.sp),
+                                    decoration: BoxDecoration(
+                                      color: tvTheme.cardColor,
+                                      borderRadius: BorderRadius.circular(24.sp),
+                                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${index + 1}',
+                                          style: AppTextStyles.t14W700.copyWith(
+                                            color: index < 3 ? Colors.redAccent : tvTheme.secondaryTextColor,
+                                          ),
+                                        ),
+                                        SizedBox(width: 8.sp),
+                                        Text(
+                                          word.keyword,
+                                          style: AppTextStyles.t16W500.copyWith(color: tvTheme.primaryTextColor),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 )
               : Builder(
