@@ -751,8 +751,13 @@ class _ControlBar extends ConsumerWidget {
                 ],
               ),
               SizedBox(height: 16.sp),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              // A Wrap, not a Row: the feature buttons grow with every new
+              // capability and a fixed row overflowed the bar (304px) on TV.
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12.sp,
+                runSpacing: 10.sp,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   TvIconButton(
                     icon: const Icon(Icons.skip_previous_rounded),
@@ -769,7 +774,6 @@ class _ControlBar extends ConsumerWidget {
                     focusNode: playNode,
                     onTap: () => controller.togglePlayPause(),
                   ),
-                  SizedBox(width: 20.sp),
                   TvIconButton(
                     icon: const Icon(Icons.skip_next_rounded),
                     label: i18n('music_next'),
@@ -777,7 +781,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.next(),
                   ),
-                  SizedBox(width: 12.sp),
                   TvIconButton(
                     icon: const Icon(Icons.replay_10_rounded),
                     label: i18n('music_seek_back'),
@@ -793,7 +796,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.seekAccelerated(1),
                   ),
-                  SizedBox(width: 40.sp),
                   TvButton(
                     title: '${state.speed}x',
                     icon: Icon(Icons.speed_rounded, size: 22.sp),
@@ -801,7 +803,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.cycleSpeed(),
                   ),
-                  SizedBox(width: 12.sp),
                   TvButton(
                     title: BilibiliMusicApi.qualityLabel(state.quality).isEmpty
                         ? i18n('video_quality')
@@ -811,7 +812,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: onOpenQuality,
                   ),
-                  SizedBox(width: 12.sp),
                   TvButton(
                     title: i18n('music_tracks_title'),
                     icon: Icon(Icons.playlist_play_rounded, size: 22.sp),

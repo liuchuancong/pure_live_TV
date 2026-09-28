@@ -2797,5 +2797,10 @@
   "music_default_play_mode_desc": "Order for new queues",
   "music_default_audio_only": "Audio-only by default",
   "music_default_audio_only_desc": "Play sound without rendering video",
-  "video_action_played": "Views"
+  "video_action_played": "Views",
+  "video_danmaku_send": "Send Danmaku",
+  "video_danmaku_send_hint": "Say something…",
+  "video_danmaku_send_rules": "Follow community rules; sent to bilibili in real time",
+  "video_danmaku_sent": "Danmaku sent",
+  "send": "Send"
 }

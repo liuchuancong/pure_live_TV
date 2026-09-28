@@ -2797,5 +2797,10 @@
   "music_default_play_mode_desc": "新队列的播放顺序",
   "music_default_audio_only": "默认纯音频收听",
   "music_default_audio_only_desc": "开启后播放默认只出声音不渲染画面",
-  "video_action_played": "播放"
+  "video_action_played": "播放",
+  "video_danmaku_send": "发弹幕",
+  "video_danmaku_send_hint": "发个弹幕见证当下",
+  "video_danmaku_send_rules": "请遵守社区规范，弹幕实时发送到B站",
+  "video_danmaku_sent": "弹幕已发送",
+  "send": "发送"
 }

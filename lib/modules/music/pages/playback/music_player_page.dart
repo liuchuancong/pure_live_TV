@@ -541,8 +541,11 @@ class _ControlBar extends ConsumerWidget {
                 ],
               ),
               SizedBox(height: 16.sp),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12.sp,
+                runSpacing: 10.sp,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   TvIconButton(
                     icon: const Icon(Icons.replay_10_rounded),
@@ -551,7 +554,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.seekAccelerated(-1),
                   ),
-                  SizedBox(width: 12.sp),
                   TvIconButton(
                     icon: const Icon(Icons.skip_previous_rounded),
                     label: i18n('music_prev'),
@@ -567,7 +569,6 @@ class _ControlBar extends ConsumerWidget {
                     focusNode: playNode,
                     onTap: () => controller.togglePlayPause(),
                   ),
-                  SizedBox(width: 20.sp),
                   TvIconButton(
                     icon: const Icon(Icons.skip_next_rounded),
                     label: i18n('music_next'),
@@ -575,7 +576,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.next(),
                   ),
-                  SizedBox(width: 12.sp),
                   TvIconButton(
                     icon: const Icon(Icons.forward_10_rounded),
                     label: i18n('music_seek_forward'),
@@ -583,7 +583,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.seekAccelerated(1),
                   ),
-                  SizedBox(width: 40.sp),
                   TvButton(
                     title: i18n(state.mode.i18nKey),
                     icon: Icon(Icons.repeat_rounded, size: 22.sp),
@@ -591,7 +590,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.cycleMode(),
                   ),
-                  SizedBox(width: 12.sp),
                   TvButton(
                     title: i18n(state.audioOnly ? 'music_video_on' : 'music_audio_only'),
                     icon: Icon(state.audioOnly ? Icons.videocam_outlined : Icons.headphones_rounded, size: 22.sp),
@@ -599,7 +597,6 @@ class _ControlBar extends ConsumerWidget {
                     isSecondary: true,
                     onTap: () => controller.toggleAudioOnly(),
                   ),
-                  SizedBox(width: 12.sp),
                   TvButton(
                     title: i18n('music_tracks_title'),
                     icon: Icon(Icons.queue_music_rounded, size: 22.sp),
