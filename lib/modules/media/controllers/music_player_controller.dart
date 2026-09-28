@@ -127,7 +127,10 @@ class MusicPlayerController extends _$MusicPlayerController {
     _preferredBackend = backendId;
     HivePrefUtil.setString('musicBackend', backendId);
 
+    // The open below must build the new engine: the old handle belongs to the
+    // old one. The position is read before it goes away.
     final position = _handle?.position ?? Duration.zero;
+    await _releaseHandle();
     final track = state.current;
     if (track == null || _currentUrls == null || _currentBvid == null) return;
     await _ignoreCancelled(() => _openUrls(track, _currentUrls!, _currentBvid!));
@@ -631,7 +634,11 @@ class MusicPlayerController extends _$MusicPlayerController {
   MusicTrack repairedTrack() => state.current ?? (throw StateError('music track vanished'));
 
   Future<void> _openUrls(MusicTrack track, MusicPlayUrls urls, String bvid) async {
-    await _releaseHandle();
+    // Music keeps one player for the whole queue: the handle below is reused
+    // across tracks, and only [stop] / [pauseForLive] (live or video taking
+    // the speakers) / a backend switch tear it down. Every open resets the
+    // per-source state a reused player carries — see the audio-file and
+    // header resets below.
     // Music can be the first thing the user plays in a session; the live
     // bootstrap otherwise owns this call. Idempotent.
     await GlobalPlayerService.instance.initialize();
@@ -657,7 +664,7 @@ class MusicPlayerController extends _$MusicPlayerController {
       }
     }
 
-    final handle = await kernel.create(
+    final PlayerHandle handle = _handle ?? await kernel.create(
       config: const PlayerConfig(name: 'music', autoPlay: true),
       preferredBackend: _preferredBackend,
     );
@@ -670,33 +677,42 @@ class MusicPlayerController extends _$MusicPlayerController {
     // 纯音乐 plays the cached file with no attachment (there is nothing to
     // attach to — the file is the finished audio); everything else rides the
     // DASH pair with the audio attached.
-    if (!_playingLocalFile && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
-      final adapter = handle.adapter;
-      if (adapter is MediaKitPlayerAdapter) {
-        // media_kit's Player proxy does not surface setProperty/command; the
-        // native player behind `platform` does. Same dynamic hop the adapter's
-        // own property helper takes.
-        final native = adapter.player.platform;
-        if (native != null) {
-          try {
+    //
+    // Runs on every open, fresh or reused: a reused player still holds the
+    // previous track's attachment and headers, and both would bleed into this
+    // one.
+    final String attachedAudio =
+        !_playingLocalFile && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty
+        ? urls.audioUrl!
+        : '';
+    final adapter = handle.adapter;
+    if (adapter is MediaKitPlayerAdapter) {
+      // media_kit's Player proxy does not surface setProperty/command; the
+      // native player behind `platform` does. Same dynamic hop the adapter's
+      // own property helper takes.
+      final native = adapter.player.platform;
+      if (native != null) {
+        try {
+          // ignore: avoid_dynamic_calls
+          await (native as dynamic).setProperty('audio-file', attachedAudio);
+          final userAgent = headers['user-agent'] ?? '';
+          final referer = headers['referer'] ?? '';
+          // The header list survives on a reused player: clear it, then one
+          // `add` per header (a comma-bearing UA would split if the whole list
+          // went through one string).
+          // ignore: avoid_dynamic_calls
+          await (native as dynamic).setProperty('http-header-fields', '');
+          if (userAgent.isNotEmpty) {
             // ignore: avoid_dynamic_calls
-            await (native as dynamic).setProperty('audio-file', urls.audioUrl!);
-            final userAgent = headers['user-agent'] ?? '';
-            final referer = headers['referer'] ?? '';
-            // One `add` per header: list options would split a comma-bearing
-            // UA if the whole list went through one string.
-            if (userAgent.isNotEmpty) {
-              // ignore: avoid_dynamic_calls
-              await (native as dynamic).command(['add', 'http-header-fields', 'User-Agent: $userAgent']);
-            }
-            if (referer.isNotEmpty) {
-              // ignore: avoid_dynamic_calls
-              await (native as dynamic).command(['add', 'http-header-fields', 'Referer: $referer']);
-            }
-          } catch (_) {
-            // Best-effort: without the attached audio mpv still plays the
-            // video stream's own audio when one exists.
+            await (native as dynamic).command(['add', 'http-header-fields', 'User-Agent: $userAgent']);
           }
+          if (referer.isNotEmpty) {
+            // ignore: avoid_dynamic_calls
+            await (native as dynamic).command(['add', 'http-header-fields', 'Referer: $referer']);
+          }
+        } catch (_) {
+          // Best-effort: without the attached audio mpv still plays the
+          // video stream's own audio when one exists.
         }
       }
     }
@@ -708,7 +724,14 @@ class MusicPlayerController extends _$MusicPlayerController {
       headers: SourceHeaders(headers),
       title: track.title,
     );
-    await handle.open(source, autoPlay: true);
+    try {
+      await handle.open(source, autoPlay: true);
+    } catch (_) {
+      // An open that failed mid-flight can leave the adapter in a state the
+      // next open cannot trust: retire it, and the next track builds fresh.
+      await _releaseHandle();
+      rethrow;
+    }
 
     // 纯音乐 is the native video-track switch on the just-opened stream, not a
     // different source: toggling back is then instant and seamless.
