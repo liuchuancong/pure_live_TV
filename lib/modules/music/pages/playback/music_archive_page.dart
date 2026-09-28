@@ -7,6 +7,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 
 /// One archive's track list (its parts), with Play all starting the queue.
@@ -26,6 +27,9 @@ class MusicArchivePage extends ConsumerStatefulWidget {
 class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
   MusicArchive? _detail;
   String? _error;
+  bool _liked = false;
+  bool _favoured = false;
+  bool _actionBusy = false;
 
   @override
   void initState() {
@@ -38,9 +42,41 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
       final detail = await BilibiliMusicApi.instance.getArchiveDetail(widget.archive.bvid);
       if (!mounted) return;
       setState(() => _detail = detail);
+      _loadStates(detail.aid);
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString());
+    }
+  }
+
+  Future<void> _loadStates(int aid) async {
+    if (aid <= 0) return;
+    final api = BilibiliUgcApi.instance;
+    if (!api.isLoggedIn) return;
+    final liked = await api.hasLiked(aid);
+    final favoured = await api.isFavoured(aid);
+    if (!mounted) return;
+    setState(() {
+      _liked = liked;
+      _favoured = favoured;
+    });
+  }
+
+  Future<void> _runAction(Future<void> Function() action, String successKey) async {
+    if (_actionBusy) return;
+    final api = BilibiliUgcApi.instance;
+    if (!api.isLoggedIn) {
+      ToastUtil.show(i18n('video_action_need_login'));
+      return;
+    }
+    setState(() => _actionBusy = true);
+    try {
+      await action();
+      if (mounted) ToastUtil.show(i18n(successKey));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    } finally {
+      _actionBusy = false;
     }
   }
 
@@ -135,6 +171,68 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
                                   ),
                                 ],
+                              ],
+                            ),
+                            SizedBox(height: 14.sp),
+                            // The interaction row, the same actions the video
+                            // detail page leads with.
+                            Wrap(
+                              spacing: 10.sp,
+                              runSpacing: 10.sp,
+                              children: [
+                                TvButton(
+                                  title: i18n('video_action_like'),
+                                  icon: Icon(
+                                    _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
+                                    size: 22.sp,
+                                  ),
+                                  size: TvButtonSize.mini,
+                                  isSecondary: !_liked,
+                                  onTap: () => _runAction(
+                                    () async {
+                                      await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
+                                      setState(() => _liked = !_liked);
+                                    },
+                                    'video_action_liked',
+                                  ),
+                                ),
+                                TvButton(
+                                  title: i18n('video_action_fav'),
+                                  icon: Icon(
+                                    _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
+                                    size: 22.sp,
+                                  ),
+                                  size: TvButtonSize.mini,
+                                  isSecondary: !_favoured,
+                                  onTap: () => _runAction(
+                                    () async {
+                                      await BilibiliUgcApi.instance.favDeal(aid: archive.aid, addFolderIds: const []);
+                                      await _loadStates(archive.aid);
+                                    },
+                                    'video_action_faved',
+                                  ),
+                                ),
+                                TvButton(
+                                  title: i18n('video_action_triple'),
+                                  icon: Icon(Icons.recommend_rounded, size: 22.sp),
+                                  size: TvButtonSize.mini,
+                                  isSecondary: true,
+                                  onTap: () => _runAction(
+                                    () => BilibiliUgcApi.instance.tripleAction(archive.aid),
+                                    'video_action_trpled',
+                                  ),
+                                ),
+                                TvButton(
+                                  title: i18n('video_comments_title'),
+                                  icon: Icon(Icons.comment_outlined, size: 22.sp),
+                                  size: TvButtonSize.mini,
+                                  isSecondary: true,
+                                  onTap: archive.aid > 0
+                                      ? () => UgcCommentsRoute(
+                                            UgcCommentsArgs(oid: archive.aid, title: archive.title),
+                                          ).push(context)
+                                      : null,
+                                ),
                               ],
                             ),
                             if (archive.description.isNotEmpty) ...[
