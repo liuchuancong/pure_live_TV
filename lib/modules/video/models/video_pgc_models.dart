@@ -17,7 +17,7 @@ class PgcItem {
     seasonId: int.tryParse(json['season_id']?.toString() ?? '') ?? 0,
     title: _strip(json['title']?.toString() ?? ''),
     cover: _https(json['cover']?.toString() ?? ''),
-    subtitle: _strip(json['subtitle']?.toString() ?? ''),
+    subtitle: _strip(json['subtitle']?.toString() ?? json['sub_title']?.toString() ?? ''),
     badge: json['badge']?.toString() ?? '',
     rating: double.tryParse(json['rating']?.toString() ?? '') ?? 0,
     episodeCount: int.tryParse(json['total']?['value']?.toString() ?? json['total_count']?.toString() ?? '') ?? 0,

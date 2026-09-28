@@ -37,26 +37,75 @@ class VideoPgcApi {
     }
   }
 
-  /// The PGC feed: tries the web index feed first, then the season index
-  /// result list (both guest-readable). [pgcType]: 1 番剧, 2 国创, 3 纪录片,
-  /// 4 电影, 5 电视剧.
+  /// Per-category feed cursors: the working web feed (`pgc/page/web/feed`,
+  /// newBV's `getPgcFeed` — no WBI needed) is cursor-based, while the paging
+  /// layer is page-based; the last cursor per category bridges the two. The
+  /// old `pgc/api/web/index/feed` endpoint answers 404 since Bilibili retired
+  /// it, and the season index result needs WBI — this feed is the only
+  /// guest-readable source left.
+  final Map<String, int> _feedCursor = {};
+
+  /// Feed names by the page's category id: 1 番剧, 2 国创, 3 纪录片, 4 电影,
+  /// 5 电视剧.
+  static const Map<int, String> _feedNames = {
+    1: 'anime',
+    2: 'guochuang',
+    3: 'documentary',
+    4: 'movie',
+    5: 'tv',
+  };
+
   Future<List<PgcItem>> getFeed({required int pgcType, int page = 1, int pageSize = 20}) async {
-    final feed = await _tryGet('https://api.bilibili.com/pgc/api/web/index/feed', query: {
-      'typed_id': '$pgcType',
-      'page': '$page',
-      'pagesize': '$pageSize',
-    });
-    final List<dynamic>? items = feed?['items'] ?? feed?['list'];
-    if (items != null && items.isNotEmpty) {
-      return [for (final item in items) PgcItem.fromJson(item)];
+    final name = _feedNames[pgcType] ?? 'movie';
+    final cursor = page <= 1 ? 0 : (_feedCursor[name] ?? 0);
+
+    // 1) The flat web feed serves guochuang / documentary / movie / tv.
+    var items = await _webFeedPage(name, cursor);
+
+    // 2) Anime and guochuang ride the v3 ranking feed — its cards are nested
+    //    in rank sections (`items[].sub_items`), flattened here.
+    if (items.isEmpty) {
+      items = await _v3FeedPage(name, cursor);
     }
-    final index = await _tryGet('https://api.bilibili.com/pgc/season/index/result', query: {
-      'season_type': '$pgcType',
-      'page': '$page',
-      'pagesize': '$pageSize',
+
+    // A page past the feed's end returns nothing new: signal the end so the
+    // paging layer stops instead of stacking duplicates.
+    if (items.isEmpty && page > 1) return const [];
+    return items;
+  }
+
+  /// The flat web feed page (`pgc/page/web/feed`), or an empty list.
+  Future<List<PgcItem>> _webFeedPage(String name, int cursor) async {
+    final feed = await _tryGet('https://api.bilibili.com/pgc/page/web/feed', query: {
+      'name': name,
+      'coursor': '$cursor',
+      'new_cursor_status': 'true',
     });
-    final list = (index?['list'] as List?) ?? const [];
-    return [for (final item in list) PgcItem.fromJson(item)];
+    if (feed == null) return const [];
+    _feedCursor[name] = int.tryParse(feed['coursor']?.toString() ?? '') ?? 0;
+    return [for (final item in (feed['items'] as List?) ?? const []) PgcItem.fromJson(item)];
+  }
+
+  /// The v3 ranking feed page (`pgc/page/web/v3/feed`), flattened.
+  Future<List<PgcItem>> _v3FeedPage(String name, int cursor) async {
+    final feed = await _tryGet('https://api.bilibili.com/pgc/page/web/v3/feed', query: {
+      'name': name,
+      'coursor': '$cursor',
+    });
+    if (feed == null) return const [];
+    _feedCursor[name] = int.tryParse(feed['coursor']?.toString() ?? '') ?? 0;
+    final out = <PgcItem>[];
+    final seen = <int>{};
+    for (final section in (feed['items'] as List?) ?? const []) {
+      if (section is! Map) continue;
+      for (final card in (section['sub_items'] as List?) ?? const []) {
+        if (card is! Map) continue;
+        final item = PgcItem.fromJson(card);
+        if (item.seasonId != 0 && !seen.add(item.seasonId)) continue;
+        out.add(item);
+      }
+    }
+    return out;
   }
 
   /// The logged-in user's followed seasons (追番/追剧,

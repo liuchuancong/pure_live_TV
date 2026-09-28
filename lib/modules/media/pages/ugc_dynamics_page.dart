@@ -88,7 +88,7 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
           crossAxisCount: 4,
           mainAxisSpacing: 16.w,
           crossAxisSpacing: 16.w,
-          childAspectRatio: 0.95,
+          childAspectRatio: 1.05,
         ),
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
@@ -104,34 +104,12 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
             );
           }
           final item = _items[index];
-          return Column(
-            children: [
-              Expanded(
-                child: MusicVideoCard(
-                  archive: item.archive,
-                  onTap: () => VideoDetailRoute(item.archive).push(context),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 4.sp),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.archive.upName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                      ),
-                    ),
-                    Text(
-                      item.pubTime,
-                      style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          // The card carries its own UP/date caption now — only the dynamic's
+          // publish time is passed in to override the archive's.
+          return MusicVideoCard(
+            archive: item.archive,
+            pubTime: item.pubTime,
+            onTap: () => VideoDetailRoute(item.archive).push(context),
           );
         },
       ),

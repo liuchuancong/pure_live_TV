@@ -15,6 +15,7 @@ class MusicArchive {
     required this.title,
     required this.cover,
     required this.upName,
+    this.tid = 0,
     this.upMid = 0,
     this.upFace = '',
     this.duration = 0,
@@ -33,6 +34,7 @@ class MusicArchive {
       title: _stripHighlight(json['title']?.toString() ?? ''),
       cover: _https(json['pic']?.toString() ?? ''),
       upName: json['owner']?['name']?.toString() ?? '',
+      tid: int.tryParse(json['tid']?.toString() ?? '') ?? 0,
       upMid: int.tryParse(json['owner']?['mid']?.toString() ?? '') ?? 0,
       upFace: _https(json['owner']?['face']?.toString() ?? ''),
       duration: int.tryParse(json['duration']?.toString() ?? '') ?? 0,
@@ -49,6 +51,8 @@ class MusicArchive {
       title: _stripHighlight(json['title']?.toString() ?? ''),
       cover: _https(json['pic']?.toString() ?? ''),
       upName: json['author']?.toString() ?? '',
+      tid: int.tryParse(json['tid']?.toString() ?? '') ?? 0,
+      tname: json['typename']?.toString() ?? '',
       upFace: _https(json['upic']?.toString() ?? ''),
       duration: _parseDurationText(json['duration']?.toString() ?? ''),
       playCount: int.tryParse(json['play']?.toString() ?? '') ?? 0,
@@ -93,6 +97,7 @@ class MusicArchive {
   final String title;
   final String cover;
   final String upName;
+  final int tid;
   final int upMid;
   final String upFace;
   final int duration;
@@ -149,6 +154,23 @@ class MusicArchive {
         if (p is Map<String, dynamic>) MusicPart.fromJson(p),
     ],
   );
+
+  /// One entry of `archive/related` — the daily-recommendation seed payload.
+  factory MusicArchive.fromRelatedJson(Map<dynamic, dynamic> json) {
+    return MusicArchive(
+      aid: int.tryParse(json['aid']?.toString() ?? '') ?? 0,
+      bvid: json['bvid']?.toString() ?? '',
+      title: _stripHighlight(json['title']?.toString() ?? ''),
+      cover: _https(json['pic']?.toString() ?? ''),
+      upName: json['owner']?['name']?.toString() ?? '',
+      upMid: int.tryParse(json['owner']?['mid']?.toString() ?? '') ?? 0,
+      upFace: _https(json['owner']?['face']?.toString() ?? ''),
+      tid: int.tryParse(json['tid']?.toString() ?? '') ?? 0,
+      tname: json['tname']?.toString() ?? '',
+      duration: int.tryParse(json['duration']?.toString() ?? '') ?? 0,
+      playCount: int.tryParse(json['stat']?['view']?.toString() ?? '') ?? 0,
+    );
+  }
 
   static String _stripHighlight(String text) => text.replaceAll(RegExp(r'</?em>'), '');
 

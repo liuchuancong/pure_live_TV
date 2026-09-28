@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
@@ -11,19 +12,20 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
+import 'package:pure_live/modules/music/services/daily_recommendation_service.dart';
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 
 /// Music mode sections. The section rail itself lives in the home sidebar —
 /// this file only builds section content, so the mode swaps the whole
 /// navigation instead of nesting its own.
-enum MusicSection { likes, favorites, recents, playlists, dynamics, history, ranking, search }
+enum MusicSection { favorites, daily, recents, playlists, dynamics, history, ranking, search }
 
 /// Content of one music section. The section rail lives in the home sidebar;
 /// login is enforced by the home shell's BilibiliLoginGate, not here.
@@ -35,8 +37,8 @@ class MusicSectionView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return switch (section) {
-      MusicSection.likes => const _LikesSection(key: ValueKey('music_likes')),
       MusicSection.favorites => const _FollowSection(key: ValueKey('music_favorites')),
+      MusicSection.daily => const _DailySection(key: ValueKey('music_daily')),
       MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
       MusicSection.playlists => const MusicFavFoldersPage(key: ValueKey('music_playlists')),
       MusicSection.dynamics => const UgcDynamicsPage(key: ValueKey('music_dynamics')),
@@ -173,97 +175,166 @@ class _SongListSectionState extends ConsumerState<_SongListSection> {
   }
 }
 
-/// 喜欢: the songs hearted from the player's red heart, queued in like
-/// order. Long press removes the heart.
-class _LikesSection extends ConsumerStatefulWidget {
-  const _LikesSection({super.key});
+/// One song row in the bmsc TrackTile shape, at TV size: a wide cover, the
+/// title, then icon-led metadata lines — album over author, and for multi-P
+/// archives the part count (with the excluded count in red, like the
+/// reference's `(-n)`) and the duration. Long press removes it from the list.
+class _SongRow extends ConsumerWidget {
+  const _SongRow({
+    required this.track,
+    required this.index,
+    required this.onPlay,
+    required this.onRemove,
+    this.focusNode,
+  });
+
+  final MusicTrack track;
+  final int index;
+  final VoidCallback onPlay;
+  final VoidCallback onRemove;
+
+  /// External node for callers that steer focus programmatically (the playing
+  /// row on return from the player). Null keeps DpadFocusable's own.
+  final FocusNode? focusNode;
 
   @override
-  ConsumerState<_LikesSection> createState() => _LikesSectionState();
-}
-
-class _LikesSectionState extends ConsumerState<_LikesSection> {
-  final MusicListReveal _reveal = MusicListReveal();
-
-  @override
-  void dispose() {
-    _reveal.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final library = ref.watch(musicLibraryControllerProvider);
-    final libraryController = ref.read(musicLibraryControllerProvider.notifier);
+  Widget build(BuildContext context, WidgetRef ref) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
-    final tracks = library.likedSongs;
+    final state = ref.watch(musicPlayerControllerProvider);
+    final library = ref.watch(musicLibraryControllerProvider);
+    final isCurrent = state.current?.archive.bvid == track.archive.bvid && state.current?.part.page == track.part.page;
+    final isMulti = track.archive.parts.length > 1;
+    final excludedCount = library.excludedCids(track.archive.bvid).length;
 
-    if (tracks.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.favorite_rounded, size: 72.sp, color: accent.withValues(alpha: 0.5)),
-            SizedBox(height: 14.sp),
-            Text(i18n('music_empty_likes'), style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor)),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 10.sp),
+    return TvFocusable(
+      onTap: onPlay,
+      onLongPress: onRemove,
+      focusNode: focusNode,
+      builder: (context, focused, child) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOutCubic,
+          // Content-sized, like the reference's tile: a fixed height overflowed
+          // by a pixel once the three text lines scaled past it.
+          padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 10.sp),
+          decoration: BoxDecoration(
+            color: isCurrent
+                ? accent.withValues(alpha: 0.14)
+                : focused
+                ? tvTheme.cardColor
+                : tvTheme.cardColor.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(14.sp),
+            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+          ),
           child: Row(
             children: [
-              Text(
-                '${i18n('music_likes')}（${tracks.length}）',
-                style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor),
+              SizedBox(
+                width: 44.sp,
+                child: isCurrent
+                    ? Icon(Icons.graphic_eq_rounded, size: 30.sp, color: accent)
+                    : Text('${index + 1}', style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor)),
               ),
-              const Spacer(),
-              TvButton(
-                title: i18n('music_play_all'),
-                icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
-                size: TvButtonSize.mini,
-                onTap: () => _play(context, ref, tracks, 0),
+              SizedBox(width: 8.sp),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10.sp),
+                child: CachedNetworkImage(
+                  imageUrl: track.archive.cover,
+                  width: 132.sp,
+                  height: 120.sp,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 320,
+                  errorWidget: (_, _, _) => Container(
+                    color: accent.withValues(alpha: 0.12),
+                    child: Icon(Icons.music_note_rounded, size: 30.sp, color: accent),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16.sp),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      track.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t18W600.copyWith(color: isCurrent ? accent : tvTheme.primaryTextColor),
+                    ),
+                    SizedBox(height: 4.sp),
+                    Row(
+                      children: [
+                        Icon(Icons.album_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.sp),
+                        Flexible(
+                          child: Text(
+                            track.archive.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          ),
+                        ),
+                        SizedBox(width: 10.sp),
+                        Icon(Icons.person_outline_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.sp),
+                        Flexible(
+                          child: Text(
+                            track.archive.upName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (isMulti) ...[
+                      SizedBox(height: 2.sp),
+                      Row(
+                        children: [
+                          Icon(Icons.playlist_play_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
+                          SizedBox(width: 4.sp),
+                          Text(
+                            'P${track.part.page}/${track.archive.parts.length}',
+                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          ),
+                          if (excludedCount > 0)
+                            Text(
+                              ' (-$excludedCount)',
+                              style: AppTextStyles.t16W500.copyWith(color: tvTheme.focusColor),
+                            ),
+                          SizedBox(width: 10.sp),
+                          Icon(Icons.schedule_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
+                          SizedBox(width: 4.sp),
+                          Text(
+                            MusicVideoCard.formatDuration(
+                              track.part.duration > 0 ? track.part.duration : track.archive.duration,
+                            ),
+                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      SizedBox(height: 2.sp),
+                      Row(
+                        children: [
+                          Icon(Icons.schedule_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
+                          SizedBox(width: 4.sp),
+                          Text(
+                            MusicVideoCard.formatDuration(track.archive.duration),
+                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ],
           ),
-        ),
-        Expanded(
-          child: DpadRegion(
-            verticalEdge: DpadEdgeBehavior.leave,
-            horizontalEdge: DpadEdgeBehavior.leave,
-            child: ListView.separated(
-              padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
-              itemCount: tracks.length,
-              separatorBuilder: (_, _) => SizedBox(height: 4.sp),
-              itemBuilder: (context, index) {
-                final track = tracks[index];
-                _reveal.bindRow(track, context);
-                return _SongRow(
-                  track: track,
-                  index: index,
-                  focusNode: _reveal.nodeFor(track),
-                  onPlay: () => _play(context, ref, tracks, index),
-                  onRemove: () => libraryController.removeLikedSong(track.id),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
-  }
-
-  Future<void> _play(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) async {
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
-    await const MusicPlayerRoute().push(context);
-    if (!mounted) return;
-    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 }
 
@@ -278,18 +349,10 @@ class _FollowSection extends ConsumerStatefulWidget {
 
 class _FollowSectionState extends ConsumerState<_FollowSection> {
   int _tab = 0;
-  final MusicListReveal _reveal = MusicListReveal();
-
-  @override
-  void dispose() {
-    _reveal.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final library = ref.watch(musicLibraryControllerProvider);
-    final libraryController = ref.read(musicLibraryControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
@@ -308,8 +371,6 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
         ),
       );
     }
-
-    final tracks = [for (final archive in library.favorites) ...archive.tracks];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,46 +395,26 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                       style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
                     ),
                   )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(20.sp, 0, 20.sp, 10.sp),
-                        child: Row(
-                          children: [
-                            const Spacer(),
-                            TvButton(
-                              title: i18n('music_play_all'),
-                              icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
-                              size: TvButtonSize.mini,
-                              onTap: () => _playAll(context, ref, tracks, 0),
-                            ),
-                          ],
-                        ),
+                : DpadRegion(
+                    horizontalEdge: DpadEdgeBehavior.leave,
+                    child: GridView.builder(
+                      padding: EdgeInsets.all(24.sp),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 16.w,
+                        crossAxisSpacing: 16.w,
+                        childAspectRatio: 1.05,
                       ),
-                      Expanded(
-                        child: DpadRegion(
-                          verticalEdge: DpadEdgeBehavior.leave,
-                          horizontalEdge: DpadEdgeBehavior.leave,
-                          child: ListView.separated(
-                            padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
-                            itemCount: tracks.length,
-                            separatorBuilder: (_, _) => SizedBox(height: 4.sp),
-                            itemBuilder: (context, index) {
-                              final track = tracks[index];
-                              _reveal.bindRow(track, context);
-                              return _SongRow(
-                                track: track,
-                                index: index,
-                                focusNode: _reveal.nodeFor(track),
-                                onPlay: () => _playAll(context, ref, tracks, index),
-                                onRemove: () => libraryController.removeFavorite(track.archive.bvid),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
+                      itemCount: library.favorites.length,
+                      itemBuilder: (context, index) {
+                        final archive = library.favorites[index];
+                        return MusicVideoCard(
+                          archive: archive,
+                          onTap: () => MusicArchiveRoute(archive).push(context),
+                          onLongPress: () => _confirmUnfollowArchive(context, ref, archive),
+                        );
+                      },
+                    ),
                   ),
           )
         else
@@ -386,18 +427,22 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                     ),
                   )
                 : DpadRegion(
-                    verticalEdge: DpadEdgeBehavior.leave,
                     horizontalEdge: DpadEdgeBehavior.leave,
-                    child: ListView.separated(
-                      padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
+                    child: GridView.builder(
+                      padding: EdgeInsets.all(24.sp),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 16.w,
+                        crossAxisSpacing: 16.w,
+                        childAspectRatio: 1.05,
+                      ),
                       itemCount: library.followedUps.length,
-                      separatorBuilder: (_, _) => SizedBox(height: 4.sp),
                       itemBuilder: (context, index) {
                         final up = library.followedUps[index];
-                        return _FollowUpRow(
+                        return _AuthorCard(
                           up: up,
-                          onOpen: () => UgcUserSpaceRoute(up.mid, up.name).push(context),
-                          onUnfollow: () => libraryController.toggleFollowUp(up),
+                          onTap: () => UgcUserSpaceRoute(up.mid, up.name).push(context),
+                          onLongPress: () => _confirmUnfollowUp(context, ref, up),
                         );
                       },
                     ),
@@ -406,162 +451,127 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
       ],
     );
   }
-
-  Future<void> _playAll(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) async {
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
-    await const MusicPlayerRoute().push(context);
-    if (!mounted || _tab != 0) return;
-    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
-  }
 }
 
-/// One followed uploader: avatar, name, unfollow; OK opens the UP's space page
-/// shared with the video module.
-class _FollowUpRow extends StatelessWidget {
-  const _FollowUpRow({required this.up, required this.onOpen, required this.onUnfollow});
+/// Long press on a followed album: one explicit row, not a silent side effect.
+Future<void> _confirmUnfollowArchive(BuildContext context, WidgetRef ref, MusicArchive archive) async {
+  await TvDialogUtils.show<void>(
+    context: context,
+    builder: (_) => TvDialog(
+      title: archive.title,
+      cancelText: i18n('cancel'),
+      width: 560.sp,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TvDialogOptionTile(
+            title: i18n('music_unfollow_album'),
+            icon: Icon(Icons.favorite_border_rounded, size: 26.sp),
+            showCheck: false,
+            autofocus: true,
+            onTap: () {
+              Navigator.of(context).pop();
+              ref.read(musicLibraryControllerProvider.notifier).removeFavorite(archive.bvid);
+              ToastUtil.show(i18n('music_removed_favorite'));
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Long press on a followed artist: unfollows after an explicit confirm row.
+Future<void> _confirmUnfollowUp(BuildContext context, WidgetRef ref, MusicUp up) async {
+  await TvDialogUtils.show<void>(
+    context: context,
+    builder: (_) => TvDialog(
+      title: up.name,
+      cancelText: i18n('cancel'),
+      width: 560.sp,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TvDialogOptionTile(
+            title: i18n('music_unfollow_up'),
+            icon: Icon(Icons.person_remove_outlined, size: 26.sp),
+            showCheck: false,
+            autofocus: true,
+            onTap: () {
+              Navigator.of(context).pop();
+              ref.read(musicLibraryControllerProvider.notifier).toggleFollowUp(up);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// The followed-UP card in the area-card visual: square avatar, name beneath.
+class _AuthorCard extends StatelessWidget {
+  const _AuthorCard({required this.up, required this.onTap, required this.onLongPress});
 
   final MusicUp up;
-  final VoidCallback onOpen;
-  final VoidCallback onUnfollow;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+
     return TvFocusable(
-      onTap: onOpen,
+      onTap: onTap,
+      onLongPress: onLongPress,
       builder: (context, focused, child) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          height: 84.sp,
-          padding: EdgeInsets.symmetric(horizontal: 12.sp),
           decoration: BoxDecoration(
-            color: focused ? tvTheme.cardColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(12.sp),
+            color: tvTheme.backgroundColor,
+            borderRadius: BorderRadius.circular(18.sp),
             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
           ),
-          child: Row(
-            children: [
-              TvCommonAvatar(avatarUrl: up.face, fallbackName: up.name, radius: 30.sp),
-              SizedBox(width: 14.sp),
-              Expanded(
-                child: Text(
+          child: Padding(
+            padding: EdgeInsets.all(9.sp),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    clipBehavior: Clip.antiAlias,
+                    child: up.face.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: up.face,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 320,
+                            errorWidget: (_, _, _) => _fallback(accent),
+                          )
+                        : _fallback(accent),
+                  ),
+                ),
+                SizedBox(height: 8.sp),
+                Text(
                   up.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
                 ),
-              ),
-              SizedBox(width: 12.sp),
-              TvButton(
-                title: i18n('music_unfollow_up'),
-                icon: Icon(Icons.person_remove_outlined, size: 22.sp),
-                size: TvButtonSize.mini,
-                isSecondary: true,
-                onTap: onUnfollow,
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
-}
 
-/// One QQ music song row: index (or the playing equalizer), cover, title over
-/// singer, duration. Long press removes it from the library list.
-class _SongRow extends ConsumerWidget {
-  const _SongRow({required this.track, required this.index, required this.onPlay, required this.onRemove, this.focusNode});
-
-  final MusicTrack track;
-  final int index;
-  final VoidCallback onPlay;
-  final VoidCallback onRemove;
-
-  /// The list's per-row node, so returning from the player can put the focus
-  /// straight on the playing song.
-  final FocusNode? focusNode;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-    final state = ref.watch(musicPlayerControllerProvider);
-    final isCurrent = state.current?.archive.bvid == track.archive.bvid && state.current?.part.page == track.part.page;
-
-    return TvFocusable(
-      focusNode: focusNode,
-      onTap: onPlay,
-      onLongPress: onRemove,
-      builder: (context, focused, child) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
-          height: 84.sp,
-          padding: EdgeInsets.symmetric(horizontal: 12.sp),
-          decoration: BoxDecoration(
-            color: isCurrent
-                ? accent.withValues(alpha: 0.14)
-                : focused
-                ? tvTheme.cardColor
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12.sp),
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-          ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 44.sp,
-                child: isCurrent
-                    ? Icon(Icons.graphic_eq_rounded, size: 26.sp, color: accent)
-                    : Text('${index + 1}', style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor)),
-              ),
-              SizedBox(width: 8.sp),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.sp),
-                child: CachedNetworkImage(
-                  imageUrl: track.archive.cover,
-                  width: 104.sp,
-                  height: 60.sp,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 320,
-                  errorWidget: (_, _, _) => Icon(Icons.music_note_rounded, size: 26.sp, color: accent),
-                ),
-              ),
-              SizedBox(width: 14.sp),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      track.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t18W600.copyWith(color: isCurrent ? accent : tvTheme.primaryTextColor),
-                    ),
-                    SizedBox(height: 3.sp),
-                    Text(
-                      '${track.archive.upName}${track.archive.parts.length > 1 ? '  ·  P${track.part.page}' : ''}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 12.sp),
-              Text(
-                MusicVideoCard.formatDuration(track.part.duration > 0 ? track.part.duration : track.archive.duration),
-                style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  Widget _fallback(Color accent) => Container(
+    color: accent.withValues(alpha: 0.15),
+    child: Icon(Icons.person_outline_rounded, size: 48.sp, color: accent),
+  );
 }
 
 /// The leaderboard grid (discovery keeps the cover-grid presentation).
@@ -595,6 +605,223 @@ class _RankingSectionState extends ConsumerState<_RankingSection> {
       ),
       itemBuilder: (context, archive, index) =>
           MusicVideoCard(archive: archive, onTap: () => MusicArchiveRoute(archive).push(context)),
+    );
+  }
+}
+
+/// 每日推荐: the bmsc brute-force engine — the default fav folder's videos
+/// seed related-video searches, one music pick per seed, cached for the day.
+/// The folder button re-pins the source, a card's long press re-rolls one slot.
+class _DailySection extends ConsumerStatefulWidget {
+  const _DailySection({super.key});
+
+  @override
+  ConsumerState<_DailySection> createState() => _DailySectionState();
+}
+
+class _DailySectionState extends ConsumerState<_DailySection> {
+  List<MusicArchive>? _recs;
+  bool _loading = true;
+  bool _lock = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load({bool force = false}) async {
+    if (_lock) return;
+    _lock = true;
+    if (mounted) setState(() => _loading = true);
+    final recs = await DailyRecommendationService.dailyRecommendations(force: force);
+    if (!mounted) return;
+    setState(() {
+      if (recs != null) _recs = recs;
+      _loading = false;
+      _lock = false;
+    });
+  }
+
+  /// One slot re-rolls from a fresh folder seed; the day's cache follows.
+  Future<void> _regenerateAt(int index) async {
+    final fresh = await DailyRecommendationService.regenerateOne(
+      existingBvids: [for (final v in _recs ?? const <MusicArchive>[]) v.bvid],
+    );
+    if (!mounted) return;
+    if (fresh == null) {
+      ToastUtil.show(i18n('music_daily_no_more'));
+      return;
+    }
+    setState(() {
+      final recs = [...?_recs];
+      if (index < recs.length) recs[index] = fresh;
+      _recs = recs;
+    });
+    unawaited(DailyRecommendationService.saveCache(_recs ?? const []));
+    ToastUtil.show(i18n('music_daily_rerolled'));
+  }
+
+  Future<void> _pickFolder() async {
+    try {
+      final folders = await BilibiliUgcApi.instance.getMyFavFolders();
+      if (!mounted) return;
+      final current = DailyRecommendationService.defaultFolder()?.id;
+      await TvDialogUtils.show<void>(
+        context: context,
+        builder: (_) => TvDialog(
+          title: i18n('music_pick_folder'),
+          cancelText: i18n('cancel'),
+          width: 640.sp,
+          child: SizedBox(
+            height: 480.sp,
+            child: folders.isEmpty
+                ? Center(
+                    child: Text(
+                      i18n('music_no_folders'),
+                      style: AppTextStyles.t16W500.copyWith(color: context.tvTheme.secondaryTextColor),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: folders.length,
+                    itemBuilder: (context, index) {
+                      final fav = folders[index];
+                      return TvDialogOptionTile(
+                        title: fav.title,
+                        subtitle: '${fav.mediaCount}',
+                        selected: current == fav.id,
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          unawaited(DailyRecommendationService.setDefaultFolder(fav));
+                          _load(force: true);
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('load_failed'));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final folder = DailyRecommendationService.defaultFolder();
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    final header = Padding(
+      padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
+      child: Row(
+        children: [
+          TvButton(
+            title: folder?.title ?? i18n('music_pick_folder'),
+            icon: Icon(Icons.folder_outlined, size: 24.sp),
+            size: TvButtonSize.mini,
+            isSecondary: true,
+            onTap: _pickFolder,
+          ),
+          const Spacer(),
+          TvButton(
+            title: i18n('music_regenerate'),
+            icon: Icon(Icons.refresh_rounded, size: 24.sp),
+            size: TvButtonSize.mini,
+            isSecondary: true,
+            onTap: folder == null || _loading ? null : () => _load(force: true),
+          ),
+        ],
+      ),
+    );
+
+    if (folder == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          header,
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.folder_off_outlined, size: 72.sp, color: accent.withValues(alpha: 0.5)),
+                  SizedBox(height: 14.sp),
+                  Text(
+                    i18n('music_daily_need_folder'),
+                    style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final recs = _recs ?? const <MusicArchive>[];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        header,
+        Expanded(
+          child: _loading && recs.isEmpty
+              ? Center(
+                  child: AppStatusView(type: AppStatusType.loading, title: '', subtitle: ''),
+                )
+              : recs.isEmpty
+              ? Center(
+                  child: AppStatusView(type: AppStatusType.empty, title: i18n('music_daily_empty')),
+                )
+              : DpadRegion(
+                  horizontalEdge: DpadEdgeBehavior.leave,
+                  child: GridView.builder(
+                    padding: EdgeInsets.all(24.sp),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 16.w,
+                      crossAxisSpacing: 16.w,
+                      childAspectRatio: 1.05,
+                    ),
+                    itemCount: recs.length,
+                    itemBuilder: (context, index) {
+                      final archive = recs[index];
+                      return MusicVideoCard(
+                        archive: archive,
+                        onTap: () => MusicArchiveRoute(archive).push(context),
+                        onLongPress: () => _confirmReroll(index),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmReroll(int index) async {
+    await TvDialogUtils.show<void>(
+      context: context,
+      builder: (_) => TvDialog(
+        title: i18n('music_re_recommend'),
+        cancelText: i18n('cancel'),
+        width: 560.sp,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TvDialogOptionTile(
+              title: i18n('music_re_recommend'),
+              icon: Icon(Icons.refresh_rounded, size: 26.sp),
+              showCheck: false,
+              autofocus: true,
+              onTap: () {
+                Navigator.of(context).pop();
+                _regenerateAt(index);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

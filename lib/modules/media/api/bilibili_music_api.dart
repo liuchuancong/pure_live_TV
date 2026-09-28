@@ -106,8 +106,10 @@ class BilibiliMusicApi {
     if (result['code'] != 0) {
       throw Exception('related failed: ${result['code']} ${result['message']}');
     }
-    final list = (result['data'] as List?) ?? const [];
-    return [for (final item in list) MusicArchive.fromRankingJson(item)];
+    // The endpoint answered `data` as the bare list before, `data.list` today.
+    final dynamic data = result['data'];
+    final list = data is List ? data : (data?['list'] as List?) ?? const [];
+    return [for (final item in list) MusicArchive.fromRelatedJson(item)];
   }
 
   /// Video search (the same endpoint the search page uses, typed `video`).
