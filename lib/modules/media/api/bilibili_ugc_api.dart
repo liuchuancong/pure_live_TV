@@ -159,6 +159,32 @@ class BilibiliUgcApi {
   Future<void> setFollowing(int mid, {required bool follow}) =>
       _post('https://api.bilibili.com/x/relation/modify', {'fid': '$mid', 'act': follow ? '1' : '2'});
 
+  /// The account's followed uploaders (`x/relation/followings`) — the real
+  /// follow list newBV's 关注列表 reads, not a local mirror. Requires the QR
+  /// login cookie; throws when logged out.
+  Future<List<({int mid, String name, String face, String sign})>> getFollowings({
+    int page = 1,
+    int pageSize = 24,
+  }) async {
+    final mid = RegExp(r'DedeUserID=([^;]+)').firstMatch(_cookie)?.group(1) ?? '';
+    if (mid.isEmpty) throw Exception('bilibili login required');
+    final data = await _get('https://api.bilibili.com/x/relation/followings', query: {
+      'vmid': mid,
+      'pn': '$page',
+      'ps': '$pageSize',
+    });
+    final list = (data?['list'] as List?) ?? const [];
+    return [
+      for (final item in list)
+        (
+          mid: int.tryParse(item['mid']?.toString() ?? '') ?? 0,
+          name: item['uname']?.toString() ?? '',
+          face: item['face']?.toString() ?? '',
+          sign: item['sign']?.toString() ?? '',
+        ),
+    ];
+  }
+
   // -------------------------------------------------------------- interactions
 
   /// Likes (or un-likes) an archive (`x/web-interface/archive/like`).

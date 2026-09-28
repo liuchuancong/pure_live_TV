@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +29,7 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
   int _tab = 0;
 
   static const _tabs = [
+    ('video_personal_follow', Icons.person_outline_rounded),
     ('video_personal_fav', Icons.favorite_border),
     ('video_personal_history', Icons.history_rounded),
     ('video_personal_toview', Icons.watch_later_outlined),
@@ -58,13 +61,178 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
         ),
         Expanded(
           child: switch (_tab) {
-            0 => const _FavPane(),
-            1 => const _HistoryPane(),
-            2 => const _ToViewPane(),
+            0 => const _FollowPane(),
+            1 => const _FavPane(),
+            2 => const _HistoryPane(),
+            3 => const _ToViewPane(),
             _ => const _BangumiPane(),
           },
         ),
       ],
+    );
+  }
+}
+
+/// The follow list, newBV's 关注列表: the account's followed uploaders as a
+/// grid of avatar + name + signature. Tapping opens the UP's space; long-press
+/// unfollows (with a confirm) and drops the row.
+class _FollowPane extends ConsumerStatefulWidget {
+  const _FollowPane();
+
+  @override
+  ConsumerState<_FollowPane> createState() => _FollowPaneState();
+}
+
+class _FollowPaneState extends ConsumerState<_FollowPane> {
+  static const int _pageSize = 24;
+
+  List<({int mid, String name, String face, String sign})>? _follows;
+  String? _error;
+  int _page = 1;
+  bool _hasMore = true;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    if (_loading || !_hasMore) return;
+    setState(() => _loading = true);
+    try {
+      final batch = await BilibiliUgcApi.instance.getFollowings(page: _page, pageSize: _pageSize);
+      if (!mounted) return;
+      setState(() {
+        _follows = [...(_follows ?? const []), ...batch];
+        _page++;
+        _hasMore = batch.length >= _pageSize;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  /// Long-press unfollows against the account and drops the row — the same
+  /// relationship API the detail page's follow button uses.
+  Future<void> _unfollow(int index) async {
+    final follow = _follows?[index];
+    if (follow == null) return;
+    try {
+      await BilibiliUgcApi.instance.setFollowing(follow.mid, follow: false);
+      if (!mounted) return;
+      setState(() {
+        final rows = List.of(_follows!);
+        rows.removeAt(index);
+        _follows = rows;
+      });
+      ToastUtil.show(i18n('video_follow_unfollowed'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    if (_error != null) {
+      return AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error);
+    }
+    final follows = _follows;
+    if (follows == null) return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
+    if (follows.isEmpty) {
+      return AppStatusView(type: AppStatusType.empty, title: i18n('video_follow_empty'), subtitle: '');
+    }
+
+    return DpadRegion(
+      horizontalEdge: DpadEdgeBehavior.leave,
+      child: GridView.builder(
+        padding: EdgeInsets.all(24.sp),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          mainAxisSpacing: 20.sp,
+          crossAxisSpacing: 24.sp,
+          childAspectRatio: 3.4,
+        ),
+        itemCount: follows.length + (_hasMore || _loading ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= follows.length) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _loadMore();
+            });
+            return Center(
+              child: _loading
+                  ? SizedBox(
+                      width: 28.sp,
+                      height: 28.sp,
+                      child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                    )
+                  : const SizedBox.shrink(),
+            );
+          }
+          final follow = follows[index];
+          return TvFocusable(
+            onTap: () => UgcUserSpaceRoute(follow.mid, follow.name).push(context),
+            onLongPress: () => unawaited(_unfollow(index)),
+            builder: (context, focused, child) => Container(
+              margin: EdgeInsets.symmetric(vertical: 4.sp),
+              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+              decoration: BoxDecoration(
+                color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+                borderRadius: BorderRadius.circular(16.sp),
+                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+              ),
+              child: Row(
+                children: [
+                  // The avatar circle, newBV's 关注列表 cell.
+                  ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: follow.face,
+                      width: 88.sp,
+                      height: 88.sp,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => ColoredBox(color: tvTheme.cardColor),
+                      errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
+                    ),
+                  ),
+                  SizedBox(width: 16.sp),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          follow.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
+                        ),
+                        if (follow.sign.isNotEmpty) ...[
+                          SizedBox(height: 4.sp),
+                          Text(
+                            follow.sign,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.t14W300.copyWith(color: tvTheme.secondaryTextColor),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
