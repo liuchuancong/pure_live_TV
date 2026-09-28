@@ -93,14 +93,25 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _items.length) {
+            // The loader owns the cell: a 32.sp ring vanished inside a
+            // grid-sized cell, reading as a broken tile.
+            if (!_loading) return const SizedBox.shrink();
             return Center(
-              child: _loading
-                  ? SizedBox(
-                      width: 32.sp,
-                      height: 32.sp,
-                      child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
-                    )
-                  : const SizedBox.shrink(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 64.sp,
+                    height: 64.sp,
+                    child: CircularProgressIndicator(strokeWidth: 5.sp, color: accent),
+                  ),
+                  SizedBox(height: 12.sp),
+                  Text(
+                    i18n('ui_loading'),
+                    style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                  ),
+                ],
+              ),
             );
           }
           final item = _items[index];

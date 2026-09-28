@@ -86,6 +86,12 @@ class _VideoCardState extends ConsumerState<VideoCard> {
 
     final badge = widget.badge.isNotEmpty ? widget.badge : archive.tname;
 
+    // TvRoomCard's focus language: the 24sp radius, a tinted filled
+    // background and a 2sp accent edge while focused, with the info text
+    // repainting in the on-focused colours — the same pairing the room grid
+    // uses, so the two card families read as one.
+    final borderRadius = BorderRadius.circular(24.sp);
+
     return TvFocusable(
       onTap: widget.onTap,
       onLongPress: archive.aid > 0 ? () => setState(() => _actionsOpen = true) : null,
@@ -99,7 +105,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                 AspectRatio(
                   aspectRatio: 1.6,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14.sp),
+                    borderRadius: borderRadius,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -225,10 +231,12 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                 if (focused)
                   Positioned.fill(
                     child: IgnorePointer(
+                      // The cover keeps its own accent edge inside the card's
+                      // filled surface (the info block below is tinted too).
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14.sp),
-                          border: Border.all(color: accent, width: 3.sp),
+                          borderRadius: borderRadius,
+                          border: Border.all(color: tvTheme.focusColor, width: 2.sp),
                         ),
                       ),
                     ),
@@ -242,7 +250,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.t14W600.copyWith(
-                color: focused ? accent : tvTheme.primaryTextColor,
+                color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                 height: 1.3,
               ),
             ),
@@ -251,7 +259,9 @@ class _VideoCardState extends ConsumerState<VideoCard> {
               archive.upName + (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14W300.copyWith(color: tvTheme.secondaryTextColor),
+              style: AppTextStyles.t14W300.copyWith(
+                color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
+              ),
             ),
           ],
         );
@@ -261,7 +271,18 @@ class _VideoCardState extends ConsumerState<VideoCard> {
             if (mounted && _actionsOpen) setState(() => _actionsOpen = false);
           });
         }
-        return card;
+        // Focused: the whole card becomes a tinted, edged surface — the room
+        // card's pairing, applied around the cover plus info block.
+        if (!focused) return card;
+        return Container(
+          padding: EdgeInsets.all(6.sp),
+          decoration: BoxDecoration(
+            color: tvTheme.focusedCardColor,
+            borderRadius: borderRadius,
+            border: Border.all(color: tvTheme.focusColor, width: 2.sp),
+          ),
+          child: card,
+        );
       },
     );
   }

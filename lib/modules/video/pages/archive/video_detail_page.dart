@@ -25,6 +25,11 @@ class VideoDetailPage extends ConsumerStatefulWidget {
 }
 
 class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
+  /// The related-videos row's region, so the header button can drop the focus
+  /// straight onto its first card — walking down through every part row to
+  /// reach the row was the whole complaint.
+  final GlobalKey<DpadRegionState> _relatedRegionKey = GlobalKey<DpadRegionState>();
+
   MusicArchive? _detail;
   List<MusicArchive> _related = [];
   String? _error;
@@ -86,6 +91,21 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     } finally {
       _actionBusy = false;
     }
+  }
+
+  /// Drops the focus straight onto the related row's first card.
+  void _focusRelated() {
+    final region = _relatedRegionKey.currentState;
+    if (region == null || region.focusNodes.isEmpty) return;
+    final first = region.focusNodes.reduce((a, b) {
+      final ra = a.context?.findRenderObject();
+      final rb = b.context?.findRenderObject();
+      if (ra is! RenderBox || !ra.hasSize) return b;
+      if (rb is! RenderBox || !rb.hasSize) return a;
+      return ra.localToGlobal(Offset.zero).dx <= rb.localToGlobal(Offset.zero).dx ? a : b;
+    });
+    region.noteFocus(first);
+    first.requestFocus();
   }
 
   void _play(List<MusicTrack> tracks, int startIndex) {
@@ -324,6 +344,15 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                 style: AppTextStyles.t20W600.copyWith(color: accent),
                               ),
                               const Spacer(),
+                              if (_related.isNotEmpty)
+                                TvButton(
+                                  title: i18n('video_related_title'),
+                                  icon: Icon(Icons.interests_rounded, size: 24.sp),
+                                  size: TvButtonSize.mini,
+                                  isSecondary: true,
+                                  onTap: _focusRelated,
+                                ),
+                              SizedBox(width: 12.sp),
                               TvButton(
                                 title: i18n('music_play_all'),
                                 icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
@@ -335,14 +364,18 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                         ),
                         Expanded(
                           flex: 3,
-                          child: ListView.separated(
-                            padding: EdgeInsets.only(bottom: 16.sp),
-                            itemCount: tracks.length,
-                            separatorBuilder: (_, _) => SizedBox(height: 8.sp),
-                            itemBuilder: (context, index) => _PartTile(
-                              track: tracks[index],
-                              index: index,
-                              onTap: () => _play(tracks, index),
+                          child: DpadRegion(
+                            verticalEdge: DpadEdgeBehavior.leave,
+                            horizontalEdge: DpadEdgeBehavior.leave,
+                            child: ListView.separated(
+                              padding: EdgeInsets.only(bottom: 16.sp),
+                              itemCount: tracks.length,
+                              separatorBuilder: (_, _) => SizedBox(height: 8.sp),
+                              itemBuilder: (context, index) => _PartTile(
+                                track: tracks[index],
+                                index: index,
+                                onTap: () => _play(tracks, index),
+                              ),
                             ),
                           ),
                         ),
@@ -356,7 +389,10 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                           ),
                           Expanded(
                             child: DpadRegion(
+                              key: _relatedRegionKey,
                               horizontalEdge: DpadEdgeBehavior.leave,
+                              verticalEdge: DpadEdgeBehavior.leave,
+                              enter: DpadEnterBehavior.nearest,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 padding: EdgeInsets.only(bottom: 16.sp),

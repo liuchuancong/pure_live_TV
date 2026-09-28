@@ -120,14 +120,29 @@ class MusicVideoCard extends StatelessWidget {
                       Positioned(
                         left: 12.sp,
                         top: 12.sp,
-                        child: TvButton(excludeFocus: true, title: label, size: TvButtonSize.mini),
+                        // Cover chrome, not reading content: the pill keeps its
+                        // design size (only the small-panel legibility lift
+                        // applies) — at the largest font setting it used to
+                        // swallow a third of the artwork.
+                        child: MediaQuery(
+                          data: MediaQuery.of(context).copyWith(
+                            textScaler: TextScaler.linear(TvTextScale.legibilityLift(context)),
+                          ),
+                          child: TvButton(excludeFocus: true, title: label, size: TvButtonSize.mini),
+                        ),
                       ),
                     // The stats row: play and danmaku counts left, duration right.
                     Positioned(
                       left: 10.sp,
                       right: 10.sp,
                       bottom: 8.sp,
-                      child: Row(
+                      // Same chrome clamp as the badge: counts and duration
+                      // stay at design size over the artwork.
+                      child: MediaQuery(
+                        data: MediaQuery.of(context).copyWith(
+                          textScaler: TextScaler.linear(TvTextScale.legibilityLift(context)),
+                        ),
+                        child: Row(
                         children: [
                           Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: Colors.white),
                           SizedBox(width: 4.sp),
@@ -157,6 +172,7 @@ class MusicVideoCard extends StatelessWidget {
                               style: AppTextStyles.t14W500.copyWith(color: Colors.white),
                             ),
                         ],
+                        ),
                       ),
                     ),
                     if (progress > 0)

@@ -18,7 +18,7 @@ import 'package:pure_live/modules/video/pages/personal/video_personal_page.dart'
 
 /// Video mode sections. The section rail lives in the home sidebar; this file
 /// builds section content only, so the mode swaps the whole navigation.
-enum VideoSection { recommend, popular, ranking, region, pgc, dynamics, search, personal }
+enum VideoSection { home, ranking, region, pgc, search, personal }
 
 /// Content of one video section. Login is enforced by the home shell's
 /// [BilibiliLoginGate], not here.
@@ -49,15 +49,58 @@ class VideoSectionView extends ConsumerWidget {
     );
 
     return switch (section) {
-      VideoSection.recommend => _FeedTab(key: const ValueKey('video_feed'), gridDelegate: gridDelegate),
-      VideoSection.popular => _PopularTab(key: const ValueKey('video_popular'), gridDelegate: gridDelegate),
+      VideoSection.home => const _VideoHomePage(key: ValueKey('video_home')),
       VideoSection.ranking => _RankingTab(key: const ValueKey('video_ranking'), gridDelegate: gridDelegate),
       VideoSection.region => const VideoRegionPage(key: ValueKey('video_region')),
       VideoSection.pgc => const VideoPgcPage(key: ValueKey('video_pgc')),
-      VideoSection.dynamics => const UgcDynamicsPage(key: ValueKey('video_dynamics')),
       VideoSection.search => const VideoSearchSection(key: ValueKey('video_search')),
       VideoSection.personal => const VideoPersonalSection(key: ValueKey('video_personal')),
     };
+  }
+}
+
+/// newBV's home grid density: a fixed 4 columns with its own spacing — the
+/// card carries its own aspect (the 1.6:1 cover plus the info block), so the
+/// shared room-card aspect no longer applies here.
+const defaultVideoGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+  crossAxisCount: 4,
+  mainAxisSpacing: 12.0,
+  crossAxisSpacing: 24.0,
+);
+
+/// Video home, newBV's HomeContent: a top tab bar over 动态/推荐/热门 — the
+/// three feeds the reference puts on its home screen. The tab order follows
+/// the reference (动态 first) and each tab keeps its own paged grid.
+class _VideoHomePage extends ConsumerStatefulWidget {
+  const _VideoHomePage({super.key});
+
+  @override
+  ConsumerState<_VideoHomePage> createState() => _VideoHomePageState();
+}
+
+class _VideoHomePageState extends ConsumerState<_VideoHomePage> {
+  int _tab = 1; // 推荐: the default landing tab.
+
+  static const _tabs = ['video_dynamics', 'video_tab_recommend', 'video_tab_popular'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TvTabBar(
+          tabs: [for (final label in _tabs) TvTabItemData(title: i18n(label))],
+          currentIndex: _tab,
+          onTabChange: (index) => setState(() => _tab = index),
+        ),
+        Expanded(
+          child: switch (_tab) {
+            0 => const UgcDynamicsPage(key: ValueKey('video_home_dynamics')),
+            1 => const _FeedTab(key: ValueKey('video_home_feed')),
+            _ => const _PopularTab(key: ValueKey('video_home_popular')),
+          },
+        ),
+      ],
+    );
   }
 }
 
@@ -65,9 +108,10 @@ class VideoSectionView extends ConsumerWidget {
 /// carries a fetch closure, and a fresh instance per build would re-key
 /// `pagingCoreProvider(param)` and reset the list.
 abstract class _PagedGridTab extends ConsumerStatefulWidget {
-  const _PagedGridTab({super.key, required this.gridDelegate});
+  const _PagedGridTab({super.key});
 
-  final SliverGridDelegateWithFixedCrossAxisCount gridDelegate;
+  /// The feed tabs share newBV's density; the ranking tab overrides it.
+  SliverGridDelegateWithFixedCrossAxisCount get gridDelegate => defaultVideoGridDelegate;
 
   /// Stable identity of this tab, the key the param cache hangs on.
   String get tabKey;
@@ -95,7 +139,7 @@ class _PagedGridTabState<W extends _PagedGridTab> extends ConsumerState<W> {
 }
 
 class _FeedTab extends _PagedGridTab {
-  const _FeedTab({super.key, required super.gridDelegate});
+  const _FeedTab({super.key});
 
   @override
   String get tabKey => 'feed';
@@ -113,7 +157,7 @@ class _FeedTab extends _PagedGridTab {
 }
 
 class _PopularTab extends _PagedGridTab {
-  const _PopularTab({super.key, required super.gridDelegate});
+  const _PopularTab({super.key});
 
   @override
   String get tabKey => 'popular';
@@ -131,7 +175,10 @@ class _PopularTab extends _PagedGridTab {
 }
 
 class _RankingTab extends _PagedGridTab {
-  const _RankingTab({super.key, required super.gridDelegate});
+  const _RankingTab({super.key, required this.gridDelegate});
+
+  @override
+  final SliverGridDelegateWithFixedCrossAxisCount gridDelegate;
 
   @override
   String get tabKey => 'ranking';

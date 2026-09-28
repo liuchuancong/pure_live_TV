@@ -1300,6 +1300,8 @@
   "music_bottom_progress_desc": "Show a progress hairline on the bottom edge while playing",
   "music_daily": "Daily picks",
   "music_short_daily": "Daily",
+  "music_discover": "Discover",
+  "music_mine": "Mine",
   "music_pick_folder": "Choose folder",
   "music_regenerate": "Regenerate",
   "music_re_recommend": "Replace slot",
@@ -2897,5 +2899,8 @@
   "video_progress_toggle": "Bottom progress line",
   "video_personal_follow": "Follow list",
   "video_follow_empty": "No followed uploaders yet",
-  "video_follow_unfollowed": "Unfollowed"
+  "video_follow_unfollowed": "Unfollowed",
+  "video_tab_home": "Home",
+  "video_settings_playback": "Playback",
+  "video_settings_danmaku": "Danmaku"
 }

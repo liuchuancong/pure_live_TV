@@ -38,23 +38,46 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
 
   @override
   Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // newBV's personal top bar: centred pills, one per pane.
         Padding(
-          padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
+          padding: EdgeInsets.only(top: 16.sp, bottom: 8.sp),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              for (final (index, (label, icon)) in _tabs.indexed) ...[
-                TvButton(
+              for (final (index, (label, _)) in _tabs.indexed) ...[
+                TvFocusable(
                   key: ValueKey('personal_tab_$index'),
-                  title: i18n(label),
-                  icon: Icon(icon, size: 24.sp),
-                  size: TvButtonSize.mini,
-                  isSecondary: _tab != index,
                   onTap: () => setState(() => _tab = index),
+                  builder: (context, focused, _) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    curve: Curves.easeOutCubic,
+                    padding: EdgeInsets.symmetric(horizontal: 34.sp, vertical: 12.sp),
+                    decoration: BoxDecoration(
+                      // The active pill is the tinted one, like the reference.
+                      color: _tab == index
+                          ? tvTheme.focusColor.withValues(alpha: 0.18)
+                          : focused
+                          ? tvTheme.focusedCardColor
+                          : tvTheme.cardColor,
+                      borderRadius: BorderRadius.circular(34.sp),
+                      border: Border.all(
+                        color: focused ? tvTheme.focusColor : Colors.transparent,
+                        width: 2.sp,
+                      ),
+                    ),
+                    child: Text(
+                      i18n(label),
+                      style: AppTextStyles.t18W600.copyWith(
+                        color: _tab == index ? tvTheme.focusColor : tvTheme.secondaryTextColor,
+                      ),
+                    ),
+                  ),
                 ),
-                SizedBox(width: 12.sp),
+                SizedBox(width: 14.sp),
               ],
             ],
           ),

@@ -1295,6 +1295,8 @@
   "music_bottom_progress_desc": "播放时在屏幕底缘显示一条进度线",
   "music_daily": "每日推荐",
   "music_short_daily": "每日",
+  "music_discover": "推荐",
+  "music_mine": "我的",
   "music_pick_folder": "选择收藏夹",
   "music_regenerate": "重新生成",
   "music_re_recommend": "重新推荐",
@@ -2897,5 +2899,8 @@
   "video_progress_toggle": "底部进度线",
   "video_personal_follow": "关注列表",
   "video_follow_empty": "还没有关注的 UP 主",
-  "video_follow_unfollowed": "已取消关注"
+  "video_follow_unfollowed": "已取消关注",
+  "video_tab_home": "首页",
+  "video_settings_playback": "播放设置",
+  "video_settings_danmaku": "弹幕设置"
 }

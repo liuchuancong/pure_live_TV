@@ -1,24 +1,24 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/modules/media/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/features/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/modules/music/music_page.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/areas/areas_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/features/history/history_page.dart';
-import 'package:pure_live/modules/music/music_page.dart';
-import 'package:pure_live/modules/media/index.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:pure_live/features/search/tv_search_page.dart';
 import 'package:pure_live/features/favorite/favorite_page.dart';
+import 'package:pure_live/features/home/home_update_dialog.dart';
 import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
-import 'package:pure_live/features/home/home_update_dialog.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -53,11 +53,15 @@ class _HomePageState extends ConsumerState<HomePage> {
       AppMode.music => (i18n('mode_music'), i18n('menu_short_mode_music'), Icons.library_music_outlined),
     };
 
+    // A control, not a state: the mode's name on the button already says
+    // what is active, so it renders like every other rail entry and lights
+    // up only under focus (it used to sit in the selected fill forever,
+    // competing with the genuinely selected section below it).
     return _buildAdaptiveItem(
       ref: ref,
       item: AppMenuItem(index: -1, title: label, shortTitle: short, icon: icon),
       isExpanded: isExpanded,
-      isSelected: true,
+      isSelected: false,
       textScale: textScale,
       focusNode: _modeFocusNode,
       onTap: _showModeDialog,
@@ -110,8 +114,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             color: isSelected
                                 ? accent.withValues(alpha: 0.18)
                                 : focused
-                                    ? accent.withValues(alpha: 0.08)
-                                    : Colors.transparent,
+                                ? accent.withValues(alpha: 0.08)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(14.sp),
                             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
                           ),
@@ -162,7 +166,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final item in menuList)
             Padding(
-              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+              padding: EdgeInsets.only(bottom: 20.sp * textScale),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: item,
@@ -175,42 +179,40 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
         ];
       case AppMode.music:
-        // (title key, collapsed caption key) — the collapsed rail clips a
-        // four-character label to "最近…", so every entry names its own
-        // two-character caption; the expanded rail paints the full title.
-        const labels = <(String, String, IconData)>[
-          ('music_favorites', 'music_short_favorites', Icons.favorite_border),
-          ('music_recents', 'music_short_recents', Icons.history_rounded),
-          ('music_playlists', 'music_short_playlists', Icons.playlist_add_check_rounded),
-          ('music_dynamics', 'music_short_dynamics', Icons.dynamic_feed_outlined),
-          ('music_history', 'music_short_history', Icons.cloud_queue_outlined),
-          ('music_tab_ranking', 'music_short_ranking', Icons.leaderboard_outlined),
-          ('music_tab_search', 'music_short_search', Icons.search_rounded),
+        // Four rail destinations over the top-tab groups (see kMusicRailGroups):
+        // 搜索, then 歌单 on its own, then the discovery and library groups —
+        // the tabbed sections live behind the content pane's tab bar.
+        const labels = <(String, IconData)>[
+          ('music_tab_search', Icons.search_rounded),
+          ('music_playlists', Icons.playlist_add_check_rounded),
+          ('music_discover', Icons.explore_outlined),
+          ('music_mine', Icons.person_outline_rounded),
         ];
         final selected = ref.watch(musicSectionIndexProvider);
+        final railIndex = musicRailIndexFor(MusicSection.values[selected.clamp(0, MusicSection.values.length - 1)]);
         return [
-          for (final (index2, (labelKey, shortKey, icon)) in labels.indexed)
+          for (final (index2, (labelKey, icon)) in labels.indexed)
             Padding(
-              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+              padding: EdgeInsets.only(bottom: 20.sp * textScale),
               child: _buildAdaptiveItem(
                 ref: ref,
-                item: AppMenuItem(index: index2, title: i18n(labelKey), shortTitle: i18n(shortKey), icon: icon),
+                item: AppMenuItem(index: index2, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
                 isExpanded: isExpanded,
-                isSelected: selected == index2,
+                isSelected: railIndex == index2,
                 textScale: textScale,
                 focusNode: _sectionNode('music_$index2'),
-                onTap: () => ref.read(musicSectionIndexProvider.notifier).change(index2),
+                onTap: () => ref.read(musicSectionIndexProvider.notifier).change(kMusicRailGroups[index2].first.index),
               ),
             ),
         ];
       case AppMode.video:
+        // newBV's left rail: top-level destinations only. The home entry's
+        // 动态/推荐/热门 live as top tabs inside the home page.
         const labels = [
-          ('video_tab_recommend', Icons.explore_outlined),
-          ('video_tab_popular', Icons.local_fire_department_outlined),
+          ('video_tab_home', Icons.home_outlined),
           ('video_tab_ranking', Icons.leaderboard_outlined),
           ('video_tab_region', Icons.category_outlined),
           ('video_tab_pgc', Icons.live_tv_outlined),
-          ('video_dynamics', Icons.dynamic_feed_outlined),
           ('video_tab_search', Icons.search_rounded),
           ('video_personal', Icons.person_outline_rounded),
         ];
@@ -218,7 +220,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final (index, (labelKey, icon)) in labels.indexed)
             Padding(
-              padding: EdgeInsets.only(bottom: 14.sp * textScale),
+              padding: EdgeInsets.only(bottom: 20.sp * textScale),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: AppMenuItem(index: index, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
@@ -247,7 +249,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       return BilibiliLoginGate(
         child: Column(
           children: [
-            Expanded(child: MusicSectionView(section: MusicSection.values[sectionIndex.clamp(0, MusicSection.values.length - 1)])),
+            Expanded(
+              child: MusicSectionView(
+                section: MusicSection.values[sectionIndex.clamp(0, MusicSection.values.length - 1)],
+              ),
+            ),
             const MusicMiniBar(),
           ],
         ),
@@ -419,7 +425,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       SizedBox(height: 15.sp * textScale),
                       Padding(
-                        padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                        padding: EdgeInsets.only(bottom: 20.sp * textScale),
                         child: _buildModeButton(appMode, isExpanded, textScale),
                       ),
                       // The active mode's own navigation — live destinations,
@@ -427,12 +433,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                       // that scrolls: video carries eight entries and overflow
                       // must not push the footer controls off screen.
                       Expanded(
+                        // Edge fades mark the clipped entries as scroll
+                        // content: at the largest font scale a half-shown
+                        // item otherwise reads as a broken rail.
                         child: SingleChildScrollView(
                           child: Column(children: _buildModeRailItems(appMode, isExpanded, textScale)),
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                        padding: EdgeInsets.only(bottom: 20.sp * textScale),
                         child: TvIconButton(
                           icon: AnimatedRotation(
                             turns: isExpanded ? 0.5 : 0.0,
@@ -449,16 +458,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       ),
                       _buildAdaptiveItem(
-                              ref: ref,
-                              item: mySettingsItem,
-                              isExpanded: isExpanded,
-                              isSelected: currentIndex == mySettingsItem.index,
-                              textScale: textScale,
-                              focusNode: _nodeFor(mySettingsItem.index),
-                              // Settings opens as its own page (title bar, back button
-                              // and the configuration-preview action), like the desktop
-                              // app, instead of swapping the content pane.
-                              onTap: () => const SettingsMenuRoute().push(context),
+                        ref: ref,
+                        item: mySettingsItem,
+                        isExpanded: isExpanded,
+                        isSelected: currentIndex == mySettingsItem.index,
+                        textScale: textScale,
+                        focusNode: _nodeFor(mySettingsItem.index),
+                        // Settings opens as its own page (title bar, back button
+                        // and the configuration-preview action), like the desktop
+                        // app, instead of swapping the content pane.
+                        onTap: () => const SettingsMenuRoute().push(context),
                       ),
                     ],
                   ),
