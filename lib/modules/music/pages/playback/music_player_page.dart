@@ -1,21 +1,17 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:flutter_lyric/flutter_lyric.dart';
-import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/player/models/player_engine.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/music/services/music_lyric_service.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/music/pages/playback/widgets/player_widgets.dart';
+import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// The full-screen music player.
@@ -42,6 +38,11 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
   final FocusNode _rootNode = FocusNode(debugLabel: 'music/page');
   bool _controlsVisible = true;
   bool _queueOpen = false;
+  bool _settingsOpen = false;
+
+  /// The live_play follow gesture: a second Left press inside the window is
+  /// the follow toggle, so a single stray Left costs nothing.
+  DateTime _lastLeftPress = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Whether the next bar activation should land in the seek zone — the
   /// hidden-state arrow seeks raise the bar with the keyboard already there.
@@ -67,13 +68,12 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     super.dispose();
   }
 
-  /// Only the video view auto-hides: over the poster or the lyrics there is
-  /// nothing the bar could be covering up.
+  /// live_play's clock: the bar hides itself five seconds after the last
+  /// key, in every view — video, lyrics, poster.
   void _armAutoHide() {
     _autoHideTimer?.cancel();
     _autoHideTimer = Timer(_autoHideAfter, () {
       if (!mounted || !_controlsVisible) return;
-      if (ref.read(musicPlayerControllerProvider).audioOnly) return;
       _hideControls();
     });
   }
@@ -126,22 +126,37 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
       return KeyEventResult.ignored;
     }
 
-    // Controls hidden: this node owns the keyboard.
+    // Controls hidden: live_play's model — Right opens the playlist, a
+    // double-pressed Left follows the album, Up/Down walk the queue, OK
+    // raises the bar (whose seek zone owns the ±10s).
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     if (event.logicalKey == LogicalKeyboardKey.select ||
-        event.logicalKey == LogicalKeyboardKey.enter ||
-        event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        event.logicalKey == LogicalKeyboardKey.enter) {
       _showControls();
       return KeyEventResult.handled;
     }
-    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      controller.seekAccelerated(-1);
-      _showControls(inSeekZone: true);
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _openQueue();
       return KeyEventResult.handled;
     }
-    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-      controller.seekAccelerated(1);
-      _showControls(inSeekZone: true);
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      final now = DateTime.now();
+      final isDouble = now.difference(_lastLeftPress) < const Duration(milliseconds: 350);
+      _lastLeftPress = now;
+      if (isDouble) {
+        final track = ref.read(musicPlayerControllerProvider).current;
+        if (track != null) {
+          ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(track.archive);
+        }
+      }
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+      controller.previous();
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+      controller.next();
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -149,11 +164,31 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
 
   void _openQueue() {
     _autoHideTimer?.cancel();
-    if (!_queueOpen) setState(() => _queueOpen = true);
+    if (!_queueOpen || _settingsOpen) {
+      setState(() {
+        _queueOpen = true;
+        _settingsOpen = false;
+      });
+    }
   }
 
   void _closeQueue() {
     if (_queueOpen) setState(() => _queueOpen = false);
+    _armAutoHide();
+  }
+
+  void _openSettings() {
+    _autoHideTimer?.cancel();
+    if (!_settingsOpen || _queueOpen) {
+      setState(() {
+        _settingsOpen = true;
+        _queueOpen = false;
+      });
+    }
+  }
+
+  void _closeSettings() {
+    if (_settingsOpen) setState(() => _settingsOpen = false);
     _armAutoHide();
   }
 
@@ -169,7 +204,7 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
 
     final MusicLyricCandidate? picked = await TvDialogUtils.show<MusicLyricCandidate>(
       context: context,
-      builder: (_) => _LyricPickerDialog(track: track),
+      builder: (_) => MusicLyricPickerDialog(track: track),
     );
 
     if (picked == null || !mounted) return;
@@ -181,34 +216,6 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
 
   /// Moves music playback onto another engine, re-opening the current track
   /// where it is playing now.
-  Future<void> _showCorePicker() async {
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
-    final String? picked = await TvDialogUtils.showSelect<String>(
-      context: context,
-      title: i18n('music_core_title'),
-      items: [
-        TvSelectItem(value: BackendIds.mediaKit, title: i18n('player_mpv')),
-        TvSelectItem(
-          value: BackendIds.fijk,
-          title: i18n('player_ijk'),
-          subtitle: i18n('music_core_dash_hint'),
-        ),
-        TvSelectItem(
-          value: BackendIds.betterPlayer,
-          title: i18nOr('player_better_player', 'Exo 播放器'),
-          subtitle: i18n('music_core_dash_hint'),
-        ),
-        TvSelectItem(
-          value: BackendIds.fvp,
-          title: i18n('player_fvp'),
-          subtitle: i18n('music_core_dash_hint'),
-        ),
-      ],
-      selectedValue: MusicPlayerController.preferredBackend,
-      onSelected: (value) => unawaited(controller.switchBackend(value)),
-    );
-    if (picked != null && mounted) ToastUtil.show(i18n('music_core_switched'));
-  }
 
   // --------------------------------------------------------------------- build
 
@@ -228,11 +235,13 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     // page itself pops. Popping the page never stops the music — the queue
     // keeps playing while the viewer browses.
     return PopScope(
-      canPop: !_queueOpen && !_controlsVisible,
+      canPop: !_queueOpen && !_settingsOpen && !_controlsVisible,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (_queueOpen) {
           _closeQueue();
+        } else if (_settingsOpen) {
+          _closeSettings();
         } else if (_controlsVisible) {
           _hideControls();
         }
@@ -256,9 +265,9 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
               if (controller.handle != null && !state.audioOnly)
                 HandleVideoSurface(handle: controller.handle!, fit: BoxFit.contain)
               else if (track != null)
-                _NowPlayingView(track: track, resolving: state.resolving, lyricRevision: _lyricRevision)
+                MusicNowPlayingView(track: track, resolving: state.resolving, lyricRevision: _lyricRevision)
               else
-                _IdleSurface(track: track, resolving: state.resolving),
+                PlayerIdleSurface(track: track, resolving: state.resolving),
 
               // --------------------------------------------------- top info bar
               AnimatedPositioned(
@@ -323,26 +332,39 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                   // controls the viewer cannot see.
                   child: ExcludeFocus(
                     excluding: !_controlsVisible || _queueOpen,
-                    child: _ControlBar(
-                      active: _controlsVisible && !_queueOpen,
+                    child: MusicControlBar(
+                      active: _controlsVisible && !_queueOpen && !_settingsOpen,
+                      onSettings: _openSettings,
                       activateInSeekZone: _activateInSeekZone,
                       onQueue: _openQueue,
                       onInteraction: _armAutoHide,
                       onPickLyric: _showLyricPicker,
-                      onSwitchCore: _showCorePicker,
                     ),
                   ),
                 ),
               ),
 
+              // -------------------------------------------------- settings panel
+              if (_settingsOpen)
+                Positioned(
+                  top: 100.sp,
+                  bottom: 100.sp,
+                  right: 48.sp,
+                  width: 640.sp,
+                  child: MusicPlayerSettingsPanel(onClose: _closeSettings),
+                ),
+
+              // --------------------------------------- flush-bottom progress line
+              Positioned(left: 0, right: 0, bottom: 0, child: MusicBottomProgressLine()),
+
               // ------------------------------------------------------ queue panel
-              if (_queueOpen)
+              if (_queueOpen && !_settingsOpen)
                 Positioned(
                   top: 100.sp,
                   bottom: 100.sp,
                   right: 48.sp,
                   width: 520.sp,
-                  child: _QueuePanel(
+                  child: MusicQueuePanel(
                     onClose: _closeQueue,
                   ),
                 ),
@@ -356,954 +378,3 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
   }
 }
 
-/// What fills the screen while no stream is open: cover art dimmed behind a
-/// spinner (resolving) or the plain dark plate.
-class _IdleSurface extends StatelessWidget {
-  const _IdleSurface({required this.track, required this.resolving});
-
-  final MusicTrack? track;
-  final bool resolving;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final track = this.track;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (track != null && track.archive.cover.isNotEmpty)
-          CachedNetworkImage(
-            imageUrl: track.archive.cover,
-            fit: BoxFit.cover,
-            memCacheWidth: 1280,
-            errorWidget: (_, _, _) => const SizedBox.shrink(),
-          ),
-        Container(color: Colors.black.withValues(alpha: track != null ? 0.72 : 1)),
-        Center(
-          child: resolving
-              ? SizedBox(
-                  width: 64.sp,
-                  height: 64.sp,
-                  child: CircularProgressIndicator(strokeWidth: 4.sp, color: tvTheme.focusColor),
-                )
-              : (track == null
-                    ? Icon(Icons.library_music_rounded, size: 96.sp, color: Colors.white24)
-                    : const SizedBox.shrink()),
-        ),
-      ],
-    );
-  }
-}
-
-/// The audio-only view: the cover in the middle to begin with, then — once the
-/// track has timed lyrics — the same cover on the left with the lines beside it.
-///
-/// The switch is the "lyrics arrived" animation: a fade with a slight slide, so
-/// the cover travels out of the centre instead of the page jumping between two
-/// unrelated layouts.
-class _NowPlayingView extends ConsumerStatefulWidget {
-  const _NowPlayingView({required this.track, required this.resolving, this.lyricRevision = 0});
-
-  final MusicTrack track;
-  final bool resolving;
-
-  /// Bumped when the viewer picks a lyric by hand; the view then reloads, and
-  /// the fetch finds the manual choice first.
-  final int lyricRevision;
-
-  @override
-  ConsumerState<_NowPlayingView> createState() => _NowPlayingViewState();
-}
-
-class _NowPlayingViewState extends ConsumerState<_NowPlayingView> {
-  LyricController? _lyric;
-  Timer? _syncTimer;
-  bool _loading = true;
-  bool _empty = false;
-  String _loadedKey = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _setup();
-  }
-
-  @override
-  void didUpdateWidget(_NowPlayingView old) {
-    super.didUpdateWidget(old);
-    if (old.track.id != widget.track.id || old.lyricRevision != widget.lyricRevision) _setup();
-  }
-
-  void _setup() {
-    final key = widget.track.id;
-    _loadedKey = key;
-    _syncTimer?.cancel();
-    _lyric?.dispose();
-    final controller = LyricController();
-    _lyric = controller;
-    controller.setOnTapLineCallback((position) {
-      ref.read(musicPlayerControllerProvider.notifier).seekTo(position);
-    });
-    _loading = true;
-    _empty = false;
-
-    // Position sync by polling: the handle appears some time after the page
-    // (the track resolves first), so a one-shot stream subscription would miss
-    // it; the poll re-reads whatever handle is live.
-    _syncTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
-      final handle = ref.read(musicPlayerControllerProvider.notifier).handle;
-      if (!mounted || handle == null || _lyric == null) return;
-      _lyric!.setProgress(handle.position);
-    });
-
-    MusicLyricService.instance
-        .fetchLyric(
-          widget.track.title,
-          hint: widget.track.archive.title,
-          aid: widget.track.archive.aid,
-          bvid: widget.track.archive.bvid,
-          cid: widget.track.part.cid,
-        )
-        .then((lrc) {
-      if (!mounted || _loadedKey != key) return;
-      setState(() {
-        _loading = false;
-        _empty = lrc == null;
-      });
-      if (lrc != null) controller.loadLyric(lrc);
-    });
-  }
-
-  @override
-  void dispose() {
-    _syncTimer?.cancel();
-    _lyric?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bool withLyrics = !_loading && !_empty && _lyric != null;
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 420),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      transitionBuilder: (child, animation) => FadeTransition(
-        opacity: animation,
-        child: SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(animation),
-          child: child,
-        ),
-      ),
-      child: withLyrics
-          ? _LyricsLayout(key: const ValueKey('lyrics'), track: widget.track, lyric: _lyric!)
-          : _PosterLayout(
-              key: const ValueKey('poster'),
-              track: widget.track,
-              resolving: widget.resolving,
-              // Only once the lookup has actually answered: a spinner over the
-              // cover for a lyric request nobody asked for reads as the track
-              // being stuck.
-              status: _loading ? '' : (_empty ? i18n('music_no_lyric') : ''),
-            ),
-    );
-  }
-}
-
-/// The cover in the middle of the screen with the name under it.
-class _PosterLayout extends StatelessWidget {
-  const _PosterLayout({super.key, required this.track, required this.resolving, required this.status});
-
-  final MusicTrack track;
-  final bool resolving;
-  final String status;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(28.sp),
-                child: CachedNetworkImage(
-                  imageUrl: track.archive.cover,
-                  width: 420.sp,
-                  height: 420.sp,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 840,
-                  errorWidget: (_, _, _) => Container(
-                    width: 420.sp,
-                    height: 420.sp,
-                    color: tvTheme.focusColor.withValues(alpha: 0.2),
-                    child: Icon(Icons.music_note_rounded, size: 140.sp, color: tvTheme.focusColor),
-                  ),
-                ),
-              ),
-              if (resolving)
-                SizedBox(
-                  width: 76.sp,
-                  height: 76.sp,
-                  child: CircularProgressIndicator(strokeWidth: 5.sp, color: tvTheme.focusColor),
-                ),
-            ],
-          ),
-          SizedBox(height: 36.sp),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 120.sp),
-            child: Text(
-              track.title,
-              style: AppTextStyles.t34W700.copyWith(color: Colors.white),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          SizedBox(height: 12.sp),
-          Text(track.archive.upName, style: AppTextStyles.t20W500.copyWith(color: Colors.white70)),
-          if (status.isNotEmpty) ...[
-            SizedBox(height: 14.sp),
-            Text(status, style: AppTextStyles.t18W500.copyWith(color: Colors.white38)),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// The synced lyric view: the cover and the track on the left, the lines beside
-/// them. Tapping a line seeks to it.
-class _LyricsLayout extends StatelessWidget {
-  const _LyricsLayout({super.key, required this.track, required this.lyric});
-
-  final MusicTrack track;
-  final LyricController lyric;
-
-  /// One style for every panel instance: bigger than the package default so it
-  /// reads at TV distance.
-  static final LyricStyle style = LyricStyles.default1.copyWith(
-    textStyle: AppTextStyles.t20W500.copyWith(color: Colors.white60, height: 1.6),
-    activeStyle: AppTextStyles.t26W700.copyWith(color: Colors.white, height: 1.6),
-    translationStyle: AppTextStyles.t16W500.copyWith(color: Colors.white38),
-    lineGap: 18,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 64.sp, vertical: 96.sp),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 5,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(24.sp),
-                  child: CachedNetworkImage(
-                    imageUrl: track.archive.cover,
-                    width: 300.sp,
-                    height: 300.sp,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 600,
-                    errorWidget: (_, _, _) => Container(
-                      width: 300.sp,
-                      height: 300.sp,
-                      color: tvTheme.focusColor.withValues(alpha: 0.2),
-                      child: Icon(Icons.music_note_rounded, size: 96.sp, color: tvTheme.focusColor),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 28.sp),
-                Text(
-                  track.title,
-                  style: AppTextStyles.t26W700.copyWith(color: Colors.white),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 10.sp),
-                Text(track.archive.upName, style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
-              ],
-            ),
-          ),
-          SizedBox(width: 48.sp),
-          Expanded(flex: 6, child: LyricView(controller: lyric, style: style)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Which part of the control layer the remote is steering.
-enum _BarZone { bar, seek }
-
-/// Transport row + progress bar, steered by an index rather than by focus
-/// traversal — the live player's control bar, in the music player's shape.
-///
-/// One [FocusNode] owns the keys and the highlighted item is drawn by
-/// `selected:`, so what the viewer sees highlighted is exactly what OK
-/// activates: no per-button focus ring to lose, and no d-pad hop that can land
-/// on a button next to the one the ring was on.
-class _ControlBar extends ConsumerStatefulWidget {
-  const _ControlBar({
-    required this.active,
-    required this.activateInSeekZone,
-    required this.onQueue,
-    required this.onInteraction,
-    required this.onPickLyric,
-    required this.onSwitchCore,
-  });
-
-  /// Whether the controls are on screen; becoming active takes the keyboard.
-  final bool active;
-
-  /// Consumed at activation: a seek-raised bar opens with the keyboard in the
-  /// seek zone, so the following arrows keep seeking instead of walking rows.
-  final bool activateInSeekZone;
-
-  final VoidCallback onQueue;
-
-  /// Every key the bar consumes re-arms the page's auto-hide countdown.
-  final VoidCallback onInteraction;
-
-  final VoidCallback onPickLyric;
-  final VoidCallback onSwitchCore;
-
-  @override
-  ConsumerState<_ControlBar> createState() => _ControlBarState();
-}
-
-class _ControlBarState extends ConsumerState<_ControlBar> {
-  final FocusNode _node = FocusNode(debugLabel: 'music/controls');
-
-  /// Play/pause sits in the middle of the row; the highlight opens there.
-  int _index = 2;
-  _BarZone _zone = _BarZone.bar;
-
-  static const int _itemCount = 13;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.active) _takeFocus();
-  }
-
-  @override
-  void didUpdateWidget(_ControlBar old) {
-    super.didUpdateWidget(old);
-    if (!old.active && widget.active) {
-      _zone = widget.activateInSeekZone ? _BarZone.seek : _BarZone.bar;
-      _takeFocus();
-    }
-  }
-
-  @override
-  void dispose() {
-    _node.dispose();
-    super.dispose();
-  }
-
-  void _takeFocus() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && widget.active && !_node.hasFocus) _node.requestFocus();
-    });
-  }
-
-  static bool _isConfirm(LogicalKeyboardKey key) =>
-      key == LogicalKeyboardKey.select ||
-      key == LogicalKeyboardKey.enter ||
-      key == LogicalKeyboardKey.space ||
-      key == LogicalKeyboardKey.controlLeft ||
-      key == LogicalKeyboardKey.controlRight ||
-      key == LogicalKeyboardKey.numpadEnter ||
-      key == LogicalKeyboardKey.gameButtonA;
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
-    if (!mounted) return KeyEventResult.ignored;
-
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
-    final key = event.logicalKey;
-    widget.onInteraction();
-
-    if (_isConfirm(key)) {
-      if (_zone == _BarZone.seek) {
-        setState(() => _zone = _BarZone.bar);
-        return KeyEventResult.handled;
-      }
-      _activateIndex(_index);
-      return KeyEventResult.handled;
-    }
-
-    switch (key) {
-      case LogicalKeyboardKey.arrowLeft:
-      case LogicalKeyboardKey.arrowRight:
-        final int delta = key == LogicalKeyboardKey.arrowLeft ? -1 : 1;
-        if (_zone == _BarZone.seek) {
-          controller.seekAccelerated(delta);
-        } else {
-          setState(() => _index = (_index + delta + _itemCount) % _itemCount);
-        }
-        return KeyEventResult.handled;
-      case LogicalKeyboardKey.arrowUp:
-        // In the buttons row this is the page's key: it opens the queue.
-        if (_zone == _BarZone.seek) {
-          setState(() => _zone = _BarZone.bar);
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      case LogicalKeyboardKey.arrowDown:
-        if (_zone == _BarZone.bar) {
-          setState(() => _zone = _BarZone.seek);
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      default:
-        return KeyEventResult.ignored;
-    }
-  }
-
-  /// Runs the action behind [index]. Taps report the button they hit, the
-  /// remote reports the highlighted one, so both paths share one list.
-  void _activateIndex(int index) {
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
-    switch (index) {
-      case 0:
-        unawaited(controller.seekAccelerated(-1));
-      case 1:
-        unawaited(controller.previous());
-      case 2:
-        unawaited(controller.togglePlayPause());
-      case 3:
-        unawaited(controller.next());
-      case 4:
-        unawaited(controller.seekAccelerated(1));
-      case 5:
-        unawaited(controller.cycleMode());
-      case 6:
-        unawaited(controller.toggleAudioOnly());
-      case 7:
-        widget.onQueue();
-      case 8:
-        widget.onPickLyric();
-      case 9:
-        widget.onSwitchCore();
-      case 10:
-      case 11:
-        final libraryController = ref.read(musicLibraryControllerProvider.notifier);
-        final current = ref.read(musicPlayerControllerProvider).current;
-        if (current == null) return;
-        if (index == 10) {
-          libraryController.toggleFavorite(current.archive);
-        } else if (current.archive.upMid > 0) {
-          libraryController.toggleFollowUp(
-            MusicUp(mid: current.archive.upMid, name: current.archive.upName, face: current.archive.upFace),
-          );
-        }
-      case 12:
-        final heartTrack = ref.read(musicPlayerControllerProvider).current;
-        if (heartTrack != null) {
-          ref.read(musicLibraryControllerProvider.notifier).toggleLikeSong(heartTrack);
-        }
-    }
-  }
-
-  /// A tap highlights the button it hit and runs it, so the mouse and the
-  /// remote can never disagree about what is selected.
-  void _activateAt(int index) {
-    if (mounted) {
-      setState(() {
-        _zone = _BarZone.bar;
-        _index = index;
-      });
-    }
-    widget.onInteraction();
-    _activateIndex(index);
-  }
-
-  static String _timeLabel(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final h = d.inHours;
-    return h > 0 ? '$h:$m:$s' : '$m:$s';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(musicPlayerControllerProvider);
-    final library = ref.watch(musicLibraryControllerProvider);
-    final tvTheme = context.tvTheme;
-    final bool seekZone = _zone == _BarZone.seek;
-    final track = state.current;
-    final bool followingAlbum = track != null && library.isFavorite(track.archive.bvid);
-    final bool followingUp = track != null && track.archive.upMid > 0 && library.isFollowingUp(track.archive.upMid);
-    // The song-level heart: what the 喜欢 list on the music page collects.
-    final bool liked = track != null && library.isSongLiked(track.id);
-
-    return Focus(
-      focusNode: _node,
-      onKeyEvent: _onKey,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 18.sp),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(24.sp),
-          border: Border.all(
-            color: tvTheme.focusColor.withValues(alpha: seekZone ? 0.9 : 0.35),
-            width: seekZone ? 2.sp : 1.sp,
-          ),
-        ),
-        child: StreamBuilder<PlaybackState>(
-          // One stream drives the whole bar: the progress row and the play/pause
-          // glyph, which otherwise went stale until the next controller state
-          // change.
-          stream: ref.read(musicPlayerControllerProvider.notifier).playbackStream,
-          builder: (context, snapshot) {
-            final playback = snapshot.data;
-            final position = playback?.position ?? Duration.zero;
-            final duration = playback?.duration ?? Duration.zero;
-            final handle = ref.read(musicPlayerControllerProvider.notifier).handle;
-            final isPlaying = playback?.isPlaying ?? (handle?.isPlaying ?? false);
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(
-                        _timeLabel(position),
-                        style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
-                      ),
-                    ),
-                    SizedBox(width: 16.sp),
-                    Expanded(
-                      child: _ProgressBar(
-                        position: position,
-                        duration: duration,
-                        focused: seekZone,
-                        onInteraction: widget.onInteraction,
-                      ),
-                    ),
-                    SizedBox(width: 16.sp),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(
-                        _timeLabel(duration),
-                        style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.sp),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 12.sp,
-                  runSpacing: 10.sp,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    _excluded(
-                      TvIconButton(
-                        icon: const Icon(Icons.replay_10_rounded),
-                        label: i18n('music_seek_back'),
-                        size: TvIconButtonSize.large,
-                        isSecondary: true,
-                        selected: _index == 0,
-                        onTap: () => _activateAt(0),
-                      ),
-                    ),
-                    _excluded(
-                      TvIconButton(
-                        icon: const Icon(Icons.skip_previous_rounded),
-                        label: i18n('music_prev'),
-                        size: TvIconButtonSize.large,
-                        isSecondary: true,
-                        selected: _index == 1,
-                        onTap: () => _activateAt(1),
-                      ),
-                    ),
-                    SizedBox(width: 20.sp),
-                    _excluded(
-                      TvIconButton(
-                        icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                        label: i18n('music_play'),
-                        size: TvIconButtonSize.large,
-                        selected: _index == 2,
-                        onTap: () => _activateAt(2),
-                      ),
-                    ),
-                    _excluded(
-                      TvIconButton(
-                        icon: const Icon(Icons.skip_next_rounded),
-                        label: i18n('music_next'),
-                        size: TvIconButtonSize.large,
-                        isSecondary: true,
-                        selected: _index == 3,
-                        onTap: () => _activateAt(3),
-                      ),
-                    ),
-                    _excluded(
-                      TvIconButton(
-                        icon: const Icon(Icons.forward_10_rounded),
-                        label: i18n('music_seek_forward'),
-                        size: TvIconButtonSize.large,
-                        isSecondary: true,
-                        selected: _index == 4,
-                        onTap: () => _activateAt(4),
-                      ),
-                    ),
-                    _excluded(
-                      TvButton(
-                        title: i18n(state.mode.i18nKey),
-                        icon: Icon(Icons.repeat_rounded, size: 22.sp),
-                        size: TvButtonSize.mini,
-                        isSecondary: true,
-                        selected: _index == 5,
-                        onTap: () => _activateAt(5),
-                      ),
-                    ),
-                    _excluded(
-                      TvButton(
-                        title: i18n(state.audioOnly ? 'music_video_on' : 'music_audio_only'),
-                        icon: Icon(state.audioOnly ? Icons.videocam_outlined : Icons.headphones_rounded, size: 22.sp),
-                        size: TvButtonSize.mini,
-                        isSecondary: true,
-                        selected: _index == 6,
-                        onTap: () => _activateAt(6),
-                      ),
-                    ),
-                    _excluded(
-                      TvButton(
-                        title: i18n('music_tracks_title'),
-                        icon: Icon(Icons.queue_music_rounded, size: 22.sp),
-                        size: TvButtonSize.mini,
-                        isSecondary: true,
-                        selected: _index == 7,
-                        onTap: () => _activateAt(7),
-                      ),
-                    ),
-                    _excluded(
-                      TvButton(
-                        title: i18n('music_lyric_pick'),
-                        icon: Icon(Icons.lyrics_outlined, size: 22.sp),
-                        size: TvButtonSize.mini,
-                        isSecondary: true,
-                        selected: _index == 8,
-                        onTap: () => _activateAt(8),
-                      ),
-                    ),
-                    _excluded(
-                      TvButton(
-                        title: i18n('music_core_title'),
-                        icon: Icon(Icons.tune_rounded, size: 22.sp),
-                        size: TvButtonSize.mini,
-                        isSecondary: true,
-                        selected: _index == 9,
-                        onTap: () => _activateAt(9),
-                      ),
-                    ),
-                    _excluded(
-                      TvButton(
-                        title: i18n(followingAlbum ? 'music_unfollow_album' : 'music_follow_album'),
-                        icon: Icon(
-                          followingAlbum ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          size: 22.sp,
-                        ),
-                        size: TvButtonSize.mini,
-                        isSecondary: !followingAlbum,
-                        selected: _index == 10,
-                        onTap: () => _activateAt(10),
-                      ),
-                    ),
-                    if (track != null && track.archive.upMid > 0)
-                      _excluded(
-                        TvButton(
-                          title: i18n(followingUp ? 'music_unfollow_up' : 'music_follow_up'),
-                          icon: Icon(
-                            followingUp ? Icons.person_remove_outlined : Icons.person_add_alt_outlined,
-                            size: 22.sp,
-                          ),
-                          size: TvButtonSize.mini,
-                          isSecondary: !followingUp,
-                          selected: _index == 11,
-                          onTap: () => _activateAt(11),
-                        ),
-                      ),
-                    if (track != null)
-                      _excluded(
-                        TvButton(
-                          title: i18n('music_likes'),
-                          icon: Icon(
-                            liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            size: 22.sp,
-                            color: liked ? const Color(0xFFEF5350) : null,
-                          ),
-                          size: TvButtonSize.mini,
-                          isSecondary: !liked,
-                          selected: _index == 12,
-                          onTap: () => _activateAt(12),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  /// The buttons draw the highlight but never take focus: one node owns the
-  /// keys, and a d-pad hop can no longer land on a button next to the one the
-  /// highlight was on. They stay tappable for a mouse.
-  Widget _excluded(Widget child) => ExcludeFocus(child: child);
-}
-
-/// The seek bar. It has no FocusNode of its own — the bar's index steers it, so
-/// the highlight it draws is the zone the remote is in.
-class _ProgressBar extends StatelessWidget {
-  const _ProgressBar({
-    required this.position,
-    required this.duration,
-    required this.focused,
-    required this.onInteraction,
-  });
-
-  final Duration position;
-  final Duration duration;
-  final bool focused;
-  final VoidCallback onInteraction;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-    final double progress = duration > Duration.zero
-        ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
-        : 0.0;
-
-    return GestureDetector(
-      onTap: onInteraction,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        height: focused ? 22.sp : 16.sp,
-        margin: EdgeInsets.symmetric(vertical: focused ? 6.sp : 10.sp),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(11.sp),
-          border: Border.all(color: focused ? accent : Colors.white24, width: focused ? 2.sp : 1.sp),
-        ),
-        child: Stack(
-          children: [
-            FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress,
-              child: Container(
-                margin: EdgeInsets.all(3.sp),
-                decoration: BoxDecoration(
-                  color: accent,
-                  borderRadius: BorderRadius.circular(8.sp),
-                ),
-              ),
-            ),
-            if (focused)
-              Align(
-                alignment: Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ??
-                    Alignment.centerLeft,
-                child: Container(
-                  width: 4.sp,
-                  color: Colors.white,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// The track list over the player. OK jumps; Back closes (handled by the page
-/// root, which sees the event bubble up).
-class _QueuePanel extends ConsumerWidget {
-  const _QueuePanel({required this.onClose});
-
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(musicPlayerControllerProvider);
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(24.sp),
-        border: Border.all(color: accent.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(20.sp),
-            child: Row(
-              children: [
-                Icon(Icons.queue_music_rounded, size: 28.sp, color: accent),
-                SizedBox(width: 10.sp),
-                Expanded(
-                  child: Text(
-                    '${i18n('music_tab_queue')}（${state.queue.length}）',
-                    style: AppTextStyles.t20W600.copyWith(color: Colors.white),
-                  ),
-                ),
-                TvIconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  size: TvIconButtonSize.small,
-                  isSecondary: true,
-                  onTap: onClose,
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.only(left: 16.sp, right: 16.sp, bottom: 16.sp),
-              itemCount: state.queue.length,
-              itemBuilder: (context, index) {
-                final track = state.queue[index];
-                final isCurrent = index == state.index;
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 8.sp),
-                  child: TvFocusable(
-                    onTap: () => controller.jumpTo(index),
-                    builder: (context, focused, child) {
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 120),
-                        height: 64.sp,
-                        padding: EdgeInsets.symmetric(horizontal: 14.sp),
-                        decoration: BoxDecoration(
-                          color: isCurrent ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(12.sp),
-                          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 32.sp,
-                              child: isCurrent
-                                  ? Icon(Icons.graphic_eq_rounded, size: 24.sp, color: accent)
-                                  : Text(
-                                      '${index + 1}',
-                                      style: AppTextStyles.t16W500.copyWith(color: Colors.white54),
-                                    ),
-                            ),
-                            SizedBox(width: 10.sp),
-                            Expanded(
-                              child: Text(
-                                track.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t16W500.copyWith(
-                                  color: isCurrent ? accent : Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The lyric picker: every candidate the chain found, one row each with the
-/// source and the song name it claims. The row in force (the viewer's last
-/// manual pick) is marked; picking a row remembers it for every later play of
-/// this track.
-class _LyricPickerDialog extends StatelessWidget {
-  const _LyricPickerDialog({required this.track});
-
-  final MusicTrack track;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.tvTheme;
-    final service = MusicLyricService.instance;
-
-    return TvDialog(
-      title: i18n('music_lyric_pick'),
-      child: SizedBox(
-        width: 720.sp,
-        height: 560.sp,
-        child: FutureBuilder<List<MusicLyricCandidate>>(
-          future: service.fetchLyricCandidates(
-            track.title,
-            hint: track.archive.title,
-            aid: track.archive.aid,
-            bvid: track.archive.bvid,
-            cid: track.part.cid,
-          ),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  SizedBox(height: 16.sp),
-                  Text(i18n('ui_loading'), style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor)),
-                ],
-              );
-            }
-
-            final candidates = snapshot.data ?? const <MusicLyricCandidate>[];
-            if (candidates.isEmpty) {
-              return Center(
-                child: Text(i18n('music_lyric_none'), style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor)),
-              );
-            }
-
-            final String current = service.manualLyric(track.title) ?? '';
-            final int selected = candidates.indexWhere((c) => c.lyric.trim() == current.trim());
-
-            return ListView.builder(
-              itemCount: candidates.length,
-              itemBuilder: (context, index) {
-                final candidate = candidates[index];
-                final String source = candidate.source == 'manual'
-                    ? i18n('music_lyric_manual_source')
-                    : candidate.source;
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 10.sp),
-                  child: TvDialogOptionTile(
-                    title: candidate.title,
-                    subtitle: '$source${candidate.artist.isEmpty ? '' : ' · ${candidate.artist}'}',
-                    selected: index == selected,
-                    // The list builds late (network candidates): without an
-                    // explicit focus target the dialog's guard ran before any
-                    // row existed and the remote landed nowhere.
-                    autofocus: index == (selected >= 0 ? selected : 0),
-                    onTap: () => Navigator.of(context).pop(candidate),
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ),
-    );
-  }
-}

@@ -665,12 +665,24 @@ class MusicPlayerController extends _$MusicPlayerController {
     _playingLocalFile = false;
     String openUrl = urls.videoUrl;
     var openProtocol = SourceProtocol.https;
+    // Whether the primary source is the video-only m4s — only then does the
+    // DASH audio ride along as mpv's external audio-file track.
+    var videoPrimary = true;
     if (state.audioOnly) {
       final File? cached = await MusicAudioCache.instance.cachedFile(track.id);
       if (cached != null) {
         openUrl = cached.path;
         openProtocol = SourceProtocol.file;
         _playingLocalFile = true;
+        videoPrimary = false;
+      } else if (urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
+        // No cache yet: the AUDIO m4s becomes the primary source, like the
+        // pre-cache builds. Opening the video m4s and hanging the audio on
+        // mpv's audio-file input stalled every first play of a track: mpv
+        // waits for the external track's demuxer to initialize, and a slow
+        // CDN open blocked playback start indefinitely (stuck at open).
+        openUrl = urls.audioUrl!;
+        videoPrimary = false;
       }
     }
 
@@ -685,14 +697,16 @@ class MusicPlayerController extends _$MusicPlayerController {
     // mpv's audio-file input. Both CDN requests need the same headers, so they
     // are appended to the player-wide http-header-fields as well.
     // 纯音乐 plays the cached file with no attachment (there is nothing to
-    // attach to — the file is the finished audio); everything else rides the
-    // DASH pair with the audio attached.
+    // attach to — the file is the finished audio), and a no-cache audio-only
+    // open takes the audio m4s itself as primary — a single stream, no
+    // external track. Only a video-primary open hangs the audio on mpv's
+    // audio-file input.
     //
     // Runs on every open, fresh or reused: a reused player still holds the
     // previous track's attachment and headers, and both would bleed into this
     // one.
     final String attachedAudio =
-        !_playingLocalFile && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty
+        videoPrimary && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty
         ? urls.audioUrl!
         : '';
     final adapter = handle.adapter;

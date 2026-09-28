@@ -93,9 +93,13 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
     final archive = _detail ?? widget.archive;
-    final tracks = archive.tracks;
     final library = ref.watch(musicLibraryControllerProvider);
     final followingUp = archive.upMid > 0 && library.isFollowingUp(archive.upMid);
+    // 跳过分 P: excluded cids vanish from the queue and from this list; when
+    // everything is excluded the header's play button simply has nothing to
+    // start (bmsc pauses instead of cascade-skipping, and so do we).
+    final tracks = library.playableParts(archive);
+    final excludedCount = archive.tracks.length - tracks.length;
 
     return TvPageScaffold(
       title: i18n('music_archive_title'),
@@ -236,6 +240,29 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                           ).push(context)
                                       : null,
                                 ),
+                                TvButton(
+                                  title: i18n('music_skip_parts'),
+                                  icon: Icon(Icons.playlist_remove_rounded, size: 22.sp),
+                                  size: TvButtonSize.mini,
+                                  isSecondary: true,
+                                  onTap: archive.tracks.length > 1
+                                      ? () => _showExcludedPartsDialog(archive)
+                                      : null,
+                                ),
+                                TvButton(
+                                  title: i18n(
+                                    library.isFavorite(archive.bvid) ? 'music_unfollow_album' : 'music_follow_album',
+                                  ),
+                                  icon: Icon(
+                                    library.isFavorite(archive.bvid)
+                                        ? Icons.favorite_rounded
+                                        : Icons.favorite_border_rounded,
+                                    size: 22.sp,
+                                  ),
+                                  size: TvButtonSize.mini,
+                                  isSecondary: !library.isFavorite(archive.bvid),
+                                  onTap: () => ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(archive),
+                                ),
                                 if (archive.upMid > 0)
                                   TvButton(
                                     title: i18n(followingUp ? 'music_unfollow_up' : 'music_follow_up'),
@@ -279,7 +306,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                               child: Row(
                                 children: [
                                   Text(
-                                    '${i18n('music_tracks_title')}（${tracks.length}）',
+                                    '${i18n('music_tracks_title')}（${tracks.length}${excludedCount > 0 ? '，${i18n('music_parts_skipped')} $excludedCount' : ''}）',
                                     style: AppTextStyles.t20W600.copyWith(color: accent),
                                   ),
                                   const Spacer(),
@@ -320,6 +347,51 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  /// 跳过分 P: every part of the archive with a state toggle; the choice is
+  /// per-archive and survives restarts (the bmsc excluded-parts dialog).
+  Future<void> _showExcludedPartsDialog(MusicArchive archive) async {
+    final libraryController = ref.read(musicLibraryControllerProvider.notifier);
+    final tvTheme = context.tvTheme;
+    await TvDialogUtils.show<void>(
+      context: context,
+      builder: (_) => TvDialog(
+        title: i18n('music_skip_parts'),
+        cancelText: i18n('cancel'),
+        width: 640.sp,
+        child: SizedBox(
+          height: 480.sp,
+          child: StatefulBuilder(
+            builder: (context, setDialogState) {
+              final excluded = libraryController.excludedCids(archive.bvid).toSet();
+              return ListView.builder(
+                itemCount: archive.tracks.length,
+                itemBuilder: (context, index) {
+                  final track = archive.tracks[index];
+                  final skipped = excluded.contains(track.part.cid);
+                  return TvDialogOptionTile(
+                    title: '${index + 1}. ${track.title}',
+                    subtitle: i18n(skipped ? 'music_part_excluded' : 'music_part_included'),
+                    selected: false,
+                    showCheck: false,
+                    trailing: Icon(
+                      skipped ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                      size: 26.sp,
+                      color: skipped ? tvTheme.secondaryTextColor : tvTheme.focusColor,
+                    ),
+                    onTap: () {
+                      libraryController.toggleExcludedPart(archive.bvid, track.part.cid);
+                      setDialogState(() {});
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 }

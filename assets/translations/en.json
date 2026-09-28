@@ -1237,6 +1237,8 @@
   "music_prev": "Previous",
   "music_next": "Next",
   "music_play": "Play",
+  "music_pause": "Pause",
+  "music_quality": "Audio quality",
   "music_mode_sequence": "List Loop",
   "music_mode_loop_one": "Repeat One",
   "music_mode_random": "Shuffle",

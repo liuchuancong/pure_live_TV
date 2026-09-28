@@ -102,6 +102,14 @@ class BilibiliUgcApi {
     return UgcMyInfo.fromNavJson(data);
   }
 
+  /// The UP's signature line only (`x/space/wbi/acc/info` alone) — the
+  /// followers/relation round-trips of [getUserSpace] are not worth it for a
+  /// card caption.
+  Future<String> getUserSign(int mid) async {
+    final info = await _getWbi('https://api.bilibili.com/x/space/wbi/acc/info', query: {'mid': '$mid'});
+    return info?['sign']?.toString() ?? '';
+  }
+
   /// One user's space header (`x/space/wbi/acc/info`) plus the relation row.
   Future<UserSpaceInfo> getUserSpace(int mid) async {
     final info = await _getWbi('https://api.bilibili.com/x/space/wbi/acc/info', query: {'mid': '$mid'});

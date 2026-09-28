@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dpad/dpad.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,13 +90,28 @@ class _VideoCardState extends ConsumerState<VideoCard> {
     // TvRoomCard's focus language: the 24sp radius, a tinted filled
     // background and a 2sp accent edge while focused, with the info text
     // repainting in the on-focused colours — the same pairing the room grid
-    // uses, so the two card families read as one.
+    // uses, so the two card families read as one. The glow wraps the whole
+    // card (scale + all-around), also from TvRoomCard.
     final borderRadius = BorderRadius.circular(24.sp);
+    final List<DpadEffect> effects = [
+      DpadScaleEffect(
+        scale: 1.01,
+        pressedScale: 0.97,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+      ),
+      // Light palette: the 18px glow is a grey smear on white; crisp ring.
+      tvTheme.isLight
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
+          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
+    ];
 
-    return TvFocusable(
-      onTap: widget.onTap,
-      onLongPress: archive.aid > 0 ? () => setState(() => _actionsOpen = true) : null,
-      builder: (context, focused, _) {
+    return DpadFocusable(
+      effects: effects,
+      onSelect: widget.onTap,
+      onLongSelect: archive.aid > 0 ? () => setState(() => _actionsOpen = true) : null,
+      builder: (context, state, _) {
+        final focused = state.focused;
         final card = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

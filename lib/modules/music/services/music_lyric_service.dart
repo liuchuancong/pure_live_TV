@@ -67,6 +67,18 @@ class MusicLyricService {
     _cache[title] = lyric;
   }
 
+  /// Drops the viewer's manual choice for [title] — the automatic chain
+  /// answers again on the next load.
+  void clearManualLyric(String title) {
+    final query = cleanTitle(title);
+    if (query.isEmpty) return;
+    try {
+      if (!Hive.isBoxOpen(_manualBox)) Hive.openBox<String>(_manualBox);
+      Hive.box<String>(_manualBox).delete(query);
+    } catch (_) {}
+    _cache.remove(title);
+  }
+
   /// Reads one of the persistent lyric boxes. Hive is opened lazily: the music
   /// page may be the first thing that touches them.
   static String? _readBox(String name, String key) {

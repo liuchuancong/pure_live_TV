@@ -1232,6 +1232,8 @@
   "music_prev": "上一首",
   "music_next": "下一首",
   "music_play": "播放",
+  "music_pause": "暂停",
+  "music_quality": "音质",
   "music_mode_sequence": "列表循环",
   "music_mode_loop_one": "单曲循环",
   "music_mode_random": "随机播放",

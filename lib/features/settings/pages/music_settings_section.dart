@@ -14,6 +14,7 @@ class MusicSettingsSectionPage extends ConsumerWidget {
   static const String _playModeKey = 'musicDefaultPlayMode';
   static const String _audioOnlyKey = 'musicDefaultAudioOnly';
   static const String _resumeKey = 'musicResumeOnOpen';
+  static const String _bottomProgressKey = 'musicPlayerProgressBar';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,6 +28,7 @@ class MusicSettingsSectionPage extends ConsumerWidget {
     };
     final audioOnly = HivePrefUtil.getString(_audioOnlyKey) != 'false';
     final resumeOnOpen = HivePrefUtil.getString(_resumeKey) == 'true';
+    final bottomProgress = HivePrefUtil.getString(_bottomProgressKey) != 'false';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,6 +68,13 @@ class MusicSettingsSectionPage extends ConsumerWidget {
               icon: Remix.play_circle_line,
               value: resumeOnOpen,
               onChanged: (v) => HivePrefUtil.setString(_resumeKey, v ? 'true' : 'false'),
+            ),
+            TvSettingsSwitchTile(
+              title: i18n('music_bottom_progress'),
+              subtitle: i18n('music_bottom_progress_desc'),
+              icon: Icons.linear_scale_rounded,
+              value: bottomProgress,
+              onChanged: (v) => HivePrefUtil.setString(_bottomProgressKey, v ? 'true' : 'false'),
             ),
           ],
         ),

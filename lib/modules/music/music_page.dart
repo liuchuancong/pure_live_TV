@@ -3,6 +3,7 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -22,13 +23,58 @@ import 'package:pure_live/modules/music/services/daily_recommendation_service.da
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
+/// The UP's signature line for the artist cards, cached in Hive: one wbi
+/// request per UP, once ever — the caption is static.
+final musicUpSignProvider = FutureProvider.family<String, int>((ref, mid) async {
+  final cached = HivePrefUtil.getString('musicUpSign_$mid');
+  if (cached != null) return cached;
+  try {
+    final sign = await BilibiliUgcApi.instance.getUserSign(mid);
+    await HivePrefUtil.setString('musicUpSign_$mid', sign);
+    return sign;
+  } catch (_) {
+    return '';
+  }
+});
+
 /// Music mode sections. The section rail itself lives in the home sidebar —
 /// this file only builds section content, so the mode swaps the whole
 /// navigation instead of nesting its own.
 enum MusicSection { favorites, daily, recents, playlists, dynamics, history, ranking, search }
 
+/// The rail's four destinations, newBV's top-tab pattern: 搜索 and 歌单 on
+/// their own (a single-section group renders bare, no tab bar), then the
+/// discovery tabs (每日/动态/排行) and the library tabs (关注/最近/云端).
+/// The rail highlights the group; the content pane's tab bar picks the section.
+const List<List<MusicSection>> kMusicRailGroups = [
+  [MusicSection.search],
+  [MusicSection.playlists],
+  [MusicSection.daily, MusicSection.dynamics, MusicSection.ranking],
+  [MusicSection.favorites, MusicSection.recents, MusicSection.history],
+];
+
+/// Which rail group [section] belongs to.
+int musicRailIndexFor(MusicSection section) =>
+    kMusicRailGroups.indexWhere((group) => group.contains(section));
+
+/// The tab-bar label of one section (two-character forms, the rail's short keys).
+String _musicSectionTabLabel(MusicSection section) => switch (section) {
+  MusicSection.search => i18n('music_tab_search'),
+  MusicSection.daily => i18n('music_short_daily'),
+  MusicSection.dynamics => i18n('music_dynamics'),
+  MusicSection.ranking => i18n('music_short_ranking'),
+  MusicSection.favorites => i18n('music_favorites'),
+  MusicSection.recents => i18n('music_short_recents'),
+  MusicSection.playlists => i18n('music_short_playlists'),
+  MusicSection.history => i18n('music_short_history'),
+};
+
 /// Content of one music section. The section rail lives in the home sidebar;
 /// login is enforced by the home shell's BilibiliLoginGate, not here.
+///
+/// A multi-section group carries the newBV-style top tab bar: it names the
+/// group's sections and swaps the content below; single-section groups
+/// (搜索) render bare.
 class MusicSectionView extends ConsumerWidget {
   const MusicSectionView({super.key, required this.section});
 
@@ -36,7 +82,8 @@ class MusicSectionView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return switch (section) {
+    final group = kMusicRailGroups[musicRailIndexFor(section)];
+    final Widget content = switch (section) {
       MusicSection.favorites => const _FollowSection(key: ValueKey('music_favorites')),
       MusicSection.daily => const _DailySection(key: ValueKey('music_daily')),
       MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
@@ -46,6 +93,23 @@ class MusicSectionView extends ConsumerWidget {
       MusicSection.ranking => const _RankingSection(key: ValueKey('music_ranking')),
       MusicSection.search => const _SearchSection(key: ValueKey('music_search')),
     };
+
+    if (group.length == 1) return content;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(24.sp, 12.sp, 24.sp, 0),
+          child: TvTabBar(
+            tabs: [for (final s in group) TvTabItemData(title: _musicSectionTabLabel(s))],
+            currentIndex: group.indexOf(section),
+            showRefreshLine: false,
+            onTabChange: (index) => ref.read(musicSectionIndexProvider.notifier).change(group[index].index),
+          ),
+        ),
+        Expanded(child: content),
+      ],
+    );
   }
 }
 
@@ -434,7 +498,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                         crossAxisCount: 4,
                         mainAxisSpacing: 16.w,
                         crossAxisSpacing: 16.w,
-                        childAspectRatio: 1.05,
+                        childAspectRatio: 3.0,
                       ),
                       itemCount: library.followedUps.length,
                       itemBuilder: (context, index) {
@@ -509,7 +573,10 @@ Future<void> _confirmUnfollowUp(BuildContext context, WidgetRef ref, MusicUp up)
 }
 
 /// The followed-UP card in the area-card visual: square avatar, name beneath.
-class _AuthorCard extends StatelessWidget {
+/// The followed-UP cell, newBV's user-card shape: a horizontal row — circular
+/// avatar left, the name over the signature line right, no card chrome; the
+/// focus paints the whole row. The sign is fetched once and cached.
+class _AuthorCard extends ConsumerWidget {
   const _AuthorCard({required this.up, required this.onTap, required this.onLongPress});
 
   final MusicUp up;
@@ -517,9 +584,10 @@ class _AuthorCard extends StatelessWidget {
   final VoidCallback onLongPress;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+    final sign = ref.watch(musicUpSignProvider(up.mid));
 
     return TvFocusable(
       onTap: onTap,
@@ -528,40 +596,57 @@ class _AuthorCard extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
+          padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 12.sp),
           decoration: BoxDecoration(
-            color: tvTheme.backgroundColor,
-            borderRadius: BorderRadius.circular(18.sp),
+            color: focused ? tvTheme.focusedCardColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(16.sp),
             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
           ),
-          child: Padding(
-            padding: EdgeInsets.all(9.sp),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AspectRatio(
-                  aspectRatio: 1,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    clipBehavior: Clip.antiAlias,
-                    child: up.face.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: up.face,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 320,
-                            errorWidget: (_, _, _) => _fallback(accent),
-                          )
-                        : _fallback(accent),
-                  ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: up.face.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: up.face,
+                        width: 84.sp,
+                        height: 84.sp,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 240,
+                        errorWidget: (_, _, _) => _fallback(accent),
+                      )
+                    : _fallback(accent),
+              ),
+              SizedBox(width: 14.sp),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      up.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t18W600.copyWith(
+                        color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+                      ),
+                    ),
+                    if (sign.asData?.value.isNotEmpty == true) ...[
+                      SizedBox(height: 4.sp),
+                      Text(
+                        sign.asData!.value,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.t14W500.copyWith(
+                          color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                SizedBox(height: 8.sp),
-                Text(
-                  up.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -569,12 +654,13 @@ class _AuthorCard extends StatelessWidget {
   }
 
   Widget _fallback(Color accent) => Container(
+    width: 84.sp,
+    height: 84.sp,
     color: accent.withValues(alpha: 0.15),
-    child: Icon(Icons.person_outline_rounded, size: 48.sp, color: accent),
+    child: Icon(Icons.person_outline_rounded, size: 44.sp, color: accent),
   );
 }
 
-/// The leaderboard grid (discovery keeps the cover-grid presentation).
 class _RankingSection extends ConsumerStatefulWidget {
   const _RankingSection({super.key});
 

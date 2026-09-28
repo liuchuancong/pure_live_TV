@@ -94,9 +94,9 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
               child: Center(
                 child: _loading
                     ? SizedBox(
-                        width: 30.sp,
-                        height: 30.sp,
-                        child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                        width: 56.sp,
+                        height: 56.sp,
+                        child: CircularProgressIndicator(strokeWidth: 5.sp, color: accent),
                       )
                     : Text(i18n('all_results_loaded'), style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
               ),
@@ -126,7 +126,8 @@ class _HistoryRow extends StatelessWidget {
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         margin: EdgeInsets.only(bottom: 10.sp),
-        height: 118.sp,
+        // Content-sized: a fixed 118.sp overflowed once the three text lines
+        // scaled past it at the largest font setting.
         padding: EdgeInsets.all(10.sp),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
