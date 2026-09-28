@@ -39,18 +39,10 @@ class VideoSectionView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     _ensurePgcResolver();
-    // newBV's home grid: a fixed 4 columns with its own spacing — the card
-    // carries its own aspect (the 1.6:1 cover plus the info block), so the
-    // shared room-card aspect no longer applies here.
-    const gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 4,
-      mainAxisSpacing: 12.0,
-      crossAxisSpacing: 24.0,
-    );
 
     return switch (section) {
       VideoSection.home => const _VideoHomePage(key: ValueKey('video_home')),
-      VideoSection.ranking => _RankingTab(key: const ValueKey('video_ranking'), gridDelegate: gridDelegate),
+      VideoSection.ranking => const _RankingTab(key: ValueKey('video_ranking')),
       VideoSection.region => const VideoRegionPage(key: ValueKey('video_region')),
       VideoSection.pgc => const VideoPgcPage(key: ValueKey('video_pgc')),
       VideoSection.search => const VideoSearchSection(key: ValueKey('video_search')),
@@ -59,13 +51,15 @@ class VideoSectionView extends ConsumerWidget {
   }
 }
 
-/// newBV's home grid density: a fixed 4 columns with its own spacing — the
-/// card carries its own aspect (the 1.6:1 cover plus the info block), so the
-/// shared room-card aspect no longer applies here.
+/// newBV's home grid density: a fixed 4 columns with its own spacing and a
+/// cell aspect sized to the card — the 1.6:1 cover plus a two-line title and
+/// the UP line come to about 1.15 total, and a little slack keeps a one-line
+/// title from overflowing the cell.
 const defaultVideoGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
   crossAxisCount: 4,
   mainAxisSpacing: 12.0,
   crossAxisSpacing: 24.0,
+  childAspectRatio: 1.15,
 );
 
 /// Video home, newBV's HomeContent: a top tab bar over 动态/推荐/热门 — the
@@ -175,10 +169,7 @@ class _PopularTab extends _PagedGridTab {
 }
 
 class _RankingTab extends _PagedGridTab {
-  const _RankingTab({super.key, required this.gridDelegate});
-
-  @override
-  final SliverGridDelegateWithFixedCrossAxisCount gridDelegate;
+  const _RankingTab({super.key});
 
   @override
   String get tabKey => 'ranking';

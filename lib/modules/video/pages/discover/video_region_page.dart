@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+
 
 /// The UGC region browser, newBV's 分区: one tab per region, each showing that
 /// region's ranking feed (`ranking/v2?rid=`) — the guest-readable endpoint
@@ -81,7 +82,6 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeState = ref.watch(themeSettingsControllerProvider);
     final rid = _regions[_selected].$1;
     final archives = _cache[rid];
 
@@ -108,13 +108,9 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
                       horizontalEdge: DpadEdgeBehavior.leave,
                       child: GridView.builder(
                         padding: EdgeInsets.all(24.sp),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: themeState.denseRoomLayout,
-                          mainAxisSpacing: themeState.mainAxisSpacing.w,
-                          crossAxisSpacing: themeState.crossAxisSpacing.w,
-                          childAspectRatio:
-                              ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout) + 0.14,
-                        ),
+                        // newBV's density, sized for VideoCard (cover +
+                        // two-line title + UP line) — the shared delegate.
+                        gridDelegate: defaultVideoGridDelegate,
                         itemCount: archives?.length ?? 0,
                         itemBuilder: (context, index) {
                           final archive = archives![index];
