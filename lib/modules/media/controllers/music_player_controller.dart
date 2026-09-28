@@ -9,6 +9,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 
@@ -459,6 +460,15 @@ class MusicPlayerController extends _$MusicPlayerController {
       await handle.setRate(state.speed);
     }
     state = state.copyWith(resolving: false, quality: urls.quality, qualityOptions: urls.videoOptions);
+
+    // Cloud history heartbeat per track start (the bmsc behaviour): the
+    // bilibili history page then shows what was listened to. Silent when
+    // logged out or the report fails.
+    if (track.archive.aid > 0) {
+      BilibiliUgcApi.instance
+          .reportHistory(aid: track.archive.aid, cid: track.part.cid, progress: 0, bvid: track.archive.bvid)
+          .catchError((Object _) {});
+    }
   }
 
   void _onAdapterEvent(PlayerAdapterEvent event) {
