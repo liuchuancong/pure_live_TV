@@ -2785,5 +2785,7 @@
   "video_search_type_live": "直播",
   "video_search_live_empty": "没有找到直播间",
   "video_search_live_badge": "直播",
-  "video_search_live_online": "人观看"
+  "video_search_live_online": "人观看",
+  "video_order_newest": "最新发布",
+  "video_order_most_played": "最多播放"
 }

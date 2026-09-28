@@ -33,6 +33,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
   int _page = 0;
   String? _error;
   bool _followBusy = false;
+  String _order = 'pubdate';
 
   @override
   void initState() {
@@ -73,7 +74,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
     if (_loadingMore || !_hasMore) return;
     setState(() => _loadingMore = true);
     try {
-      final uploads = await BilibiliUgcApi.instance.getUserUploads(widget.mid, page: _page + 1);
+      final uploads = await BilibiliUgcApi.instance.getUserUploads(widget.mid, page: _page + 1, order: _order);
       if (!mounted) return;
       setState(() {
         _uploads.addAll(uploads);
@@ -132,9 +133,32 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: 24.sp),
-                          child: Text(
-                            '${i18n('video_uploads_title')}（${_info!.videoCount}）',
-                            style: AppTextStyles.t20W600.copyWith(color: accent),
+                          child: Row(
+                            children: [
+                              Text(
+                                '${i18n('video_uploads_title')}（${_info!.videoCount}）',
+                                style: AppTextStyles.t20W600.copyWith(color: accent),
+                              ),
+                              const Spacer(),
+                              TvButton(
+                                title: i18n(_order == 'pubdate' ? 'video_order_newest' : 'video_order_most_played'),
+                                icon: Icon(
+                                  _order == 'pubdate' ? Icons.schedule_rounded : Icons.local_fire_department_outlined,
+                                  size: 22.sp,
+                                ),
+                                size: TvButtonSize.mini,
+                                isSecondary: true,
+                                onTap: () {
+                                  setState(() {
+                                    _order = _order == 'pubdate' ? 'click' : 'pubdate';
+                                    _uploads.clear();
+                                    _page = 0;
+                                    _hasMore = true;
+                                  });
+                                  _loadMore();
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ),
