@@ -326,13 +326,35 @@ class MusicPlayerController extends _$MusicPlayerController {
     await seekBy(direction * _accelStep);
   }
 
-  /// Toggles the picture off (music listening) and back on. mpv drops the
-  /// video track in place, so no re-open is needed; the player page paints the
-  /// cover over the idle surface.
+  /// Toggles between the lyric view and the video view without leaving the
+  /// player.
+  ///
+  /// - video → audio: mpv drops the video track in place, the sound keeps
+  ///   playing, no re-open.
+  /// - audio → video: if the open source is the audio-only stream there *is*
+  ///   no video track to restore, so the cached DASH pair is re-opened and
+  ///   playback resumes at the current position — the dynamic switch the
+  ///   music player's 歌词/视频 toggle rides on.
   Future<void> toggleAudioOnly() async {
     final audioOnly = !state.audioOnly;
     state = state.copyWith(audioOnly: audioOnly);
-    await _handle?.setAudioOnly(audioOnly);
+    final handle = _handle;
+    if (audioOnly) {
+      await handle?.setAudioOnly(true);
+      return;
+    }
+    final urls = _currentUrls;
+    final track = state.current;
+    final bvid = _currentBvid;
+    if (urls != null && urls.isDash && urls.audioUrl != null && track != null && bvid != null) {
+      final position = handle?.position ?? Duration.zero;
+      await _openUrls(track, urls, bvid);
+      if (position > Duration.zero) {
+        await _handle?.seek(position);
+      }
+    } else {
+      await handle?.setAudioOnly(false);
+    }
   }
 
   Future<void> stop() async {
