@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:pure_live/platforms/bilibili/bilibili_site.dart';
 import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/shared/utils/string_similarity.dart';
 
 /// Lyrics for music mode, ported from the bilibilimusic reference project's
 /// chain plus the netease fallback this app already had:
@@ -12,6 +13,12 @@ import 'package:pure_live/shared/common/http_client.dart';
 ///    app prefers, because it is the uploader's own BGM metadata;
 /// 2. third-party LRC APIs (lrc.cx, rangotec — the reference's `lyricApiList`);
 /// 3. netease search + lyric (this app's original fallback).
+///
+/// **Every candidate is checked against the track before its lyric is used.** The
+/// APIs answer with their best fuzzy guess, and a compilation's part name
+/// (「002. 可能」) or an uploader's background music gets a *different* song back —
+/// a wrong lyric is worse than none, so an unmatched candidate is dropped and the
+/// page shows 暂无歌词 instead.
 ///
 /// All results are cached per title for the session — misses too, so a
 /// lyric-less track does not refetch every open.
@@ -28,8 +35,9 @@ class MusicLyricService {
   /// The third-party LRC endpoints, in preference order (reference:
   /// settings_service.dart `lyricApiList`). `{title}` / `{artist}` are replaced.
   ///
-  /// lrc.cx serves plain LRC text from `/lyrics` (`/lrc` — what this list used
-  /// to ask for — answers 404); rangotec wraps the same text in a JSON envelope.
+  /// lrc.cx serves plain LRC text from `/lyrics` (`/lrc` — what this list used to
+  /// ask for — answers 404); rangotec wraps the same text in a JSON envelope that
+  /// carries the candidate's own title.
   static const List<({String url, bool json})> _lrcApis = [
     (url: 'https://api.lrc.cx/lyrics?title={title}&artist={artist}', json: false),
     (url: 'https://tools.rangotec.com/api/anon/lrc?title={title}&artist={artist}', json: true),
@@ -54,12 +62,20 @@ class MusicLyricService {
     final key = title;
     if (_cache.containsKey(key)) return _cache[key];
 
+    // The query is the track name alone: a compilation part is named 「002. 可能」
+    // and every source below would otherwise search for that literal string.
+    final query = cleanTitle(title);
+    if (query.isEmpty) {
+      _cache[key] = null;
+      return null;
+    }
+
     String? lyric;
     try {
-      lyric = await _fetchBgmLyric(aid: aid, bvid: bvid, cid: cid);
+      lyric = await _fetchBgmLyric(query, aid: aid, bvid: bvid, cid: cid);
     } catch (_) {}
-    lyric ??= await _fetchLrcApiLyric(title, hint);
-    lyric ??= await _fetchNeteaseLyric(title, hint);
+    lyric ??= await _fetchLrcApiLyric(query, hint);
+    lyric ??= await _fetchNeteaseLyric(query, hint);
     _cache[key] = lyric;
     return lyric;
   }
@@ -99,8 +115,25 @@ class MusicLyricService {
     }
   }
 
+  static String? _firstString(Map data, List<String> keys) {
+    for (final key in keys) {
+      final value = data[key]?.toString().trim() ?? '';
+      if (value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
   /// The bilibili BGM chain: the archive's own background-music metadata.
-  Future<String?> _fetchBgmLyric({required int aid, required String bvid, required int cid}) async {
+  ///
+  /// Checked like the others — a compilation's BGM is whatever the uploader laid
+  /// under the video, not the track that plays, so a BGM whose own title
+  /// disagrees with the part is not this part's lyric.
+  Future<String?> _fetchBgmLyric(
+    String query, {
+    required int aid,
+    required String bvid,
+    required int cid,
+  }) async {
     if (cid <= 0) return null;
     final header = await _site.getHeader();
     final signed = await _site.getWbiSign('https://api.bilibili.com/x/player/wbi/v2?aid=$aid&bvid=$bvid&cid=$cid');
@@ -112,7 +145,12 @@ class MusicLyricService {
     final player = _decode(playerBody);
     final playerData = player is Map ? player['data'] : null;
     final bgm = playerData is Map ? playerData['bgm_info'] : null;
-    final musicId = bgm is Map ? bgm['music_id']?.toString() ?? '' : '';
+    if (bgm is! Map) return null;
+
+    final bgmTitle = _firstString(bgm, const ['music_title', 'title', 'song_title']);
+    if (bgmTitle != null && !plausible(query, bgmTitle)) return null;
+
+    final musicId = bgm['music_id']?.toString() ?? '';
     if (musicId.isEmpty) return null;
 
     final detailBody = await _probe(
@@ -126,48 +164,57 @@ class MusicLyricService {
     final detail = _decode(detailBody);
     final detailData = detail is Map ? detail['data'] : null;
     final lyric = detailData is Map ? detailData['mv_lyric']?.toString() ?? '' : '';
-    return _normalize(lyric);
+    return verified(query, _normalize(lyric));
   }
 
   /// The third-party LRC list: first endpoint that answers with something that
-  /// looks like timed lyrics wins.
-  Future<String?> _fetchLrcApiLyric(String title, String hint) async {
-    final cleaned = cleanTitle(title);
+  /// looks like timed lyrics for *this* track wins.
+  Future<String?> _fetchLrcApiLyric(String query, String hint) async {
     for (final api in _lrcApis) {
       final url = api.url
-          .replaceFirst('{title}', Uri.encodeQueryComponent(cleaned))
+          .replaceFirst('{title}', Uri.encodeQueryComponent(query))
           .replaceFirst('{artist}', Uri.encodeQueryComponent(hint));
       final body = await _probe(url, header: _headers);
       if (body == null) continue;
-      final text = api.json ? _envelopeLyric(body) : body;
-      if (text == null) continue;
-      final lyric = _normalize(text);
+      final text = api.json ? _envelopeLyric(body, query) : body;
+      final lyric = verified(query, _normalize(text ?? ''));
       if (lyric != null) return lyric;
     }
     return null;
   }
 
   /// Pulls the LRC out of a JSON envelope: rangotec answers
-  /// `{"code":200,"data":[{"lrc":"…"}]}`, lrc.cx's `/jsonapi` a plain object.
-  static String? _envelopeLyric(String body) {
+  /// `{"code":200,"data":[{"title":"…","lrc":"…"}]}`. The candidate's own title has
+  /// to line up with the query — the list is a search result, not an answer.
+  static String? _envelopeLyric(String body, String query) {
     final decoded = _decode(body);
-    if (decoded is Map) {
-      final data = decoded['data'];
-      if (data is List && data.isNotEmpty && data.first is Map) {
-        final lrc = (data.first as Map)['lrc'];
-        if (lrc != null) return lrc.toString();
+    if (decoded is! Map) return null;
+
+    final data = decoded['data'];
+    if (data is List) {
+      for (final entry in data) {
+        if (entry is! Map) continue;
+        final lrc = entry['lrc']?.toString() ?? '';
+        if (lrc.isEmpty) continue;
+        final title = entry['title']?.toString() ?? '';
+        if (title.isEmpty || plausible(query, title)) return lrc;
       }
-      if (data is Map && data['lrc'] != null) return data['lrc'].toString();
-      for (final String key in const ['lrc', 'lyric']) {
-        if (decoded[key] != null) return decoded[key].toString();
-      }
+      return null;
+    }
+    if (data is Map) {
+      final lrc = data['lrc']?.toString() ?? '';
+      if (lrc.isNotEmpty) return lrc;
+    }
+    for (final key in const ['lrc', 'lyric']) {
+      final lrc = decoded[key]?.toString() ?? '';
+      if (lrc.isNotEmpty) return lrc;
     }
     return null;
   }
 
   /// The netease chain this app shipped first.
-  Future<String?> _fetchNeteaseLyric(String title, String hint) async {
-    final songId = await _searchSongId(title, hint);
+  Future<String?> _fetchNeteaseLyric(String query, String hint) async {
+    final songId = await _searchSongId(query, hint);
     if (songId == null) return null;
     final body = await _probe(
       _withQuery('https://music.163.com/api/song/lyric', {'id': songId, 'lv': '1', 'kv': '1', 'tv': '-1'}),
@@ -177,32 +224,65 @@ class MusicLyricService {
     final result = _decode(body);
     final lrc = result is Map ? result['lrc'] : null;
     final lyric = lrc is Map ? lrc['lyric']?.toString() ?? '' : '';
-    return _normalize(lyric);
+    return verified(query, _normalize(lyric));
   }
 
-  Future<int?> _searchSongId(String title, String hint) async {
-    final queries = [title, if (hint.isNotEmpty && hint != title) '$title $hint'];
-    for (final query in queries) {
+  /// The id of the search hit whose name actually is the track, or `null`.
+  ///
+  /// The top hit used to be taken as-is: searching a part name like 「002. 可能」
+  /// ranks 不可能 first, and the page then played a different song's words.
+  Future<int?> _searchSongId(String query, String hint) async {
+    for (final text in [query, if (hint.isNotEmpty && hint != query) '$query $hint']) {
       final body = await _probe(
-        _withQuery('https://music.163.com/api/search/get/web', {'s': query, 'type': '1', 'limit': '5'}),
+        _withQuery('https://music.163.com/api/search/get/web', {'s': text, 'type': '1', 'limit': '10'}),
         header: _headers,
       );
       if (body == null) continue;
       final result = _decode(body);
       final resultData = result is Map ? result['result'] : null;
       final songs = (resultData is Map ? resultData['songs'] as List? : null) ?? const [];
-      if (songs.isEmpty) continue;
-      final normalized = cleanTitle(title).toLowerCase();
       for (final song in songs) {
-        final name = song['name']?.toString().toLowerCase() ?? '';
-        if (normalized.isNotEmpty && name.contains(normalized)) {
-          return int.tryParse(song['id']?.toString() ?? '');
-        }
+        if (song is! Map) continue;
+        if (!plausible(query, song['name']?.toString() ?? '')) continue;
+        final id = int.tryParse(song['id']?.toString() ?? '');
+        if (id != null) return id;
       }
-      return int.tryParse(songs.first['id']?.toString() ?? '');
     }
     return null;
   }
+
+  /// Drops an LRC whose own `[ti:]` tag names another song.
+  ///
+  /// These files carry the title they were made for; when that title does not
+  /// line up with the track, the file belongs to something else. Files without
+  /// the tag cannot be checked and stay.
+  static String? verified(String query, String? lyric) {
+    if (lyric == null) return null;
+    final tag = _tagValue(lyric, 'ti');
+    if (tag == null) return lyric;
+    return plausible(query, tag) ? lyric : null;
+  }
+
+  static String? _tagValue(String lrc, String name) {
+    final match = RegExp('\\[$name:([^\\]]*)\\]', caseSensitive: false).firstMatch(lrc);
+    final value = match?.group(1)?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  /// Whether [candidate] plausibly names the same song as [query].
+  ///
+  /// Equality, a shared prefix (「起风了」 / 「起风了 (旧版)」) or a high Sørensen-Dice
+  /// score. Suffix-only overlap is not enough: 「不可能」 is not 「可能」.
+  static bool plausible(String query, String candidate) {
+    final a = _fold(query);
+    final b = _fold(candidate);
+    if (a.isEmpty || b.isEmpty) return true;
+    if (a == b || a.startsWith(b) || b.startsWith(a)) return true;
+    return compareTwoStrings(a, b) >= 0.7;
+  }
+
+  static String _fold(String text) =>
+      text.toLowerCase().replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), '');
 
   /// Accepts only text with timed lines, and normalizes the timestamp shapes
   /// the reference project converts (`[mm:ss,mmm]`, `[hh:mm:ss.mmm]`) into the
@@ -222,12 +302,24 @@ class MusicLyricService {
     return text.contains(RegExp(r'\[\d{2}:\d{2}\.\d{2}\]')) ? text : null;
   }
 
-  /// Strips the decoration bilibili uploaders put in part names: 【】 brackets,
-  /// parenthesised credits and runs of whitespace.
+  /// The track name inside a part's title.
+  ///
+  /// Compilations number their parts (「002. 可能」, 「01 - 夜曲」, 「第 3 首 晴天」,
+  /// 「P4 可能」) and that decoration is not part of the song: searching for it
+  /// finds nothing, and the fuzzy APIs answer with a wrong song.
   static String cleanTitle(String title) {
-    var text = title;
-    text = text.replaceAll(RegExp(r'【[^】]*】|\([^)]*\)|\[[^\]]*\]'), ' ');
+    var text = title.trim();
+    // Brackets first: 「【高音质】002、可能」 only shows its ordinal once the
+    // decoration is gone.
+    text = text.replaceAll(RegExp(r'【[^】]*】|\([^)]*\)|\[[^\]]*\]'), ' ').trim();
+    // 「第 3 首」/「第三曲」 before the plain-number rule, which would eat the 第
+    // and leave the classifier behind.
+    text = text.replaceFirst(RegExp(r'^第\s*[0-9一二三四五六七八九十]{1,3}\s*[首曲集部]?\s*'), '');
+    text = text.replaceFirst(RegExp(r'^p\s*\d{1,3}\s*[\.、\-—_:：]?\s*', caseSensitive: false), '');
+    // A numbered part needs a separator or a zero-padded number: 「002. 可能」 and
+    // 「002 可能」 are parts, while 「7 Years」 is a song that starts with a digit.
+    text = text.replaceFirst(RegExp(r'^(?:\d{1,3}\s*[\.、\-—_:：]\s*|0\d{1,2}\s+)'), '');
     text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
-    return text;
+    return text.isEmpty ? title.trim() : text;
   }
 }
