@@ -73,10 +73,14 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
     _load();
   }
 
+  /// The bar's OK-twice refresh: drop the region's cache and refetch.
+  Future<void> _refresh() async {
+    _cache.remove(_regions[_selected].$1);
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
     final themeState = ref.watch(themeSettingsControllerProvider);
     final rid = _regions[_selected].$1;
     final archives = _cache[rid];
@@ -84,47 +88,16 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 64.sp,
-          child: DpadRegion(
-            horizontalEdge: DpadEdgeBehavior.leave,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 10.sp),
-              itemCount: _regions.length,
-              separatorBuilder: (_, _) => SizedBox(width: 10.sp),
-              itemBuilder: (context, index) {
-                final (_, labelKey, icon) = _regions[index];
-                final isSelected = index == _selected;
-                return TvFocusable(
-                  autofocus: index == 0,
-                  onTap: () => _select(index),
-                  builder: (context, focused, child) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 120),
-                    padding: EdgeInsets.symmetric(horizontal: 22.sp, vertical: 8.sp),
-                    decoration: BoxDecoration(
-                      color: isSelected ? accent.withValues(alpha: 0.22) : tvTheme.cardColor,
-                      borderRadius: BorderRadius.circular(24.sp),
-                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(icon, style: TextStyle(fontSize: 20.sp)),
-                        SizedBox(width: 8.sp),
-                        Text(
-                          i18n(labelKey),
-                          style: AppTextStyles.t16W600.copyWith(
-                            color: isSelected ? accent : tvTheme.secondaryTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+        // The shared TV tab bar: one tab per region, emoji as the leading icon.
+        TvTabBar(
+          tabs: [
+            for (final (_, labelKey, icon) in _regions)
+              TvTabItemData(title: i18n(labelKey), icon: Text(icon, style: TextStyle(fontSize: 20.sp))),
+          ],
+          currentIndex: _selected,
+          refreshing: _loading,
+          onTabChange: _select,
+          onTabRefresh: (_) => _refresh(),
         ),
         Expanded(
           child: _loading

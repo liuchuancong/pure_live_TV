@@ -76,6 +76,16 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
     _loadFirst();
   }
 
+  /// The bar's OK-twice refresh: back to page 1 for the current category.
+  Future<void> _refresh() async {
+    final type = _types[_selected].$1;
+    _pages.remove(type);
+    _pageOf.remove(type);
+    _hasMoreOf.remove(type);
+    _errors.remove(type);
+    await _loadMore();
+  }
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
@@ -85,40 +95,16 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 64.sp,
-          child: DpadRegion(
-            horizontalEdge: DpadEdgeBehavior.leave,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 10.sp),
-              itemCount: _types.length,
-              separatorBuilder: (_, _) => SizedBox(width: 10.sp),
-              itemBuilder: (context, index) {
-                final (_, labelKey) = _types[index];
-                final isSelected = index == _selected;
-                return TvFocusable(
-                  autofocus: index == 0,
-                  onTap: () => _select(index),
-                  builder: (context, focused, child) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 120),
-                    padding: EdgeInsets.symmetric(horizontal: 26.sp, vertical: 8.sp),
-                    decoration: BoxDecoration(
-                      color: isSelected ? accent.withValues(alpha: 0.22) : tvTheme.cardColor,
-                      borderRadius: BorderRadius.circular(24.sp),
-                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                    ),
-                    child: Text(
-                      i18n(labelKey),
-                      style: AppTextStyles.t16W600.copyWith(
-                        color: isSelected ? accent : tvTheme.secondaryTextColor,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+        // The shared TV tab bar (same bar the areas page uses): one tab per
+        // season type, the refresh line shows the category load.
+        TvTabBar(
+          tabs: [
+            for (final (_, labelKey) in _types) TvTabItemData(title: i18n(labelKey)),
+          ],
+          currentIndex: _selected,
+          refreshing: _loading,
+          onTabChange: _select,
+          onTabRefresh: (_) => _refresh(),
         ),
         Expanded(
           child: _errors[_type] != null && (items?.isEmpty ?? true)
