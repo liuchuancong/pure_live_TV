@@ -2889,5 +2889,8 @@
   "music_core_switched": "已切换播放内核",
   "video_replies_expand": "共 {count} 条回复，按 OK 展开",
   "video_replies_collapse": "收起回复",
-  "video_replies_loading": "回复加载中…"
+  "video_replies_loading": "回复加载中…",
+  "video_action_like_cancelled": "已取消点赞",
+  "video_state_buffering": "缓冲中…",
+  "video_progress_toggle": "底部进度线"
 }

@@ -57,7 +57,13 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   bool _danmakuOn = true;
   bool _subtitleOn = false;
   bool _aspectFill = false;
+  bool _liked = false;
+  bool _favoured = false;
   final GlobalKey<VodDanmakuOverlayState> _danmakuKey = GlobalKey();
+
+  /// newBV's persistent bottom progress line — the thin line at the screen's
+  /// bottom edge stays on unless the viewer turns it off in the bar.
+  bool _showBottomLine = true;
 
   // Per-part player extras: subtitles, online count, progress heartbeat.
   List<SubtitleCue> _subtitleCues = const [];
@@ -76,6 +82,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     EmojiManager().preload('bilibili');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _playNode.requestFocus();
+      _loadInteractionStates();
     });
     _progressTimer = Timer.periodic(const Duration(seconds: 10), (_) => _recordProgress());
     ref.listenManual(musicPlayerControllerProvider, (previous, next) {
@@ -149,6 +156,67 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       BilibiliUgcApi.instance
           .reportHistory(aid: track.archive.aid, cid: cid, progress: 0, bvid: track.archive.bvid)
           .catchError((Object _) {});
+    }
+  }
+
+  /// Like / favourite state for the in-player shortcuts, same source the
+  /// detail page reads. Coin has no readable state here; it fires optimistically.
+  Future<void> _loadInteractionStates() async {
+    final track = ref.read(musicPlayerControllerProvider).current;
+    final aid = track?.archive.aid ?? 0;
+    if (aid <= 0) return;
+    try {
+      final results = await Future.wait([
+        BilibiliUgcApi.instance.hasLiked(aid),
+        BilibiliUgcApi.instance.isFavoured(aid),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _liked = results[0];
+        _favoured = results[1];
+      });
+    } catch (_) {
+      // Logged out or rate-limited: the shortcuts still fire, they just start
+      // from the optimistic state.
+    }
+  }
+
+  /// The in-player like/coin/fav shortcuts (newBV's player actions). Each
+  /// announces itself with a toast — the hint that the shortcut fired.
+  Future<void> _likeShortcut() async {
+    final track = ref.read(musicPlayerControllerProvider).current;
+    if (track == null) return;
+    try {
+      await BilibiliUgcApi.instance.setLike(track.archive.aid, like: !_liked);
+      if (!mounted) return;
+      setState(() => _liked = !_liked);
+      ToastUtil.show(i18n(_liked ? 'video_action_liked' : 'video_action_like_cancelled'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    }
+  }
+
+  Future<void> _coinShortcut() async {
+    final track = ref.read(musicPlayerControllerProvider).current;
+    if (track == null) return;
+    try {
+      await BilibiliUgcApi.instance.addCoin(track.archive.aid);
+      if (mounted) ToastUtil.show(i18n('video_action_coined'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    }
+  }
+
+  Future<void> _favShortcut() async {
+    final track = ref.read(musicPlayerControllerProvider).current;
+    if (track == null) return;
+    try {
+      await BilibiliUgcApi.instance.favDeal(aid: track.archive.aid, addFolderIds: const []);
+      if (!mounted) return;
+      setState(() => _favoured = true);
+      ToastUtil.show(i18n('video_action_faved'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
     }
   }
 
@@ -435,6 +503,71 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       bvid: track.archive.bvid,
                     ),
 
+                  // ---------------- state tips (newBV's PlayStateTips):
+                  // error > buffering > paused, three mutually exclusive faces.
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      child: StreamBuilder<PlaybackState>(
+                        stream: controller.playbackStream,
+                        builder: (context, snapshot) {
+                          final playback = snapshot.data;
+                          if (state.error.isNotEmpty) {
+                            return Center(
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 14.sp),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.72),
+                                  borderRadius: BorderRadius.circular(16.sp),
+                                ),
+                                child: Text(
+                                  state.error,
+                                  style: AppTextStyles.t18W500.copyWith(color: Colors.white),
+                                ),
+                              ),
+                            );
+                          }
+                          if (playback?.buffering == true) {
+                            return Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 44.sp,
+                                    height: 44.sp,
+                                    child: CircularProgressIndicator(strokeWidth: 3.sp, color: tvTheme.focusColor),
+                                  ),
+                                  SizedBox(height: 12.sp),
+                                  Text(
+                                    i18n('video_state_buffering'),
+                                    style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          if (controller.handle != null && playback?.isPlaying == false && track != null) {
+                            return Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding: EdgeInsets.only(right: 48.sp, bottom: 64.sp),
+                                child: Icon(
+                                  Icons.pause_circle_outline_rounded,
+                                  size: 72.sp,
+                                  color: Colors.white.withValues(alpha: 0.55),
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ),
+
                   // --------------------------------------------------- subtitle
                   if (_subtitleOn && controller.handle != null)
                     Positioned(
@@ -531,6 +664,13 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                               ? null
                               : () => setState(() => _subtitleOn = !_subtitleOn),
                           onToggleAspect: () => setState(() => _aspectFill = !_aspectFill),
+                          liked: _liked,
+                          favoured: _favoured,
+                          onLike: () => unawaited(_likeShortcut()),
+                          onCoin: () => unawaited(_coinShortcut()),
+                          onFav: () => unawaited(_favShortcut()),
+                          showBottomLine: _showBottomLine,
+                          onToggleBottomLine: () => setState(() => _showBottomLine = !_showBottomLine),
                         ),
                       ),
                     ),
@@ -538,9 +678,11 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
 
                   // ------------------------------ bottom edge progress line
                   // newBV's thin line: the whole video's progress as one hair
-                  // at the very bottom, always on during playback — the control
-                  // panel above only labels the two ends.
-                  Positioned(
+                  // at the very bottom, on during playback unless the viewer
+                  // turned it off in the bar — the control panel above only
+                  // labels the two ends.
+                  if (_showBottomLine)
+                    Positioned(
                     left: 0,
                     right: 0,
                     bottom: 0,
@@ -742,6 +884,13 @@ class _ControlBar extends ConsumerWidget {
     required this.onToggleDanmaku,
     required this.onToggleSubtitle,
     required this.onToggleAspect,
+    required this.liked,
+    required this.favoured,
+    required this.onLike,
+    required this.onCoin,
+    required this.onFav,
+    required this.showBottomLine,
+    required this.onToggleBottomLine,
   });
 
   final FocusNode playNode;
@@ -757,6 +906,17 @@ class _ControlBar extends ConsumerWidget {
   final VoidCallback onToggleDanmaku;
   final VoidCallback? onToggleSubtitle;
   final VoidCallback onToggleAspect;
+
+  /// The in-player interaction shortcuts (newBV's player actions): like /
+  /// coin / favourite fire with their own toast, and the bottom progress line
+  /// can be turned off from here.
+  final bool liked;
+  final bool favoured;
+  final VoidCallback onLike;
+  final VoidCallback onCoin;
+  final VoidCallback onFav;
+  final bool showBottomLine;
+  final VoidCallback onToggleBottomLine;
 
   static String _timeLabel(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -849,6 +1009,45 @@ class _ControlBar extends ConsumerWidget {
                     size: TvButtonSize.mini,
                     isSecondary: true,
                     onTap: () => controller.cycleSpeed(),
+                  ),
+                  TvButton(
+                    title: i18n('video_action_like'),
+                    icon: Icon(
+                      liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
+                      size: 22.sp,
+                      color: liked ? const Color(0xFFEF5350) : null,
+                    ),
+                    size: TvButtonSize.mini,
+                    isSecondary: !liked,
+                    onTap: onLike,
+                  ),
+                  TvButton(
+                    title: i18n('video_action_coin'),
+                    icon: Icon(Icons.toll_rounded, size: 22.sp),
+                    size: TvButtonSize.mini,
+                    isSecondary: true,
+                    onTap: onCoin,
+                  ),
+                  TvButton(
+                    title: i18n('video_action_fav'),
+                    icon: Icon(
+                      favoured ? Icons.star_rounded : Icons.star_outline_rounded,
+                      size: 22.sp,
+                      color: favoured ? const Color(0xFFFFCA28) : null,
+                    ),
+                    size: TvButtonSize.mini,
+                    isSecondary: !favoured,
+                    onTap: onFav,
+                  ),
+                  TvButton(
+                    title: i18n('video_progress_toggle'),
+                    icon: Icon(
+                      showBottomLine ? Icons.align_vertical_bottom_rounded : Icons.vertical_align_bottom_rounded,
+                      size: 22.sp,
+                    ),
+                    size: TvButtonSize.mini,
+                    isSecondary: true,
+                    onTap: onToggleBottomLine,
                   ),
                   TvButton(
                     title: BilibiliMusicApi.qualityLabel(state.quality).isEmpty

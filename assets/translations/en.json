@@ -2889,5 +2889,8 @@
   "music_core_switched": "Player engine switched",
   "video_replies_expand": "{count} replies, press OK to expand",
   "video_replies_collapse": "Collapse replies",
-  "video_replies_loading": "Loading replies…"
+  "video_replies_loading": "Loading replies…",
+  "video_action_like_cancelled": "Like removed",
+  "video_state_buffering": "Buffering…",
+  "video_progress_toggle": "Bottom progress line"
 }
