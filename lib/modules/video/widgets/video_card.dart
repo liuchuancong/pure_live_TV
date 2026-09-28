@@ -5,6 +5,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 
 /// The video-mode card, newBV's SmallVideoCard for a 1080p TV grid: cover,
@@ -36,6 +37,18 @@ class VideoCard extends ConsumerWidget {
 
     return TvFocusable(
       onTap: onTap,
+      // TV shortcut: long-press adds the archive to the bilibili watch-later
+      // list from any grid, the way a remote user expects a quick action.
+      onLongPress: archive.aid > 0
+          ? () async {
+              try {
+                await BilibiliUgcApi.instance.addToView(archive.aid);
+                ToastUtil.show(i18n('video_action_toviewed'));
+              } catch (_) {
+                ToastUtil.show(i18n('video_action_need_login'));
+              }
+            }
+          : null,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
