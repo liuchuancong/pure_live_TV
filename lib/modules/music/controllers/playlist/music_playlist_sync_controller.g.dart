@@ -65,7 +65,7 @@ final class MusicPlaylistSyncControllerProvider
 }
 
 String _$musicPlaylistSyncControllerHash() =>
-    r'f829ba10d9fe583c28d94b2fcea2778bdc0a07e5';
+    r'c7ffcfc8470a61e7b3d47259ee8a17058d709de5';
 
 /// The sync engine behind the synced playlists (bmsc's fav-list caching):
 /// bilibili fav folders pulled down into music-module Hive keys so the

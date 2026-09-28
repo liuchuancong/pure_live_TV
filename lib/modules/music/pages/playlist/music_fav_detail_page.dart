@@ -121,14 +121,14 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
 
   void _playAll(BuildContext context, WidgetRef ref, List<MusicTrack> tracks) {
     final filtered = ref.read(musicPlaylistSyncControllerProvider.notifier).filterExcluded(tracks);
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(filtered, audioOnly: true);
+    ref.read(musicPlayerControllerProvider.notifier).playQueue(filtered);
     const MusicPlayerRoute().push(context);
   }
 
   void _playFrom(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int index) {
     final filtered = ref.read(musicPlaylistSyncControllerProvider.notifier).filterExcluded(tracks);
     final at = filtered.indexWhere((t) => t.id == tracks[index].id);
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(filtered, startIndex: at < 0 ? 0 : at, audioOnly: true);
+    ref.read(musicPlayerControllerProvider.notifier).playQueue(filtered, startIndex: at < 0 ? 0 : at);
     const MusicPlayerRoute().push(context);
   }
 }

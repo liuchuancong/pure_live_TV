@@ -169,6 +169,7 @@ abstract final class AppRoutes {
   static const kSettingsProxy = "/settings/proxy";
   static const kSettingsLocalInteraction = "/settings/local_interaction";
   static const kSettingsGeneral = "/settings/general";
+  static const kSettingsMusic = "/settings/music";
   static const kSettingsNavigation = "/settings/navigation";
 
   /// The three navigation & display sub-pages: which entries the side menu shows, in

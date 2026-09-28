@@ -114,6 +114,7 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsPlayerKernel: const PlayerKernelSettingsRoute(),
   AppRoutes.kSettingsProxy: const ProxySettingsRoute(),
   AppRoutes.kSettingsGeneral: const GeneralSettingsRoute(),
+  AppRoutes.kSettingsMusic: const MusicSettingsRoute(),
   AppRoutes.kSettingsNavigation: const NavigationSettingsRoute(),
   AppRoutes.kSettingsNavVisibility: const NavVisibilityRoute(),
   AppRoutes.kSettingsNavOrder: const NavOrderRoute(),
@@ -662,6 +663,18 @@ class SettingsMenuRoute extends GoRouteData with $SettingsMenuRoute {
 /// The icon picker owns a grid, so it is a route of its own instead of a
 /// section inside the scrolling settings shell. The row that opens it passes the
 /// icon it currently shows as `extra` and receives the choice as the pop result.
+/// Music-mode settings, opened from the music mode's settings menu.
+@TypedGoRoute<MusicSettingsRoute>(path: AppRoutes.kSettingsMusic)
+class MusicSettingsRoute extends GoRouteData with $MusicSettingsRoute {
+  const MusicSettingsRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const SettingsSectionScaffold(
+        location: AppRoutes.kSettingsMusic,
+        child: MusicSettingsSectionPage(),
+      );
+}
+
 @TypedGoRoute<SettingsIconPickerRoute>(path: AppRoutes.kSettingsIconPicker)
 class SettingsIconPickerRoute extends GoRouteData with $SettingsIconPickerRoute {
   SettingsIconPickerRoute([this.$extra]);

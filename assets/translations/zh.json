@@ -2789,5 +2789,12 @@
   "video_order_newest": "最新发布",
   "video_order_most_played": "最多播放",
   "music_seek_back": "快退10秒",
-  "music_seek_forward": "快进10秒"
+  "music_seek_forward": "快进10秒",
+  "music_settings": "音乐设置",
+  "music_settings_desc": "播放模式与收听偏好",
+  "music_playback_defaults": "播放默认",
+  "music_default_play_mode": "默认播放模式",
+  "music_default_play_mode_desc": "新队列的播放顺序",
+  "music_default_audio_only": "默认纯音频收听",
+  "music_default_audio_only_desc": "开启后播放默认只出声音不渲染画面"
 }

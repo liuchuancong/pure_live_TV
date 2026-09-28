@@ -144,7 +144,7 @@ class _SongListSection extends ConsumerWidget {
   }
 
   void _play(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) {
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex, audioOnly: true);
+    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
     const MusicPlayerRoute().push(context);
   }
 }

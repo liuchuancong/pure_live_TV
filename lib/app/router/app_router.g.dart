@@ -11,6 +11,7 @@ List<RouteBase> get $appRoutes => [
   $homeRoute,
   $agreementPageRoute,
   $settingsMenuRoute,
+  $musicSettingsRoute,
   $settingsIconPickerRoute,
   $settingsLoadingStyleRoute,
   $settingsColorPickerRoute,
@@ -1380,6 +1381,33 @@ mixin $SettingsMenuRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/settings');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $musicSettingsRoute => GoRouteData.$route(
+  path: '/settings/music',
+  hasOverriddenOnExit: false,
+  factory: $MusicSettingsRoute._fromState,
+);
+
+mixin $MusicSettingsRoute on GoRouteData {
+  static MusicSettingsRoute _fromState(GoRouterState state) =>
+      const MusicSettingsRoute();
+
+  @override
+  String get location => GoRouteData.$location('/settings/music');
 
   @override
   void go(BuildContext context) => context.go(location);

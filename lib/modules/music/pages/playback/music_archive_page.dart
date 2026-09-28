@@ -83,7 +83,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
   void _playAll(List<MusicTrack> tracks, int startIndex) {
     // Music mode listens: the queue starts audio-only, and the player page's
     // toggle brings the picture back on demand.
-    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex, audioOnly: true);
+    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
     const MusicPlayerRoute().push(context);
   }
 

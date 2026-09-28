@@ -117,7 +117,13 @@ class MusicPlayerController extends _$MusicPlayerController {
   @override
   MusicPlayerState build() {
     ref.onDispose(_releaseHandle);
-    return const MusicPlayerState();
+    // Music-mode defaults from the music settings section: the play mode and
+    // the audio-only preference the user picked rule until they change them.
+    final savedMode = MusicPlayMode.values
+        .where((m) => m.name == HivePrefUtil.getString('musicDefaultPlayMode'))
+        .firstOrNull;
+    final savedAudioOnly = HivePrefUtil.getString('musicDefaultAudioOnly') != 'false';
+    return MusicPlayerState(mode: savedMode ?? MusicPlayMode.sequence, audioOnly: savedAudioOnly);
   }
 
   BilibiliMusicApi get _api => BilibiliMusicApi.instance;

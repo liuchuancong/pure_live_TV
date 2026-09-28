@@ -5,12 +5,15 @@ import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/features/home/home_provider.dart';
 
 /// One settings destination: its route, translation keys and icon.
 typedef SettingsEntry = ({String path, String titleKey, String? subtitleKey, IconData icon});
 
-/// A titled group of entries — the "big group, small rows" layout.
-typedef SettingsGroup = ({String titleKey, List<SettingsEntry> entries});
+/// Which mode a group belongs to. `'all'` = every mode; `'live'` / `'video'`
+/// / `'music'` = that mode only, so each mode's settings menu shows its own
+/// configuration instead of everything at once.
+typedef SettingsGroup = ({String titleKey, List<SettingsEntry> entries, String scope});
 
 /// The settings menu.
 ///
@@ -21,6 +24,7 @@ typedef SettingsGroup = ({String titleKey, List<SettingsEntry> entries});
 final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   (
     titleKey: 'theme_settings',
+    scope: 'all',
     entries: <SettingsEntry>[
       (
         path: AppRoutes.kSettingsTheme,
@@ -31,13 +35,34 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     ],
   ),
   (
+    titleKey: 'music_settings',
+    scope: 'music',
+    entries: <SettingsEntry>[
+      (
+        path: AppRoutes.kSettingsMusic,
+        titleKey: 'music_settings',
+        subtitleKey: 'music_settings_desc',
+        icon: Remix.music_2_line,
+      ),
+    ],
+  ),
+  (
+    titleKey: 'video_settings',
+    scope: 'video',
+    entries: <SettingsEntry>[
+      (path: AppRoutes.kSettingsVideo, titleKey: 'video', subtitleKey: 'video_desc', icon: Remix.film_line),
+    ],
+  ),
+  (
     titleKey: 'iptv_settings',
+    scope: 'live',
     entries: <SettingsEntry>[
       (path: AppRoutes.kIptv, titleKey: 'iptv_settings', subtitleKey: 'manage_iptv_sources', icon: Remix.tv_line),
     ],
   ),
   (
     titleKey: 'refresh_settings',
+    scope: 'live',
     entries: <SettingsEntry>[
       (
         path: AppRoutes.kSettingsRefresh,
@@ -48,13 +73,8 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
     ],
   ),
   (
-    titleKey: 'video_settings',
-    entries: <SettingsEntry>[
-      (path: AppRoutes.kSettingsVideo, titleKey: 'video', subtitleKey: 'video_desc', icon: Remix.film_line),
-    ],
-  ),
-  (
     titleKey: 'player_kernel_settings',
+    scope: 'all',
     entries: <SettingsEntry>[
       (
         path: AppRoutes.kSettingsPlayerKernel,
@@ -66,6 +86,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   ),
   (
     titleKey: 'network_proxy_settings',
+    scope: 'all',
     entries: <SettingsEntry>[
       (
         path: AppRoutes.kSettingsProxy,
@@ -77,6 +98,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   ),
   (
     titleKey: 'general_settings',
+    scope: 'all',
     entries: <SettingsEntry>[
       (path: AppRoutes.kSettingsGeneral, titleKey: 'general', subtitleKey: 'general_desc', icon: Remix.settings_4_line),
       (
@@ -85,6 +107,12 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
         subtitleKey: 'navigation_display_settings_desc',
         icon: Remix.menu_line,
       ),
+    ],
+  ),
+  (
+    titleKey: 'platform_settings_group',
+    scope: 'live',
+    entries: <SettingsEntry>[
       (
         path: AppRoutes.kSettingsPlatform,
         titleKey: 'platform_settings',
@@ -95,6 +123,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   ),
   (
     titleKey: 'data_manage',
+    scope: 'all',
     entries: <SettingsEntry>[
       (
         path: AppRoutes.kSettingsCache,
@@ -106,6 +135,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   ),
   (
     titleKey: 'backup_manage',
+    scope: 'all',
     entries: <SettingsEntry>[
       (path: AppRoutes.kBackup, titleKey: 'backup_recover', subtitleKey: 'backup_recover_desc',
        icon: Icons.settings_backup_restore_rounded),
@@ -115,6 +145,7 @@ final List<SettingsGroup> settingsCatalog = <SettingsGroup>[
   // menu, so the row stays here to keep the page reachable.
   (
     titleKey: 'about',
+    scope: 'all',
     entries: <SettingsEntry>[
       (
         path: AppRoutes.kAbout,
@@ -153,10 +184,20 @@ class SettingsCatalogView extends ConsumerWidget {
     final updateState = ref.watch(appUpdateControllerProvider);
     final bool hasUpdate = updateState.phase == AppUpdatePhase.available && updateState.latestVersion.isNotEmpty;
 
+    // The menu follows the mode it was opened from: live shows the live-side
+    // groups, music and video theirs, and the 'all' groups stay everywhere.
+    final AppMode mode = ref.watch(appModeControllerProvider);
+    final String modeScope = switch (mode) {
+      AppMode.live => 'live',
+      AppMode.video => 'video',
+      AppMode.music => 'music',
+    };
+
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
       children: [
-        for (final SettingsGroup group in settingsCatalog) ...[
+        for (final SettingsGroup group in settingsCatalog)
+          if (group.scope == 'all' || group.scope == modeScope) ...[
           TvSettingsGroupTitle(title: i18n(group.titleKey)),
           TvSettingsCard(
             children: [
@@ -241,6 +282,7 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   // themselves are titled video settings / player engine / network & proxy; taking the
   // title from the menu row made the TV app bars disagree with the phone's.
   AppRoutes.kSettingsVideo: 'video_settings',
+  AppRoutes.kSettingsMusic: 'music_settings',
   AppRoutes.kSettingsPlayerKernel: 'player_kernel_settings',
   AppRoutes.kSettingsProxy: 'network_proxy_settings',
 };
