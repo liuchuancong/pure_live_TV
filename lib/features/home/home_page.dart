@@ -76,10 +76,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         final accent = tvTheme.focusColor;
         return Dialog(
           backgroundColor: tvTheme.cardColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24.sp),
-            side: BorderSide(color: accent.withValues(alpha: 0.5)),
-          ),
+          // Compact on purpose: a mode picker is three rows, not a page.
+          insetPadding: EdgeInsets.symmetric(horizontal: 480.sp, vertical: 240.sp),
           child: Padding(
             padding: EdgeInsets.all(24.sp),
             child: Column(
@@ -388,62 +386,59 @@ class _HomePageState extends ConsumerState<HomePage> {
                 // spacers below working exactly as before while the content still
                 // fits, and collapses them when it does not.
                 child: LayoutBuilder(
-                  builder: (context, constraints) => SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                      child: IntrinsicHeight(
-                        child: Column(
-                          children: [
-                            // The clock sits at the sidebar's header: a TV left
-                            // on the home screen is a wall clock too.
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 6.sp * textScale),
-                              child: TvDigitalClock(
-                                format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
-                                style: AppTextStyles.t20W600.copyWith(
-                                  color: currentTvTheme.primaryTextColor,
-                                  height: 1,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ),
-                            if (isExpanded)
-                              TvDigitalClock(
-                                format: 'yyyy/MM/dd',
-                                style: AppTextStyles.t14W500.copyWith(color: currentTvTheme.secondaryTextColor, height: 1),
-                              ),
-                            SizedBox(height: 15.sp * textScale),
-                            // The mode switch lives where the backup shortcut
-                            // used to: one OK press cycles 直播 → 视频 → 音乐,
-                            // and the whole rail + content pane follow.
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 14.sp * textScale),
-                              child: _buildModeButton(appMode, isExpanded, textScale),
-                            ),
-                            const Spacer(),
-                            // The rail below the switch is the active mode's
-                            // own navigation: live destinations, music library
-                            // sections or video sections.
-                            ..._buildModeRailItems(appMode, isExpanded, textScale),
-                            const Spacer(),
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 14.sp * textScale),
-                              child: TvIconButton(
-                                icon: AnimatedRotation(
-                                  turns: isExpanded ? 0.5 : 0.0,
-                                  duration: const Duration(milliseconds: 250),
-                                  curve: Curves.easeOutCubic,
-                                  child: const Icon(Icons.arrow_forward_ios_rounded),
-                                ),
-                                // Expanded already spells every entry out; collapsed is
-                                // the state where the arrow needs a name.
-                                label: isExpanded ? null : i18n('menu_short_expand'),
-                                size: TvIconButtonSize.medium,
-                                isSecondary: true,
-                                onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
-                              ),
-                            ),
-                            _buildAdaptiveItem(
+                  builder: (context, constraints) => Column(
+                    children: [
+                      // Header stays pinned: the clock is a wall clock, and the
+                      // mode switch must be reachable no matter how far the
+                      // section list has scrolled.
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 6.sp * textScale),
+                        child: TvDigitalClock(
+                          format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
+                          style: AppTextStyles.t20W600.copyWith(
+                            color: currentTvTheme.primaryTextColor,
+                            height: 1,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                      if (isExpanded)
+                        TvDigitalClock(
+                          format: 'yyyy/MM/dd',
+                          style: AppTextStyles.t14W500.copyWith(color: currentTvTheme.secondaryTextColor, height: 1),
+                        ),
+                      SizedBox(height: 15.sp * textScale),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                        child: _buildModeButton(appMode, isExpanded, textScale),
+                      ),
+                      // The active mode's own navigation — live destinations,
+                      // music sections or video sections — is the only part
+                      // that scrolls: video carries eight entries and overflow
+                      // must not push the footer controls off screen.
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(children: _buildModeRailItems(appMode, isExpanded, textScale)),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 14.sp * textScale),
+                        child: TvIconButton(
+                          icon: AnimatedRotation(
+                            turns: isExpanded ? 0.5 : 0.0,
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            child: const Icon(Icons.arrow_forward_ios_rounded),
+                          ),
+                          // Expanded already spells every entry out; collapsed is
+                          // the state where the arrow needs a name.
+                          label: isExpanded ? null : i18n('menu_short_expand'),
+                          size: TvIconButtonSize.medium,
+                          isSecondary: true,
+                          onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
+                        ),
+                      ),
+                      _buildAdaptiveItem(
                               ref: ref,
                               item: mySettingsItem,
                               isExpanded: isExpanded,
@@ -454,11 +449,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                               // and the configuration-preview action), like the desktop
                               // app, instead of swapping the content pane.
                               onTap: () => const SettingsMenuRoute().push(context),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
