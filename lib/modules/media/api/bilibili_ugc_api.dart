@@ -3,6 +3,8 @@ import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/platforms/bilibili/bilibili_site.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/shared/common/http_client.dart';
+import 'dart:convert' show utf8;
+import 'package:dio/dio.dart' show Options, ResponseType;
 
 /// The shared bilibili UGC account/social layer behind both modes.
 ///
@@ -475,5 +477,127 @@ class BilibiliUgcApi {
     } catch (_) {
       return 0;
     }
+  }
+
+  /// The number of danmaku segments for the part (`x/v2/dm/web/view`): one
+  /// segment per ~6 minutes of video, the segmentation newBV loads by.
+  /// Zero when the answer carries nothing — the caller falls back to the
+  /// one-shot XML.
+  Future<int> getDanmakuSegmentCount({required int aid, required int cid}) async {
+    try {
+      final data = await _getWbi(
+        'https://api.bilibili.com/x/v2/dm/web/view',
+        query: {'pid': '$aid', 'oid': '$cid', 'type': '1'},
+      );
+      final segs = data?['dm_seg'];
+      return segs is List ? segs.length : 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// One danmaku segment (`x/v2/dm/web/seg.so`) as protobuf. The response
+  /// is a `DmSegMobileReply` whose repeated element (field 1) carries, per
+  /// danmaku: progress (field 2, varint, milliseconds), mode (field 3,
+  /// varint) and content (field 7, string) — the only fields this app uses.
+  Future<List<({double time, String text})>> getDanmakuSegment({
+    required int cid,
+    required int segment,
+  }) async {
+    final response = await HttpClient.instance.dio.get<List<int>>(
+      'https://api.bilibili.com/x/v2/dm/web/seg.so',
+      options: Options(
+        responseType: ResponseType.bytes,
+        headers: {'user-agent': 'Mozilla/5.0', 'referer': 'https://www.bilibili.com/'},
+      ),
+      queryParameters: {'type': '1', 'oid': '$cid', 'segment': '$segment'},
+    );
+    return parseDanmakuSegment(response.data ?? const <int>[]);
+  }
+
+  /// Minimal protobuf walk for [getDanmakuSegment] — no generated bindings;
+  /// the three fields above are all the player needs. Anything malformed
+  /// yields what was parsed so far; the overlay then shows fewer danmaku.
+  static List<({double time, String text})> parseDanmakuSegment(List<int> bytes) {
+    final out = <({double time, String text})>[];
+    var at = 0;
+
+    /// Reads one varint, returns (value, nextOffset).
+    (int, int) varint(List<int> source, int offset) {
+      var value = 0;
+      var shift = 0;
+      var cursor = offset;
+      while (cursor < source.length) {
+        final b = source[cursor++];
+        value |= (b & 0x7f) << shift;
+        if (b & 0x80 == 0) return (value, cursor);
+        shift += 7;
+      }
+      throw const FormatException('truncated varint');
+    }
+
+    int skip(int offset, int wire) {
+      switch (wire) {
+        case 0:
+          return varint(bytes, offset).$2;
+        case 1:
+          return offset + 8;
+        case 2:
+          final (length, after) = varint(bytes, offset);
+          return after + length;
+        case 5:
+          return offset + 4;
+        default:
+          throw const FormatException('unsupported wire type');
+      }
+    }
+
+    try {
+      while (at < bytes.length) {
+        final (key, keyNext) = varint(bytes, at);
+        final field = key >> 3;
+        final wire = key & 7;
+        if (field != 1 || wire != 2) {
+          at = skip(keyNext, wire);
+          continue;
+        }
+        final (elemLength, elemStart) = varint(bytes, keyNext);
+        final elem = bytes.sublist(elemStart, elemStart + elemLength);
+        at = elemStart + elemLength;
+
+        var progressMs = 0;
+        var mode = 1;
+        var text = '';
+        var inner = 0;
+        while (inner < elem.length) {
+          final (innerKey, innerNext) = varint(elem, inner);
+          final innerField = innerKey >> 3;
+          final innerWire = innerKey & 7;
+          switch ((innerField, innerWire)) {
+            case (2, 0):
+              final (value, valueNext) = varint(elem, innerNext);
+              progressMs = value;
+              inner = valueNext;
+            case (3, 0):
+              final (modeValue, modeNext) = varint(elem, innerNext);
+              mode = modeValue;
+              inner = modeNext;
+            case (7, 2):
+              final (length, textStart) = varint(elem, innerNext);
+              text = utf8.decode(elem.sublist(textStart, textStart + length), allowMalformed: true);
+              inner = textStart + length;
+            default:
+              final (_, after) = varint(elem, inner); inner = after;
+          }
+        }
+        if (text.isNotEmpty && mode <= 3) {
+          out.add((time: progressMs / 1000.0, text: text));
+        }
+      }
+    } on FormatException {
+      return out;
+    }
+    out.sort((a, b) => a.time.compareTo(b.time));
+    return out;
   }
 }

@@ -238,6 +238,15 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   },
                                   'video_action_liked',
                                 ),
+                                // Long-press: the one-touch triple, like newBV's
+                                // shortcut — like, coin and favourite together.
+                                onLongPress: () => _runAction(
+                                  () async {
+                                    await BilibiliUgcApi.instance.tripleAction(archive.aid);
+                                    await _loadStates(archive.aid);
+                                  },
+                                  'video_action_trpled',
+                                ),
                               ),
                               _ActionChip(
                                 icon: Icons.toll_rounded,
@@ -379,12 +388,16 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
 
 /// One interaction chip: a compact icon+label pill in the focused palette.
 class _ActionChip extends StatelessWidget {
-  const _ActionChip({required this.icon, required this.label, this.active = false, this.onTap});
+  const _ActionChip({required this.icon, required this.label, this.active = false, this.onTap, this.onLongPress});
 
   final IconData icon;
   final String label;
   final bool active;
   final VoidCallback? onTap;
+
+  /// The long-press shortcut, newBV's one-touch triple (like + coin + favourite)
+  /// on the like chip.
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -393,6 +406,7 @@ class _ActionChip extends StatelessWidget {
 
     return TvFocusable(
       onTap: onTap,
+      onLongPress: onLongPress,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
