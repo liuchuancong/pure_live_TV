@@ -9,6 +9,7 @@ import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// One archive's track list (its parts), with Play all starting the queue.
 ///
@@ -93,6 +94,8 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     final accent = tvTheme.focusColor;
     final archive = _detail ?? widget.archive;
     final tracks = archive.tracks;
+    final library = ref.watch(musicLibraryControllerProvider);
+    final followingUp = archive.upMid > 0 && library.isFollowingUp(archive.upMid);
 
     return TvPageScaffold(
       title: i18n('music_archive_title'),
@@ -233,6 +236,19 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                           ).push(context)
                                       : null,
                                 ),
+                                if (archive.upMid > 0)
+                                  TvButton(
+                                    title: i18n(followingUp ? 'music_unfollow_up' : 'music_follow_up'),
+                                    icon: Icon(
+                                      followingUp ? Icons.person_remove_outlined : Icons.person_add_alt_outlined,
+                                      size: 22.sp,
+                                    ),
+                                    size: TvButtonSize.mini,
+                                    isSecondary: !followingUp,
+                                    onTap: () => ref
+                                        .read(musicLibraryControllerProvider.notifier)
+                                        .toggleFollowUp(MusicUp(mid: archive.upMid, name: archive.upName, face: archive.upFace)),
+                                  ),
                               ],
                             ),
                             if (archive.description.isNotEmpty) ...[
