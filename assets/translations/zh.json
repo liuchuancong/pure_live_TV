@@ -1244,6 +1244,7 @@
   "music_archive_no_parts": "无法获取曲目",
   "music_player_title": "音乐",
   "music_audio_only": "纯音频",
+  "music_video_failed": "画面播放失败，已切回歌词",
   "music_video_on": "显示画面",
   "music_favorites": "喜欢",
   "music_recents": "最近播放",
@@ -2802,5 +2803,6 @@
   "video_danmaku_send_hint": "发个弹幕见证当下",
   "video_danmaku_send_rules": "请遵守社区规范，弹幕实时发送到B站",
   "video_danmaku_sent": "弹幕已发送",
-  "send": "发送"
+  "send": "发送",
+  "cookie_scan_hint": "遥控器输入不了这么长的 Cookie：用手机扫码打开该页面，在手机上粘贴或登录，电视会自动同步。"
 }

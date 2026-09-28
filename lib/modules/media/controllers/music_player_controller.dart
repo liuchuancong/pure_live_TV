@@ -229,8 +229,8 @@ class MusicPlayerController extends _$MusicPlayerController {
     // the music-player convention.
     final handle = _handle;
     if (handle != null && handle.position > const Duration(seconds: 5)) {
-      await handle.seek(Duration.zero);
-      if (!handle.isPlaying) await handle.play();
+      await _ignoreCancelled(() => handle.seek(Duration.zero));
+      if (!handle.isPlaying) await _ignoreCancelled(handle.play);
       return;
     }
     await jumpTo((state.index - 1 + queue.length) % queue.length);
@@ -291,7 +291,18 @@ class MusicPlayerController extends _$MusicPlayerController {
     if (handle.isPlaying) {
       await handle.pause();
     } else {
-      await handle.play();
+      await _ignoreCancelled(handle.play);
+    }
+  }
+
+  /// A transport operation that loses to a newer one — another seek, a track
+  /// switch, a stop — is cancelled by media_core by design: the player has
+  /// already moved on, so the superseded one must not surface as an error.
+  Future<void> _ignoreCancelled(Future<void> Function() operation) async {
+    try {
+      await operation();
+    } on OperationCancelledException {
+      // Superseded — the newer operation owns the transport now.
     }
   }
 
@@ -304,7 +315,7 @@ class MusicPlayerController extends _$MusicPlayerController {
       if (target < Duration.zero) target = Duration.zero;
       if (target > duration) target = duration;
     }
-    await handle.seek(target);
+    await _ignoreCancelled(() => handle.seek(target));
   }
 
   Future<void> seekBy(int seconds) async {
@@ -335,26 +346,80 @@ class MusicPlayerController extends _$MusicPlayerController {
   ///   no video track to restore, so the cached DASH pair is re-opened and
   ///   playback resumes at the current position — the dynamic switch the
   ///   music player's 歌词/视频 toggle rides on.
+  ///
+  /// A re-open that fails keeps the sound and puts the mode back: a video stream
+  /// that is expired or refused is not a dead track, and letting it reach the
+  /// failure path is what made "显示画面" skip to the next song.
   Future<void> toggleAudioOnly() async {
     final audioOnly = !state.audioOnly;
-    state = state.copyWith(audioOnly: audioOnly);
     final handle = _handle;
+    state = state.copyWith(audioOnly: audioOnly);
+
     if (audioOnly) {
-      await handle?.setAudioOnly(true);
+      try {
+        await handle?.setAudioOnly(true);
+      } catch (_) {
+        state = state.copyWith(audioOnly: false);
+      }
       return;
     }
+
     final urls = _currentUrls;
     final track = state.current;
     final bvid = _currentBvid;
-    if (urls != null && urls.isDash && urls.audioUrl != null && track != null && bvid != null) {
-      final position = handle?.position ?? Duration.zero;
-      await _openUrls(track, urls, bvid);
-      if (position > Duration.zero) {
-        await _handle?.seek(position);
+    if (urls == null || !urls.isDash || urls.audioUrl == null || track == null || bvid == null) {
+      // Nothing cached to rebuild a video track from: let the adapter try, and
+      // stay on the lyrics view when it cannot.
+      try {
+        await handle?.setAudioOnly(false);
+      } catch (_) {
+        state = state.copyWith(audioOnly: true);
       }
-    } else {
-      await handle?.setAudioOnly(false);
+      return;
     }
+
+    final position = handle?.position ?? Duration.zero;
+    try {
+      await _openUrls(track, urls, bvid);
+      await _restorePosition(position);
+    } catch (_) {
+      await _degradeToAudioOnly(position);
+    }
+  }
+
+  /// Drops back to the audio stream at [position] after the picture could not be
+  /// opened, keeping the track playing.
+  ///
+  /// Deliberately not the failure path ([_advanceAfterFailure]): that one is for
+  /// a track that is dead, and running a refused video stream through it skipped
+  /// the queue on every 显示画面 press.
+  Future<void> _degradeToAudioOnly(Duration position) async {
+    _consecutiveFailures = 0;
+    state = state.copyWith(audioOnly: true, resolving: false);
+    ToastUtil.show(i18n('music_video_failed'));
+
+    final urls = _currentUrls;
+    final track = state.current;
+    final bvid = _currentBvid;
+    if (urls == null || urls.audioUrl == null || track == null || bvid == null) {
+      await _openCurrent();
+      return;
+    }
+    try {
+      await _openUrls(track, urls, bvid);
+      await _restorePosition(position);
+    } catch (_) {
+      // The audio is gone too — now it is the failure path's business.
+      await _openCurrent();
+    }
+  }
+
+  Future<void> _restorePosition(Duration position) async {
+    if (position <= Duration.zero) return;
+    await _ignoreCancelled(() async {
+      final target = _handle;
+      if (target != null) await target.seek(position);
+    });
   }
 
   Future<void> stop() async {
@@ -498,7 +563,7 @@ class MusicPlayerController extends _$MusicPlayerController {
     // The rate persists across track switches: a user watching at 1.5x keeps
     // 1.5x on the next episode.
     if (state.speed != 1.0) {
-      await handle.setRate(state.speed);
+      await _ignoreCancelled(() => handle.setRate(state.speed));
     }
     state = state.copyWith(resolving: false, quality: urls.quality, qualityOptions: urls.videoOptions);
 
@@ -516,6 +581,13 @@ class MusicPlayerController extends _$MusicPlayerController {
     if (event is PlayerAdapterCompleted) {
       _onCompleted();
     } else if (event is PlayerAdapterErrorEvent) {
+      // A video stream that fell over is not a dead track — the same track's
+      // audio stream usually still plays, and the lyrics view is the right answer
+      // for it. Only a track with nothing left to play goes to the failure path.
+      if (!state.audioOnly && _currentUrls?.audioUrl != null) {
+        unawaited(_degradeToAudioOnly(_handle?.position ?? Duration.zero));
+        return;
+      }
       _consecutiveFailures++;
       ToastUtil.show(i18n('music_play_failed'));
       unawaited(_advanceAfterFailure());
@@ -527,8 +599,8 @@ class MusicPlayerController extends _$MusicPlayerController {
       case MusicPlayMode.loopOne:
         final handle = _handle;
         if (handle == null) return;
-        await handle.seek(Duration.zero);
-        await handle.play();
+        await _ignoreCancelled(() => handle.seek(Duration.zero));
+        await _ignoreCancelled(handle.play);
       case MusicPlayMode.sequence:
       case MusicPlayMode.random:
         await next();

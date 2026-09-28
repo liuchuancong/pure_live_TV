@@ -1249,6 +1249,7 @@
   "music_archive_no_parts": "Could not load tracks",
   "music_player_title": "Music",
   "music_audio_only": "Audio Only",
+  "music_video_failed": "Video failed; switched back to the lyrics",
   "music_video_on": "Show Video",
   "music_favorites": "Favorites",
   "music_recents": "Recently Played",
@@ -2802,5 +2803,6 @@
   "video_danmaku_send_hint": "Say something…",
   "video_danmaku_send_rules": "Follow community rules; sent to bilibili in real time",
   "video_danmaku_sent": "Danmaku sent",
-  "send": "Send"
+  "send": "Send",
+  "cookie_scan_hint": "A remote cannot type a cookie this long: scan the code, paste or sign in on the phone, and this device syncs it automatically."
 }
