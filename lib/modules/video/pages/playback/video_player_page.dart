@@ -170,8 +170,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         );
   }
 
-  void _showControls() {
+  void _showControls({bool takeFocus = true}) {
     setState(() => _controlsVisible = true);
+    if (!takeFocus) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _controlsVisible) _playNode.requestFocus();
     });
@@ -239,20 +240,35 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         setState(() => _partsOpen = true);
         return KeyEventResult.handled;
       }
+      // Left/right reach this handler only while the root still holds the
+      // keyboard — the seek-raised bar shows without taking it, so repeated
+      // presses keep seeking here instead of walking the buttons.
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        controller.seekAccelerated(-1);
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        controller.seekAccelerated(1);
+        return KeyEventResult.handled;
+      }
       return KeyEventResult.ignored;
     }
 
-    // Controls hidden: the root owns the keyboard.
+    // Controls hidden: the root owns the keyboard. A seek raises the bar and
+    // lands the focus on it — the viewer asked for the controls, and the bar's
+    // own keys (walk / seek / OK) take over from there.
     if (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter) {
       _showControls();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       controller.seekAccelerated(-1);
+      _showControls();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
       controller.seekAccelerated(1);
+      _showControls();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -520,6 +536,42 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     ),
                   ),
 
+                  // ------------------------------ bottom edge progress line
+                  // newBV's thin line: the whole video's progress as one hair
+                  // at the very bottom, always on during playback — the control
+                  // panel above only labels the two ends.
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: StreamBuilder<PlaybackState>(
+                      stream: ref.read(musicPlayerControllerProvider.notifier).playbackStream,
+                      builder: (context, snapshot) {
+                        final playback = snapshot.data;
+                        final position = playback?.position ?? Duration.zero;
+                        final duration = playback?.duration ?? Duration.zero;
+                        final double progress = duration > Duration.zero
+                            ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                            : 0.0;
+                        final accent = tvTheme.focusColor;
+                        return SizedBox(
+                          height: 5.sp,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ColoredBox(color: Colors.white.withValues(alpha: 0.16)),
+                              FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: progress,
+                                child: ColoredBox(color: accent),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
                   // ----------------------------------------------- comments panel
                   if (_commentsOpen && track != null)
                     Positioned(
@@ -736,19 +788,13 @@ class _ControlBar extends ConsumerWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // The progress itself lives on the thin line at the screen's
+              // bottom edge; the panel only labels the two ends.
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 120.sp),
-                    child: Text(_timeLabel(position), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
-                  ),
-                  SizedBox(width: 16.sp),
-                  Expanded(child: _ProgressBar(position: position, duration: duration)),
-                  SizedBox(width: 16.sp),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 120.sp),
-                    child: Text(_timeLabel(duration), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
-                  ),
+                  Text(_timeLabel(position), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
+                  Text(_timeLabel(duration), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
                 ],
               ),
               SizedBox(height: 16.sp),
@@ -873,84 +919,6 @@ class _ControlBar extends ConsumerWidget {
                 ],
               ),
             ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// The seek bar with newBV's acceleration on left/right while focused.
-class _ProgressBar extends ConsumerStatefulWidget {
-  const _ProgressBar({required this.position, required this.duration});
-
-  final Duration position;
-  final Duration duration;
-
-  @override
-  ConsumerState<_ProgressBar> createState() => _ProgressBarState();
-}
-
-class _ProgressBarState extends ConsumerState<_ProgressBar> {
-  final FocusNode _node = FocusNode();
-  @override
-  void dispose() {
-    _node.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-    final double progress = widget.duration > Duration.zero
-        ? (widget.position.inMilliseconds / widget.duration.inMilliseconds).clamp(0.0, 1.0)
-        : 0.0;
-
-    return Focus(
-      focusNode: _node,
-      onKeyEvent: (node, event) {
-        if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
-        final controller = ref.read(musicPlayerControllerProvider.notifier);
-        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          controller.seekAccelerated(-1);
-          return KeyEventResult.handled;
-        }
-        if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-          controller.seekAccelerated(1);
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Builder(
-        builder: (context) {
-          final focused = Focus.of(context).hasFocus;
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
-            height: focused ? 22.sp : 16.sp,
-            margin: EdgeInsets.symmetric(vertical: focused ? 6.sp : 10.sp),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(11.sp),
-              border: Border.all(color: focused ? accent : Colors.white24, width: focused ? 2.sp : 1.sp),
-            ),
-            child: Stack(
-              children: [
-                FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: progress,
-                  child: Container(
-                    margin: EdgeInsets.all(3.sp),
-                    decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(8.sp)),
-                  ),
-                ),
-                if (focused)
-                  Align(
-                    alignment: Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ??
-                        Alignment.centerLeft,
-                    child: Container(width: 4.sp, color: Colors.white),
-                  ),
-              ],
-            ),
           );
         },
       ),
