@@ -15,13 +15,15 @@ import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
+import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 
 /// Music mode sections. The section rail itself lives in the home sidebar —
 /// this file only builds section content, so the mode swaps the whole
 /// navigation instead of nesting its own.
-enum MusicSection { favorites, recents, playlists, dynamics, history, ranking, search }
+enum MusicSection { likes, favorites, recents, playlists, dynamics, history, ranking, search }
 
 /// Content of one music section. The section rail lives in the home sidebar;
 /// login is enforced by the home shell's BilibiliLoginGate, not here.
@@ -33,6 +35,7 @@ class MusicSectionView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return switch (section) {
+      MusicSection.likes => const _LikesSection(key: ValueKey('music_likes')),
       MusicSection.favorites => const _FollowSection(key: ValueKey('music_favorites')),
       MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
       MusicSection.playlists => const MusicFavFoldersPage(key: ValueKey('music_playlists')),
@@ -46,13 +49,27 @@ class MusicSectionView extends ConsumerWidget {
 
 /// Favorites / Recently played: the QQ music song-table — index, cover, title+singer,
 /// duration — with a Play all header and long-press removal.
-class _SongListSection extends ConsumerWidget {
+class _SongListSection extends ConsumerStatefulWidget {
   const _SongListSection({super.key, required this.section});
 
   final MusicSection section;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SongListSection> createState() => _SongListSectionState();
+}
+
+class _SongListSectionState extends ConsumerState<_SongListSection> {
+  final MusicListReveal _reveal = MusicListReveal();
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final section = widget.section;
     final library = ref.watch(musicLibraryControllerProvider);
     final libraryController = ref.read(musicLibraryControllerProvider.notifier);
     final tvTheme = context.tvTheme;
@@ -125,9 +142,11 @@ class _SongListSection extends ConsumerWidget {
               separatorBuilder: (_, _) => SizedBox(height: 4.sp),
               itemBuilder: (context, index) {
                 final track = tracks[index];
+                _reveal.bindRow(track, context);
                 return _SongRow(
                   track: track,
                   index: index,
+                  focusNode: _reveal.nodeFor(track),
                   onPlay: () => _play(context, ref, tracks, index),
                   onRemove: () {
                     if (isFavorites) {
@@ -145,9 +164,106 @@ class _SongListSection extends ConsumerWidget {
     );
   }
 
-  void _play(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) {
+  Future<void> _play(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) async {
     ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
-    const MusicPlayerRoute().push(context);
+    await const MusicPlayerRoute().push(context);
+    // Back from the player: the list meets the viewer at the playing row.
+    if (!mounted) return;
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
+  }
+}
+
+/// 喜欢: the songs hearted from the player's red heart, queued in like
+/// order. Long press removes the heart.
+class _LikesSection extends ConsumerStatefulWidget {
+  const _LikesSection({super.key});
+
+  @override
+  ConsumerState<_LikesSection> createState() => _LikesSectionState();
+}
+
+class _LikesSectionState extends ConsumerState<_LikesSection> {
+  final MusicListReveal _reveal = MusicListReveal();
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final library = ref.watch(musicLibraryControllerProvider);
+    final libraryController = ref.read(musicLibraryControllerProvider.notifier);
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+    final tracks = library.likedSongs;
+
+    if (tracks.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.favorite_rounded, size: 72.sp, color: accent.withValues(alpha: 0.5)),
+            SizedBox(height: 14.sp),
+            Text(i18n('music_empty_likes'), style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor)),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 10.sp),
+          child: Row(
+            children: [
+              Text(
+                '${i18n('music_likes')}（${tracks.length}）',
+                style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor),
+              ),
+              const Spacer(),
+              TvButton(
+                title: i18n('music_play_all'),
+                icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                size: TvButtonSize.mini,
+                onTap: () => _play(context, ref, tracks, 0),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: DpadRegion(
+            verticalEdge: DpadEdgeBehavior.leave,
+            horizontalEdge: DpadEdgeBehavior.leave,
+            child: ListView.separated(
+              padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
+              itemCount: tracks.length,
+              separatorBuilder: (_, _) => SizedBox(height: 4.sp),
+              itemBuilder: (context, index) {
+                final track = tracks[index];
+                _reveal.bindRow(track, context);
+                return _SongRow(
+                  track: track,
+                  index: index,
+                  focusNode: _reveal.nodeFor(track),
+                  onPlay: () => _play(context, ref, tracks, index),
+                  onRemove: () => libraryController.removeLikedSong(track.id),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _play(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) async {
+    ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
+    await const MusicPlayerRoute().push(context);
+    if (!mounted) return;
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 }
 
@@ -162,6 +278,13 @@ class _FollowSection extends ConsumerStatefulWidget {
 
 class _FollowSectionState extends ConsumerState<_FollowSection> {
   int _tab = 0;
+  final MusicListReveal _reveal = MusicListReveal();
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -238,9 +361,11 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                             separatorBuilder: (_, _) => SizedBox(height: 4.sp),
                             itemBuilder: (context, index) {
                               final track = tracks[index];
+                              _reveal.bindRow(track, context);
                               return _SongRow(
                                 track: track,
                                 index: index,
+                                focusNode: _reveal.nodeFor(track),
                                 onPlay: () => _playAll(context, ref, tracks, index),
                                 onRemove: () => libraryController.removeFavorite(track.archive.bvid),
                               );
@@ -282,9 +407,11 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
     );
   }
 
-  void _playAll(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) {
+  Future<void> _playAll(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int startIndex) async {
     ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex);
-    const MusicPlayerRoute().push(context);
+    await const MusicPlayerRoute().push(context);
+    if (!mounted || _tab != 0) return;
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 }
 
@@ -345,12 +472,16 @@ class _FollowUpRow extends StatelessWidget {
 /// One QQ music song row: index (or the playing equalizer), cover, title over
 /// singer, duration. Long press removes it from the library list.
 class _SongRow extends ConsumerWidget {
-  const _SongRow({required this.track, required this.index, required this.onPlay, required this.onRemove});
+  const _SongRow({required this.track, required this.index, required this.onPlay, required this.onRemove, this.focusNode});
 
   final MusicTrack track;
   final int index;
   final VoidCallback onPlay;
   final VoidCallback onRemove;
+
+  /// The list's per-row node, so returning from the player can put the focus
+  /// straight on the playing song.
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -360,6 +491,7 @@ class _SongRow extends ConsumerWidget {
     final isCurrent = state.current?.archive.bvid == track.archive.bvid && state.current?.part.page == track.part.page;
 
     return TvFocusable(
+      focusNode: focusNode,
       onTap: onPlay,
       onLongPress: onRemove,
       builder: (context, focused, child) {
@@ -652,7 +784,7 @@ class MusicMiniBar extends ConsumerWidget {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
     final track = state.current;
-    final isFavorite = track != null && library.isFavorite(track.archive.bvid);
+    final isLiked = track != null && library.isSongLiked(track.id);
     return DpadRegion(
       child: Container(
         margin: EdgeInsets.all(12.sp),
@@ -735,12 +867,22 @@ class MusicMiniBar extends ConsumerWidget {
                     ),
                     SizedBox(width: 8.sp),
                     TvIconButton(
-                      icon: Icon(isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded),
+                      icon: Icon(isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded),
                       size: TvIconButtonSize.medium,
                       onTap: () {
                         if (track != null) {
-                          ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(track.archive);
+                          ref.read(musicLibraryControllerProvider.notifier).toggleLikeSong(track);
                         }
+                      },
+                    ),
+                    SizedBox(width: 6.sp),
+                    TvIconButton(
+                      icon: const Icon(Icons.playlist_add_rounded),
+                      size: TvIconButtonSize.medium,
+                      isSecondary: true,
+                      onTap: () {
+                        final current = state.current;
+                        if (current != null) showAddToPlaylistDialog(context, ref, current);
                       },
                     ),
                     SizedBox(width: 6.sp),

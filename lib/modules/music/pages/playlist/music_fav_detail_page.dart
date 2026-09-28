@@ -6,6 +6,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
 /// One synced playlist's track table (bmsc's fav detail): an in-list search
@@ -22,9 +23,11 @@ class MusicFavDetailPage extends ConsumerStatefulWidget {
 
 class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
   final TextEditingController _filter = TextEditingController();
+  final MusicListReveal _reveal = MusicListReveal();
 
   @override
   void dispose() {
+    _reveal.dispose();
     _filter.dispose();
     super.dispose();
   }
@@ -94,18 +97,23 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
                 : ListView.builder(
                     padding: EdgeInsets.fromLTRB(24.sp, 4.sp, 24.sp, 24.sp),
                     itemCount: tracks.length,
-                    itemBuilder: (context, index) => _TrackRow(
-                      track: tracks[index],
-                      index: index,
-                      excluded: ref
-                          .read(musicPlaylistSyncControllerProvider.notifier)
-                          .excludedParts(tracks[index].archive.bvid)
-                          .contains(tracks[index].part.cid),
-                      onPlay: () => _playFrom(context, ref, tracks, index),
-                      onToggleExcluded: () => ref
-                          .read(musicPlaylistSyncControllerProvider.notifier)
-                          .toggleExcludedPart(tracks[index].archive.bvid, tracks[index].part.cid),
-                    ),
+                    itemBuilder: (context, index) {
+                      final track = tracks[index];
+                      _reveal.bindRow(track, context);
+                      return _TrackRow(
+                        track: track,
+                        index: index,
+                        focusNode: _reveal.nodeFor(track),
+                        excluded: ref
+                            .read(musicPlaylistSyncControllerProvider.notifier)
+                            .excludedParts(track.archive.bvid)
+                            .contains(track.part.cid),
+                        onPlay: () => _playFrom(context, ref, tracks, index),
+                        onToggleExcluded: () => ref
+                            .read(musicPlaylistSyncControllerProvider.notifier)
+                            .toggleExcludedPart(track.archive.bvid, track.part.cid),
+                      );
+                    },
                   ),
           ),
         ],
@@ -113,17 +121,22 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
     );
   }
 
-  void _playAll(BuildContext context, WidgetRef ref, List<MusicTrack> tracks) {
+  Future<void> _playAll(BuildContext context, WidgetRef ref, List<MusicTrack> tracks) async {
     final filtered = ref.read(musicPlaylistSyncControllerProvider.notifier).filterExcluded(tracks);
     ref.read(musicPlayerControllerProvider.notifier).playQueue(filtered);
-    const MusicPlayerRoute().push(context);
+    await const MusicPlayerRoute().push(context);
+    if (!mounted) return;
+    // The reveal walks the visible list, not the filtered queue.
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 
-  void _playFrom(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int index) {
+  Future<void> _playFrom(BuildContext context, WidgetRef ref, List<MusicTrack> tracks, int index) async {
     final filtered = ref.read(musicPlaylistSyncControllerProvider.notifier).filterExcluded(tracks);
     final at = filtered.indexWhere((t) => t.id == tracks[index].id);
     ref.read(musicPlayerControllerProvider.notifier).playQueue(filtered, startIndex: at < 0 ? 0 : at);
-    const MusicPlayerRoute().push(context);
+    await const MusicPlayerRoute().push(context);
+    if (!mounted) return;
+    _reveal.reveal(this.context, tracks, ref.read(musicPlayerControllerProvider).current);
   }
 }
 
@@ -134,6 +147,7 @@ class _TrackRow extends StatelessWidget {
     required this.excluded,
     required this.onPlay,
     required this.onToggleExcluded,
+    this.focusNode,
   });
 
   final MusicTrack track;
@@ -142,12 +156,16 @@ class _TrackRow extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onToggleExcluded;
 
+  /// The list's per-row node, for the return-from-player reveal.
+  final FocusNode? focusNode;
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
     return TvFocusable(
+      focusNode: focusNode,
       onTap: onPlay,
       onLongPress: onToggleExcluded,
       builder: (context, focused, child) => AnimatedContainer(

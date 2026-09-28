@@ -13,7 +13,19 @@ class TvFocusable extends StatelessWidget {
   final VoidCallback? onLongPress;
   final bool autofocus;
 
-  const TvFocusable({super.key, this.child, this.builder, this.onTap, this.onLongPress, this.autofocus = false});
+  /// External node, for callers that steer focus programmatically (a list that
+  /// puts the focus back on the playing row). Null keeps DpadFocusable's own.
+  final FocusNode? focusNode;
+
+  const TvFocusable({
+    super.key,
+    this.child,
+    this.builder,
+    this.onTap,
+    this.onLongPress,
+    this.autofocus = false,
+    this.focusNode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +33,7 @@ class TvFocusable extends StatelessWidget {
 
     return DpadFocusable(
       autofocus: autofocus,
+      focusNode: focusNode,
       onSelect: onTap,
       onLongSelect: onLongPress,
       // No manual `Scrollable.ensureVisible` here: `DpadFocusable` already
