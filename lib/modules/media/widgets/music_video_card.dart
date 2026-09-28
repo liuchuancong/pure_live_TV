@@ -1,19 +1,40 @@
+import 'package:dpad/dpad.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 
-/// A music archive tile for the ranking / search grids.
+/// A bilibili archive card in the shared [TvRoomCard] visual language: the
+/// same dpad focus effects, the same focused-card palette, a cover with
+/// corner badges and an avatar-led info row. The live card speaks LiveRoom;
+/// this one speaks [MusicArchive] — cover, title, who made it.
 ///
-/// Not [TvRoomCard]: that widget speaks LiveRoom (followed marks, platform
-/// badges, live status). An archive card is a cover, a title and who made it —
-/// a slimmer widget keeps the grid honest about what it is showing.
+/// Optional [badge] (region / rank label), [progress] (watched fraction,
+/// drawn as the cover's bottom bar) and [onLongPress] let the video module's
+/// grids reuse the same shell.
 class MusicVideoCard extends StatelessWidget {
-  const MusicVideoCard({super.key, required this.archive, this.onTap});
+  const MusicVideoCard({
+    super.key,
+    required this.archive,
+    this.onTap,
+    this.onLongPress,
+    this.badge = '',
+    this.progress = 0,
+    this.showDuration = true,
+  });
 
   final MusicArchive archive;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+
+  /// Static label on the cover's top-left (region name, rank number, percent).
+  final String badge;
+
+  /// 0..1 watched fraction; > 0 draws the progress bar on the cover edge.
+  final double progress;
+
+  final bool showDuration;
 
   static String formatDuration(int seconds) {
     if (seconds <= 0) return '';
@@ -25,102 +46,127 @@ class MusicVideoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
+    final borderRadius = BorderRadius.circular(24.sp);
 
-    return TvFocusable(
-      onTap: onTap,
-      builder: (context, focused, child) {
-        return AnimatedScale(
-          scale: focused ? 1.03 : 1.0,
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOutCubic,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOutCubic,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: tvTheme.cardColor,
-              borderRadius: BorderRadius.circular(16.sp),
-              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-              boxShadow: [
-                BoxShadow(color: accent.withValues(alpha: focused ? 0.45 : 0), blurRadius: focused ? 16.sp : 0),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CachedNetworkImage(
+    final List<DpadEffect> effects = [
+      DpadScaleEffect(
+        scale: 1.01,
+        pressedScale: 0.97,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+      ),
+      tvTheme.isLight
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
+          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
+      DpadCustomEffect((ctx, state, _) {
+        final isFocused = state.focused;
+        final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
+        final titleColor = isFocused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
+        final subtitleColor = isFocused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
+        final label = badge.isNotEmpty ? badge : archive.tname;
+
+        return AnimatedContainer(
+          duration: TvFocusStyle.focusDuration(isFocused),
+          curve: TvFocusStyle.curve,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: borderRadius,
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(borderRadius: borderRadius, color: tvTheme.cardColor),
+                      child: CachedNetworkImage(
                         imageUrl: archive.cover,
                         fit: BoxFit.cover,
                         memCacheWidth: 640,
-                        errorWidget: (_, _, _) => Icon(Icons.music_note_rounded, size: 40.sp, color: tvTheme.secondaryTextColor),
-                        placeholder: (_, _) => Container(color: tvTheme.secondaryTextColor.withValues(alpha: 0.15)),
-                      ),
-                      if (archive.duration > 0)
-                        Positioned(
-                          right: 8.sp,
-                          bottom: 8.sp,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.65),
-                              borderRadius: BorderRadius.circular(8.sp),
-                            ),
-                            child: Text(
-                              formatDuration(archive.duration),
-                              style: AppTextStyles.t14W500.copyWith(color: Colors.white, height: 1.2),
-                            ),
-                          ),
+                        placeholder: (context, url) => Container(
+                          color: tvTheme.cardColor,
+                          child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
                         ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(10.sp),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        archive.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16W700.copyWith(color: tvTheme.primaryTextColor, height: 1.3),
+                        errorWidget: (context, url, error) =>
+                            AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true),
                       ),
-                      SizedBox(height: 6.sp),
-                      Row(
+                    ),
+                    if (label.isNotEmpty)
+                      Positioned(
+                        left: 12.sp,
+                        top: 12.sp,
+                        child: TvButton(excludeFocus: true, title: label, size: TvButtonSize.mini),
+                      ),
+                    if (showDuration && archive.duration > 0)
+                      Positioned(
+                        right: 12.sp,
+                        bottom: 12.sp,
+                        child: TvButton(
+                          excludeFocus: true,
+                          title: formatDuration(archive.duration),
+                          size: TvButtonSize.mini,
+                        ),
+                      ),
+                    if (progress > 0)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: LinearProgressIndicator(
+                          value: progress.clamp(0.0, 1.0),
+                          minHeight: 4.sp,
+                          backgroundColor: Colors.white24,
+                          valueColor: AlwaysStoppedAnimation(tvTheme.focusColor),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 10.sp, top: 12.sp, right: 14.sp, bottom: 8.sp),
+                child: Row(
+                  children: [
+                    TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName),
+                    SizedBox(width: 12.sp),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.person_outline_rounded, size: 16.sp, color: tvTheme.secondaryTextColor),
-                          SizedBox(width: 4.sp),
-                          Expanded(
-                            child: Text(
-                              archive.upName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
-                            ),
+                          TvMarqueeText(
+                            text: archive.title,
+                            isFocused: isFocused,
+                            style: AppTextStyles.t16W700.copyWith(color: titleColor),
                           ),
-                          SizedBox(width: 8.sp),
-                          Icon(Icons.play_circle_outline_rounded, size: 16.sp, color: tvTheme.secondaryTextColor),
-                          SizedBox(width: 4.sp),
+                          SizedBox(height: 2.sp),
                           Text(
-                            readableCount(archive.playCount.toString()),
-                            style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                            archive.upName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.t14W500.copyWith(color: subtitleColor),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
-      },
+      }),
+    ];
+
+    return DpadFocusable(
+      autofocus: false,
+      effects: effects,
+      onSelect: onTap,
+      onLongSelect: onLongPress,
+      child: const SizedBox(),
     );
   }
 }
