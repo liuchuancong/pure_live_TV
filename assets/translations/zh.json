@@ -2779,5 +2779,7 @@
   "video_subtitle_off": "字幕关",
   "video_aspect_fill": "填满",
   "video_aspect_fit": "适应",
-  "music_playlist_filter_hint": "在歌单内搜索"
+  "music_playlist_filter_hint": "在歌单内搜索",
+  "video_personal_bangumi": "我的追番",
+  "video_bangumi_empty": "还没有追番"
 }

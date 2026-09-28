@@ -59,6 +59,20 @@ class VideoPgcApi {
     return [for (final item in list) PgcItem.fromJson(item)];
   }
 
+  /// The logged-in user's followed seasons (追番/追剧,
+  /// `x/space/bangumi/follow/list`). [type]: 1 bangumi, 2 drama.
+  Future<List<PgcItem>> getFollowedSeasons({int type = 1, int page = 1, int pageSize = 20}) async {
+    final mid = RegExp(r'DedeUserID=([^;]+)').firstMatch(_cookie)?.group(1) ?? '';
+    if (mid.isEmpty) throw Exception('bilibili login required');
+    final data = await _tryGet('https://api.bilibili.com/x/space/bangumi/follow/list', query: {
+      'vmid': mid,
+      'type': '$type',
+      'pn': '$page',
+      'ps': '$pageSize',
+    });
+    return [for (final item in (data?['list'] as List?) ?? const []) PgcItem.fromJson(item)];
+  }
+
   /// The full season detail by season id or episode id (`pgc/view/web/season`).
   Future<PgcSeason> getSeasonDetail({int? seasonId, int? epId}) async {
     final data = await _tryGet('https://api.bilibili.com/pgc/view/web/season', query: {

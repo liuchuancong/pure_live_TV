@@ -7,6 +7,8 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/video/api/video_pgc_api.dart';
+import 'package:pure_live/modules/video/models/video_pgc_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
@@ -28,6 +30,7 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
     ('video_personal_fav', Icons.favorite_border),
     ('video_personal_history', Icons.history_rounded),
     ('video_personal_toview', Icons.watch_later_outlined),
+    ('video_personal_bangumi', Icons.movie_filter_outlined),
   ];
 
   @override
@@ -57,7 +60,8 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
           child: switch (_tab) {
             0 => const _FavPane(),
             1 => const _HistoryPane(),
-            _ => const _ToViewPane(),
+            2 => const _ToViewPane(),
+            _ => const _BangumiPane(),
           },
         ),
       ],
@@ -426,6 +430,161 @@ class _ToViewPaneState extends ConsumerState<_ToViewPane> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Followed seasons (我的追番): the account's bangumi list, opening each
+/// season's episode page.
+class _BangumiPane extends ConsumerStatefulWidget {
+  const _BangumiPane();
+
+  @override
+  ConsumerState<_BangumiPane> createState() => _BangumiPaneState();
+}
+
+class _BangumiPaneState extends ConsumerState<_BangumiPane> {
+  final ScrollController _scroll = ScrollController();
+  final List<PgcItem> _items = [];
+  bool _loading = false;
+  bool _hasMore = true;
+  int _page = 0;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+    _scroll.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scroll.position.extentAfter < 600 && !_loading && _hasMore) _load();
+  }
+
+  Future<void> _load() async {
+    if (_loading || !_hasMore) return;
+    setState(() => _loading = true);
+    try {
+      final items = await VideoPgcApi.instance.getFollowedSeasons(page: _page + 1);
+      if (!mounted) return;
+      setState(() {
+        _items.addAll(items);
+        _page += 1;
+        _hasMore = items.length >= 20;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    if (_error != null && _items.isEmpty) {
+      return AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error);
+    }
+    if (_items.isEmpty && _loading) {
+      return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
+    }
+    if (_items.isEmpty) {
+      return AppStatusView(type: AppStatusType.empty, title: i18n('video_bangumi_empty'), subtitle: '');
+    }
+    return DpadRegion(
+      horizontalEdge: DpadEdgeBehavior.leave,
+      child: GridView.builder(
+        controller: _scroll,
+        padding: EdgeInsets.all(24.sp),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5,
+          mainAxisSpacing: 16.w,
+          crossAxisSpacing: 16.w,
+          childAspectRatio: 0.72,
+        ),
+        itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= _items.length) {
+            return Center(
+              child: _loading
+                  ? SizedBox(
+                      width: 32.sp,
+                      height: 32.sp,
+                      child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                    )
+                  : const SizedBox.shrink(),
+            );
+          }
+          final item = _items[index];
+          return _BangumiCard(item: item);
+        },
+      ),
+    );
+  }
+}
+
+class _BangumiCard extends StatelessWidget {
+  const _BangumiCard({required this.item});
+
+  final PgcItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+
+    return TvFocusable(
+      onTap: () => VideoSeasonRoute(item).push(context),
+      builder: (context, focused, child) => AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        decoration: BoxDecoration(
+          color: tvTheme.cardColor,
+          borderRadius: BorderRadius.circular(14.sp),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 5,
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(14.sp)),
+                child: CachedNetworkImage(
+                  imageUrl: item.cover,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  memCacheWidth: 480,
+                  errorWidget: (_, _, _) => Container(color: Colors.black26),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: EdgeInsets.all(8.sp),
+                child: Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.primaryTextColor),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

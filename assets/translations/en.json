@@ -2779,5 +2779,7 @@
   "video_subtitle_off": "Sub OFF",
   "video_aspect_fill": "Fill",
   "video_aspect_fit": "Fit",
-  "music_playlist_filter_hint": "Filter this list"
+  "music_playlist_filter_hint": "Filter this list",
+  "video_personal_bangumi": "Followed",
+  "video_bangumi_empty": "Nothing followed yet"
 }
