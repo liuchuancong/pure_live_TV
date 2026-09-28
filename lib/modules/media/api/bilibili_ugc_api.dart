@@ -513,21 +513,88 @@ class BilibiliUgcApi {
     }
   }
 
-  /// The number of danmaku segments for the part (`x/v2/dm/web/view`): one
-  /// segment per ~6 minutes of video, the segmentation newBV loads by.
-  /// Zero when the answer carries nothing — the caller falls back to the
-  /// one-shot XML.
+  /// The number of danmaku segments for the part. `x/v2/dm/web/view` answers
+  /// as protobuf (DmWebViewReply, non-WBI — newBV reads it the same way) whose
+  /// field 4 carries the repeated dm_seg config; the first entry's field 2 is
+  /// the segment total. Zero when the answer carries nothing — the caller
+  /// falls back to the one-shot XML.
   Future<int> getDanmakuSegmentCount({required int aid, required int cid}) async {
     try {
-      final data = await _getWbi(
+      final response = await HttpClient.instance.dio.get<List<int>>(
         'https://api.bilibili.com/x/v2/dm/web/view',
-        query: {'pid': '$aid', 'oid': '$cid', 'type': '1'},
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {'user-agent': 'Mozilla/5.0', 'referer': 'https://www.bilibili.com/'},
+        ),
+        queryParameters: {'type': '1', 'oid': '$cid', 'pid': '$aid'},
       );
-      final segs = data?['dm_seg'];
-      return segs is List ? segs.length : 0;
+      return _pbSegmentTotal(response.data ?? const <int>[]);
     } catch (_) {
       return 0;
     }
+  }
+
+  /// Reads one protobuf varint; returns (value, nextOffset).
+  static (int, int) _pbVarint(List<int> source, int offset) {
+    var value = 0;
+    var shift = 0;
+    var cursor = offset;
+    while (cursor < source.length) {
+      final b = source[cursor++];
+      value |= (b & 0x7f) << shift;
+      if (b & 0x80 == 0) return (value, cursor);
+      shift += 7;
+    }
+    throw const FormatException('truncated varint');
+  }
+
+  static int _pbSkip(List<int> source, int offset, int wire) {
+    switch (wire) {
+      case 0:
+        return _pbVarint(source, offset).$2;
+      case 1:
+        return offset + 8;
+      case 2:
+        final (length, after) = _pbVarint(source, offset);
+        return after + length;
+      case 5:
+        return offset + 4;
+      default:
+        throw const FormatException('unsupported wire type');
+    }
+  }
+
+  /// Total segments from the first `dm_seg` config (DmWebViewReply field 4 →
+  /// DmSegConfig field 2), or 0 when absent.
+  static int _pbSegmentTotal(List<int> bytes) {
+    try {
+      var at = 0;
+      while (at < bytes.length) {
+        final (key, keyNext) = _pbVarint(bytes, at);
+        final field = key >> 3;
+        final wire = key & 7;
+        if (field != 4 || wire != 2) {
+          at = _pbSkip(bytes, keyNext, wire);
+          continue;
+        }
+        final (configLength, configStart) = _pbVarint(bytes, keyNext);
+        final config = bytes.sublist(configStart, configStart + configLength);
+
+        var inner = 0;
+        while (inner < config.length) {
+          final (innerKey, innerNext) = _pbVarint(config, inner);
+          if ((innerKey >> 3) == 2 && (innerKey & 7) == 0) {
+            final (total, _) = _pbVarint(config, innerNext);
+            return total;
+          }
+          inner = _pbSkip(config, innerNext, innerKey & 7);
+        }
+        return 0;
+      }
+    } on FormatException {
+      // Fall through: malformed protobuf reads as "no segments".
+    }
+    return 0;
   }
 
   /// One danmaku segment (`x/v2/dm/web/seg.so`) as protobuf. The response
@@ -535,16 +602,23 @@ class BilibiliUgcApi {
   /// danmaku: progress (field 2, varint, milliseconds), mode (field 3,
   /// varint) and content (field 7, string) — the only fields this app uses.
   Future<List<({double time, String text})>> getDanmakuSegment({
+    required int aid,
     required int cid,
     required int segment,
   }) async {
+    // `/x/v2/dm/wbi/web/seg.so` — the WBI-signed web endpoint newBV uses
+    // (`segment_index`, 1-based). The unsigned `dm/web/seg.so` answers an
+    // empty reply to plain clients, which read as "no danmaku in this
+    // segment".
+    final base = 'https://api.bilibili.com/x/v2/dm/wbi/web/seg.so';
+    final signed = await _site.getWbiSign('$base?type=1&oid=$cid&pid=$aid&segment_index=$segment');
     final response = await HttpClient.instance.dio.get<List<int>>(
-      'https://api.bilibili.com/x/v2/dm/web/seg.so',
+      base,
       options: Options(
         responseType: ResponseType.bytes,
         headers: {'user-agent': 'Mozilla/5.0', 'referer': 'https://www.bilibili.com/'},
       ),
-      queryParameters: {'type': '1', 'oid': '$cid', 'segment': '$segment'},
+      queryParameters: signed,
     );
     return parseDanmakuSegment(response.data ?? const <int>[]);
   }

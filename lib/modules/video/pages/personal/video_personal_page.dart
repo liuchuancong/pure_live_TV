@@ -175,23 +175,19 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
       return AppStatusView(type: AppStatusType.empty, title: i18n('video_follow_empty'), subtitle: '');
     }
 
-    return DpadRegion(
-      horizontalEdge: DpadEdgeBehavior.leave,
-      child: GridView.builder(
-        padding: EdgeInsets.all(24.sp),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
-          mainAxisSpacing: 20.sp,
-          crossAxisSpacing: 24.sp,
-          childAspectRatio: 3.4,
-        ),
-        itemCount: follows.length + (_hasMore || _loading ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= follows.length) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _loadMore();
-            });
-            return Center(
+    // newBV's 关注列表: full-width rows in a plain list — wide rows in an
+    // aspect-ratio grid overflowed under sidebar-constrained widths.
+    return ListView.builder(
+      padding: EdgeInsets.all(24.sp),
+      itemCount: follows.length + (_hasMore || _loading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index >= follows.length) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _loadMore();
+          });
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 14.sp),
+            child: Center(
               child: _loading
                   ? SizedBox(
                       width: 28.sp,
@@ -199,15 +195,17 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
                       child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
                     )
                   : const SizedBox.shrink(),
-            );
-          }
-          final follow = follows[index];
-          return TvFocusable(
+            ),
+          );
+        }
+        final follow = follows[index];
+        return Padding(
+          padding: EdgeInsets.only(bottom: 12.sp),
+          child: TvFocusable(
             onTap: () => UgcUserSpaceRoute(follow.mid, follow.name).push(context),
             onLongPress: () => unawaited(_unfollow(index)),
             builder: (context, focused, child) => Container(
-              margin: EdgeInsets.symmetric(vertical: 4.sp),
-              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
               decoration: BoxDecoration(
                 color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
                 borderRadius: BorderRadius.circular(16.sp),
@@ -230,7 +228,6 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           follow.name,
@@ -253,9 +250,9 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
                 ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

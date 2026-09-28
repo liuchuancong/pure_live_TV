@@ -147,7 +147,7 @@ class VodDanmakuOverlayState extends ConsumerState<VodDanmakuOverlay> {
     if (_segments.containsKey(n) || _segmentsLoading.contains(n)) return;
     _segmentsLoading.add(n);
     try {
-      final items = await BilibiliUgcApi.instance.getDanmakuSegment(cid: widget.cid, segment: n);
+      final items = await BilibiliUgcApi.instance.getDanmakuSegment(aid: widget.aid, cid: widget.cid, segment: n);
       if (!mounted || _loadedCid != widget.cid) return;
       setState(() {
         _segments[n] = items;
