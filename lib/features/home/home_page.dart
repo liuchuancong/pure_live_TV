@@ -210,7 +210,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         // 动态/推荐/热门 live as top tabs inside the home page.
         const labels = [
           ('video_tab_home', Icons.home_outlined),
-          ('video_tab_ranking', Icons.leaderboard_outlined),
           ('video_tab_region', Icons.category_outlined),
           ('video_tab_pgc', Icons.live_tv_outlined),
           ('video_tab_search', Icons.search_rounded),

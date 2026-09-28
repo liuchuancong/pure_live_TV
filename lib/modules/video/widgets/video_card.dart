@@ -93,6 +93,9 @@ class _VideoCardState extends ConsumerState<VideoCard> {
     // uses, so the two card families read as one. The glow wraps the whole
     // card (scale + all-around), also from TvRoomCard.
     final borderRadius = BorderRadius.circular(24.sp);
+    // The visuals fold into a DpadCustomEffect: DpadFocusable takes effects
+    // or a builder, never both (the assertion that filled every grid cell
+    // with the error view).
     final List<DpadEffect> effects = [
       DpadScaleEffect(
         scale: 1.01,
@@ -104,13 +107,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
       tvTheme.isLight
           ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
           : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
-    ];
-
-    return DpadFocusable(
-      effects: effects,
-      onSelect: widget.onTap,
-      onLongSelect: archive.aid > 0 ? () => setState(() => _actionsOpen = true) : null,
-      builder: (context, state, _) {
+      DpadCustomEffect((context, state, _) {
         final focused = state.focused;
         final card = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +296,14 @@ class _VideoCardState extends ConsumerState<VideoCard> {
           ),
           child: card,
         );
-      },
+      }),
+    ];
+
+    return DpadFocusable(
+      effects: effects,
+      onSelect: widget.onTap,
+      onLongSelect: archive.aid > 0 ? () => setState(() => _actionsOpen = true) : null,
+      child: const SizedBox.shrink(),
     );
   }
 }

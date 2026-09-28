@@ -391,7 +391,10 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                 ],
               ),
             ),
+    );
   }
+}
+
 /// One interaction chip: a compact icon+label pill in the focused palette.
 class _ActionChip extends StatelessWidget {
   const _ActionChip({required this.icon, required this.label, this.active = false, this.onTap, this.onLongPress});
