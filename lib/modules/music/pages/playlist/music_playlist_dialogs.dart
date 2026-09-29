@@ -31,13 +31,12 @@ Future<String?> showPlaylistNameDialog(BuildContext context, WidgetRef ref, {Mus
   );
 }
 
-/// 加入歌单: pick one of the local playlists, or create one on the spot.
-/// With no playlist yet it opens straight into the creation dialog.
+/// 加入歌单: the liked playlist first, then the local ones, or create one on
+/// the spot. The liked row always exists, so the dialog always opens — with no
+/// playlist yet it is the liked row plus creation.
 Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicTrack track) {
-  final playlists = ref.read(musicLibraryControllerProvider).orderedPlaylists;
-  if (playlists.isEmpty) {
-    return showPlaylistNameDialog(context, ref);
-  }
+  final library = ref.read(musicLibraryControllerProvider);
+  final playlists = library.orderedPlaylists;
 
   final tvTheme = context.tvTheme;
   return TvDialogUtils.show<void>(
@@ -49,9 +48,46 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (final (index, playlist) in playlists.indexed)
+          // The liked playlist, the shelf's fixed head — picking it hearts the
+          // song (adding to a playlist never un-hearts one that already is).
+          TvFocusable(
+            autofocus: true,
+            onTap: () {
+              Navigator.of(context).pop();
+              final controller = ref.read(musicLibraryControllerProvider.notifier);
+              if (!library.isSongLiked(track.id)) controller.toggleLikeSong(track);
+            },
+            builder: (context, focused, child) => AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+              decoration: BoxDecoration(
+                color: focused ? tvTheme.cardColor : Colors.transparent,
+                borderRadius: BorderRadius.circular(12.sp),
+                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.favorite_rounded, size: 26.sp, color: tvTheme.focusColor),
+                  SizedBox(width: 12.sp),
+                  Expanded(
+                    child: Text(
+                      i18n('music_liked_playlist'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
+                    ),
+                  ),
+                  Text(
+                    '${library.likedSongs.length}',
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          for (final playlist in playlists)
             TvFocusable(
-              autofocus: index == 0,
+              autofocus: false,
               onTap: () {
                 Navigator.of(context).pop();
                 ref.read(musicLibraryControllerProvider.notifier).addTrackToPlaylist(playlist.id, track);
