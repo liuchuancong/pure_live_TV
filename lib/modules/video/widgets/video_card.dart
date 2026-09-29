@@ -10,17 +10,15 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 
-
-
-
-
-
-
-/// The video-mode card, newBV's SmallVideoCard: a 1.6:1 cover with the
-/// play/danmaku counts and the duration on a bottom gradient, the title, and
-/// the UP · publish-time line under it. The watched-progress line rides the
-/// cover's bottom edge. Long-press swaps the cover for the action row
-/// (稍后再看 / UP 主页), closing when the card loses focus.
+/// The video-mode card, newBV's SmallVideoCard: a cover with the play/danmaku
+/// counts and the duration on a bottom gradient, the title, and the UP ·
+/// publish-time line under it. The watched-progress line rides the cover's
+/// bottom edge. Long-press swaps the cover for the action row (稍后再看 /
+/// UP 主页), closing when the card loses focus.
+///
+/// The focus language is TvRoomCard's: one AnimatedContainer surface
+/// (focusedCardColor / cardColor, 24sp radius, 2sp accent edge), cover
+/// flexing inside it, on-cover pills as TvButton mini, marquee title.
 class VideoCard extends ConsumerStatefulWidget {
   const VideoCard({super.key, required this.archive, required this.onTap, this.badge = ''});
 
@@ -87,11 +85,6 @@ class _VideoCardState extends ConsumerState<VideoCard> {
 
     final badge = widget.badge.isNotEmpty ? widget.badge : archive.tname;
 
-    // TvRoomCard's focus language: the 24sp radius, a tinted filled
-    // background and a 2sp accent edge while focused, with the info text
-    // repainting in the on-focused colours — the same pairing the room grid
-    // uses, so the two card families read as one. The glow wraps the whole
-    // card (scale + all-around), also from TvRoomCard.
     final borderRadius = BorderRadius.circular(24.sp);
     // The visuals fold into a DpadCustomEffect: DpadFocusable takes effects
     // or a builder, never both (the assertion that filled every grid cell
@@ -108,212 +101,180 @@ class _VideoCardState extends ConsumerState<VideoCard> {
           ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
           : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((context, state, _) {
-        final focused = state.focused;
-        final card = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ----------------------------------------------------- the cover
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 1.6,
-                  child: ClipRRect(
-                    borderRadius: borderRadius,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: archive.cover,
-                          fit: BoxFit.cover,
-                          placeholder: (_, _) => ColoredBox(color: tvTheme.cardColor),
-                          errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
-                        ),
-                        // Bottom gradient + stats, newBV's CardCover.
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            height: 64.sp,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 10.sp,
-                          right: 10.sp,
-                          bottom: 6.sp,
-                          child: Row(
-                            children: [
-                              Icon(Icons.play_arrow_rounded, size: 18.sp, color: Colors.white.withValues(alpha: 0.9)),
-                              SizedBox(width: 2.sp),
-                              Flexible(
-                                child: Text(
-                                  _wan(archive.playCount),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9)),
-                                ),
-                              ),
-                              SizedBox(width: 10.sp),
-                              Icon(Icons.comment_outlined, size: 16.sp, color: Colors.white.withValues(alpha: 0.9)),
-                              SizedBox(width: 2.sp),
-                              Flexible(
-                                child: Text(
-                                  _wan(archive.barrageCount),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9)),
-                                ),
-                              ),
-                              const Spacer(),
-                              if (_durationLabel.isNotEmpty)
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 6.sp, vertical: 1.sp),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.6),
-                                    borderRadius: BorderRadius.circular(6.sp),
-                                  ),
-                                  child: Text(
-                                    _durationLabel,
-                                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (badge.isNotEmpty)
-                          Positioned(
-                            left: 10.sp,
-                            top: 10.sp,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.55),
-                                borderRadius: BorderRadius.circular(8.sp),
-                              ),
-                              child: Text(
-                                badge,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
-                              ),
-                            ),
-                          ),
-                        // Watched progress along the cover's bottom edge.
-                        if (progress > 0)
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: SizedBox(
-                              height: 4.sp,
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  ColoredBox(color: Colors.white.withValues(alpha: 0.25)),
-                                  FractionallySizedBox(
-                                    alignment: Alignment.centerLeft,
-                                    widthFactor: progress.clamp(0.0, 1.0),
-                                    child: ColoredBox(color: accent),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        // Long-press action row, replacing the cover (newBV's
-                        // long-press actions: 稍后再看 / UP 主页).
-                        if (_actionsOpen)
-                          ColoredBox(
-                            color: Colors.black.withValues(alpha: 0.82),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                IconButton(
-                                  tooltip: i18n('video_action_toview'),
-                                  onPressed: _watchLater,
-                                  icon: Icon(Icons.watch_later_outlined, size: 30.sp, color: Colors.white),
-                                ),
-                                IconButton(
-                                  tooltip: i18n('video_action_up_page'),
-                                  onPressed: archive.upMid > 0
-                                      ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
-                                      : null,
-                                  icon: Icon(Icons.person_outline_rounded, size: 30.sp, color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (focused)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      // The cover keeps its own accent edge inside the card's
-                      // filled surface (the info block below is tinted too).
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: borderRadius,
-                          border: Border.all(color: tvTheme.focusColor, width: 2.sp),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            SizedBox(height: 8.sp),
-            // -------------------------------------------------- the info block
-            // Flexible on purpose: the grid cell's height is fixed, so at a
-            // large font scale the two text lines must shrink to what fits
-            // (they already ellipsize) instead of pushing the Column past the
-            // cell edge.
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    archive.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, 
-                      color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
-                      height: 1.3,
-                    ),
-                  ),
-                  SizedBox(height: 4.sp),
-                  Text(
-                    archive.upName + (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, 
-                      color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
+        final isFocused = state.focused;
         // Losing focus closes the action overlay, like newBV's onFocusChanged.
-        if (_actionsOpen && !focused) {
+        if (_actionsOpen && !isFocused) {
           scheduleMicrotask(() {
             if (mounted && _actionsOpen) setState(() => _actionsOpen = false);
           });
         }
-        // Focused: the whole card becomes a tinted, edged surface — the room
-        // card's pairing, applied around the cover plus info block.
-        if (!focused) return card;
-        return Container(
-          padding: EdgeInsets.all(6.sp),
+        final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
+        final titleColor = isFocused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
+        final subtitleColor = isFocused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
+
+        return AnimatedContainer(
+          duration: TvFocusStyle.focusDuration(isFocused),
+          curve: TvFocusStyle.curve,
           decoration: BoxDecoration(
-            color: tvTheme.focusedCardColor,
+            color: bgColor,
             borderRadius: borderRadius,
-            border: Border.all(color: tvTheme.focusColor, width: 2.sp),
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
           ),
-          child: card,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // The cover takes the height the info block leaves (the room
+              // card's rule: the artwork yields, the content does not).
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24.sp),
+                        color: tvTheme.cardColor,
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: archive.cover,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 640,
+                        placeholder: (context, url) => Container(
+                          color: tvTheme.cardColor,
+                          child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: tvTheme.cardColor,
+                          child: AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true),
+                        ),
+                      ),
+                    ),
+                    // Bottom gradient, newBV's CardCover scrim.
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        height: 64.sp,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // On-cover pills are TvButton mini, the room card's badge
+                    // language: counts bottom-left, duration bottom-right.
+                    Positioned(
+                      left: 10.sp,
+                      right: 10.sp,
+                      bottom: 8.sp,
+                      child: Row(
+                        children: [
+                          TvButton(
+                            excludeFocus: true,
+                            title: _wan(archive.playCount),
+                            icon: Icon(Icons.play_arrow_rounded, size: 16.sp),
+                            size: TvButtonSize.mini,
+                          ),
+                          SizedBox(width: 6.sp),
+                          TvButton(
+                            excludeFocus: true,
+                            title: _wan(archive.barrageCount),
+                            icon: Icon(Icons.comment_outlined, size: 16.sp),
+                            size: TvButtonSize.mini,
+                          ),
+                          const Spacer(),
+                          if (_durationLabel.isNotEmpty)
+                            TvButton(
+                              excludeFocus: true,
+                              title: _durationLabel,
+                              size: TvButtonSize.mini,
+                            ),
+                        ],
+                      ),
+                    ),
+                    // The region/rank pill anchors the top-left corner, like
+                    // the room card's platform badge.
+                    if (badge.isNotEmpty)
+                      Positioned(
+                        left: 12.sp,
+                        top: 12.sp,
+                        child: TvButton(
+                          excludeFocus: true,
+                          title: badge,
+                          size: TvButtonSize.mini,
+                        ),
+                      ),
+                    // Watched progress along the cover's bottom edge.
+                    if (progress > 0)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SizedBox(
+                          height: 4.sp,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ColoredBox(color: Colors.white.withValues(alpha: 0.25)),
+                              FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: progress.clamp(0.0, 1.0),
+                                child: ColoredBox(color: accent),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    // Long-press action row, replacing the cover (newBV's
+                    // long-press actions: 稍后再看 / UP 主页).
+                    if (_actionsOpen)
+                      ColoredBox(
+                        color: Colors.black.withValues(alpha: 0.82),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(
+                              tooltip: i18n('video_action_toview'),
+                              onPressed: _watchLater,
+                              icon: Icon(Icons.watch_later_outlined, size: 30.sp, color: Colors.white),
+                            ),
+                            IconButton(
+                              tooltip: i18n('video_action_up_page'),
+                              onPressed: archive.upMid > 0
+                                  ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
+                                  : null,
+                              icon: Icon(Icons.person_outline_rounded, size: 30.sp, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // The info block, sized by its own two lines like the room
+              // card's compact info row: title marquee over the UP · date line.
+              Padding(
+                padding: EdgeInsets.only(left: 10.sp, right: 10.sp, top: 8.sp, bottom: 8.sp),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TvMarqueeText(
+                      text: archive.title,
+                      isFocused: isFocused,
+                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700, color: titleColor),
+                    ),
+                    SizedBox(height: 4.sp),
+                    Text(
+                      archive.upName + (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: subtitleColor),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       }),
     ];
