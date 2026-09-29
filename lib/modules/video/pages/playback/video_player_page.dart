@@ -57,13 +57,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   bool _danmakuOn = true;
   bool _subtitleOn = false;
   bool _aspectFill = false;
-  bool _liked = false;
-  bool _favoured = false;
   final GlobalKey<VodDanmakuOverlayState> _danmakuKey = GlobalKey();
-
-  /// newBV's persistent bottom progress line — the thin line at the screen's
-  /// bottom edge stays on unless the viewer turns it off in the bar.
-  bool _showBottomLine = true;
 
   // Per-part player extras: subtitles, online count, progress heartbeat.
   List<SubtitleCue> _subtitleCues = const [];
@@ -82,7 +76,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     EmojiManager().preload('bilibili');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _playNode.requestFocus();
-      _loadInteractionStates();
     });
     _progressTimer = Timer.periodic(const Duration(seconds: 10), (_) => _recordProgress());
     ref.listenManual(musicPlayerControllerProvider, (previous, next) {
@@ -156,67 +149,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       BilibiliUgcApi.instance
           .reportHistory(aid: track.archive.aid, cid: cid, progress: 0, bvid: track.archive.bvid)
           .catchError((Object _) {});
-    }
-  }
-
-  /// Like / favourite state for the in-player shortcuts, same source the
-  /// detail page reads. Coin has no readable state here; it fires optimistically.
-  Future<void> _loadInteractionStates() async {
-    final track = ref.read(musicPlayerControllerProvider).current;
-    final aid = track?.archive.aid ?? 0;
-    if (aid <= 0) return;
-    try {
-      final results = await Future.wait([
-        BilibiliUgcApi.instance.hasLiked(aid),
-        BilibiliUgcApi.instance.isFavoured(aid),
-      ]);
-      if (!mounted) return;
-      setState(() {
-        _liked = results[0];
-        _favoured = results[1];
-      });
-    } catch (_) {
-      // Logged out or rate-limited: the shortcuts still fire, they just start
-      // from the optimistic state.
-    }
-  }
-
-  /// The in-player like/coin/fav shortcuts (newBV's player actions). Each
-  /// announces itself with a toast — the hint that the shortcut fired.
-  Future<void> _likeShortcut() async {
-    final track = ref.read(musicPlayerControllerProvider).current;
-    if (track == null) return;
-    try {
-      await BilibiliUgcApi.instance.setLike(track.archive.aid, like: !_liked);
-      if (!mounted) return;
-      setState(() => _liked = !_liked);
-      ToastUtil.show(i18n(_liked ? 'video_action_liked' : 'video_action_like_cancelled'));
-    } catch (_) {
-      if (mounted) ToastUtil.show(i18n('video_action_failed'));
-    }
-  }
-
-  Future<void> _coinShortcut() async {
-    final track = ref.read(musicPlayerControllerProvider).current;
-    if (track == null) return;
-    try {
-      await BilibiliUgcApi.instance.addCoin(track.archive.aid);
-      if (mounted) ToastUtil.show(i18n('video_action_coined'));
-    } catch (_) {
-      if (mounted) ToastUtil.show(i18n('video_action_failed'));
-    }
-  }
-
-  Future<void> _favShortcut() async {
-    final track = ref.read(musicPlayerControllerProvider).current;
-    if (track == null) return;
-    try {
-      await BilibiliUgcApi.instance.favDeal(aid: track.archive.aid, addFolderIds: const []);
-      if (!mounted) return;
-      setState(() => _favoured = true);
-      ToastUtil.show(i18n('video_action_faved'));
-    } catch (_) {
-      if (mounted) ToastUtil.show(i18n('video_action_failed'));
     }
   }
 
@@ -654,13 +586,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                               ? null
                               : () => setState(() => _subtitleOn = !_subtitleOn),
                           onToggleAspect: () => setState(() => _aspectFill = !_aspectFill),
-                          liked: _liked,
-                          favoured: _favoured,
-                          onLike: () => unawaited(_likeShortcut()),
-                          onCoin: () => unawaited(_coinShortcut()),
-                          onFav: () => unawaited(_favShortcut()),
-                          showBottomLine: _showBottomLine,
-                          onToggleBottomLine: () => setState(() => _showBottomLine = !_showBottomLine),
                         ),
                       ),
                     ),
@@ -668,11 +593,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
 
                   // ------------------------------ bottom edge progress line
                   // newBV's thin line: the whole video's progress as one hair
-                  // at the very bottom, on during playback unless the viewer
-                  // turned it off in the bar — the control panel above only
-                  // labels the two ends.
-                  if (_showBottomLine)
-                    Positioned(
+                  // at the very bottom during playback.
+                  Positioned(
                     left: 0,
                     right: 0,
                     bottom: 0,
@@ -879,13 +801,6 @@ class _ControlBar extends ConsumerStatefulWidget {
     required this.onToggleDanmaku,
     required this.onToggleSubtitle,
     required this.onToggleAspect,
-    required this.liked,
-    required this.favoured,
-    required this.onLike,
-    required this.onCoin,
-    required this.onFav,
-    required this.showBottomLine,
-    required this.onToggleBottomLine,
   });
 
   /// The bar's single key owner. The page requests it when the controls rise,
@@ -904,17 +819,6 @@ class _ControlBar extends ConsumerStatefulWidget {
   final VoidCallback? onToggleSubtitle;
   final VoidCallback onToggleAspect;
 
-  /// The in-player interaction shortcuts (newBV's player actions): like /
-  /// coin / favourite fire with their own toast, and the bottom progress line
-  /// can be turned off from here.
-  final bool liked;
-  final bool favoured;
-  final VoidCallback onLike;
-  final VoidCallback onCoin;
-  final VoidCallback onFav;
-  final bool showBottomLine;
-  final VoidCallback onToggleBottomLine;
-
   @override
   ConsumerState<_ControlBar> createState() => _ControlBarState();
 }
@@ -923,7 +827,20 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
   _BarZone _zone = _BarZone.bar;
   int _index = 1; // the play button: the first thing a viewer reaches for.
 
-  static const int _itemCount = 18;
+  // The live bar's reveal: walking the index with the arrows must drag the
+  // selected pill into view once the row overflows.
+  final Map<int, GlobalKey> _barKeys = <int, GlobalKey>{};
+  GlobalKey _barKey(int index) => _barKeys.putIfAbsent(index, () => GlobalKey());
+
+  void _revealSelection() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final BuildContext? pill = _barKeys[_index]?.currentContext;
+      if (pill != null) Scrollable.ensureVisible(pill, duration: Duration.zero);
+    });
+  }
+
+  static const int _itemCount = 14;
 
   static String _timeLabel(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -962,6 +879,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
           controller.seekAccelerated(delta);
         } else {
           setState(() => _index = (_index + delta + _itemCount) % _itemCount);
+          if (_zone == _BarZone.bar) _revealSelection();
         }
         return KeyEventResult.handled;
       case LogicalKeyboardKey.arrowDown:
@@ -999,28 +917,20 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
       case 5:
         unawaited(controller.cycleSpeed());
       case 6:
-        widget.onLike();
-      case 7:
-        widget.onCoin();
-      case 8:
-        widget.onFav();
-      case 9:
-        widget.onToggleBottomLine();
-      case 10:
         widget.onOpenQuality();
-      case 11:
+      case 7:
         widget.onOpenParts();
-      case 12:
+      case 8:
         widget.onToggleDanmaku();
-      case 13:
+      case 9:
         if (widget.commentsEnabled) widget.onOpenComments();
-      case 14:
+      case 10:
         widget.onSendDanmaku?.call();
-      case 15:
+      case 11:
         widget.onOpenDanmakuSettings();
-      case 16:
+      case 12:
         widget.onToggleSubtitle?.call();
-      case 17:
+      case 13:
         widget.onToggleAspect();
     }
   }
@@ -1096,47 +1006,6 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                 active: false,
                 secondary: true,
                 onTap: () => controller.cycleSpeed(),
-              ),
-              (
-                label: i18n('video_action_like'),
-                icon: Icon(
-                  widget.liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                  size: 22.sp,
-                  color: widget.liked ? const Color(0xFFEF5350) : null,
-                ),
-                active: widget.liked,
-                secondary: !widget.liked,
-                onTap: widget.onLike,
-              ),
-              (
-                label: i18n('video_action_coin'),
-                icon: Icon(Icons.toll_rounded, size: 22.sp),
-                active: false,
-                secondary: true,
-                onTap: widget.onCoin,
-              ),
-              (
-                label: i18n('video_action_fav'),
-                icon: Icon(
-                  widget.favoured ? Icons.star_rounded : Icons.star_outline_rounded,
-                  size: 22.sp,
-                  color: widget.favoured ? const Color(0xFFFFCA28) : null,
-                ),
-                active: widget.favoured,
-                secondary: !widget.favoured,
-                onTap: widget.onFav,
-              ),
-              (
-                label: i18n('video_progress_toggle'),
-                icon: Icon(
-                  widget.showBottomLine
-                      ? Icons.align_vertical_bottom_rounded
-                      : Icons.vertical_align_bottom_rounded,
-                  size: 22.sp,
-                ),
-                active: false,
-                secondary: true,
-                onTap: widget.onToggleBottomLine,
               ),
               (
                 label: BilibiliMusicApi.qualityLabel(state.quality).isEmpty
@@ -1260,26 +1129,28 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                   ],
                 ),
                 SizedBox(height: 16.sp),
-                // A Wrap, not a Row: the feature buttons grow with every new
-                // capability and a fixed row overflowed the bar (304px) on TV.
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 12.sp,
-                  runSpacing: 10.sp,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    for (var i = 0; i < buttons.length; i++)
-                      ExcludeFocus(
-                        child: TvButton(
-                          title: buttons[i].label,
-                          icon: buttons[i].icon,
-                          size: TvButtonSize.mini,
-                          isSecondary: !buttons[i].active,
-                          selected: _index == i,
-                          onTap: buttons[i].onTap,
-                        ),
+                // One scrollable pill row, live_play's bar: a fixed row
+                // overflowed (304px) and a Wrap spilled to a second line where
+                // the index walked invisibly. The row follows the selection.
+                SizedBox(
+                  height: _BarPill.height,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.zero,
+                    itemCount: buttons.length,
+                    separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+                    itemBuilder: (context, i) => KeyedSubtree(
+                      key: _barKey(i),
+                      child: _BarPill(
+                        icon: buttons[i].icon,
+                        label: buttons[i].label,
+                        selected: _zone == _BarZone.bar && _index == i,
+                        accent: tvTheme.focusColor,
+                        active: buttons[i].active,
+                        onTap: buttons[i].onTap,
                       ),
-                  ],
+                    ),
+                  ),
                 ),
               ],
             );
@@ -1289,17 +1160,122 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
     );
   }
 }
-class _PartListPanel extends ConsumerWidget {
+/// The live bar's pill: accent fill plus a scale lift is the whole selected
+/// treatment (no ring — a border insets the fill and reads as a dark edge),
+/// over a translucent base when idle. An active state tints its glyph.
+class _BarPill extends StatelessWidget {
+  const _BarPill({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.accent,
+    required this.active,
+    this.onTap,
+  });
+
+  // Pill geometry in one place, live_play's numbers.
+  static const double _height = 52;
+  static const double _hPadding = 18;
+  static const double _gap = 8;
+
+  static double get height => _height.sp;
+
+  final Widget icon;
+  final String label;
+  final bool selected;
+  final bool active;
+  final Color accent;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const Color foreground = Colors.white;
+    final TextStyle textStyle = (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
+      color: foreground,
+      fontSize: 22.sp,
+    );
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedScale(
+        scale: selected ? 1.05 : 1.0,
+        duration: TvFocusStyle.focusDuration(selected),
+        curve: TvFocusStyle.curve,
+        child: AnimatedContainer(
+          duration: TvFocusStyle.focusDuration(selected),
+          curve: TvFocusStyle.curve,
+          height: _height.sp,
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: _hPadding.sp),
+          decoration: BoxDecoration(
+            color: selected ? accent : Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular((_height / 3).sp),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconTheme.merge(
+                data: IconThemeData(color: selected ? foreground : (active ? accent : Colors.white70)),
+                child: icon,
+              ),
+              SizedBox(width: _gap.sp),
+              Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PartListPanel extends ConsumerStatefulWidget {
   const _PartListPanel({required this.onClose});
 
   final VoidCallback onClose;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_PartListPanel> createState() => _PartListPanelState();
+}
+
+/// Opens with the keyboard ON the playing row, the music queue's recipe:
+/// per-row nodes, one post-frame jump, one requestFocus — opened, the panel
+/// used to leave focus nowhere and the remote dead.
+class _PartListPanelState extends ConsumerState<_PartListPanel> {
+  final ScrollController _scroll = ScrollController();
+  final Map<int, FocusNode> _rowNodes = <int, FocusNode>{};
+  bool _steered = false;
+
+  FocusNode _nodeAt(int index) => _rowNodes.putIfAbsent(index, FocusNode.new);
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    for (final node in _rowNodes.values) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  /// Only the first build steers; rebuilds must not drag focus back.
+  void _steerToCurrent(int index) {
+    _steered = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      // Row stride: 64.sp height + 8.sp bottom margin.
+      final target = (index * 72.0).sp - _scroll.position.viewportDimension / 2;
+      _scroll.jumpTo(target.clamp(0.0, _scroll.position.maxScrollExtent));
+      _nodeAt(index).requestFocus();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(musicPlayerControllerProvider);
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+
+    if (!_steered && state.index >= 0 && state.queue.isNotEmpty) _steerToCurrent(state.index);
 
     return Container(
       decoration: BoxDecoration(
@@ -1325,13 +1301,14 @@ class _PartListPanel extends ConsumerWidget {
                   icon: const Icon(Icons.close_rounded),
                   size: TvIconButtonSize.small,
                   isSecondary: true,
-                  onTap: onClose,
+                  onTap: widget.onClose,
                 ),
               ],
             ),
           ),
           Expanded(
             child: ListView.builder(
+              controller: _scroll,
               padding: EdgeInsets.only(left: 16.sp, right: 16.sp, bottom: 16.sp),
               itemCount: state.queue.length,
               itemBuilder: (context, index) {
@@ -1340,6 +1317,7 @@ class _PartListPanel extends ConsumerWidget {
                 return Padding(
                   padding: EdgeInsets.only(bottom: 8.sp),
                   child: TvFocusable(
+                    focusNode: _nodeAt(index),
                     onTap: () => controller.jumpTo(index),
                     builder: (context, focused, child) {
                       return AnimatedContainer(
@@ -1431,6 +1409,7 @@ class _QualityMenu extends ConsumerWidget {
             Padding(
               padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 8.sp),
               child: TvFocusable(
+                autofocus: option.quality == state.quality,
                 onTap: () {
                   controller.switchQuality(option.quality);
                   onClose();
@@ -1609,6 +1588,7 @@ class _CommentsPanelState extends State<_CommentsPanel> {
                       return _CommentTile(
                         comment: widget.comments[index],
                         oid: widget.oid,
+                        autofocus: index == 0,
                         like: _likeOf,
                         liked: _likedOf,
                         onLike: () => unawaited(_like(widget.comments[index])),
@@ -1629,6 +1609,7 @@ class _CommentsPanelState extends State<_CommentsPanel> {
 /// One comment: body OK opens the thread, the like pill is its own focusable.
 class _CommentTile extends StatelessWidget {
   const _CommentTile({
+    required this.autofocus,
     required this.comment,
     required this.oid,
     required this.like,
@@ -1640,6 +1621,8 @@ class _CommentTile extends StatelessWidget {
     required this.onToggleReplies,
   });
 
+  /// The panel opens with the keyboard on the first comment's like pill.
+  final bool autofocus;
   final CommentItem comment;
   final int oid;
   final int Function(CommentItem) like;
@@ -1677,6 +1660,7 @@ class _CommentTile extends StatelessWidget {
                 ),
               ),
               TvFocusable(
+                autofocus: autofocus,
                 onTap: onLike,
                 builder: (context, focused, _) => AnimatedContainer(
                   duration: const Duration(milliseconds: 120),
