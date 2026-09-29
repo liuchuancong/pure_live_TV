@@ -126,8 +126,15 @@ class BilibiliUgcApi {
   }
 
   /// Follows or unfollows a user (`x/relation/modify`).
-  Future<void> setFollowing(int mid, {required bool follow}) =>
-      _client.postForm('https://api.bilibili.com/x/relation/modify', {'fid': '$mid', 'act': follow ? '1' : '2'});
+  ///
+  /// The full web parameter set — fid, act, re_src (11 = from a user space,
+  /// newBV's FollowActionSource.Space) and the csrf postForm appends. Omitting
+  /// re_src made the endpoint answer code 0 while dropping the mutation, so
+  /// the follow never stuck; the UI's optimistic flip then lied about it.
+  Future<void> setFollowing(int mid, {required bool follow}) => _client.postForm(
+    'https://api.bilibili.com/x/relation/modify',
+    {'fid': '$mid', 'act': follow ? '1' : '2', 're_src': '11'},
+  );
 
   /// The account's followed uploaders (`x/relation/followings`) — the real
   /// follow list newBV's 关注列表 reads, not a local mirror. Requires the QR
