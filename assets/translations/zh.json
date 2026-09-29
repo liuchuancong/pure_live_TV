@@ -2894,7 +2894,7 @@
   "video_danmaku_send_rules": "请遵守社区规范，弹幕实时发送到B站",
   "video_danmaku_sent": "弹幕已发送",
   "send": "发送",
-  "cookie_scan_hint": "手机扫码登录，电视自动同步",
+  "cookie_scan_hint": "打开手机扫码同步",
   "music_lyric_pick": "选择歌词",
   "music_lyric_none": "没有找到可用的歌词",
   "music_lyric_picked": "已选用该歌词，之后播放这首默认使用",

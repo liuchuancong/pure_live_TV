@@ -198,9 +198,10 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     final bool configured = _isDouyu ? DouyuUtils.hasSession(stored) : stored.isNotEmpty;
 
     // Centred rather than split into columns: the page has one job, and the
-    // phone does it.
+    // phone does it. Vertically centred like the bilibili login page — a lone
+    // QR block pinned to the top read as broken on a tall panel.
     return Align(
-      alignment: Alignment.topCenter,
+      alignment: Alignment.center,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 660.sp),
         child: Column(

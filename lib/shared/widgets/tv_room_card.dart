@@ -373,7 +373,7 @@ class _CoverChip extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14.copyWith(fontSize: 14.sp, color: Colors.white),
+              style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: Colors.white),
             ),
           ),
         ],
