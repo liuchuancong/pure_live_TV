@@ -251,6 +251,13 @@ class MusicLibraryController extends _$MusicLibraryController {
     ToastUtil.show(i18n('music_playlist_deleted'));
   }
 
+  /// Empties a playlist's tracks, keeping the playlist itself on the shelf.
+  void clearPlaylist(String id) {
+    final at = state.playlists.indexWhere((p) => p.id == id);
+    if (at < 0) return;
+    _replacePlaylist(at, state.playlists[at].copyWith(tracks: const []));
+  }
+
   /// Pins / unpins a playlist (置顶).
   void togglePlaylistPin(String id) {
     final at = state.playlists.indexWhere((p) => p.id == id);

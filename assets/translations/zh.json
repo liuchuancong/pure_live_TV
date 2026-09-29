@@ -2939,5 +2939,8 @@
   "music_queue_exclude_hint": "排除该分P，连播时不再自动加入",
   "music_queue_remove": "从队列移除",
   "music_removed_from_queue": "已从队列移除",
-  "video_action_up_page": "UP 主主页"
+  "video_action_up_page": "UP 主主页",
+  "music_clear_tracks": "清空歌曲",
+  "music_clear_tracks_confirm": "确定清空该歌单的全部歌曲？",
+  "music_sync_folder": "同步更新"
 }

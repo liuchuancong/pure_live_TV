@@ -136,7 +136,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: TvAdaptiveGrid.media(
                     context,
-                    crossAxisCount: 4,
+                    crossAxisCount: 6,
                     mainAxisSpacing: 16.w,
                     crossAxisSpacing: 16.w,
                     childAspectRatio: 1.15,
@@ -165,8 +165,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
                       syncedAt: syncedAt,
                       isSyncing: isSyncing,
                       onOpen: () => MusicFavDetailRoute(folder).push(context),
-                      onSync: () => syncController.syncFolder(folder.id),
-                      onRemove: () => syncController.removeFolder(folder.id),
+                      onMenu: () => _showFolderMenu(context, ref, folder),
                     );
                   },
                 ),
@@ -184,7 +183,9 @@ class MusicFavFoldersPage extends ConsumerWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: TvAdaptiveGrid.media(
         context,
-        crossAxisCount: 4,
+        // Six columns, not four: a playlist cover needs no detail to read, and
+        // QQ music's shelf is dense — four turned every card into a poster.
+        crossAxisCount: 6,
         mainAxisSpacing: 16.w,
         crossAxisSpacing: 16.w,
         childAspectRatio: 0.95,
@@ -241,12 +242,89 @@ class MusicFavFoldersPage extends ConsumerWidget {
               },
             ),
             TvDialogOptionTile(
+              title: i18n('music_clear_tracks'),
+              icon: Icon(Icons.clear_all_rounded, size: 26.sp),
+              showCheck: false,
+              onTap: () {
+                Navigator.of(context).pop();
+                _confirmClearPlaylist(context, ref, playlist);
+              },
+            ),
+            TvDialogOptionTile(
               title: i18n('music_delete_playlist'),
               icon: Icon(Icons.delete_outline_rounded, size: 26.sp),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();
                 _confirmDeletePlaylist(context, ref, playlist);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmClearPlaylist(BuildContext context, WidgetRef ref, MusicUserPlaylist playlist) async {
+    await TvDialogUtils.show<void>(
+      context: context,
+      builder: (_) => TvDialog(
+        title: i18n('music_clear_tracks'),
+        confirmText: i18n('ui_confirm'),
+        cancelText: i18n('cancel'),
+        onConfirm: () {
+          ref.read(musicLibraryControllerProvider.notifier).clearPlaylist(playlist.id);
+          Navigator.of(context).pop();
+        },
+        child: Text(
+          i18n('music_clear_tracks_confirm'),
+          style: AppTextStyles.t20.copyWith(height: 1.5, color: context.tvTheme.primaryTextColor),
+        ),
+      ),
+    );
+  }
+
+  /// Long press on a synced folder: 同步更新 / 清空歌曲 / 删除. The folder is
+  /// re-syncable from the bilibili account, so neither action confirms — the
+  /// local playlists' menu does, those tracks exist only here.
+  Future<void> _showFolderMenu(BuildContext context, WidgetRef ref, FavFolder folder) async {
+    final syncController = ref.read(musicPlaylistSyncControllerProvider.notifier);
+
+    await TvDialogUtils.show<void>(
+      context: context,
+      builder: (_) => TvDialog(
+        title: folder.title,
+        cancelText: i18n('cancel'),
+        width: 560.sp,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TvDialogOptionTile(
+              title: i18n('music_sync_folder'),
+              icon: Icon(Icons.sync_rounded, size: 26.sp),
+              showCheck: false,
+              autofocus: true,
+              onTap: () {
+                Navigator.of(context).pop();
+                syncController.syncFolder(folder.id);
+              },
+            ),
+            TvDialogOptionTile(
+              title: i18n('music_clear_tracks'),
+              icon: Icon(Icons.clear_all_rounded, size: 26.sp),
+              showCheck: false,
+              onTap: () {
+                Navigator.of(context).pop();
+                syncController.clearFolderTracks(folder.id);
+              },
+            ),
+            TvDialogOptionTile(
+              title: i18n('music_delete_playlist'),
+              icon: Icon(Icons.delete_outline_rounded, size: 26.sp),
+              showCheck: false,
+              onTap: () {
+                Navigator.of(context).pop();
+                syncController.removeFolder(folder.id);
               },
             ),
           ],
@@ -415,8 +493,7 @@ class _FolderCard extends StatelessWidget {
     required this.syncedAt,
     required this.isSyncing,
     required this.onOpen,
-    required this.onSync,
-    required this.onRemove,
+    required this.onMenu,
   });
 
   final FavFolder folder;
@@ -425,8 +502,10 @@ class _FolderCard extends StatelessWidget {
   final DateTime? syncedAt;
   final bool isSyncing;
   final VoidCallback onOpen;
-  final VoidCallback onSync;
-  final VoidCallback onRemove;
+
+  /// Long press: the folder's menu (同步更新 / 清空歌曲 / 删除), handled by
+  /// the page — the card itself only opens.
+  final VoidCallback onMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +516,7 @@ class _FolderCard extends StatelessWidget {
     return TvFocusable(
       autofocus: false,
       onTap: onOpen,
-      onLongPress: onSync,
+      onLongPress: onMenu,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,

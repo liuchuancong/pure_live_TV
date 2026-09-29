@@ -87,6 +87,16 @@ class MusicPlaylistSyncController extends _$MusicPlaylistSyncController {
     _persistAll();
   }
 
+  /// Drops a folder's synced tracks and its sync stamp; the folder itself
+  /// stays on the shelf and can be synced down again.
+  void clearFolderTracks(int folderId) {
+    state = state.copyWith(
+      folderTracks: {...state.folderTracks, folderId: const []},
+      syncedAt: {...state.syncedAt}..remove(folderId),
+    );
+    _persistAll();
+  }
+
   // ---------------------------------------------------------------- 排除分P
 
   Map<String, List<int>> get _excluded => Map.fromEntries([

@@ -2939,5 +2939,8 @@
   "music_queue_exclude_hint": "This part will not be auto-queued again",
   "music_queue_remove": "Remove from Queue",
   "music_removed_from_queue": "Removed from queue",
-  "video_action_up_page": "Uploader Home"
+  "video_action_up_page": "Uploader Home",
+  "music_clear_tracks": "Clear tracks",
+  "music_clear_tracks_confirm": "Clear every track in this playlist?",
+  "music_sync_folder": "Sync now"
 }
