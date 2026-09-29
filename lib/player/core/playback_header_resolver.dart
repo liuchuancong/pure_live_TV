@@ -10,6 +10,18 @@ import 'package:pure_live/services/settings/settings.dart';
 class PlaybackHeaderResolver {
   const PlaybackHeaderResolver._();
 
+  /// A synthetic platform key for the on-demand (music/video) players: the
+  /// bilibili policy with the video-page Referer. Not a [Sites] entry — an
+  /// internal discriminator for [resolve].
+  static const String _bilibiliVodSite = 'bilibili_vod';
+
+  /// Headers for the music/video on-demand players: the bilibili policy with
+  /// the video-page Referer ([_bilibiliVodSite]). [bvid] is the archive the
+  /// stream belongs to; the CDN accepts the bare-site referer too, but the
+  /// per-video page is what the web client sends.
+  static Future<Map<String, String>> resolveVod({required String bvid}) =>
+      resolve(platform: _bilibiliVodSite, roomId: bvid);
+
   static const String _desktopUserAgent =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
       'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -42,6 +54,24 @@ class PlaybackHeaderResolver {
           'referer': normalizedRoomId.isEmpty
               ? BiliBiliSite.kDefaultReferer
               : 'https://live.bilibili.com/$normalizedRoomId',
+          if (cookie.isNotEmpty) 'cookie': cookie else if (anonymousCookie.isNotEmpty) 'cookie': anonymousCookie,
+        };
+        break;
+      case _bilibiliVodSite:
+        // The on-demand players (music/video) read the same CDNs as the live
+        // one, so the cookie and UA policy is identical — only the Referer is
+        // different: the streams belong to a video page, not a live room.
+        final cookie = _configuredCookie((settings) => settings.cookieState.bilibiliCookie);
+        final anonymousCookie = <String>[
+          if (BiliBiliSite.buvid3.isNotEmpty) 'buvid3=${BiliBiliSite.buvid3}',
+          if (BiliBiliSite.buvid4.isNotEmpty) 'buvid4=${BiliBiliSite.buvid4}',
+        ].join(';');
+        headers = <String, String>{
+          'user-agent': BiliBiliSite.kDefaultUserAgent,
+          'origin': 'https://www.bilibili.com',
+          'referer': normalizedRoomId.isEmpty
+              ? 'https://www.bilibili.com/'
+              : 'https://www.bilibili.com/video/$normalizedRoomId',
           if (cookie.isNotEmpty) 'cookie': cookie else if (anonymousCookie.isNotEmpty) 'cookie': anonymousCookie,
         };
         break;

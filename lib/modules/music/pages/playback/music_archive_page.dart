@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dpad/dpad.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -377,27 +376,18 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                           style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                         )
                       else
-                        DpadRegion(
-                          verticalEdge: DpadEdgeBehavior.leave,
-                          horizontalEdge: DpadEdgeBehavior.leave,
-                          // Enter on the geometrically nearest row, the video
-                          // detail page's working pattern — the default
-                          // `restore` never landed the remote's Down in the
-                          // list on a fresh page.
-                          enter: DpadEnterBehavior.nearest,
-                          child: Column(
-                            children: [
-                              for (final (index, track) in tracks.indexed)
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 8.sp * textScale),
-                                  child: _PartTile(
-                                    track: track,
-                                    index: index,
-                                    onTap: () => _playAll(tracks, index),
-                                  ),
+                        Column(
+                          children: [
+                            for (final (index, track) in tracks.indexed)
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 8.sp * textScale),
+                                child: _PartTile(
+                                  track: track,
+                                  index: index,
+                                  onTap: () => _playAll(tracks, index),
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
                     ],
                   ),
