@@ -193,7 +193,7 @@ void main() {
             MediaQuery(
               data: MediaQuery.of(
                 context,
-              ).copyWith(textScaler: TvTextScale.scalerFor(context, userScale: scale)),
+              ).copyWith(textScaler: TextScaler.linear(scale * TvTextScale.legibilityLift(context))),
               child: child!,
             ),
           ),
@@ -271,7 +271,7 @@ void main() {
               builder: (context) => MediaQuery(
                 data: MediaQuery.of(
                   context,
-                ).copyWith(textScaler: TvTextScale.scalerFor(context, userScale: scale)),
+                ).copyWith(textScaler: TextScaler.linear(scale * TvTextScale.legibilityLift(context))),
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[

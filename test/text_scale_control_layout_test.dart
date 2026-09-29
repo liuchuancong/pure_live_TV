@@ -55,7 +55,7 @@ void main() {
               MediaQuery(
                 data: MediaQuery.of(
                   context,
-                ).copyWith(textScaler: TvTextScale.scalerFor(context, userScale: scale)),
+                ).copyWith(textScaler: TextScaler.linear(scale * TvTextScale.legibilityLift(context))),
                 child: child!,
               ),
             ),

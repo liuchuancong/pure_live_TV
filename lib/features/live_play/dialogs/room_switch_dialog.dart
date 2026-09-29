@@ -302,7 +302,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
                     // small-panel legibility correction for these rows.
                     data: MediaQuery.of(
                       context,
-                    ).copyWith(textScaler: TvTextScale.scalerFor(context, userScale: _listTextScale)),
+                    ).copyWith(textScaler: TextScaler.linear(_listTextScale * TvTextScale.legibilityLift(context))),
                     child: _buildRooms(rooms, rowIndex),
                   ),
                 ),

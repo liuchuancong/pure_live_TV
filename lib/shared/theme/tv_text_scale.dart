@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
+
 /// Text sizing for TV panels.
 ///
 /// The UI is drafted against a 1920x1080 panel and `flutter_screenutil`
@@ -52,16 +54,24 @@ class TvTextScale {
     return (designHeight / panelHeight(context)).clamp(1.0, maxLegibilityLift);
   }
 
-  /// The text scale for a subtree: the caller's own scale times the correction.
+  /// The text scale for a subtree: the inherited (system) scale times the
+  /// panel correction.
   ///
-  /// Use this instead of `TextScaler.linear` so a subtree that replaces the
-  /// inherited text scale — the room switcher does, to size its own rows — keeps
-  /// the correction.
-  static TextScaler scalerFor(BuildContext context, {double userScale = 1}) =>
-      TextScaler.linear(userScale * legibilityLift(context));
+  /// The user's own scale does NOT ride here anymore — it is applied exactly
+  /// once, inside the typography resolver ([AppTextStyles] base styles), so
+  /// that the resolver is the single exit for text sizing and special zones
+  /// (danmaku, subtitles) can opt out of it. What remains here is the panel
+  /// legibility correction times whatever the platform's accessibility
+  /// setting demands — the system factor must never be flattened away.
+  static TextScaler scalerFor(BuildContext context) {
+    final inherited = MediaQuery.textScalerOf(context).scale(1.0);
+    return TextScaler.linear(legibilityLift(context) * inherited);
+  }
 
   /// The factor the inherited text scaler applies to any font size, i.e. the
-  /// setting the whole app is currently rendering text at.
+  /// setting the whole app is currently rendering text at: the user scale
+  /// (from [AppFontScale.user], via the resolver) times the panel correction
+  /// times the system accessibility scale.
   ///
   /// Every box that exists *because* of text has to follow it. A line box, the
   /// gap between two lines, or the height of a button holding a label, derived
@@ -72,7 +82,8 @@ class TvTextScale {
   ///
   /// `scale(1.0)` is the right value for a box: the scaler is linear in the
   /// sizes this app uses, so a design-pixel length becomes `length * factor`.
-  static double factorOf(BuildContext context) => MediaQuery.textScalerOf(context).scale(1.0);
+  static double factorOf(BuildContext context) =>
+      AppFontScale.user * MediaQuery.textScalerOf(context).scale(1.0);
 }
 
 /// Lengths that have to track the text around them.

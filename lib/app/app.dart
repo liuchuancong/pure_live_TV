@@ -15,8 +15,6 @@ import 'package:pure_live/services/theme_settings/theme_settings_controller.dart
 
 class App extends ConsumerWidget {
   const App({super.key});
-  static const double _minTextScale = 0.7;
-  static const double _maxTextScale = 2.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,7 +36,6 @@ class App extends ConsumerWidget {
     // per subtree (see TvTextScale): the same font scale must mean the same
     // text size on a 720p TV and a 1080p one.
     final fontSettings = ref.watch(fontSettingsControllerProvider).value;
-    final textScale = (fontSettings?.textScaleFactor ?? 1.0).clamp(_minTextScale, _maxTextScale);
     final fontFamily = _fontFamilyOf(fontSettings);
     // AppTextStyles carry the family statically: the widgets that install one
     // of its styles as a DefaultTextStyle (TvButton, TvTabBar) replace the
@@ -83,7 +80,7 @@ class App extends ConsumerWidget {
                 // The panel correction rides along with the user's font scale, so
                 // a 720p TV keeps a 1080p TV's font sizes instead of shrinking
                 // every label by a third. See TvTextScale.
-                data: MediaQuery.of(context).copyWith(textScaler: TvTextScale.scalerFor(context, userScale: textScale)),
+                data: MediaQuery.of(context).copyWith(textScaler: TvTextScale.scalerFor(context)),
                 child: TvPaletteDefaults(
                   theme: resolvedTvTheme,
                   child: TvLocaleRebuilder(
