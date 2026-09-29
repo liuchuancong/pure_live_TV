@@ -181,6 +181,16 @@ class _SongListSectionState extends ConsumerState<_SongListSection> {
                 style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor),
               ),
               const Spacer(),
+              // One press from anywhere above the long list: the mini bar's
+              // destination is the full player anyway.
+              TvButton(
+                title: i18n('music_now_playing'),
+                icon: Icon(Icons.music_note_rounded, size: 24.sp),
+                size: TvButtonSize.mini,
+                isSecondary: true,
+                onTap: () => const MusicPlayerRoute().push(context),
+              ),
+              SizedBox(width: 12.sp),
               TvButton(
                 title: i18n('music_play_all'),
                 icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),

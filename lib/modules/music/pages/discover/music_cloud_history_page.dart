@@ -82,10 +82,33 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
       return AppStatusView(type: AppStatusType.empty, title: i18n('music_history_empty'), subtitle: '');
     }
 
-    return DpadRegion(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
+          child: Row(
+            children: [
+              Text(
+                '${i18n('music_cloud_history')}（${_items.length}）',
+                style: AppTextStyles.t20W600.copyWith(color: accent),
+              ),
+              const Spacer(),
+              TvButton(
+                title: i18n('music_now_playing'),
+                icon: Icon(Icons.music_note_rounded, size: 24.sp),
+                size: TvButtonSize.mini,
+                isSecondary: true,
+                onTap: () => const MusicPlayerRoute().push(context),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: DpadRegion(
       child: ListView.builder(
         controller: _scroll,
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.fromLTRB(24.sp, 8.sp, 24.sp, 24.sp),
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _items.length) {
@@ -106,6 +129,9 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
           return _HistoryRow(item: item);
         },
       ),
+          ),
+        ),
+      ],
     );
   }
 }
