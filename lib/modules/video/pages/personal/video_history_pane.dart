@@ -90,7 +90,9 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
               margin: EdgeInsets.only(bottom: 10.sp),
-              height: 118.sp,
+              // No fixed height: the 98.sp cover + padding + border size the
+              // row. A pinned 118.sp left 94.sp of content room for a 98.sp
+              // cover — the 4px difference was the bottom overflow.
               padding: EdgeInsets.all(10.sp),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
