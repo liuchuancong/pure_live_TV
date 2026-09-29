@@ -55,7 +55,7 @@ class MusicVideoCard extends StatelessWidget {
 
     final List<DpadEffect> effects = [
       DpadScaleEffect(
-        scale: 1.02,
+        scale: 1.01,
         pressedScale: 0.97,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
@@ -100,81 +100,44 @@ class MusicVideoCard extends StatelessWidget {
                             AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true),
                       ),
                     ),
-                    // Bottom scrim: the stats stay readable over any artwork.
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        height: 56.sp,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)],
-                          ),
-                        ),
-                      ),
-                    ),
+                    // The corner badges speak TvRoomCard's compact chip
+                    // language: the type anchors the top-left, the counts sit
+                    // bottom-left and the duration bottom-right. The chips are
+                    // near-opaque, so no scrim under them — the old gradient
+                    // just greyed the artwork. Fixed-size text like the room
+                    // card's: cover meta is an overlay, exempt from the
+                    // font-scale resolver.
                     if (label.isNotEmpty)
                       Positioned(
                         left: 12.sp,
                         top: 12.sp,
-                        // Cover chrome, not reading content: the pill keeps its
-                        // design size (only the small-panel legibility lift
-                        // applies) — at the largest font setting it used to
-                        // swallow a third of the artwork.
-                        child: MediaQuery(
-                          data: MediaQuery.of(context).copyWith(
-                            textScaler: TextScaler.linear(TvTextScale.legibilityLift(context)),
-                          ),
-                          child: TvButton(excludeFocus: true, title: label, size: TvButtonSize.mini),
-                        ),
+                        child: _CoverChip(label: label),
                       ),
-                    // The stats row: play and danmaku counts left, duration right.
                     Positioned(
-                      left: 10.sp,
-                      right: 10.sp,
-                      bottom: 8.sp,
-                      // Same chrome clamp as the badge: counts and duration
-                      // stay at design size over the artwork.
-                      child: MediaQuery(
-                        data: MediaQuery.of(context).copyWith(
-                          textScaler: TextScaler.linear(TvTextScale.legibilityLift(context)),
-                        ),
-                        child: Row(
+                      left: 12.sp,
+                      bottom: 12.sp,
+                      child: Wrap(
+                        spacing: 8.sp,
+                        runSpacing: 6.sp,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: Colors.white),
-                          SizedBox(width: 4.sp),
-                          Flexible(
-                            child: Text(
-                              readableCount(archive.playCount.toString()),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
-                            ),
+                          _CoverChip(
+                            icon: Icons.play_circle_outline_rounded,
+                            label: readableCount(archive.playCount.toString()),
                           ),
-                          SizedBox(width: 10.sp),
-                          Icon(Icons.speaker_notes_outlined, size: 18.sp, color: Colors.white),
-                          SizedBox(width: 4.sp),
-                          Flexible(
-                            child: Text(
-                              readableCount(archive.barrageCount.toString()),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
-                            ),
+                          _CoverChip(
+                            icon: Icons.speaker_notes_outlined,
+                            label: readableCount(archive.barrageCount.toString()),
                           ),
-                          const Spacer(),
-                          if (showDuration && archive.duration > 0)
-                            Text(
-                              formatDuration(archive.duration),
-                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
-                            ),
                         ],
-                        ),
                       ),
                     ),
+                    if (showDuration && archive.duration > 0)
+                      Positioned(
+                        right: 12.sp,
+                        bottom: 12.sp,
+                        child: _CoverChip(label: formatDuration(archive.duration)),
+                      ),
                     if (progress > 0)
                       Positioned(
                         left: 0,
@@ -247,6 +210,42 @@ class MusicVideoCard extends StatelessWidget {
       onSelect: onTap,
       onLongSelect: onLongPress,
       child: const SizedBox(),
+    );
+  }
+}
+
+/// A compact translucent chip for the cover overlays (type, counts, duration),
+/// TvRoomCard's exact cover language. Fixed-size text on purpose — cover meta
+/// is an overlay, exempt from the font-scale resolver like the avatar initial
+/// — because an enlarged label inside a pill swallowed the artwork.
+class _CoverChip extends StatelessWidget {
+  const _CoverChip({required this.label, this.icon});
+
+  final String label;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 5.sp),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.98),
+        borderRadius: BorderRadius.circular(20.sp),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 13.sp, color: Colors.white), SizedBox(width: 4.sp)],
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
