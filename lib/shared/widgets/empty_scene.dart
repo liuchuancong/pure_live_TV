@@ -43,46 +43,46 @@ _EmptySceneStyle _styleFor(EmptyScene scene) {
     case EmptyScene.favorite:
       return _EmptySceneStyle(
         icon: Icons.favorite_border_rounded,
-        title: i18nOr('empty_favorite_title', 'No followed rooms yet'),
-        subtitle: i18nOr('empty_favorite_subtitle', 'Search for a streamer you like, or browse the hot list'),
-        actionLabel: i18nOr('empty_favorite_action', 'Go to search'),
+        title: i18nOr('empty_favorite_title', 'No followed rooms'),
+        subtitle: i18nOr('empty_favorite_subtitle', 'Followed rooms will appear here'),
+        actionLabel: i18nOr('empty_favorite_action', 'Go to Search'),
         action: EmptySceneAction.goSearch,
       );
     case EmptyScene.hot:
       return _EmptySceneStyle(
         icon: Icons.local_fire_department_outlined,
-        title: i18nOr('empty_hot_title', 'No live rooms on this platform right now'),
-        subtitle: i18nOr('empty_hot_subtitle', 'Try another platform, or check back later'),
+        title: i18nOr('empty_hot_title', 'No live rooms on this platform'),
+        subtitle: i18nOr('empty_hot_subtitle', 'Switch platform or retry later'),
         action: EmptySceneAction.retry,
       );
     case EmptyScene.history:
       return _EmptySceneStyle(
         icon: Icons.history_rounded,
-        title: i18nOr('empty_history_title', 'No watch history yet'),
-        subtitle: i18nOr('empty_history_subtitle', 'Rooms you watch are remembered here automatically'),
-        actionLabel: i18nOr('empty_history_action', 'Browse hot'),
+        title: i18nOr('empty_watch_history_title', 'No watch history'),
+        subtitle: i18nOr('empty_watch_history_subtitle', 'Watch history is saved automatically'),
+        actionLabel: i18nOr('empty_watch_history_action', 'Browse Popular'),
         action: EmptySceneAction.goHot,
       );
     case EmptyScene.favoriteAreas:
       return _EmptySceneStyle(
         // The mobile app's own favorite-areas empty icon (apps_2_line).
         icon: Remix.apps_2_line,
-        title: i18nOr('empty_favorite_areas_title', 'No favorite folders yet'),
-        subtitle: i18nOr('empty_favorite_areas_subtitle', 'Add categories to a folder to collect whole groups of rooms'),
+        title: i18nOr('empty_favorite_areas_title', 'No favorite folders'),
+        subtitle: i18nOr('empty_favorite_areas_subtitle', 'Add categories to a folder to group rooms'),
         action: EmptySceneAction.retry,
       );
     case EmptyScene.searchResult:
       return _EmptySceneStyle(
         icon: Icons.search_off_rounded,
         title: i18nOr('empty_search_title', 'No matching live rooms'),
-        subtitle: i18nOr('empty_search_subtitle', 'Try another keyword, or switch platform / search type'),
+        subtitle: i18nOr('empty_search_subtitle', 'Try different keywords or platform'),
         action: EmptySceneAction.retry,
       );
     case EmptyScene.areaRooms:
       return _EmptySceneStyle(
         icon: Icons.category_outlined,
         title: i18nOr('empty_area_rooms_title', 'No live rooms in this category'),
-        subtitle: i18nOr('empty_area_rooms_subtitle', 'Try another category, or check back later'),
+        subtitle: i18nOr('empty_area_rooms_subtitle', 'Switch category or retry later'),
         action: EmptySceneAction.retry,
       );
     case EmptyScene.generic:
