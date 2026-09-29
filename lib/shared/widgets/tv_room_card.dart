@@ -206,9 +206,9 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                             runSpacing: 6.sp,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              _CoverChip(label: widget.room.platform.toUpperCase()),
+                              TvCoverChip(label: widget.room.platform.toUpperCase()),
                               if (widget.showFollowedMark && _followed)
-                                _CoverChip(
+                                TvCoverChip(
                                   icon: Icons.favorite,
                                   iconColor: const Color(0xFFFF5C7A),
                                   label: i18n('followed'),
@@ -221,7 +221,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           Positioned(
                             right: 12.sp,
                             top: 12.sp,
-                            child: _CoverChip(icon: Icons.videocam_rounded, label: i18n('ui_replay')),
+                            child: TvCoverChip(icon: Icons.videocam_rounded, label: i18n('ui_replay')),
                           ),
                         if (widget.room.isRecord == false &&
                             widget.room.liveStatus == LiveStatus.live &&
@@ -229,7 +229,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           Positioned(
                             right: 12.sp,
                             bottom: 12.sp,
-                            child: _CoverChip(icon: Icons.whatshot_rounded, label: audience),
+                            child: TvCoverChip(icon: Icons.whatshot_rounded, label: audience),
                           ),
                       ],
                     ),
@@ -345,39 +345,3 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   }
 }
 
-/// A compact translucent chip for the cover overlays (platform, followed,
-/// replay, audience). Fixed-size text on purpose — cover meta is an overlay,
-/// exempt from the font-scale resolver like the avatar initial — because a
-/// 2.4x label inside a pill swallowed the artwork.
-class _CoverChip extends StatelessWidget {
-  const _CoverChip({required this.label, this.icon, this.iconColor});
-
-  final String label;
-  final IconData? icon;
-  final Color? iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 5.sp),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.98),
-        borderRadius: BorderRadius.circular(20.sp),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[Icon(icon, size: 13.sp, color: iconColor ?? Colors.white), SizedBox(width: 4.sp)],
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

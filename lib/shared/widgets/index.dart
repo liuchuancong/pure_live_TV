@@ -19,6 +19,7 @@ export 'tv_page_scaffold.dart';
 export 'tv_page_shell.dart';
 export 'tv_platform_logo.dart';
 export 'tv_qr_card.dart';
+export 'tv_cover_chip.dart';
 export 'tv_room_card.dart';
 export 'tv_scaffold.dart';
 export 'tv_section.dart';

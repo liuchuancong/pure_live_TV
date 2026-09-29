@@ -126,7 +126,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                       Positioned(
                         left: 12.sp,
                         top: 12.sp,
-                        child: _CoverChip(label: label),
+                        child: TvCoverChip(label: label),
                       ),
                     Positioned(
                       left: 12.sp,
@@ -136,11 +136,11 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                         runSpacing: 6.sp,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          _CoverChip(
+                          TvCoverChip(
                             icon: Icons.play_circle_outline_rounded,
                             label: readableCount(archive.playCount.toString()),
                           ),
-                          _CoverChip(
+                          TvCoverChip(
                             icon: Icons.speaker_notes_outlined,
                             label: readableCount(archive.barrageCount.toString()),
                           ),
@@ -151,7 +151,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                       Positioned(
                         right: 12.sp,
                         bottom: 12.sp,
-                        child: _CoverChip(label: MusicVideoCard.formatDuration(archive.duration)),
+                        child: TvCoverChip(label: MusicVideoCard.formatDuration(archive.duration)),
                       ),
                     if (progress > 0)
                       Positioned(
@@ -237,38 +237,3 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
   }
 }
 
-/// A compact translucent chip for the cover overlays (type, counts, duration),
-/// TvRoomCard's exact cover language. Fixed-size text on purpose — cover meta
-/// is an overlay, exempt from the font-scale resolver like the avatar initial
-/// — because an enlarged label inside a pill swallowed the artwork.
-class _CoverChip extends StatelessWidget {
-  const _CoverChip({required this.label, this.icon});
-
-  final String label;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 5.sp),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.98),
-        borderRadius: BorderRadius.circular(20.sp),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[Icon(icon, size: 13.sp, color: Colors.white), SizedBox(width: 4.sp)],
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
