@@ -2936,5 +2936,6 @@
   "video_player_surface": "播放器界面",
   "video_persistent_progress": "常显进度条",
   "video_persistent_progress_sub": "播放时在画面底部常驻迷你进度条",
-  "music_now_playing": "Now playing"
+  "music_now_playing": "Now playing",
+  "video_danmaku_stat": "{count} danmaku"
 }

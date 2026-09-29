@@ -106,6 +106,9 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     final accent = tvTheme.focusColor;
     final archive = _detail ?? widget.archive;
     final tracks = archive.tracks;
+    // Vertical rhythm follows the app font setting: fixed .sp heights clipped
+    // their labels the moment the user enlarged the font.
+    final double textScale = TvTextScale.factorOf(context);
 
     return TvPageScaffold(
       title: i18n('video_detail_title'),
@@ -368,23 +371,29 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                       horizontalEdge: DpadEdgeBehavior.leave,
                       verticalEdge: DpadEdgeBehavior.leave,
                       enter: DpadEnterBehavior.nearest,
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.only(bottom: 16.sp),
-                        itemCount: _related.length,
-                        separatorBuilder: (_, _) => SizedBox(width: 12.sp),
-                        itemBuilder: (context, index) {
-                          final related = _related[index];
-                          return SizedBox(
-                            width: 300.sp,
-                            child: VideoCard(
-                              archive: related,
-                              onTap: () => VideoDetailRoute(related).push(context),
-                            ),
-                          );
-                        },
+                      // A shrinkWrap horizontal viewport has an unbounded cross
+                      // axis inside the page's vertical scroller and crashes
+                      // layout — pin the row's height, scaled with the font so
+                      // an enlarged setting still fits the two text lines under
+                      // the cover.
+                      child: SizedBox(
+                        height: 300.sp * 9 / 16 + 108.sp * textScale,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.only(bottom: 16.sp),
+                          itemCount: _related.length,
+                          separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+                          itemBuilder: (context, index) {
+                            final related = _related[index];
+                            return SizedBox(
+                              width: 300.sp,
+                              child: VideoCard(
+                                archive: related,
+                                onTap: () => VideoDetailRoute(related).push(context),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -457,6 +466,7 @@ class _PartTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+    final double textScale = TvTextScale.factorOf(context);
 
     return TvFocusable(
       onTap: onTap,
@@ -464,7 +474,7 @@ class _PartTile extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          height: 76.sp,
+          height: 76.sp * textScale,
           padding: EdgeInsets.symmetric(horizontal: 16.sp),
           decoration: BoxDecoration(
             color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
