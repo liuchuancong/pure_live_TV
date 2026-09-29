@@ -8,15 +8,18 @@ part of 'home_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+/// The app-wide mode, persisted: the TV boots into whatever mode was last
+/// used instead of always live.
 
 @ProviderFor(AppModeController)
 final appModeControllerProvider = AppModeControllerProvider._();
 
-/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+/// The app-wide mode, persisted: the TV boots into whatever mode was last
+/// used instead of always live.
 final class AppModeControllerProvider
     extends $NotifierProvider<AppModeController, AppMode> {
-  /// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+  /// The app-wide mode, persisted: the TV boots into whatever mode was last
+  /// used instead of always live.
   AppModeControllerProvider._()
     : super(
         from: null,
@@ -44,9 +47,10 @@ final class AppModeControllerProvider
   }
 }
 
-String _$appModeControllerHash() => r'7601803f989e967178fbe4380ba1d6de4d6ff768';
+String _$appModeControllerHash() => r'03cbcf9b93a41e4607a55b94f6e70096031d461f';
 
-/// The app-wide mode. Session-scoped on purpose: the TV always boots into live.
+/// The app-wide mode, persisted: the TV boots into whatever mode was last
+/// used instead of always live.
 
 abstract class _$AppModeController extends $Notifier<AppMode> {
   AppMode build();
@@ -160,7 +164,7 @@ final class VideoSectionIndexProvider
   }
 }
 
-String _$videoSectionIndexHash() => r'cae7836dec2d67428afee6141291c003905d599d';
+String _$videoSectionIndexHash() => r'c361cb5410239c21e5fc80a79526d03f191df058';
 
 /// Selected video-mode sidebar section (index into [VideoSection.values]).
 

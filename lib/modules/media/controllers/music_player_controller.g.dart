@@ -69,7 +69,7 @@ final class MusicPlayerControllerProvider
 }
 
 String _$musicPlayerControllerHash() =>
-    r'217585949342e3a10bfea1062d76a5bda154b3bf';
+    r'7be6c728d474081c7d0af6207da9018ea4ac869b';
 
 /// The music-mode player: one VOD [PlayerHandle] on the shared kernel, a track
 /// queue and the advance rules.

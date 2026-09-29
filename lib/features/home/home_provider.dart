@@ -6,6 +6,8 @@ import 'package:pure_live/shared/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:pure_live/services/settings/settings.dart';
 
 part 'home_provider.g.dart';
 
@@ -59,7 +61,12 @@ class MusicSectionIndex extends _$MusicSectionIndex {
 @riverpod
 class VideoSectionIndex extends _$VideoSectionIndex {
   @override
-  int build() => 0;
+  int build() {
+    // 启动页 (newBV's setting): the section the video mode lands on.
+    final service = SettingsService.to;
+    if (!service.isInitialized) return 0;
+    return service.videoState.startSection.clamp(0, VideoSection.values.length - 1);
+  }
 
   void change(int index) => state = index;
 }

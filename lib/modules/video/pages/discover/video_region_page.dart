@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
@@ -117,7 +116,7 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
                           return VideoCard(
                             archive: archive,
                             badge: '${index + 1}',
-                            onTap: () => VideoDetailRoute(archive).push(context),
+                            onTap: () => openVideoArchive(context, ref, archive),
                           );
                         },
                       ),

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
 
 /// The followed users' video feed (bmsc/newBV's dynamics), shared by the
 /// music and video home rails: one grid paging the offset-based API.
@@ -120,7 +120,7 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
           return MusicVideoCard(
             archive: item.archive,
             pubTime: item.pubTime,
-            onTap: () => VideoDetailRoute(item.archive).push(context),
+            onTap: () => openVideoArchive(context, ref, item.archive),
           );
         },
       ),

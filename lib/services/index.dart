@@ -38,6 +38,8 @@ export 'page_settings/page_settings_controller.dart';
 export 'page_settings/page_settings_model.dart';
 export 'player_settings/player_settings_controller.dart';
 export 'player_settings/player_settings_model.dart';
+export 'video_settings/video_settings_controller.dart';
+export 'video_settings/video_settings_model.dart';
 export 'proxy_settings/proxy_settings_controller.dart';
 export 'proxy_settings/proxy_settings_model.dart';
 export 'refresh_config/refresh_config_controller.dart';

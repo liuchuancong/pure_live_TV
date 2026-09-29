@@ -13,10 +13,26 @@ import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';
 import 'package:pure_live/modules/video/pages/personal/video_personal_page.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
+import 'package:pure_live/services/index.dart';
 
 /// Video mode sections. The section rail lives in the home sidebar; this file
 /// builds section content only, so the mode swaps the whole navigation.
 enum VideoSection { home, region, pgc, search, personal }
+
+/// One card tap, one behaviour (newBV's 显示视频详情): detail-first when the
+/// video setting asks for it, otherwise straight into the player with the
+/// whole archive queued.
+void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive) {
+  final showDetail = SettingsService.to.isInitialized && SettingsService.to.videoState.showVideoDetail;
+  if (showDetail) {
+    VideoDetailRoute(archive).push(context);
+    return;
+  }
+  ref
+      .read(musicPlayerControllerProvider.notifier)
+      .playQueue(archive.tracks, startIndex: 0, audioOnly: false);
+  const VideoPlayerRoute().push(context);
+}
 
 /// newBV's home grid density: a fixed 4 columns with its own spacing and a
 /// cell aspect sized to the card — the 1.6:1 cover plus a two-line title and
@@ -70,7 +86,8 @@ class _VideoHomePage extends ConsumerStatefulWidget {
 }
 
 class _VideoHomePageState extends ConsumerState<_VideoHomePage> {
-  int _tab = 1; // 推荐: the default landing tab.
+  // 首页置顶 Tab (newBV's setting): the landing top tab, 推荐 while unset.
+  int _tab = SettingsService.to.isInitialized ? SettingsService.to.videoState.homeTabIndex.clamp(0, 2) : 1;
 
   static const _tabs = ['video_dynamics', 'video_tab_recommend', 'video_tab_popular'];
 
@@ -121,7 +138,7 @@ class _PagedGridTabState<W extends _PagedGridTab> extends ConsumerState<W> {
       gridDelegate: defaultVideoGridDelegate,
       itemBuilder: (context, archive, index) => VideoCard(
         archive: archive,
-        onTap: () => VideoDetailRoute(archive).push(context),
+        onTap: () => openVideoArchive(context, ref, archive),
       ),
     );
   }

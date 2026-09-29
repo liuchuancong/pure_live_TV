@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
 
 /// A shared UP-space page: the header card (avatar, sign, followers, follow
 /// button) over a paged uploads grid. Music opens it from comment/track
@@ -296,8 +296,9 @@ class _UploadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TvFocusable(
-      onTap: () => VideoDetailRoute(archive).push(context),
+    return Consumer(
+      builder: (context, ref, _) => TvFocusable(
+      onTap: () => openVideoArchive(context, ref, archive),
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         decoration: BoxDecoration(
@@ -334,6 +335,7 @@ class _UploadCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

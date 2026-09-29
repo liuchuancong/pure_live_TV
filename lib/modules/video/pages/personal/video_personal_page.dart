@@ -14,6 +14,8 @@ import 'package:pure_live/modules/video/models/video_pgc_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
 
 /// The video personal center, newBV's personal sections over the logged-in
 /// account: fav folders (server-side), cloud history, watch later. Nothing
@@ -26,7 +28,8 @@ class VideoPersonalSection extends ConsumerStatefulWidget {
 }
 
 class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
-  int _tab = 0;
+  // 个人页置顶 Tab (newBV's setting); 关注 stays the landing pane while unset.
+  int _tab = SettingsService.to.isInitialized ? SettingsService.to.videoState.personalTabIndex.clamp(0, 4) : 0;
 
   static const _tabs = [
     ('video_personal_follow', Icons.person_outline_rounded),
@@ -344,7 +347,7 @@ class _FavPaneState extends ConsumerState<_FavPane> {
                 itemCount: _resources!.length,
                 itemBuilder: (context, index) {
                   final archive = _resources![index].toArchive();
-                  return VideoCard(archive: archive, onTap: () => VideoDetailRoute(archive).push(context));
+                  return VideoCard(archive: archive, onTap: () => openVideoArchive(context, ref, archive));
                 },
               ),
             ),
@@ -479,7 +482,7 @@ class _HistoryPaneState extends ConsumerState<_HistoryPane> {
           final item = _items[index];
           final progress = item.duration > 0 ? (item.progress / item.duration).clamp(0.0, 1.0) : 0.0;
           return TvFocusable(
-            onTap: () => VideoDetailRoute(item.archive).push(context),
+            onTap: () => openVideoArchive(context, ref, item.archive),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
               margin: EdgeInsets.only(bottom: 10.sp),
@@ -614,7 +617,7 @@ class _ToViewPaneState extends ConsumerState<_ToViewPane> {
             child: VideoCard(
               archive: archive,
               badge: progress > 0 ? '${(progress * 100).toStringAsFixed(0)}%' : '',
-              onTap: () => VideoDetailRoute(archive).push(context),
+              onTap: () => openVideoArchive(context, ref, archive),
             ),
           );
         },

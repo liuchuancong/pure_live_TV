@@ -206,30 +206,48 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
         ];
       case AppMode.video:
-        // newBV's left rail: top-level destinations only. The home entry's
-        // 动态/推荐/热门 live as top tabs inside the home page.
-        const labels = [
-          ('video_tab_home', Icons.home_outlined),
-          ('video_tab_region', Icons.category_outlined),
-          ('video_tab_pgc', Icons.live_tv_outlined),
-          ('video_tab_search', Icons.search_rounded),
-          ('video_personal', Icons.person_outline_rounded),
+        // newBV's left rail, its exact item order: 搜索/个人/主页/分区/影视 —
+        // each entry maps to its VideoSection index. 直播 closes the list the
+        // same way newBV's rail does: it hands the app to the live mode.
+        const entries = <(int, String, IconData)>[
+          (3, 'video_tab_search', Icons.search_rounded),
+          (4, 'video_personal', Icons.person_outline_rounded),
+          (0, 'video_tab_home', Icons.home_outlined),
+          (1, 'video_tab_region', Icons.category_outlined),
+          (2, 'video_tab_pgc', Icons.movie_outlined),
         ];
         final selected = ref.watch(videoSectionIndexProvider);
         return [
-          for (final (index, (labelKey, icon)) in labels.indexed)
+          for (final (railIndex, (sectionIndex, labelKey, icon)) in entries.indexed)
             Padding(
               padding: EdgeInsets.only(bottom: 20.sp * textScale),
               child: _buildAdaptiveItem(
                 ref: ref,
-                item: AppMenuItem(index: index, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
+                item: AppMenuItem(index: railIndex, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
                 isExpanded: isExpanded,
-                isSelected: selected == index,
+                isSelected: selected == sectionIndex,
                 textScale: textScale,
-                focusNode: _sectionNode('video_$index'),
-                onTap: () => ref.read(videoSectionIndexProvider.notifier).change(index),
+                focusNode: _sectionNode('video_$railIndex'),
+                onTap: () => ref.read(videoSectionIndexProvider.notifier).change(sectionIndex),
               ),
             ),
+          Padding(
+            padding: EdgeInsets.only(bottom: 20.sp * textScale),
+            child: _buildAdaptiveItem(
+              ref: ref,
+              item: AppMenuItem(
+                index: entries.length,
+                title: i18n('mode_live'),
+                shortTitle: i18n('menu_short_mode_live'),
+                icon: Icons.live_tv_rounded,
+              ),
+              isExpanded: isExpanded,
+              isSelected: false,
+              textScale: textScale,
+              focusNode: _sectionNode('video_${entries.length}'),
+              onTap: () => ref.read(appModeControllerProvider.notifier).setMode(AppMode.live),
+            ),
+          ),
         ];
     }
   }

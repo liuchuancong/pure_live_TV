@@ -107,6 +107,10 @@ class MusicPlayerController extends _$MusicPlayerController {
 
   /// Stops the auto-advance when every track fails in a row.
   int _consecutiveFailures = 0;
+
+  /// The rendition (qn) the VIDEO mode wants on open, from the video settings.
+  /// Null = the play-url answer's own pick — music never sets this.
+  int? _preferredQuality;
   final Random _random = Random();
 
   // ------------------------------------------------------------- last session
@@ -424,6 +428,20 @@ class MusicPlayerController extends _$MusicPlayerController {
     }
   }
 
+  /// The video settings' default rendition; the next resolve opens it when the
+  /// answer ships that rendition.
+  void setPreferredQuality(int quality) => _preferredQuality = quality > 0 ? quality : null;
+
+  /// Sets the rate directly (the video settings' default speed applies it once
+  /// on page entry); unlike [cycleSpeed] it takes an absolute value.
+  Future<void> setSpeed(double speed) async {
+    state = state.copyWith(speed: speed);
+    await _ignoreCancelled(() async {
+      final target = handle;
+      if (target != null) await target.setRate(speed);
+    });
+  }
+
   /// Cycles the playback rate through [speedSteps].
   Future<void> cycleSpeed() async {
     final next = speedSteps[(speedSteps.indexOf(state.speed) + 1) % speedSteps.length];
@@ -652,6 +670,22 @@ class MusicPlayerController extends _$MusicPlayerController {
       var urls = await modulePlayUrlResolver?.call(repairedTrack());
       urls ??= await _api.getPlayUrls(bvid: bvid, cid: cid);
       if (generation != _generation) return;
+
+      // The video mode's 默认清晰度: exact rendition match only — if the answer
+      // does not ship it, the server's own pick stands (no second open).
+      final preferred = _preferredQuality;
+      if (preferred != null && preferred != urls.quality) {
+        final match = urls.videoOptions.where((o) => o.quality == preferred && o.url.isNotEmpty).firstOrNull;
+        if (match != null) {
+          urls = MusicPlayUrls(
+            videoUrl: match.url,
+            audioUrl: urls.audioUrl,
+            videoBackupUrls: match.backupUrls,
+            quality: preferred,
+            videoOptions: urls.videoOptions,
+          );
+        }
+      }
 
       await _openUrls(repairedTrack(), urls, bvid);
       await _restorePosition(startAt ?? Duration.zero);

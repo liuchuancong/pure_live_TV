@@ -18,6 +18,7 @@ import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 import 'package:pure_live/modules/video/widgets/vod_danmaku_overlay.dart';
+import 'package:pure_live/services/index.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// The video-mode player, modelled on newBV's layer scheme:
@@ -75,7 +76,18 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     WakelockPlus.enable().catchError((Object _) {});
     EmojiManager().preload('bilibili');
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _playNode.requestFocus();
+      if (!mounted) return;
+      _playNode.requestFocus();
+      // The video settings' player defaults (newBV's 播放设置): the preferred
+      // rendition rides the next resolve, the default rate applies once on
+      // entry — a rate the user set (or a restored session carried) stands.
+      if (!SettingsService.to.isInitialized) return;
+      final video = SettingsService.to.videoState;
+      final controller = ref.read(musicPlayerControllerProvider.notifier);
+      controller.setPreferredQuality(video.preferredQuality);
+      if (ref.read(musicPlayerControllerProvider).speed == 1.0 && video.defaultSpeed != 1.0) {
+        unawaited(controller.setSpeed(video.defaultSpeed));
+      }
     });
     _progressTimer = Timer.periodic(const Duration(seconds: 10), (_) => _recordProgress());
     ref.listenManual(musicPlayerControllerProvider, (previous, next) {
@@ -593,8 +605,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
 
                   // ------------------------------ bottom edge progress line
                   // newBV's thin line: the whole video's progress as one hair
-                  // at the very bottom during playback.
-                  Positioned(
+                  // at the very bottom during playback, on by the 常显进度条 setting.
+                  if (ref.watch(videoSettingsControllerProvider.select((m) => m.persistentProgress)))
+                    Positioned(
                     left: 0,
                     right: 0,
                     bottom: 0,

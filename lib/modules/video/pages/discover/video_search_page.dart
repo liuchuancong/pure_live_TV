@@ -15,6 +15,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/models/video_pgc_models.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/services/index.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
 
 /// The full-type search section, newBV's search screen for TV: hotwords while
 /// idle, then video / user / movie results per keyword.
@@ -146,7 +148,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
           ),
           itemBuilder: (context, archive, index) => VideoCard(
             archive: archive,
-            onTap: () => VideoDetailRoute(archive).push(context),
+            onTap: () => openVideoArchive(context, ref, archive),
           ),
         );
     }

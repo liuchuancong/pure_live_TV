@@ -35,6 +35,8 @@ import 'package:pure_live/services/favorites/favorite_settings_model.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
+import 'package:pure_live/services/video_settings/video_settings_controller.dart';
+import 'package:pure_live/services/video_settings/video_settings_model.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 
 class SettingsService {
@@ -72,6 +74,9 @@ class SettingsService {
   // player
   PlayerSettingsModel get playerState => _container.read(playerSettingsControllerProvider);
   PlayerSettingsController get player => _container.read(playerSettingsControllerProvider.notifier);
+  // video (the video mode's own preferences)
+  VideoSettingsModel get videoState => _container.read(videoSettingsControllerProvider);
+  VideoSettingsController get video => _container.read(videoSettingsControllerProvider.notifier);
   // font
   FontSettingsModel get fontState => _container.read(fontSettingsControllerProvider).value!;
   FontSettingsController get font => _container.read(fontSettingsControllerProvider.notifier);

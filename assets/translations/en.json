@@ -2924,5 +2924,22 @@
   "video_follow_unfollowed": "Unfollowed",
   "video_tab_home": "Home",
   "video_settings_playback": "Playback",
-  "video_settings_danmaku": "Danmaku"
+  "video_settings_danmaku": "Danmaku",
+  "video_settings_interface": "界面设置",
+  "video_default_playback_title": "默认播放",
+  "video_default_quality": "默认清晰度",
+  "video_default_quality_sub": "起播时优先使用该清晰度，源里没有则跟服默认",
+  "video_quality_auto": "自动",
+  "video_default_speed": "默认倍速",
+  "video_default_speed_sub": "视频起播时的播放速度",
+  "video_startup_page": "启动页",
+  "video_startup_page_sub": "进入视频模式时默认所在的页面",
+  "video_home_default_tab": "首页置顶 Tab",
+  "video_personal_default_tab": "个人页置顶 Tab",
+  "video_show_detail_first": "显示视频详情",
+  "video_show_detail_first_sub": "点击卡片先进入详情页，关闭后直接播放",
+  "video_player_surface": "播放器界面",
+  "video_persistent_progress": "常显进度条",
+  "video_persistent_progress_sub": "播放时在画面底部常驻迷你进度条"
+
 }
