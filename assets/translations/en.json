@@ -1266,7 +1266,7 @@
   "music_follow_up": "Follow UP",
   "music_unfollow_up": "Unfollow",
   "music_up_followed": "UP followed",
-    "music_up_unfollowed": "UP unfollowed",
+  "music_up_unfollowed": "UP unfollowed",
   "music_likes": "Liked",
   "music_short_likes": "Liked",
   "music_empty_likes": "No liked songs yet — tap the heart in the mini player",
@@ -1310,14 +1310,6 @@
   "music_remove_from_recent": "Remove from recents",
   "music_removed_from_recent": "Removed from recents",
   "music_added_skipped": "Added {added}, skipped {skipped}",
-  "music_play_next": "Play next",
-  "music_already_next": "Already set as next",
-  "music_set_next": "Set as play next",
-  "music_song_like_menu": "Like this song",
-  "music_song_unliked_menu": "Unlike",
-  "music_remove_from_recent": "Remove from recents",
-  "music_removed_from_recent": "Removed from recents",
-  "music_play_album": "Play album",
   "music_bottom_progress": "Bottom progress bar",
   "music_bottom_progress_desc": "Show a progress hairline on the bottom edge while playing",
   "music_daily": "Daily picks",
@@ -1349,7 +1341,6 @@
   "music_parts_skipped": "skipped",
   "music_part_excluded": "Excluded from the queue",
   "music_part_included": "Plays",
-
   "music_lyrics": "Lyrics",
   "music_no_lyric": "No lyrics",
   "mode_live": "Live",
@@ -2940,6 +2931,6 @@
   "video_show_detail_first_sub": "点击卡片先进入详情页，关闭后直接播放",
   "video_player_surface": "播放器界面",
   "video_persistent_progress": "常显进度条",
-  "video_persistent_progress_sub": "播放时在画面底部常驻迷你进度条"
-
+  "video_persistent_progress_sub": "播放时在画面底部常驻迷你进度条",
+  "music_now_playing": "Now playing"
 }
