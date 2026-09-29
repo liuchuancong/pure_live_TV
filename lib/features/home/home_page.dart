@@ -81,8 +81,11 @@ class _HomePageState extends ConsumerState<HomePage> {
         final double scale = TvTextScale.factorOf(context);
         return Dialog(
           backgroundColor: tvTheme.cardColor,
-          // Compact on purpose: a mode picker is three rows, not a page.
-          insetPadding: EdgeInsets.symmetric(horizontal: 480.sp, vertical: 240.sp),
+          // Compact on purpose: a mode picker is three rows, not a page. The
+          // vertical inset is half the old one: at the largest font the rows
+          // are nearly twice their drafted height, and 240.sp left the dialog
+          // clipping its own last row.
+          insetPadding: EdgeInsets.symmetric(horizontal: 480.sp, vertical: 120.sp),
           child: Padding(
             padding: EdgeInsets.all(24.sp * scale),
             child: Column(
@@ -97,7 +100,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 SizedBox(height: 16.sp * scale),
                 // The rows scroll when the enlarged font outgrows the dialog's
                 // max height, and the dialog stays content-sized when they fit:
-                // min-size column + Flexible is what makes both true.
+                // min-size column + Flexible is what makes both true. The
+                // trailing padding keeps the last row clear of the dialog's
+                // rounded edge even while scrolled to the end.
                 Flexible(
                   child: SingleChildScrollView(
                     child: Column(
@@ -156,6 +161,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                               },
                             ),
                           ),
+                        SizedBox(height: 4.sp * scale),
                       ],
                     ),
                   ),
