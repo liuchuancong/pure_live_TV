@@ -42,7 +42,7 @@ final class MusicLibraryControllerProvider
 }
 
 String _$musicLibraryControllerHash() =>
-    r'c5cd3701f4654ae6158d3ac9c3a086d511d820d2';
+    r'cfd52da03e0114c373c58bbd0ee3700e9278e6f5';
 
 abstract class _$MusicLibraryController extends $Notifier<MusicLibraryState> {
   MusicLibraryState build();

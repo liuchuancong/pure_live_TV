@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
@@ -72,10 +73,10 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 8.sp),
+            padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 8.ts(context)),
             child: TvButton(
               title: i18n('video_personal_back'),
-              icon: Icon(Icons.arrow_back_rounded, size: 22.sp),
+              icon: Icon(Icons.arrow_back_rounded, size: 22.ts(context)),
               size: TvButtonSize.mini,
               isSecondary: true,
               onTap: () => setState(() => _openFolderId = null),
@@ -85,7 +86,7 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
             child: DpadRegion(
               horizontalEdge: DpadEdgeBehavior.leave,
               child: GridView.builder(
-                padding: EdgeInsets.all(24.sp),
+                padding: EdgeInsets.all(24.ts(context)),
                 gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                 itemCount: _resources!.length,
                 itemBuilder: (context, index) {
@@ -102,7 +103,7 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _folders!.length,
         itemBuilder: (context, index) {
@@ -111,17 +112,17 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
             onTap: () => _openFolder(folder),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              padding: EdgeInsets.all(16.sp),
+              padding: EdgeInsets.all(16.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
                 borderRadius: BorderRadius.circular(16.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
+                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.ts(context)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.folder_special_outlined, size: 40.sp, color: accent),
-                  SizedBox(height: 10.sp),
+                  Icon(Icons.folder_special_outlined, size: 40.ts(context), color: accent),
+                  SizedBox(height: 10.ts(context)),
                   Expanded(
                     child: Text(
                       folder.title,

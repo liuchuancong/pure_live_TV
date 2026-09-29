@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/models/models.dart';
@@ -21,8 +22,8 @@ class MusicLyricPickerDialog extends StatelessWidget {
     return TvDialog(
       title: i18n('music_lyric_pick'),
       child: SizedBox(
-        width: 720.sp,
-        height: 560.sp,
+        width: 720.ts(context),
+        height: 560.ts(context),
         child: FutureBuilder<List<MusicLyricCandidate>>(
           future: service.fetchLyricCandidates(
             track.title,
@@ -37,7 +38,7 @@ class MusicLyricPickerDialog extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(),
-                  SizedBox(height: 16.sp),
+                  SizedBox(height: 16.ts(context)),
                   Text(i18n('ui_loading'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor)),
                 ],
               );
@@ -61,7 +62,7 @@ class MusicLyricPickerDialog extends StatelessWidget {
                     ? i18n('music_lyric_manual_source')
                     : candidate.source;
                 return Padding(
-                  padding: EdgeInsets.only(bottom: 10.sp),
+                  padding: EdgeInsets.only(bottom: 10.ts(context)),
                   child: TvDialogOptionTile(
                     title: candidate.title,
                     subtitle: '$source${candidate.artist.isEmpty ? '' : ' · ${candidate.artist}'}',

@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,7 +126,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+            padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
             child: Row(
               children: [
                 for (final (index, (label, isHot)) in [
@@ -141,11 +142,11 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                     },
                     builder: (context, focused, child) => AnimatedContainer(
                       duration: const Duration(milliseconds: 120),
-                      padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 10.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 10.ts(context)),
                       decoration: BoxDecoration(
                         color: _hot == isHot ? accent.withValues(alpha: 0.22) : tvTheme.cardColor,
                         borderRadius: BorderRadius.circular(24.sp),
-                        border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                        border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                       ),
                       child: Text(
                         label,
@@ -155,7 +156,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 14.sp),
+                  SizedBox(width: 14.ts(context)),
                 ],
               ],
             ),
@@ -170,17 +171,17 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                         : DpadRegion(
                             child: ListView.builder(
                               controller: _scroll,
-                              padding: EdgeInsets.only(bottom: 24.sp),
+                              padding: EdgeInsets.only(bottom: 24.ts(context)),
                               itemCount: _comments.length + (_hasMore || _loading ? 1 : 0),
                               itemBuilder: (context, index) {
                                 if (index >= _comments.length) {
                                   return Padding(
-                                    padding: EdgeInsets.all(20.sp),
+                                    padding: EdgeInsets.all(20.ts(context)),
                                     child: Center(
                                       child: _loading
                                           ? SizedBox(
-                                              width: 32.sp,
-                                              height: 32.sp,
+                                              width: 32.ts(context),
+                                              height: 32.ts(context),
                                               child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
                                             )
                                           : Text(
@@ -215,12 +216,12 @@ class _CommentTile extends StatelessWidget {
     final accent = tvTheme.focusColor;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 8.sp),
-      padding: EdgeInsets.all(18.sp),
+      margin: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 8.ts(context)),
+      padding: EdgeInsets.all(18.ts(context)),
       decoration: BoxDecoration(
         color: tvTheme.cardColor,
         borderRadius: BorderRadius.circular(16.sp),
-        border: Border.all(color: comment.isTop ? accent.withValues(alpha: 0.5) : Colors.transparent, width: 1.5.sp),
+        border: Border.all(color: comment.isTop ? accent.withValues(alpha: 0.5) : Colors.transparent, width: 1.5.ts(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,13 +231,13 @@ class _CommentTile extends StatelessWidget {
               ClipOval(
                 child: CachedNetworkImage(
                   imageUrl: comment.face,
-                  width: 44.sp,
-                  height: 44.sp,
+                  width: 44.ts(context),
+                  height: 44.ts(context),
                   fit: BoxFit.cover,
-                  errorWidget: (_, _, _) => Icon(Icons.person_rounded, size: 44.sp, color: tvTheme.secondaryTextColor),
+                  errorWidget: (_, _, _) => Icon(Icons.person_rounded, size: 44.ts(context), color: tvTheme.secondaryTextColor),
                 ),
               ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +253,7 @@ class _CommentTile extends StatelessWidget {
                           ),
                         ),
                         if (comment.isTop) ...[
-                          SizedBox(width: 8.sp),
+                          SizedBox(width: 8.ts(context)),
                           Text(i18n('video_comments_top'), style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent)),
                         ],
                       ],
@@ -264,26 +265,26 @@ class _CommentTile extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               TvFocusable(
                 onTap: () => onLike(comment),
                 builder: (context, focused, child) => Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 8.sp),
+                  padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 8.ts(context)),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18.sp),
                     color: comment.liked ? accent.withValues(alpha: 0.2) : Colors.transparent,
-                    border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                    border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         comment.liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                        size: 20.sp,
+                        size: 20.ts(context),
                         color: comment.liked ? accent : tvTheme.secondaryTextColor,
                       ),
                       if (comment.like > 0) ...[
-                        SizedBox(width: 6.sp),
+                        SizedBox(width: 6.ts(context)),
                         Text(
                           readableCount(comment.like.toString()),
                           style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -295,15 +296,15 @@ class _CommentTile extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 10.sp),
+          SizedBox(height: 10.ts(context)),
           SelectableText(
             comment.content,
             style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor, height: 1.5),
           ),
           if (comment.replies.isNotEmpty) ...[
-            SizedBox(height: 10.sp),
+            SizedBox(height: 10.ts(context)),
             Container(
-              padding: EdgeInsets.all(12.sp),
+              padding: EdgeInsets.all(12.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.backgroundColor.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(12.sp),
@@ -313,7 +314,7 @@ class _CommentTile extends StatelessWidget {
                 children: [
                   for (final reply in comment.replies)
                     Padding(
-                      padding: EdgeInsets.only(bottom: 6.sp),
+                      padding: EdgeInsets.only(bottom: 6.ts(context)),
                       child: RichText(
                         text: TextSpan(
                           style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),

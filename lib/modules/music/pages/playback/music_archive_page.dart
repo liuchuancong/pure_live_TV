@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,7 +134,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
           : _detail == null
               ? Center(child: AppStatusView(type: AppStatusType.loading, title: '', subtitle: ''))
               : SingleChildScrollView(
-                  padding: EdgeInsets.all(24.sp),
+                  padding: EdgeInsets.all(24.ts(context)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -145,7 +146,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            width: 400.sp,
+                            width: 400.ts(context),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(16.sp),
                               child: AspectRatio(
@@ -158,7 +159,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 32.sp),
+                          SizedBox(width: 32.ts(context)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,24 +172,24 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     height: 1.35,
                                   ),
                                 ),
-                                SizedBox(height: 10.sp),
+                                SizedBox(height: 10.ts(context)),
                                 Row(
                                   children: [
-                                    Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                    SizedBox(width: 6.sp),
+                                    Icon(Icons.play_circle_outline_rounded, size: 20.ts(context), color: tvTheme.secondaryTextColor),
+                                    SizedBox(width: 6.ts(context)),
                                     Text(
                                       readableCount(archive.playCount.toString()),
                                       style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                     ),
-                                    SizedBox(width: 16.sp),
-                                    Icon(Icons.format_quote_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                    SizedBox(width: 6.sp),
+                                    SizedBox(width: 16.ts(context)),
+                                    Icon(Icons.format_quote_rounded, size: 20.ts(context), color: tvTheme.secondaryTextColor),
+                                    SizedBox(width: 6.ts(context)),
                                     Text(
                                       readableCount(archive.barrageCount.toString()),
                                       style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                     ),
                                     if (archive.publishDate.isNotEmpty) ...[
-                                      SizedBox(width: 16.sp),
+                                      SizedBox(width: 16.ts(context)),
                                       Text(
                                         archive.publishDate,
                                         style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -196,7 +197,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     ],
                                   ],
                                 ),
-                                SizedBox(height: 16.sp),
+                                SizedBox(height: 16.ts(context)),
                                 // The UP row: avatar-led, opens the user space.
                                 TvFocusable(
                                   onTap: archive.upMid > 0
@@ -204,17 +205,17 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                       : null,
                                   builder: (context, focused, child) => AnimatedContainer(
                                     duration: const Duration(milliseconds: 120),
-                                    padding: EdgeInsets.all(12.sp),
+                                    padding: EdgeInsets.all(12.ts(context)),
                                     decoration: BoxDecoration(
                                       color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
                                       borderRadius: BorderRadius.circular(20.sp),
-                                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName),
-                                        SizedBox(width: 12.sp),
+                                        SizedBox(width: 12.ts(context)),
                                         Flexible(
                                           child: Text(
                                             archive.upName,
@@ -230,7 +231,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 16.sp),
+                                SizedBox(height: 16.ts(context)),
                                 // The interaction row, the same actions the video
                                 // detail page leads with.
                                 Wrap(
@@ -241,7 +242,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                       title: i18n('video_action_like'),
                                       icon: Icon(
                                         _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                                        size: 22.sp,
+                                        size: 22.ts(context),
                                       ),
                                       size: TvButtonSize.mini,
                                       isSecondary: !_liked,
@@ -257,7 +258,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                       title: i18n('video_action_fav'),
                                       icon: Icon(
                                         _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
-                                        size: 22.sp,
+                                        size: 22.ts(context),
                                       ),
                                       size: TvButtonSize.mini,
                                       isSecondary: !_favoured,
@@ -265,7 +266,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     ),
                                     TvButton(
                                       title: i18n('video_action_triple'),
-                                      icon: Icon(Icons.recommend_rounded, size: 22.sp),
+                                      icon: Icon(Icons.recommend_rounded, size: 22.ts(context)),
                                       size: TvButtonSize.mini,
                                       isSecondary: true,
                                       onTap: () => _runAction(
@@ -275,7 +276,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     ),
                                     TvButton(
                                       title: i18n('video_comments_title'),
-                                      icon: Icon(Icons.comment_outlined, size: 22.sp),
+                                      icon: Icon(Icons.comment_outlined, size: 22.ts(context)),
                                       size: TvButtonSize.mini,
                                       isSecondary: true,
                                       onTap: archive.aid > 0
@@ -286,7 +287,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     ),
                                     TvButton(
                                       title: i18n('music_skip_parts'),
-                                      icon: Icon(Icons.playlist_remove_rounded, size: 22.sp),
+                                      icon: Icon(Icons.playlist_remove_rounded, size: 22.ts(context)),
                                       size: TvButtonSize.mini,
                                       isSecondary: true,
                                       onTap: archive.tracks.length > 1
@@ -301,7 +302,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                         library.isFavorite(archive.bvid)
                                             ? Icons.favorite_rounded
                                             : Icons.favorite_border_rounded,
-                                        size: 22.sp,
+                                        size: 22.ts(context),
                                       ),
                                       size: TvButtonSize.mini,
                                       isSecondary: !library.isFavorite(archive.bvid),
@@ -312,7 +313,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                         title: i18n(followingUp ? 'music_unfollow_up' : 'music_follow_up'),
                                         icon: Icon(
                                           followingUp ? Icons.person_remove_outlined : Icons.person_add_alt_outlined,
-                                          size: 22.sp,
+                                          size: 22.ts(context),
                                         ),
                                         size: TvButtonSize.mini,
                                         isSecondary: !followingUp,
@@ -330,12 +331,12 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                         ],
                       ),
                       if (archive.description.isNotEmpty) ...[
-                        SizedBox(height: 20.sp),
+                        SizedBox(height: 20.ts(context)),
                         // The description in its own card, like the video
                         // detail page's grey block under the header.
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.all(18.sp),
+                          padding: EdgeInsets.all(18.ts(context)),
                           decoration: BoxDecoration(
                             color: tvTheme.cardColor,
                             borderRadius: BorderRadius.circular(16.sp),
@@ -350,10 +351,10 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                           ),
                         ),
                       ],
-                      SizedBox(height: 24.sp),
+                      SizedBox(height: 24.ts(context)),
                       // ==================================================== parts
                       Padding(
-                        padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
+                        padding: EdgeInsets.only(left: 8.ts(context), bottom: 12.ts(context)),
                         child: Row(
                           children: [
                             Text(
@@ -363,7 +364,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                             const Spacer(),
                             TvButton(
                               title: i18n('music_play_all'),
-                              icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                              icon: Icon(Icons.play_circle_fill_rounded, size: 28.ts(context)),
                               size: TvButtonSize.mini,
                               onTap: () => _playAll(tracks, 0),
                             ),
@@ -380,7 +381,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                           children: [
                             for (final (index, track) in tracks.indexed)
                               Padding(
-                                padding: EdgeInsets.only(bottom: 8.sp * textScale),
+                                padding: EdgeInsets.only(bottom: 8.ts(context) * textScale),
                                 child: _PartTile(
                                   track: track,
                                   index: index,
@@ -405,9 +406,9 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
       builder: (_) => TvDialog(
         title: i18n('music_skip_parts'),
         cancelText: i18n('cancel'),
-        width: 640.sp,
+        width: 640.ts(context),
         child: SizedBox(
-          height: 480.sp,
+          height: 480.ts(context),
           child: StatefulBuilder(
             builder: (context, setDialogState) {
               final excluded = libraryController.excludedCids(archive.bvid).toSet();
@@ -423,7 +424,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                     showCheck: false,
                     trailing: Icon(
                       skipped ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                      size: 26.sp,
+                      size: 26.ts(context),
                       color: skipped ? tvTheme.secondaryTextColor : tvTheme.focusColor,
                     ),
                     onTap: () {
@@ -473,17 +474,17 @@ class _PartTile extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          height: 76.sp * textScale,
-          padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
+          height: 76.ts(context) * textScale,
+          padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale),
           decoration: BoxDecoration(
             color: tvTheme.cardColor,
             borderRadius: BorderRadius.circular(14.sp),
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
           ),
           child: Row(
             children: [
               SizedBox(
-                width: 40.sp * textScale,
+                width: 40.ts(context) * textScale,
                 child: Text(
                   '${index + 1}',
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -497,7 +498,7 @@ class _PartTile extends StatelessWidget {
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                 ),
               ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               Text(
                 MusicVideoCard.formatDuration(track.part.duration > 0 ? track.part.duration : track.archive.duration),
                 style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),

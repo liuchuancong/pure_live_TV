@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -130,10 +131,10 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                     controller: _scroll,
                     slivers: [
                       SliverToBoxAdapter(child: _HeaderCard(info: _info!, onToggleFollow: _toggleFollow)),
-                      SliverPadding(padding: EdgeInsets.only(top: 12.sp)),
+                      SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24.sp),
+                          padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
                           child: Row(
                             children: [
                               Text(
@@ -145,7 +146,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                                 title: i18n(_order == 'pubdate' ? 'video_order_newest' : 'video_order_most_played'),
                                 icon: Icon(
                                   _order == 'pubdate' ? Icons.schedule_rounded : Icons.local_fire_department_outlined,
-                                  size: 22.sp,
+                                  size: 22.ts(context),
                                 ),
                                 size: TvButtonSize.mini,
                                 isSecondary: true,
@@ -163,9 +164,9 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                           ),
                         ),
                       ),
-                      SliverPadding(padding: EdgeInsets.only(top: 12.sp)),
+                      SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
                       SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: 24.sp),
+                        padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
                         sliver: SliverGrid(
                           gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                           delegate: SliverChildBuilderDelegate(
@@ -175,8 +176,8 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                                 return Center(
                                   child: _loadingMore
                                       ? SizedBox(
-                                          width: 32.sp,
-                                          height: 32.sp,
+                                          width: 32.ts(context),
+                                          height: 32.ts(context),
                                           child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
                                         )
                                       : const SizedBox.shrink(),
@@ -206,8 +207,8 @@ class _HeaderCard extends StatelessWidget {
     final tvTheme = context.tvTheme;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24.sp),
-      padding: EdgeInsets.all(20.sp),
+      margin: EdgeInsets.symmetric(horizontal: 24.ts(context)),
+      padding: EdgeInsets.all(20.ts(context)),
       decoration: BoxDecoration(
         color: tvTheme.cardColor,
         borderRadius: BorderRadius.circular(20.sp),
@@ -217,20 +218,20 @@ class _HeaderCard extends StatelessWidget {
           ClipOval(
             child: CachedNetworkImage(
               imageUrl: info.face,
-              width: 96.sp,
-              height: 96.sp,
+              width: 96.ts(context),
+              height: 96.ts(context),
               fit: BoxFit.cover,
-              errorWidget: (_, _, _) => Icon(Icons.person_rounded, size: 96.sp, color: tvTheme.secondaryTextColor),
+              errorWidget: (_, _, _) => Icon(Icons.person_rounded, size: 96.ts(context), color: tvTheme.secondaryTextColor),
             ),
           ),
-          SizedBox(width: 20.sp),
+          SizedBox(width: 20.ts(context)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(info.name, style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor)),
                 if (info.sign.isNotEmpty) ...[
-                  SizedBox(height: 6.sp),
+                  SizedBox(height: 6.ts(context)),
                   Text(
                     info.sign,
                     maxLines: 2,
@@ -238,23 +239,23 @@ class _HeaderCard extends StatelessWidget {
                     style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                   ),
                 ],
-                SizedBox(height: 8.sp),
+                SizedBox(height: 8.ts(context)),
                 Row(
                   children: [
                     _Stat(label: i18n('video_followers'), value: readableCount(info.followers.toString())),
-                    SizedBox(width: 24.sp),
+                    SizedBox(width: 24.ts(context)),
                     _Stat(label: i18n('video_following'), value: readableCount(info.following.toString())),
-                    SizedBox(width: 24.sp),
+                    SizedBox(width: 24.ts(context)),
                     _Stat(label: i18n('video_uploads_title'), value: readableCount(info.videoCount.toString())),
                   ],
                 ),
               ],
             ),
           ),
-          SizedBox(width: 16.sp),
+          SizedBox(width: 16.ts(context)),
           TvButton(
             title: i18n(info.isFollowed ? 'video_unfollow' : 'video_follow'),
-            icon: Icon(info.isFollowed ? Icons.done_rounded : Icons.add_rounded, size: 24.sp),
+            icon: Icon(info.isFollowed ? Icons.done_rounded : Icons.add_rounded, size: 24.ts(context)),
             size: TvButtonSize.mini,
             isSecondary: info.isFollowed,
             onTap: onToggleFollow,
@@ -302,7 +303,7 @@ class _UploadCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14.sp),
           border: Border.all(
             color: focused ? context.tvTheme.focusColor : Colors.transparent,
-            width: 2.sp,
+            width: 2.ts(context),
           ),
         ),
         child: Column(
@@ -321,7 +322,7 @@ class _UploadCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(10.sp),
+              padding: EdgeInsets.all(10.ts(context)),
               child: Text(
                 archive.title,
                 maxLines: 2,

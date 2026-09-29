@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
@@ -60,7 +61,7 @@ class VideoToViewPaneState extends ConsumerState<VideoToViewPane> {
 
     return DpadRegion(
       child: GridView.builder(
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _items!.length,
         itemBuilder: (context, index) {

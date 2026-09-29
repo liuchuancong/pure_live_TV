@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -80,7 +81,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
     return DpadRegion(
       child: ListView.builder(
         controller: _scroll,
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         itemCount: _items.length,
         itemBuilder: (context, index) {
           final item = _items[index];
@@ -89,15 +90,15 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
             onTap: () => openVideoArchive(context, ref, item.archive),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.sp),
-              // No fixed height: the 98.sp cover + padding + border size the
+              margin: EdgeInsets.only(bottom: 10.ts(context)),
+              // No fixed height: the 98.ts(context) cover + padding + border size the
               // row. A pinned 118.sp left 94.sp of content room for a 98.sp
               // cover — the 4px difference was the bottom overflow.
-              padding: EdgeInsets.all(10.sp),
+              padding: EdgeInsets.all(10.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
                 borderRadius: BorderRadius.circular(16.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
               ),
               child: Row(
                 children: [
@@ -107,11 +108,11 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                         borderRadius: BorderRadius.circular(10.sp),
                         child: CachedNetworkImage(
                           imageUrl: item.archive.cover,
-                          width: 180.sp,
-                          height: 98.sp,
+                          width: 180.ts(context),
+                          height: 98.ts(context),
                           fit: BoxFit.cover,
                           memCacheWidth: 480,
-                          errorWidget: (_, _, _) => Container(width: 180.sp, color: Colors.black26),
+                          errorWidget: (_, _, _) => Container(width: 180.ts(context), color: Colors.black26),
                         ),
                       ),
                       Positioned(
@@ -127,7 +128,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                       ),
                     ],
                   ),
-                  SizedBox(width: 14.sp),
+                  SizedBox(width: 14.ts(context)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +143,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                             color: tvTheme.primaryTextColor,
                           ),
                         ),
-                        SizedBox(height: 4.sp),
+                        SizedBox(height: 4.ts(context)),
                         Text(
                           '${item.archive.upName} · ${(progress * 100).toStringAsFixed(0)}%',
                           style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),

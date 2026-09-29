@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -56,8 +57,8 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.favorite_border_rounded, size: 72.sp, color: accent.withValues(alpha: 0.5)),
-            SizedBox(height: 14.sp),
+            Icon(Icons.favorite_border_rounded, size: 72.ts(context), color: accent.withValues(alpha: 0.5)),
+            SizedBox(height: 14.ts(context)),
             Text(
               i18n('music_empty_favorites'),
               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -71,7 +72,7 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 10.sp),
+          padding: EdgeInsets.fromLTRB(20.ts(context), 16.ts(context), 20.ts(context), 10.ts(context)),
           child: TvTabBar(
             tabs: [
               TvTabItemData(title: '${i18n('music_follow_albums')}（${library.favorites.length}）'),
@@ -83,7 +84,7 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
         ),
         if (_selectingAlbums && _tab == 0)
           Padding(
-            padding: EdgeInsets.fromLTRB(24.sp, 0, 24.sp, 10.sp),
+            padding: EdgeInsets.fromLTRB(24.ts(context), 0, 24.ts(context), 10.ts(context)),
             child: Row(
               children: [
                 Text(
@@ -100,7 +101,7 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
                       ..addAll([for (final a in library.favorites) a.bvid]);
                   }),
                 ),
-                SizedBox(width: 12.sp),
+                SizedBox(width: 12.ts(context)),
                 TvButton(
                   title: i18n('cancel'),
                   size: TvButtonSize.mini,
@@ -110,10 +111,10 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
                     _selectedAlbums.clear();
                   }),
                 ),
-                SizedBox(width: 12.sp),
+                SizedBox(width: 12.ts(context)),
                 TvButton(
                   title: i18n('music_save_to_playlist'),
-                  icon: Icon(Icons.playlist_add_rounded, size: 22.sp),
+                  icon: Icon(Icons.playlist_add_rounded, size: 22.ts(context)),
                   size: TvButtonSize.mini,
                   onTap: _selectedAlbums.isEmpty ? null : () => _saveSelectedToPlaylist(),
                 ),
@@ -132,7 +133,7 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
                 : DpadRegion(
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: GridView.builder(
-                      padding: EdgeInsets.all(24.sp),
+                      padding: EdgeInsets.all(24.ts(context)),
                       gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                       itemCount: library.favorites.length,
                       itemBuilder: (context, index) {
@@ -163,10 +164,10 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
                                 top: 10.sp,
                                 child: IgnorePointer(
                                   child: Container(
-                                    width: 44.sp,
-                                    height: 44.sp,
+                                    width: 44.ts(context),
+                                    height: 44.ts(context),
                                     decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-                                    child: Icon(Icons.check_rounded, size: 28.sp, color: Colors.white),
+                                    child: Icon(Icons.check_rounded, size: 28.ts(context), color: Colors.white),
                                   ),
                                 ),
                               ),
@@ -188,7 +189,7 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
                 : DpadRegion(
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: GridView.builder(
-                      padding: EdgeInsets.all(24.sp),
+                      padding: EdgeInsets.all(24.ts(context)),
                       gridDelegate: TvAdaptiveGrid.media(
                         context,
                         crossAxisCount: 4,
@@ -251,13 +252,13 @@ Future<void> _confirmUnfollowArchive(BuildContext context, WidgetRef ref, MusicA
     builder: (_) => TvDialog(
       title: archive.title,
       cancelText: i18n('cancel'),
-      width: 560.sp,
+      width: 560.ts(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TvDialogOptionTile(
             title: i18n('music_play_album'),
-            icon: Icon(Icons.play_circle_fill_rounded, size: 26.sp),
+            icon: Icon(Icons.play_circle_fill_rounded, size: 26.ts(context)),
             showCheck: false,
             autofocus: true,
             onTap: () {
@@ -268,7 +269,7 @@ Future<void> _confirmUnfollowArchive(BuildContext context, WidgetRef ref, MusicA
           ),
           TvDialogOptionTile(
             title: i18n('music_unfollow_album'),
-            icon: Icon(Icons.favorite_border_rounded, size: 26.sp),
+            icon: Icon(Icons.favorite_border_rounded, size: 26.ts(context)),
             showCheck: false,
             onTap: () {
               Navigator.of(context).pop();
@@ -289,13 +290,13 @@ Future<void> _confirmUnfollowUp(BuildContext context, WidgetRef ref, MusicUp up)
     builder: (_) => TvDialog(
       title: up.name,
       cancelText: i18n('cancel'),
-      width: 560.sp,
+      width: 560.ts(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TvDialogOptionTile(
             title: i18n('music_unfollow_up'),
-            icon: Icon(Icons.person_remove_outlined, size: 26.sp),
+            icon: Icon(Icons.person_remove_outlined, size: 26.ts(context)),
             showCheck: false,
             autofocus: true,
             onTap: () {
@@ -333,11 +334,11 @@ class MusicAuthorCard extends ConsumerWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 12.sp),
+          padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 12.ts(context)),
           decoration: BoxDecoration(
             color: focused ? tvTheme.focusedCardColor : Colors.transparent,
             borderRadius: BorderRadius.circular(16.sp),
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
           ),
           child: Row(
             children: [
@@ -346,15 +347,15 @@ class MusicAuthorCard extends ConsumerWidget {
                 child: up.face.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: up.face,
-                        width: 84.sp,
-                        height: 84.sp,
+                        width: 84.ts(context),
+                        height: 84.ts(context),
                         fit: BoxFit.cover,
                         memCacheWidth: 240,
-                        errorWidget: (_, _, _) => _fallback(accent),
+                        errorWidget: (_, _, _) => _fallback(context, accent),
                       )
-                    : _fallback(accent),
+                    : _fallback(context, accent),
               ),
-              SizedBox(width: 14.sp),
+              SizedBox(width: 14.ts(context)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,7 +371,7 @@ class MusicAuthorCard extends ConsumerWidget {
                       ),
                     ),
                     if (sign.asData?.value.isNotEmpty == true) ...[
-                      SizedBox(height: 4.sp),
+                      SizedBox(height: 4.ts(context)),
                       Text(
                         sign.asData!.value,
                         maxLines: 2,
@@ -392,10 +393,10 @@ class MusicAuthorCard extends ConsumerWidget {
     );
   }
 
-  Widget _fallback(Color accent) => Container(
-    width: 84.sp,
-    height: 84.sp,
+  Widget _fallback(BuildContext context, Color accent) => Container(
+    width: 84.ts(context),
+    height: 84.ts(context),
     color: accent.withValues(alpha: 0.15),
-    child: Icon(Icons.person_outline_rounded, size: 44.sp, color: accent),
+    child: Icon(Icons.person_outline_rounded, size: 44.ts(context), color: accent),
   );
 }

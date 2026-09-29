@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -92,22 +93,22 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 10.sp),
+                  padding: EdgeInsets.fromLTRB(20.ts(context), 16.ts(context), 20.ts(context), 10.ts(context)),
                   child: Row(
                     children: [
                       Text('（${tracks.length}）', style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.secondaryTextColor)),
                       const Spacer(),
                       TvButton(
                         title: i18n('music_now_playing'),
-                        icon: Icon(Icons.music_note_rounded, size: 24.sp),
+                        icon: Icon(Icons.music_note_rounded, size: 24.ts(context)),
                         size: TvButtonSize.mini,
                         isSecondary: true,
                         onTap: () => const MusicPlayerRoute().push(context),
                       ),
-                      SizedBox(width: 12.sp),
+                      SizedBox(width: 12.ts(context)),
                       TvButton(
                         title: i18n('music_play_all'),
-                        icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                        icon: Icon(Icons.play_circle_fill_rounded, size: 28.ts(context)),
                         size: TvButtonSize.mini,
                         onTap: tracks.isEmpty ? null : () => _play(context, ref, tracks, 0),
                       ),
@@ -120,9 +121,9 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: ListView.separated(
                       controller: _scroll,
-                      padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
+                      padding: EdgeInsets.only(left: 20.ts(context), right: 20.ts(context), bottom: 16.ts(context), top: 16.ts(context)),
                       itemCount: tracks.length,
-                      separatorBuilder: (_, _) => SizedBox(height: 4.sp),
+                      separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
                       itemBuilder: (context, index) {
                         final track = tracks[index];
                         final isCurrent = playingId == track.id;
@@ -160,13 +161,13 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
       builder: (_) => TvDialog(
         title: track.title,
         cancelText: i18n('cancel'),
-        width: 560.sp,
+        width: 560.ts(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TvDialogOptionTile(
               title: i18n(_isLiked ? 'music_song_unliked' : 'music_remove_from_playlist'),
-              icon: Icon(Icons.delete_outline_rounded, size: 26.sp),
+              icon: Icon(Icons.delete_outline_rounded, size: 26.ts(context)),
               showCheck: false,
               autofocus: true,
               onTap: () {
@@ -182,7 +183,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
             ),
             TvDialogOptionTile(
               title: i18n('music_pin'),
-              icon: Icon(Icons.vertical_align_top_rounded, size: 26.sp),
+              icon: Icon(Icons.vertical_align_top_rounded, size: 26.ts(context)),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();
@@ -197,7 +198,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
             if (hasDefaultLyric)
               TvDialogOptionTile(
                 title: i18n('music_clear_default_lyric'),
-                icon: Icon(Icons.lyrics_outlined, size: 26.sp),
+                icon: Icon(Icons.lyrics_outlined, size: 26.ts(context)),
                 showCheck: false,
                 onTap: () {
                   Navigator.of(context).pop();
@@ -245,7 +246,7 @@ class _PlaylistTrackRow extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 10.sp),
+          padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 10.ts(context)),
           decoration: BoxDecoration(
             color: isCurrent
                 ? accent.withValues(alpha: 0.14)
@@ -253,32 +254,32 @@ class _PlaylistTrackRow extends StatelessWidget {
                 ? tvTheme.cardColor
                 : tvTheme.cardColor.withValues(alpha: 0.45),
             borderRadius: BorderRadius.circular(14.sp),
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
           ),
           child: Row(
             children: [
               SizedBox(
-                width: 44.sp,
+                width: 44.ts(context),
                 child: isCurrent
-                    ? Icon(Icons.graphic_eq_rounded, size: 30.sp, color: accent)
+                    ? Icon(Icons.graphic_eq_rounded, size: 30.ts(context), color: accent)
                     : Text('${index + 1}', style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor)),
               ),
-              SizedBox(width: 8.sp),
+              SizedBox(width: 8.ts(context)),
               ClipRRect(
                 borderRadius: BorderRadius.circular(10.sp),
                 child: CachedNetworkImage(
                   imageUrl: track.archive.cover,
-                  width: 132.sp,
-                  height: 84.sp,
+                  width: 132.ts(context),
+                  height: 84.ts(context),
                   fit: BoxFit.cover,
                   memCacheWidth: 320,
                   errorWidget: (_, _, _) => Container(
                     color: accent.withValues(alpha: 0.12),
-                    child: Icon(Icons.music_note_rounded, size: 30.sp, color: accent),
+                    child: Icon(Icons.music_note_rounded, size: 30.ts(context), color: accent),
                   ),
                 ),
               ),
-              SizedBox(width: 16.sp),
+              SizedBox(width: 16.ts(context)),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -296,9 +297,9 @@ class _PlaylistTrackRow extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10.sp),
-                        Icon(Icons.schedule_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                        SizedBox(width: 4.sp),
+                        SizedBox(width: 10.ts(context)),
+                        Icon(Icons.schedule_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.ts(context)),
                         Text(
                           MusicVideoCard.formatDuration(
                             track.part.duration > 0 ? track.part.duration : track.archive.duration,
@@ -307,11 +308,11 @@ class _PlaylistTrackRow extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 4.sp),
+                    SizedBox(height: 4.ts(context)),
                     Row(
                       children: [
-                        Icon(Icons.album_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                        SizedBox(width: 4.sp),
+                        Icon(Icons.album_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.ts(context)),
                         Flexible(
                           child: Text(
                             track.archive.title,
@@ -320,9 +321,9 @@ class _PlaylistTrackRow extends StatelessWidget {
                             style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                         ),
-                        SizedBox(width: 10.sp),
-                        Icon(Icons.person_outline_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                        SizedBox(width: 4.sp),
+                        SizedBox(width: 10.ts(context)),
+                        Icon(Icons.person_outline_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.ts(context)),
                         Flexible(
                           child: Text(
                             track.archive.upName,

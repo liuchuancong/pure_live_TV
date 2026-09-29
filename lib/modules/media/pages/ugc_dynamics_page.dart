@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -84,7 +85,7 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
         controller: _scroll,
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
@@ -97,11 +98,11 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
-                    width: 64.sp,
-                    height: 64.sp,
+                    width: 64.ts(context),
+                    height: 64.ts(context),
                     child: CircularProgressIndicator(strokeWidth: 5.sp, color: accent),
                   ),
-                  SizedBox(height: 12.sp),
+                  SizedBox(height: 12.ts(context)),
                   Text(
                     i18n('ui_loading'),
                     style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),

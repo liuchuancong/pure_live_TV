@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,37 +53,37 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(24.sp, 12.sp, 24.sp, 8.sp),
+            padding: EdgeInsets.fromLTRB(24.ts(context), 12.ts(context), 24.ts(context), 8.ts(context)),
             child: Row(
               children: [
                 Text(
                   '${tracks.length} ${i18n('music_tracks_unit')}',
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                 ),
-                SizedBox(width: 16.sp),
+                SizedBox(width: 16.ts(context)),
                 SizedBox(
-                  width: 320.sp,
+                  width: 320.ts(context),
                   child: TvInputField(
                     controller: _filter,
                     hint: i18n('music_playlist_filter_hint'),
-                    height: 56.sp,
+                    height: 56.ts(context),
                     maxLines: 1,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
-                SizedBox(width: 16.sp),
+                SizedBox(width: 16.ts(context)),
                 Text(i18n('music_excluded_hint'), style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor)),
                 const Spacer(),
                 TvButton(
                   title: i18n('music_play_all'),
-                  icon: Icon(Icons.play_circle_fill_rounded, size: 26.sp),
+                  icon: Icon(Icons.play_circle_fill_rounded, size: 26.ts(context)),
                   size: TvButtonSize.mini,
                   onTap: tracks.isEmpty ? null : () => _playAll(context, ref, tracks),
                 ),
-                SizedBox(width: 12.sp),
+                SizedBox(width: 12.ts(context)),
                 TvButton(
                   title: i18n('music_sync_this'),
-                  icon: Icon(Icons.sync_rounded, size: 24.sp),
+                  icon: Icon(Icons.sync_rounded, size: 24.ts(context)),
                   size: TvButtonSize.mini,
                   isSecondary: true,
                   onTap: () => ref.read(musicPlaylistSyncControllerProvider.notifier).syncFolder(folder.id),
@@ -94,7 +95,7 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
             child: tracks.isEmpty
                 ? AppStatusView(type: AppStatusType.empty, title: i18n('music_sync_not_yet'), subtitle: '')
                 : ListView.builder(
-                    padding: EdgeInsets.fromLTRB(24.sp, 4.sp, 24.sp, 24.sp),
+                    padding: EdgeInsets.fromLTRB(24.ts(context), 4.ts(context), 24.ts(context), 24.ts(context)),
                     itemCount: tracks.length,
                     itemBuilder: (context, index) {
                       final track = tracks[index];
@@ -174,17 +175,17 @@ class _TrackRow extends StatelessWidget {
       onLongPress: onToggleExcluded,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        margin: EdgeInsets.only(bottom: 8.sp),
-        padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale, vertical: 12.sp * textScale),
+        margin: EdgeInsets.only(bottom: 8.ts(context)),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale, vertical: 12.ts(context) * textScale),
         decoration: BoxDecoration(
           color: excluded ? tvTheme.cardColor.withValues(alpha: 0.4) : tvTheme.cardColor,
           borderRadius: BorderRadius.circular(14.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
         ),
         child: Row(
           children: [
             SizedBox(
-              width: 44.sp * textScale,
+              width: 44.ts(context) * textScale,
               child: Text(
                 '${index + 1}',
                 style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),

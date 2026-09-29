@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/app/router/app_router.dart';
@@ -24,13 +25,14 @@ class MusicMiniBar extends ConsumerWidget {
     final accent = tvTheme.focusColor;
     final track = state.current;
     final isLiked = track != null && library.isSongLiked(track.id);
+    final double textScale = TvTextScale.factorOf(context);
     return DpadRegion(
       child: Container(
-        margin: EdgeInsets.all(12.sp),
-        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
+        margin: EdgeInsets.all(12.ts(context) * textScale),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale, vertical: 10.ts(context) * textScale),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(20.sp),
+          borderRadius: BorderRadius.circular(20.sp * textScale),
           border: Border.all(color: accent.withValues(alpha: 0.35)),
         ),
         child: StreamBuilder<PlaybackState>(
@@ -52,11 +54,11 @@ class MusicMiniBar extends ConsumerWidget {
                         builder: (context, focused, child) {
                           return AnimatedContainer(
                             duration: const Duration(milliseconds: 120),
-                            padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 6.sp),
+                            padding: EdgeInsets.symmetric(horizontal: 10.ts(context) * textScale, vertical: 6.ts(context) * textScale),
                             decoration: BoxDecoration(
                               color: focused ? accent.withValues(alpha: 0.18) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12.sp),
-                              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                              borderRadius: BorderRadius.circular(12.sp * textScale),
+                              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context) * textScale),
                             ),
                             child: Row(
                               children: [
@@ -64,15 +66,15 @@ class MusicMiniBar extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(10.sp),
                                   child: CachedNetworkImage(
                                     imageUrl: track?.archive.cover ?? '',
-                                    width: 124.sp,
-                                    height: 80.sp,
+                                    width: 124.ts(context) * textScale,
+                                    height: 80.ts(context) * textScale,
                                     fit: BoxFit.cover,
                                     memCacheWidth: 320,
                                     errorWidget: (_, _, _) =>
-                                        Icon(Icons.music_note_rounded, size: 28.sp, color: accent),
+                                        Icon(Icons.music_note_rounded, size: 28.ts(context), color: accent),
                                   ),
                                 ),
-                                SizedBox(width: 14.sp),
+                                SizedBox(width: 14.ts(context) * textScale),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,7 +88,7 @@ class MusicMiniBar extends ConsumerWidget {
                                           color: tvTheme.primaryTextColor,
                                         ),
                                       ),
-                                      SizedBox(height: 2.sp),
+                                      SizedBox(height: 2.ts(context)),
                                       Text(
                                         track?.archive.upName ?? '',
                                         maxLines: 1,
@@ -99,7 +101,7 @@ class MusicMiniBar extends ConsumerWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(width: 12.sp),
+                                SizedBox(width: 12.ts(context) * textScale),
                                 Text(
                                   '${MusicVideoCard.formatDuration(position.inSeconds)} / ${MusicVideoCard.formatDuration(duration.inSeconds)}',
                                   style: AppTextStyles.t14.copyWith(
@@ -113,55 +115,55 @@ class MusicMiniBar extends ConsumerWidget {
                         },
                       ),
                     ),
-                    SizedBox(width: 8.sp),
+                    SizedBox(width: 8.ts(context) * textScale),
                     TvIconButton(
                       icon: Icon(isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded),
-                      size: TvIconButtonSize.medium,
+                      size: TvIconButtonSize.small,
                       onTap: () {
                         if (track != null) {
                           ref.read(musicLibraryControllerProvider.notifier).toggleLikeSong(track);
                         }
                       },
                     ),
-                    SizedBox(width: 6.sp),
+                    SizedBox(width: 6.ts(context) * textScale),
                     TvIconButton(
                       icon: const Icon(Icons.playlist_add_rounded),
-                      size: TvIconButtonSize.medium,
+                      size: TvIconButtonSize.small,
                       isSecondary: true,
                       onTap: () {
                         final current = state.current;
                         if (current != null) showAddToPlaylistDialog(context, ref, current);
                       },
                     ),
-                    SizedBox(width: 6.sp),
+                    SizedBox(width: 6.ts(context) * textScale),
                     TvIconButton(
                       icon: const Icon(Icons.skip_previous_rounded),
-                      size: TvIconButtonSize.medium,
+                      size: TvIconButtonSize.small,
                       isSecondary: true,
                       onTap: () => controller.previous(),
                     ),
-                    SizedBox(width: 6.sp),
+                    SizedBox(width: 6.ts(context) * textScale),
                     TvIconButton(
                       icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                      size: TvIconButtonSize.large,
+                      size: TvIconButtonSize.medium,
                       onTap: () => controller.togglePlayPause(),
                     ),
-                    SizedBox(width: 6.sp),
+                    SizedBox(width: 6.ts(context) * textScale),
                     TvIconButton(
                       icon: const Icon(Icons.skip_next_rounded),
-                      size: TvIconButtonSize.medium,
+                      size: TvIconButtonSize.small,
                       isSecondary: true,
                       onTap: () => controller.next(),
                     ),
-                    SizedBox(width: 6.sp),
+                    SizedBox(width: 6.ts(context) * textScale),
                   ],
                 ),
-                SizedBox(height: 6.sp),
+                SizedBox(height: 6.ts(context) * textScale),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(3.sp),
+                  borderRadius: BorderRadius.circular(3.sp * textScale),
                   child: LinearProgressIndicator(
                     value: progress.clamp(0.0, 1.0),
-                    minHeight: 6.sp,
+                    minHeight: 6.sp * textScale,
                     backgroundColor: tvTheme.secondaryTextColor.withValues(alpha: 0.25),
                     color: accent,
                   ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,7 +86,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
       builder: (_) => TvDialog(
         title: track.title,
         cancelText: i18n('cancel'),
-        width: 560.sp,
+        width: 560.ts(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -93,7 +94,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
               TvDialogOptionTile(
                 title: i18n('music_queue_exclude'),
                 subtitle: i18n('music_queue_exclude_hint'),
-                icon: Icon(Icons.not_interested, size: 26.sp),
+                icon: Icon(Icons.not_interested, size: 26.ts(context)),
                 showCheck: false,
                 autofocus: true,
                 onTap: () {
@@ -105,7 +106,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
               ),
             TvDialogOptionTile(
               title: i18n('music_queue_remove'),
-              icon: Icon(Icons.delete_outline_rounded, size: 26.sp),
+              icon: Icon(Icons.delete_outline_rounded, size: 26.ts(context)),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();
@@ -139,10 +140,10 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(20.sp, 14.sp, 12.sp, 10.sp),
+            padding: EdgeInsets.fromLTRB(20.ts(context), 14.ts(context), 12.ts(context), 10.ts(context)),
             child: Row(
               children: [
-                SizedBox(width: 6.sp),
+                SizedBox(width: 6.ts(context)),
                 Expanded(
                   child: Text(
                     '${i18n('music_tab_queue')}（${queue.length}）',
@@ -155,7 +156,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                   isSecondary: true,
                   onTap: queue.isEmpty ? null : _confirmClear,
                 ),
-                SizedBox(width: 6.sp),
+                SizedBox(width: 6.ts(context)),
                 TvIconButton(
                   icon: Icon(switch (state.mode) {
                     MusicPlayMode.sequence => Icons.playlist_play_rounded,
@@ -166,7 +167,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                   isSecondary: true,
                   onTap: controller.cycleMode,
                 ),
-                SizedBox(width: 6.sp),
+                SizedBox(width: 6.ts(context)),
                 TvIconButton(
                   icon: const Icon(Icons.close_rounded),
                   size: TvIconButtonSize.small,
@@ -186,14 +187,14 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                   )
                 : ListView.builder(
                     controller: _scroll,
-                    padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 16.sp),
+                    padding: EdgeInsets.only(left: 12.ts(context), right: 12.ts(context), bottom: 16.ts(context)),
                     itemCount: queue.length,
                     itemBuilder: (context, index) {
                       final track = queue[index];
                       final isCurrent = index == playing;
                       final isMulti = track.archive.parts.length > 1;
                       return Padding(
-                        padding: EdgeInsets.only(bottom: 6.sp),
+                        padding: EdgeInsets.only(bottom: 6.ts(context)),
                         child: TvFocusable(
                           onTap: () => controller.jumpTo(index),
                           onLongPress: () => _showRowMenu(index),
@@ -203,7 +204,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                               duration: const Duration(milliseconds: 120),
                               // Content-sized: the fixed 100.sp overflowed by
                               // a pixel at the largest font setting.
-                              padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 16.sp),
+                              padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 16.ts(context)),
                               decoration: BoxDecoration(
                                 color: isCurrent
                                     ? accent.withValues(alpha: 0.22)
@@ -211,20 +212,20 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                                     ? Colors.white.withValues(alpha: 0.12)
                                     : Colors.white.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(14.sp),
-                                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                               ),
                               child: Row(
                                 children: [
                                   SizedBox(
-                                    width: 36.sp,
+                                    width: 36.ts(context),
                                     child: isCurrent
-                                        ? Icon(Icons.play_arrow_rounded, size: 30.sp, color: accent)
+                                        ? Icon(Icons.play_arrow_rounded, size: 30.ts(context), color: accent)
                                         : Text(
                                             '${index + 1}',
                                             style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
                                           ),
                                   ),
-                                  SizedBox(width: 12.sp),
+                                  SizedBox(width: 12.ts(context)),
                                   Expanded(
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
@@ -244,7 +245,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                                             ),
                                             if (isMulti)
                                               Padding(
-                                                padding: EdgeInsets.only(left: 8.sp),
+                                                padding: EdgeInsets.only(left: 8.ts(context)),
                                                 child: Text(
                                                   'P${track.part.page}',
                                                   style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
@@ -252,11 +253,11 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                                               ),
                                           ],
                                         ),
-                                        SizedBox(height: 4.sp),
+                                        SizedBox(height: 4.ts(context)),
                                         Row(
                                           children: [
-                                            Icon(Icons.album_rounded, size: 18.sp, color: Colors.white38),
-                                            SizedBox(width: 4.sp),
+                                            Icon(Icons.album_rounded, size: 18.ts(context), color: Colors.white38),
+                                            SizedBox(width: 4.ts(context)),
                                             Expanded(
                                               child: Text(
                                                 isMulti ? track.archive.title : track.archive.upName,
