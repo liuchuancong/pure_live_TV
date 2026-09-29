@@ -1261,7 +1261,7 @@
   "music_follow_up": "关注UP主",
   "music_unfollow_up": "取消关注",
   "music_up_followed": "已关注UP主",
-    "music_up_unfollowed": "已取消关注",
+  "music_up_unfollowed": "已取消关注",
   "music_likes": "喜欢",
   "music_short_likes": "喜欢",
   "music_empty_likes": "还没有喜欢的歌曲，播放条点红心喜欢",
@@ -1305,14 +1305,6 @@
   "music_remove_from_recent": "从最近播放移除",
   "music_removed_from_recent": "已从最近播放移除",
   "music_added_skipped": "已加入 {added} 首，跳过 {skipped} 首",
-  "music_play_next": "下一首播放",
-  "music_already_next": "已在下一首位置",
-  "music_set_next": "已设为下一首播放",
-  "music_song_like_menu": "喜欢这首歌",
-  "music_song_unliked_menu": "取消喜欢",
-  "music_remove_from_recent": "从最近播放移除",
-  "music_removed_from_recent": "已从最近播放移除",
-  "music_play_album": "播放全辑",
   "music_bottom_progress": "底部进度条",
   "music_bottom_progress_desc": "播放时在屏幕底缘显示一条进度线",
   "music_daily": "每日推荐",
@@ -1344,7 +1336,6 @@
   "music_parts_skipped": "已跳过",
   "music_part_excluded": "已跳过，不进入播放队列",
   "music_part_included": "会播放",
-
   "music_lyrics": "歌词",
   "music_no_lyric": "暂无歌词",
   "mode_live": "直播",
@@ -2940,6 +2931,6 @@
   "video_show_detail_first_sub": "点击卡片先进入详情页，关闭后直接播放",
   "video_player_surface": "播放器界面",
   "video_persistent_progress": "常显进度条",
-  "video_persistent_progress_sub": "播放时在画面底部常驻迷你进度条"
-
+  "video_persistent_progress_sub": "播放时在画面底部常驻迷你进度条",
+  "music_now_playing": "正在播放"
 }
