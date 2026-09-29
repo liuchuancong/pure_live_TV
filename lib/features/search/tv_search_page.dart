@@ -106,23 +106,23 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
               },
             ),
             SizedBox(height: _itemGap.sp),
+            // A long ellipse: wider than the rest of the column, fully
+            // pill-rounded (radius = half the height) and quiet — card fill,
+            // a hairline neutral border that turns into the accent ring only
+            // while focused. No glow, no scale.
             SizedBox(
-              width: _centerWidgetWidth.sp,
-              // TvInputField's own surface: card fill, quiet border, accent
-              // ring only while focused — the same input language as every
-              // other page. The old custom builder stacked a double glow, a
-              // 32sp pill and an always-on accent border on top of it.
+              width: (_centerWidgetWidth + 260).sp,
               child: TvInputField(
                 controller: _searchController,
                 hint: i18n('search_room_hint'),
-                height: 72.sp * TvTextScale.factorOf(context),
+                height: 76.sp * TvTextScale.factorOf(context),
                 maxLines: 1,
                 onChanged: (text) => ref.read(tvSearchNotifierProvider.notifier).updateKeyword(text),
                 onSubmitted: _onSearchSubmit,
                 postFixWidget: GestureDetector(
                   onTap: () => _onSearchSubmit(_searchController.text),
                   child: Padding(
-                    padding: EdgeInsets.only(right: 8.sp),
+                    padding: EdgeInsets.only(right: 16.sp),
                     child: Icon(
                       Icons.search_rounded,
                       color: tvTheme.secondaryTextColor,
@@ -130,6 +130,24 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                     ),
                   ),
                 ),
+                builder: (content, isFocused) {
+                  final double scale = TvTextScale.factorOf(context);
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    curve: Curves.easeOutCubic,
+                    height: 76.sp * scale,
+                    padding: EdgeInsets.symmetric(horizontal: 28.sp * scale),
+                    decoration: BoxDecoration(
+                      color: tvTheme.cardColor,
+                      borderRadius: BorderRadius.circular(38.sp * scale),
+                      border: Border.all(
+                        color: isFocused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
+                        width: isFocused ? 2.sp : 1.5.sp,
+                      ),
+                    ),
+                    child: content,
+                  );
+                },
               ),
             ),
             if (history.isNotEmpty) ...[SizedBox(height: 24.sp), _buildHistorySection(history, themeColor)],
