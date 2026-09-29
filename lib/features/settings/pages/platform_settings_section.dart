@@ -37,6 +37,9 @@ class PlatformSettingsSectionPage extends ConsumerWidget {
               subtitle: i18n('prefer_platform_subtitle'),
               icon: Remix.heart_3_line,
               options: siteNames,
+              // The picker rows wear each platform's own logo, like every
+              // other platform list in the app.
+              optionLeading: [for (final site in sites) TvPlatformLogo(logo: site.logo)],
               index: currentIndex,
               onChanged: (i) => fav.changePreferPlatform(siteIds[i]),
             ),

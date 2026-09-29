@@ -24,6 +24,10 @@ class TvSettingsOptionTile extends StatelessWidget {
   final int index;
   final ValueChanged<int>? onChanged;
 
+  /// Optional leading widget per option (a platform logo, say), aligned with
+  /// [options] by index; an option past the end simply has no leading.
+  final List<Widget>? optionLeading;
+
   const TvSettingsOptionTile({
     super.key,
     required this.title,
@@ -31,6 +35,7 @@ class TvSettingsOptionTile extends StatelessWidget {
     required this.index,
     this.subtitle,
     this.icon,
+    this.optionLeading,
     this.onChanged,
   });
 
@@ -66,7 +71,12 @@ class TvSettingsOptionTile extends StatelessWidget {
       title: title,
       selectedValue: safeIndex,
       items: <TvSelectItem<int>>[
-        for (int i = 0; i < options.length; i++) TvSelectItem<int>(title: options[i], value: i),
+        for (int i = 0; i < options.length; i++)
+          TvSelectItem<int>(
+            title: options[i],
+            value: i,
+            leading: (optionLeading != null && i < optionLeading!.length) ? optionLeading![i] : null,
+          ),
       ],
     );
     if (selected == null || selected == safeIndex) return;
