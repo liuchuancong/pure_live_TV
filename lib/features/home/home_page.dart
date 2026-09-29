@@ -207,8 +207,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         ];
       case AppMode.video:
         // newBV's left rail, its exact item order: 搜索/个人/主页/分区/影视 —
-        // each entry maps to its VideoSection index. 直播 closes the list the
-        // same way newBV's rail does: it hands the app to the live mode.
+        // each entry maps to its VideoSection index.
         const entries = <(int, String, IconData)>[
           (3, 'video_tab_search', Icons.search_rounded),
           (4, 'video_personal', Icons.person_outline_rounded),
@@ -231,23 +230,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onTap: () => ref.read(videoSectionIndexProvider.notifier).change(sectionIndex),
               ),
             ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 20.sp * textScale),
-            child: _buildAdaptiveItem(
-              ref: ref,
-              item: AppMenuItem(
-                index: entries.length,
-                title: i18n('mode_live'),
-                shortTitle: i18n('menu_short_mode_live'),
-                icon: Icons.live_tv_rounded,
-              ),
-              isExpanded: isExpanded,
-              isSelected: false,
-              textScale: textScale,
-              focusNode: _sectionNode('video_${entries.length}'),
-              onTap: () => ref.read(appModeControllerProvider.notifier).setMode(AppMode.live),
-            ),
-          ),
         ];
     }
   }
