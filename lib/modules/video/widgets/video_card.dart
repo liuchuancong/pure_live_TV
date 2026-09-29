@@ -176,50 +176,17 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                       bottom: 6.sp,
                       child: Row(
                         children: [
-                          Icon(Icons.play_arrow_rounded, size: 14.sp, color: Colors.white.withValues(alpha: 0.9)),
-                          SizedBox(width: 2.sp),
-                          Flexible(
-                            child: Text(
-                              _wan(archive.playCount),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t14.copyWith(
-                                fontSize: 12.sp,
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
-                            ),
+                          TvCoverChip(
+                            icon: Icons.play_arrow_rounded,
+                            label: _wan(archive.playCount),
                           ),
-                          SizedBox(width: 8.sp),
-                          Icon(Icons.comment_outlined, size: 13.sp, color: Colors.white.withValues(alpha: 0.9)),
-                          SizedBox(width: 2.sp),
-                          Flexible(
-                            child: Text(
-                              _wan(archive.barrageCount),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t14.copyWith(
-                                fontSize: 12.sp,
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
-                            ),
+                          SizedBox(width: 6.sp),
+                          TvCoverChip(
+                            icon: Icons.comment_outlined,
+                            label: _wan(archive.barrageCount),
                           ),
                           const Spacer(),
-                          if (_durationLabel.isNotEmpty)
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 6.sp, vertical: 1.sp),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.6),
-                                borderRadius: BorderRadius.circular(6.sp),
-                              ),
-                              child: Text(
-                                _durationLabel,
-                                style: AppTextStyles.t14.copyWith(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                          if (_durationLabel.isNotEmpty) TvCoverChip(label: _durationLabel),
                         ],
                       ),
                     ),
@@ -228,22 +195,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                       Positioned(
                         left: 10.sp,
                         top: 10.sp,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.55),
-                            borderRadius: BorderRadius.circular(8.sp),
-                          ),
-                          child: Text(
-                            badge,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t14.copyWith(
-                              fontSize: 12.sp,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
+                        child: TvCoverChip(label: badge),
                       ),
                     // Watched progress along the cover's bottom edge.
                     if (progress > 0)

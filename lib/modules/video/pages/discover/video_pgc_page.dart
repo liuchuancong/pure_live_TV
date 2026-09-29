@@ -201,16 +201,10 @@ class _PgcCard extends StatelessWidget {
                     Positioned(
                       right: 8.sp,
                       bottom: 8.sp,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 3.sp),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.65),
-                          borderRadius: BorderRadius.circular(8.sp),
-                        ),
-                        child: Text(
-                          item.rating.toStringAsFixed(1),
-                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: Colors.amberAccent),
-                        ),
+                      child: TvCoverChip(
+                        icon: Icons.star_rounded,
+                        label: item.rating.toStringAsFixed(1),
+                        textColor: Colors.amberAccent,
                       ),
                     ),
                 ],

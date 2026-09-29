@@ -8,11 +8,14 @@ import 'package:pure_live/shared/theme/index.dart';
 /// an overlay, exempt from the font-scale resolver like the avatar initial,
 /// because an enlarged label inside a pill swallowed the artwork.
 class TvCoverChip extends StatelessWidget {
-  const TvCoverChip({super.key, required this.label, this.icon, this.iconColor});
+  const TvCoverChip({super.key, required this.label, this.icon, this.iconColor, this.textColor});
 
   final String label;
   final IconData? icon;
   final Color? iconColor;
+
+  /// Overrides the default white label (a rating, a highlight).
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
@@ -26,17 +29,18 @@ class TvCoverChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 13.sp, color: iconColor ?? Colors.white),
-            SizedBox(width: 4.sp),
+            Icon(icon, size: 13.sp, color: iconColor ?? textColor ?? Colors.white),
+            if (label.isNotEmpty) SizedBox(width: 4.sp),
           ],
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: Colors.white),
+          if (label.isNotEmpty)
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: textColor ?? Colors.white),
+              ),
             ),
-          ),
         ],
       ),
     );

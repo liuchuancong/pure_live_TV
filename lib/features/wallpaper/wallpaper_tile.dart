@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:pure_live/shared/widgets/index.dart';
 
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
@@ -180,13 +181,6 @@ class WallpaperBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.sp, vertical: 2.sp),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(6.sp),
-      ),
-      child: Text(text, style: AppTextStyles.t15.copyWith(color: Colors.white)),
-    );
+    return TvCoverChip(label: text);
   }
 }

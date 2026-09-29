@@ -430,19 +430,12 @@ class _PlaylistCard extends StatelessWidget {
                       Positioned(
                         left: 12.sp,
                         top: 12.sp,
-                        child: Container(
-                          padding: EdgeInsets.all(6.sp),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.65),
-                            borderRadius: BorderRadius.circular(10.sp),
-                          ),
-                          child: Icon(Icons.push_pin_rounded, size: 22.sp, color: Colors.white),
-                        ),
+                        child: TvCoverChip(icon: Icons.push_pin_rounded, label: ''),
                       ),
                     Positioned(
                       right: 12.sp,
                       bottom: 12.sp,
-                      child: TvButton(excludeFocus: true, title: '${entry.tracks.length}', size: TvButtonSize.mini),
+                      child: TvCoverChip(label: '${entry.tracks.length}'),
                     ),
                   ],
                 ),
@@ -546,17 +539,7 @@ class _FolderCard extends StatelessWidget {
                   Positioned(
                     right: 8.sp,
                     top: 8.sp,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 4.sp),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(10.sp),
-                      ),
-                      child: Text(
-                        isSyncing ? '...' : '${folder.mediaCount}',
-                        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
-                      ),
-                    ),
+                    child: TvCoverChip(label: isSyncing ? '...' : '${folder.mediaCount}'),
                   ),
                 ],
               ),
