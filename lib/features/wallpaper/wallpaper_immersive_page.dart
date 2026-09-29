@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:media_kit/media_kit.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';

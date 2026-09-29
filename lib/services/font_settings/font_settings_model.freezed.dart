@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'font_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'font_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $FontSettingsModelCopyWith<FontSettingsModel> get copyWith => _$FontSettingsMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FontSettingsModel&&(identical(other.textScaleFactor, textScaleFactor) || other.textScaleFactor == textScaleFactor)&&(identical(other.fontSizeBodySmall, fontSizeBodySmall) || other.fontSizeBodySmall == fontSizeBodySmall)&&(identical(other.fontSizeBodyMedium, fontSizeBodyMedium) || other.fontSizeBodyMedium == fontSizeBodyMedium)&&(identical(other.fontSizeBodyLarge, fontSizeBodyLarge) || other.fontSizeBodyLarge == fontSizeBodyLarge)&&(identical(other.fontSizeTitleMedium, fontSizeTitleMedium) || other.fontSizeTitleMedium == fontSizeTitleMedium)&&(identical(other.fontSizeTitleLarge, fontSizeTitleLarge) || other.fontSizeTitleLarge == fontSizeTitleLarge)&&(identical(other.fontFamilyName, fontFamilyName) || other.fontFamilyName == fontFamilyName));
+  final _this = this as FontSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FontSettingsModel&&(identical(other.textScaleFactor, _this.textScaleFactor) || other.textScaleFactor == _this.textScaleFactor)&&(identical(other.fontSizeBodySmall, _this.fontSizeBodySmall) || other.fontSizeBodySmall == _this.fontSizeBodySmall)&&(identical(other.fontSizeBodyMedium, _this.fontSizeBodyMedium) || other.fontSizeBodyMedium == _this.fontSizeBodyMedium)&&(identical(other.fontSizeBodyLarge, _this.fontSizeBodyLarge) || other.fontSizeBodyLarge == _this.fontSizeBodyLarge)&&(identical(other.fontSizeTitleMedium, _this.fontSizeTitleMedium) || other.fontSizeTitleMedium == _this.fontSizeTitleMedium)&&(identical(other.fontSizeTitleLarge, _this.fontSizeTitleLarge) || other.fontSizeTitleLarge == _this.fontSizeTitleLarge)&&(identical(other.fontFamilyName, _this.fontFamilyName) || other.fontFamilyName == _this.fontFamilyName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,textScaleFactor,fontSizeBodySmall,fontSizeBodyMedium,fontSizeBodyLarge,fontSizeTitleMedium,fontSizeTitleLarge,fontFamilyName);
+int get hashCode {
+  final _this = this as FontSettingsModel;
+  return Object.hash(runtimeType,_this.textScaleFactor,_this.fontSizeBodySmall,_this.fontSizeBodyMedium,_this.fontSizeBodyLarge,_this.fontSizeTitleMedium,_this.fontSizeTitleLarge,_this.fontFamilyName);
+}
 
 @override
 String toString() {
-  return 'FontSettingsModel(textScaleFactor: $textScaleFactor, fontSizeBodySmall: $fontSizeBodySmall, fontSizeBodyMedium: $fontSizeBodyMedium, fontSizeBodyLarge: $fontSizeBodyLarge, fontSizeTitleMedium: $fontSizeTitleMedium, fontSizeTitleLarge: $fontSizeTitleLarge, fontFamilyName: $fontFamilyName)';
+  final _this = this as FontSettingsModel;
+  return 'FontSettingsModel(textScaleFactor: ${_this.textScaleFactor}, fontSizeBodySmall: ${_this.fontSizeBodySmall}, fontSizeBodyMedium: ${_this.fontSizeBodyMedium}, fontSizeBodyLarge: ${_this.fontSizeBodyLarge}, fontSizeTitleMedium: ${_this.fontSizeTitleMedium}, fontSizeTitleLarge: ${_this.fontSizeTitleLarge}, fontFamilyName: ${_this.fontFamilyName})';
 }
 
 
@@ -66,7 +72,7 @@ class _$FontSettingsModelCopyWithImpl<$Res>
 /// Create a copy of FontSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? textScaleFactor = null,Object? fontSizeBodySmall = null,Object? fontSizeBodyMedium = null,Object? fontSizeBodyLarge = null,Object? fontSizeTitleMedium = null,Object? fontSizeTitleLarge = null,Object? fontFamilyName = null,}) {
-  return _then(_self.copyWith(
+  return _then(FontSettingsModel(
 textScaleFactor: null == textScaleFactor ? _self.textScaleFactor : textScaleFactor // ignore: cast_nullable_to_non_nullable
 as double,fontSizeBodySmall: null == fontSizeBodySmall ? _self.fontSizeBodySmall : fontSizeBodySmall // ignore: cast_nullable_to_non_nullable
 as double,fontSizeBodyMedium: null == fontSizeBodyMedium ? _self.fontSizeBodyMedium : fontSizeBodyMedium // ignore: cast_nullable_to_non_nullable
@@ -239,16 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FontSettingsModel&&(identical(other.textScaleFactor, textScaleFactor) || other.textScaleFactor == textScaleFactor)&&(identical(other.fontSizeBodySmall, fontSizeBodySmall) || other.fontSizeBodySmall == fontSizeBodySmall)&&(identical(other.fontSizeBodyMedium, fontSizeBodyMedium) || other.fontSizeBodyMedium == fontSizeBodyMedium)&&(identical(other.fontSizeBodyLarge, fontSizeBodyLarge) || other.fontSizeBodyLarge == fontSizeBodyLarge)&&(identical(other.fontSizeTitleMedium, fontSizeTitleMedium) || other.fontSizeTitleMedium == fontSizeTitleMedium)&&(identical(other.fontSizeTitleLarge, fontSizeTitleLarge) || other.fontSizeTitleLarge == fontSizeTitleLarge)&&(identical(other.fontFamilyName, fontFamilyName) || other.fontFamilyName == fontFamilyName));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FontSettingsModel&&(identical(other.textScaleFactor, textScaleFactor) || other.textScaleFactor == textScaleFactor)&&(identical(other.fontSizeBodySmall, fontSizeBodySmall) || other.fontSizeBodySmall == fontSizeBodySmall)&&(identical(other.fontSizeBodyMedium, fontSizeBodyMedium) || other.fontSizeBodyMedium == fontSizeBodyMedium)&&(identical(other.fontSizeBodyLarge, fontSizeBodyLarge) || other.fontSizeBodyLarge == fontSizeBodyLarge)&&(identical(other.fontSizeTitleMedium, fontSizeTitleMedium) || other.fontSizeTitleMedium == fontSizeTitleMedium)&&(identical(other.fontSizeTitleLarge, fontSizeTitleLarge) || other.fontSizeTitleLarge == fontSizeTitleLarge)&&(identical(other.fontFamilyName, fontFamilyName) || other.fontFamilyName == fontFamilyName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,textScaleFactor,fontSizeBodySmall,fontSizeBodyMedium,fontSizeBodyLarge,fontSizeTitleMedium,fontSizeTitleLarge,fontFamilyName);
+int get hashCode {
+    return Object.hash(runtimeType,textScaleFactor,fontSizeBodySmall,fontSizeBodyMedium,fontSizeBodyLarge,fontSizeTitleMedium,fontSizeTitleLarge,fontFamilyName);
+}
 
 @override
 String toString() {
-  return 'FontSettingsModel(textScaleFactor: $textScaleFactor, fontSizeBodySmall: $fontSizeBodySmall, fontSizeBodyMedium: $fontSizeBodyMedium, fontSizeBodyLarge: $fontSizeBodyLarge, fontSizeTitleMedium: $fontSizeTitleMedium, fontSizeTitleLarge: $fontSizeTitleLarge, fontFamilyName: $fontFamilyName)';
+    return 'FontSettingsModel(textScaleFactor: $textScaleFactor, fontSizeBodySmall: $fontSizeBodySmall, fontSizeBodyMedium: $fontSizeBodyMedium, fontSizeBodyLarge: $fontSizeBodyLarge, fontSizeTitleMedium: $fontSizeTitleMedium, fontSizeTitleLarge: $fontSizeTitleLarge, fontFamilyName: $fontFamilyName)';
 }
 
 

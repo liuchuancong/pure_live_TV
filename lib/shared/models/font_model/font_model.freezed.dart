@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'font_model.dart';
@@ -9,6 +9,7 @@ part of 'font_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $FontModelCopyWith<FontModel> get copyWith => _$FontModelCopyWithImpl<FontModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FontModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.files, files)&&(identical(other.desc, desc) || other.desc == desc)&&(identical(other.official, official) || other.official == official)&&const DeepCollectionEquality().equals(other.license, license));
+  final _this = this as FontModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FontModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&const DeepCollectionEquality().equals(other.files, _this.files)&&(identical(other.desc, _this.desc) || other.desc == _this.desc)&&(identical(other.official, _this.official) || other.official == _this.official)&&const DeepCollectionEquality().equals(other.license, _this.license));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,const DeepCollectionEquality().hash(files),desc,official,const DeepCollectionEquality().hash(license));
+int get hashCode {
+  final _this = this as FontModel;
+  return Object.hash(runtimeType,_this.id,_this.name,const DeepCollectionEquality().hash(_this.files),_this.desc,_this.official,const DeepCollectionEquality().hash(_this.license));
+}
 
 @override
 String toString() {
-  return 'FontModel(id: $id, name: $name, files: $files, desc: $desc, official: $official, license: $license)';
+  final _this = this as FontModel;
+  return 'FontModel(id: ${_this.id}, name: ${_this.name}, files: ${_this.files}, desc: ${_this.desc}, official: ${_this.official}, license: ${_this.license})';
 }
 
 
@@ -66,7 +72,7 @@ class _$FontModelCopyWithImpl<$Res>
 /// Create a copy of FontModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? files = null,Object? desc = null,Object? official = null,Object? license = null,}) {
-  return _then(_self.copyWith(
+  return _then(FontModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,files: null == files ? _self.files : files // ignore: cast_nullable_to_non_nullable
@@ -214,7 +220,7 @@ return $default(_that.id,_that.name,_that.files,_that.desc,_that.official,_that.
 @JsonSerializable()
 
 class _FontModel implements FontModel {
-  const _FontModel({this.id = '', this.name = '', final  List<String> files = const [], this.desc = '', this.official = '', final  Map<String, dynamic> license = const {}}): _files = files,_license = license;
+  const _FontModel({this.id = '', this.name = '',  List<String> files = const [], this.desc = '', this.official = '',  Map<String, dynamic> license = const {}}): _files = files,_license = license;
   factory _FontModel.fromJson(Map<String, dynamic> json) => _$FontModelFromJson(json);
 
 @override@JsonKey() final  String id;
@@ -249,16 +255,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FontModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other._files, _files)&&(identical(other.desc, desc) || other.desc == desc)&&(identical(other.official, official) || other.official == official)&&const DeepCollectionEquality().equals(other._license, _license));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FontModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.files, _files)&&(identical(other.desc, desc) || other.desc == desc)&&(identical(other.official, official) || other.official == official)&&const DeepCollectionEquality().equals(other.license, _license));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,const DeepCollectionEquality().hash(_files),desc,official,const DeepCollectionEquality().hash(_license));
+int get hashCode {
+    return Object.hash(runtimeType,id,name,const DeepCollectionEquality().hash(_files),desc,official,const DeepCollectionEquality().hash(_license));
+}
 
 @override
 String toString() {
-  return 'FontModel(id: $id, name: $name, files: $files, desc: $desc, official: $official, license: $license)';
+    return 'FontModel(id: $id, name: $name, files: $files, desc: $desc, official: $official, license: $license)';
 }
 
 

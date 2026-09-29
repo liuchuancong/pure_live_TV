@@ -1,8 +1,5 @@
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/settings/pages/navigation_menu_meta.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 

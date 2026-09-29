@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'live_search_result.dart';
@@ -9,6 +9,7 @@ part of 'live_search_result.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $LiveSearchRoomResultCopyWith<LiveSearchRoomResult> get copyWith => _$LiveSearch
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSearchRoomResult&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&const DeepCollectionEquality().equals(other.items, items));
+  final _this = this as LiveSearchRoomResult;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSearchRoomResult&&(identical(other.hasMore, _this.hasMore) || other.hasMore == _this.hasMore)&&const DeepCollectionEquality().equals(other.items, _this.items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasMore,const DeepCollectionEquality().hash(items));
+int get hashCode {
+  final _this = this as LiveSearchRoomResult;
+  return Object.hash(runtimeType,_this.hasMore,const DeepCollectionEquality().hash(_this.items));
+}
 
 @override
 String toString() {
-  return 'LiveSearchRoomResult(hasMore: $hasMore, items: $items)';
+  final _this = this as LiveSearchRoomResult;
+  return 'LiveSearchRoomResult(hasMore: ${_this.hasMore}, items: ${_this.items})';
 }
 
 
@@ -66,7 +72,7 @@ class _$LiveSearchRoomResultCopyWithImpl<$Res>
 /// Create a copy of LiveSearchRoomResult
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? hasMore = null,Object? items = null,}) {
-  return _then(_self.copyWith(
+  return _then(LiveSearchRoomResult(
 hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<LiveRoom>,
@@ -210,7 +216,7 @@ return $default(_that.hasMore,_that.items);case _:
 @JsonSerializable()
 
 class _LiveSearchRoomResult implements LiveSearchRoomResult {
-  const _LiveSearchRoomResult({this.hasMore = false, final  List<LiveRoom> items = const []}): _items = items;
+  const _LiveSearchRoomResult({this.hasMore = false,  List<LiveRoom> items = const []}): _items = items;
   factory _LiveSearchRoomResult.fromJson(Map<String, dynamic> json) => _$LiveSearchRoomResultFromJson(json);
 
 @override@JsonKey() final  bool hasMore;
@@ -235,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSearchRoomResult&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&const DeepCollectionEquality().equals(other._items, _items));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSearchRoomResult&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&const DeepCollectionEquality().equals(other.items, _items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasMore,const DeepCollectionEquality().hash(_items));
+int get hashCode {
+    return Object.hash(runtimeType,hasMore,const DeepCollectionEquality().hash(_items));
+}
 
 @override
 String toString() {
-  return 'LiveSearchRoomResult(hasMore: $hasMore, items: $items)';
+    return 'LiveSearchRoomResult(hasMore: $hasMore, items: $items)';
 }
 
 
@@ -300,16 +308,21 @@ $LiveSearchAnchorResultCopyWith<LiveSearchAnchorResult> get copyWith => _$LiveSe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSearchAnchorResult&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&const DeepCollectionEquality().equals(other.items, items));
+  final _this = this as LiveSearchAnchorResult;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSearchAnchorResult&&(identical(other.hasMore, _this.hasMore) || other.hasMore == _this.hasMore)&&const DeepCollectionEquality().equals(other.items, _this.items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasMore,const DeepCollectionEquality().hash(items));
+int get hashCode {
+  final _this = this as LiveSearchAnchorResult;
+  return Object.hash(runtimeType,_this.hasMore,const DeepCollectionEquality().hash(_this.items));
+}
 
 @override
 String toString() {
-  return 'LiveSearchAnchorResult(hasMore: $hasMore, items: $items)';
+  final _this = this as LiveSearchAnchorResult;
+  return 'LiveSearchAnchorResult(hasMore: ${_this.hasMore}, items: ${_this.items})';
 }
 
 
@@ -338,7 +351,7 @@ class _$LiveSearchAnchorResultCopyWithImpl<$Res>
 /// Create a copy of LiveSearchAnchorResult
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? hasMore = null,Object? items = null,}) {
-  return _then(_self.copyWith(
+  return _then(LiveSearchAnchorResult(
 hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<LiveAnchorItem>,
@@ -482,7 +495,7 @@ return $default(_that.hasMore,_that.items);case _:
 @JsonSerializable()
 
 class _LiveSearchAnchorResult implements LiveSearchAnchorResult {
-  const _LiveSearchAnchorResult({this.hasMore = false, final  List<LiveAnchorItem> items = const []}): _items = items;
+  const _LiveSearchAnchorResult({this.hasMore = false,  List<LiveAnchorItem> items = const []}): _items = items;
   factory _LiveSearchAnchorResult.fromJson(Map<String, dynamic> json) => _$LiveSearchAnchorResultFromJson(json);
 
 @override@JsonKey() final  bool hasMore;
@@ -507,16 +520,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSearchAnchorResult&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&const DeepCollectionEquality().equals(other._items, _items));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSearchAnchorResult&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&const DeepCollectionEquality().equals(other.items, _items));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,hasMore,const DeepCollectionEquality().hash(_items));
+int get hashCode {
+    return Object.hash(runtimeType,hasMore,const DeepCollectionEquality().hash(_items));
+}
 
 @override
 String toString() {
-  return 'LiveSearchAnchorResult(hasMore: $hasMore, items: $items)';
+    return 'LiveSearchAnchorResult(hasMore: $hasMore, items: $items)';
 }
 
 

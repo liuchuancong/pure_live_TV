@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'video_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'video_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -37,16 +38,21 @@ $VideoSettingsModelCopyWith<VideoSettingsModel> get copyWith => _$VideoSettingsM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoSettingsModel&&(identical(other.preferredQuality, preferredQuality) || other.preferredQuality == preferredQuality)&&(identical(other.defaultSpeed, defaultSpeed) || other.defaultSpeed == defaultSpeed)&&(identical(other.showVideoDetail, showVideoDetail) || other.showVideoDetail == showVideoDetail)&&(identical(other.persistentProgress, persistentProgress) || other.persistentProgress == persistentProgress)&&(identical(other.startSection, startSection) || other.startSection == startSection)&&(identical(other.homeTabIndex, homeTabIndex) || other.homeTabIndex == homeTabIndex)&&(identical(other.personalTabIndex, personalTabIndex) || other.personalTabIndex == personalTabIndex));
+  final _this = this as VideoSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoSettingsModel&&(identical(other.preferredQuality, _this.preferredQuality) || other.preferredQuality == _this.preferredQuality)&&(identical(other.defaultSpeed, _this.defaultSpeed) || other.defaultSpeed == _this.defaultSpeed)&&(identical(other.showVideoDetail, _this.showVideoDetail) || other.showVideoDetail == _this.showVideoDetail)&&(identical(other.persistentProgress, _this.persistentProgress) || other.persistentProgress == _this.persistentProgress)&&(identical(other.startSection, _this.startSection) || other.startSection == _this.startSection)&&(identical(other.homeTabIndex, _this.homeTabIndex) || other.homeTabIndex == _this.homeTabIndex)&&(identical(other.personalTabIndex, _this.personalTabIndex) || other.personalTabIndex == _this.personalTabIndex));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,preferredQuality,defaultSpeed,showVideoDetail,persistentProgress,startSection,homeTabIndex,personalTabIndex);
+int get hashCode {
+  final _this = this as VideoSettingsModel;
+  return Object.hash(runtimeType,_this.preferredQuality,_this.defaultSpeed,_this.showVideoDetail,_this.persistentProgress,_this.startSection,_this.homeTabIndex,_this.personalTabIndex);
+}
 
 @override
 String toString() {
-  return 'VideoSettingsModel(preferredQuality: $preferredQuality, defaultSpeed: $defaultSpeed, showVideoDetail: $showVideoDetail, persistentProgress: $persistentProgress, startSection: $startSection, homeTabIndex: $homeTabIndex, personalTabIndex: $personalTabIndex)';
+  final _this = this as VideoSettingsModel;
+  return 'VideoSettingsModel(preferredQuality: ${_this.preferredQuality}, defaultSpeed: ${_this.defaultSpeed}, showVideoDetail: ${_this.showVideoDetail}, persistentProgress: ${_this.persistentProgress}, startSection: ${_this.startSection}, homeTabIndex: ${_this.homeTabIndex}, personalTabIndex: ${_this.personalTabIndex})';
 }
 
 
@@ -75,7 +81,7 @@ class _$VideoSettingsModelCopyWithImpl<$Res>
 /// Create a copy of VideoSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? preferredQuality = null,Object? defaultSpeed = null,Object? showVideoDetail = null,Object? persistentProgress = null,Object? startSection = null,Object? homeTabIndex = null,Object? personalTabIndex = null,}) {
-  return _then(_self.copyWith(
+  return _then(VideoSettingsModel(
 preferredQuality: null == preferredQuality ? _self.preferredQuality : preferredQuality // ignore: cast_nullable_to_non_nullable
 as int,defaultSpeed: null == defaultSpeed ? _self.defaultSpeed : defaultSpeed // ignore: cast_nullable_to_non_nullable
 as double,showVideoDetail: null == showVideoDetail ? _self.showVideoDetail : showVideoDetail // ignore: cast_nullable_to_non_nullable
@@ -257,16 +263,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoSettingsModel&&(identical(other.preferredQuality, preferredQuality) || other.preferredQuality == preferredQuality)&&(identical(other.defaultSpeed, defaultSpeed) || other.defaultSpeed == defaultSpeed)&&(identical(other.showVideoDetail, showVideoDetail) || other.showVideoDetail == showVideoDetail)&&(identical(other.persistentProgress, persistentProgress) || other.persistentProgress == persistentProgress)&&(identical(other.startSection, startSection) || other.startSection == startSection)&&(identical(other.homeTabIndex, homeTabIndex) || other.homeTabIndex == homeTabIndex)&&(identical(other.personalTabIndex, personalTabIndex) || other.personalTabIndex == personalTabIndex));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoSettingsModel&&(identical(other.preferredQuality, preferredQuality) || other.preferredQuality == preferredQuality)&&(identical(other.defaultSpeed, defaultSpeed) || other.defaultSpeed == defaultSpeed)&&(identical(other.showVideoDetail, showVideoDetail) || other.showVideoDetail == showVideoDetail)&&(identical(other.persistentProgress, persistentProgress) || other.persistentProgress == persistentProgress)&&(identical(other.startSection, startSection) || other.startSection == startSection)&&(identical(other.homeTabIndex, homeTabIndex) || other.homeTabIndex == homeTabIndex)&&(identical(other.personalTabIndex, personalTabIndex) || other.personalTabIndex == personalTabIndex));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,preferredQuality,defaultSpeed,showVideoDetail,persistentProgress,startSection,homeTabIndex,personalTabIndex);
+int get hashCode {
+    return Object.hash(runtimeType,preferredQuality,defaultSpeed,showVideoDetail,persistentProgress,startSection,homeTabIndex,personalTabIndex);
+}
 
 @override
 String toString() {
-  return 'VideoSettingsModel(preferredQuality: $preferredQuality, defaultSpeed: $defaultSpeed, showVideoDetail: $showVideoDetail, persistentProgress: $persistentProgress, startSection: $startSection, homeTabIndex: $homeTabIndex, personalTabIndex: $personalTabIndex)';
+    return 'VideoSettingsModel(preferredQuality: $preferredQuality, defaultSpeed: $defaultSpeed, showVideoDetail: $showVideoDetail, persistentProgress: $persistentProgress, startSection: $startSection, homeTabIndex: $homeTabIndex, personalTabIndex: $personalTabIndex)';
 }
 
 

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'cache_model.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';

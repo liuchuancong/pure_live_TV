@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 
 part 'video_progress_state.freezed.dart';
 

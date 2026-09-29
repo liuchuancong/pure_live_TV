@@ -5,9 +5,9 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
-import 'package:pure_live/modules/video/api/video_pgc_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
 import 'package:pure_live/modules/video/pages/discover/video_pgc_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';
@@ -57,7 +57,7 @@ class VideoSectionView extends ConsumerWidget {
   void _ensurePgcResolver() {
     MusicPlayerController.modulePlayUrlResolver ??= (track) async {
       if (track.part.epId <= 0) return null;
-      return VideoPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
+      return BilibiliPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
     };
   }
 

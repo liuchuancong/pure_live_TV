@@ -1,9 +1,9 @@
 import 'package:dpad/dpad.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 
 /// A bilibili archive card in the newBV visual: the cover carries a bottom
 /// scrim with the play / danmaku counts and the duration, the title sits below
@@ -151,7 +151,7 @@ class MusicVideoCard extends StatelessWidget {
                               readableCount(archive.playCount.toString()),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t14W500.copyWith(color: Colors.white),
+                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
                             ),
                           ),
                           SizedBox(width: 10.sp),
@@ -162,14 +162,14 @@ class MusicVideoCard extends StatelessWidget {
                               readableCount(archive.barrageCount.toString()),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t14W500.copyWith(color: Colors.white),
+                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
                             ),
                           ),
                           const Spacer(),
                           if (showDuration && archive.duration > 0)
                             Text(
                               formatDuration(archive.duration),
-                              style: AppTextStyles.t14W500.copyWith(color: Colors.white),
+                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
                             ),
                         ],
                         ),
@@ -201,7 +201,7 @@ class MusicVideoCard extends StatelessWidget {
                       archive.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t16W600.copyWith(color: titleColor, height: 1.3),
+                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: titleColor, height: 1.3),
                     ),
                     SizedBox(height: 6.sp),
                     Row(
@@ -214,7 +214,7 @@ class MusicVideoCard extends StatelessWidget {
                           ),
                           child: Text(
                             'UP',
-                            style: AppTextStyles.t14W700.copyWith(color: secondaryColor, height: 1.1),
+                            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700, color: secondaryColor, height: 1.1),
                           ),
                         ),
                         SizedBox(width: 6.sp),
@@ -223,12 +223,12 @@ class MusicVideoCard extends StatelessWidget {
                             archive.upName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t14W500.copyWith(color: secondaryColor),
+                            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: secondaryColor),
                           ),
                         ),
                         if (date.isNotEmpty) ...[
                           SizedBox(width: 8.sp),
-                          Text(date, style: AppTextStyles.t14W500.copyWith(color: secondaryColor)),
+                          Text(date, style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: secondaryColor)),
                         ],
                       ],
                     ),

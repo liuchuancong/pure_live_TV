@@ -1,8 +1,6 @@
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_settings/app_settings_model.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Labels, subtitles and default icons of the side-menu entries.
 ///

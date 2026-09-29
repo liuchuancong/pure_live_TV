@@ -1,12 +1,7 @@
 import 'dart:async';
-import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/player/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/tv_focus_style.dart';
-import 'package:pure_live/shared/widgets/app_status_view.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';

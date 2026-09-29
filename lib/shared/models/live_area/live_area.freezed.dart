@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'live_area.dart';
@@ -9,6 +9,7 @@ part of 'live_area.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $LiveAreaCopyWith<LiveArea> get copyWith => _$LiveAreaCopyWithImpl<LiveArea>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveArea&&(identical(other.platform, platform) || other.platform == platform)&&(identical(other.areaType, areaType) || other.areaType == areaType)&&(identical(other.typeName, typeName) || other.typeName == typeName)&&(identical(other.areaId, areaId) || other.areaId == areaId)&&(identical(other.areaName, areaName) || other.areaName == areaName)&&(identical(other.areaPic, areaPic) || other.areaPic == areaPic)&&(identical(other.shortName, shortName) || other.shortName == shortName));
+  final _this = this as LiveArea;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveArea&&(identical(other.platform, _this.platform) || other.platform == _this.platform)&&(identical(other.areaType, _this.areaType) || other.areaType == _this.areaType)&&(identical(other.typeName, _this.typeName) || other.typeName == _this.typeName)&&(identical(other.areaId, _this.areaId) || other.areaId == _this.areaId)&&(identical(other.areaName, _this.areaName) || other.areaName == _this.areaName)&&(identical(other.areaPic, _this.areaPic) || other.areaPic == _this.areaPic)&&(identical(other.shortName, _this.shortName) || other.shortName == _this.shortName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,platform,areaType,typeName,areaId,areaName,areaPic,shortName);
+int get hashCode {
+  final _this = this as LiveArea;
+  return Object.hash(runtimeType,_this.platform,_this.areaType,_this.typeName,_this.areaId,_this.areaName,_this.areaPic,_this.shortName);
+}
 
 @override
 String toString() {
-  return 'LiveArea(platform: $platform, areaType: $areaType, typeName: $typeName, areaId: $areaId, areaName: $areaName, areaPic: $areaPic, shortName: $shortName)';
+  final _this = this as LiveArea;
+  return 'LiveArea(platform: ${_this.platform}, areaType: ${_this.areaType}, typeName: ${_this.typeName}, areaId: ${_this.areaId}, areaName: ${_this.areaName}, areaPic: ${_this.areaPic}, shortName: ${_this.shortName})';
 }
 
 
@@ -66,7 +72,7 @@ class _$LiveAreaCopyWithImpl<$Res>
 /// Create a copy of LiveArea
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? platform = null,Object? areaType = null,Object? typeName = null,Object? areaId = null,Object? areaName = null,Object? areaPic = null,Object? shortName = null,}) {
-  return _then(_self.copyWith(
+  return _then(LiveArea(
 platform: null == platform ? _self.platform : platform // ignore: cast_nullable_to_non_nullable
 as String,areaType: null == areaType ? _self.areaType : areaType // ignore: cast_nullable_to_non_nullable
 as String,typeName: null == typeName ? _self.typeName : typeName // ignore: cast_nullable_to_non_nullable
@@ -239,16 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveArea&&(identical(other.platform, platform) || other.platform == platform)&&(identical(other.areaType, areaType) || other.areaType == areaType)&&(identical(other.typeName, typeName) || other.typeName == typeName)&&(identical(other.areaId, areaId) || other.areaId == areaId)&&(identical(other.areaName, areaName) || other.areaName == areaName)&&(identical(other.areaPic, areaPic) || other.areaPic == areaPic)&&(identical(other.shortName, shortName) || other.shortName == shortName));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveArea&&(identical(other.platform, platform) || other.platform == platform)&&(identical(other.areaType, areaType) || other.areaType == areaType)&&(identical(other.typeName, typeName) || other.typeName == typeName)&&(identical(other.areaId, areaId) || other.areaId == areaId)&&(identical(other.areaName, areaName) || other.areaName == areaName)&&(identical(other.areaPic, areaPic) || other.areaPic == areaPic)&&(identical(other.shortName, shortName) || other.shortName == shortName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,platform,areaType,typeName,areaId,areaName,areaPic,shortName);
+int get hashCode {
+    return Object.hash(runtimeType,platform,areaType,typeName,areaId,areaName,areaPic,shortName);
+}
 
 @override
 String toString() {
-  return 'LiveArea(platform: $platform, areaType: $areaType, typeName: $typeName, areaId: $areaId, areaName: $areaName, areaPic: $areaPic, shortName: $shortName)';
+    return 'LiveArea(platform: $platform, areaType: $areaType, typeName: $typeName, areaId: $areaId, areaName: $areaName, areaPic: $areaPic, shortName: $shortName)';
 }
 
 

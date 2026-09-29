@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'volume_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'volume_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $VolumeSettingsModelCopyWith<VolumeSettingsModel> get copyWith => _$VolumeSettin
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VolumeSettingsModel&&(identical(other.defaultMobileVolume, defaultMobileVolume) || other.defaultMobileVolume == defaultMobileVolume)&&(identical(other.defaultDesktopVolume, defaultDesktopVolume) || other.defaultDesktopVolume == defaultDesktopVolume)&&(identical(other.globalVolumeMute, globalVolumeMute) || other.globalVolumeMute == globalVolumeMute)&&const DeepCollectionEquality().equals(other.roomVolumes, roomVolumes));
+  final _this = this as VolumeSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VolumeSettingsModel&&(identical(other.defaultMobileVolume, _this.defaultMobileVolume) || other.defaultMobileVolume == _this.defaultMobileVolume)&&(identical(other.defaultDesktopVolume, _this.defaultDesktopVolume) || other.defaultDesktopVolume == _this.defaultDesktopVolume)&&(identical(other.globalVolumeMute, _this.globalVolumeMute) || other.globalVolumeMute == _this.globalVolumeMute)&&const DeepCollectionEquality().equals(other.roomVolumes, _this.roomVolumes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,defaultMobileVolume,defaultDesktopVolume,globalVolumeMute,const DeepCollectionEquality().hash(roomVolumes));
+int get hashCode {
+  final _this = this as VolumeSettingsModel;
+  return Object.hash(runtimeType,_this.defaultMobileVolume,_this.defaultDesktopVolume,_this.globalVolumeMute,const DeepCollectionEquality().hash(_this.roomVolumes));
+}
 
 @override
 String toString() {
-  return 'VolumeSettingsModel(defaultMobileVolume: $defaultMobileVolume, defaultDesktopVolume: $defaultDesktopVolume, globalVolumeMute: $globalVolumeMute, roomVolumes: $roomVolumes)';
+  final _this = this as VolumeSettingsModel;
+  return 'VolumeSettingsModel(defaultMobileVolume: ${_this.defaultMobileVolume}, defaultDesktopVolume: ${_this.defaultDesktopVolume}, globalVolumeMute: ${_this.globalVolumeMute}, roomVolumes: ${_this.roomVolumes})';
 }
 
 
@@ -66,7 +72,7 @@ class _$VolumeSettingsModelCopyWithImpl<$Res>
 /// Create a copy of VolumeSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? defaultMobileVolume = null,Object? defaultDesktopVolume = null,Object? globalVolumeMute = null,Object? roomVolumes = null,}) {
-  return _then(_self.copyWith(
+  return _then(VolumeSettingsModel(
 defaultMobileVolume: null == defaultMobileVolume ? _self.defaultMobileVolume : defaultMobileVolume // ignore: cast_nullable_to_non_nullable
 as double,defaultDesktopVolume: null == defaultDesktopVolume ? _self.defaultDesktopVolume : defaultDesktopVolume // ignore: cast_nullable_to_non_nullable
 as double,globalVolumeMute: null == globalVolumeMute ? _self.globalVolumeMute : globalVolumeMute // ignore: cast_nullable_to_non_nullable
@@ -212,7 +218,7 @@ return $default(_that.defaultMobileVolume,_that.defaultDesktopVolume,_that.globa
 @JsonSerializable()
 
 class _VolumeSettingsModel implements VolumeSettingsModel {
-  const _VolumeSettingsModel({this.defaultMobileVolume = 0.5, this.defaultDesktopVolume = 1.0, this.globalVolumeMute = false, final  Map<String, double> roomVolumes = const {}}): _roomVolumes = roomVolumes;
+  const _VolumeSettingsModel({this.defaultMobileVolume = 0.5, this.defaultDesktopVolume = 1.0, this.globalVolumeMute = false,  Map<String, double> roomVolumes = const {}}): _roomVolumes = roomVolumes;
   factory _VolumeSettingsModel.fromJson(Map<String, dynamic> json) => _$VolumeSettingsModelFromJson(json);
 
 @override@JsonKey() final  double defaultMobileVolume;
@@ -239,16 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VolumeSettingsModel&&(identical(other.defaultMobileVolume, defaultMobileVolume) || other.defaultMobileVolume == defaultMobileVolume)&&(identical(other.defaultDesktopVolume, defaultDesktopVolume) || other.defaultDesktopVolume == defaultDesktopVolume)&&(identical(other.globalVolumeMute, globalVolumeMute) || other.globalVolumeMute == globalVolumeMute)&&const DeepCollectionEquality().equals(other._roomVolumes, _roomVolumes));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VolumeSettingsModel&&(identical(other.defaultMobileVolume, defaultMobileVolume) || other.defaultMobileVolume == defaultMobileVolume)&&(identical(other.defaultDesktopVolume, defaultDesktopVolume) || other.defaultDesktopVolume == defaultDesktopVolume)&&(identical(other.globalVolumeMute, globalVolumeMute) || other.globalVolumeMute == globalVolumeMute)&&const DeepCollectionEquality().equals(other.roomVolumes, _roomVolumes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,defaultMobileVolume,defaultDesktopVolume,globalVolumeMute,const DeepCollectionEquality().hash(_roomVolumes));
+int get hashCode {
+    return Object.hash(runtimeType,defaultMobileVolume,defaultDesktopVolume,globalVolumeMute,const DeepCollectionEquality().hash(_roomVolumes));
+}
 
 @override
 String toString() {
-  return 'VolumeSettingsModel(defaultMobileVolume: $defaultMobileVolume, defaultDesktopVolume: $defaultDesktopVolume, globalVolumeMute: $globalVolumeMute, roomVolumes: $roomVolumes)';
+    return 'VolumeSettingsModel(defaultMobileVolume: $defaultMobileVolume, defaultDesktopVolume: $defaultDesktopVolume, globalVolumeMute: $globalVolumeMute, roomVolumes: $roomVolumes)';
 }
 
 

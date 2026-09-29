@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'favorite_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'favorite_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $FavoriteSettingsModelCopyWith<FavoriteSettingsModel> get copyWith => _$Favorite
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteSettingsModel&&const DeepCollectionEquality().equals(other.shieldList, shieldList)&&(identical(other.siteCatalogMigration, siteCatalogMigration) || other.siteCatalogMigration == siteCatalogMigration)&&const DeepCollectionEquality().equals(other.hotAreasList, hotAreasList)&&(identical(other.preferPlatform, preferPlatform) || other.preferPlatform == preferPlatform)&&const DeepCollectionEquality().equals(other.favoriteRooms, favoriteRooms)&&const DeepCollectionEquality().equals(other.favoriteAreas, favoriteAreas));
+  final _this = this as FavoriteSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteSettingsModel&&const DeepCollectionEquality().equals(other.shieldList, _this.shieldList)&&(identical(other.siteCatalogMigration, _this.siteCatalogMigration) || other.siteCatalogMigration == _this.siteCatalogMigration)&&const DeepCollectionEquality().equals(other.hotAreasList, _this.hotAreasList)&&(identical(other.preferPlatform, _this.preferPlatform) || other.preferPlatform == _this.preferPlatform)&&const DeepCollectionEquality().equals(other.favoriteRooms, _this.favoriteRooms)&&const DeepCollectionEquality().equals(other.favoriteAreas, _this.favoriteAreas));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(shieldList),siteCatalogMigration,const DeepCollectionEquality().hash(hotAreasList),preferPlatform,const DeepCollectionEquality().hash(favoriteRooms),const DeepCollectionEquality().hash(favoriteAreas));
+int get hashCode {
+  final _this = this as FavoriteSettingsModel;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.shieldList),_this.siteCatalogMigration,const DeepCollectionEquality().hash(_this.hotAreasList),_this.preferPlatform,const DeepCollectionEquality().hash(_this.favoriteRooms),const DeepCollectionEquality().hash(_this.favoriteAreas));
+}
 
 @override
 String toString() {
-  return 'FavoriteSettingsModel(shieldList: $shieldList, siteCatalogMigration: $siteCatalogMigration, hotAreasList: $hotAreasList, preferPlatform: $preferPlatform, favoriteRooms: $favoriteRooms, favoriteAreas: $favoriteAreas)';
+  final _this = this as FavoriteSettingsModel;
+  return 'FavoriteSettingsModel(shieldList: ${_this.shieldList}, siteCatalogMigration: ${_this.siteCatalogMigration}, hotAreasList: ${_this.hotAreasList}, preferPlatform: ${_this.preferPlatform}, favoriteRooms: ${_this.favoriteRooms}, favoriteAreas: ${_this.favoriteAreas})';
 }
 
 
@@ -66,7 +72,7 @@ class _$FavoriteSettingsModelCopyWithImpl<$Res>
 /// Create a copy of FavoriteSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? shieldList = null,Object? siteCatalogMigration = null,Object? hotAreasList = null,Object? preferPlatform = null,Object? favoriteRooms = null,Object? favoriteAreas = null,}) {
-  return _then(_self.copyWith(
+  return _then(FavoriteSettingsModel(
 shieldList: null == shieldList ? _self.shieldList : shieldList // ignore: cast_nullable_to_non_nullable
 as List<String>,siteCatalogMigration: null == siteCatalogMigration ? _self.siteCatalogMigration : siteCatalogMigration // ignore: cast_nullable_to_non_nullable
 as int,hotAreasList: null == hotAreasList ? _self.hotAreasList : hotAreasList // ignore: cast_nullable_to_non_nullable
@@ -214,7 +220,7 @@ return $default(_that.shieldList,_that.siteCatalogMigration,_that.hotAreasList,_
 @JsonSerializable()
 
 class _FavoriteSettingsModel implements FavoriteSettingsModel {
-  const _FavoriteSettingsModel({final  List<String> shieldList = const [], this.siteCatalogMigration = 0, final  List<String> hotAreasList = const [], this.preferPlatform = '', final  List<LiveRoom> favoriteRooms = const [], final  List<LiveArea> favoriteAreas = const []}): _shieldList = shieldList,_hotAreasList = hotAreasList,_favoriteRooms = favoriteRooms,_favoriteAreas = favoriteAreas;
+  const _FavoriteSettingsModel({ List<String> shieldList = const [], this.siteCatalogMigration = 0,  List<String> hotAreasList = const [], this.preferPlatform = '',  List<LiveRoom> favoriteRooms = const [],  List<LiveArea> favoriteAreas = const []}): _shieldList = shieldList,_hotAreasList = hotAreasList,_favoriteRooms = favoriteRooms,_favoriteAreas = favoriteAreas;
   factory _FavoriteSettingsModel.fromJson(Map<String, dynamic> json) => _$FavoriteSettingsModelFromJson(json);
 
  final  List<String> _shieldList;
@@ -261,16 +267,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteSettingsModel&&const DeepCollectionEquality().equals(other._shieldList, _shieldList)&&(identical(other.siteCatalogMigration, siteCatalogMigration) || other.siteCatalogMigration == siteCatalogMigration)&&const DeepCollectionEquality().equals(other._hotAreasList, _hotAreasList)&&(identical(other.preferPlatform, preferPlatform) || other.preferPlatform == preferPlatform)&&const DeepCollectionEquality().equals(other._favoriteRooms, _favoriteRooms)&&const DeepCollectionEquality().equals(other._favoriteAreas, _favoriteAreas));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteSettingsModel&&const DeepCollectionEquality().equals(other.shieldList, _shieldList)&&(identical(other.siteCatalogMigration, siteCatalogMigration) || other.siteCatalogMigration == siteCatalogMigration)&&const DeepCollectionEquality().equals(other.hotAreasList, _hotAreasList)&&(identical(other.preferPlatform, preferPlatform) || other.preferPlatform == preferPlatform)&&const DeepCollectionEquality().equals(other.favoriteRooms, _favoriteRooms)&&const DeepCollectionEquality().equals(other.favoriteAreas, _favoriteAreas));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_shieldList),siteCatalogMigration,const DeepCollectionEquality().hash(_hotAreasList),preferPlatform,const DeepCollectionEquality().hash(_favoriteRooms),const DeepCollectionEquality().hash(_favoriteAreas));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_shieldList),siteCatalogMigration,const DeepCollectionEquality().hash(_hotAreasList),preferPlatform,const DeepCollectionEquality().hash(_favoriteRooms),const DeepCollectionEquality().hash(_favoriteAreas));
+}
 
 @override
 String toString() {
-  return 'FavoriteSettingsModel(shieldList: $shieldList, siteCatalogMigration: $siteCatalogMigration, hotAreasList: $hotAreasList, preferPlatform: $preferPlatform, favoriteRooms: $favoriteRooms, favoriteAreas: $favoriteAreas)';
+    return 'FavoriteSettingsModel(shieldList: $shieldList, siteCatalogMigration: $siteCatalogMigration, hotAreasList: $hotAreasList, preferPlatform: $preferPlatform, favoriteRooms: $favoriteRooms, favoriteAreas: $favoriteAreas)';
 }
 
 

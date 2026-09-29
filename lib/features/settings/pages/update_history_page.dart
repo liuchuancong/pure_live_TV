@@ -1,11 +1,6 @@
 import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/shared/models/release_model/release_model.dart';
 
 /// version history — the release list the update page links to, plus local update log.
 ///

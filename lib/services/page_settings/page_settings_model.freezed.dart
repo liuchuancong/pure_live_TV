@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'page_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'page_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $PageSettingsModelCopyWith<PageSettingsModel> get copyWith => _$PageSettingsMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PageSettingsModel&&(identical(other.showPageSizeSelector, showPageSizeSelector) || other.showPageSizeSelector == showPageSizeSelector)&&(identical(other.showGotoButton, showGotoButton) || other.showGotoButton == showGotoButton)&&(identical(other.showScrollToTopBtn, showScrollToTopBtn) || other.showScrollToTopBtn == showScrollToTopBtn)&&(identical(other.defaultPageSize, defaultPageSize) || other.defaultPageSize == defaultPageSize)&&const DeepCollectionEquality().equals(other.pageSizeOptions, pageSizeOptions));
+  final _this = this as PageSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PageSettingsModel&&(identical(other.showPageSizeSelector, _this.showPageSizeSelector) || other.showPageSizeSelector == _this.showPageSizeSelector)&&(identical(other.showGotoButton, _this.showGotoButton) || other.showGotoButton == _this.showGotoButton)&&(identical(other.showScrollToTopBtn, _this.showScrollToTopBtn) || other.showScrollToTopBtn == _this.showScrollToTopBtn)&&(identical(other.defaultPageSize, _this.defaultPageSize) || other.defaultPageSize == _this.defaultPageSize)&&const DeepCollectionEquality().equals(other.pageSizeOptions, _this.pageSizeOptions));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,showPageSizeSelector,showGotoButton,showScrollToTopBtn,defaultPageSize,const DeepCollectionEquality().hash(pageSizeOptions));
+int get hashCode {
+  final _this = this as PageSettingsModel;
+  return Object.hash(runtimeType,_this.showPageSizeSelector,_this.showGotoButton,_this.showScrollToTopBtn,_this.defaultPageSize,const DeepCollectionEquality().hash(_this.pageSizeOptions));
+}
 
 @override
 String toString() {
-  return 'PageSettingsModel(showPageSizeSelector: $showPageSizeSelector, showGotoButton: $showGotoButton, showScrollToTopBtn: $showScrollToTopBtn, defaultPageSize: $defaultPageSize, pageSizeOptions: $pageSizeOptions)';
+  final _this = this as PageSettingsModel;
+  return 'PageSettingsModel(showPageSizeSelector: ${_this.showPageSizeSelector}, showGotoButton: ${_this.showGotoButton}, showScrollToTopBtn: ${_this.showScrollToTopBtn}, defaultPageSize: ${_this.defaultPageSize}, pageSizeOptions: ${_this.pageSizeOptions})';
 }
 
 
@@ -66,7 +72,7 @@ class _$PageSettingsModelCopyWithImpl<$Res>
 /// Create a copy of PageSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? showPageSizeSelector = null,Object? showGotoButton = null,Object? showScrollToTopBtn = null,Object? defaultPageSize = null,Object? pageSizeOptions = null,}) {
-  return _then(_self.copyWith(
+  return _then(PageSettingsModel(
 showPageSizeSelector: null == showPageSizeSelector ? _self.showPageSizeSelector : showPageSizeSelector // ignore: cast_nullable_to_non_nullable
 as bool,showGotoButton: null == showGotoButton ? _self.showGotoButton : showGotoButton // ignore: cast_nullable_to_non_nullable
 as bool,showScrollToTopBtn: null == showScrollToTopBtn ? _self.showScrollToTopBtn : showScrollToTopBtn // ignore: cast_nullable_to_non_nullable
@@ -213,7 +219,7 @@ return $default(_that.showPageSizeSelector,_that.showGotoButton,_that.showScroll
 @JsonSerializable()
 
 class _PageSettingsModel implements PageSettingsModel {
-  const _PageSettingsModel({this.showPageSizeSelector = true, this.showGotoButton = true, this.showScrollToTopBtn = true, this.defaultPageSize = 12, final  List<int> pageSizeOptions = const [12, 24, 36, 48]}): _pageSizeOptions = pageSizeOptions;
+  const _PageSettingsModel({this.showPageSizeSelector = true, this.showGotoButton = true, this.showScrollToTopBtn = true, this.defaultPageSize = 12,  List<int> pageSizeOptions = const [12, 24, 36, 48]}): _pageSizeOptions = pageSizeOptions;
   factory _PageSettingsModel.fromJson(Map<String, dynamic> json) => _$PageSettingsModelFromJson(json);
 
 @override@JsonKey() final  bool showPageSizeSelector;
@@ -241,16 +247,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PageSettingsModel&&(identical(other.showPageSizeSelector, showPageSizeSelector) || other.showPageSizeSelector == showPageSizeSelector)&&(identical(other.showGotoButton, showGotoButton) || other.showGotoButton == showGotoButton)&&(identical(other.showScrollToTopBtn, showScrollToTopBtn) || other.showScrollToTopBtn == showScrollToTopBtn)&&(identical(other.defaultPageSize, defaultPageSize) || other.defaultPageSize == defaultPageSize)&&const DeepCollectionEquality().equals(other._pageSizeOptions, _pageSizeOptions));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PageSettingsModel&&(identical(other.showPageSizeSelector, showPageSizeSelector) || other.showPageSizeSelector == showPageSizeSelector)&&(identical(other.showGotoButton, showGotoButton) || other.showGotoButton == showGotoButton)&&(identical(other.showScrollToTopBtn, showScrollToTopBtn) || other.showScrollToTopBtn == showScrollToTopBtn)&&(identical(other.defaultPageSize, defaultPageSize) || other.defaultPageSize == defaultPageSize)&&const DeepCollectionEquality().equals(other.pageSizeOptions, _pageSizeOptions));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,showPageSizeSelector,showGotoButton,showScrollToTopBtn,defaultPageSize,const DeepCollectionEquality().hash(_pageSizeOptions));
+int get hashCode {
+    return Object.hash(runtimeType,showPageSizeSelector,showGotoButton,showScrollToTopBtn,defaultPageSize,const DeepCollectionEquality().hash(_pageSizeOptions));
+}
 
 @override
 String toString() {
-  return 'PageSettingsModel(showPageSizeSelector: $showPageSizeSelector, showGotoButton: $showGotoButton, showScrollToTopBtn: $showScrollToTopBtn, defaultPageSize: $defaultPageSize, pageSizeOptions: $pageSizeOptions)';
+    return 'PageSettingsModel(showPageSizeSelector: $showPageSizeSelector, showGotoButton: $showGotoButton, showScrollToTopBtn: $showScrollToTopBtn, defaultPageSize: $defaultPageSize, pageSizeOptions: $pageSizeOptions)';
 }
 
 

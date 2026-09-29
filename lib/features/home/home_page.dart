@@ -1,12 +1,10 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/modules/media/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/features/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/modules/music/music_page.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/areas/areas_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/features/history/history_page.dart';

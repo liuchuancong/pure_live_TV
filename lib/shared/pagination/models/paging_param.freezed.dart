@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'paging_param.dart';
@@ -9,6 +9,7 @@ part of 'paging_param.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -24,23 +25,29 @@ $PagingParamCopyWith<T, PagingParam<T>> get copyWith => _$PagingParamCopyWithImp
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  final _this = this as PagingParam<T>;
   properties
     ..add(DiagnosticsProperty('type', 'PagingParam<$T>'))
-    ..add(DiagnosticsProperty('mode', mode))..add(DiagnosticsProperty('pageSize', pageSize))..add(DiagnosticsProperty('fixedServerSize', fixedServerSize))..add(DiagnosticsProperty('keepAlive', keepAlive))..add(DiagnosticsProperty('fetchRemote', fetchRemote))..add(DiagnosticsProperty('fetchAll', fetchAll))..add(DiagnosticsProperty('fetchFixed', fetchFixed))..add(DiagnosticsProperty('localRefresh', localRefresh));
+    ..add(DiagnosticsProperty('mode', _this.mode))..add(DiagnosticsProperty('pageSize', _this.pageSize))..add(DiagnosticsProperty('fixedServerSize', _this.fixedServerSize))..add(DiagnosticsProperty('keepAlive', _this.keepAlive))..add(DiagnosticsProperty('fetchRemote', _this.fetchRemote))..add(DiagnosticsProperty('fetchAll', _this.fetchAll))..add(DiagnosticsProperty('fetchFixed', _this.fetchFixed))..add(DiagnosticsProperty('localRefresh', _this.localRefresh));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PagingParam<T>&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.pageSize, pageSize) || other.pageSize == pageSize)&&(identical(other.fixedServerSize, fixedServerSize) || other.fixedServerSize == fixedServerSize)&&(identical(other.keepAlive, keepAlive) || other.keepAlive == keepAlive)&&(identical(other.fetchRemote, fetchRemote) || other.fetchRemote == fetchRemote)&&(identical(other.fetchAll, fetchAll) || other.fetchAll == fetchAll)&&(identical(other.fetchFixed, fetchFixed) || other.fetchFixed == fetchFixed)&&(identical(other.localRefresh, localRefresh) || other.localRefresh == localRefresh));
+  final _this = this as PagingParam<T>;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PagingParam<T>&&(identical(other.mode, _this.mode) || other.mode == _this.mode)&&(identical(other.pageSize, _this.pageSize) || other.pageSize == _this.pageSize)&&(identical(other.fixedServerSize, _this.fixedServerSize) || other.fixedServerSize == _this.fixedServerSize)&&(identical(other.keepAlive, _this.keepAlive) || other.keepAlive == _this.keepAlive)&&(identical(other.fetchRemote, _this.fetchRemote) || other.fetchRemote == _this.fetchRemote)&&(identical(other.fetchAll, _this.fetchAll) || other.fetchAll == _this.fetchAll)&&(identical(other.fetchFixed, _this.fetchFixed) || other.fetchFixed == _this.fetchFixed)&&(identical(other.localRefresh, _this.localRefresh) || other.localRefresh == _this.localRefresh));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,mode,pageSize,fixedServerSize,keepAlive,fetchRemote,fetchAll,fetchFixed,localRefresh);
+int get hashCode {
+  final _this = this as PagingParam<T>;
+  return Object.hash(runtimeType,_this.mode,_this.pageSize,_this.fixedServerSize,_this.keepAlive,_this.fetchRemote,_this.fetchAll,_this.fetchFixed,_this.localRefresh);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'PagingParam<$T>(mode: $mode, pageSize: $pageSize, fixedServerSize: $fixedServerSize, keepAlive: $keepAlive, fetchRemote: $fetchRemote, fetchAll: $fetchAll, fetchFixed: $fetchFixed, localRefresh: $localRefresh)';
+  final _this = this as PagingParam<T>;
+  return 'PagingParam<$T>(mode: ${_this.mode}, pageSize: ${_this.pageSize}, fixedServerSize: ${_this.fixedServerSize}, keepAlive: ${_this.keepAlive}, fetchRemote: ${_this.fetchRemote}, fetchAll: ${_this.fetchAll}, fetchFixed: ${_this.fetchFixed}, localRefresh: ${_this.localRefresh})';
 }
 
 
@@ -69,7 +76,7 @@ class _$PagingParamCopyWithImpl<T,$Res>
 /// Create a copy of PagingParam
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? mode = null,Object? pageSize = null,Object? fixedServerSize = null,Object? keepAlive = null,Object? fetchRemote = freezed,Object? fetchAll = freezed,Object? fetchFixed = freezed,Object? localRefresh = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(PagingParam(
 mode: null == mode ? _self.mode : mode // ignore: cast_nullable_to_non_nullable
 as PagingMode,pageSize: null == pageSize ? _self.pageSize : pageSize // ignore: cast_nullable_to_non_nullable
 as int,fixedServerSize: null == fixedServerSize ? _self.fixedServerSize : fixedServerSize // ignore: cast_nullable_to_non_nullable
@@ -240,23 +247,25 @@ _$PagingParamCopyWith<T, _PagingParam<T>> get copyWith => __$PagingParamCopyWith
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
+    properties
     ..add(DiagnosticsProperty('type', 'PagingParam<$T>'))
     ..add(DiagnosticsProperty('mode', mode))..add(DiagnosticsProperty('pageSize', pageSize))..add(DiagnosticsProperty('fixedServerSize', fixedServerSize))..add(DiagnosticsProperty('keepAlive', keepAlive))..add(DiagnosticsProperty('fetchRemote', fetchRemote))..add(DiagnosticsProperty('fetchAll', fetchAll))..add(DiagnosticsProperty('fetchFixed', fetchFixed))..add(DiagnosticsProperty('localRefresh', localRefresh));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PagingParam<T>&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.pageSize, pageSize) || other.pageSize == pageSize)&&(identical(other.fixedServerSize, fixedServerSize) || other.fixedServerSize == fixedServerSize)&&(identical(other.keepAlive, keepAlive) || other.keepAlive == keepAlive)&&(identical(other.fetchRemote, fetchRemote) || other.fetchRemote == fetchRemote)&&(identical(other.fetchAll, fetchAll) || other.fetchAll == fetchAll)&&(identical(other.fetchFixed, fetchFixed) || other.fetchFixed == fetchFixed)&&(identical(other.localRefresh, localRefresh) || other.localRefresh == localRefresh));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PagingParam<T>&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.pageSize, pageSize) || other.pageSize == pageSize)&&(identical(other.fixedServerSize, fixedServerSize) || other.fixedServerSize == fixedServerSize)&&(identical(other.keepAlive, keepAlive) || other.keepAlive == keepAlive)&&(identical(other.fetchRemote, fetchRemote) || other.fetchRemote == fetchRemote)&&(identical(other.fetchAll, fetchAll) || other.fetchAll == fetchAll)&&(identical(other.fetchFixed, fetchFixed) || other.fetchFixed == fetchFixed)&&(identical(other.localRefresh, localRefresh) || other.localRefresh == localRefresh));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,mode,pageSize,fixedServerSize,keepAlive,fetchRemote,fetchAll,fetchFixed,localRefresh);
+int get hashCode {
+    return Object.hash(runtimeType,mode,pageSize,fixedServerSize,keepAlive,fetchRemote,fetchAll,fetchFixed,localRefresh);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'PagingParam<$T>(mode: $mode, pageSize: $pageSize, fixedServerSize: $fixedServerSize, keepAlive: $keepAlive, fetchRemote: $fetchRemote, fetchAll: $fetchAll, fetchFixed: $fetchFixed, localRefresh: $localRefresh)';
+    return 'PagingParam<$T>(mode: $mode, pageSize: $pageSize, fixedServerSize: $fixedServerSize, keepAlive: $keepAlive, fetchRemote: $fetchRemote, fetchAll: $fetchAll, fetchFixed: $fetchFixed, localRefresh: $localRefresh)';
 }
 
 

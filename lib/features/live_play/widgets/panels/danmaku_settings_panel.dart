@@ -4,7 +4,6 @@ import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// danmaku settings, as an index panel like the reference player's settings panel:
 /// Up/Down pick a row, Left/Right change its value, OK toggles a switch row.

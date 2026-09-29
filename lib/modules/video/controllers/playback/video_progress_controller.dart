@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_state.dart';
 
 part 'video_progress_controller.g.dart';

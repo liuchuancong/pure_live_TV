@@ -1,12 +1,7 @@
 import 'dart:async';
 
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/utils/version_util.dart';
-import 'package:pure_live/shared/platform/file_utils.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 /// Home-page update dialog: shown once per session, after the startup check,
 /// with the version, changelog and a download entry.

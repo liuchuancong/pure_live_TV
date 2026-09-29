@@ -1,14 +1,11 @@
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
 import 'package:pure_live/features/live_play/dialogs/room_switch_dialog.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
+
 
 /// "This room is not broadcasting" placeholder.
 ///
@@ -128,7 +125,7 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
             Text(
               i18n('room_offline'),
               textAlign: TextAlign.center,
-              style: AppTextStyles.t24W600.copyWith(color: tvTheme.primaryTextColor),
+              style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
             ),
             SizedBox(height: 8.sp),
             SizedBox(
@@ -138,13 +135,13 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t18W300.copyWith(color: tvTheme.secondaryTextColor),
+                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: tvTheme.secondaryTextColor),
               ),
             ),
             SizedBox(height: 10.sp),
             Text(
               i18nOr('ui_panel_keys_adjust', '←→ 选择 · OK 确认'),
-              style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
             ),
             SizedBox(height: 20.sp),
             Row(
@@ -206,7 +203,7 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
           children: [
             Icon(icon, size: 20.sp, color: Colors.white),
             SizedBox(width: 8.sp),
-            Text(label, style: AppTextStyles.t16W600.copyWith(color: Colors.white)),
+            Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
           ],
         ),
       ),
@@ -275,7 +272,7 @@ class _OfflineBadge extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+            style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
           ),
         ),
       ],

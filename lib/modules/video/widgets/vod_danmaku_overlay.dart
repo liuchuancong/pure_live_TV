@@ -6,15 +6,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_core/media_core.dart';
 
 import 'package:pure_live/player/danmaku_config_builder.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_danmaku_api.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/common/http_client.dart';
 
 /// The VOD danmaku overlay, the live player's engine on a recorded stream:
 /// [FlameBarrageWidget] renders, the global 弹幕设置 page styles it, and this
-/// widget only bridges the player position to the engine — the full XML list
-/// (`/x/v1/dm/list.so`) is parsed once per part and walked against the handle
-/// position, feeding due items into the [BarrageController].
+/// widget only bridges the player position to the engine — the endpoints and
+/// parsing live in [BilibiliDanmakuApi] (segmented protobuf reads first, the
+/// full XML list as the fallback), and this widget walks the timeline,
+/// feeding due items into the [BarrageController].
 ///
 /// [inject] puts a just-sent comment on screen without waiting for the API.
 class VodDanmakuOverlay extends ConsumerStatefulWidget {
@@ -41,17 +41,6 @@ class VodDanmakuOverlay extends ConsumerStatefulWidget {
 }
 
 class VodDanmakuOverlayState extends ConsumerState<VodDanmakuOverlay> {
-  static final RegExp _line = RegExp(r'<d p="([^"]+)"[^>]*>([^<]+)</d>');
-  static final RegExp _htmlTag = RegExp(r'<[^>]+>');
-  static const Map<String, String> _entities = {
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&apos;': "'",
-    '&amp;': '&',
-  };
-
   late final BarrageController _barrage = BarrageController();
   Timer? _timer;
 
@@ -66,13 +55,6 @@ class VodDanmakuOverlayState extends ConsumerState<VodDanmakuOverlay> {
   final Map<int, List<({double time, String text})>> _segments = {};
   int _segmentCount = 0;
   final Set<int> _segmentsLoading = {};
-  String _unescape(String raw) {
-    var text = raw;
-    for (final entry in _entities.entries) {
-      text = text.replaceAll(entry.key, entry.value);
-    }
-    return text.replaceAll(_htmlTag, '');
-  }
 
   @override
   void initState() {
@@ -106,7 +88,7 @@ class VodDanmakuOverlayState extends ConsumerState<VodDanmakuOverlay> {
 
     // Segments first (small responses, only the minutes being watched); the
     // one-shot XML is the fallback for a part the view API says nothing about.
-    final api = BilibiliUgcApi.instance;
+    final api = BilibiliDanmakuApi.instance;
     final segments = await api.getDanmakuSegmentCount(aid: widget.aid, cid: widget.cid);
     if (segments > 0) {
       if (!mounted || _loadedCid != widget.cid) return;
@@ -117,21 +99,7 @@ class VodDanmakuOverlayState extends ConsumerState<VodDanmakuOverlay> {
 
     setState(() => _segmentCount = 0);
     try {
-      final xml = await HttpClient.instance.getText(
-        'https://api.bilibili.com/x/v1/dm/list.so?oid=${widget.cid}',
-        header: {'user-agent': 'Mozilla/5.0', 'referer': 'https://www.bilibili.com/'},
-      );
-      final parsed = <({double time, String text})>[];
-      for (final match in _line.allMatches(xml)) {
-        final fields = match.group(1)?.split(',') ?? const [];
-        final time = double.tryParse(fields.elementAtOrNull(0) ?? '') ?? -1;
-        final mode = int.tryParse(fields.elementAtOrNull(1) ?? '') ?? 1;
-        if (time < 0 || mode > 3) continue;
-        final text = _unescape(match.group(2) ?? '').trim();
-        if (text.isEmpty) continue;
-        parsed.add((time: time, text: text));
-      }
-      parsed.sort((a, b) => a.time.compareTo(b.time));
+      final parsed = await api.getDanmakuXml(cid: widget.cid);
       if (!mounted || _loadedCid != widget.cid) return;
       setState(() => _items = parsed);
     } catch (_) {
@@ -147,7 +115,7 @@ class VodDanmakuOverlayState extends ConsumerState<VodDanmakuOverlay> {
     if (_segments.containsKey(n) || _segmentsLoading.contains(n)) return;
     _segmentsLoading.add(n);
     try {
-      final items = await BilibiliUgcApi.instance.getDanmakuSegment(aid: widget.aid, cid: widget.cid, segment: n);
+      final items = await BilibiliDanmakuApi.instance.getDanmakuSegment(aid: widget.aid, cid: widget.cid, segment: n);
       if (!mounted || _loadedCid != widget.cid) return;
       setState(() {
         _segments[n] = items;

@@ -1,10 +1,7 @@
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/consts/app_consts.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/app/consts/app_theme_consts.dart';
-import 'package:pure_live/shared/platform/font_download_manager.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 

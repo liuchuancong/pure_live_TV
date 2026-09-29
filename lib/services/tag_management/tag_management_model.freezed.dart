@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'tag_management_model.dart';
@@ -9,6 +9,7 @@ part of 'tag_management_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $TagManagementModelCopyWith<TagManagementModel> get copyWith => _$TagManagementM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TagManagementModel&&const DeepCollectionEquality().equals(other.tags, tags)&&const DeepCollectionEquality().equals(other.roomTagsMap, roomTagsMap));
+  final _this = this as TagManagementModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TagManagementModel&&const DeepCollectionEquality().equals(other.tags, _this.tags)&&const DeepCollectionEquality().equals(other.roomTagsMap, _this.roomTagsMap));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(tags),const DeepCollectionEquality().hash(roomTagsMap));
+int get hashCode {
+  final _this = this as TagManagementModel;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.tags),const DeepCollectionEquality().hash(_this.roomTagsMap));
+}
 
 @override
 String toString() {
-  return 'TagManagementModel(tags: $tags, roomTagsMap: $roomTagsMap)';
+  final _this = this as TagManagementModel;
+  return 'TagManagementModel(tags: ${_this.tags}, roomTagsMap: ${_this.roomTagsMap})';
 }
 
 
@@ -66,7 +72,7 @@ class _$TagManagementModelCopyWithImpl<$Res>
 /// Create a copy of TagManagementModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? tags = null,Object? roomTagsMap = null,}) {
-  return _then(_self.copyWith(
+  return _then(TagManagementModel(
 tags: null == tags ? _self.tags : tags // ignore: cast_nullable_to_non_nullable
 as List<LiveTag>,roomTagsMap: null == roomTagsMap ? _self.roomTagsMap : roomTagsMap // ignore: cast_nullable_to_non_nullable
 as Map<String, List<String>>,
@@ -210,7 +216,7 @@ return $default(_that.tags,_that.roomTagsMap);case _:
 @JsonSerializable()
 
 class _TagManagementModel implements TagManagementModel {
-  const _TagManagementModel({final  List<LiveTag> tags = const [], final  Map<String, List<String>> roomTagsMap = const {}}): _tags = tags,_roomTagsMap = roomTagsMap;
+  const _TagManagementModel({ List<LiveTag> tags = const [],  Map<String, List<String>> roomTagsMap = const {}}): _tags = tags,_roomTagsMap = roomTagsMap;
   factory _TagManagementModel.fromJson(Map<String, dynamic> json) => _$TagManagementModelFromJson(json);
 
  final  List<LiveTag> _tags;
@@ -241,16 +247,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TagManagementModel&&const DeepCollectionEquality().equals(other._tags, _tags)&&const DeepCollectionEquality().equals(other._roomTagsMap, _roomTagsMap));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TagManagementModel&&const DeepCollectionEquality().equals(other.tags, _tags)&&const DeepCollectionEquality().equals(other.roomTagsMap, _roomTagsMap));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_tags),const DeepCollectionEquality().hash(_roomTagsMap));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_tags),const DeepCollectionEquality().hash(_roomTagsMap));
+}
 
 @override
 String toString() {
-  return 'TagManagementModel(tags: $tags, roomTagsMap: $roomTagsMap)';
+    return 'TagManagementModel(tags: $tags, roomTagsMap: $roomTagsMap)';
 }
 
 

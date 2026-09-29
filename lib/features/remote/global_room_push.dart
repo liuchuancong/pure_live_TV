@@ -111,7 +111,7 @@ class _RoomPushCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     i18nOr('room_push_title', '手机推送了一个直播间'),
-                    style: AppTextStyles.t20W600,
+                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -121,7 +121,7 @@ class _RoomPushCard extends StatelessWidget {
             SizedBox(height: 16.h),
             Text(
               input,
-              style: AppTextStyles.t16W500.copyWith(color: theme.secondaryTextColor),
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.secondaryTextColor),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),

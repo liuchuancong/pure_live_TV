@@ -1,16 +1,14 @@
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
+import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/states/live_play_state.dart';
-import 'package:pure_live/features/live_play/widgets/panels/danmaku_settings_panel.dart';
-import 'package:pure_live/features/live_play/widgets/panels/playlist_panel.dart';
-import 'package:pure_live/features/live_play/widgets/panels/shield_panel.dart';
-import 'package:pure_live/features/live_play/widgets/video_player/tv_video_surface.dart';
 import 'package:pure_live/features/live_play/widgets/player_key_scope.dart';
-import 'package:pure_live/features/live_play/player_panel_layout.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/features/live_play/widgets/panels/shield_panel.dart';
+import 'package:pure_live/features/live_play/widgets/panels/playlist_panel.dart';
+import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
+import 'package:pure_live/features/live_play/widgets/panels/danmaku_settings_panel.dart';
+import 'package:pure_live/features/live_play/widgets/video_player/tv_video_surface.dart';
 
 /// Fullscreen live playback page.
 ///
@@ -34,44 +32,44 @@ class LivePlayPage extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.black,
         body: Stack(
-        fit: StackFit.expand,
-        children: [
-          DpadRegion(
-            memoryKey: 'live_play/video',
-            child: TvVideoSurface(args: args),
-          ),
-          // The panel overlays the video instead of sitting beside it: playback
-          // keeps the whole screen and the danmaku keep their geometry.
-          if (state.showSidePanel)
-            Positioned(
-              top: 24.sp,
-              bottom: 24.sp,
-              left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.sp : null,
-              right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.sp,
-              width: 400.sp,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.sp),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: tvTheme.backgroundColor.withValues(alpha: 0.92),
-                    borderRadius: BorderRadius.circular(20.sp),
-                    border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
-                  ),
-                  child: DpadRegion(
-                    // Each panel remembers its own focus and returns to the previous row.
-                    memoryKey: 'live_play/side-panel/${state.panel?.name ?? 'none'}',
-                    child: _SidePanel(
-                      state: state,
-                      controller: controller,
-                      args: args,
-                      onTogglePanel: controller.toggleSidePanel,
+          fit: StackFit.expand,
+          children: [
+            DpadRegion(
+              memoryKey: 'live_play/video',
+              child: TvVideoSurface(args: args),
+            ),
+            // The panel overlays the video instead of sitting beside it: playback
+            // keeps the whole screen and the danmaku keep their geometry.
+            if (state.showSidePanel)
+              Positioned(
+                top: 24.sp,
+                bottom: 24.sp,
+                left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.sp : null,
+                right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.sp,
+                width: 400.sp,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.sp),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: tvTheme.backgroundColor.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(20.sp),
+                      border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
+                    ),
+                    child: DpadRegion(
+                      // Each panel remembers its own focus and returns to the previous row.
+                      memoryKey: 'live_play/side-panel/${state.panel?.name ?? 'none'}',
+                      child: _SidePanel(
+                        state: state,
+                        controller: controller,
+                        args: args,
+                        onTogglePanel: controller.toggleSidePanel,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -101,7 +99,7 @@ class _SidePanel extends ConsumerWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
       child: Text(
         i18nOr('ui_panel_keys', '↑↓ select · OK confirm · ← back'),
-        style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
       ),
     );
 
@@ -128,5 +126,3 @@ class _SidePanel extends ConsumerWidget {
     }
   }
 }
-
-

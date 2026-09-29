@@ -13,17 +13,10 @@ import 'package:pure_live/services/tag_management/tag_management_controller.dart
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_model.dart';
 import 'package:pure_live/services/iptv_settings/iptv_settings_controller.dart';
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/common/http_header_policy.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
-import 'package:pure_live/shared/utils/log.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/utils/version_util.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/dialog/backup_import_dialog.dart';
 
 part 'tv_remote_receiver.g.dart';

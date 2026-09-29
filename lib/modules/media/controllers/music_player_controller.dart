@@ -14,7 +14,7 @@ import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/music/services/music_audio_cache.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 
 part 'music_player_controller.g.dart';
 

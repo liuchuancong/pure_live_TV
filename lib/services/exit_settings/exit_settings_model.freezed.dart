@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'exit_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'exit_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ExitSettingsModelCopyWith<ExitSettingsModel> get copyWith => _$ExitSettingsMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExitSettingsModel&&(identical(other.dontAskExit, dontAskExit) || other.dontAskExit == dontAskExit)&&(identical(other.exitChoose, exitChoose) || other.exitChoose == exitChoose)&&(identical(other.autoShutDownTime, autoShutDownTime) || other.autoShutDownTime == autoShutDownTime)&&(identical(other.enableAutoShutDownTime, enableAutoShutDownTime) || other.enableAutoShutDownTime == enableAutoShutDownTime));
+  final _this = this as ExitSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExitSettingsModel&&(identical(other.dontAskExit, _this.dontAskExit) || other.dontAskExit == _this.dontAskExit)&&(identical(other.exitChoose, _this.exitChoose) || other.exitChoose == _this.exitChoose)&&(identical(other.autoShutDownTime, _this.autoShutDownTime) || other.autoShutDownTime == _this.autoShutDownTime)&&(identical(other.enableAutoShutDownTime, _this.enableAutoShutDownTime) || other.enableAutoShutDownTime == _this.enableAutoShutDownTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,dontAskExit,exitChoose,autoShutDownTime,enableAutoShutDownTime);
+int get hashCode {
+  final _this = this as ExitSettingsModel;
+  return Object.hash(runtimeType,_this.dontAskExit,_this.exitChoose,_this.autoShutDownTime,_this.enableAutoShutDownTime);
+}
 
 @override
 String toString() {
-  return 'ExitSettingsModel(dontAskExit: $dontAskExit, exitChoose: $exitChoose, autoShutDownTime: $autoShutDownTime, enableAutoShutDownTime: $enableAutoShutDownTime)';
+  final _this = this as ExitSettingsModel;
+  return 'ExitSettingsModel(dontAskExit: ${_this.dontAskExit}, exitChoose: ${_this.exitChoose}, autoShutDownTime: ${_this.autoShutDownTime}, enableAutoShutDownTime: ${_this.enableAutoShutDownTime})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ExitSettingsModelCopyWithImpl<$Res>
 /// Create a copy of ExitSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? dontAskExit = null,Object? exitChoose = null,Object? autoShutDownTime = null,Object? enableAutoShutDownTime = null,}) {
-  return _then(_self.copyWith(
+  return _then(ExitSettingsModel(
 dontAskExit: null == dontAskExit ? _self.dontAskExit : dontAskExit // ignore: cast_nullable_to_non_nullable
 as bool,exitChoose: null == exitChoose ? _self.exitChoose : exitChoose // ignore: cast_nullable_to_non_nullable
 as String,autoShutDownTime: null == autoShutDownTime ? _self.autoShutDownTime : autoShutDownTime // ignore: cast_nullable_to_non_nullable
@@ -233,16 +239,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExitSettingsModel&&(identical(other.dontAskExit, dontAskExit) || other.dontAskExit == dontAskExit)&&(identical(other.exitChoose, exitChoose) || other.exitChoose == exitChoose)&&(identical(other.autoShutDownTime, autoShutDownTime) || other.autoShutDownTime == autoShutDownTime)&&(identical(other.enableAutoShutDownTime, enableAutoShutDownTime) || other.enableAutoShutDownTime == enableAutoShutDownTime));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExitSettingsModel&&(identical(other.dontAskExit, dontAskExit) || other.dontAskExit == dontAskExit)&&(identical(other.exitChoose, exitChoose) || other.exitChoose == exitChoose)&&(identical(other.autoShutDownTime, autoShutDownTime) || other.autoShutDownTime == autoShutDownTime)&&(identical(other.enableAutoShutDownTime, enableAutoShutDownTime) || other.enableAutoShutDownTime == enableAutoShutDownTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,dontAskExit,exitChoose,autoShutDownTime,enableAutoShutDownTime);
+int get hashCode {
+    return Object.hash(runtimeType,dontAskExit,exitChoose,autoShutDownTime,enableAutoShutDownTime);
+}
 
 @override
 String toString() {
-  return 'ExitSettingsModel(dontAskExit: $dontAskExit, exitChoose: $exitChoose, autoShutDownTime: $autoShutDownTime, enableAutoShutDownTime: $enableAutoShutDownTime)';
+    return 'ExitSettingsModel(dontAskExit: $dontAskExit, exitChoose: $exitChoose, autoShutDownTime: $autoShutDownTime, enableAutoShutDownTime: $enableAutoShutDownTime)';
 }
 
 

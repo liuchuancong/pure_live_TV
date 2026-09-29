@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'release_model.dart';
@@ -9,6 +9,7 @@ part of 'release_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ReleaseModelCopyWith<ReleaseModel> get copyWith => _$ReleaseModelCopyWithImpl<R
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReleaseModel&&(identical(other.version, version) || other.version == version)&&(identical(other.title, title) || other.title == title)&&(identical(other.date, date) || other.date == date)&&(identical(other.github, github) || other.github == github)&&(identical(other.author, author) || other.author == author)&&(identical(other.changeLog, changeLog) || other.changeLog == changeLog)&&const DeepCollectionEquality().equals(other.files, files));
+  final _this = this as ReleaseModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReleaseModel&&(identical(other.version, _this.version) || other.version == _this.version)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.github, _this.github) || other.github == _this.github)&&(identical(other.author, _this.author) || other.author == _this.author)&&(identical(other.changeLog, _this.changeLog) || other.changeLog == _this.changeLog)&&const DeepCollectionEquality().equals(other.files, _this.files));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,version,title,date,github,author,changeLog,const DeepCollectionEquality().hash(files));
+int get hashCode {
+  final _this = this as ReleaseModel;
+  return Object.hash(runtimeType,_this.version,_this.title,_this.date,_this.github,_this.author,_this.changeLog,const DeepCollectionEquality().hash(_this.files));
+}
 
 @override
 String toString() {
-  return 'ReleaseModel(version: $version, title: $title, date: $date, github: $github, author: $author, changeLog: $changeLog, files: $files)';
+  final _this = this as ReleaseModel;
+  return 'ReleaseModel(version: ${_this.version}, title: ${_this.title}, date: ${_this.date}, github: ${_this.github}, author: ${_this.author}, changeLog: ${_this.changeLog}, files: ${_this.files})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ReleaseModelCopyWithImpl<$Res>
 /// Create a copy of ReleaseModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? version = null,Object? title = null,Object? date = null,Object? github = null,Object? author = null,Object? changeLog = null,Object? files = null,}) {
-  return _then(_self.copyWith(
+  return _then(ReleaseModel(
 version: null == version ? _self.version : version // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -224,7 +230,7 @@ return $default(_that.version,_that.title,_that.date,_that.github,_that.author,_
 @JsonSerializable()
 
 class _ReleaseModel implements ReleaseModel {
-  const _ReleaseModel({this.version = '', this.title = '', this.date = '', this.github = '', required this.author, this.changeLog = '', final  List<ReleaseFileModel> files = const []}): _files = files;
+  const _ReleaseModel({this.version = '', this.title = '', this.date = '', this.github = '', required this.author, this.changeLog = '',  List<ReleaseFileModel> files = const []}): _files = files;
   factory _ReleaseModel.fromJson(Map<String, dynamic> json) => _$ReleaseModelFromJson(json);
 
 @override@JsonKey() final  String version;
@@ -254,16 +260,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReleaseModel&&(identical(other.version, version) || other.version == version)&&(identical(other.title, title) || other.title == title)&&(identical(other.date, date) || other.date == date)&&(identical(other.github, github) || other.github == github)&&(identical(other.author, author) || other.author == author)&&(identical(other.changeLog, changeLog) || other.changeLog == changeLog)&&const DeepCollectionEquality().equals(other._files, _files));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReleaseModel&&(identical(other.version, version) || other.version == version)&&(identical(other.title, title) || other.title == title)&&(identical(other.date, date) || other.date == date)&&(identical(other.github, github) || other.github == github)&&(identical(other.author, author) || other.author == author)&&(identical(other.changeLog, changeLog) || other.changeLog == changeLog)&&const DeepCollectionEquality().equals(other.files, _files));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,version,title,date,github,author,changeLog,const DeepCollectionEquality().hash(_files));
+int get hashCode {
+    return Object.hash(runtimeType,version,title,date,github,author,changeLog,const DeepCollectionEquality().hash(_files));
+}
 
 @override
 String toString() {
-  return 'ReleaseModel(version: $version, title: $title, date: $date, github: $github, author: $author, changeLog: $changeLog, files: $files)';
+    return 'ReleaseModel(version: $version, title: $title, date: $date, github: $github, author: $author, changeLog: $changeLog, files: $files)';
 }
 
 
@@ -333,16 +341,21 @@ $AuthorModelCopyWith<AuthorModel> get copyWith => _$AuthorModelCopyWithImpl<Auth
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthorModel&&(identical(other.name, name) || other.name == name)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.profile, profile) || other.profile == profile));
+  final _this = this as AuthorModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthorModel&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.avatar, _this.avatar) || other.avatar == _this.avatar)&&(identical(other.profile, _this.profile) || other.profile == _this.profile));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,avatar,profile);
+int get hashCode {
+  final _this = this as AuthorModel;
+  return Object.hash(runtimeType,_this.name,_this.avatar,_this.profile);
+}
 
 @override
 String toString() {
-  return 'AuthorModel(name: $name, avatar: $avatar, profile: $profile)';
+  final _this = this as AuthorModel;
+  return 'AuthorModel(name: ${_this.name}, avatar: ${_this.avatar}, profile: ${_this.profile})';
 }
 
 
@@ -371,7 +384,7 @@ class _$AuthorModelCopyWithImpl<$Res>
 /// Create a copy of AuthorModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? avatar = null,Object? profile = null,}) {
-  return _then(_self.copyWith(
+  return _then(AuthorModel(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,avatar: null == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
 as String,profile: null == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
@@ -536,16 +549,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthorModel&&(identical(other.name, name) || other.name == name)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.profile, profile) || other.profile == profile));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthorModel&&(identical(other.name, name) || other.name == name)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.profile, profile) || other.profile == profile));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,avatar,profile);
+int get hashCode {
+    return Object.hash(runtimeType,name,avatar,profile);
+}
 
 @override
 String toString() {
-  return 'AuthorModel(name: $name, avatar: $avatar, profile: $profile)';
+    return 'AuthorModel(name: $name, avatar: $avatar, profile: $profile)';
 }
 
 
@@ -602,16 +617,21 @@ $ReleaseFileModelCopyWith<ReleaseFileModel> get copyWith => _$ReleaseFileModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReleaseFileModel&&(identical(other.name, name) || other.name == name)&&(identical(other.size, size) || other.size == size)&&(identical(other.downloads, downloads) || other.downloads == downloads)&&(identical(other.url, url) || other.url == url));
+  final _this = this as ReleaseFileModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReleaseFileModel&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.size, _this.size) || other.size == _this.size)&&(identical(other.downloads, _this.downloads) || other.downloads == _this.downloads)&&(identical(other.url, _this.url) || other.url == _this.url));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,size,downloads,url);
+int get hashCode {
+  final _this = this as ReleaseFileModel;
+  return Object.hash(runtimeType,_this.name,_this.size,_this.downloads,_this.url);
+}
 
 @override
 String toString() {
-  return 'ReleaseFileModel(name: $name, size: $size, downloads: $downloads, url: $url)';
+  final _this = this as ReleaseFileModel;
+  return 'ReleaseFileModel(name: ${_this.name}, size: ${_this.size}, downloads: ${_this.downloads}, url: ${_this.url})';
 }
 
 
@@ -640,7 +660,7 @@ class _$ReleaseFileModelCopyWithImpl<$Res>
 /// Create a copy of ReleaseFileModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? size = null,Object? downloads = null,Object? url = null,}) {
-  return _then(_self.copyWith(
+  return _then(ReleaseFileModel(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
 as String,downloads: null == downloads ? _self.downloads : downloads // ignore: cast_nullable_to_non_nullable
@@ -807,16 +827,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReleaseFileModel&&(identical(other.name, name) || other.name == name)&&(identical(other.size, size) || other.size == size)&&(identical(other.downloads, downloads) || other.downloads == downloads)&&(identical(other.url, url) || other.url == url));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ReleaseFileModel&&(identical(other.name, name) || other.name == name)&&(identical(other.size, size) || other.size == size)&&(identical(other.downloads, downloads) || other.downloads == downloads)&&(identical(other.url, url) || other.url == url));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,size,downloads,url);
+int get hashCode {
+    return Object.hash(runtimeType,name,size,downloads,url);
+}
 
 @override
 String toString() {
-  return 'ReleaseFileModel(name: $name, size: $size, downloads: $downloads, url: $url)';
+    return 'ReleaseFileModel(name: $name, size: $size, downloads: $downloads, url: $url)';
 }
 
 

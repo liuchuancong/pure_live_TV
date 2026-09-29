@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'base_controller_state.dart';
@@ -9,6 +9,7 @@ part of 'base_controller_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $BaseControllerStateCopyWith<BaseControllerState> get copyWith => _$BaseControll
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BaseControllerState&&(identical(other.pageLoading, pageLoading) || other.pageLoading == pageLoading)&&(identical(other.loading, loading) || other.loading == loading)&&(identical(other.pageEmpty, pageEmpty) || other.pageEmpty == pageEmpty)&&(identical(other.pageError, pageError) || other.pageError == pageError)&&(identical(other.notLogin, notLogin) || other.notLogin == notLogin)&&(identical(other.errorMsg, errorMsg) || other.errorMsg == errorMsg));
+  final _this = this as BaseControllerState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BaseControllerState&&(identical(other.pageLoading, _this.pageLoading) || other.pageLoading == _this.pageLoading)&&(identical(other.loading, _this.loading) || other.loading == _this.loading)&&(identical(other.pageEmpty, _this.pageEmpty) || other.pageEmpty == _this.pageEmpty)&&(identical(other.pageError, _this.pageError) || other.pageError == _this.pageError)&&(identical(other.notLogin, _this.notLogin) || other.notLogin == _this.notLogin)&&(identical(other.errorMsg, _this.errorMsg) || other.errorMsg == _this.errorMsg));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,pageLoading,loading,pageEmpty,pageError,notLogin,errorMsg);
+int get hashCode {
+  final _this = this as BaseControllerState;
+  return Object.hash(runtimeType,_this.pageLoading,_this.loading,_this.pageEmpty,_this.pageError,_this.notLogin,_this.errorMsg);
+}
 
 @override
 String toString() {
-  return 'BaseControllerState(pageLoading: $pageLoading, loading: $loading, pageEmpty: $pageEmpty, pageError: $pageError, notLogin: $notLogin, errorMsg: $errorMsg)';
+  final _this = this as BaseControllerState;
+  return 'BaseControllerState(pageLoading: ${_this.pageLoading}, loading: ${_this.loading}, pageEmpty: ${_this.pageEmpty}, pageError: ${_this.pageError}, notLogin: ${_this.notLogin}, errorMsg: ${_this.errorMsg})';
 }
 
 
@@ -63,7 +69,7 @@ class _$BaseControllerStateCopyWithImpl<$Res>
 /// Create a copy of BaseControllerState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? pageLoading = null,Object? loading = null,Object? pageEmpty = null,Object? pageError = null,Object? notLogin = null,Object? errorMsg = null,}) {
-  return _then(_self.copyWith(
+  return _then(BaseControllerState(
 pageLoading: null == pageLoading ? _self.pageLoading : pageLoading // ignore: cast_nullable_to_non_nullable
 as bool,loading: null == loading ? _self.loading : loading // ignore: cast_nullable_to_non_nullable
 as bool,pageEmpty: null == pageEmpty ? _self.pageEmpty : pageEmpty // ignore: cast_nullable_to_non_nullable
@@ -231,16 +237,18 @@ _$BaseControllerStateCopyWith<_BaseControllerState> get copyWith => __$BaseContr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BaseControllerState&&(identical(other.pageLoading, pageLoading) || other.pageLoading == pageLoading)&&(identical(other.loading, loading) || other.loading == loading)&&(identical(other.pageEmpty, pageEmpty) || other.pageEmpty == pageEmpty)&&(identical(other.pageError, pageError) || other.pageError == pageError)&&(identical(other.notLogin, notLogin) || other.notLogin == notLogin)&&(identical(other.errorMsg, errorMsg) || other.errorMsg == errorMsg));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BaseControllerState&&(identical(other.pageLoading, pageLoading) || other.pageLoading == pageLoading)&&(identical(other.loading, loading) || other.loading == loading)&&(identical(other.pageEmpty, pageEmpty) || other.pageEmpty == pageEmpty)&&(identical(other.pageError, pageError) || other.pageError == pageError)&&(identical(other.notLogin, notLogin) || other.notLogin == notLogin)&&(identical(other.errorMsg, errorMsg) || other.errorMsg == errorMsg));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,pageLoading,loading,pageEmpty,pageError,notLogin,errorMsg);
+int get hashCode {
+    return Object.hash(runtimeType,pageLoading,loading,pageEmpty,pageError,notLogin,errorMsg);
+}
 
 @override
 String toString() {
-  return 'BaseControllerState(pageLoading: $pageLoading, loading: $loading, pageEmpty: $pageEmpty, pageError: $pageError, notLogin: $notLogin, errorMsg: $errorMsg)';
+    return 'BaseControllerState(pageLoading: $pageLoading, loading: $loading, pageEmpty: $pageEmpty, pageError: $pageError, notLogin: $notLogin, errorMsg: $errorMsg)';
 }
 
 

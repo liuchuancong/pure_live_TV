@@ -1,14 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+
 
 /// A shared UP-space page: the header card (avatar, sign, followers, follow
 /// button) over a paged uploads grid. Music opens it from comment/track
@@ -137,7 +136,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                             children: [
                               Text(
                                 '${i18n('video_uploads_title')}（${_info!.videoCount}）',
-                                style: AppTextStyles.t20W600.copyWith(color: accent),
+                                style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                               ),
                               const Spacer(),
                               TvButton(
@@ -232,14 +231,14 @@ class _HeaderCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(info.name, style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor)),
+                Text(info.name, style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor)),
                 if (info.sign.isNotEmpty) ...[
                   SizedBox(height: 6.sp),
                   Text(
                     info.sign,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                   ),
                 ],
                 SizedBox(height: 8.sp),
@@ -281,7 +280,7 @@ class _Stat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: AppTextStyles.t18W700.copyWith(color: tvTheme.primaryTextColor)),
+        Text(value, style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor)),
         Text(label, style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor)),
       ],
     );
@@ -330,7 +329,7 @@ class _UploadCard extends StatelessWidget {
                 archive.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.primaryTextColor),
+                style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.primaryTextColor),
               ),
             ),
           ],

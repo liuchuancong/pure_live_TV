@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'background_config_model.dart';
@@ -9,6 +9,7 @@ part of 'background_config_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -30,16 +31,21 @@ $BackgroundConfigModelCopyWith<BackgroundConfigModel> get copyWith => _$Backgrou
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BackgroundConfigModel&&(identical(other.source, source) || other.source == source)&&(identical(other.boxFit, boxFit) || other.boxFit == boxFit)&&(identical(other.maskOpacity, maskOpacity) || other.maskOpacity == maskOpacity)&&(identical(other.blurSigma, blurSigma) || other.blurSigma == blurSigma)&&(identical(other.solidColor, solidColor) || other.solidColor == solidColor)&&const DeepCollectionEquality().equals(other.gradientColors, gradientColors)&&(identical(other.assetImagePath, assetImagePath) || other.assetImagePath == assetImagePath)&&(identical(other.localImagePath, localImagePath) || other.localImagePath == localImagePath)&&(identical(other.networkImageUrl, networkImageUrl) || other.networkImageUrl == networkImageUrl)&&(identical(other.currentBoxImageBase64, currentBoxImageBase64) || other.currentBoxImageBase64 == currentBoxImageBase64)&&(identical(other.assetVideoPath, assetVideoPath) || other.assetVideoPath == assetVideoPath)&&(identical(other.localVideoPath, localVideoPath) || other.localVideoPath == localVideoPath)&&(identical(other.networkVideoUrl, networkVideoUrl) || other.networkVideoUrl == networkVideoUrl));
+  final _this = this as BackgroundConfigModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BackgroundConfigModel&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.boxFit, _this.boxFit) || other.boxFit == _this.boxFit)&&(identical(other.maskOpacity, _this.maskOpacity) || other.maskOpacity == _this.maskOpacity)&&(identical(other.blurSigma, _this.blurSigma) || other.blurSigma == _this.blurSigma)&&(identical(other.solidColor, _this.solidColor) || other.solidColor == _this.solidColor)&&const DeepCollectionEquality().equals(other.gradientColors, _this.gradientColors)&&(identical(other.assetImagePath, _this.assetImagePath) || other.assetImagePath == _this.assetImagePath)&&(identical(other.localImagePath, _this.localImagePath) || other.localImagePath == _this.localImagePath)&&(identical(other.networkImageUrl, _this.networkImageUrl) || other.networkImageUrl == _this.networkImageUrl)&&(identical(other.currentBoxImageBase64, _this.currentBoxImageBase64) || other.currentBoxImageBase64 == _this.currentBoxImageBase64)&&(identical(other.assetVideoPath, _this.assetVideoPath) || other.assetVideoPath == _this.assetVideoPath)&&(identical(other.localVideoPath, _this.localVideoPath) || other.localVideoPath == _this.localVideoPath)&&(identical(other.networkVideoUrl, _this.networkVideoUrl) || other.networkVideoUrl == _this.networkVideoUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,source,boxFit,maskOpacity,blurSigma,solidColor,const DeepCollectionEquality().hash(gradientColors),assetImagePath,localImagePath,networkImageUrl,currentBoxImageBase64,assetVideoPath,localVideoPath,networkVideoUrl);
+int get hashCode {
+  final _this = this as BackgroundConfigModel;
+  return Object.hash(runtimeType,_this.source,_this.boxFit,_this.maskOpacity,_this.blurSigma,_this.solidColor,const DeepCollectionEquality().hash(_this.gradientColors),_this.assetImagePath,_this.localImagePath,_this.networkImageUrl,_this.currentBoxImageBase64,_this.assetVideoPath,_this.localVideoPath,_this.networkVideoUrl);
+}
 
 @override
 String toString() {
-  return 'BackgroundConfigModel(source: $source, boxFit: $boxFit, maskOpacity: $maskOpacity, blurSigma: $blurSigma, solidColor: $solidColor, gradientColors: $gradientColors, assetImagePath: $assetImagePath, localImagePath: $localImagePath, networkImageUrl: $networkImageUrl, currentBoxImageBase64: $currentBoxImageBase64, assetVideoPath: $assetVideoPath, localVideoPath: $localVideoPath, networkVideoUrl: $networkVideoUrl)';
+  final _this = this as BackgroundConfigModel;
+  return 'BackgroundConfigModel(source: ${_this.source}, boxFit: ${_this.boxFit}, maskOpacity: ${_this.maskOpacity}, blurSigma: ${_this.blurSigma}, solidColor: ${_this.solidColor}, gradientColors: ${_this.gradientColors}, assetImagePath: ${_this.assetImagePath}, localImagePath: ${_this.localImagePath}, networkImageUrl: ${_this.networkImageUrl}, currentBoxImageBase64: ${_this.currentBoxImageBase64}, assetVideoPath: ${_this.assetVideoPath}, localVideoPath: ${_this.localVideoPath}, networkVideoUrl: ${_this.networkVideoUrl})';
 }
 
 
@@ -68,7 +74,7 @@ class _$BackgroundConfigModelCopyWithImpl<$Res>
 /// Create a copy of BackgroundConfigModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? source = null,Object? boxFit = null,Object? maskOpacity = null,Object? blurSigma = null,Object? solidColor = null,Object? gradientColors = null,Object? assetImagePath = freezed,Object? localImagePath = freezed,Object? networkImageUrl = freezed,Object? currentBoxImageBase64 = null,Object? assetVideoPath = freezed,Object? localVideoPath = freezed,Object? networkVideoUrl = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(BackgroundConfigModel(
 source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as BackgroundSource,boxFit: null == boxFit ? _self.boxFit : boxFit // ignore: cast_nullable_to_non_nullable
 as BoxFit,maskOpacity: null == maskOpacity ? _self.maskOpacity : maskOpacity // ignore: cast_nullable_to_non_nullable
@@ -223,7 +229,7 @@ return $default(_that.source,_that.boxFit,_that.maskOpacity,_that.blurSigma,_tha
 @JsonSerializable()
 
 class _BackgroundConfigModel implements BackgroundConfigModel {
-  const _BackgroundConfigModel({this.source = BackgroundSource.none, this.boxFit = BoxFit.cover, this.maskOpacity = 0.35, this.blurSigma = 0, @HexColorConverter() this.solidColor = const Color(0xFF141e30), @HexColorListConverter() final  List<Color> gradientColors = const [Color(0xFF141e30), Color(0xFF243b55), Color(0xFF141e30)], this.assetImagePath, this.localImagePath, this.networkImageUrl, this.currentBoxImageBase64 = '', this.assetVideoPath, this.localVideoPath, this.networkVideoUrl}): _gradientColors = gradientColors;
+  const _BackgroundConfigModel({this.source = BackgroundSource.none, this.boxFit = BoxFit.cover, this.maskOpacity = 0.35, this.blurSigma = 0, @HexColorConverter() this.solidColor = const Color(0xFF141e30), @HexColorListConverter()  List<Color> gradientColors = const [Color(0xFF141e30), Color(0xFF243b55), Color(0xFF141e30)], this.assetImagePath, this.localImagePath, this.networkImageUrl, this.currentBoxImageBase64 = '', this.assetVideoPath, this.localVideoPath, this.networkVideoUrl}): _gradientColors = gradientColors;
   factory _BackgroundConfigModel.fromJson(Map<String, dynamic> json) => _$BackgroundConfigModelFromJson(json);
 
 @override@JsonKey() final  BackgroundSource source;
@@ -261,16 +267,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BackgroundConfigModel&&(identical(other.source, source) || other.source == source)&&(identical(other.boxFit, boxFit) || other.boxFit == boxFit)&&(identical(other.maskOpacity, maskOpacity) || other.maskOpacity == maskOpacity)&&(identical(other.blurSigma, blurSigma) || other.blurSigma == blurSigma)&&(identical(other.solidColor, solidColor) || other.solidColor == solidColor)&&const DeepCollectionEquality().equals(other._gradientColors, _gradientColors)&&(identical(other.assetImagePath, assetImagePath) || other.assetImagePath == assetImagePath)&&(identical(other.localImagePath, localImagePath) || other.localImagePath == localImagePath)&&(identical(other.networkImageUrl, networkImageUrl) || other.networkImageUrl == networkImageUrl)&&(identical(other.currentBoxImageBase64, currentBoxImageBase64) || other.currentBoxImageBase64 == currentBoxImageBase64)&&(identical(other.assetVideoPath, assetVideoPath) || other.assetVideoPath == assetVideoPath)&&(identical(other.localVideoPath, localVideoPath) || other.localVideoPath == localVideoPath)&&(identical(other.networkVideoUrl, networkVideoUrl) || other.networkVideoUrl == networkVideoUrl));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BackgroundConfigModel&&(identical(other.source, source) || other.source == source)&&(identical(other.boxFit, boxFit) || other.boxFit == boxFit)&&(identical(other.maskOpacity, maskOpacity) || other.maskOpacity == maskOpacity)&&(identical(other.blurSigma, blurSigma) || other.blurSigma == blurSigma)&&(identical(other.solidColor, solidColor) || other.solidColor == solidColor)&&const DeepCollectionEquality().equals(other.gradientColors, _gradientColors)&&(identical(other.assetImagePath, assetImagePath) || other.assetImagePath == assetImagePath)&&(identical(other.localImagePath, localImagePath) || other.localImagePath == localImagePath)&&(identical(other.networkImageUrl, networkImageUrl) || other.networkImageUrl == networkImageUrl)&&(identical(other.currentBoxImageBase64, currentBoxImageBase64) || other.currentBoxImageBase64 == currentBoxImageBase64)&&(identical(other.assetVideoPath, assetVideoPath) || other.assetVideoPath == assetVideoPath)&&(identical(other.localVideoPath, localVideoPath) || other.localVideoPath == localVideoPath)&&(identical(other.networkVideoUrl, networkVideoUrl) || other.networkVideoUrl == networkVideoUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,source,boxFit,maskOpacity,blurSigma,solidColor,const DeepCollectionEquality().hash(_gradientColors),assetImagePath,localImagePath,networkImageUrl,currentBoxImageBase64,assetVideoPath,localVideoPath,networkVideoUrl);
+int get hashCode {
+    return Object.hash(runtimeType,source,boxFit,maskOpacity,blurSigma,solidColor,const DeepCollectionEquality().hash(_gradientColors),assetImagePath,localImagePath,networkImageUrl,currentBoxImageBase64,assetVideoPath,localVideoPath,networkVideoUrl);
+}
 
 @override
 String toString() {
-  return 'BackgroundConfigModel(source: $source, boxFit: $boxFit, maskOpacity: $maskOpacity, blurSigma: $blurSigma, solidColor: $solidColor, gradientColors: $gradientColors, assetImagePath: $assetImagePath, localImagePath: $localImagePath, networkImageUrl: $networkImageUrl, currentBoxImageBase64: $currentBoxImageBase64, assetVideoPath: $assetVideoPath, localVideoPath: $localVideoPath, networkVideoUrl: $networkVideoUrl)';
+    return 'BackgroundConfigModel(source: $source, boxFit: $boxFit, maskOpacity: $maskOpacity, blurSigma: $blurSigma, solidColor: $solidColor, gradientColors: $gradientColors, assetImagePath: $assetImagePath, localImagePath: $localImagePath, networkImageUrl: $networkImageUrl, currentBoxImageBase64: $currentBoxImageBase64, assetVideoPath: $assetVideoPath, localVideoPath: $localVideoPath, networkVideoUrl: $networkVideoUrl)';
 }
 
 

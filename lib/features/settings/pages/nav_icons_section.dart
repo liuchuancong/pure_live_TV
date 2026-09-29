@@ -3,10 +3,7 @@ import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/settings/pages/icon_picker_section.dart';
 import 'package:pure_live/features/settings/pages/navigation_menu_meta.dart';
 import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
 import 'package:pure_live/shared/consts/icon_catalog.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 
 /// navigation & display — icons: which icon each side-menu entry shows.
 ///

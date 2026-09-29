@@ -1,17 +1,17 @@
 import 'dart:async';
-
 import 'package:dpad/dpad.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
+
+
+
 
 
 
@@ -155,7 +155,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                                   _wan(archive.playCount),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t14W500.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9)),
                                 ),
                               ),
                               SizedBox(width: 10.sp),
@@ -166,7 +166,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                                   _wan(archive.barrageCount),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t14W500.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9)),
                                 ),
                               ),
                               const Spacer(),
@@ -179,7 +179,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                                   ),
                                   child: Text(
                                     _durationLabel,
-                                    style: AppTextStyles.t14W600.copyWith(color: Colors.white),
+                                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                                   ),
                                 ),
                             ],
@@ -199,7 +199,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                                 badge,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t14W500.copyWith(color: Colors.white70),
+                                style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                               ),
                             ),
                           ),
@@ -278,7 +278,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                     archive.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W600.copyWith(
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, 
                       color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                       height: 1.3,
                     ),
@@ -288,7 +288,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                     archive.upName + (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W300.copyWith(
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, 
                       color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
                     ),
                   ),

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'bilibili_account_model.dart';
@@ -9,6 +9,7 @@ part of 'bilibili_account_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $BilibiliAccountModelCopyWith<BilibiliAccountModel> get copyWith => _$BilibiliAc
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BilibiliAccountModel&&(identical(other.isLogined, isLogined) || other.isLogined == isLogined)&&(identical(other.name, name) || other.name == name)&&(identical(other.uid, uid) || other.uid == uid));
+  final _this = this as BilibiliAccountModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BilibiliAccountModel&&(identical(other.isLogined, _this.isLogined) || other.isLogined == _this.isLogined)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.uid, _this.uid) || other.uid == _this.uid));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isLogined,name,uid);
+int get hashCode {
+  final _this = this as BilibiliAccountModel;
+  return Object.hash(runtimeType,_this.isLogined,_this.name,_this.uid);
+}
 
 @override
 String toString() {
-  return 'BilibiliAccountModel(isLogined: $isLogined, name: $name, uid: $uid)';
+  final _this = this as BilibiliAccountModel;
+  return 'BilibiliAccountModel(isLogined: ${_this.isLogined}, name: ${_this.name}, uid: ${_this.uid})';
 }
 
 
@@ -66,7 +72,7 @@ class _$BilibiliAccountModelCopyWithImpl<$Res>
 /// Create a copy of BilibiliAccountModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isLogined = null,Object? name = null,Object? uid = null,}) {
-  return _then(_self.copyWith(
+  return _then(BilibiliAccountModel(
 isLogined: null == isLogined ? _self.isLogined : isLogined // ignore: cast_nullable_to_non_nullable
 as bool,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
@@ -231,16 +237,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BilibiliAccountModel&&(identical(other.isLogined, isLogined) || other.isLogined == isLogined)&&(identical(other.name, name) || other.name == name)&&(identical(other.uid, uid) || other.uid == uid));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BilibiliAccountModel&&(identical(other.isLogined, isLogined) || other.isLogined == isLogined)&&(identical(other.name, name) || other.name == name)&&(identical(other.uid, uid) || other.uid == uid));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isLogined,name,uid);
+int get hashCode {
+    return Object.hash(runtimeType,isLogined,name,uid);
+}
 
 @override
 String toString() {
-  return 'BilibiliAccountModel(isLogined: $isLogined, name: $name, uid: $uid)';
+    return 'BilibiliAccountModel(isLogined: $isLogined, name: $name, uid: $uid)';
 }
 
 

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'log_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'log_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $LogSettingsModelCopyWith<LogSettingsModel> get copyWith => _$LogSettingsModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LogSettingsModel&&(identical(other.serverAddress, serverAddress) || other.serverAddress == serverAddress)&&(identical(other.serverPort, serverPort) || other.serverPort == serverPort)&&(identical(other.storedEnableLog, storedEnableLog) || other.storedEnableLog == storedEnableLog));
+  final _this = this as LogSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LogSettingsModel&&(identical(other.serverAddress, _this.serverAddress) || other.serverAddress == _this.serverAddress)&&(identical(other.serverPort, _this.serverPort) || other.serverPort == _this.serverPort)&&(identical(other.storedEnableLog, _this.storedEnableLog) || other.storedEnableLog == _this.storedEnableLog));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverAddress,serverPort,storedEnableLog);
+int get hashCode {
+  final _this = this as LogSettingsModel;
+  return Object.hash(runtimeType,_this.serverAddress,_this.serverPort,_this.storedEnableLog);
+}
 
 @override
 String toString() {
-  return 'LogSettingsModel(serverAddress: $serverAddress, serverPort: $serverPort, storedEnableLog: $storedEnableLog)';
+  final _this = this as LogSettingsModel;
+  return 'LogSettingsModel(serverAddress: ${_this.serverAddress}, serverPort: ${_this.serverPort}, storedEnableLog: ${_this.storedEnableLog})';
 }
 
 
@@ -66,7 +72,7 @@ class _$LogSettingsModelCopyWithImpl<$Res>
 /// Create a copy of LogSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? serverAddress = null,Object? serverPort = null,Object? storedEnableLog = null,}) {
-  return _then(_self.copyWith(
+  return _then(LogSettingsModel(
 serverAddress: null == serverAddress ? _self.serverAddress : serverAddress // ignore: cast_nullable_to_non_nullable
 as String,serverPort: null == serverPort ? _self.serverPort : serverPort // ignore: cast_nullable_to_non_nullable
 as int,storedEnableLog: null == storedEnableLog ? _self.storedEnableLog : storedEnableLog // ignore: cast_nullable_to_non_nullable
@@ -231,16 +237,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LogSettingsModel&&(identical(other.serverAddress, serverAddress) || other.serverAddress == serverAddress)&&(identical(other.serverPort, serverPort) || other.serverPort == serverPort)&&(identical(other.storedEnableLog, storedEnableLog) || other.storedEnableLog == storedEnableLog));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LogSettingsModel&&(identical(other.serverAddress, serverAddress) || other.serverAddress == serverAddress)&&(identical(other.serverPort, serverPort) || other.serverPort == serverPort)&&(identical(other.storedEnableLog, storedEnableLog) || other.storedEnableLog == storedEnableLog));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverAddress,serverPort,storedEnableLog);
+int get hashCode {
+    return Object.hash(runtimeType,serverAddress,serverPort,storedEnableLog);
+}
 
 @override
 String toString() {
-  return 'LogSettingsModel(serverAddress: $serverAddress, serverPort: $serverPort, storedEnableLog: $storedEnableLog)';
+    return 'LogSettingsModel(serverAddress: $serverAddress, serverPort: $serverPort, storedEnableLog: $storedEnableLog)';
 }
 
 

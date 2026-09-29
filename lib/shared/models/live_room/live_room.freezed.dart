@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'live_room.dart';
@@ -9,6 +9,7 @@ part of 'live_room.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -30,7 +31,8 @@ $LiveRoomCopyWith<LiveRoom> get copyWith => _$LiveRoomCopyWithImpl<LiveRoom>(thi
 
 @override
 String toString() {
-  return 'LiveRoom(roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, popularity: $popularity, onlineViewers: $onlineViewers, totalViewers: $totalViewers, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, isRecord: $isRecord, liveStatus: $liveStatus, audienceMetricType: $audienceMetricType, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, catchUpStart: $catchUpStart, catchUpEnd: $catchUpEnd, catchUpMode: $catchUpMode, catchUpSource: $catchUpSource, catchUpDays: $catchUpDays, catchUpCorrectionHours: $catchUpCorrectionHours, httpHeaders: $httpHeaders, data: $data, danmakuData: $danmakuData)';
+  final _this = this as LiveRoom;
+  return 'LiveRoom(roomId: ${_this.roomId}, userId: ${_this.userId}, link: ${_this.link}, title: ${_this.title}, nick: ${_this.nick}, avatar: ${_this.avatar}, cover: ${_this.cover}, area: ${_this.area}, watching: ${_this.watching}, popularity: ${_this.popularity}, onlineViewers: ${_this.onlineViewers}, totalViewers: ${_this.totalViewers}, followers: ${_this.followers}, platform: ${_this.platform}, tagIds: ${_this.tagIds}, introduction: ${_this.introduction}, notice: ${_this.notice}, status: ${_this.status}, isRecord: ${_this.isRecord}, liveStatus: ${_this.liveStatus}, audienceMetricType: ${_this.audienceMetricType}, catchUpUrl: ${_this.catchUpUrl}, isCatchUp: ${_this.isCatchUp}, catchUpStart: ${_this.catchUpStart}, catchUpEnd: ${_this.catchUpEnd}, catchUpMode: ${_this.catchUpMode}, catchUpSource: ${_this.catchUpSource}, catchUpDays: ${_this.catchUpDays}, catchUpCorrectionHours: ${_this.catchUpCorrectionHours}, httpHeaders: ${_this.httpHeaders}, data: ${_this.data}, danmakuData: ${_this.danmakuData})';
 }
 
 
@@ -59,7 +61,7 @@ class _$LiveRoomCopyWithImpl<$Res>
 /// Create a copy of LiveRoom
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? roomId = null,Object? userId = null,Object? link = null,Object? title = null,Object? nick = null,Object? avatar = null,Object? cover = null,Object? area = null,Object? watching = null,Object? popularity = null,Object? onlineViewers = null,Object? totalViewers = null,Object? followers = null,Object? platform = null,Object? tagIds = null,Object? introduction = null,Object? notice = null,Object? status = null,Object? isRecord = null,Object? liveStatus = null,Object? audienceMetricType = null,Object? catchUpUrl = freezed,Object? isCatchUp = null,Object? catchUpStart = freezed,Object? catchUpEnd = freezed,Object? catchUpMode = freezed,Object? catchUpSource = freezed,Object? catchUpDays = freezed,Object? catchUpCorrectionHours = freezed,Object? httpHeaders = null,Object? data = freezed,Object? danmakuData = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(LiveRoom(
 roomId: null == roomId ? _self.roomId : roomId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,link: null == link ? _self.link : link // ignore: cast_nullable_to_non_nullable
@@ -233,7 +235,7 @@ return $default(_that.roomId,_that.userId,_that.link,_that.title,_that.nick,_tha
 @JsonSerializable()
 
 class _LiveRoom extends LiveRoom {
-  const _LiveRoom({this.roomId = '', this.userId = '', this.link = '', this.title = '', this.nick = '', this.avatar = '', this.cover = '', this.area = '', this.watching = '0', this.popularity = '', this.onlineViewers = '', this.totalViewers = '', this.followers = '', this.platform = 'UNKNOWN', final  List<String> tagIds = const [], this.introduction = '', this.notice = '', this.status = false, this.isRecord = false, this.liveStatus = LiveStatus.offline, this.audienceMetricType = AudienceMetricType.unknown, this.catchUpUrl, this.isCatchUp = false, this.catchUpStart, this.catchUpEnd, this.catchUpMode, this.catchUpSource, this.catchUpDays, this.catchUpCorrectionHours, final  Map<String, String> httpHeaders = const <String, String>{}, @JsonKey(includeFromJson: false, includeToJson: false) this.data, @JsonKey(includeFromJson: false, includeToJson: false) this.danmakuData}): _tagIds = tagIds,_httpHeaders = httpHeaders,super._();
+  const _LiveRoom({this.roomId = '', this.userId = '', this.link = '', this.title = '', this.nick = '', this.avatar = '', this.cover = '', this.area = '', this.watching = '0', this.popularity = '', this.onlineViewers = '', this.totalViewers = '', this.followers = '', this.platform = 'UNKNOWN',  List<String> tagIds = const [], this.introduction = '', this.notice = '', this.status = false, this.isRecord = false, this.liveStatus = LiveStatus.offline, this.audienceMetricType = AudienceMetricType.unknown, this.catchUpUrl, this.isCatchUp = false, this.catchUpStart, this.catchUpEnd, this.catchUpMode, this.catchUpSource, this.catchUpDays, this.catchUpCorrectionHours,  Map<String, String> httpHeaders = const <String, String>{}, @JsonKey(includeFromJson: false, includeToJson: false) this.data, @JsonKey(includeFromJson: false, includeToJson: false) this.danmakuData}): _tagIds = tagIds,_httpHeaders = httpHeaders,super._();
   factory _LiveRoom.fromJson(Map<String, dynamic> json) => _$LiveRoomFromJson(json);
 
 @override@JsonKey() final  String roomId;
@@ -296,7 +298,7 @@ Map<String, dynamic> toJson() {
 
 @override
 String toString() {
-  return 'LiveRoom(roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, popularity: $popularity, onlineViewers: $onlineViewers, totalViewers: $totalViewers, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, isRecord: $isRecord, liveStatus: $liveStatus, audienceMetricType: $audienceMetricType, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, catchUpStart: $catchUpStart, catchUpEnd: $catchUpEnd, catchUpMode: $catchUpMode, catchUpSource: $catchUpSource, catchUpDays: $catchUpDays, catchUpCorrectionHours: $catchUpCorrectionHours, httpHeaders: $httpHeaders, data: $data, danmakuData: $danmakuData)';
+    return 'LiveRoom(roomId: $roomId, userId: $userId, link: $link, title: $title, nick: $nick, avatar: $avatar, cover: $cover, area: $area, watching: $watching, popularity: $popularity, onlineViewers: $onlineViewers, totalViewers: $totalViewers, followers: $followers, platform: $platform, tagIds: $tagIds, introduction: $introduction, notice: $notice, status: $status, isRecord: $isRecord, liveStatus: $liveStatus, audienceMetricType: $audienceMetricType, catchUpUrl: $catchUpUrl, isCatchUp: $isCatchUp, catchUpStart: $catchUpStart, catchUpEnd: $catchUpEnd, catchUpMode: $catchUpMode, catchUpSource: $catchUpSource, catchUpDays: $catchUpDays, catchUpCorrectionHours: $catchUpCorrectionHours, httpHeaders: $httpHeaders, data: $data, danmakuData: $danmakuData)';
 }
 
 

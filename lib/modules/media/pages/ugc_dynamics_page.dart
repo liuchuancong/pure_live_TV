@@ -1,13 +1,12 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 
 /// The followed users' video feed (bmsc/newBV's dynamics), shared by the
 /// music and video home rails: one grid paging the offset-based API.
@@ -108,7 +107,7 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
                   SizedBox(height: 12.sp),
                   Text(
                     i18n('ui_loading'),
-                    style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                   ),
                 ],
               ),

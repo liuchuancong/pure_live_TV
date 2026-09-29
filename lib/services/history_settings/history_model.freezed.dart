@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'history_model.dart';
@@ -9,6 +9,7 @@ part of 'history_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $HistoryModelCopyWith<HistoryModel> get copyWith => _$HistoryModelCopyWithImpl<H
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryModel&&const DeepCollectionEquality().equals(other.historyRooms, historyRooms)&&(identical(other.historyLimit, historyLimit) || other.historyLimit == historyLimit));
+  final _this = this as HistoryModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryModel&&const DeepCollectionEquality().equals(other.historyRooms, _this.historyRooms)&&(identical(other.historyLimit, _this.historyLimit) || other.historyLimit == _this.historyLimit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(historyRooms),historyLimit);
+int get hashCode {
+  final _this = this as HistoryModel;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.historyRooms),_this.historyLimit);
+}
 
 @override
 String toString() {
-  return 'HistoryModel(historyRooms: $historyRooms, historyLimit: $historyLimit)';
+  final _this = this as HistoryModel;
+  return 'HistoryModel(historyRooms: ${_this.historyRooms}, historyLimit: ${_this.historyLimit})';
 }
 
 
@@ -66,7 +72,7 @@ class _$HistoryModelCopyWithImpl<$Res>
 /// Create a copy of HistoryModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? historyRooms = null,Object? historyLimit = null,}) {
-  return _then(_self.copyWith(
+  return _then(HistoryModel(
 historyRooms: null == historyRooms ? _self.historyRooms : historyRooms // ignore: cast_nullable_to_non_nullable
 as List<LiveRoom>,historyLimit: null == historyLimit ? _self.historyLimit : historyLimit // ignore: cast_nullable_to_non_nullable
 as int,
@@ -210,7 +216,7 @@ return $default(_that.historyRooms,_that.historyLimit);case _:
 @JsonSerializable()
 
 class _HistoryModel implements HistoryModel {
-  const _HistoryModel({final  List<LiveRoom> historyRooms = const [], this.historyLimit = 50}): _historyRooms = historyRooms;
+  const _HistoryModel({ List<LiveRoom> historyRooms = const [], this.historyLimit = 50}): _historyRooms = historyRooms;
   factory _HistoryModel.fromJson(Map<String, dynamic> json) => _$HistoryModelFromJson(json);
 
  final  List<LiveRoom> _historyRooms;
@@ -235,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryModel&&const DeepCollectionEquality().equals(other._historyRooms, _historyRooms)&&(identical(other.historyLimit, historyLimit) || other.historyLimit == historyLimit));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryModel&&const DeepCollectionEquality().equals(other.historyRooms, _historyRooms)&&(identical(other.historyLimit, historyLimit) || other.historyLimit == historyLimit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_historyRooms),historyLimit);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_historyRooms),historyLimit);
+}
 
 @override
 String toString() {
-  return 'HistoryModel(historyRooms: $historyRooms, historyLimit: $historyLimit)';
+    return 'HistoryModel(historyRooms: $historyRooms, historyLimit: $historyLimit)';
 }
 
 

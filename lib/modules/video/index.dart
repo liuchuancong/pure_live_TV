@@ -1,17 +1,16 @@
 /// The video module (newBV feature set): recommend / popular / ranking /
-/// region / PGC / dynamics / search / personal sections, the archive detail,
-/// the full-screen player with progress store, and the PGC api. Depends only
-/// on modules/media and shared core.
+/// region / PGC / dynamics / search / personal sections, the archive detail
+/// and the full-screen player with progress store. Depends only on
+/// modules/media and shared core — the PGC endpoints and models live in the
+/// shared media layer.
 ///
 /// Layout: section content hangs off `video_home_page.dart`; `pages/<domain>/`
-/// the surfaces, `controllers/<domain>/` the state, `api/`+`models/` the PGC
-/// layer, `widgets/` the shared card.
+/// the surfaces, `controllers/<domain>/` the state, `widgets/` the shared
+/// card.
 library;
 
-export 'api/video_pgc_api.dart';
 export 'controllers/playback/video_progress_controller.dart';
 export 'controllers/playback/video_progress_state.dart';
-export 'models/video_pgc_models.dart';
 export 'pages/archive/video_detail_page.dart';
 export 'pages/discover/video_pgc_page.dart';
 export 'pages/discover/video_region_page.dart';

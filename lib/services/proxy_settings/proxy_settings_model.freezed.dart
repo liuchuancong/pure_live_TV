@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'proxy_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'proxy_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ProxySettingsModelCopyWith<ProxySettingsModel> get copyWith => _$ProxySettingsM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProxySettingsModel&&(identical(other.enableProxy, enableProxy) || other.enableProxy == enableProxy)&&(identical(other.proxyHost, proxyHost) || other.proxyHost == proxyHost)&&(identical(other.proxyPort, proxyPort) || other.proxyPort == proxyPort)&&(identical(other.enableAppProxy, enableAppProxy) || other.enableAppProxy == enableAppProxy)&&(identical(other.appProxyHost, appProxyHost) || other.appProxyHost == appProxyHost)&&(identical(other.appProxyPort, appProxyPort) || other.appProxyPort == appProxyPort));
+  final _this = this as ProxySettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProxySettingsModel&&(identical(other.enableProxy, _this.enableProxy) || other.enableProxy == _this.enableProxy)&&(identical(other.proxyHost, _this.proxyHost) || other.proxyHost == _this.proxyHost)&&(identical(other.proxyPort, _this.proxyPort) || other.proxyPort == _this.proxyPort)&&(identical(other.enableAppProxy, _this.enableAppProxy) || other.enableAppProxy == _this.enableAppProxy)&&(identical(other.appProxyHost, _this.appProxyHost) || other.appProxyHost == _this.appProxyHost)&&(identical(other.appProxyPort, _this.appProxyPort) || other.appProxyPort == _this.appProxyPort));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,enableProxy,proxyHost,proxyPort,enableAppProxy,appProxyHost,appProxyPort);
+int get hashCode {
+  final _this = this as ProxySettingsModel;
+  return Object.hash(runtimeType,_this.enableProxy,_this.proxyHost,_this.proxyPort,_this.enableAppProxy,_this.appProxyHost,_this.appProxyPort);
+}
 
 @override
 String toString() {
-  return 'ProxySettingsModel(enableProxy: $enableProxy, proxyHost: $proxyHost, proxyPort: $proxyPort, enableAppProxy: $enableAppProxy, appProxyHost: $appProxyHost, appProxyPort: $appProxyPort)';
+  final _this = this as ProxySettingsModel;
+  return 'ProxySettingsModel(enableProxy: ${_this.enableProxy}, proxyHost: ${_this.proxyHost}, proxyPort: ${_this.proxyPort}, enableAppProxy: ${_this.enableAppProxy}, appProxyHost: ${_this.appProxyHost}, appProxyPort: ${_this.appProxyPort})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ProxySettingsModelCopyWithImpl<$Res>
 /// Create a copy of ProxySettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? enableProxy = null,Object? proxyHost = null,Object? proxyPort = null,Object? enableAppProxy = null,Object? appProxyHost = null,Object? appProxyPort = null,}) {
-  return _then(_self.copyWith(
+  return _then(ProxySettingsModel(
 enableProxy: null == enableProxy ? _self.enableProxy : enableProxy // ignore: cast_nullable_to_non_nullable
 as bool,proxyHost: null == proxyHost ? _self.proxyHost : proxyHost // ignore: cast_nullable_to_non_nullable
 as String,proxyPort: null == proxyPort ? _self.proxyPort : proxyPort // ignore: cast_nullable_to_non_nullable
@@ -237,16 +243,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProxySettingsModel&&(identical(other.enableProxy, enableProxy) || other.enableProxy == enableProxy)&&(identical(other.proxyHost, proxyHost) || other.proxyHost == proxyHost)&&(identical(other.proxyPort, proxyPort) || other.proxyPort == proxyPort)&&(identical(other.enableAppProxy, enableAppProxy) || other.enableAppProxy == enableAppProxy)&&(identical(other.appProxyHost, appProxyHost) || other.appProxyHost == appProxyHost)&&(identical(other.appProxyPort, appProxyPort) || other.appProxyPort == appProxyPort));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProxySettingsModel&&(identical(other.enableProxy, enableProxy) || other.enableProxy == enableProxy)&&(identical(other.proxyHost, proxyHost) || other.proxyHost == proxyHost)&&(identical(other.proxyPort, proxyPort) || other.proxyPort == proxyPort)&&(identical(other.enableAppProxy, enableAppProxy) || other.enableAppProxy == enableAppProxy)&&(identical(other.appProxyHost, appProxyHost) || other.appProxyHost == appProxyHost)&&(identical(other.appProxyPort, appProxyPort) || other.appProxyPort == appProxyPort));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,enableProxy,proxyHost,proxyPort,enableAppProxy,appProxyHost,appProxyPort);
+int get hashCode {
+    return Object.hash(runtimeType,enableProxy,proxyHost,proxyPort,enableAppProxy,appProxyHost,appProxyPort);
+}
 
 @override
 String toString() {
-  return 'ProxySettingsModel(enableProxy: $enableProxy, proxyHost: $proxyHost, proxyPort: $proxyPort, enableAppProxy: $enableAppProxy, appProxyHost: $appProxyHost, appProxyPort: $appProxyPort)';
+    return 'ProxySettingsModel(enableProxy: $enableProxy, proxyHost: $proxyHost, proxyPort: $proxyPort, enableAppProxy: $enableAppProxy, appProxyHost: $appProxyHost, appProxyPort: $appProxyPort)';
 }
 
 

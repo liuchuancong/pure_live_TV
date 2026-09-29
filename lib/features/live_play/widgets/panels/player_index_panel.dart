@@ -1,7 +1,5 @@
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
 
 /// One row of an index panel.

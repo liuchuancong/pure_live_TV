@@ -1,8 +1,5 @@
 import 'package:pure_live/platforms/sites.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 
 /// platform display — platform order: the order the platform tabs appear in.

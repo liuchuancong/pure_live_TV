@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'refresh_config_model.dart';
@@ -9,6 +9,7 @@ part of 'refresh_config_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $RefreshConfigCopyWith<RefreshConfig> get copyWith => _$RefreshConfigCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefreshConfig&&(identical(other.autoRefreshFavorite, autoRefreshFavorite) || other.autoRefreshFavorite == autoRefreshFavorite)&&(identical(other.autoRefreshInterval, autoRefreshInterval) || other.autoRefreshInterval == autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, maxConcurrentRefresh) || other.maxConcurrentRefresh == maxConcurrentRefresh));
+  final _this = this as RefreshConfig;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefreshConfig&&(identical(other.autoRefreshFavorite, _this.autoRefreshFavorite) || other.autoRefreshFavorite == _this.autoRefreshFavorite)&&(identical(other.autoRefreshInterval, _this.autoRefreshInterval) || other.autoRefreshInterval == _this.autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, _this.maxConcurrentRefresh) || other.maxConcurrentRefresh == _this.maxConcurrentRefresh));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,autoRefreshFavorite,autoRefreshInterval,maxConcurrentRefresh);
+int get hashCode {
+  final _this = this as RefreshConfig;
+  return Object.hash(runtimeType,_this.autoRefreshFavorite,_this.autoRefreshInterval,_this.maxConcurrentRefresh);
+}
 
 @override
 String toString() {
-  return 'RefreshConfig(autoRefreshFavorite: $autoRefreshFavorite, autoRefreshInterval: $autoRefreshInterval, maxConcurrentRefresh: $maxConcurrentRefresh)';
+  final _this = this as RefreshConfig;
+  return 'RefreshConfig(autoRefreshFavorite: ${_this.autoRefreshFavorite}, autoRefreshInterval: ${_this.autoRefreshInterval}, maxConcurrentRefresh: ${_this.maxConcurrentRefresh})';
 }
 
 
@@ -66,7 +72,7 @@ class _$RefreshConfigCopyWithImpl<$Res>
 /// Create a copy of RefreshConfig
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? autoRefreshFavorite = null,Object? autoRefreshInterval = null,Object? maxConcurrentRefresh = null,}) {
-  return _then(_self.copyWith(
+  return _then(RefreshConfig(
 autoRefreshFavorite: null == autoRefreshFavorite ? _self.autoRefreshFavorite : autoRefreshFavorite // ignore: cast_nullable_to_non_nullable
 as bool,autoRefreshInterval: null == autoRefreshInterval ? _self.autoRefreshInterval : autoRefreshInterval // ignore: cast_nullable_to_non_nullable
 as int,maxConcurrentRefresh: null == maxConcurrentRefresh ? _self.maxConcurrentRefresh : maxConcurrentRefresh // ignore: cast_nullable_to_non_nullable
@@ -231,16 +237,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefreshConfig&&(identical(other.autoRefreshFavorite, autoRefreshFavorite) || other.autoRefreshFavorite == autoRefreshFavorite)&&(identical(other.autoRefreshInterval, autoRefreshInterval) || other.autoRefreshInterval == autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, maxConcurrentRefresh) || other.maxConcurrentRefresh == maxConcurrentRefresh));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefreshConfig&&(identical(other.autoRefreshFavorite, autoRefreshFavorite) || other.autoRefreshFavorite == autoRefreshFavorite)&&(identical(other.autoRefreshInterval, autoRefreshInterval) || other.autoRefreshInterval == autoRefreshInterval)&&(identical(other.maxConcurrentRefresh, maxConcurrentRefresh) || other.maxConcurrentRefresh == maxConcurrentRefresh));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,autoRefreshFavorite,autoRefreshInterval,maxConcurrentRefresh);
+int get hashCode {
+    return Object.hash(runtimeType,autoRefreshFavorite,autoRefreshInterval,maxConcurrentRefresh);
+}
 
 @override
 String toString() {
-  return 'RefreshConfig(autoRefreshFavorite: $autoRefreshFavorite, autoRefreshInterval: $autoRefreshInterval, maxConcurrentRefresh: $maxConcurrentRefresh)';
+    return 'RefreshConfig(autoRefreshFavorite: $autoRefreshFavorite, autoRefreshInterval: $autoRefreshInterval, maxConcurrentRefresh: $maxConcurrentRefresh)';
 }
 
 

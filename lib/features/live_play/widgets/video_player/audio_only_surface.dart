@@ -1,10 +1,5 @@
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/utils/cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
 
 /// The picture area while a session plays audio only.
 ///
@@ -110,7 +105,7 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
                   maxLines: 2,
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t28W600.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                 ),
                 if ((room?.nick ?? '').isNotEmpty) ...[
                   SizedBox(height: 10.sp),
@@ -118,7 +113,7 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
                     room!.nick,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                    style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                   ),
                 ],
                 SizedBox(height: compact ? 18.sp : 26.sp),
@@ -158,7 +153,7 @@ class _AudioOnlyBadge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(i18n('ui_audio_only'), style: AppTextStyles.t18W500.copyWith(color: tvTheme.primaryTextColor)),
+              Text(i18n('ui_audio_only'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor)),
             ],
           ),
         ],

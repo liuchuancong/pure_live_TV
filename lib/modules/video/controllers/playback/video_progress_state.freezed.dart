@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'video_progress_state.dart';
@@ -9,6 +9,7 @@ part of 'video_progress_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $VideoProgressEntryCopyWith<VideoProgressEntry> get copyWith => _$VideoProgressE
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoProgressEntry&&(identical(other.cid, cid) || other.cid == cid)&&(identical(other.position, position) || other.position == position)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.percent, percent) || other.percent == percent)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.archive, archive) || other.archive == archive));
+  final _this = this as VideoProgressEntry;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoProgressEntry&&(identical(other.cid, _this.cid) || other.cid == _this.cid)&&(identical(other.position, _this.position) || other.position == _this.position)&&(identical(other.duration, _this.duration) || other.duration == _this.duration)&&(identical(other.percent, _this.percent) || other.percent == _this.percent)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt)&&(identical(other.archive, _this.archive) || other.archive == _this.archive));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,cid,position,duration,percent,updatedAt,archive);
+int get hashCode {
+  final _this = this as VideoProgressEntry;
+  return Object.hash(runtimeType,_this.cid,_this.position,_this.duration,_this.percent,_this.updatedAt,_this.archive);
+}
 
 @override
 String toString() {
-  return 'VideoProgressEntry(cid: $cid, position: $position, duration: $duration, percent: $percent, updatedAt: $updatedAt, archive: $archive)';
+  final _this = this as VideoProgressEntry;
+  return 'VideoProgressEntry(cid: ${_this.cid}, position: ${_this.position}, duration: ${_this.duration}, percent: ${_this.percent}, updatedAt: ${_this.updatedAt}, archive: ${_this.archive})';
 }
 
 
@@ -49,7 +55,7 @@ $Res call({
 });
 
 
-
+$MusicArchiveCopyWith<$Res>? get archive;
 
 }
 /// @nodoc
@@ -63,7 +69,7 @@ class _$VideoProgressEntryCopyWithImpl<$Res>
 /// Create a copy of VideoProgressEntry
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? cid = null,Object? position = null,Object? duration = null,Object? percent = null,Object? updatedAt = null,Object? archive = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(VideoProgressEntry(
 cid: null == cid ? _self.cid : cid // ignore: cast_nullable_to_non_nullable
 as int,position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
 as int,duration: null == duration ? _self.duration : duration // ignore: cast_nullable_to_non_nullable
@@ -73,7 +79,19 @@ as int,archive: freezed == archive ? _self.archive : archive // ignore: cast_nul
 as MusicArchive?,
   ));
 }
+/// Create a copy of VideoProgressEntry
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MusicArchiveCopyWith<$Res>? get archive {
+    if (_self.archive == null) {
+    return null;
+  }
 
+  return $MusicArchiveCopyWith<$Res>(_self.archive!, (value) {
+    return _then(_self.copyWith(archive: value));
+  });
+}
 }
 
 
@@ -231,16 +249,18 @@ _$VideoProgressEntryCopyWith<_VideoProgressEntry> get copyWith => __$VideoProgre
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoProgressEntry&&(identical(other.cid, cid) || other.cid == cid)&&(identical(other.position, position) || other.position == position)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.percent, percent) || other.percent == percent)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.archive, archive) || other.archive == archive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoProgressEntry&&(identical(other.cid, cid) || other.cid == cid)&&(identical(other.position, position) || other.position == position)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.percent, percent) || other.percent == percent)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.archive, archive) || other.archive == archive));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,cid,position,duration,percent,updatedAt,archive);
+int get hashCode {
+    return Object.hash(runtimeType,cid,position,duration,percent,updatedAt,archive);
+}
 
 @override
 String toString() {
-  return 'VideoProgressEntry(cid: $cid, position: $position, duration: $duration, percent: $percent, updatedAt: $updatedAt, archive: $archive)';
+    return 'VideoProgressEntry(cid: $cid, position: $position, duration: $duration, percent: $percent, updatedAt: $updatedAt, archive: $archive)';
 }
 
 
@@ -255,7 +275,7 @@ $Res call({
 });
 
 
-
+@override $MusicArchiveCopyWith<$Res>? get archive;
 
 }
 /// @nodoc
@@ -280,7 +300,19 @@ as MusicArchive?,
   ));
 }
 
+/// Create a copy of VideoProgressEntry
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MusicArchiveCopyWith<$Res>? get archive {
+    if (_self.archive == null) {
+    return null;
+  }
 
+  return $MusicArchiveCopyWith<$Res>(_self.archive!, (value) {
+    return _then(_self.copyWith(archive: value));
+  });
+}
 }
 
 /// @nodoc
@@ -297,16 +329,21 @@ $VideoProgressStateCopyWith<VideoProgressState> get copyWith => _$VideoProgressS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoProgressState&&const DeepCollectionEquality().equals(other.entries, entries));
+  final _this = this as VideoProgressState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoProgressState&&const DeepCollectionEquality().equals(other.entries, _this.entries));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(entries));
+int get hashCode {
+  final _this = this as VideoProgressState;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.entries));
+}
 
 @override
 String toString() {
-  return 'VideoProgressState(entries: $entries)';
+  final _this = this as VideoProgressState;
+  return 'VideoProgressState(entries: ${_this.entries})';
 }
 
 
@@ -335,7 +372,7 @@ class _$VideoProgressStateCopyWithImpl<$Res>
 /// Create a copy of VideoProgressState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? entries = null,}) {
-  return _then(_self.copyWith(
+  return _then(VideoProgressState(
 entries: null == entries ? _self.entries : entries // ignore: cast_nullable_to_non_nullable
 as Map<String, VideoProgressEntry>,
   ));
@@ -478,7 +515,7 @@ return $default(_that.entries);case _:
 
 
 class _VideoProgressState implements VideoProgressState {
-  const _VideoProgressState({final  Map<String, VideoProgressEntry> entries = const {}}): _entries = entries;
+  const _VideoProgressState({ Map<String, VideoProgressEntry> entries = const {}}): _entries = entries;
   
 
  final  Map<String, VideoProgressEntry> _entries;
@@ -499,16 +536,18 @@ _$VideoProgressStateCopyWith<_VideoProgressState> get copyWith => __$VideoProgre
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoProgressState&&const DeepCollectionEquality().equals(other._entries, _entries));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoProgressState&&const DeepCollectionEquality().equals(other.entries, _entries));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_entries));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_entries));
+}
 
 @override
 String toString() {
-  return 'VideoProgressState(entries: $entries)';
+    return 'VideoProgressState(entries: $entries)';
 }
 
 

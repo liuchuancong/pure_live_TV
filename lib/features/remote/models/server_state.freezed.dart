@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'server_state.dart';
@@ -9,6 +9,7 @@ part of 'server_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ServerStateCopyWith<ServerState> get copyWith => _$ServerStateCopyWithImpl<Serv
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ServerState&&(identical(other.isRunning, isRunning) || other.isRunning == isRunning)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.port, port) || other.port == port)&&(identical(other.error, error) || other.error == error));
+  final _this = this as ServerState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ServerState&&(identical(other.isRunning, _this.isRunning) || other.isRunning == _this.isRunning)&&(identical(other.serverUrl, _this.serverUrl) || other.serverUrl == _this.serverUrl)&&(identical(other.port, _this.port) || other.port == _this.port)&&(identical(other.error, _this.error) || other.error == _this.error));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isRunning,serverUrl,port,error);
+int get hashCode {
+  final _this = this as ServerState;
+  return Object.hash(runtimeType,_this.isRunning,_this.serverUrl,_this.port,_this.error);
+}
 
 @override
 String toString() {
-  return 'ServerState(isRunning: $isRunning, serverUrl: $serverUrl, port: $port, error: $error)';
+  final _this = this as ServerState;
+  return 'ServerState(isRunning: ${_this.isRunning}, serverUrl: ${_this.serverUrl}, port: ${_this.port}, error: ${_this.error})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ServerStateCopyWithImpl<$Res>
 /// Create a copy of ServerState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isRunning = null,Object? serverUrl = null,Object? port = null,Object? error = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(ServerState(
 isRunning: null == isRunning ? _self.isRunning : isRunning // ignore: cast_nullable_to_non_nullable
 as bool,serverUrl: null == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String,port: null == port ? _self.port : port // ignore: cast_nullable_to_non_nullable
@@ -233,16 +239,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ServerState&&(identical(other.isRunning, isRunning) || other.isRunning == isRunning)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.port, port) || other.port == port)&&(identical(other.error, error) || other.error == error));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ServerState&&(identical(other.isRunning, isRunning) || other.isRunning == isRunning)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.port, port) || other.port == port)&&(identical(other.error, error) || other.error == error));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isRunning,serverUrl,port,error);
+int get hashCode {
+    return Object.hash(runtimeType,isRunning,serverUrl,port,error);
+}
 
 @override
 String toString() {
-  return 'ServerState(isRunning: $isRunning, serverUrl: $serverUrl, port: $port, error: $error)';
+    return 'ServerState(isRunning: $isRunning, serverUrl: $serverUrl, port: $port, error: $error)';
 }
 
 

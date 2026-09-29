@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'iptv_settings_model.dart';
@@ -9,6 +9,7 @@ part of 'iptv_settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -30,16 +31,21 @@ $IptvSettingsModelCopyWith<IptvSettingsModel> get copyWith => _$IptvSettingsMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IptvSettingsModel&&(identical(other.isAutoSyncEnabled, isAutoSyncEnabled) || other.isAutoSyncEnabled == isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, autoSyncHoursInterval) || other.autoSyncHoursInterval == autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, customIptvUserAgent) || other.customIptvUserAgent == customIptvUserAgent)&&(identical(other.customIptvReferer, customIptvReferer) || other.customIptvReferer == customIptvReferer)&&(identical(other.customIptvCookie, customIptvCookie) || other.customIptvCookie == customIptvCookie)&&(identical(other.m3uDirectory, m3uDirectory) || other.m3uDirectory == m3uDirectory)&&(identical(other.hotResourceUrl, hotResourceUrl) || other.hotResourceUrl == hotResourceUrl));
+  final _this = this as IptvSettingsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IptvSettingsModel&&(identical(other.isAutoSyncEnabled, _this.isAutoSyncEnabled) || other.isAutoSyncEnabled == _this.isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, _this.autoSyncHoursInterval) || other.autoSyncHoursInterval == _this.autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, _this.customIptvUserAgent) || other.customIptvUserAgent == _this.customIptvUserAgent)&&(identical(other.customIptvReferer, _this.customIptvReferer) || other.customIptvReferer == _this.customIptvReferer)&&(identical(other.customIptvCookie, _this.customIptvCookie) || other.customIptvCookie == _this.customIptvCookie)&&(identical(other.m3uDirectory, _this.m3uDirectory) || other.m3uDirectory == _this.m3uDirectory)&&(identical(other.hotResourceUrl, _this.hotResourceUrl) || other.hotResourceUrl == _this.hotResourceUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isAutoSyncEnabled,autoSyncHoursInterval,customIptvUserAgent,customIptvReferer,customIptvCookie,m3uDirectory,hotResourceUrl);
+int get hashCode {
+  final _this = this as IptvSettingsModel;
+  return Object.hash(runtimeType,_this.isAutoSyncEnabled,_this.autoSyncHoursInterval,_this.customIptvUserAgent,_this.customIptvReferer,_this.customIptvCookie,_this.m3uDirectory,_this.hotResourceUrl);
+}
 
 @override
 String toString() {
-  return 'IptvSettingsModel(isAutoSyncEnabled: $isAutoSyncEnabled, autoSyncHoursInterval: $autoSyncHoursInterval, customIptvUserAgent: $customIptvUserAgent, customIptvReferer: $customIptvReferer, customIptvCookie: $customIptvCookie, m3uDirectory: $m3uDirectory, hotResourceUrl: $hotResourceUrl)';
+  final _this = this as IptvSettingsModel;
+  return 'IptvSettingsModel(isAutoSyncEnabled: ${_this.isAutoSyncEnabled}, autoSyncHoursInterval: ${_this.autoSyncHoursInterval}, customIptvUserAgent: ${_this.customIptvUserAgent}, customIptvReferer: ${_this.customIptvReferer}, customIptvCookie: ${_this.customIptvCookie}, m3uDirectory: ${_this.m3uDirectory}, hotResourceUrl: ${_this.hotResourceUrl})';
 }
 
 
@@ -68,7 +74,7 @@ class _$IptvSettingsModelCopyWithImpl<$Res>
 /// Create a copy of IptvSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isAutoSyncEnabled = null,Object? autoSyncHoursInterval = null,Object? customIptvUserAgent = null,Object? customIptvReferer = null,Object? customIptvCookie = null,Object? m3uDirectory = null,Object? hotResourceUrl = null,}) {
-  return _then(_self.copyWith(
+  return _then(IptvSettingsModel(
 isAutoSyncEnabled: null == isAutoSyncEnabled ? _self.isAutoSyncEnabled : isAutoSyncEnabled // ignore: cast_nullable_to_non_nullable
 as bool,autoSyncHoursInterval: null == autoSyncHoursInterval ? _self.autoSyncHoursInterval : autoSyncHoursInterval // ignore: cast_nullable_to_non_nullable
 as int,customIptvUserAgent: null == customIptvUserAgent ? _self.customIptvUserAgent : customIptvUserAgent // ignore: cast_nullable_to_non_nullable
@@ -243,16 +249,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IptvSettingsModel&&(identical(other.isAutoSyncEnabled, isAutoSyncEnabled) || other.isAutoSyncEnabled == isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, autoSyncHoursInterval) || other.autoSyncHoursInterval == autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, customIptvUserAgent) || other.customIptvUserAgent == customIptvUserAgent)&&(identical(other.customIptvReferer, customIptvReferer) || other.customIptvReferer == customIptvReferer)&&(identical(other.customIptvCookie, customIptvCookie) || other.customIptvCookie == customIptvCookie)&&(identical(other.m3uDirectory, m3uDirectory) || other.m3uDirectory == m3uDirectory)&&(identical(other.hotResourceUrl, hotResourceUrl) || other.hotResourceUrl == hotResourceUrl));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _IptvSettingsModel&&(identical(other.isAutoSyncEnabled, isAutoSyncEnabled) || other.isAutoSyncEnabled == isAutoSyncEnabled)&&(identical(other.autoSyncHoursInterval, autoSyncHoursInterval) || other.autoSyncHoursInterval == autoSyncHoursInterval)&&(identical(other.customIptvUserAgent, customIptvUserAgent) || other.customIptvUserAgent == customIptvUserAgent)&&(identical(other.customIptvReferer, customIptvReferer) || other.customIptvReferer == customIptvReferer)&&(identical(other.customIptvCookie, customIptvCookie) || other.customIptvCookie == customIptvCookie)&&(identical(other.m3uDirectory, m3uDirectory) || other.m3uDirectory == m3uDirectory)&&(identical(other.hotResourceUrl, hotResourceUrl) || other.hotResourceUrl == hotResourceUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,isAutoSyncEnabled,autoSyncHoursInterval,customIptvUserAgent,customIptvReferer,customIptvCookie,m3uDirectory,hotResourceUrl);
+int get hashCode {
+    return Object.hash(runtimeType,isAutoSyncEnabled,autoSyncHoursInterval,customIptvUserAgent,customIptvReferer,customIptvCookie,m3uDirectory,hotResourceUrl);
+}
 
 @override
 String toString() {
-  return 'IptvSettingsModel(isAutoSyncEnabled: $isAutoSyncEnabled, autoSyncHoursInterval: $autoSyncHoursInterval, customIptvUserAgent: $customIptvUserAgent, customIptvReferer: $customIptvReferer, customIptvCookie: $customIptvCookie, m3uDirectory: $m3uDirectory, hotResourceUrl: $hotResourceUrl)';
+    return 'IptvSettingsModel(isAutoSyncEnabled: $isAutoSyncEnabled, autoSyncHoursInterval: $autoSyncHoursInterval, customIptvUserAgent: $customIptvUserAgent, customIptvReferer: $customIptvReferer, customIptvCookie: $customIptvCookie, m3uDirectory: $m3uDirectory, hotResourceUrl: $hotResourceUrl)';
 }
 
 

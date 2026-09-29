@@ -1,13 +1,14 @@
-import 'package:pure_live/platforms/bilibili/bilibili_site.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/modules/media/api/bilibili_api_client.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 
 /// The bilibili UGC endpoints the music mode reads.
 ///
 /// Everything here runs against the *video* site (api.bilibili.com), not the
 /// live site, but it rides on the same stored bilibili cookie and the same WBI
-/// signer [BiliBiliSite] already maintains — one login serves both modes.
+/// signer the live site maintains — one login serves both modes. The request
+/// plumbing lives in [BilibiliApiClient]; this file owns the playback and
+/// feed reads.
 ///
 /// Two risk-control lessons from the reference TV client are baked in:
 /// - playurl uses the plain `/x/player/playurl` endpoint, never the WBI one
@@ -18,27 +19,14 @@ class BilibiliMusicApi {
 
   static final BilibiliMusicApi instance = BilibiliMusicApi._();
 
-  /// Shares the buvid cache and the WBI key cache with the live site.
-  final BiliBiliSite _site = BiliBiliSite();
-
-  String get _cookie => SettingsService.to.cookieManager.bilibiliCookie.v;
-
-  bool get _loggedIn => _cookie.trim().isNotEmpty;
-
-  /// Referer every video-site request must carry.
-  static const String _videoReferer = 'https://www.bilibili.com/';
-
-  Future<Map<String, String>> _headers({String referer = _videoReferer}) async {
-    final base = await _site.getHeader();
-    return {...base, 'referer': referer};
-  }
+  final BilibiliApiClient _client = BilibiliApiClient.instance;
 
   /// The headers the CDN asks for when fetching the media streams themselves.
   Future<Map<String, String>> streamHeaders(String bvid) async {
     return {
-      'user-agent': BiliBiliSite.kDefaultUserAgent,
+      'user-agent': _client.userAgent,
       'referer': 'https://www.bilibili.com/video/$bvid/',
-      if (_cookie.trim().isNotEmpty) 'cookie': _cookie,
+      if (_client.loggedIn) 'cookie': _client.cookie,
     };
   }
 
@@ -58,7 +46,7 @@ class BilibiliMusicApi {
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/web-interface/ranking/v2',
       queryParameters: {'rid': '$rid', 'type': 'all'},
-      header: await _headers(),
+      header: await _client.headers(),
     );
     if (result['code'] != 0) {
       throw Exception('ranking failed: ${result['code']} ${result['message']}');
@@ -72,7 +60,7 @@ class BilibiliMusicApi {
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/web-interface/popular',
       queryParameters: {'pn': page.toString(), 'ps': pageSize.toString()},
-      header: await _headers(),
+      header: await _client.headers(),
     );
     if (result['code'] != 0) {
       throw Exception('popular failed: ${result['code']} ${result['message']}');
@@ -87,8 +75,8 @@ class BilibiliMusicApi {
     final url =
         '$baseUrl?fresh_type=4&ps=$pageSize&fresh_idx=$page&fresh_idx_1h=$page&platform=web'
         '&web_location=1430654&x-tra-code=20001';
-    final params = await _site.getWbiSign(url);
-    final result = await HttpClient.instance.getJson(baseUrl, queryParameters: params, header: await _headers());
+    final params = await _client.wbiSign(url);
+    final result = await HttpClient.instance.getJson(baseUrl, queryParameters: params, header: await _client.headers());
     if (result['code'] != 0) {
       throw Exception('recommend feed failed: ${result['code']} ${result['message']}');
     }
@@ -101,7 +89,7 @@ class BilibiliMusicApi {
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/web-interface/archive/related',
       queryParameters: {'aid': aid.toString()},
-      header: await _headers(),
+      header: await _client.headers(),
     );
     if (result['code'] != 0) {
       throw Exception('related failed: ${result['code']} ${result['message']}');
@@ -120,11 +108,11 @@ class BilibiliMusicApi {
     final url =
         '$baseUrl?search_type=video&keyword=${Uri.encodeQueryComponent(keyword)}'
         '&order=totalrank&page=$page&page_size=$pageSize&highlight=1&single_column=0';
-    final params = await _site.getWbiSign(url);
+    final params = await _client.wbiSign(url);
     final result = await HttpClient.instance.getJson(
       baseUrl,
       queryParameters: params,
-      header: await _headers(referer: 'https://search.bilibili.com/'),
+      header: await _client.headers(referer: 'https://search.bilibili.com/'),
     );
     if (result['code'] != 0) {
       throw Exception('music search failed: ${result['code']} ${result['message']}');
@@ -140,7 +128,7 @@ class BilibiliMusicApi {
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/web-interface/view',
       queryParameters: {'bvid': bvid},
-      header: await _headers(),
+      header: await _client.headers(),
     );
     if (result['code'] != 0) {
       throw Exception('music archive detail failed: ${result['code']} ${result['message']}');
@@ -163,12 +151,12 @@ class BilibiliMusicApi {
       'fnver': '0',
       'fourk': '1',
       'platform': 'oc',
-      if (!_loggedIn) ..._guestParams(),
+      if (!_client.loggedIn) ..._guestParams(),
     };
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/x/player/playurl',
       queryParameters: params,
-      header: await _headers(referer: 'https://www.bilibili.com/video/$bvid/'),
+      header: await _client.headers(referer: 'https://www.bilibili.com/video/$bvid/'),
     );
     if (result['code'] != 0) {
       throw Exception('music playurl failed: ${result['code']} ${result['message']}');

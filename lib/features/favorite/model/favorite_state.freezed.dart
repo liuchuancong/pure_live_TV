@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'favorite_state.dart';
@@ -9,6 +9,7 @@ part of 'favorite_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -26,16 +27,21 @@ $FavoriteStateCopyWith<FavoriteState> get copyWith => _$FavoriteStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteState&&(identical(other.tabSiteIndex, tabSiteIndex) || other.tabSiteIndex == tabSiteIndex)&&(identical(other.tabOnlineIndex, tabOnlineIndex) || other.tabOnlineIndex == tabOnlineIndex)&&(identical(other.selectedTagId, selectedTagId) || other.selectedTagId == selectedTagId)&&const DeepCollectionEquality().equals(other.onlineRooms, onlineRooms)&&const DeepCollectionEquality().equals(other.offlineRooms, offlineRooms)&&const DeepCollectionEquality().equals(other.replayRooms, replayRooms)&&const DeepCollectionEquality().equals(other.visibleTags, visibleTags)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.denseLayout, denseLayout) || other.denseLayout == denseLayout));
+  final _this = this as FavoriteState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FavoriteState&&(identical(other.tabSiteIndex, _this.tabSiteIndex) || other.tabSiteIndex == _this.tabSiteIndex)&&(identical(other.tabOnlineIndex, _this.tabOnlineIndex) || other.tabOnlineIndex == _this.tabOnlineIndex)&&(identical(other.selectedTagId, _this.selectedTagId) || other.selectedTagId == _this.selectedTagId)&&const DeepCollectionEquality().equals(other.onlineRooms, _this.onlineRooms)&&const DeepCollectionEquality().equals(other.offlineRooms, _this.offlineRooms)&&const DeepCollectionEquality().equals(other.replayRooms, _this.replayRooms)&&const DeepCollectionEquality().equals(other.visibleTags, _this.visibleTags)&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.denseLayout, _this.denseLayout) || other.denseLayout == _this.denseLayout));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,tabSiteIndex,tabOnlineIndex,selectedTagId,const DeepCollectionEquality().hash(onlineRooms),const DeepCollectionEquality().hash(offlineRooms),const DeepCollectionEquality().hash(replayRooms),const DeepCollectionEquality().hash(visibleTags),isLoading,denseLayout);
+int get hashCode {
+  final _this = this as FavoriteState;
+  return Object.hash(runtimeType,_this.tabSiteIndex,_this.tabOnlineIndex,_this.selectedTagId,const DeepCollectionEquality().hash(_this.onlineRooms),const DeepCollectionEquality().hash(_this.offlineRooms),const DeepCollectionEquality().hash(_this.replayRooms),const DeepCollectionEquality().hash(_this.visibleTags),_this.isLoading,_this.denseLayout);
+}
 
 @override
 String toString() {
-  return 'FavoriteState(tabSiteIndex: $tabSiteIndex, tabOnlineIndex: $tabOnlineIndex, selectedTagId: $selectedTagId, onlineRooms: $onlineRooms, offlineRooms: $offlineRooms, replayRooms: $replayRooms, visibleTags: $visibleTags, isLoading: $isLoading, denseLayout: $denseLayout)';
+  final _this = this as FavoriteState;
+  return 'FavoriteState(tabSiteIndex: ${_this.tabSiteIndex}, tabOnlineIndex: ${_this.tabOnlineIndex}, selectedTagId: ${_this.selectedTagId}, onlineRooms: ${_this.onlineRooms}, offlineRooms: ${_this.offlineRooms}, replayRooms: ${_this.replayRooms}, visibleTags: ${_this.visibleTags}, isLoading: ${_this.isLoading}, denseLayout: ${_this.denseLayout})';
 }
 
 
@@ -64,7 +70,7 @@ class _$FavoriteStateCopyWithImpl<$Res>
 /// Create a copy of FavoriteState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? tabSiteIndex = null,Object? tabOnlineIndex = null,Object? selectedTagId = null,Object? onlineRooms = null,Object? offlineRooms = null,Object? replayRooms = null,Object? visibleTags = null,Object? isLoading = null,Object? denseLayout = null,}) {
-  return _then(_self.copyWith(
+  return _then(FavoriteState(
 tabSiteIndex: null == tabSiteIndex ? _self.tabSiteIndex : tabSiteIndex // ignore: cast_nullable_to_non_nullable
 as int,tabOnlineIndex: null == tabOnlineIndex ? _self.tabOnlineIndex : tabOnlineIndex // ignore: cast_nullable_to_non_nullable
 as int,selectedTagId: null == selectedTagId ? _self.selectedTagId : selectedTagId // ignore: cast_nullable_to_non_nullable
@@ -215,7 +221,7 @@ return $default(_that.tabSiteIndex,_that.tabOnlineIndex,_that.selectedTagId,_tha
 
 
 class _FavoriteState implements FavoriteState {
-  const _FavoriteState({this.tabSiteIndex = 0, this.tabOnlineIndex = 0, this.selectedTagId = 'all', final  List<LiveRoom> onlineRooms = const [], final  List<LiveRoom> offlineRooms = const [], final  List<LiveRoom> replayRooms = const [], final  List<LiveTag> visibleTags = const [], this.isLoading = false, this.denseLayout = true}): _onlineRooms = onlineRooms,_offlineRooms = offlineRooms,_replayRooms = replayRooms,_visibleTags = visibleTags;
+  const _FavoriteState({this.tabSiteIndex = 0, this.tabOnlineIndex = 0, this.selectedTagId = 'all',  List<LiveRoom> onlineRooms = const [],  List<LiveRoom> offlineRooms = const [],  List<LiveRoom> replayRooms = const [],  List<LiveTag> visibleTags = const [], this.isLoading = false, this.denseLayout = true}): _onlineRooms = onlineRooms,_offlineRooms = offlineRooms,_replayRooms = replayRooms,_visibleTags = visibleTags;
   
 
 @override@JsonKey() final  int tabSiteIndex;
@@ -263,16 +269,18 @@ _$FavoriteStateCopyWith<_FavoriteState> get copyWith => __$FavoriteStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteState&&(identical(other.tabSiteIndex, tabSiteIndex) || other.tabSiteIndex == tabSiteIndex)&&(identical(other.tabOnlineIndex, tabOnlineIndex) || other.tabOnlineIndex == tabOnlineIndex)&&(identical(other.selectedTagId, selectedTagId) || other.selectedTagId == selectedTagId)&&const DeepCollectionEquality().equals(other._onlineRooms, _onlineRooms)&&const DeepCollectionEquality().equals(other._offlineRooms, _offlineRooms)&&const DeepCollectionEquality().equals(other._replayRooms, _replayRooms)&&const DeepCollectionEquality().equals(other._visibleTags, _visibleTags)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.denseLayout, denseLayout) || other.denseLayout == denseLayout));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FavoriteState&&(identical(other.tabSiteIndex, tabSiteIndex) || other.tabSiteIndex == tabSiteIndex)&&(identical(other.tabOnlineIndex, tabOnlineIndex) || other.tabOnlineIndex == tabOnlineIndex)&&(identical(other.selectedTagId, selectedTagId) || other.selectedTagId == selectedTagId)&&const DeepCollectionEquality().equals(other.onlineRooms, _onlineRooms)&&const DeepCollectionEquality().equals(other.offlineRooms, _offlineRooms)&&const DeepCollectionEquality().equals(other.replayRooms, _replayRooms)&&const DeepCollectionEquality().equals(other.visibleTags, _visibleTags)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.denseLayout, denseLayout) || other.denseLayout == denseLayout));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,tabSiteIndex,tabOnlineIndex,selectedTagId,const DeepCollectionEquality().hash(_onlineRooms),const DeepCollectionEquality().hash(_offlineRooms),const DeepCollectionEquality().hash(_replayRooms),const DeepCollectionEquality().hash(_visibleTags),isLoading,denseLayout);
+int get hashCode {
+    return Object.hash(runtimeType,tabSiteIndex,tabOnlineIndex,selectedTagId,const DeepCollectionEquality().hash(_onlineRooms),const DeepCollectionEquality().hash(_offlineRooms),const DeepCollectionEquality().hash(_replayRooms),const DeepCollectionEquality().hash(_visibleTags),isLoading,denseLayout);
+}
 
 @override
 String toString() {
-  return 'FavoriteState(tabSiteIndex: $tabSiteIndex, tabOnlineIndex: $tabOnlineIndex, selectedTagId: $selectedTagId, onlineRooms: $onlineRooms, offlineRooms: $offlineRooms, replayRooms: $replayRooms, visibleTags: $visibleTags, isLoading: $isLoading, denseLayout: $denseLayout)';
+    return 'FavoriteState(tabSiteIndex: $tabSiteIndex, tabOnlineIndex: $tabOnlineIndex, selectedTagId: $selectedTagId, onlineRooms: $onlineRooms, offlineRooms: $offlineRooms, replayRooms: $replayRooms, visibleTags: $visibleTags, isLoading: $isLoading, denseLayout: $denseLayout)';
 }
 
 

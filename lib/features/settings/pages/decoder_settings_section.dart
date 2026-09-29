@@ -1,7 +1,5 @@
 import 'dart:io';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/services/player_settings/player_settings_controller.dart';
 

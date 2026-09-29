@@ -1,21 +1,20 @@
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
+import 'package:pure_live/services/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/video/api/video_pgc_api.dart';
-import 'package:pure_live/modules/video/models/video_pgc_models.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
-import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
-import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/services/index.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/video/widgets/video_card.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
+
+
 
 /// The video personal center, newBV's personal sections over the logged-in
 /// account: fav folders (server-side), cloud history, watch later. Nothing
@@ -74,7 +73,7 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
                     ),
                     child: Text(
                       i18n(label),
-                      style: AppTextStyles.t18W600.copyWith(
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, 
                         color: _tab == index ? tvTheme.focusColor : tvTheme.secondaryTextColor,
                       ),
                     ),
@@ -236,7 +235,7 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
                           follow.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
+                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                         ),
                         if (follow.sign.isNotEmpty) ...[
                           SizedBox(height: 4.sp),
@@ -244,7 +243,7 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
                             follow.sign,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t14W300.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, color: tvTheme.secondaryTextColor),
                           ),
                         ],
                       ],
@@ -389,7 +388,7 @@ class _FavPaneState extends ConsumerState<_FavPane> {
                       folder.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                     ),
                   ),
                   Text(
@@ -531,7 +530,7 @@ class _HistoryPaneState extends ConsumerState<_HistoryPane> {
                           item.archive.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
+                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                         ),
                         SizedBox(height: 4.sp),
                         Text(
@@ -664,7 +663,7 @@ class _BangumiPaneState extends ConsumerState<_BangumiPane> {
     if (_loading || !_hasMore) return;
     setState(() => _loading = true);
     try {
-      final items = await VideoPgcApi.instance.getFollowedSeasons(page: _page + 1);
+      final items = await BilibiliPgcApi.instance.getFollowedSeasons(page: _page + 1);
       if (!mounted) return;
       setState(() {
         _items.addAll(items);
@@ -770,7 +769,7 @@ class _BangumiCard extends StatelessWidget {
                   item.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                 ),
               ),
             ),

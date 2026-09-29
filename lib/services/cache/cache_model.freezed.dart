@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'cache_model.dart';
@@ -9,6 +9,7 @@ part of 'cache_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $CacheModelCopyWith<CacheModel> get copyWith => _$CacheModelCopyWithImpl<CacheMo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CacheModel&&(identical(other.cacheSizeMB, cacheSizeMB) || other.cacheSizeMB == cacheSizeMB)&&(identical(other.refreshTurns, refreshTurns) || other.refreshTurns == refreshTurns)&&(identical(other.imageCacheEpoch, imageCacheEpoch) || other.imageCacheEpoch == imageCacheEpoch)&&(identical(other.isScanning, isScanning) || other.isScanning == isScanning)&&(identical(other.isClearing, isClearing) || other.isClearing == isClearing)&&(identical(other.isRefreshingImages, isRefreshingImages) || other.isRefreshingImages == isRefreshingImages));
+  final _this = this as CacheModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CacheModel&&(identical(other.cacheSizeMB, _this.cacheSizeMB) || other.cacheSizeMB == _this.cacheSizeMB)&&(identical(other.refreshTurns, _this.refreshTurns) || other.refreshTurns == _this.refreshTurns)&&(identical(other.imageCacheEpoch, _this.imageCacheEpoch) || other.imageCacheEpoch == _this.imageCacheEpoch)&&(identical(other.isScanning, _this.isScanning) || other.isScanning == _this.isScanning)&&(identical(other.isClearing, _this.isClearing) || other.isClearing == _this.isClearing)&&(identical(other.isRefreshingImages, _this.isRefreshingImages) || other.isRefreshingImages == _this.isRefreshingImages));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cacheSizeMB,refreshTurns,imageCacheEpoch,isScanning,isClearing,isRefreshingImages);
+int get hashCode {
+  final _this = this as CacheModel;
+  return Object.hash(runtimeType,_this.cacheSizeMB,_this.refreshTurns,_this.imageCacheEpoch,_this.isScanning,_this.isClearing,_this.isRefreshingImages);
+}
 
 @override
 String toString() {
-  return 'CacheModel(cacheSizeMB: $cacheSizeMB, refreshTurns: $refreshTurns, imageCacheEpoch: $imageCacheEpoch, isScanning: $isScanning, isClearing: $isClearing, isRefreshingImages: $isRefreshingImages)';
+  final _this = this as CacheModel;
+  return 'CacheModel(cacheSizeMB: ${_this.cacheSizeMB}, refreshTurns: ${_this.refreshTurns}, imageCacheEpoch: ${_this.imageCacheEpoch}, isScanning: ${_this.isScanning}, isClearing: ${_this.isClearing}, isRefreshingImages: ${_this.isRefreshingImages})';
 }
 
 
@@ -66,7 +72,7 @@ class _$CacheModelCopyWithImpl<$Res>
 /// Create a copy of CacheModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? cacheSizeMB = null,Object? refreshTurns = null,Object? imageCacheEpoch = null,Object? isScanning = null,Object? isClearing = null,Object? isRefreshingImages = null,}) {
-  return _then(_self.copyWith(
+  return _then(CacheModel(
 cacheSizeMB: null == cacheSizeMB ? _self.cacheSizeMB : cacheSizeMB // ignore: cast_nullable_to_non_nullable
 as double,refreshTurns: null == refreshTurns ? _self.refreshTurns : refreshTurns // ignore: cast_nullable_to_non_nullable
 as double,imageCacheEpoch: null == imageCacheEpoch ? _self.imageCacheEpoch : imageCacheEpoch // ignore: cast_nullable_to_non_nullable
@@ -237,16 +243,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CacheModel&&(identical(other.cacheSizeMB, cacheSizeMB) || other.cacheSizeMB == cacheSizeMB)&&(identical(other.refreshTurns, refreshTurns) || other.refreshTurns == refreshTurns)&&(identical(other.imageCacheEpoch, imageCacheEpoch) || other.imageCacheEpoch == imageCacheEpoch)&&(identical(other.isScanning, isScanning) || other.isScanning == isScanning)&&(identical(other.isClearing, isClearing) || other.isClearing == isClearing)&&(identical(other.isRefreshingImages, isRefreshingImages) || other.isRefreshingImages == isRefreshingImages));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CacheModel&&(identical(other.cacheSizeMB, cacheSizeMB) || other.cacheSizeMB == cacheSizeMB)&&(identical(other.refreshTurns, refreshTurns) || other.refreshTurns == refreshTurns)&&(identical(other.imageCacheEpoch, imageCacheEpoch) || other.imageCacheEpoch == imageCacheEpoch)&&(identical(other.isScanning, isScanning) || other.isScanning == isScanning)&&(identical(other.isClearing, isClearing) || other.isClearing == isClearing)&&(identical(other.isRefreshingImages, isRefreshingImages) || other.isRefreshingImages == isRefreshingImages));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,cacheSizeMB,refreshTurns,imageCacheEpoch,isScanning,isClearing,isRefreshingImages);
+int get hashCode {
+    return Object.hash(runtimeType,cacheSizeMB,refreshTurns,imageCacheEpoch,isScanning,isClearing,isRefreshingImages);
+}
 
 @override
 String toString() {
-  return 'CacheModel(cacheSizeMB: $cacheSizeMB, refreshTurns: $refreshTurns, imageCacheEpoch: $imageCacheEpoch, isScanning: $isScanning, isClearing: $isClearing, isRefreshingImages: $isRefreshingImages)';
+    return 'CacheModel(cacheSizeMB: $cacheSizeMB, refreshTurns: $refreshTurns, imageCacheEpoch: $imageCacheEpoch, isScanning: $isScanning, isClearing: $isClearing, isRefreshingImages: $isRefreshingImages)';
 }
 
 

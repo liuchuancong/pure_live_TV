@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_qr_login_service.dart';
 
 /// Bilibili: the account page. QR sign-in only — the manual cookie paste was

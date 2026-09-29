@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
 
 /// Read-only preview of the local configuration.

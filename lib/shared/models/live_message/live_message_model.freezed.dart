@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'live_message_model.dart';
@@ -9,6 +9,7 @@ part of 'live_message_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,12 +29,16 @@ $LiveMessageColorCopyWith<LiveMessageColor> get copyWith => _$LiveMessageColorCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveMessageColor&&(identical(other.r, r) || other.r == r)&&(identical(other.g, g) || other.g == g)&&(identical(other.b, b) || other.b == b));
+  final _this = this as LiveMessageColor;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveMessageColor&&(identical(other.r, _this.r) || other.r == _this.r)&&(identical(other.g, _this.g) || other.g == _this.g)&&(identical(other.b, _this.b) || other.b == _this.b));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,r,g,b);
+int get hashCode {
+  final _this = this as LiveMessageColor;
+  return Object.hash(runtimeType,_this.r,_this.g,_this.b);
+}
 
 
 
@@ -62,7 +67,7 @@ class _$LiveMessageColorCopyWithImpl<$Res>
 /// Create a copy of LiveMessageColor
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? r = null,Object? g = null,Object? b = null,}) {
-  return _then(_self.copyWith(
+  return _then(LiveMessageColor(
 r: null == r ? _self.r : r // ignore: cast_nullable_to_non_nullable
 as int,g: null == g ? _self.g : g // ignore: cast_nullable_to_non_nullable
 as int,b: null == b ? _self.b : b // ignore: cast_nullable_to_non_nullable
@@ -227,12 +232,14 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveMessageColor&&(identical(other.r, r) || other.r == r)&&(identical(other.g, g) || other.g == g)&&(identical(other.b, b) || other.b == b));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveMessageColor&&(identical(other.r, r) || other.r == r)&&(identical(other.g, g) || other.g == g)&&(identical(other.b, b) || other.b == b));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,r,g,b);
+int get hashCode {
+    return Object.hash(runtimeType,r,g,b);
+}
 
 
 
@@ -289,16 +296,21 @@ $LiveMessageCopyWith<LiveMessage> get copyWith => _$LiveMessageCopyWithImpl<Live
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveMessage&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.message, message) || other.message == message)&&(identical(other.color, color) || other.color == color)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.isLocal, isLocal) || other.isLocal == isLocal)&&(identical(other.style, style) || other.style == style));
+  final _this = this as LiveMessage;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveMessage&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.userName, _this.userName) || other.userName == _this.userName)&&(identical(other.message, _this.message) || other.message == _this.message)&&(identical(other.color, _this.color) || other.color == _this.color)&&const DeepCollectionEquality().equals(other.data, _this.data)&&(identical(other.messageId, _this.messageId) || other.messageId == _this.messageId)&&(identical(other.userId, _this.userId) || other.userId == _this.userId)&&(identical(other.sentAt, _this.sentAt) || other.sentAt == _this.sentAt)&&(identical(other.isLocal, _this.isLocal) || other.isLocal == _this.isLocal)&&(identical(other.style, _this.style) || other.style == _this.style));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,userName,message,color,const DeepCollectionEquality().hash(data),messageId,userId,sentAt,isLocal,style);
+int get hashCode {
+  final _this = this as LiveMessage;
+  return Object.hash(runtimeType,_this.type,_this.userName,_this.message,_this.color,const DeepCollectionEquality().hash(_this.data),_this.messageId,_this.userId,_this.sentAt,_this.isLocal,_this.style);
+}
 
 @override
 String toString() {
-  return 'LiveMessage(type: $type, userName: $userName, message: $message, color: $color, data: $data, messageId: $messageId, userId: $userId, sentAt: $sentAt, isLocal: $isLocal, style: $style)';
+  final _this = this as LiveMessage;
+  return 'LiveMessage(type: ${_this.type}, userName: ${_this.userName}, message: ${_this.message}, color: ${_this.color}, data: ${_this.data}, messageId: ${_this.messageId}, userId: ${_this.userId}, sentAt: ${_this.sentAt}, isLocal: ${_this.isLocal}, style: ${_this.style})';
 }
 
 
@@ -327,7 +339,7 @@ class _$LiveMessageCopyWithImpl<$Res>
 /// Create a copy of LiveMessage
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? type = null,Object? userName = null,Object? message = null,Object? color = null,Object? data = freezed,Object? messageId = freezed,Object? userId = freezed,Object? sentAt = freezed,Object? isLocal = null,Object? style = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(LiveMessage(
 type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as LiveMessageType,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
@@ -515,16 +527,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveMessage&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.message, message) || other.message == message)&&(identical(other.color, color) || other.color == color)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.isLocal, isLocal) || other.isLocal == isLocal)&&(identical(other.style, style) || other.style == style));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveMessage&&(identical(other.type, type) || other.type == type)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.message, message) || other.message == message)&&(identical(other.color, color) || other.color == color)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.isLocal, isLocal) || other.isLocal == isLocal)&&(identical(other.style, style) || other.style == style));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,type,userName,message,color,const DeepCollectionEquality().hash(data),messageId,userId,sentAt,isLocal,style);
+int get hashCode {
+    return Object.hash(runtimeType,type,userName,message,color,const DeepCollectionEquality().hash(data),messageId,userId,sentAt,isLocal,style);
+}
 
 @override
 String toString() {
-  return 'LiveMessage(type: $type, userName: $userName, message: $message, color: $color, data: $data, messageId: $messageId, userId: $userId, sentAt: $sentAt, isLocal: $isLocal, style: $style)';
+    return 'LiveMessage(type: $type, userName: $userName, message: $message, color: $color, data: $data, messageId: $messageId, userId: $userId, sentAt: $sentAt, isLocal: $isLocal, style: $style)';
 }
 
 
@@ -597,16 +611,21 @@ $LiveSuperChatMessageCopyWith<LiveSuperChatMessage> get copyWith => _$LiveSuperC
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSuperChatMessage&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.face, face) || other.face == face)&&(identical(other.message, message) || other.message == message)&&(identical(other.price, price) || other.price == price)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.backgroundBottomColor, backgroundBottomColor) || other.backgroundBottomColor == backgroundBottomColor));
+  final _this = this as LiveSuperChatMessage;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LiveSuperChatMessage&&(identical(other.messageId, _this.messageId) || other.messageId == _this.messageId)&&(identical(other.userName, _this.userName) || other.userName == _this.userName)&&(identical(other.face, _this.face) || other.face == _this.face)&&(identical(other.message, _this.message) || other.message == _this.message)&&(identical(other.price, _this.price) || other.price == _this.price)&&(identical(other.startTime, _this.startTime) || other.startTime == _this.startTime)&&(identical(other.endTime, _this.endTime) || other.endTime == _this.endTime)&&(identical(other.backgroundColor, _this.backgroundColor) || other.backgroundColor == _this.backgroundColor)&&(identical(other.backgroundBottomColor, _this.backgroundBottomColor) || other.backgroundBottomColor == _this.backgroundBottomColor));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,messageId,userName,face,message,price,startTime,endTime,backgroundColor,backgroundBottomColor);
+int get hashCode {
+  final _this = this as LiveSuperChatMessage;
+  return Object.hash(runtimeType,_this.messageId,_this.userName,_this.face,_this.message,_this.price,_this.startTime,_this.endTime,_this.backgroundColor,_this.backgroundBottomColor);
+}
 
 @override
 String toString() {
-  return 'LiveSuperChatMessage(messageId: $messageId, userName: $userName, face: $face, message: $message, price: $price, startTime: $startTime, endTime: $endTime, backgroundColor: $backgroundColor, backgroundBottomColor: $backgroundBottomColor)';
+  final _this = this as LiveSuperChatMessage;
+  return 'LiveSuperChatMessage(messageId: ${_this.messageId}, userName: ${_this.userName}, face: ${_this.face}, message: ${_this.message}, price: ${_this.price}, startTime: ${_this.startTime}, endTime: ${_this.endTime}, backgroundColor: ${_this.backgroundColor}, backgroundBottomColor: ${_this.backgroundBottomColor})';
 }
 
 
@@ -635,7 +654,7 @@ class _$LiveSuperChatMessageCopyWithImpl<$Res>
 /// Create a copy of LiveSuperChatMessage
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? messageId = null,Object? userName = null,Object? face = null,Object? message = null,Object? price = null,Object? startTime = null,Object? endTime = null,Object? backgroundColor = null,Object? backgroundBottomColor = null,}) {
-  return _then(_self.copyWith(
+  return _then(LiveSuperChatMessage(
 messageId: null == messageId ? _self.messageId : messageId // ignore: cast_nullable_to_non_nullable
 as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,face: null == face ? _self.face : face // ignore: cast_nullable_to_non_nullable
@@ -812,16 +831,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSuperChatMessage&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.face, face) || other.face == face)&&(identical(other.message, message) || other.message == message)&&(identical(other.price, price) || other.price == price)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.backgroundBottomColor, backgroundBottomColor) || other.backgroundBottomColor == backgroundBottomColor));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LiveSuperChatMessage&&(identical(other.messageId, messageId) || other.messageId == messageId)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.face, face) || other.face == face)&&(identical(other.message, message) || other.message == message)&&(identical(other.price, price) || other.price == price)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.backgroundBottomColor, backgroundBottomColor) || other.backgroundBottomColor == backgroundBottomColor));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,messageId,userName,face,message,price,startTime,endTime,backgroundColor,backgroundBottomColor);
+int get hashCode {
+    return Object.hash(runtimeType,messageId,userName,face,message,price,startTime,endTime,backgroundColor,backgroundBottomColor);
+}
 
 @override
 String toString() {
-  return 'LiveSuperChatMessage(messageId: $messageId, userName: $userName, face: $face, message: $message, price: $price, startTime: $startTime, endTime: $endTime, backgroundColor: $backgroundColor, backgroundBottomColor: $backgroundBottomColor)';
+    return 'LiveSuperChatMessage(messageId: $messageId, userName: $userName, face: $face, message: $message, price: $price, startTime: $startTime, endTime: $endTime, backgroundColor: $backgroundColor, backgroundBottomColor: $backgroundBottomColor)';
 }
 
 

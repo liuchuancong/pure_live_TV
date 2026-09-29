@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'live_play_quality.dart';
@@ -9,6 +9,7 @@ part of 'live_play_quality.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $LivePlayQualityCopyWith<LivePlayQuality> get copyWith => _$LivePlayQualityCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LivePlayQuality&&(identical(other.quality, quality) || other.quality == quality)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.sort, sort) || other.sort == sort)&&const DeepCollectionEquality().equals(other.id, id)&&(identical(other.playbackUnconfirmed, playbackUnconfirmed) || other.playbackUnconfirmed == playbackUnconfirmed));
+  final _this = this as LivePlayQuality;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LivePlayQuality&&(identical(other.quality, _this.quality) || other.quality == _this.quality)&&const DeepCollectionEquality().equals(other.data, _this.data)&&(identical(other.sort, _this.sort) || other.sort == _this.sort)&&const DeepCollectionEquality().equals(other.id, _this.id)&&(identical(other.playbackUnconfirmed, _this.playbackUnconfirmed) || other.playbackUnconfirmed == _this.playbackUnconfirmed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,quality,const DeepCollectionEquality().hash(data),sort,const DeepCollectionEquality().hash(id),playbackUnconfirmed);
+int get hashCode {
+  final _this = this as LivePlayQuality;
+  return Object.hash(runtimeType,_this.quality,const DeepCollectionEquality().hash(_this.data),_this.sort,const DeepCollectionEquality().hash(_this.id),_this.playbackUnconfirmed);
+}
 
 @override
 String toString() {
-  return 'LivePlayQuality(quality: $quality, data: $data, sort: $sort, id: $id, playbackUnconfirmed: $playbackUnconfirmed)';
+  final _this = this as LivePlayQuality;
+  return 'LivePlayQuality(quality: ${_this.quality}, data: ${_this.data}, sort: ${_this.sort}, id: ${_this.id}, playbackUnconfirmed: ${_this.playbackUnconfirmed})';
 }
 
 
@@ -66,7 +72,7 @@ class _$LivePlayQualityCopyWithImpl<$Res>
 /// Create a copy of LivePlayQuality
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? quality = null,Object? data = freezed,Object? sort = null,Object? id = freezed,Object? playbackUnconfirmed = null,}) {
-  return _then(_self.copyWith(
+  return _then(LivePlayQuality(
 quality: null == quality ? _self.quality : quality // ignore: cast_nullable_to_non_nullable
 as String,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as dynamic,sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
@@ -235,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LivePlayQuality&&(identical(other.quality, quality) || other.quality == quality)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.sort, sort) || other.sort == sort)&&const DeepCollectionEquality().equals(other.id, id)&&(identical(other.playbackUnconfirmed, playbackUnconfirmed) || other.playbackUnconfirmed == playbackUnconfirmed));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LivePlayQuality&&(identical(other.quality, quality) || other.quality == quality)&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.sort, sort) || other.sort == sort)&&const DeepCollectionEquality().equals(other.id, id)&&(identical(other.playbackUnconfirmed, playbackUnconfirmed) || other.playbackUnconfirmed == playbackUnconfirmed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,quality,const DeepCollectionEquality().hash(data),sort,const DeepCollectionEquality().hash(id),playbackUnconfirmed);
+int get hashCode {
+    return Object.hash(runtimeType,quality,const DeepCollectionEquality().hash(data),sort,const DeepCollectionEquality().hash(id),playbackUnconfirmed);
+}
 
 @override
 String toString() {
-  return 'LivePlayQuality(quality: $quality, data: $data, sort: $sort, id: $id, playbackUnconfirmed: $playbackUnconfirmed)';
+    return 'LivePlayQuality(quality: $quality, data: $data, sort: $sort, id: $id, playbackUnconfirmed: $playbackUnconfirmed)';
 }
 
 

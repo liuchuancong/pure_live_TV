@@ -1,10 +1,6 @@
 import 'package:pure_live/exports/package_export.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:pure_live/shared/pagination/paging_core.dart';
-import 'package:pure_live/shared/pagination/models/paging_param.dart';
 import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
-import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 class BasePagedTvView<T> extends ConsumerStatefulWidget {
   final PagingParam<T> param;

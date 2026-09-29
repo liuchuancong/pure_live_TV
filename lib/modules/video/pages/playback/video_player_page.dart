@@ -1,25 +1,24 @@
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_core/media_core.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
-import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
-import 'package:pure_live/modules/video/widgets/vod_danmaku_overlay.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/api/bilibili_danmaku_api.dart';
+import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/video/widgets/vod_danmaku_overlay.dart';
+import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 
 /// The video-mode player, modelled on newBV's layer scheme:
 ///
@@ -173,7 +172,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     final position = handle.position.inSeconds;
     final duration = handle.duration.inSeconds;
     if (duration <= 0) return;
-    ref.read(videoProgressControllerProvider.notifier).record(
+    ref
+        .read(videoProgressControllerProvider.notifier)
+        .record(
           track.archive.bvid,
           cid: track.part.cid,
           position: position,
@@ -326,8 +327,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   /// TV send-danmaku flow: a dialog with the soft keyboard, then the web
   /// send endpoint; the comment is echoed locally on success.
   Future<void> _showSendDialog(MusicTrack track) async {
-    final api = BilibiliUgcApi.instance;
-    if (!api.isLoggedIn) {
+    final api = BilibiliDanmakuApi.instance;
+    if (!BilibiliUgcApi.instance.isLoggedIn) {
       ToastUtil.show(i18n('video_action_need_login'));
       return;
     }
@@ -347,7 +348,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
               children: [
                 Text(
                   i18n('video_danmaku_send'),
-                  style: AppTextStyles.t20W700.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 16.sp),
@@ -459,7 +460,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                                 ),
                                 child: Text(
                                   state.error,
-                                  style: AppTextStyles.t18W500.copyWith(color: Colors.white),
+                                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white),
                                 ),
                               ),
                             );
@@ -477,7 +478,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                                   SizedBox(height: 12.sp),
                                   Text(
                                     i18n('video_state_buffering'),
-                                    style: AppTextStyles.t16W500.copyWith(color: Colors.white70),
+                                    style: AppTextStyles.t16.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white70,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -531,20 +535,20 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                               track?.title ?? i18n('video_player_title'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t22W700.copyWith(color: Colors.white),
+                              style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
                             ),
                           ),
                           SizedBox(width: 12.sp),
                           if (track != null && track.archive.parts.length > 1)
                             Text(
                               'P${track.part.page}/${track.archive.parts.length}',
-                              style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
                           SizedBox(width: 12.sp),
                           if (BilibiliMusicApi.qualityLabel(state.quality).isNotEmpty)
                             Text(
                               BilibiliMusicApi.qualityLabel(state.quality),
-                              style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
                           SizedBox(width: 12.sp),
                           if (_onlineCount > 0) ...[
@@ -552,7 +556,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                             SizedBox(width: 4.sp),
                             Text(
                               readableCount(_onlineCount.toString()),
-                              style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
                             SizedBox(width: 12.sp),
                           ],
@@ -563,7 +567,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                                 track.archive.upName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                               ),
                             ),
                         ],
@@ -608,36 +612,36 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   // at the very bottom during playback, on by the 常显进度条 setting.
                   if (ref.watch(videoSettingsControllerProvider.select((m) => m.persistentProgress)))
                     Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: StreamBuilder<PlaybackState>(
-                      stream: ref.read(musicPlayerControllerProvider.notifier).playbackStream,
-                      builder: (context, snapshot) {
-                        final playback = snapshot.data;
-                        final position = playback?.position ?? Duration.zero;
-                        final duration = playback?.duration ?? Duration.zero;
-                        final double progress = duration > Duration.zero
-                            ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
-                            : 0.0;
-                        final accent = tvTheme.focusColor;
-                        return SizedBox(
-                          height: 5.sp,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              ColoredBox(color: Colors.white.withValues(alpha: 0.16)),
-                              FractionallySizedBox(
-                                alignment: Alignment.centerLeft,
-                                widthFactor: progress,
-                                child: ColoredBox(color: accent),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: StreamBuilder<PlaybackState>(
+                        stream: ref.read(musicPlayerControllerProvider.notifier).playbackStream,
+                        builder: (context, snapshot) {
+                          final playback = snapshot.data;
+                          final position = playback?.position ?? Duration.zero;
+                          final duration = playback?.duration ?? Duration.zero;
+                          final double progress = duration > Duration.zero
+                              ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
+                              : 0.0;
+                          final accent = tvTheme.focusColor;
+                          return SizedBox(
+                            height: 5.sp,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                ColoredBox(color: Colors.white.withValues(alpha: 0.16)),
+                                FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: progress,
+                                  child: ColoredBox(color: accent),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
 
                   // ----------------------------------------------- comments panel
                   if (_commentsOpen && track != null)
@@ -675,7 +679,6 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                       width: 320.sp,
                       child: _QualityMenu(onClose: () => setState(() => _qualityOpen = false)),
                     ),
-
                 ],
               ),
             ),
@@ -743,7 +746,8 @@ class _SubtitleLinesState extends State<SubtitleLines> {
             child: Text(
               line,
               textAlign: TextAlign.center,
-              style: AppTextStyles.t20W600.copyWith(
+              style: AppTextStyles.t20.copyWith(
+                fontWeight: FontWeight.w600,
                 color: Colors.white,
                 shadows: [Shadow(color: Colors.black, blurRadius: 4)],
               ),
@@ -1095,7 +1099,10 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                   children: [
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(_timeLabel(position), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
+                      child: Text(
+                        _timeLabel(position),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                      ),
                     ),
                     SizedBox(width: 16.sp),
                     Expanded(
@@ -1127,7 +1134,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                               Align(
                                 alignment:
                                     Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ??
-                                        Alignment.centerLeft,
+                                    Alignment.centerLeft,
                                 child: Container(width: 4.sp, color: Colors.white),
                               ),
                           ],
@@ -1137,7 +1144,10 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                     SizedBox(width: 16.sp),
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(_timeLabel(duration), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
+                      child: Text(
+                        _timeLabel(duration),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                      ),
                     ),
                   ],
                 ),
@@ -1173,6 +1183,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
     );
   }
 }
+
 /// The live bar's pill: accent fill plus a scale lift is the whole selected
 /// treatment (no ring — a border insets the fill and reads as a dark edge),
 /// over a translucent base when idle. An active state tints its glyph.
@@ -1203,10 +1214,8 @@ class _BarPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color foreground = Colors.white;
-    final TextStyle textStyle = (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
-      color: foreground,
-      fontSize: 22.sp,
-    );
+    final TextStyle textStyle = (selected ? AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600) : AppTextStyles.t20)
+        .copyWith(color: foreground);
 
     return GestureDetector(
       onTap: onTap,
@@ -1307,7 +1316,7 @@ class _PartListPanelState extends ConsumerState<_PartListPanel> {
                 Expanded(
                   child: Text(
                     '${i18n('music_tracks_title')}（${state.queue.length}）',
-                    style: AppTextStyles.t20W600.copyWith(color: Colors.white),
+                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
                 TvIconButton(
@@ -1348,7 +1357,13 @@ class _PartListPanelState extends ConsumerState<_PartListPanel> {
                               width: 32.sp,
                               child: isCurrent
                                   ? Icon(Icons.play_arrow_rounded, size: 26.sp, color: accent)
-                                  : Text('${index + 1}', style: AppTextStyles.t16W500.copyWith(color: Colors.white54)),
+                                  : Text(
+                                      '${index + 1}',
+                                      style: AppTextStyles.t16.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white54,
+                                      ),
+                                    ),
                             ),
                             SizedBox(width: 10.sp),
                             Expanded(
@@ -1356,14 +1371,17 @@ class _PartListPanelState extends ConsumerState<_PartListPanel> {
                                 track.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.t16W500.copyWith(color: isCurrent ? accent : Colors.white),
+                                style: AppTextStyles.t16.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: isCurrent ? accent : Colors.white,
+                                ),
                               ),
                             ),
                             Text(
                               MusicVideoCard.formatDuration(
                                 track.part.duration > 0 ? track.part.duration : track.archive.duration,
                               ),
-                              style: AppTextStyles.t14W500.copyWith(color: Colors.white54),
+                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
                             ),
                           ],
                         ),
@@ -1408,7 +1426,12 @@ class _QualityMenu extends ConsumerWidget {
               children: [
                 Icon(Icons.high_quality_outlined, size: 26.sp, color: accent),
                 SizedBox(width: 10.sp),
-                Expanded(child: Text(i18n('video_quality'), style: AppTextStyles.t18W600.copyWith(color: Colors.white))),
+                Expanded(
+                  child: Text(
+                    i18n('video_quality'),
+                    style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
+                  ),
+                ),
                 TvIconButton(
                   icon: const Icon(Icons.close_rounded),
                   size: TvIconButtonSize.small,
@@ -1445,7 +1468,10 @@ class _QualityMenu extends ConsumerWidget {
                             BilibiliMusicApi.qualityLabel(option.quality).isEmpty
                                 ? '${option.quality}'
                                 : BilibiliMusicApi.qualityLabel(option.quality),
-                            style: AppTextStyles.t16W500.copyWith(color: isCurrent ? accent : Colors.white),
+                            style: AppTextStyles.t16.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: isCurrent ? accent : Colors.white,
+                            ),
                           ),
                         ),
                         if (isCurrent) Icon(Icons.check_rounded, size: 22.sp, color: accent),
@@ -1507,8 +1533,7 @@ class _CommentsPanelState extends State<_CommentsPanel> {
     }
   }
 
-  List<CommentItem> _repliesOf(CommentItem comment) =>
-      _replies[comment.rpid] ?? comment.replies;
+  List<CommentItem> _repliesOf(CommentItem comment) => _replies[comment.rpid] ?? comment.replies;
 
   Future<void> _toggleReplies(CommentItem comment) async {
     if (!_expanded.remove(comment.rpid)) {
@@ -1553,7 +1578,7 @@ class _CommentsPanelState extends State<_CommentsPanel> {
                 Expanded(
                   child: Text(
                     i18n('video_comments_title'),
-                    style: AppTextStyles.t20W600.copyWith(color: Colors.white),
+                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
                 TvIconButton(
@@ -1669,7 +1694,7 @@ class _CommentTile extends StatelessWidget {
                   comment.uname,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t14W600.copyWith(color: accent),
+                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
                 ),
               ),
               TvFocusable(
@@ -1698,7 +1723,8 @@ class _CommentTile extends StatelessWidget {
                       SizedBox(width: 4.sp),
                       Text(
                         readableCount(like(comment).toString()),
-                        style: AppTextStyles.t14W500.copyWith(
+                        style: AppTextStyles.t14.copyWith(
+                          fontWeight: FontWeight.w500,
                           color: liked(comment) ? accent : Colors.white54,
                         ),
                       ),
@@ -1711,7 +1737,7 @@ class _CommentTile extends StatelessWidget {
           SizedBox(height: 6.sp),
           Text(
             comment.content,
-            style: AppTextStyles.t14W500.copyWith(color: Colors.white, height: 1.4),
+            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white, height: 1.4),
           ),
           if (hasThread) ...[
             SizedBox(height: 6.sp),
@@ -1723,7 +1749,10 @@ class _CommentTile extends StatelessWidget {
                     : expanded
                     ? i18n('video_replies_collapse')
                     : i18n('video_replies_expand', args: {'count': '${comment.rcount}'}),
-                style: AppTextStyles.t14W500.copyWith(color: focused ? accent : Colors.white54),
+                style: AppTextStyles.t14.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: focused ? accent : Colors.white54,
+                ),
               ),
             ),
           ],
@@ -1741,11 +1770,11 @@ class _CommentTile extends StatelessWidget {
                           children: [
                             TextSpan(
                               text: '${reply.uname}: ',
-                              style: AppTextStyles.t14W600.copyWith(color: accent),
+                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
                             ),
                             TextSpan(
                               text: reply.content,
-                              style: AppTextStyles.t14W300.copyWith(color: Colors.white70),
+                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, color: Colors.white70),
                             ),
                           ],
                         ),

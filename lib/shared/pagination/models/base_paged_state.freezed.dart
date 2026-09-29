@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'base_paged_state.dart';
@@ -9,6 +9,7 @@ part of 'base_paged_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $BasePagedStateCopyWith<T, BasePagedState<T>> get copyWith => _$BasePagedStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BasePagedState<T>&&(identical(other.controllerState, controllerState) || other.controllerState == controllerState)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.allLocalItems, allLocalItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.pageSize, pageSize) || other.pageSize == pageSize)&&(identical(other.canLoadMore, canLoadMore) || other.canLoadMore == canLoadMore)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount));
+  final _this = this as BasePagedState<T>;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BasePagedState<T>&&(identical(other.controllerState, _this.controllerState) || other.controllerState == _this.controllerState)&&const DeepCollectionEquality().equals(other.items, _this.items)&&const DeepCollectionEquality().equals(other.allLocalItems, _this.allLocalItems)&&(identical(other.currentPage, _this.currentPage) || other.currentPage == _this.currentPage)&&(identical(other.pageSize, _this.pageSize) || other.pageSize == _this.pageSize)&&(identical(other.canLoadMore, _this.canLoadMore) || other.canLoadMore == _this.canLoadMore)&&(identical(other.totalCount, _this.totalCount) || other.totalCount == _this.totalCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,controllerState,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(allLocalItems),currentPage,pageSize,canLoadMore,totalCount);
+int get hashCode {
+  final _this = this as BasePagedState<T>;
+  return Object.hash(runtimeType,_this.controllerState,const DeepCollectionEquality().hash(_this.items),const DeepCollectionEquality().hash(_this.allLocalItems),_this.currentPage,_this.pageSize,_this.canLoadMore,_this.totalCount);
+}
 
 @override
 String toString() {
-  return 'BasePagedState<$T>(controllerState: $controllerState, items: $items, allLocalItems: $allLocalItems, currentPage: $currentPage, pageSize: $pageSize, canLoadMore: $canLoadMore, totalCount: $totalCount)';
+  final _this = this as BasePagedState<T>;
+  return 'BasePagedState<$T>(controllerState: ${_this.controllerState}, items: ${_this.items}, allLocalItems: ${_this.allLocalItems}, currentPage: ${_this.currentPage}, pageSize: ${_this.pageSize}, canLoadMore: ${_this.canLoadMore}, totalCount: ${_this.totalCount})';
 }
 
 
@@ -63,7 +69,7 @@ class _$BasePagedStateCopyWithImpl<T,$Res>
 /// Create a copy of BasePagedState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? controllerState = null,Object? items = null,Object? allLocalItems = null,Object? currentPage = null,Object? pageSize = null,Object? canLoadMore = null,Object? totalCount = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(BasePagedState(
 controllerState: null == controllerState ? _self.controllerState : controllerState // ignore: cast_nullable_to_non_nullable
 as BaseControllerState,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<T>,allLocalItems: null == allLocalItems ? _self.allLocalItems : allLocalItems // ignore: cast_nullable_to_non_nullable
@@ -221,7 +227,7 @@ return $default(_that.controllerState,_that.items,_that.allLocalItems,_that.curr
 
 
 class _BasePagedState<T> implements BasePagedState<T> {
-  const _BasePagedState({required this.controllerState, final  List<T> items = const [], final  List<T> allLocalItems = const [], this.currentPage = 1, this.pageSize = 20, this.canLoadMore = false, this.totalCount}): _items = items,_allLocalItems = allLocalItems;
+  const _BasePagedState({required this.controllerState,  List<T> items = const [],  List<T> allLocalItems = const [], this.currentPage = 1, this.pageSize = 20, this.canLoadMore = false, this.totalCount}): _items = items,_allLocalItems = allLocalItems;
   
 
 @override final  BaseControllerState controllerState;
@@ -254,16 +260,18 @@ _$BasePagedStateCopyWith<T, _BasePagedState<T>> get copyWith => __$BasePagedStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BasePagedState<T>&&(identical(other.controllerState, controllerState) || other.controllerState == controllerState)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._allLocalItems, _allLocalItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.pageSize, pageSize) || other.pageSize == pageSize)&&(identical(other.canLoadMore, canLoadMore) || other.canLoadMore == canLoadMore)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BasePagedState<T>&&(identical(other.controllerState, controllerState) || other.controllerState == controllerState)&&const DeepCollectionEquality().equals(other.items, _items)&&const DeepCollectionEquality().equals(other.allLocalItems, _allLocalItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.pageSize, pageSize) || other.pageSize == pageSize)&&(identical(other.canLoadMore, canLoadMore) || other.canLoadMore == canLoadMore)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,controllerState,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_allLocalItems),currentPage,pageSize,canLoadMore,totalCount);
+int get hashCode {
+    return Object.hash(runtimeType,controllerState,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_allLocalItems),currentPage,pageSize,canLoadMore,totalCount);
+}
 
 @override
 String toString() {
-  return 'BasePagedState<$T>(controllerState: $controllerState, items: $items, allLocalItems: $allLocalItems, currentPage: $currentPage, pageSize: $pageSize, canLoadMore: $canLoadMore, totalCount: $totalCount)';
+    return 'BasePagedState<$T>(controllerState: $controllerState, items: $items, allLocalItems: $allLocalItems, currentPage: $currentPage, pageSize: $pageSize, canLoadMore: $canLoadMore, totalCount: $totalCount)';
 }
 
 

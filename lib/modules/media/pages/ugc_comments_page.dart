@@ -1,12 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+
 
 /// A shared TV comments page for one archive (`x/v2/reply/wbi/main`), used by
 /// both music and video modes: hot/newest switch, root list with up to three
@@ -149,7 +149,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                       ),
                       child: Text(
                         label,
-                        style: AppTextStyles.t16W600.copyWith(
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, 
                           color: _hot == isHot ? accent : tvTheme.secondaryTextColor,
                         ),
                       ),
@@ -185,7 +185,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                                             )
                                           : Text(
                                               i18n('all_results_loaded'),
-                                              style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                             ),
                                     ),
                                   );
@@ -248,12 +248,12 @@ class _CommentTile extends StatelessWidget {
                             comment.uname,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                           ),
                         ),
                         if (comment.isTop) ...[
                           SizedBox(width: 8.sp),
-                          Text(i18n('video_comments_top'), style: AppTextStyles.t14W600.copyWith(color: accent)),
+                          Text(i18n('video_comments_top'), style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent)),
                         ],
                       ],
                     ),
@@ -286,7 +286,7 @@ class _CommentTile extends StatelessWidget {
                         SizedBox(width: 6.sp),
                         Text(
                           readableCount(comment.like.toString()),
-                          style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                         ),
                       ],
                     ],
@@ -298,7 +298,7 @@ class _CommentTile extends StatelessWidget {
           SizedBox(height: 10.sp),
           SelectableText(
             comment.content,
-            style: AppTextStyles.t16W500.copyWith(color: tvTheme.primaryTextColor, height: 1.5),
+            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor, height: 1.5),
           ),
           if (comment.replies.isNotEmpty) ...[
             SizedBox(height: 10.sp),
@@ -316,11 +316,11 @@ class _CommentTile extends StatelessWidget {
                       padding: EdgeInsets.only(bottom: 6.sp),
                       child: RichText(
                         text: TextSpan(
-                          style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           children: [
                             TextSpan(
                               text: '${reply.uname}: ',
-                              style: AppTextStyles.t14W600.copyWith(color: accent),
+                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
                             ),
                             TextSpan(text: reply.content),
                           ],
@@ -330,7 +330,7 @@ class _CommentTile extends StatelessWidget {
                   if (comment.rcount > comment.replies.length)
                     Text(
                       '${i18n('video_comments_more_replies')} ${comment.rcount}',
-                      style: AppTextStyles.t14W500.copyWith(color: accent),
+                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: accent),
                     ),
                 ],
               ),

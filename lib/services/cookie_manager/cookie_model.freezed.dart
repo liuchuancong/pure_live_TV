@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'cookie_model.dart';
@@ -9,6 +9,7 @@ part of 'cookie_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $CookieModelCopyWith<CookieModel> get copyWith => _$CookieModelCopyWithImpl<Cook
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CookieModel&&(identical(other.bilibiliCookie, bilibiliCookie) || other.bilibiliCookie == bilibiliCookie)&&(identical(other.bilibiliUid, bilibiliUid) || other.bilibiliUid == bilibiliUid)&&(identical(other.huyaCookie, huyaCookie) || other.huyaCookie == huyaCookie)&&(identical(other.douyuCookie, douyuCookie) || other.douyuCookie == douyuCookie)&&(identical(other.douyuLtp0, douyuLtp0) || other.douyuLtp0 == douyuLtp0)&&(identical(other.douyuDid, douyuDid) || other.douyuDid == douyuDid)&&(identical(other.douyuCookieSavedAt, douyuCookieSavedAt) || other.douyuCookieSavedAt == douyuCookieSavedAt)&&(identical(other.douyuForceRenewal, douyuForceRenewal) || other.douyuForceRenewal == douyuForceRenewal)&&(identical(other.douyinCookie, douyinCookie) || other.douyinCookie == douyinCookie)&&(identical(other.kuaishouCookie, kuaishouCookie) || other.kuaishouCookie == kuaishouCookie)&&(identical(other.yyCookie, yyCookie) || other.yyCookie == yyCookie)&&(identical(other.soopCookie, soopCookie) || other.soopCookie == soopCookie)&&(identical(other.twitchCookie, twitchCookie) || other.twitchCookie == twitchCookie));
+  final _this = this as CookieModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CookieModel&&(identical(other.bilibiliCookie, _this.bilibiliCookie) || other.bilibiliCookie == _this.bilibiliCookie)&&(identical(other.bilibiliUid, _this.bilibiliUid) || other.bilibiliUid == _this.bilibiliUid)&&(identical(other.huyaCookie, _this.huyaCookie) || other.huyaCookie == _this.huyaCookie)&&(identical(other.douyuCookie, _this.douyuCookie) || other.douyuCookie == _this.douyuCookie)&&(identical(other.douyuLtp0, _this.douyuLtp0) || other.douyuLtp0 == _this.douyuLtp0)&&(identical(other.douyuDid, _this.douyuDid) || other.douyuDid == _this.douyuDid)&&(identical(other.douyuCookieSavedAt, _this.douyuCookieSavedAt) || other.douyuCookieSavedAt == _this.douyuCookieSavedAt)&&(identical(other.douyuForceRenewal, _this.douyuForceRenewal) || other.douyuForceRenewal == _this.douyuForceRenewal)&&(identical(other.douyinCookie, _this.douyinCookie) || other.douyinCookie == _this.douyinCookie)&&(identical(other.kuaishouCookie, _this.kuaishouCookie) || other.kuaishouCookie == _this.kuaishouCookie)&&(identical(other.yyCookie, _this.yyCookie) || other.yyCookie == _this.yyCookie)&&(identical(other.soopCookie, _this.soopCookie) || other.soopCookie == _this.soopCookie)&&(identical(other.twitchCookie, _this.twitchCookie) || other.twitchCookie == _this.twitchCookie));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,bilibiliCookie,bilibiliUid,huyaCookie,douyuCookie,douyuLtp0,douyuDid,douyuCookieSavedAt,douyuForceRenewal,douyinCookie,kuaishouCookie,yyCookie,soopCookie,twitchCookie);
+int get hashCode {
+  final _this = this as CookieModel;
+  return Object.hash(runtimeType,_this.bilibiliCookie,_this.bilibiliUid,_this.huyaCookie,_this.douyuCookie,_this.douyuLtp0,_this.douyuDid,_this.douyuCookieSavedAt,_this.douyuForceRenewal,_this.douyinCookie,_this.kuaishouCookie,_this.yyCookie,_this.soopCookie,_this.twitchCookie);
+}
 
 @override
 String toString() {
-  return 'CookieModel(bilibiliCookie: $bilibiliCookie, bilibiliUid: $bilibiliUid, huyaCookie: $huyaCookie, douyuCookie: $douyuCookie, douyuLtp0: $douyuLtp0, douyuDid: $douyuDid, douyuCookieSavedAt: $douyuCookieSavedAt, douyuForceRenewal: $douyuForceRenewal, douyinCookie: $douyinCookie, kuaishouCookie: $kuaishouCookie, yyCookie: $yyCookie, soopCookie: $soopCookie, twitchCookie: $twitchCookie)';
+  final _this = this as CookieModel;
+  return 'CookieModel(bilibiliCookie: ${_this.bilibiliCookie}, bilibiliUid: ${_this.bilibiliUid}, huyaCookie: ${_this.huyaCookie}, douyuCookie: ${_this.douyuCookie}, douyuLtp0: ${_this.douyuLtp0}, douyuDid: ${_this.douyuDid}, douyuCookieSavedAt: ${_this.douyuCookieSavedAt}, douyuForceRenewal: ${_this.douyuForceRenewal}, douyinCookie: ${_this.douyinCookie}, kuaishouCookie: ${_this.kuaishouCookie}, yyCookie: ${_this.yyCookie}, soopCookie: ${_this.soopCookie}, twitchCookie: ${_this.twitchCookie})';
 }
 
 
@@ -66,7 +72,7 @@ class _$CookieModelCopyWithImpl<$Res>
 /// Create a copy of CookieModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? bilibiliCookie = null,Object? bilibiliUid = null,Object? huyaCookie = null,Object? douyuCookie = null,Object? douyuLtp0 = null,Object? douyuDid = null,Object? douyuCookieSavedAt = null,Object? douyuForceRenewal = null,Object? douyinCookie = null,Object? kuaishouCookie = null,Object? yyCookie = null,Object? soopCookie = null,Object? twitchCookie = null,}) {
-  return _then(_self.copyWith(
+  return _then(CookieModel(
 bilibiliCookie: null == bilibiliCookie ? _self.bilibiliCookie : bilibiliCookie // ignore: cast_nullable_to_non_nullable
 as String,bilibiliUid: null == bilibiliUid ? _self.bilibiliUid : bilibiliUid // ignore: cast_nullable_to_non_nullable
 as int,huyaCookie: null == huyaCookie ? _self.huyaCookie : huyaCookie // ignore: cast_nullable_to_non_nullable
@@ -251,16 +257,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CookieModel&&(identical(other.bilibiliCookie, bilibiliCookie) || other.bilibiliCookie == bilibiliCookie)&&(identical(other.bilibiliUid, bilibiliUid) || other.bilibiliUid == bilibiliUid)&&(identical(other.huyaCookie, huyaCookie) || other.huyaCookie == huyaCookie)&&(identical(other.douyuCookie, douyuCookie) || other.douyuCookie == douyuCookie)&&(identical(other.douyuLtp0, douyuLtp0) || other.douyuLtp0 == douyuLtp0)&&(identical(other.douyuDid, douyuDid) || other.douyuDid == douyuDid)&&(identical(other.douyuCookieSavedAt, douyuCookieSavedAt) || other.douyuCookieSavedAt == douyuCookieSavedAt)&&(identical(other.douyuForceRenewal, douyuForceRenewal) || other.douyuForceRenewal == douyuForceRenewal)&&(identical(other.douyinCookie, douyinCookie) || other.douyinCookie == douyinCookie)&&(identical(other.kuaishouCookie, kuaishouCookie) || other.kuaishouCookie == kuaishouCookie)&&(identical(other.yyCookie, yyCookie) || other.yyCookie == yyCookie)&&(identical(other.soopCookie, soopCookie) || other.soopCookie == soopCookie)&&(identical(other.twitchCookie, twitchCookie) || other.twitchCookie == twitchCookie));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CookieModel&&(identical(other.bilibiliCookie, bilibiliCookie) || other.bilibiliCookie == bilibiliCookie)&&(identical(other.bilibiliUid, bilibiliUid) || other.bilibiliUid == bilibiliUid)&&(identical(other.huyaCookie, huyaCookie) || other.huyaCookie == huyaCookie)&&(identical(other.douyuCookie, douyuCookie) || other.douyuCookie == douyuCookie)&&(identical(other.douyuLtp0, douyuLtp0) || other.douyuLtp0 == douyuLtp0)&&(identical(other.douyuDid, douyuDid) || other.douyuDid == douyuDid)&&(identical(other.douyuCookieSavedAt, douyuCookieSavedAt) || other.douyuCookieSavedAt == douyuCookieSavedAt)&&(identical(other.douyuForceRenewal, douyuForceRenewal) || other.douyuForceRenewal == douyuForceRenewal)&&(identical(other.douyinCookie, douyinCookie) || other.douyinCookie == douyinCookie)&&(identical(other.kuaishouCookie, kuaishouCookie) || other.kuaishouCookie == kuaishouCookie)&&(identical(other.yyCookie, yyCookie) || other.yyCookie == yyCookie)&&(identical(other.soopCookie, soopCookie) || other.soopCookie == soopCookie)&&(identical(other.twitchCookie, twitchCookie) || other.twitchCookie == twitchCookie));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,bilibiliCookie,bilibiliUid,huyaCookie,douyuCookie,douyuLtp0,douyuDid,douyuCookieSavedAt,douyuForceRenewal,douyinCookie,kuaishouCookie,yyCookie,soopCookie,twitchCookie);
+int get hashCode {
+    return Object.hash(runtimeType,bilibiliCookie,bilibiliUid,huyaCookie,douyuCookie,douyuLtp0,douyuDid,douyuCookieSavedAt,douyuForceRenewal,douyinCookie,kuaishouCookie,yyCookie,soopCookie,twitchCookie);
+}
 
 @override
 String toString() {
-  return 'CookieModel(bilibiliCookie: $bilibiliCookie, bilibiliUid: $bilibiliUid, huyaCookie: $huyaCookie, douyuCookie: $douyuCookie, douyuLtp0: $douyuLtp0, douyuDid: $douyuDid, douyuCookieSavedAt: $douyuCookieSavedAt, douyuForceRenewal: $douyuForceRenewal, douyinCookie: $douyinCookie, kuaishouCookie: $kuaishouCookie, yyCookie: $yyCookie, soopCookie: $soopCookie, twitchCookie: $twitchCookie)';
+    return 'CookieModel(bilibiliCookie: $bilibiliCookie, bilibiliUid: $bilibiliUid, huyaCookie: $huyaCookie, douyuCookie: $douyuCookie, douyuLtp0: $douyuLtp0, douyuDid: $douyuDid, douyuCookieSavedAt: $douyuCookieSavedAt, douyuForceRenewal: $douyuForceRenewal, douyinCookie: $douyinCookie, kuaishouCookie: $kuaishouCookie, yyCookie: $yyCookie, soopCookie: $soopCookie, twitchCookie: $twitchCookie)';
 }
 
 

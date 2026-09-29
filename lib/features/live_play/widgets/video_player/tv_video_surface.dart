@@ -1,10 +1,5 @@
 import 'package:pure_live/player/index.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/shared/utils/text_util.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/widgets/danmaku/danmaku_overlay.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
@@ -62,7 +57,7 @@ class _InfoPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[Icon(icon, size: 16.sp, color: Colors.white70), SizedBox(width: 4.sp)],
-          Text(label, style: AppTextStyles.t16W600.copyWith(color: filled ? Colors.white : Colors.white70)),
+          Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: filled ? Colors.white : Colors.white70)),
         ],
       ),
     );
@@ -207,7 +202,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                       SizedBox(height: 12.sp),
                       Text(
                         loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
-                        style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                       ),
                     ],
                   ),
@@ -332,7 +327,7 @@ class _RoomInfoBar extends StatelessWidget {
                       room.displayTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t28W600.copyWith(color: Colors.white),
+                      style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                     SizedBox(height: 8.sp),
                     Row(
@@ -347,7 +342,7 @@ class _RoomInfoBar extends StatelessWidget {
                               room.nick,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
                           ),
                         if (room.nick.isNotEmpty && audience.isNotEmpty) SizedBox(width: 10.sp),
@@ -364,7 +359,7 @@ class _RoomInfoBar extends StatelessWidget {
               // glances up for is the time of day.
               Icon(RemixIcons.time_line, size: 24.sp, color: Colors.white70),
               SizedBox(width: 8.sp),
-              TvDigitalClock(format: 'HH:mm', style: AppTextStyles.t28W600.copyWith(color: Colors.white)),
+              TvDigitalClock(format: 'HH:mm', style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
             ],
           ),
         ),
@@ -396,7 +391,7 @@ class _ChannelBannerToast extends StatelessWidget {
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.t24W600.copyWith(color: Colors.white),
+            style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
           ),
         ),
       ),

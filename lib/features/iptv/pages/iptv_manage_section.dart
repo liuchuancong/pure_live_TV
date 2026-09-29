@@ -1,6 +1,4 @@
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
 import 'package:pure_live/app/router/web_router.dart';

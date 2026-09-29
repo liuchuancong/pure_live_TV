@@ -1,8 +1,4 @@
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/tag_management/live_tag.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 

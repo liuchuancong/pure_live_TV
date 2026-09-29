@@ -1,7 +1,5 @@
 import 'dart:io';
-import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 
 Future<void> showExitConfirmDialog(BuildContext context, WidgetRef _) async {
   await TvDialogUtils.show<bool>(context: context, builder: (_) => const _ExitConfirmDialog());

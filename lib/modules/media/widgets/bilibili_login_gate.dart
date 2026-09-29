@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/cookie_manager/bilibili/bilibili_account_controller.dart';
 
 /// Gates music/video mode content behind a bilibili login, the bmsc way: a
@@ -49,12 +49,12 @@ class BilibiliLoginGate extends ConsumerWidget {
                 SizedBox(height: 18.sp),
                 Text(
                   i18n('bili_login_required'),
-                  style: AppTextStyles.t22W700.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
                 ),
                 SizedBox(height: 8.sp),
                 Text(
                   i18n('bili_login_hint'),
-                  style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                 ),
                 SizedBox(height: 20.sp),
                 Container(
@@ -70,7 +70,7 @@ class BilibiliLoginGate extends ConsumerWidget {
                       SizedBox(width: 10.sp),
                       Text(
                         i18n('bili_login_action'),
-                        style: AppTextStyles.t18W600.copyWith(color: focused ? Colors.white : accent),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: focused ? Colors.white : accent),
                       ),
                     ],
                   ),

@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/platforms/sites.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
