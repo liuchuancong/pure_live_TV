@@ -53,20 +53,26 @@ class MusicMiniBar extends ConsumerWidget {
                         builder: (context, focused, child) {
                           return AnimatedContainer(
                             duration: const Duration(milliseconds: 120),
-                            padding: EdgeInsets.symmetric(horizontal: 10.ts(context) * textScale, vertical: 6.ts(context) * textScale),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.ts(context) * textScale,
+                              vertical: 6.ts(context) * textScale,
+                            ),
                             decoration: BoxDecoration(
                               color: focused ? accent.withValues(alpha: 0.18) : Colors.transparent,
                               borderRadius: BorderRadius.circular(12.sp * textScale),
-                              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context) * textScale),
+                              border: Border.all(
+                                color: focused ? accent : Colors.transparent,
+                                width: 2.ts(context) * textScale,
+                              ),
                             ),
                             child: Row(
                               children: [
                                 ClipRRect(
-                                  borderRadius: BorderRadius.circular(10.sp),
+                                  borderRadius: BorderRadius.circular(30.sp),
                                   child: CachedNetworkImage(
-                                    imageUrl: track?.archive.cover ?? '',
-                                    width: 124.ts(context) * textScale,
-                                    height: 80.ts(context) * textScale,
+                                    imageUrl: track?.archive.upFace ?? '',
+                                    width: 40.ts(context) * textScale,
+                                    height: 40.ts(context) * textScale,
                                     fit: BoxFit.cover,
                                     memCacheWidth: 320,
                                     errorWidget: (_, _, _) =>
@@ -88,14 +94,19 @@ class MusicMiniBar extends ConsumerWidget {
                                         ),
                                       ),
                                       SizedBox(height: 2.ts(context)),
-                                      Text(
-                                        track?.archive.upName ?? '',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.t14.copyWith(
-                                          fontWeight: FontWeight.w500,
-                                          color: tvTheme.secondaryTextColor,
-                                        ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width: 10.ts(context)),
+                                          Text(
+                                            track?.archive.upName ?? '',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.t14.copyWith(
+                                              fontWeight: FontWeight.w500,
+                                              color: tvTheme.secondaryTextColor,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

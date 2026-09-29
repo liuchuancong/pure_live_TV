@@ -1,16 +1,15 @@
 import 'package:pure_live/modules/media/api/bilibili_api_client.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 
 /// The bilibili PGC (影视/番剧) layer, newBV's pgc sections: the season
 /// feed, the season detail with its episode list, and the episode playurl.
 ///
-/// The web playurl for PGC shares the DASH shape with UGC, so the answer is
-/// converted into the shared [MusicPlayUrls] model and handed to the common
-/// VOD engine — the video module injects [resolvePlayUrls] as the
-/// `modulePlayUrlResolver` hook. A paid episode answers with a preview range
-/// as a guest; the muxed durl fallback covers it the same way UGC does.
+/// The web playurl answer is converted into the shared [MusicPlayUrls] model
+/// and handed to the common VOD engine — the video module injects
+/// [resolvePlayUrls] as the `modulePlayUrlResolver` hook. A paid episode
+/// answers with a preview range as a guest; the muxed mp4 durl covers it the
+/// same way UGC does.
 class BilibiliPgcApi {
   BilibiliPgcApi._();
 
@@ -125,16 +124,28 @@ class BilibiliPgcApi {
   }
 
   /// Playback URLs for one episode, converted into the shared playurl model.
+  ///
+  /// The muxed mp4 route only (`fnval=0`): bilibili merges video and audio
+  /// server-side into a single `durl` mp4 — the same policy the UGC endpoint
+  /// rides since the DASH route was removed (its COS/edge-cloud CDN dispatch
+  /// answers ffmpeg-based players with HTTP 400). A paid episode answers with
+  /// a preview range as a guest; the single-segment durl covers it the same
+  /// way UGC does.
   Future<MusicPlayUrls> getPlayUrls({required int epId, required int cid}) async {
     final result = await HttpClient.instance.getJson(
       'https://api.bilibili.com/pgc/player/web/playurl',
       queryParameters: {
         'ep_id': '$epId',
         'cid': '$cid',
-        'qn': '127',
-        'fnval': '4048',
+        'qn': '80',
+        'fnval': '0',
         'fnver': '0',
         'fourk': '1',
+        'platform': 'html5',
+        'format': 'mp4',
+        'type': 'video',
+        'otype': 'json',
+        'high_quality': '1',
         'try_look': '1',
       },
       header: await _client.headers(),
@@ -144,78 +155,17 @@ class BilibiliPgcApi {
       throw Exception('pgc playurl failed: $message');
     }
     final data = result['data'] as Map<dynamic, dynamic>? ?? {};
-    final dash = data['dash'] as Map<dynamic, dynamic>?;
-
-    if (dash != null) {
-      // The UGC DASH picker is identical for PGC answers.
-      final urls = _pickDash(dash, servedQuality: int.tryParse(data['quality']?.toString() ?? '') ?? 0);
-      if (urls != null) return urls;
-    }
     final durl = data['durl'] as List?;
     if (durl != null && durl.isNotEmpty) {
-      return MusicPlayUrls(
-        videoUrl: durl.first['url']?.toString() ?? '',
-        quality: int.tryParse(data['quality']?.toString() ?? '') ?? 0,
-        isDash: false,
-      );
+      final order = (durl.first['order'] ?? 1) as int;
+      if (durl.length == 1 || order > 1) {
+        return MusicPlayUrls(
+          videoUrl: durl.first['url']?.toString() ?? '',
+          quality: int.tryParse(data['quality']?.toString() ?? '') ?? 0,
+          isDash: false,
+        );
+      }
     }
     throw Exception('pgc playurl: no playable stream');
-  }
-
-  /// Same AVC-first quality picker as [BilibiliMusicApi] uses, including its
-  /// `bestUrlOf` mcdn-edge avoidance — one stream-selection policy for every
-  /// DASH answer in the app.
-  MusicPlayUrls? _pickDash(Map<dynamic, dynamic> dash, {required int servedQuality}) {
-    final videos = (dash['video'] as List?) ?? const [];
-    final audios = (dash['audio'] as List?) ?? const [];
-    if (videos.isEmpty) return null;
-
-    final Map<int, Map<dynamic, dynamic>> byQuality = {};
-    for (final v in videos) {
-      final id = int.tryParse(v['id']?.toString() ?? '') ?? 0;
-      if (servedQuality > 0 && id > servedQuality) continue;
-      final existing = byQuality[id];
-      final isAvc = v['codecs']?.toString().startsWith('avc') == true;
-      if (existing == null || (isAvc && existing['codecs']?.toString().startsWith('avc') != true)) {
-        byQuality[id] = v;
-      }
-    }
-    final tiers = byQuality.keys.toList()..sort((a, b) => b - a);
-    if (tiers.isEmpty) return null;
-
-    List<String> backupsOf(Map<dynamic, dynamic> v) => [
-      for (final url in (v['backupUrl'] as List?) ?? const <dynamic>[])
-      if (url.toString().isNotEmpty) url.toString(),
-    ];
-    final picked = byQuality[tiers.first]!;
-    final videoUrl = BilibiliMusicApi.bestUrlOf(picked);
-    if (videoUrl.isEmpty) return null;
-    final options = [
-      for (final id in tiers)
-        MusicStreamOption(
-          quality: id,
-          url: BilibiliMusicApi.bestUrlOf(byQuality[id]!),
-          codecs: byQuality[id]!['codecs']?.toString() ?? '',
-          backupUrls: backupsOf(byQuality[id]!),
-        ),
-    ];
-    Map<dynamic, dynamic>? pickAudio() {
-      const preference = [30280, 30232, 30216];
-      for (final id in preference) {
-        for (final audio in audios) {
-          if (int.tryParse(audio['id']?.toString() ?? '') == id) return audio;
-        }
-      }
-      return audios.isEmpty ? null : audios.last;
-    }
-
-    final audio = pickAudio();
-    return MusicPlayUrls(
-      videoUrl: videoUrl,
-      audioUrl: audio == null ? null : BilibiliMusicApi.bestUrlOf(audio),
-      videoBackupUrls: backupsOf(picked),
-      quality: tiers.first,
-      videoOptions: options,
-    );
   }
 }

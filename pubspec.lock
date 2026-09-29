@@ -1126,8 +1126,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1135,8 +1135,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_better_player"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1144,8 +1144,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_fvp"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1153,8 +1153,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_ijk_player"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1162,8 +1162,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_live"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1171,8 +1171,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_logging"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1180,8 +1180,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_media_kit"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1189,8 +1189,8 @@ packages:
     dependency: transitive
     description:
       path: "packages/media_core_memory"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.1.0"
@@ -1198,8 +1198,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/media_core_native"
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
-      resolved-ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
+      resolved-ref: "78b57b7bd94ad56336ea517164db136dbada19d9"
       url: "https://github.com/liuchuancong/media_core.git"
     source: git
     version: "0.2.0"

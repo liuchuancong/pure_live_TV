@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:async';
 import 'dart:convert';
@@ -8,11 +7,9 @@ import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:media_core_media_kit/media_core_media_kit.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/player/core/playback_header_resolver.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/music/services/music_audio_cache.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 part 'music_player_controller.g.dart';
@@ -135,8 +132,17 @@ class MusicPlayerController extends _$MusicPlayerController {
     final position = _handle?.position ?? Duration.zero;
     await _releaseHandle();
     final track = state.current;
-    if (track == null || _currentUrls == null || _currentBvid == null) return;
-    await _ignoreCancelled(() => _openUrls(track, _currentUrls!, _currentBvid!));
+    final bvid = _currentBvid;
+    if (track == null || bvid == null) return;
+
+    // Re-resolve rather than replay the stored answer: its signed URL may be
+    // near expiry, and the new backend wants a fresh stream anyway.
+    try {
+      final urls = await modulePlayUrlResolver?.call(track) ?? await _api.getPlayUrls(bvid: bvid, cid: track.part.cid);
+      await _openUrls(track, urls, bvid);
+    } catch (_) {
+      return;
+    }
     await _restorePosition(position);
   }
 
@@ -511,51 +517,10 @@ class MusicPlayerController extends _$MusicPlayerController {
     await seekBy(direction * _accelStep);
   }
 
-  /// Toggles between the lyric view and the video view without leaving the
-  /// player.
-  ///
-  /// - video → audio: mpv drops the video track in place, the sound keeps
-  ///   playing, no re-open.
-  /// - audio → video: when the open primary carries a video track the switch
-  ///   is the same in-place `vid=auto`. The cached file and the audio m4s
-  ///   carry NO video track to restore — asking mpv for one on them is the
-  ///   "toggled to 显示画面 but no picture" state — so that toggle re-opens
-  ///   the DASH pair and resumes at the current position.
-  ///
-  /// A re-open that fails keeps the sound and puts the mode back: a video stream
-  /// that is expired or refused is not a dead track, and letting it reach the
-  /// failure path is what made "显示画面" skip to the next song.
   Future<void> toggleAudioOnly() async {
     final audioOnly = !state.audioOnly;
     final handle = _handle;
     state = state.copyWith(audioOnly: audioOnly);
-
-    if (!audioOnly && !_videoPrimaryOpen) {
-      final position = handle?.position ?? Duration.zero;
-      final track = state.current;
-      final bvid = _currentBvid;
-      if (track != null && bvid != null) {
-        // The open primary carries no picture: say it is loading instead of
-        // leaving the toggle silent while the network pair re-opens.
-        state = state.copyWith(resolving: true);
-        try {
-          // The stored answer may be hours old, and a stale DASH audio URL is
-          // exactly the silent-video failure — the picture streams while the
-          // expired audio 403s. Re-resolve instead of replaying the stored
-          // answer.
-          var fresh = await modulePlayUrlResolver?.call(track);
-          fresh ??= await _api.getPlayUrls(bvid: bvid, cid: track.part.cid);
-          await _openUrls(track, fresh, bvid);
-          await _restorePosition(position);
-          return;
-        } catch (_) {
-          state = state.copyWith(audioOnly: true);
-          return;
-        } finally {
-          if (ref.mounted) state = state.copyWith(resolving: false);
-        }
-      }
-    }
 
     try {
       await handle?.setAudioOnly(audioOnly);
@@ -564,47 +529,22 @@ class MusicPlayerController extends _$MusicPlayerController {
     }
   }
 
-  /// Whether the open source is the cache's local file rather than the network.
-  bool _playingLocalFile = false;
-
-  /// Whether the open primary carries a video track (the video m4s). Toggling
-  /// back to 显示画面 is the instant in-place `vid=auto` only when this is
-  /// true; the cached file and the audio m4s carry no video track to restore,
-  /// so that toggle must re-open the network pair.
-  bool _videoPrimaryOpen = true;
-
-  /// Drops back to the audio stream at [position] after the picture could not be
-  /// opened, keeping the track playing.
-  ///
-  /// Deliberately not the failure path ([_advanceAfterFailure]): that one is for
-  /// a track that is dead, and running a refused video stream through it skipped
-  /// the queue on every 显示画面 press.
-  Future<void> _degradeToAudioOnly(Duration position) async {
-    _consecutiveFailures = 0;
-    state = state.copyWith(audioOnly: true, resolving: false);
-    ToastUtil.show(i18n('music_video_failed'));
-
-    final urls = _currentUrls;
-    final track = state.current;
-    final bvid = _currentBvid;
-    if (urls == null || urls.audioUrl == null || track == null || bvid == null) {
-      await _openCurrent();
-      return;
-    }
-    try {
-      await _openUrls(track, urls, bvid);
-      await _restorePosition(position);
-    } catch (_) {
-      // The audio is gone too — now it is the failure path's business.
-      await _openCurrent();
-    }
-  }
-
   Future<void> _restorePosition(Duration position) async {
     if (position <= Duration.zero) return;
     await _ignoreCancelled(() async {
       final target = _handle;
-      if (target != null) await target.seek(position);
+      if (target == null) return;
+      // A freshly opened backend is not immediately seekable: better_player
+      // initializes asynchronously and a seek that lands before its first
+      // duration report is dropped (and could poison the session), while mpv
+      // accepts one only once the demuxer is up. Wait — bounded — for the
+      // stream to prove it is live (duration known or already playing), then
+      // seek.
+      for (var i = 0; i < 40; i++) {
+        if (target.duration > Duration.zero || target.isPlaying) break;
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+      await target.seek(position);
     });
   }
 
@@ -666,9 +606,9 @@ class MusicPlayerController extends _$MusicPlayerController {
       }
 
       // A module resolver (video PGC) may own the track; otherwise the plain
-      // UGC playurl endpoint answers.
-      var urls = await modulePlayUrlResolver?.call(repairedTrack());
-      urls ??= await _api.getPlayUrls(bvid: bvid, cid: cid);
+      // UGC playurl endpoint answers. Both return the muxed mp4: one URL,
+      // sound and picture in one container, playable by every backend.
+      var urls = await modulePlayUrlResolver?.call(repairedTrack()) ?? await _api.getPlayUrls(bvid: bvid, cid: cid);
       if (generation != _generation) return;
 
       // The video mode's 默认清晰度: exact rendition match only — if the answer
@@ -708,9 +648,7 @@ class MusicPlayerController extends _$MusicPlayerController {
   Future<void> _openUrls(MusicTrack track, MusicPlayUrls urls, String bvid) async {
     // Music keeps one player for the whole queue: the handle below is reused
     // across tracks, and only [stop] / [pauseForLive] (live or video taking
-    // the speakers) / a backend switch tear it down. Every open resets the
-    // per-source state a reused player carries — see the audio-files and
-    // header resets below.
+    // the speakers) / a backend switch tear it down.
     // Music can be the first thing the user plays in a session; the live
     // bootstrap otherwise owns this call. Idempotent.
     await GlobalPlayerService.instance.initialize();
@@ -722,29 +660,8 @@ class MusicPlayerController extends _$MusicPlayerController {
     // The VOD branch of the playback header resolver: the live bilibili
     // policy with the video-page Referer.
     final headers = await PlaybackHeaderResolver.resolveVod(bvid: bvid);
-
-    // 纯音乐 prefers the cached file: once a track has been heard, replaying it
-    // asks nothing from the network. The file carries no picture, so the video
-    // view always streams (and keeps the cache warm for the next listen).
-    _playingLocalFile = false;
     String openUrl = urls.videoUrl;
     var openProtocol = SourceProtocol.https;
-    // Whether the primary source is the video m4s — only then does the DASH
-    // audio ride along as mpv's external audio-files track.
-    var videoPrimary = true;
-    if (state.audioOnly) {
-      final File? cached = await MusicAudioCache.instance.cachedFile(track.id);
-      if (cached != null) {
-        openUrl = cached.path;
-        openProtocol = SourceProtocol.file;
-        _playingLocalFile = true;
-        videoPrimary = false;
-      } else if (urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
-        openUrl = urls.audioUrl!;
-        videoPrimary = false;
-      }
-    }
-    _videoPrimaryOpen = videoPrimary;
 
     final PlayerHandle handle =
         _handle ??
@@ -753,30 +670,10 @@ class MusicPlayerController extends _$MusicPlayerController {
           preferredBackend: _preferredBackend,
         );
     _handle = handle;
-    final String attachedAudio = videoPrimary && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty
-        ? urls.audioUrl!
-        : '';
-    final adapter = handle.adapter;
-    if (adapter is MediaKitPlayerAdapter) {
-      final native = adapter.player.platform;
-      if (native != null) {
-        // Clearing through the property API writes ONE EMPTY PATH into the
-        // list: mpv parses '' as a path, fails to demux it, and the adapter
-        // reports the spurious "Cannot open file ''" as a playback failure —
-        // which wakes the recovery sweep to race the next open. change-list
-        // clr is the string-level clear that stays an empty list.
-        if (attachedAudio.isEmpty) {
-          try {
-            // ignore: avoid_dynamic_calls
-            await (native as dynamic).command(['change-list', 'audio-files', 'clr', '']);
-          } catch (_) {}
-        } else {
-          // ignore: avoid_dynamic_calls
-          await (native as dynamic).setProperty('audio-files', attachedAudio).catchError((Object _) {});
-        }
-      }
-    }
 
+    // The muxed mp4 carries both tracks: no external audio attachment, no
+    // player-wide header surgery — the durl nodes serve plain clients. The
+    // 纯音乐/显示画面 toggle is the native video-track switch on this stream.
     final source = PlayerSource(
       id: SourceId('music_${track.id}_${DateTime.now().millisecondsSinceEpoch}'),
       uri: Uri.parse(openUrl),
@@ -793,20 +690,9 @@ class MusicPlayerController extends _$MusicPlayerController {
       rethrow;
     }
 
-    // 纯音乐/显示画面 is the native video-track switch on the just-opened
-    // stream, not a different source: toggling back is then instant and
-    // seamless. Applied on EVERY open, both ways — a reused player keeps
-    // `vid=no` from an earlier audio-only track, and video mode that never
-    // turned it back on would show a dead surface for the rest of the queue.
     try {
       await handle.setAudioOnly(state.audioOnly);
     } catch (_) {}
-
-    // Warm the cache for the next play of this track while the network stream
-    // runs. Skipped when this session already plays the cached file.
-    if (!_playingLocalFile && state.audioOnly && urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
-      MusicAudioCache.instance.prefetch(trackId: track.id, url: urls.audioUrl!, headers: headers);
-    }
 
     _events?.cancel();
     _events = handle.adapterEvents.listen(_onAdapterEvent);
@@ -831,13 +717,8 @@ class MusicPlayerController extends _$MusicPlayerController {
     if (event is PlayerAdapterCompleted) {
       _onCompleted();
     } else if (event is PlayerAdapterErrorEvent) {
-      // A video stream that fell over is not a dead track — the same track's
-      // audio stream usually still plays, and the lyrics view is the right answer
-      // for it. Only a track with nothing left to play goes to the failure path.
-      if (!state.audioOnly && _currentUrls?.audioUrl != null) {
-        unawaited(_degradeToAudioOnly(_handle?.position ?? Duration.zero));
-        return;
-      }
+      // The muxed mp4 carries both tracks, so a failed stream has no separate
+      // audio to fall back to — it goes straight to the failure path.
       _consecutiveFailures++;
       ToastUtil.show(i18n('music_play_failed'));
       unawaited(_advanceAfterFailure());
@@ -872,11 +753,6 @@ class MusicPlayerController extends _$MusicPlayerController {
   Future<void> _releaseHandle() async {
     _events?.cancel();
     _events = null;
-    // The next player starts with no external audio track on record and no
-    // open primary, so neither the stale-attachment clear nor the audio→video
-    // re-open decision can act on a value the dead player owned.
-    _attachedAudioUrl = null;
-    _videoPrimaryOpen = false;
     final handle = _handle;
     _handle = null;
     if (handle == null) return;

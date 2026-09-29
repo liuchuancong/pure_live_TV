@@ -108,42 +108,42 @@ dependencies:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   media_core_media_kit:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_media_kit
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   media_core_fvp:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_fvp
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   media_core_live:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_live
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   media_core_native:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_native
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   media_core_logging:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_logging
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   media_core_better_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_better_player
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   media_core_ijk_player:
     git:
       url: https://github.com/liuchuancong/media_core.git
       path: ./packages/media_core_ijk_player
-      ref: ef1a8ef2aa173c8d4fad91baf36781bdd33a0204
+      ref: 78b57b7bd94ad56336ea517164db136dbada19d9
   # Imported directly by the wallpaper / background code (and available through
   # the media_core_media_kit adapter's re-export, which pins the same revision);
   # declared here because a direct import should come from a direct dependency.

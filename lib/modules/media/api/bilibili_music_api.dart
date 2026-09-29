@@ -139,19 +139,29 @@ class BilibiliMusicApi {
 
   /// Playback URLs for one part.
   ///
-  /// DASH first: the video-only m4s plays as the primary source with the audio
-  /// m4s attached through mpv's audio-file input (the player takes one URI).
-  /// When the answer carries no DASH (a paid preview, an ancient codec) the
-  /// muxed mp4 durl stands in.
+  /// The muxed mp4 route only (`fnval=0` + `format=mp4` + `platform=html5`):
+  /// bilibili merges video and audio server-side into a single `durl` mp4 that
+  /// every backend plays with no attachment machinery. The DASH route (separate
+  /// video/audio m4s streams) was removed on 2026-09-29 — its CDN dispatch
+  /// increasingly hands out COS/edge-cloud nodes that answer ffmpeg-based
+  /// players with HTTP 400 (measured: `os=bcache` demuxed in 250ms while
+  /// `os=cosbv`/`estgcos`/`estgoss` refused every header combination), and no
+  /// client-side selection could route around that reliably. The trade is the
+  /// rendition ceiling — no 4K / high-bitrate tiers and no per-tier rendition
+  /// list — the same shape every ExoPlayer-based bilibili client gets.
   Future<MusicPlayUrls> getPlayUrls({required String bvid, required int cid}) async {
     final params = <String, String>{
       'bvid': bvid,
       'cid': cid.toString(),
-      'qn': '127',
-      'fnval': '4048',
+      'qn': '80',
+      'fnval': '0',
       'fnver': '0',
       'fourk': '1',
-      'platform': 'oc',
+      'platform': 'html5',
+      'format': 'mp4',
+      'type': 'video',
+      'otype': 'json',
+      'high_quality': '1',
       if (!_client.loggedIn) ..._guestParams(),
     };
     final result = await HttpClient.instance.getJson(
@@ -163,12 +173,6 @@ class BilibiliMusicApi {
       throw Exception('music playurl failed: ${result['code']} ${result['message']}');
     }
     final data = result['data'] as Map<dynamic, dynamic>? ?? {};
-    final dash = data['dash'] as Map<dynamic, dynamic>?;
-
-    if (dash != null) {
-      final urls = _pickDashStreams(dash, servedQuality: int.tryParse(data['quality']?.toString() ?? '') ?? 0);
-      if (urls != null) return urls;
-    }
 
     final durl = data['durl'] as List?;
     if (durl != null && durl.isNotEmpty) {
@@ -185,85 +189,6 @@ class BilibiliMusicApi {
       }
     }
     throw Exception('music playurl: no playable stream');
-  }
-
-  /// Best compatible DASH pair: video at or below the served quality with AVC
-  /// preferred (every TV decodes it), audio at the highest ordinary bitrate.
-  /// Every quality tier the answer offers also lands in [MusicPlayUrls.videoOptions],
-  /// so the player page can switch quality without another request.
-  /// The stream's first usable URL, skipping the mcdn edges when a backup
-  /// offers one. Those hosts (`*.mcdn.bilivideo.cn`, IP-encoded, odd ports)
-  /// often accept the TCP connection but never stream to a plain HTTPS client —
-  /// the player then sits on an "opened" source that delivers nothing.
-  static String bestUrlOf(Map<dynamic, dynamic> stream) {
-    final candidates = <String>[
-      stream['baseUrl']?.toString() ?? '',
-      for (final url in (stream['backupUrl'] as List?) ?? const <dynamic>[]) url.toString(),
-    ].where((url) => url.isNotEmpty).toList();
-    for (final url in candidates) {
-      final host = Uri.tryParse(url)?.host ?? '';
-      if (!host.contains('mcdn')) return url;
-    }
-    return candidates.isEmpty ? '' : candidates.first;
-  }
-
-  MusicPlayUrls? _pickDashStreams(Map<dynamic, dynamic> dash, {required int servedQuality}) {
-    final videos = (dash['video'] as List?) ?? const [];
-    final audios = (dash['audio'] as List?) ?? const [];
-    if (videos.isEmpty) return null;
-
-    // One candidate per quality tier, AVC before HEVC/AV1 (the widest decoder
-    // coverage on TV boxes), highest tier first.
-    final Map<int, Map<dynamic, dynamic>> byQuality = {};
-    for (final v in videos) {
-      final id = int.tryParse(v['id']?.toString() ?? '') ?? 0;
-      if (servedQuality > 0 && id > servedQuality) continue;
-      final existing = byQuality[id];
-      final isAvc = v['codecs']?.toString().startsWith('avc') == true;
-      if (existing == null || (isAvc && existing['codecs']?.toString().startsWith('avc') != true)) {
-        byQuality[id] = v;
-      }
-    }
-    final tiers = byQuality.keys.toList()..sort((a, b) => b - a);
-    if (tiers.isEmpty) return null;
-
-    final picked = byQuality[tiers.first]!;
-    final videoUrl = bestUrlOf(picked);
-    if (videoUrl.isEmpty) return null;
-    List<String> backupsOf(Map<dynamic, dynamic> v) => [
-      for (final url in (v['backupUrl'] as List?) ?? const <dynamic>[])
-      if (url.toString().isNotEmpty) url.toString(),
-    ];
-    final options = [
-      for (final id in tiers)
-        MusicStreamOption(
-          quality: id,
-          url: bestUrlOf(byQuality[id]!),
-          codecs: byQuality[id]!['codecs']?.toString() ?? '',
-          backupUrls: backupsOf(byQuality[id]!),
-        ),
-    ];
-
-    Map<dynamic, dynamic>? pickAudio() {
-      // 30280 = 192k, 30232 = 132k, 30216 = 64k. Dolby / Hi-Res need codec
-      // support not every box has, so the ordinary tiers come first.
-      const preference = [30280, 30232, 30216];
-      for (final id in preference) {
-        for (final audio in audios) {
-          if (int.tryParse(audio['id']?.toString() ?? '') == id) return audio;
-        }
-      }
-      return audios.isEmpty ? null : audios.last;
-    }
-
-    final audio = pickAudio();
-    return MusicPlayUrls(
-      videoUrl: videoUrl,
-      audioUrl: audio == null ? null : bestUrlOf(audio),
-      videoBackupUrls: backupsOf(picked),
-      quality: tiers.first,
-      videoOptions: options,
-    );
   }
 
   /// Human label for a bilibili quality id.

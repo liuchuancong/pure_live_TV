@@ -1,5 +1,4 @@
-import 'package:flutter/widgets.dart';
-
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 
 /// Text sizing for TV panels.
@@ -82,8 +81,7 @@ class TvTextScale {
   ///
   /// `scale(1.0)` is the right value for a box: the scaler is linear in the
   /// sizes this app uses, so a design-pixel length becomes `length * factor`.
-  static double factorOf(BuildContext context) =>
-      AppFontScale.user * MediaQuery.textScalerOf(context).scale(1.0);
+  static double factorOf(BuildContext context) => AppFontScale.user * MediaQuery.textScalerOf(context).scale(1.0);
 }
 
 /// Lengths that have to track the text around them.
@@ -92,7 +90,7 @@ class TvTextScale {
 /// `44.ts(context)` as "the 44 design pixels this label needs at the current
 /// font scale".
 extension TvTextScaledLength on num {
-  double ts(BuildContext context) => toDouble() * TvTextScale.factorOf(context);
+  double ts(BuildContext context) => toDouble().sp * TvTextScale.factorOf(context);
 }
 
 /// Grid delegates whose density follows the text.
