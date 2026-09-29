@@ -108,59 +108,27 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
             SizedBox(height: _itemGap.sp),
             SizedBox(
               width: _centerWidgetWidth.sp,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16.sp),
-                  boxShadow: [
-                    BoxShadow(
-                      color: themeColor.withValues(alpha: 0.3),
-                      blurRadius: 28.sp,
-                      spreadRadius: 3.sp,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: TvInputField(
-                  controller: _searchController,
-                  hint: i18n('search_room_hint'),
-                  // The field grows with the text it holds (t28 inside).
-                  height: 72.sp * TvTextScale.factorOf(context),
-                  maxLines: 1,
-                  onChanged: (text) => ref.read(tvSearchNotifierProvider.notifier).updateKeyword(text),
-                  onSubmitted: _onSearchSubmit,
-                  postFixWidget: GestureDetector(
-                    onTap: () => _onSearchSubmit(_searchController.text),
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 6.sp),
-                      child: Icon(Icons.search_rounded, color: themeColor, size: 32.sp * TvTextScale.factorOf(context)),
+              // TvInputField's own surface: card fill, quiet border, accent
+              // ring only while focused — the same input language as every
+              // other page. The old custom builder stacked a double glow, a
+              // 32sp pill and an always-on accent border on top of it.
+              child: TvInputField(
+                controller: _searchController,
+                hint: i18n('search_room_hint'),
+                height: 72.sp * TvTextScale.factorOf(context),
+                maxLines: 1,
+                onChanged: (text) => ref.read(tvSearchNotifierProvider.notifier).updateKeyword(text),
+                onSubmitted: _onSearchSubmit,
+                postFixWidget: GestureDetector(
+                  onTap: () => _onSearchSubmit(_searchController.text),
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 8.sp),
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: tvTheme.secondaryTextColor,
+                      size: 28.sp * TvTextScale.factorOf(context),
                     ),
                   ),
-                  builder: (content, isFocused) {
-                    final double inputScale = TvTextScale.factorOf(context);
-                    return AnimatedScale(
-                      scale: isFocused ? 1.04 : 1.0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOutCubic,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOutCubic,
-                        height: 80.sp * inputScale,
-                        padding: EdgeInsets.symmetric(horizontal: 18.sp * inputScale, vertical: 12.sp * inputScale),
-                        decoration: BoxDecoration(
-                          color: tvTheme.backgroundColor,
-                          borderRadius: BorderRadius.circular(32.sp * inputScale),
-                          border: Border.all(color: themeColor, width: isFocused ? 2.5.sp : 1.5.sp),
-                          boxShadow: [
-                            BoxShadow(
-                              color: themeColor.withValues(alpha: isFocused ? 0.5 : 0.35),
-                              blurRadius: 12.sp,
-                            ),
-                          ],
-                        ),
-                        child: content,
-                      ),
-                    );
-                  },
                 ),
               ),
             ),
