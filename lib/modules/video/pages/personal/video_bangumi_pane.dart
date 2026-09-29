@@ -140,11 +140,9 @@ class _BangumiCard extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: EdgeInsets.all(8.sp),
-                child: TvMarqueeText(
+            Padding(
+              padding: EdgeInsets.all(8.sp),
+              child: TvMarqueeText(
                   text: item.title,
                   isFocused: focused,
                   style: AppTextStyles.t14.copyWith(
@@ -153,7 +151,6 @@ class _BangumiCard extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),

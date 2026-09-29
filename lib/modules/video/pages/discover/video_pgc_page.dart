@@ -204,14 +204,16 @@ class _PgcCard extends StatelessWidget {
                 ],
               ),
             ),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: EdgeInsets.all(10.sp),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TvMarqueeText(
+            // The info block sizes itself; the cover above takes everything
+            // that remains — the room card's rule, so the card's height is
+            // the grid cell's, not taller.
+            Padding(
+              padding: EdgeInsets.all(10.sp),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TvMarqueeText(
                       text: item.title,
                       isFocused: focused,
                       style: AppTextStyles.t14.copyWith(
@@ -232,7 +234,6 @@ class _PgcCard extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
           ],
         ),
       ),

@@ -34,7 +34,12 @@ Map<String, dynamic> _normalizePgcSeasonJson(Map<String, dynamic> json) => <Stri
   'badge': json['badge'],
   'rating': json['rating']?['score'],
   'styles': [
-    for (final s in (json['styles'] as List?) ?? const <dynamic>[]) s['name']?.toString() ?? '',
+    // `pgc/view/web/season` ships plain strings ("动画"); the feed endpoints
+    // ship name objects. Indexing a *string* element with 'name' crashed the
+    // whole detail open ("type 'String' is not a subtype of type 'int' of
+    // 'index'").
+    for (final s in (json['styles'] as List?) ?? const <dynamic>[])
+      s is Map ? s['name']?.toString() ?? '' : s.toString(),
   ].where((s) => s.isNotEmpty).toList(),
   'pubTime': json['publish']?['pub_time'],
 };
