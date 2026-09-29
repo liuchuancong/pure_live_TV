@@ -1,5 +1,6 @@
 import 'package:pure_live/modules/media/api/bilibili_api_client.dart';
 import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/player/core/playback_header_resolver.dart';
 import 'package:pure_live/shared/common/http_client.dart';
 
 /// The bilibili UGC endpoints the music mode reads.
@@ -22,12 +23,12 @@ class BilibiliMusicApi {
   final BilibiliApiClient _client = BilibiliApiClient.instance;
 
   /// The headers the CDN asks for when fetching the media streams themselves.
-  Future<Map<String, String>> streamHeaders(String bvid) async {
-    return {
-      'user-agent': _client.userAgent,
-      'referer': 'https://www.bilibili.com/video/$bvid/',
-      if (_client.loggedIn) 'cookie': _client.cookie,
-    };
+  ///
+  /// Delegates to the central per-platform policy ([PlaybackHeaderResolver]):
+  /// same cookie + buvid fallback and UA as live playback, only the Referer is
+  /// the video page. Guests keep playing through the anonymous buvid cookie.
+  Future<Map<String, String>> streamHeaders(String bvid) {
+    return PlaybackHeaderResolver.resolveVod(bvid: bvid);
   }
 
   Map<String, String> _guestParams() => const {
