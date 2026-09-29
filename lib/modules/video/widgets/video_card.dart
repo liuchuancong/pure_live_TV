@@ -163,47 +163,82 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                         ),
                       ),
                     ),
-                    // On-cover pills are TvButton mini, the room card's badge
-                    // language: counts bottom-left, duration bottom-right.
+                    // On-cover meta stays hand-drawn and compact: the room
+                    // card's TvButton pills are sized for its cell, and at a
+                    // 160px video cell they swallow the cover (and overflow).
                     Positioned(
                       left: 10.sp,
                       right: 10.sp,
-                      bottom: 8.sp,
+                      bottom: 6.sp,
                       child: Row(
                         children: [
-                          TvButton(
-                            excludeFocus: true,
-                            title: _wan(archive.playCount),
-                            icon: Icon(Icons.play_arrow_rounded, size: 16.sp),
-                            size: TvButtonSize.mini,
+                          Icon(Icons.play_arrow_rounded, size: 14.sp, color: Colors.white.withValues(alpha: 0.9)),
+                          SizedBox(width: 2.sp),
+                          Flexible(
+                            child: Text(
+                              _wan(archive.playCount),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.t14.copyWith(
+                                fontSize: 12.sp,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
                           ),
-                          SizedBox(width: 6.sp),
-                          TvButton(
-                            excludeFocus: true,
-                            title: _wan(archive.barrageCount),
-                            icon: Icon(Icons.comment_outlined, size: 16.sp),
-                            size: TvButtonSize.mini,
+                          SizedBox(width: 8.sp),
+                          Icon(Icons.comment_outlined, size: 13.sp, color: Colors.white.withValues(alpha: 0.9)),
+                          SizedBox(width: 2.sp),
+                          Flexible(
+                            child: Text(
+                              _wan(archive.barrageCount),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.t14.copyWith(
+                                fontSize: 12.sp,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
                           ),
                           const Spacer(),
                           if (_durationLabel.isNotEmpty)
-                            TvButton(
-                              excludeFocus: true,
-                              title: _durationLabel,
-                              size: TvButtonSize.mini,
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 6.sp, vertical: 1.sp),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(6.sp),
+                              ),
+                              child: Text(
+                                _durationLabel,
+                                style: AppTextStyles.t14.copyWith(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                         ],
                       ),
                     ),
-                    // The region/rank pill anchors the top-left corner, like
-                    // the room card's platform badge.
+                    // The region/rank chip anchors the top-left corner.
                     if (badge.isNotEmpty)
                       Positioned(
-                        left: 12.sp,
-                        top: 12.sp,
-                        child: TvButton(
-                          excludeFocus: true,
-                          title: badge,
-                          size: TvButtonSize.mini,
+                        left: 10.sp,
+                        top: 10.sp,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(8.sp),
+                          ),
+                          child: Text(
+                            badge,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.t14.copyWith(
+                              fontSize: 12.sp,
+                              color: Colors.white70,
+                            ),
+                          ),
                         ),
                       ),
                     // Watched progress along the cover's bottom edge.
