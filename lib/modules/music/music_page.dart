@@ -23,6 +23,7 @@ import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.da
 import 'package:pure_live/modules/music/services/daily_recommendation_service.dart';
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 /// The UP's signature line for the artist cards, cached in Hive: one wbi
 /// request per UP, once ever — the caption is static.
@@ -77,42 +78,88 @@ String _musicSectionTabLabel(MusicSection section) => switch (section) {
 /// A multi-section group carries the newBV-style top tab bar: it names the
 /// group's sections and swaps the content below; single-section groups
 /// (搜索) render bare.
-class MusicSectionView extends ConsumerWidget {
+///
+/// With the refresh settings' keep-alive switch on (the live home's switch),
+/// every section's page is built at most once per run and the group renders
+/// an IndexedStack over them — switching tabs re-shows the cached page
+/// instead of refetching it. Off, sections swap in place and a switch
+/// rebuilds the page, as before.
+class MusicSectionView extends ConsumerStatefulWidget {
   const MusicSectionView({super.key, required this.section});
 
   final MusicSection section;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final group = kMusicRailGroups[musicRailIndexFor(section)];
-    final Widget content = switch (section) {
-      MusicSection.favorites => const _FollowSection(key: ValueKey('music_favorites')),
-      MusicSection.daily => const _DailySection(key: ValueKey('music_daily')),
-      MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
-      MusicSection.playlists => const MusicFavFoldersPage(key: ValueKey('music_playlists')),
-      MusicSection.dynamics => const UgcDynamicsPage(key: ValueKey('music_dynamics')),
-      MusicSection.history => const MusicCloudHistoryPage(key: ValueKey('music_history')),
-      MusicSection.followedUps => const MusicFollowPane(key: ValueKey('music_followed_ups')),
-      MusicSection.ranking => const _RankingSection(key: ValueKey('music_ranking')),
-      MusicSection.search => const _SearchSection(key: ValueKey('music_search')),
-    };
+  ConsumerState<MusicSectionView> createState() => _MusicSectionViewState();
+}
 
-    if (group.length == 1) return content;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+class _MusicSectionViewState extends ConsumerState<MusicSectionView> {
+  /// The once-per-run children, keyed by section. Lived in the widget tree via
+  /// the IndexedStack below, a page keeps its scroll position and its fetched
+  /// data across tab switches.
+  final Map<MusicSection, Widget> _children = {};
+
+  Widget _buildSection(MusicSection section) => switch (section) {
+    MusicSection.favorites => const _FollowSection(key: ValueKey('music_favorites')),
+    MusicSection.daily => const _DailySection(key: ValueKey('music_daily')),
+    MusicSection.recents => _SongListSection(key: const ValueKey('music_recents'), section: MusicSection.recents),
+    MusicSection.playlists => const MusicFavFoldersPage(key: ValueKey('music_playlists')),
+    MusicSection.dynamics => const UgcDynamicsPage(key: ValueKey('music_dynamics')),
+    MusicSection.history => const MusicCloudHistoryPage(key: ValueKey('music_history')),
+    MusicSection.followedUps => const MusicFollowPane(key: ValueKey('music_followed_ups')),
+    MusicSection.ranking => const _RankingSection(key: ValueKey('music_ranking')),
+    MusicSection.search => const _SearchSection(key: ValueKey('music_search')),
+  };
+
+  Widget _childFor(MusicSection section) =>
+      _children.putIfAbsent(section, () => _buildSection(section));
+
+  @override
+  Widget build(BuildContext context) {
+    final group = kMusicRailGroups[musicRailIndexFor(widget.section)];
+    final keepAlive = ref.watch(refreshConfigControllerProvider.select((s) => s.homeKeepAlive));
+
+    final List<Widget> Function() column;
+    if (keepAlive && group.length > 1) {
+      column = () => [
         Padding(
           padding: EdgeInsets.fromLTRB(24.sp, 12.sp, 24.sp, 0),
           child: TvTabBar(
             tabs: [for (final s in group) TvTabItemData(title: _musicSectionTabLabel(s))],
-            currentIndex: group.indexOf(section),
+            currentIndex: group.indexOf(widget.section),
             showRefreshLine: false,
             onTabChange: (index) => ref.read(musicSectionIndexProvider.notifier).change(group[index].index),
           ),
         ),
+        Expanded(
+          // Offstage group members keep their state: the dynamic page's grid
+          // and the ranking page's rows survive a tab hop untouched.
+          child: IndexedStack(
+            index: group.indexOf(widget.section),
+            children: [for (final s in group) _childFor(s)],
+          ),
+        ),
+      ];
+    } else {
+      // Keep-alive off (or a single-section group): swap in place, rebuild on
+      // every switch — the pre-cache behaviour the switch exists to choose.
+      final content = keepAlive ? _childFor(widget.section) : _buildSection(widget.section);
+      column = () => [
+        if (group.length > 1)
+          Padding(
+            padding: EdgeInsets.fromLTRB(24.sp, 12.sp, 24.sp, 0),
+            child: TvTabBar(
+              tabs: [for (final s in group) TvTabItemData(title: _musicSectionTabLabel(s))],
+              currentIndex: group.indexOf(widget.section),
+              showRefreshLine: false,
+              onTabChange: (index) => ref.read(musicSectionIndexProvider.notifier).change(group[index].index),
+            ),
+          ),
         Expanded(child: content),
-      ],
-    );
+      ];
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: column());
   }
 }
 
