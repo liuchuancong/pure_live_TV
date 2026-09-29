@@ -9,8 +9,6 @@ import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
-// Leaf model import: the live result rows open the app's own room player.
-import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/models/video_pgc_models.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
@@ -38,7 +36,6 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
     ('video_search_type_video', Icons.movie_outlined),
     ('video_search_type_user', Icons.person_outline_rounded),
     ('video_search_type_pgc', Icons.live_tv_outlined),
-    ('video_search_type_live', Icons.wifi_tethering_rounded),
   ];
 
   @override
@@ -123,8 +120,6 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
         return _UserResults(keyword: _keyword);
       case 2:
         return _PgcResults(keyword: _keyword);
-      case 3:
-        return _LiveResults(keyword: _keyword);
       default:
         final themeState = ref.watch(themeSettingsControllerProvider);
         final param = _videoParams.putIfAbsent(
@@ -429,151 +424,6 @@ class _PgcResultsState extends ConsumerState<_PgcResults> {
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// Live-room results: each row opens the app's own live player on the
-/// bilibili platform — the video module searches, the live domain plays.
-class _LiveResults extends ConsumerStatefulWidget {
-  const _LiveResults({required this.keyword});
-
-  final String keyword;
-
-  @override
-  ConsumerState<_LiveResults> createState() => _LiveResultsState();
-}
-
-class _LiveResultsState extends ConsumerState<_LiveResults> {
-  List<SearchLiveItem> _rooms = [];
-  bool _loading = false;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() => _loading = true);
-    try {
-      final rooms = await BilibiliUgcApi.instance.searchLives(widget.keyword);
-      if (!mounted) return;
-      setState(() {
-        _rooms = rooms;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-
-    if (_loading && _rooms.isEmpty) {
-      return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
-    }
-    if (_error != null && _rooms.isEmpty) {
-      return AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error);
-    }
-    if (_rooms.isEmpty) {
-      return AppStatusView(type: AppStatusType.empty, title: i18n('video_search_live_empty'), subtitle: '');
-    }
-    return DpadRegion(
-      child: ListView.builder(
-        padding: EdgeInsets.all(24.sp),
-        itemCount: _rooms.length,
-        itemBuilder: (context, index) {
-          final room = _rooms[index];
-          final live = room.liveStatus == 1;
-          return TvFocusable(
-            onTap: () => LivePlayRoute(
-              LivePlayArgs(platform: 'bilibili', roomId: room.roomId.toString()),
-            ).push(context),
-            builder: (context, focused, child) => AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.sp),
-              height: 118.sp,
-              padding: EdgeInsets.all(10.sp),
-              decoration: BoxDecoration(
-                color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(16.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-              ),
-              child: Row(
-                children: [
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10.sp),
-                        child: CachedNetworkImage(
-                          imageUrl: room.cover,
-                          width: 180.sp,
-                          height: 98.sp,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 480,
-                          errorWidget: (_, _, _) => Container(width: 180.sp, color: Colors.black26),
-                        ),
-                      ),
-                      if (live)
-                        Positioned(
-                          left: 6.sp,
-                          top: 6.sp,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
-                            decoration: BoxDecoration(
-                              color: accent.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(6.sp),
-                            ),
-                            child: Text(
-                              i18n('video_search_live_badge'),
-                              style: AppTextStyles.t14W600.copyWith(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(width: 14.sp),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          room.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
-                        ),
-                        SizedBox(height: 4.sp),
-                        Text(
-                          room.uname,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                        ),
-                        if (room.online > 0)
-                          Text(
-                            '${readableCount(room.online.toString())} ${i18n('video_search_live_online')}',
-                            style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                          ),
-                      ],
                     ),
                   ),
                 ],
