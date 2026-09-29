@@ -3,17 +3,17 @@ import 'package:hive_ce/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/core/theme/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/history_settings/history_model.dart';
 import 'package:pure_live/services/favorites/favorite_settings_model.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/services/history_settings/history_controller.dart';
-import 'package:pure_live/features/live_play/dialogs/room_switch_dialog.dart';
+import 'package:pure_live/modules/live/playback/dialogs/room_switch_dialog.dart';
 
 /// The room switcher is steered by **selected index**, like the player's own
 /// control bar and side panels: Left/Right walk the tabs, Down enters the list,

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/index.dart';
+import 'package:pure_live/core/common/index.dart';
 import 'package:pure_live/platforms/niconico/niconico_master_reader.dart'
     show NiconicoSeatFactory, NiconicoMasterReader, readNiconicoMaster;
 

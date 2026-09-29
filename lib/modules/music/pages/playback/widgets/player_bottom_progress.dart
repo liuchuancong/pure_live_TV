@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// The flush-bottom progress hairline, live-play style: the playback position
 /// on the bottom edge in every view. The settings switch

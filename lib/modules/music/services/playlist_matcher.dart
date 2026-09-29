@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 
 /// Track → bilibili-video matching, ported from the bmsc playlist importer
 /// (playlist_search_screen's rankScore + search loop).
@@ -20,11 +20,8 @@ class PlaylistMatcher {
   static final RegExp _wordRegex = RegExp(r'([^a-zA-Z0-9_\u4e00-\u9fa5]+)');
   static final RegExp _htmlRegex = RegExp(r'<[^>]*>|&[^;]+;');
 
-  /// Non-music categories excluded outright (音Mad / 音乐现场 / 翻唱 / 学科普
-  /// / 运动综合 in the reference). Search answers carry the category name.
   static const List<String> _excludedTnames = ['音Mad', '音乐现场', '翻唱', '学科科普', '运动综合'];
 
-  /// Music categories the reference boosts (MV / 音乐综合 / 电台).
   static const List<String> _preferredTnames = ['MV', '音乐综合', '电台'];
 
   static String stripHtml(String text) => text.replaceAll(_htmlRegex, '');

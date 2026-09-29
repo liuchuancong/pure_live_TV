@@ -6,10 +6,10 @@ import 'package:markdown_widget/widget/all.dart';
 import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/release_model/release_model.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/release_model/release_model.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// The download page behind the update page's current-version row - the TV twin of the mobile
 /// app's version update page: a platform card with one section per ABI, every

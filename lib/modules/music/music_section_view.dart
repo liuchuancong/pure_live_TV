@@ -3,7 +3,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/home/home_provider.dart';
-import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
+import 'package:pure_live/modules/vod/pages/ugc_dynamics_page.dart';
 import 'package:pure_live/modules/music/music_section.dart';
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
 import 'package:pure_live/modules/music/pages/discover/music_daily_page.dart';
@@ -21,7 +21,6 @@ import 'package:pure_live/services/refresh_config/refresh_config_controller.dart
 ///
 /// A multi-section group carries the newBV-style top tab bar: it names the
 /// group's sections and swaps the content below; single-section groups
-/// (搜索) render bare.
 ///
 /// With the refresh settings' keep-alive switch on (the live home's switch),
 /// every section's page is built at most once per run and the group renders

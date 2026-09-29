@@ -1,21 +1,19 @@
 import 'dart:async';
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/shared/utils/dpad_long_press_gate.dart';
+import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 
 /// The video-mode card, newBV's SmallVideoCard: a cover with the play/danmaku
 /// counts and the duration on a bottom gradient, the title, and the UP ·
 /// publish-time line under it. The watched-progress line rides the cover's
-/// bottom edge. Long-press swaps the cover for the action row (稍后再看 /
-/// UP 主页), closing when the card loses focus.
 ///
 /// The focus language is TvRoomCard's: one AnimatedContainer surface
 /// (focusedCardColor / cardColor, 24sp radius, 2sp accent edge), cover
@@ -45,7 +43,6 @@ class _VideoCardState extends ConsumerState<VideoCard> {
 
   bool _actionsOpen = false;
 
-  /// "3.2万" style, the same 万-abbreviation the reference uses.
   String _wan(int count) {
     if (count <= 0) return '0';
     if (count >= 100000000) {
@@ -266,7 +263,6 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                             ),
                           ),
                         // Long-press action row, replacing the cover (newBV's
-                        // long-press actions: 稍后再看 / UP 主页).
                         if (_actionsOpen)
                           ColoredBox(
                             color: Colors.black.withValues(alpha: 0.82),

@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:pure_live/shared/common/index.dart';
+import 'package:pure_live/core/common/index.dart';
 
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/platforms/soop/soop_site.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
 import 'package:pure_live/platforms/yy/yy_web_socket_channel.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 class SoopDanmakuArgs {
   String url;
   String chatNo;

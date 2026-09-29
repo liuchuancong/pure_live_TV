@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/widgets/music_video_card.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
@@ -28,7 +28,6 @@ final musicUpSignProvider = FutureProvider.family<String, int>((ref, mid) async 
   }
 });
 
-/// 关注: followed albums and followed uploaders, split by the tab bar — the
 /// album tab keeps the QQ-music song table, the artist tab lists the UPs.
 class MusicFollowSection extends ConsumerStatefulWidget {
   const MusicFollowSection({super.key});
@@ -40,7 +39,6 @@ class MusicFollowSection extends ConsumerStatefulWidget {
 class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
   int _tab = 0;
 
-  /// The album tab's multi-select save (关注 albums into one playlist):
   /// long press enters the mode, taps toggle, the bar saves to a playlist.
   bool _selectingAlbums = false;
   final Set<String> _selectedAlbums = <String>{};

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 typedef AcfunRequest = Future<Object?> Function(
   String method,

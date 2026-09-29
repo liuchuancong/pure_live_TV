@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/index.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/common/index.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 
 enum MissevanFailure { transport, access, rateLimited, service, notFound, schema, cancelled, qualityUnavailable }

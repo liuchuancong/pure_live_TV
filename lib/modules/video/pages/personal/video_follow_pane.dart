@@ -4,7 +4,7 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class VideoFollowPane extends ConsumerStatefulWidget {
@@ -125,7 +125,6 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // The avatar circle, newBV's 关注列表 cell, promoted to the
                 // card's face.
                 ClipOval(
                   child: CachedNetworkImage(

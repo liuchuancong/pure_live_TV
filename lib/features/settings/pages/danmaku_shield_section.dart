@@ -5,13 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/web_router.dart';
-import 'package:pure_live/features/remote/tv_remote_receiver.dart';
+import 'package:pure_live/domains/device/tv_remote_receiver.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/dialog/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// Keyword shield, in the tag page's shape: the phone QR on top, an add dialog
 /// and a left-aligned chip cloud. Its own page and web route

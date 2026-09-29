@@ -5,9 +5,9 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:pure_live/services/proxy_settings/proxy_settings_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/common/android_native_http.dart';
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/common/request_scope.dart';
+import 'package:pure_live/core/common/android_native_http.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/common/request_scope.dart';
 
 import 'kick_link.dart';
 

@@ -5,10 +5,9 @@ import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/player/models/player_engine.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// Which part of the control layer the remote is steering.
 enum _BarZone { bar, seek, options }
@@ -20,8 +19,6 @@ enum _BarPanel { none, quality, kernel }
 /// One bar button, data-driven like the live player's _PanelAction: the
 /// highlight walks THIS list, so what is highlighted is always a button that
 /// exists. The old bar carried a fixed 14-slot index while three of its
-/// buttons were conditional (关注专辑/关注UP主 landed on nothing for archives
-/// without an UP id, 喜欢 vanished with the track) — the remote died exactly
 /// there.
 class _BarAction {
   const _BarAction({required this.icon, required this.label, required this.onSelect, this.active = false});
@@ -250,7 +247,6 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
   /// queue's behaviour. The seek ±10s buttons are gone —
   /// the seek zone under the bar owns left/right with press acceleration,
   /// exactly like the live player, whose bar carries no seek buttons either.
-  /// The interaction buttons (关注专辑/关注UP主/喜欢) are gone too: they live
   /// on the mini bar and the detail page, and they were what grew this bar to
   /// fourteen buttons.
   List<_BarAction> _barActions() {
@@ -646,4 +642,3 @@ class MusicProgressBar extends StatelessWidget {
     );
   }
 }
-

@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:pure_live/shared/utils/index.dart';
+import 'package:pure_live/core/utils/index.dart';
 import 'package:uuid/uuid.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
-import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
+import 'package:pure_live/core/models/index.dart';
 import 'yy_protocol.dart';
 import 'yy_web_socket_channel.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 class YyDanmakuArgs {
   final int topSid;

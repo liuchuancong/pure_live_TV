@@ -1,4 +1,4 @@
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -6,7 +6,6 @@ import 'video_settings_model.dart';
 
 part 'video_settings_controller.g.dart';
 
-/// The video mode's own preferences (newBV's 界面/播放 settings): what a video
 /// opens at (quality, speed, detail-first) and which section the mode lands on.
 /// Music is deliberately untouched — this controller is only read from the
 /// video surfaces.
@@ -18,7 +17,6 @@ class VideoSettingsController extends _$VideoSettingsController {
   /// inside this set.
   static const List<double> speedOptions = [1.0, 1.25, 1.5, 2.0];
 
-  /// The rendition codes offered by 默认清晰度; 0 = the answer's own pick.
   static const List<int> qualityOptions = [0, 16, 32, 64, 74, 80, 112, 116, 120];
 
   @override

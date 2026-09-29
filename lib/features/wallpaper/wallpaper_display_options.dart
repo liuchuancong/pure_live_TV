@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 /// Fill modes offered by the display-settings row and cycled by the preview's
 /// fill action, in the order the desktop app numbered them.

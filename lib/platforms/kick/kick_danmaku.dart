@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 
-import 'package:pure_live/shared/models/live_message/live_message_model.dart';
-import 'package:pure_live/shared/utils/web_socket_util.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
+import 'package:pure_live/core/models/live_message/live_message_model.dart';
+import 'package:pure_live/core/utils/web_socket_util.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
 import 'kick_api.dart';
 import 'kick_link.dart';
 import 'package:web_socket_channel/io.dart';

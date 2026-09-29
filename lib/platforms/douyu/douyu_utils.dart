@@ -3,10 +3,10 @@ import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/services/cookie_manager/cookie_value.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/utils/core_log.dart';
+import 'package:pure_live/core/utils/core_log.dart';
 
 class DouyuUtils {
   static const String defaultDeviceId = '10000000000000000000000000001501';

@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_state.dart';
 
 part 'video_progress_controller.g.dart';
 
-/// The video module's local watch-progress store, newBV's 已播进度条: every
 /// part that opens reports its position, cards render the progress bar, and a
 /// reopened archive resumes from where it stopped.
 ///

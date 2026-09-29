@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart' as html;
-import 'package:pure_live/shared/common/index.dart';
+import 'package:pure_live/core/common/index.dart';
 
 import 'kilakila_link.dart';
 

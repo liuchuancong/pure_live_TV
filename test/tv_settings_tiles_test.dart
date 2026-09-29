@@ -2,15 +2,15 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/dialog/tv_dialog.dart';
+import 'package:pure_live/core/dialog/tv_dialog.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
-import 'package:pure_live/shared/widgets/tv_settings_nav_tile.dart';
-import 'package:pure_live/shared/widgets/tv_settings_row.dart';
-import 'package:pure_live/shared/widgets/tv_settings_menu_tile.dart';
+import 'package:pure_live/core/widgets/tv_settings_nav_tile.dart';
+import 'package:pure_live/core/widgets/tv_settings_row.dart';
+import 'package:pure_live/core/widgets/tv_settings_menu_tile.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/widgets/tv_settings_option_tile.dart';
-import 'package:pure_live/shared/widgets/tv_settings_slider_tile.dart';
-import 'package:pure_live/shared/widgets/tv_settings_switch_tile.dart';
+import 'package:pure_live/core/widgets/tv_settings_option_tile.dart';
+import 'package:pure_live/core/widgets/tv_settings_slider_tile.dart';
+import 'package:pure_live/core/widgets/tv_settings_switch_tile.dart';
 
 /// Mounts the TV components the way the app does.
 ///

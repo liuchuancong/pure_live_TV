@@ -1,0 +1,117 @@
+import 'package:dpad/dpad.dart';
+import 'package:pure_live/app/router/router.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/modules/live/areas/platform_provider.dart';
+import 'package:pure_live/modules/live/areas/category_provider.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+
+class AreaGridView extends ConsumerStatefulWidget {
+  final List<String> labels;
+  final List<List<LiveArea>> areas;
+
+  /// Flat mode: the whole site renders one list ([labels]/[areas] each carry a
+  /// single entry with an empty label) and no sub-category tab bar.
+  final bool flat;
+
+  const AreaGridView({super.key, required this.labels, required this.areas, this.flat = false});
+
+  @override
+  ConsumerState<AreaGridView> createState() => _AreaGridViewState();
+}
+
+class _AreaGridViewState extends ConsumerState<AreaGridView> {
+  late List<PagingParam<LiveArea>> _pagingParams;
+
+  @override
+  void initState() {
+    super.initState();
+    _initPagingParams();
+  }
+
+  @override
+  void didUpdateWidget(covariant AreaGridView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.labels != oldWidget.labels || widget.areas != oldWidget.areas) {
+      _initPagingParams();
+    }
+  }
+
+  void _initPagingParams() {
+    _pagingParams = List.generate(widget.labels.length, (subIndex) {
+      final currentSubAreas = widget.areas.isNotEmpty && subIndex < widget.areas.length
+          ? widget.areas[subIndex]
+          : <LiveArea>[];
+
+      return PagingParam<LiveArea>(
+        mode: PagingMode.serverAll,
+        pageSize: 12,
+        keepAlive: true,
+        fetchAll: () async => currentSubAreas,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentCategoryIndex = ref.watch(categoryTabProvider);
+    final platformState = ref.watch(platformTabProvider);
+    final currentSite = platformState.siteList[platformState.currentPlatformIndex];
+    if (widget.labels.isEmpty || currentCategoryIndex >= widget.labels.length) {
+      return const SizedBox.shrink();
+    }
+
+    final List<TvTabItemData> secondTabItems = widget.labels.map((name) {
+      return TvTabItemData(title: name);
+    }).toList();
+
+    final currentParam = _pagingParams[currentCategoryIndex];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.labels.isNotEmpty && !widget.flat)
+          TvTabBar(
+            tabs: secondTabItems,
+            currentIndex: currentCategoryIndex,
+            onTabChange: (index) {
+              ref.read(categoryTabProvider.notifier).switchCategory(index);
+            },
+            // Local reload: the platform's catalogue was fetched whole, so this
+            // re-slices the categories already in memory — the bar's own line
+            // covers its minimum visible time. The catalogue reload itself is not
+            // reflected here: that one shows on the platform bar above, and one
+            // refresh lights one line.
+            onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
+          ),
+        SizedBox(height: 20.sp),
+        Expanded(
+          child: TvTabView(
+            memoryKey: widget.flat ? "areas_flat_view" : "areas_sub_category_view_$currentCategoryIndex",
+            // Left at the first column hands the remote to the home sidebar.
+            // Stopping here left the rail reachable only through the tab bar above,
+            // so a viewer browsing a grid had to go up first.
+            verticalEdge: DpadEdgeBehavior.leave,
+            horizontalEdge: DpadEdgeBehavior.leave,
+            child: BasePagedTvView<LiveArea>(
+              key: ValueKey('page_$currentCategoryIndex'),
+              param: currentParam,
+              getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+              gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
+              itemBuilder: (context, area, index) => TvAreaCard(
+                area: area,
+                onTap: () {
+                  context.pushPage(
+                    AppRoutes.kAreaRooms,
+                    extra: AreaRoomsArgs(site: currentSite, subCategory: area),
+                  );
+                },
+                onLongPress: () {
+                  FavOperateUtil.toggleAreaFollowDialog(context, area);
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

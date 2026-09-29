@@ -2,8 +2,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
 /// The picture library: one row per picture source.

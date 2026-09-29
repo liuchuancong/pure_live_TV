@@ -1,8 +1,8 @@
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 /// auto-refresh, in the mobile page's shape: one group, the interval hidden while

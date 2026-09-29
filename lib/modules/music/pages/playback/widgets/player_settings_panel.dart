@@ -4,7 +4,6 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/features/settings/pages/music_settings_section.dart';
 
-/// The in-player 设置 panel: the music settings module embedded beside the
 /// picture, the way live_play mounts its own side panels.
 class MusicPlayerSettingsPanel extends ConsumerWidget {
   const MusicPlayerSettingsPanel({super.key,required this.onClose});
@@ -56,4 +55,3 @@ class MusicPlayerSettingsPanel extends ConsumerWidget {
     );
   }
 }
-

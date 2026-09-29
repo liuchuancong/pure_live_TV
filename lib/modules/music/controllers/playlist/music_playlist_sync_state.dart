@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 
 part 'music_playlist_sync_state.freezed.dart';
 

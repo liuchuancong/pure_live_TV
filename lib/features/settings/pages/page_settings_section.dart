@@ -1,7 +1,7 @@
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/services/page_settings/page_settings_controller.dart';
 
 /// Paging settings.

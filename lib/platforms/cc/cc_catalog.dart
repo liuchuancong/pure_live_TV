@@ -1,5 +1,5 @@
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 /// The public game registry supplies artwork/names, not live categories.
 /// Only entries selected by the official live configuration are navigable.

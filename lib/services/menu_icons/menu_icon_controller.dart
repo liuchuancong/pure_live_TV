@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/consts/icon_catalog.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/consts/app_consts.dart';
+import 'package:pure_live/core/consts/icon_catalog.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 
 /// Menu entries whose icon the user may replace from the icon picker.
 List<String> iconCustomisableMenuIds() => <String>[

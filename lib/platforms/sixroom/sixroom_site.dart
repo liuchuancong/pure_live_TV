@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/models/live_area/live_area.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
-import 'package:pure_live/shared/contracts/live_directory.dart';
-import 'package:pure_live/shared/contracts/live_search.dart';
-import 'package:pure_live/shared/contracts/live_site.dart';
-import 'package:pure_live/shared/models/live_category/live_category.dart';
-import 'package:pure_live/shared/models/live_play_quality/live_play_quality.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/live_area/live_area.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/danmaku/empty_danmaku.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
+import 'package:pure_live/core/contracts/live_directory.dart';
+import 'package:pure_live/core/contracts/live_search.dart';
+import 'package:pure_live/core/contracts/live_site.dart';
+import 'package:pure_live/core/models/live_category/live_category.dart';
+import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 import 'sixroom_api.dart';
 import 'sixroom_link.dart';

@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import 'package:pure_live/shared/common/index.dart';
+import 'package:pure_live/core/common/index.dart';
 import 'package:pure_live/platforms/douyin/douyin_audience.dart';
 
 import 'package:pure_live/platforms/sites.dart';
 import 'package:meta/meta.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 class DouyinSearch {
   static const String host = 'https://live.douyin.com';
   static const String userAgent =

@@ -8,11 +8,11 @@ import 'proto/douyin.pb.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:pure_live/platforms/douyin/x_bogus.dart';
-import 'package:pure_live/shared/common/index.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
+import 'package:pure_live/core/common/index.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
 import 'package:pure_live/platforms/douyin/douyin_request_params.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 class DouyinDanmakuArgs {
   final String webRid;

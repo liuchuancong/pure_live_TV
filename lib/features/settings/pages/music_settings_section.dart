@@ -1,6 +1,6 @@
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 
 /// Music-mode settings (music's own section, separate from live/video):
 /// the defaults the shared VOD engine boots with in music mode.

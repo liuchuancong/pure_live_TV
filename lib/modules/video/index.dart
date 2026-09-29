@@ -1,8 +1,8 @@
 /// The video module (newBV feature set): recommend / popular / ranking /
 /// region / PGC / dynamics / search / personal sections, the archive detail
 /// and the full-screen player with progress store. Depends only on
-/// modules/media and shared core — the PGC endpoints and models live in the
-/// shared media layer.
+/// modules/vod and shared core — the PGC endpoints and models live in the
+/// shared vod layer.
 ///
 /// Layout: section content hangs off `video_home_page.dart`; `pages/<domain>/`
 /// the surfaces, `controllers/<domain>/` the state, `widgets/` the shared

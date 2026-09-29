@@ -2,16 +2,15 @@ import 'dart:convert';
 import 'package:meta/meta.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:html_unescape/html_unescape.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/contracts/index.dart';
-import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/contracts/index.dart';
+import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/platforms/douyu/douyu_danmaku.dart';
-import 'package:pure_live/shared/utils/live_quality_label.dart';
-import 'package:pure_live/shared/utils/core_error.dart';
-import 'package:pure_live/shared/utils/core_log.dart';
-
+import 'package:pure_live/core/utils/live_quality_label.dart';
+import 'package:pure_live/core/utils/core_error.dart';
+import 'package:pure_live/core/utils/core_log.dart';
 
 class DouyuSite
     implements
@@ -596,7 +595,7 @@ final currentRoom = Sites.currentRoom(platform, roomId);
   static bool isLiveRoomPayload(Map<dynamic, dynamic> roomInfo) {
     return _asInt(roomInfo['show_status']) == 1 &&
         _asInt(roomInfo['videoLoop']) != 1 &&
-        !roomInfo['room_name'].toString().startsWith('【回放】'); // Douyu prefixes replay titles in Chinese
+        !roomInfo['room_name'].toString().startsWith('【回放】');
   }
 
   @override

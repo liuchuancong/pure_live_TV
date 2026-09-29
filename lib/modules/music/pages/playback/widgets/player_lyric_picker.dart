@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 
 /// The lyric picker: every candidate the chain found, one row each with the

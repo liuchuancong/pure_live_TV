@@ -8,7 +8,6 @@ part of 'video_settings_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The video mode's own preferences (newBV's 界面/播放 settings): what a video
 /// opens at (quality, speed, detail-first) and which section the mode lands on.
 /// Music is deliberately untouched — this controller is only read from the
 /// video surfaces.
@@ -16,13 +15,11 @@ part of 'video_settings_controller.dart';
 @ProviderFor(VideoSettingsController)
 final videoSettingsControllerProvider = VideoSettingsControllerProvider._();
 
-/// The video mode's own preferences (newBV's 界面/播放 settings): what a video
 /// opens at (quality, speed, detail-first) and which section the mode lands on.
 /// Music is deliberately untouched — this controller is only read from the
 /// video surfaces.
 final class VideoSettingsControllerProvider
     extends $NotifierProvider<VideoSettingsController, VideoSettingsModel> {
-  /// The video mode's own preferences (newBV's 界面/播放 settings): what a video
   /// opens at (quality, speed, detail-first) and which section the mode lands on.
   /// Music is deliberately untouched — this controller is only read from the
   /// video surfaces.
@@ -56,7 +53,6 @@ final class VideoSettingsControllerProvider
 String _$videoSettingsControllerHash() =>
     r'552e58625b3680dc781bf5eaa56fb5f57c4e7a3c';
 
-/// The video mode's own preferences (newBV's 界面/播放 settings): what a video
 /// opens at (quality, speed, detail-first) and which section the mode lands on.
 /// Music is deliberately untouched — this controller is only read from the
 /// video surfaces.

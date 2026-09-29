@@ -13,7 +13,6 @@ part of 'music_playlist_sync_controller.dart';
 /// playlists open offline and survive restarts. Video never reads these keys —
 /// the modules' local data stay strictly separated.
 ///
-/// Also owns 排除分P: parts excluded from playlist playback, the bmsc
 /// "excluded parts" feature.
 
 @ProviderFor(MusicPlaylistSyncController)
@@ -25,7 +24,6 @@ final musicPlaylistSyncControllerProvider =
 /// playlists open offline and survive restarts. Video never reads these keys —
 /// the modules' local data stay strictly separated.
 ///
-/// Also owns 排除分P: parts excluded from playlist playback, the bmsc
 /// "excluded parts" feature.
 final class MusicPlaylistSyncControllerProvider
     extends
@@ -35,7 +33,6 @@ final class MusicPlaylistSyncControllerProvider
   /// playlists open offline and survive restarts. Video never reads these keys —
   /// the modules' local data stay strictly separated.
   ///
-  /// Also owns 排除分P: parts excluded from playlist playback, the bmsc
   /// "excluded parts" feature.
   MusicPlaylistSyncControllerProvider._()
     : super(
@@ -65,14 +62,13 @@ final class MusicPlaylistSyncControllerProvider
 }
 
 String _$musicPlaylistSyncControllerHash() =>
-    r'817dc5b1c220a42fd222e5da1ef2a1f96b08f68b';
+    r'5907648aa59eab4142a70ca7c8f29bd4e4a8fc37';
 
 /// The sync engine behind the synced playlists (bmsc's fav-list caching):
 /// bilibili fav folders pulled down into music-module Hive keys so the
 /// playlists open offline and survive restarts. Video never reads these keys —
 /// the modules' local data stay strictly separated.
 ///
-/// Also owns 排除分P: parts excluded from playlist playback, the bmsc
 /// "excluded parts" feature.
 
 abstract class _$MusicPlaylistSyncController

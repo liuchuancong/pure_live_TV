@@ -1,6 +1,6 @@
 ﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/consts/icon_catalog.dart';
+import 'package:pure_live/core/consts/icon_catalog.dart';
 
 /// What the icon picker returns.
 ///

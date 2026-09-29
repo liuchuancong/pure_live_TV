@@ -3,12 +3,12 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/widgets/music_video_card.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// One archive's track list (its parts), with Play all starting the queue.
@@ -391,8 +391,6 @@ class _PartTile extends StatelessWidget {
   final int index;
   final VoidCallback onTap;
 
-  /// Strips the ordinal a ripper baked into the title ("001.周杰伦-晴天" →
-  /// "周杰伦-晴天"): the list numbers its rows itself, and the two disagree
   /// the moment the source skips a number. Leading digits count as an ordinal
   /// only when a separator follows — "24K Magic" keeps its digits.
   static final RegExp _leadingIndex = RegExp(r'^\d{1,4}\s*[.、，,\-–—_:：)·．]\s*');

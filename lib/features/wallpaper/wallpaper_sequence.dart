@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
-import 'package:pure_live/shared/pagination/models/paging_param.dart';
-import 'package:pure_live/shared/pagination/paging_core.dart';
+import 'package:pure_live/core/pagination/models/paging_param.dart';
+import 'package:pure_live/core/pagination/paging_core.dart';
 import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-import 'package:pure_live/shared/common/utils/color_util.dart';
+import 'package:pure_live/core/common/utils/color_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// The wallpaper sequence shared by the preview and immersive pages: paging

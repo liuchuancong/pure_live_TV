@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/tv_focus_restorer.dart';
-import 'package:pure_live/shared/widgets/tv_page_scaffold.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/tv_focus_restorer.dart';
+import 'package:pure_live/core/widgets/tv_page_scaffold.dart';
 
 /// The back button must follow the route stack, not a value cached at build
 /// time.

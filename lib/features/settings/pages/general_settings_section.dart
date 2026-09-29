@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 /// General settings, in the desktop app's order: update checking, the shutdown
 /// countdown, then the exit prompt.

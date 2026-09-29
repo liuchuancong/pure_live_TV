@@ -2,7 +2,7 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/widgets/tv_tab_bar.dart';
+import 'package:pure_live/core/widgets/tv_tab_bar.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 void main() {

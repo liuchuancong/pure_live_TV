@@ -32,7 +32,6 @@ class AppModeController extends _$AppModeController {
     HivePrefUtil.setString('appMode', mode.name);
   }
 
-  /// The single top-left button cycles 直播 → 视频 → 音乐: one OK press moves
   /// on, no submenu needed on a remote.
   void cycle() => setMode(switch (state) {
     AppMode.live => AppMode.video,
@@ -55,7 +54,6 @@ class MusicSectionIndex extends _$MusicSectionIndex {
 class VideoSectionIndex extends _$VideoSectionIndex {
   @override
   int build() {
-    // 启动页 (newBV's setting): the section the video mode lands on.
     final service = SettingsService.to;
     if (!service.isInitialized) return 0;
     return service.videoState.startSection.clamp(0, VideoSection.values.length - 1);
@@ -200,7 +198,6 @@ class SideMenuIndex extends _$SideMenuIndex {
 /// The side rail's display mode (collapsed icons / expanded labels).
 ///
 /// A preference now, not UI state: the toggle lives in navigation & display
-/// (导航栏显示控制), persisted with the rest of the app settings, so the rail
 /// boots the way the user last chose.
 @riverpod
 class IsMenuExpanded extends _$IsMenuExpanded {

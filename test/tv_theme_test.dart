@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/core/theme/index.dart';
 
 /// Theme presets carry a translation *key*, not a translated string.
 ///

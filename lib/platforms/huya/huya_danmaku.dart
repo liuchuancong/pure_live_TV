@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:pure_live/shared/common/index.dart';
-import 'package:pure_live/shared/tars/index.dart';
+import 'package:pure_live/core/common/index.dart';
+import 'package:pure_live/core/tars/index.dart';
 import 'package:pure_live/platforms/huya/huya_utils.dart';
-import 'package:pure_live/shared/models/live_message/live_message_model.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/live_message/live_message_model.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 // ignore_for_file: no_leading_underscores_for_local_identifiers
 

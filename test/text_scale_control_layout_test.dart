@@ -11,9 +11,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pure_live/features/home/home_page.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// The controls have to follow the app's font-size setting, not just the labels.
 ///

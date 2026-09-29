@@ -299,7 +299,6 @@ class FavoriteRoomController extends _$FavoriteRoomController {
   /// id and Douyin reports its web rid. Looking the card up under one key only
   /// missed entries stored under the other, and a missed update is invisible —
   /// the card simply kept the status it had, which is how an opened room that had
-  /// stopped broadcasting stayed under 正在直播.
   ///
   /// [unplayable] stores the card as an offline room. That is the app's own
   /// verdict rather than the platform's: the room is not on air *and* no source

@@ -1,6 +1,5 @@
 import 'package:pure_live/exports/common_export.dart';
 
-
 /// Music mode sections. The section rail itself lives in the home sidebar —
 /// this file only names them, so the mode swaps the whole navigation instead
 /// of nesting its own.
@@ -9,10 +8,7 @@ import 'package:pure_live/exports/common_export.dart';
 /// index, so reordering would silently retarget every saved selection.
 enum MusicSection { favorites, daily, recents, playlists, dynamics, history, ranking, followedUps, search, nowPlaying }
 
-/// The rail's five destinations, newBV's top-tab pattern: 正在播放 and 搜索
 /// on their own (a single-section group renders bare, no tab bar), then the
-/// playlist shelf, the discovery tabs (每日/动态/排行) and the library tabs
-/// (关注/最近/云端/关注UP).
 const List<List<MusicSection>> kMusicRailGroups = [
   [MusicSection.nowPlaying],
   [MusicSection.search],

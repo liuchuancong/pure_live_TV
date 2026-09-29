@@ -5,13 +5,12 @@ import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-/// The video personal page's 收藏 tab, shaped after the music playlist shelf:
 /// folder cards speak the cover-card visual — the folder's art (its first
 /// video's cover) fills the card with a count chip on the corner, the title
 /// sits beneath — and OK opens the folder's videos as the video grid.

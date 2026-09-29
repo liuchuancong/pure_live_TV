@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:pure_live/features/favorite/favorite_provider.dart';
+import 'package:pure_live/modules/live/favorite/favorite_provider.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/contracts/live_site.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/contracts/live_site.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 
 /// A platform adapter whose cheap refresh path fails the way a real adapter
 /// propagates a transport error, while its UI-oriented detail path still answers

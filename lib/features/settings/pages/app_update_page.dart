@@ -4,10 +4,10 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/settings/pages/update_history_page.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/release_model/release_model.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/release_model/release_model.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
 /// online update: the running version and its check state, the pending release with its

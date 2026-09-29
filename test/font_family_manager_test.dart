@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/platform/font_download_manager.dart';
+import 'package:pure_live/core/platform/font_download_manager.dart';
 
 /// Weight/labelling rules of the font manager's download pipeline.
 ///

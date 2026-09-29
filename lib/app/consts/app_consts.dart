@@ -68,8 +68,8 @@ class AppConsts {
     {'key': 'ballZigZag', 'nameEn': 'Ball ZigZag', 'nameZh': '双球Z字错位'},
     {'key': 'ballZigZagDeflect', 'nameEn': 'Ball ZigZag Deflect', 'nameZh': '双球曲线反弹'},
     {'key': 'ballTrianglePath', 'nameEn': 'Ball Triangle Path', 'nameZh': '三角轨迹循环'},
-    {'key': 'ballTrianglePathColored', 'nameEn': 'Ball Triangle Path Colored', 'nameZh': '三角彩轨循环'}, // 补齐
-    {'key': 'ballTrianglePathColoredFilled', 'nameEn': 'Ball Triangle Filled', 'nameZh': '三角实心循环'}, // 补齐
+    {'key': 'ballTrianglePathColored', 'nameEn': 'Ball Triangle Path Colored', 'nameZh': '三角彩轨循环'},
+    {'key': 'ballTrianglePathColoredFilled', 'nameEn': 'Ball Triangle Filled', 'nameZh': '三角实心循环'},
     {'key': 'ballScale', 'nameEn': 'Ball Scale', 'nameZh': '单圆水波脉冲'},
     {'key': 'lineScale', 'nameEn': 'Line Scale', 'nameZh': '五线谱律动'},
     {'key': 'lineScaleParty', 'nameEn': 'Line Scale Party', 'nameZh': '律动线条'},
@@ -88,7 +88,7 @@ class AppConsts {
     {'key': 'semiCircleSpin', 'nameEn': 'Semi Circle Spin', 'nameZh': '半圆飞速旋转'},
     {'key': 'ballRotateChase', 'nameEn': 'Ball Rotate Chase', 'nameZh': '圆点接力追逐'},
     {'key': 'orbit', 'nameEn': 'Orbit', 'nameZh': '行星轨道公转'},
-    {'key': 'audioEqualizer', 'nameEn': 'Audio Equalizer', 'nameZh': '音频均衡器'}, // 替代旧版 audioWave
+    {'key': 'audioEqualizer', 'nameEn': 'Audio Equalizer', 'nameZh': '音频均衡器'},
     {'key': 'circleStrokeSpin', 'nameEn': 'Circle Stroke Spin', 'nameZh': '纯净描边圆环'},
   ];
 }

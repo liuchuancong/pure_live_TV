@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart' as html;
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/common/http_client.dart';
 
 import 'acfun_api.dart';
 
@@ -156,7 +156,7 @@ class AcfunSearchClient {
     final explicitEmpty = fragment.querySelector('.empty-page') != null;
     if (total == null &&
         AcfunApi.text(totalNode.attributes['data-total']).isEmpty &&
-        totalNode.text.replaceAll(RegExp(r'\s'), '') == '共0条结果' && // matches the Chinese text AcFun returns
+        totalNode.text.replaceAll(RegExp(r'\s'), '') == '共0条结果' &&
         explicitEmpty &&
         cards.isEmpty) {
       total = 0;

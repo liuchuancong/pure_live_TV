@@ -1,4 +1,4 @@
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/player/models/player_engine.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart' as media_core_media_kit;
 

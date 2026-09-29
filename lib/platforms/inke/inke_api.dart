@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/index.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/contracts/live_directory.dart';
+import 'package:pure_live/core/common/index.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/contracts/live_directory.dart';
 
 enum InkeFailure { transport, access, rateLimited, service, notFound, schema, cancelled, mediaUnavailable }
 

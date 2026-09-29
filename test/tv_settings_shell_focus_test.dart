@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// The settings shell keeps ONE `TvScaffold` and swaps the page inside it with a
 /// nested navigator — so `TvScaffold`'s route awareness never sees those pushes.

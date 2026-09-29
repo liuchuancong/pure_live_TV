@@ -5,17 +5,17 @@ import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:pure_live/shared/common/api_proxy_policy.dart';
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/platform/race_http.dart';
-import 'package:pure_live/shared/utils/version_util.dart';
+import 'package:pure_live/core/common/api_proxy_policy.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/platform/race_http.dart';
+import 'package:pure_live/core/utils/version_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/platform/file_utils.dart';
+import 'package:pure_live/core/platform/file_utils.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/release_model/release_model.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/release_model/release_model.dart';
 
 part 'app_update_service.g.dart';
 

@@ -10,10 +10,10 @@ import 'package:hive_ce/hive.dart';
 import 'package:pure_live/features/home/home_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
-import 'package:pure_live/shared/widgets/tv_icon_button.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/core/widgets/tv_icon_button.dart';
 
 /// Pins the sidebar open, the way the expand button does at runtime.
 class _ExpandedMenu extends IsMenuExpanded {

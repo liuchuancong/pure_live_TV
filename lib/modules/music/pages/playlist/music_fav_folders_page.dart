@@ -3,20 +3,17 @@ import 'package:pure_live/services/theme_settings/theme_settings_controller.dart
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_import_dialog.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/music/widgets/music_playlist_cards.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_user_playlist_detail_page.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
-/// The playlist shelf, QQ music's 我的歌单 shape: the default 喜欢 playlist
-/// mounted on top, then the locally created ones (置顶 first), then every
 /// bilibili fav folder synced down. Cards speak the dynamics-card visual —
 /// cover on top, name and count beneath. OK opens the track table; long press
-/// opens the playlist menu (置顶 / 编辑 / 删除 — the liked playlist has none
 /// of those, it is the shelf's fixed head).
 class MusicFavFoldersPage extends ConsumerWidget {
   const MusicFavFoldersPage({super.key});
@@ -29,17 +26,17 @@ class MusicFavFoldersPage extends ConsumerWidget {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
-    final liked = _PlaylistEntry(
+    final liked = MusicPlaylistEntry(
       id: MusicLibraryController.likedPlaylistId,
       name: i18n('music_liked_playlist'),
       tracks: library.likedSongs,
       pinned: true,
       isLiked: true,
     );
-    final entries = <_PlaylistEntry>[
+    final entries = <MusicPlaylistEntry>[
       liked,
       for (final playlist in library.orderedPlaylists)
-        _PlaylistEntry(
+        MusicPlaylistEntry(
           id: playlist.id,
           name: playlist.name,
           tracks: playlist.tracks,
@@ -95,7 +92,6 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: accent),
               ),
               const Spacer(),
-              // The QQ/网易云/酷狗 import — the empty state carries it too,
               // but this is the header people actually live in: a shelf that
               // already has playlists must not lose the import entry.
               TvButton(
@@ -162,7 +158,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
                         }
                       }
                     }
-                    return _FolderCard(
+                    return MusicFolderCard(
                       folder: folder,
                       cover: cover,
                       trackCount: tracks.length,
@@ -181,7 +177,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
     );
   }
 
-  Widget _shelfGrid(BuildContext context, WidgetRef ref, List<_PlaylistEntry> entries, {required bool includeLoading}) {
+  Widget _shelfGrid(BuildContext context, WidgetRef ref, List<MusicPlaylistEntry> entries, {required bool includeLoading}) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -197,7 +193,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index];
-        return _PlaylistCard(
+        return MusicPlaylistCard(
           entry: entry,
           onOpen: () => Navigator.of(
             context,
@@ -208,8 +204,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
     );
   }
 
-  /// Long press on a locally created playlist: 置顶 / 编辑 / 删除.
-  Future<void> _showPlaylistMenu(BuildContext context, WidgetRef ref, _PlaylistEntry entry) async {
+  Future<void> _showPlaylistMenu(BuildContext context, WidgetRef ref, MusicPlaylistEntry entry) async {
     final playlist = entry.playlist;
     if (playlist == null) return;
     final libraryController = ref.read(musicLibraryControllerProvider.notifier);
@@ -288,7 +283,6 @@ class MusicFavFoldersPage extends ConsumerWidget {
     );
   }
 
-  /// Long press on a synced folder: 同步更新 / 清空歌曲 / 删除. The folder is
   /// re-syncable from the bilibili account, so neither action confirms — the
   /// local playlists' menu does, those tracks exist only here.
   Future<void> _showFolderMenu(BuildContext context, WidgetRef ref, FavFolder folder) async {
@@ -355,234 +349,4 @@ class MusicFavFoldersPage extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// One shelf entry as the page sees it — the liked head and the stored
-/// playlists share a shape.
-class _PlaylistEntry {
-  const _PlaylistEntry({
-    required this.id,
-    required this.name,
-    required this.tracks,
-    required this.pinned,
-    required this.isLiked,
-    this.playlist,
-  });
-
-  final String id;
-  final String name;
-  final List<MusicTrack> tracks;
-  final bool pinned;
-  final bool isLiked;
-  final MusicUserPlaylist? playlist;
-}
-
-/// The dynamics-card visual for a playlist: cover on top (the first track
-/// that carries one), name and count beneath, a 置顶 badge when pinned.
-class _PlaylistCard extends StatelessWidget {
-  const _PlaylistCard({required this.entry, required this.onOpen, required this.onLongPress});
-
-  final _PlaylistEntry entry;
-  final VoidCallback onOpen;
-  final VoidCallback? onLongPress;
-
-  String get _cover {
-    for (final track in entry.tracks) {
-      if (track.archive.cover.isNotEmpty) return track.archive.cover;
-    }
-    return '';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-    final cover = _cover;
-
-    return TvFocusable(
-      onTap: onOpen,
-      onLongPress: onLongPress,
-      builder: (context, focused, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                curve: Curves.easeOutCubic,
-                decoration: BoxDecoration(
-                  color: tvTheme.cardColor,
-                  borderRadius: BorderRadius.circular(24.sp),
-                  border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accent.withValues(alpha: focused ? 0.4 : 0),
-                      blurRadius: focused ? 18.sp : 0,
-                      spreadRadius: 1.5.sp,
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(24.sp),
-                      child: cover.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: cover,
-                              fit: BoxFit.cover,
-                              memCacheWidth: 480,
-                              errorWidget: (_, _, _) => _fallback(accent),
-                            )
-                          : _fallback(accent),
-                    ),
-                    if (entry.pinned)
-                      Positioned(
-                        left: 12.sp,
-                        top: 12.sp,
-                        child: TvCoverChip(icon: Icons.push_pin_rounded, label: ''),
-                      ),
-                    Positioned(
-                      right: 12.sp,
-                      bottom: 12.sp,
-                      child: TvCoverChip(label: '${entry.tracks.length}'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 4.sp),
-              child: Row(
-                children: [
-                  if (entry.isLiked) ...[
-                    Icon(Icons.favorite_rounded, size: 22.sp, color: accent),
-                    SizedBox(width: 6.sp),
-                  ],
-                  Expanded(
-                    child: Text(
-                      entry.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _fallback(Color accent) => Container(
-    color: accent.withValues(alpha: 0.15),
-    child: Icon(Icons.library_music_rounded, size: 64.sp, color: accent),
-  );
-}
-
-class _FolderCard extends StatelessWidget {
-  const _FolderCard({
-    required this.folder,
-    required this.cover,
-    required this.trackCount,
-    required this.syncedAt,
-    required this.isSyncing,
-    required this.onOpen,
-    required this.onMenu,
-  });
-
-  final FavFolder folder;
-  final String cover;
-  final int trackCount;
-  final DateTime? syncedAt;
-  final bool isSyncing;
-  final VoidCallback onOpen;
-
-  /// Long press: the folder's menu (同步更新 / 清空歌曲 / 删除), handled by
-  /// the page — the card itself only opens.
-  final VoidCallback onMenu;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-    final syncedAtLocal = syncedAt;
-
-    return TvFocusable(
-      autofocus: false,
-      onTap: onOpen,
-      onLongPress: onMenu,
-      builder: (context, focused, child) => AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(16.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
-          boxShadow: [
-            BoxShadow(
-              color: accent.withValues(alpha: focused ? 0.25 : 0),
-              blurRadius: focused ? 18.sp : 0,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16.sp)),
-                    child: cover.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: cover,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 480,
-                            errorWidget: (_, _, _) => _coverFallback(accent),
-                          )
-                        : _coverFallback(accent),
-                  ),
-                  Positioned(
-                    right: 8.sp,
-                    top: 8.sp,
-                    child: TvCoverChip(label: isSyncing ? '...' : '${folder.mediaCount}'),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(10.sp),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    folder.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
-                  ),
-                  SizedBox(height: 4.sp),
-                  Text(
-                    syncedAtLocal == null
-                        ? i18n('music_sync_not_yet')
-                        : '${i18n('music_synced_at')} ${syncedAtLocal.month}/${syncedAtLocal.day}',
-                    style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _coverFallback(Color accent) => Container(
-    color: accent.withValues(alpha: 0.15),
-    child: Icon(Icons.playlist_play_rounded, size: 64.sp, color: accent),
-  );
 }

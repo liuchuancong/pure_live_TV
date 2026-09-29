@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/video/widgets/video_action_chip.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/widgets/music_video_card.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// One archive's page in video mode, newBV's detail screen restyled for the
 /// TV grid: a poster with the gradient scrim and cover badges, the avatar-led
-/// UP row, the interaction chips and the part (分P) list, all in the shared
 /// focused-card palette. The UP row opens the user-space page.
 class VideoDetailPage extends ConsumerStatefulWidget {
   const VideoDetailPage({super.key, required this.archive});
@@ -93,7 +93,6 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
 
   /// Flips the favoured state against the user's own default folder: the
   /// fav-deal API only changes what the id lists name, so favouriting has to
-  /// name a folder (the first created one, bilibili's 默认收藏夹) and
   /// unfavouriting has to name the same one for removal.
   Future<void> _toggleFavoured() async {
     final folders = await BilibiliUgcApi.instance.getMyFavFolders();
@@ -240,7 +239,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                               spacing: 10.sp,
                               runSpacing: 10.sp,
                               children: [
-                                _ActionChip(
+                                VideoActionChip(
                                   icon: _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
                                   label: i18n('video_action_like'),
                                   active: _liked,
@@ -252,10 +251,9 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   // focusable with a long-select loses its mouse
                                   // tap (the d-pad layer holds the tap to
                                   // disambiguate the hold), and on the emulator
-                                  // that made the like chip unclickable. 一键三连
                                   // has its own chip.
                                 ),
-                                _ActionChip(
+                                VideoActionChip(
                                   icon: Icons.toll_rounded,
                                   label: i18n('video_action_coin'),
                                   onTap: () => _runAction(
@@ -263,7 +261,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                     'video_action_coined',
                                   ),
                                 ),
-                                _ActionChip(
+                                VideoActionChip(
                                   icon: _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
                                   label: i18n('video_action_fav'),
                                   active: _favoured,
@@ -273,7 +271,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   // stored nothing.
                                   onTap: () => _runAction(_toggleFavoured, 'video_action_faved'),
                                 ),
-                                _ActionChip(
+                                VideoActionChip(
                                   icon: Icons.recommend_rounded,
                                   label: i18n('video_action_triple'),
                                   onTap: () => _runAction(
@@ -281,7 +279,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                     'video_action_trpled',
                                   ),
                                 ),
-                                _ActionChip(
+                                VideoActionChip(
                                   icon: Icons.watch_later_outlined,
                                   label: i18n('video_action_toview'),
                                   onTap: () => _runAction(
@@ -289,7 +287,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                     'video_action_toviewed',
                                   ),
                                 ),
-                                _ActionChip(
+                                VideoActionChip(
                                   icon: Icons.comment_outlined,
                                   label: i18n('video_comments_title'),
                                   onTap: archive.aid > 0
@@ -400,57 +398,6 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     );
   }
 }
-
-/// One interaction chip: a compact icon+label pill in the focused palette.
-class _ActionChip extends StatelessWidget {
-  const _ActionChip({required this.icon, required this.label, this.active = false, this.onTap});
-
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-    // The chip's box is padding-driven and grows with its label; the glyph
-    // rides the same factor instead of staying at its drafted pixels.
-    final double scale = TvTextScale.factorOf(context);
-
-    return TvFocusable(
-      onTap: onTap,
-      builder: (context, focused, child) => AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 10.sp * scale),
-        decoration: BoxDecoration(
-          color: active
-              ? accent.withValues(alpha: 0.2)
-              : focused
-              ? tvTheme.focusedCardColor
-              : tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(24.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 22.sp * scale, color: active ? accent : tvTheme.secondaryTextColor),
-            SizedBox(width: 8.sp * scale),
-            Text(
-              label,
-              style: AppTextStyles.t14.copyWith(
-                fontWeight: FontWeight.w600,
-                color: active ? accent : (focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _PartTile extends StatelessWidget {
   const _PartTile({required this.track, required this.index, required this.onTap});
 
@@ -458,8 +405,6 @@ class _PartTile extends StatelessWidget {
   final int index;
   final VoidCallback onTap;
 
-  /// Strips the ordinal a ripper baked into the title ("001.周杰伦-晴天" →
-  /// "周杰伦-晴天"): the list numbers its rows itself, and the two disagree
   /// the moment the source skips a number. Leading digits count as an ordinal
   /// only when a separator follows — "24K Magic" keeps its digits.
   static final RegExp _leadingIndex = RegExp(r'^\d{1,4}\s*[.、，,\-–—_:：)·．]\s*');

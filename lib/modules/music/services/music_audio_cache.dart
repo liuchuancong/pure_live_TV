@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/utils/core_log.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/utils/core_log.dart';
 
 /// Persistent audio cache for music mode: one file per track, downloaded in the
 /// background while the network stream plays, and preferred over the network on
@@ -12,7 +12,6 @@ import 'package:pure_live/shared/utils/core_log.dart';
 /// which expire, or on the network at all.
 ///
 /// Video is deliberately not cached: a music track's audio is a few megabytes,
-/// its video tens, and the picture is exactly what 纯音乐 mode does not show.
 class MusicAudioCache {
   MusicAudioCache._();
 

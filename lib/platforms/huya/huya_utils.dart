@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'huya_request_params.dart';
 
-import 'package:pure_live/shared/tars/index.dart';
-import 'package:pure_live/shared/models/live_message/live_message_model.dart';
+import 'package:pure_live/core/tars/index.dart';
+import 'package:pure_live/core/models/live_message/live_message_model.dart';
 
 int rotl64(int t) {
   final low = t & 0xFFFFFFFF;

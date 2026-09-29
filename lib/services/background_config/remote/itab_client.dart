@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/utils/core_error.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/utils/core_error.dart';
 
 /// Thin client for the iTab wallpaper endpoints.
 ///

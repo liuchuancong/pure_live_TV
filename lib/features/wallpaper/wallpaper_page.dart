@@ -5,9 +5,9 @@ import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
 /// Background settings home.

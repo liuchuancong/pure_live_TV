@@ -4,7 +4,7 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/consts/app_theme_consts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:pure_live/features/remote/global_room_push.dart';
+import 'package:pure_live/domains/device/global_room_push.dart';
 import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';

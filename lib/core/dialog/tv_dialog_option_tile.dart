@@ -1,0 +1,128 @@
+import 'package:dpad/dpad.dart';
+import 'package:flutter/material.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+
+/// One option inside a dialog.
+///
+/// Dialogs used to render their entries as [TvButton]s. In a list those stretch
+/// to the dialog's full width and draw as stadium bars, so the entries read as
+/// blocks with no shape of their own. These are rounded rectangles instead —
+/// radius [radius], a 1px outline and a filled background — with the accent fill
+/// and white content on the row the user is on, which is the same highlight the
+/// player's lists and the settings rows use.
+///
+/// Wrapped in a [DpadFocusable] because a modal dialog is steered with the
+/// remote's focus traversal (the player's own key-driven panels are the
+/// exception).
+class TvDialogOptionTile extends StatelessWidget {
+  const TvDialogOptionTile({
+    super.key,
+    required this.title,
+    required this.onTap,
+    this.selected = false,
+    this.autofocus = false,
+    this.focusNode,
+    this.subtitle,
+    this.icon,
+    this.trailing,
+    this.showCheck = true,
+    this.radius = 16,
+  });
+
+  final String title;
+  final VoidCallback onTap;
+
+  /// The value in force: it keeps the accent fill and a check mark, so the list
+  /// shows what is selected even while the highlight is elsewhere.
+  final bool selected;
+  final bool autofocus;
+
+  /// Explicit node for callers that must hand focus to one particular row (a
+  /// select dialog focuses the value in force).
+  final FocusNode? focusNode;
+  final String? subtitle;
+  final Widget? icon;
+  final Widget? trailing;
+
+  /// Off for lists that mark their own state with [icon] (a multi-select list
+  /// draws a filled/empty circle, so a second check mark would be noise).
+  final bool showCheck;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+
+    return DpadFocusable(
+      autofocus: autofocus,
+      focusNode: focusNode,
+      onSelect: onTap,
+      builder: (context, state, child) {
+        final bool focused = state.focused;
+        final bool highlighted = focused || selected;
+        final Color foreground = highlighted ? Colors.white : tvTheme.primaryTextColor;
+        final Color muted = highlighted ? Colors.white70 : tvTheme.secondaryTextColor;
+        // The row's labels are resolver-scaled; the leading and check glyphs
+        // ride the same factor instead of staying at their drafted pixels.
+        final double scale = TvTextScale.factorOf(context);
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeInOut,
+          constraints: BoxConstraints(minHeight: 60.sp * scale),
+          padding: EdgeInsets.symmetric(horizontal: 20.sp * scale, vertical: 10.sp * scale),
+          decoration: BoxDecoration(
+            color: highlighted ? tvTheme.focusColor : tvTheme.subtleRowFill,
+            borderRadius: BorderRadius.circular(radius.sp),
+            border: Border.all(
+              color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
+              width: 1.sp,
+            ),
+          ),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                IconTheme(
+                  data: IconThemeData(size: 24.sp * scale, color: foreground),
+                  child: icon!,
+                ),
+                SizedBox(width: 14.sp * scale),
+              ],
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t20.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: foreground,
+                      ),
+                    ),
+                    if (subtitle != null && subtitle!.isNotEmpty)
+                      Text(
+                        subtitle!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: muted),
+                      ),
+                  ],
+                ),
+              ),
+              if (trailing != null) ...[SizedBox(width: 12.sp), trailing!],
+              if (selected && showCheck) ...[
+                SizedBox(width: 12.sp * scale),
+                Icon(Icons.check_circle_rounded, size: 26.sp * scale, color: foreground),
+              ],
+            ],
+          ),
+        );
+      },
+      child: const SizedBox.shrink(),
+    );
+  }
+}

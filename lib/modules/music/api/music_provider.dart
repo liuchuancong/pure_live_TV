@@ -10,7 +10,6 @@ import 'package:dio/dio.dart';
 class MusicProvider {
   static final Dio _dio = Dio();
 
-  /// 网易云音乐: a community NeteaseCloudMusicApi mirror.
   static Future<List<Map<String, dynamic>>?> fetchNeteasePlaylistTracks(String playlistId) async {
     try {
       final response = await _dio.get(
@@ -36,7 +35,6 @@ class MusicProvider {
     }
   }
 
-  /// QQ 音乐: timelessq's songList endpoint.
   static Future<List<Map<String, dynamic>>?> fetchTencentPlaylistTracks(String playlistId) async {
     try {
       final response = await _dio.get(
@@ -60,7 +58,6 @@ class MusicProvider {
     }
   }
 
-  /// 酷狗音乐: a community mirror; `gcid_...` share links resolve to the real
   /// global id through the songlist page first. Pages of 300.
   static Future<List<Map<String, dynamic>>?> fetchKuGouPlaylistTracks(String playlistId) async {
     try {

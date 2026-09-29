@@ -1,5 +1,5 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';

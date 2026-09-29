@@ -6,11 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_core/media_core.dart';
 
 import 'package:pure_live/player/danmaku_config_builder.dart';
-import 'package:pure_live/modules/media/api/bilibili_danmaku_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_danmaku_api.dart';
 import 'package:pure_live/services/index.dart';
 
 /// The VOD danmaku overlay, the live player's engine on a recorded stream:
-/// [FlameBarrageWidget] renders, the global 弹幕设置 page styles it, and this
 /// widget only bridges the player position to the engine — the endpoints and
 /// parsing live in [BilibiliDanmakuApi] (segmented protobuf reads first, the
 /// full XML list as the fallback), and this widget walks the timeline,

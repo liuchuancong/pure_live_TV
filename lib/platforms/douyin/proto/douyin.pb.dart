@@ -351,7 +351,6 @@ class Message extends $pb.GeneratedMessage {
   void clearWrdsSubKey() => $_clearField(8);
 }
 
-/// 聊天
 class ChatMessage extends $pb.GeneratedMessage {
   factory ChatMessage({
     Common? common,
@@ -1291,7 +1290,6 @@ class RoomUserSeqMessageContributor extends $pb.GeneratedMessage {
   void clearExactlyScore() => $_clearField(7);
 }
 
-/// 礼物消息
 class GiftMessage extends $pb.GeneratedMessage {
   factory GiftMessage({
     Common? common,
@@ -2497,7 +2495,6 @@ class TextEffectDetail extends $pb.GeneratedMessage {
   void clearStrokeWidth() => $_clearField(15);
 }
 
-/// 成员消息
 class MemberMessage extends $pb.GeneratedMessage {
   factory MemberMessage({
     Common? common,
@@ -4127,7 +4124,6 @@ class TextFormat extends $pb.GeneratedMessage {
   void clearUseRemoteClor() => $_clearField(8);
 }
 
-/// 点赞
 class LikeMessage extends $pb.GeneratedMessage {
   factory LikeMessage({
     Common? common,
@@ -7390,7 +7386,6 @@ class PreMessage extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   SendMessageBody ensureSendMessageBody() => $_ensure(7);
 
-  /// 字段名待定
   @$pb.TagNumber(9)
   $core.String get aa => $_getSZ(8);
   @$pb.TagNumber(9)

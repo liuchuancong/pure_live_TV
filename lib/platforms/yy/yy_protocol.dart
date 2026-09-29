@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 /// Current YY H5 service protocol version published by the YY web client.
 const yyH5ServiceProtocolVersion = '3.2.10';

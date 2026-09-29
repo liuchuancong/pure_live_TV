@@ -1,24 +1,24 @@
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/modules/media/index.dart';
-import 'package:pure_live/features/hot/hot_page.dart';
+import 'package:pure_live/modules/vod/index.dart';
+import 'package:pure_live/modules/live/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/areas/areas_page.dart';
+import 'package:pure_live/modules/live/areas/areas_page.dart';
 import 'package:pure_live/modules/music/music_section.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/modules/video/video_section.dart';
-import 'package:pure_live/features/history/history_page.dart';
-import 'package:pure_live/features/search/tv_search_page.dart';
-import 'package:pure_live/features/favorite/favorite_page.dart';
+import 'package:pure_live/modules/live/history/history_page.dart';
+import 'package:pure_live/modules/live/search/tv_search_page.dart';
+import 'package:pure_live/modules/live/favorite/favorite_page.dart';
 import 'package:pure_live/modules/music/music_section_view.dart';
 import 'package:pure_live/modules/video/video_section_view.dart';
 import 'package:pure_live/features/home/home_update_dialog.dart';
 import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
 import 'package:pure_live/modules/music/widgets/music_mini_bar.dart';
-import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
-import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
+import 'package:pure_live/modules/live/movie_playback/movie_playback_page.dart';
+import 'package:pure_live/modules/live/favorite_areas/favorite_areas_page.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -45,7 +45,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   FocusNode _sectionNode(String key) => _sectionFocusNodes.putIfAbsent(key, FocusNode.new);
 
   /// The mode switch button (in the old backup slot): shows the active mode,
-  /// one OK press cycles 直播 → 视频 → 音乐.
   Widget _buildModeButton(AppMode mode, bool isExpanded, double textScale) {
     final (String label, String short, IconData icon) = switch (mode) {
       AppMode.live => (i18n('mode_live'), i18n('menu_short_mode_live'), Icons.live_tv_rounded),
@@ -69,7 +68,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   /// The mode picker (bmsc's login-placeholder spirit: an explicit choice,
-  /// not a blind cycle). The chrome is the 加入歌单 dialog's, verbatim — same
   /// TvDialog width, title, row recipe and cancel — only the icons and the
   /// labels differ. Picking a different mode first closes whatever the
   /// previous module was playing — the speakers pass cleanly.
@@ -163,7 +161,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         ];
       case AppMode.music:
         // Five rail destinations over the top-tab groups (see kMusicRailGroups):
-        // 正在播放, then 搜索, 歌单 on its own, then the discovery and library
         // groups — the tabbed sections live behind the content pane's tab bar.
         const labels = <(String, IconData)>[
           ('music_now_playing', Icons.queue_music_rounded),
@@ -190,7 +187,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
         ];
       case AppMode.video:
-        // newBV's left rail, its exact item order: 搜索/个人/主页/分区/影视 —
         // each entry maps to its VideoSection index.
         const entries = <(int, String, IconData)>[
           (3, 'video_tab_search', Icons.search_rounded),

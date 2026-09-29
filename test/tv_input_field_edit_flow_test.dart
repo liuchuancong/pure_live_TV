@@ -2,9 +2,9 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/widgets/tv_input_field.dart';
-import 'package:pure_live/shared/theme/tv_theme_extension.dart';
-import 'package:pure_live/shared/theme/themes/cyber_theme.dart';
+import 'package:pure_live/core/widgets/tv_input_field.dart';
+import 'package:pure_live/core/theme/tv_theme_extension.dart';
+import 'package:pure_live/core/theme/themes/cyber_theme.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The TV input contract with the tv_textfield dependency gone: a focused field

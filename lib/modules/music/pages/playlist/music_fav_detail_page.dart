@@ -4,9 +4,9 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
@@ -26,7 +26,6 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
   final TextEditingController _filter = TextEditingController();
   final MusicListReveal _reveal = MusicListReveal();
 
-  /// Batch mode: rows toggle membership instead of playing — 喜欢 / 加入歌单
   /// land on every selected track (the bilibili-music checkbox table).
   bool _selectMode = false;
   final Set<String> _selectedIds = {};
@@ -171,7 +170,6 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
                     ),
                   ),
                   const Spacer(),
-                  // 多选: the batch entry (喜欢 / 加入歌单).
                   TvButton(
                     title: i18n('music_batch_select'),
                     icon: Icon(Icons.checklist_rounded, size: 24.ts(context)),

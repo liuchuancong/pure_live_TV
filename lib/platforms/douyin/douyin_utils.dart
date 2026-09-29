@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:pure_live/shared/common/index.dart';
+import 'package:pure_live/core/common/index.dart';
 
 import 'abogus.dart';
 import 'douyin_request_params.dart';

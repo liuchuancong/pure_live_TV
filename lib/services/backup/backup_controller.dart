@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

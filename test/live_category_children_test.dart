@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/models/live_category/live_category.dart';
+import 'package:pure_live/core/models/live_category/live_category.dart';
 
 /// 获取接口数据 → 数据加载失败：`Unsupported operation: Cannot add to an unmodifiable list`.
 ///

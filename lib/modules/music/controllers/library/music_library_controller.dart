@@ -2,13 +2,12 @@ import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/exports/common_export.dart';
 
 part 'music_library_controller.g.dart';
 
-/// A locally-created playlist (自建歌单): named by the user, tracks added
 /// from the player, ordered in place. Persisted inside the library's Hive.
 class MusicUserPlaylist {
   const MusicUserPlaylist({
@@ -54,13 +53,10 @@ class MusicLibraryState {
   final List<MusicArchive> favorites;
   final List<MusicArchive> recents;
 
-  /// Followed uploaders (作者), separate from the album favorites.
   final List<MusicUp> followedUps;
 
-  /// Songs hearted from the player — the 喜欢 list, one entry per part.
   final List<MusicTrack> likedSongs;
 
-  /// Locally created playlists (自建歌单).
   final List<MusicUserPlaylist> playlists;
 
   /// Reactive favorite check for widgets holding the state.
@@ -69,7 +65,6 @@ class MusicLibraryState {
   bool isFollowingUp(int mid) => followedUps.any((u) => u.mid == mid);
 
   bool isSongLiked(String trackId) => likedSongs.any((t) => t.id == trackId);
-
 
   /// User playlists in display order: pinned first (newest pin highest), the
   /// rest newest-created first. The default liked playlist is not in here —
@@ -101,7 +96,6 @@ class MusicLibraryState {
 
 @Riverpod(keepAlive: true)
 class MusicLibraryController extends _$MusicLibraryController {
-  /// The default 喜欢 playlist: the hearted songs, mounted on top of the
   /// playlist shelf and not deletable. Its tracks live in their own key.
   static const String likedPlaylistId = 'liked';
   static const int _recentsCap = 50;
@@ -165,7 +159,6 @@ class MusicLibraryController extends _$MusicLibraryController {
   ///
   /// Writes through to the bilibili relation as well (best effort, when
   /// logged in): the UP-space page reads the platform's state, and a local-only
-  /// follow would show up as 未关注 there.
   void toggleFollowUp(MusicUp up) {
     final next = List<MusicUp>.from(state.followedUps);
     final existing = next.indexWhere((u) => u.mid == up.mid);
@@ -189,8 +182,6 @@ class MusicLibraryController extends _$MusicLibraryController {
 
   // ---------------------------------------------------------------- song likes
 
-  /// Hearts / unhearts a song (歌曲级红心). Liked songs live outside any
-  /// album: they queue in their own order on the 喜欢 page.
   void toggleLikeSong(MusicTrack track) {
     final next = List<MusicTrack>.from(state.likedSongs);
     final existing = next.indexWhere((t) => t.id == track.id);
@@ -205,7 +196,6 @@ class MusicLibraryController extends _$MusicLibraryController {
     _persistTracks('musicLikedSongs', next);
   }
 
-  /// Unlikes without toggling — the 喜欢 page's removal must never re-add.
   void removeLikedSong(String trackId) {
     final next = List<MusicTrack>.from(state.likedSongs)..removeWhere((t) => t.id == trackId);
     if (next.length == state.likedSongs.length) return;
@@ -240,7 +230,6 @@ class MusicLibraryController extends _$MusicLibraryController {
     _replacePlaylist(at, state.playlists[at].copyWith(tracks: const []));
   }
 
-  /// Pins / unpins a playlist (置顶).
   void togglePlaylistPin(String id) {
     final at = state.playlists.indexWhere((p) => p.id == id);
     if (at < 0) return;
@@ -259,7 +248,6 @@ class MusicLibraryController extends _$MusicLibraryController {
     ToastUtil.show(i18n('music_playlist_renamed'));
   }
 
-  /// Moves a liked song to the top of the 喜欢 list (置顶).
   void pinLikedSong(String trackId) {
     final at = state.likedSongs.indexWhere((t) => t.id == trackId);
     if (at <= 0) return;
@@ -283,7 +271,6 @@ class MusicLibraryController extends _$MusicLibraryController {
   }
 
   /// Batch-adds [tracks] to a playlist, silently skipping the ones it already
-  /// holds — the batch save (关注 albums → 歌单) toasts a summary once instead
   /// of a toast per track. Returns how many actually landed.
   int addTracksToPlaylist(String id, List<MusicTrack> tracks) {
     final at = state.playlists.indexWhere((p) => p.id == id);
@@ -310,7 +297,6 @@ class MusicLibraryController extends _$MusicLibraryController {
     );
   }
 
-  /// Moves a track by [delta] slots — the playlist page's 排序 step.
   void moveTrackInPlaylist(String id, int index, int delta) {
     final at = state.playlists.indexWhere((p) => p.id == id);
     if (at < 0) return;
@@ -360,7 +346,6 @@ class MusicLibraryController extends _$MusicLibraryController {
   void _persistUps(String key, List<MusicUp> list) {
     HivePrefUtil.setStringList(key, [for (final u in list) jsonEncode(u.toJson())]);
   }
-
 
   /// Track-list codec shared by liked songs and local playlists: archives are
   /// stored once per bvid, tracks as `bvid#cid#page` refs into them. A ref

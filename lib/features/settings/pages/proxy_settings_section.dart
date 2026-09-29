@@ -49,7 +49,6 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
     final proxyState = ref.watch(proxySettingsControllerProvider);
     final proxy = ref.read(proxySettingsControllerProvider.notifier);
 
-    // The phone's page writes these settings in 实时同步模式 while the TV may be
     // showing them. These fields are built once, so without following the store an
     // arriving value stayed invisible — the same gap the cookie box had. Edits
     // made here and not saved yet win, so typing on the TV is never clobbered.

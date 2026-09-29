@@ -3,7 +3,7 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
-import 'package:pure_live/shared/platform/local_network_access.dart';
+import 'package:pure_live/core/platform/local_network_access.dart';
 
 // proxy_settings_controller.dart
 

@@ -1,10 +1,10 @@
 import 'acfun_api.dart';
 import 'acfun_search.dart';
 import 'acfun_directory.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/contracts/index.dart';
-import 'package:pure_live/shared/danmaku/empty_danmaku.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/contracts/index.dart';
+import 'package:pure_live/core/danmaku/empty_danmaku.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 
 /// Anonymous AcFun live directory, author search, playback and recording.

@@ -6,8 +6,8 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/widgets/music_video_card.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 

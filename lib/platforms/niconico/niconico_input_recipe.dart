@@ -1,4 +1,4 @@
-import 'package:pure_live/shared/contracts/live_input_recipe.dart';
+import 'package:pure_live/core/contracts/live_input_recipe.dart';
 
 import 'niconico_watch.dart';
 

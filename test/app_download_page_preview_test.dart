@@ -12,9 +12,9 @@ import 'package:hive_ce/hive.dart';
 import 'package:pure_live/features/settings/pages/app_download_page.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/models/release_model/release_model.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/models/release_model/release_model.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 
 /// Renders [AppDownloadPage] (the 当前版本 download page) to PNGs — top with
 /// the per-ABI 下载源 grid, bottom with the markdown release notes.

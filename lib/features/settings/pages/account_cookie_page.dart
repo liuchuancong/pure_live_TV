@@ -3,8 +3,8 @@ import 'package:pure_live/services/index.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/platforms/douyu/douyu_utils.dart';
-import 'package:pure_live/features/remote/tv_remote_receiver.dart';
-import 'package:pure_live/features/remote/models/server_state.dart';
+import 'package:pure_live/domains/device/tv_remote_receiver.dart';
+import 'package:pure_live/domains/device/models/server_state.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
 
 /// One platform's cookie page: the cookie itself is entered on the phone.

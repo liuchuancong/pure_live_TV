@@ -4,10 +4,10 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 
 /// One season's page, newBV's PGC detail: cover, rating, synopsis and the

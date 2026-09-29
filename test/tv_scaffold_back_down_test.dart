@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// The up/down round trip between 返回 and the first content row must keep working
 /// on every level of the stack.

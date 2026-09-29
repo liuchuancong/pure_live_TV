@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/http_client.dart';
-import 'package:pure_live/shared/common/request_scope.dart';
+import 'package:pure_live/core/common/http_client.dart';
+import 'package:pure_live/core/common/request_scope.dart';
 
 import 'seventeenlive_link.dart';
 

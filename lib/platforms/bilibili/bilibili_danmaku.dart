@@ -6,10 +6,10 @@ import 'dart:typed_data';
 import 'package:brotli/brotli.dart';
 
 
-import 'package:pure_live/shared/common/index.dart';
-import 'package:pure_live/shared/models/live_message/live_message_model.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/common/index.dart';
+import 'package:pure_live/core/models/live_message/live_message_model.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 class BiliBiliDanmakuArgs {
   final int roomId;

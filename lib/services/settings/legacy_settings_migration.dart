@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// Migrates legacy Hive keys into the v2 settings store.

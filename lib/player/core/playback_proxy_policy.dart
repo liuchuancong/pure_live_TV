@@ -1,4 +1,4 @@
-import 'package:pure_live/shared/common/proxy_routing.dart';
+import 'package:pure_live/core/common/proxy_routing.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
 /// Proxy policy for media transport, independent from the API layer.

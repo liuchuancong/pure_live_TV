@@ -1,8 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/models/font_model/font_model.dart';
-import 'package:pure_live/shared/platform/font_download_manager.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/models/font_model/font_model.dart';
+import 'package:pure_live/core/platform/font_download_manager.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
 import 'font_settings_controller.dart';
 

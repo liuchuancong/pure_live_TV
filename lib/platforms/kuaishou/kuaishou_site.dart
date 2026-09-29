@@ -5,18 +5,18 @@ import 'package:meta/meta.dart';
 
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:pure_live/shared/common/api_proxy_policy.dart';
-import 'package:pure_live/shared/contracts/index.dart';
-import 'package:pure_live/shared/models/index.dart';
+import 'package:pure_live/core/common/api_proxy_policy.dart';
+import 'package:pure_live/core/contracts/index.dart';
+import 'package:pure_live/core/models/index.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 
 import 'package:pure_live/platforms/sites.dart';
-import 'package:pure_live/shared/platform/fake_useragent.dart';
-import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/core/platform/fake_useragent.dart';
+import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/platforms/kuaishou/kuaishou_danmaku.dart';
-import 'package:pure_live/shared/utils/live_quality_label.dart';
+import 'package:pure_live/core/utils/live_quality_label.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoomResolver {
   @override
   String id = Sites.kuaishouSite;
@@ -532,7 +532,6 @@ class KuaishouSite implements LiveSite, LiveSiteRoomRefresher, LiveSiteRecordRoo
 
   @override
   Future<List<LiveRoom>> searchRooms(String keyword, {int page = 1, int pageSize = 30}) async {
-    // The live-stream search answers anonymous visitors with "服务器繁忙", so a
     // web search page never lists rooms. The streamer search stays public and
     // reports whether each streamer is live, and its ids open the same /u/<id>
     // rooms this site already resolves.

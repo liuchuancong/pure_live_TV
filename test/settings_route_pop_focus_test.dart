@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// Popping a second-level page must leave focus inside the page that comes
 /// back, not on a node belonging to a route further down the stack.

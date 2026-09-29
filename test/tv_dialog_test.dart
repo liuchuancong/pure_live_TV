@@ -2,10 +2,10 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/dialog/tv_dialog_option_tile.dart';
-import 'package:pure_live/shared/dialog/tv_dialog_utils.dart';
-import 'package:pure_live/shared/dialog/tv_select_dialog.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/core/dialog/tv_dialog_option_tile.dart';
+import 'package:pure_live/core/dialog/tv_dialog_utils.dart';
+import 'package:pure_live/core/dialog/tv_select_dialog.dart';
+import 'package:pure_live/core/theme/index.dart';
 
 /// Every dialog must offer a visible way out, and its entries must be shaped rows
 /// rather than full-width bars.

@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 

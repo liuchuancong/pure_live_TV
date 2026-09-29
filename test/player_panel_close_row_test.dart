@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/core/theme/index.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
+import 'package:pure_live/modules/live/playback/widgets/panels/player_index_panel.dart';
 
 /// The player's side panels and the bar's option lists must offer the same way
 /// out, and the highlight must stay readable on every palette.

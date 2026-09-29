@@ -6,9 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 
-/// The music module's 关注 UP list, the video personal page's follow pane:
 /// the account's followed uploaders as full-width rows — avatar, name,
 /// signature. Tapping opens the UP's space; long-press unfollows against the
 /// account and drops the row.

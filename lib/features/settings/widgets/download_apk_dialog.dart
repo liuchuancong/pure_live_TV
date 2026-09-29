@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/dialog/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// The update package download, as a TV dialog: progress, cancel, install.
 ///

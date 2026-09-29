@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 
 class VideoToViewPane extends ConsumerStatefulWidget {
@@ -79,5 +79,4 @@ class VideoToViewPaneState extends ConsumerState<VideoToViewPane> {
   }
 }
 
-/// Followed seasons (我的追番): the account's bangumi list, opening each
 /// season's episode page.

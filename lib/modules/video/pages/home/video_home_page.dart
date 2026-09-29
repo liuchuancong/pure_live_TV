@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/pages/ugc_dynamics_page.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 
-/// Video home, newBV's HomeContent: a top tab bar over 动态/推荐/热门 — the
 /// three feeds the reference puts on its home screen. The tab order follows
-/// the reference (动态 first) and each tab keeps its own paged grid.
 class VideoHomePage extends ConsumerStatefulWidget {
   const VideoHomePage({super.key});
 
@@ -19,7 +17,6 @@ class VideoHomePage extends ConsumerStatefulWidget {
 }
 
 class VideoHomePageState extends ConsumerState<VideoHomePage> {
-  // 首页置顶 Tab (newBV's setting): the landing top tab, 推荐 while unset.
   int _tab = SettingsService.to.isInitialized ? SettingsService.to.videoState.homeTabIndex.clamp(0, 2) : 1;
 
   static const _tabs = ['video_dynamics', 'video_tab_recommend', 'video_tab_popular'];

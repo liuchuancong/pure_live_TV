@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:pure_live/shared/models/live_area/live_area.dart';
-import 'package:pure_live/shared/models/live_category/live_category.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/models/live_area/live_area.dart';
+import 'package:pure_live/core/models/live_category/live_category.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:pure_live/platforms/sites.dart';
 
 /// Fills missing category artwork by borrowing it from other platforms.

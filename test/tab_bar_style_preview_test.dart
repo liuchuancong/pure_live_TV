@@ -7,8 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// Renders the restyled [TvTabBar] (segmented-control look) to a PNG so the
 /// new tray/selected/idle states can be reviewed without a device.

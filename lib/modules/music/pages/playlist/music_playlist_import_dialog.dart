@@ -4,11 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/music/api/music_provider.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/services/playlist_matcher.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
-/// 歌单导入, the bmsc playlist importer: one of the other music platforms
-/// (网易云 / QQ 音乐 / 酷狗音乐) plus the playlist id (or a pasted share link —
 /// the netease `playlist?id=` form is detected), then every track triple is
 /// searched on bilibili and the best-scoring archive joins the new local
 /// playlist. One match per ~1.2s, the reference's rate.

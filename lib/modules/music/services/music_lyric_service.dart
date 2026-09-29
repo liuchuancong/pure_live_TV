@@ -1,7 +1,7 @@
 import 'package:hive_ce/hive.dart';
-import 'package:pure_live/modules/media/api/bilibili_lyric_api.dart';
-import 'package:pure_live/modules/media/api/third_party_lyric_api.dart';
-import 'package:pure_live/shared/utils/string_similarity.dart';
+import 'package:pure_live/modules/vod/api/bilibili_lyric_api.dart';
+import 'package:pure_live/modules/music/api/third_party_lyric_api.dart';
+import 'package:pure_live/core/utils/string_similarity.dart';
 
 /// One selectable lyric for a track: where it came from and whose song it says
 /// it is. The picker dialog lists these; the one the viewer picks becomes the
@@ -37,9 +37,7 @@ class MusicLyricCandidate {
 ///
 /// **Every candidate is checked against the track before its lyric is used.** The
 /// APIs answer with their best fuzzy guess, and a compilation's part name
-/// (「002. 可能」) or an uploader's background music gets a *different* song back —
 /// a wrong lyric is worse than none, so an unmatched candidate is dropped and the
-/// page shows 暂无歌词 instead.
 ///
 /// All results are cached per title for the session — misses too, so a
 /// lyric-less track does not refetch every open.
@@ -113,7 +111,6 @@ class MusicLyricService {
     final key = title;
     if (_cache.containsKey(key)) return _cache[key];
 
-    // The query is the track name alone: a compilation part is named 「002. 可能」
     // and every source below would otherwise search for that literal string.
     final query = cleanTitle(title);
     if (query.isEmpty) {
@@ -250,8 +247,6 @@ class MusicLyricService {
 
   /// The search hits whose name actually is the track, best first.
   ///
-  /// The top hit used to be taken as-is: searching a part name like 「002. 可能」
-  /// ranks 不可能 first, and the page then played a different song's words.
   Future<List<({String id, String name, String artist})>> _searchSongs(
     String query,
     String hint, {
@@ -292,8 +287,6 @@ class MusicLyricService {
 
   /// Whether [candidate] plausibly names the same song as [query].
   ///
-  /// Equality, a shared prefix (「起风了」 / 「起风了 (旧版)」) or a high Sørensen-Dice
-  /// score. Suffix-only overlap is not enough: 「不可能」 is not 「可能」.
   static bool plausible(String query, String candidate) {
     final a = _fold(query);
     final b = _fold(candidate);
@@ -325,20 +318,14 @@ class MusicLyricService {
 
   /// The track name inside a part's title.
   ///
-  /// Compilations number their parts (「002. 可能」, 「01 - 夜曲」, 「第 3 首 晴天」,
-  /// 「P4 可能」) and that decoration is not part of the song: searching for it
   /// finds nothing, and the fuzzy APIs answer with a wrong song.
   static String cleanTitle(String title) {
     var text = title.trim();
-    // Brackets first: 「【高音质】002、可能」 only shows its ordinal once the
     // decoration is gone.
     text = text.replaceAll(RegExp(r'【[^】]*】|\([^)]*\)|\[[^\]]*\]'), ' ').trim();
-    // 「第 3 首」/「第三曲」 before the plain-number rule, which would eat the 第
     // and leave the classifier behind.
     text = text.replaceFirst(RegExp(r'^第\s*[0-9一二三四五六七八九十]{1,3}\s*[首曲集部]?\s*'), '');
     text = text.replaceFirst(RegExp(r'^p\s*\d{1,3}\s*[\.、\-—_:：]?\s*', caseSensitive: false), '');
-    // A numbered part needs a separator or a zero-padded number: 「002. 可能」 and
-    // 「002 可能」 are parts, while 「7 Years」 is a song that starts with a digit.
     text = text.replaceFirst(RegExp(r'^(?:\d{1,3}\s*[\.、\-—_:：]\s*|0\d{1,2}\s+)'), '');
     text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
     return text.isEmpty ? title.trim() : text;

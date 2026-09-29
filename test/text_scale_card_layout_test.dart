@@ -11,11 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
-import 'package:pure_live/shared/models/live_area/live_area.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/models/live_area/live_area.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// The grid cards have to survive the app's font-size setting.
 ///

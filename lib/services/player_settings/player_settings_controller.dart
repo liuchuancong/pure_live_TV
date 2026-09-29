@@ -1,7 +1,7 @@
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/player/utils/player_consts.dart';
 import 'package:pure_live/app/consts/app_theme_consts.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/player_settings/player_settings_model.dart';
 

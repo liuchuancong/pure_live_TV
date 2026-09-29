@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
-/// 新建歌单 / 编辑歌单: one name field. With [playlist] it renames in place;
 /// without it a new playlist is created. The controller refuses empty names.
 Future<String?> showPlaylistNameDialog(BuildContext context, WidgetRef ref, {MusicUserPlaylist? playlist}) {
   final editing = playlist != null;
@@ -31,7 +30,6 @@ Future<String?> showPlaylistNameDialog(BuildContext context, WidgetRef ref, {Mus
   );
 }
 
-/// 加入歌单: the liked playlist first, then the local ones, or create one on
 /// the spot. The liked row always exists, so the dialog always opens — with no
 /// playlist yet it is the liked row plus creation.
 Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicTrack track) {

@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/app/router/app_router.dart';
 
 /// Video settings in newBV's settings shape: a left menu of groups over a
-/// right content pane (播放设置 / 界面设置 / 弹幕设置). The rows sync newBV's
 /// settings pages: what a video opens at (quality/speed/detail-first), where
 /// the mode lands (startup section, top tabs), and the player surface toggles.
 ///
@@ -139,8 +138,6 @@ class _PlaybackSettingsGroup extends ConsumerWidget {
           TvSettingsGroupTitle(title: i18n('video_default_playback_title')),
           TvSettingsCard(
             children: [
-              // 默认清晰度 (newBV): the rendition the video player asks for on
-              // open when the play-url answer ships it; 自动 keeps the server pick.
               TvSettingsOptionTile(
                 title: i18n('video_default_quality'),
                 subtitle: i18n('video_default_quality_sub'),
@@ -185,7 +182,6 @@ class _PlaybackSettingsGroup extends ConsumerWidget {
   }
 }
 
-/// newBV's 界面设置: what the video mode opens on and two player-surface
 /// toggles. Theme and text size live in the app-wide settings; this group
 /// carries only what is video-specific.
 class _InterfaceSettingsGroup extends ConsumerWidget {
@@ -266,7 +262,6 @@ class _InterfaceSettingsGroup extends ConsumerWidget {
   }
 }
 
-/// 默认清晰度 label: 自动 for 0 (the server pick), the API name otherwise.
 String _qualityLabel(int qn) {
   if (qn <= 0) return i18n('video_quality_auto');
   final label = BilibiliMusicApi.qualityLabel(qn);

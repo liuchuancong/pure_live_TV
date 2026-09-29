@@ -10,7 +10,7 @@ import 'core/flv_legacy_hevc_relay.dart';
 import 'core/flv_splice_relay.dart';
 import 'core/playback_proxy_policy.dart';
 import '../app/consts/app_theme_consts.dart';
-import '../shared/models/live_room/live_room.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
 import 'package:media_core_media_kit/media_core_media_kit.dart';
 import 'package:media_core_ijk_player/media_core_ijk_player.dart';
 import 'package:media_core_better_player/media_core_video_player.dart';

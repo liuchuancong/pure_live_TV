@@ -3,10 +3,10 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/index.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/common/index.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 
 class KuaishouDanmakuArgs {
   const KuaishouDanmakuArgs({required this.liveStreamId, this.cookie = ''});

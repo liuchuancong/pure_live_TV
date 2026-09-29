@@ -5,14 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 
 /// How the calling list removes this song — every list deletes differently
-/// (最近播放 drops the record, 喜欢 unhooks the heart, a playlist unplugs the
 /// entry), while everything else in the menu is shared.
 enum MusicSongMenuRemove {
   recent,
@@ -21,12 +20,8 @@ enum MusicSongMenuRemove {
   none,
 }
 
-/// The unified song long-press menu, the QQ-music set: 下一首播放, 喜欢,
-/// 加入歌单, plus the caller's own rows (置顶 / 清除默认歌词 / 删除).
 ///
-/// 下一首播放 (the play-order adjustment — queue the song behind the playing
 /// one) only makes sense for a song that is NOT the one playing now, so it
-/// hides for the current track. [onDelete] adds a plain 删除 row for callers
 /// whose list owns its own removal (the playing queue drops the entry).
 Future<void> showMusicSongMenu(
   BuildContext context,

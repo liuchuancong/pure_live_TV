@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path/path.dart' as p;
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
-import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/core/common/http_client.dart';
 
 /// Everything the live-wallpaper feature needs from the video stack.
 ///

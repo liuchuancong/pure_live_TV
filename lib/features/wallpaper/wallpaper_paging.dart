@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/services/background_config/remote/background_repository.dart';
-import 'package:pure_live/shared/pagination/models/paging_model.dart';
-import 'package:pure_live/shared/pagination/models/paging_param.dart';
+import 'package:pure_live/core/pagination/models/paging_model.dart';
+import 'package:pure_live/core/pagination/models/paging_param.dart';
 
 /// The source tree, available synchronously.
 final backgroundCatalogProvider = Provider<BackgroundCatalog>(

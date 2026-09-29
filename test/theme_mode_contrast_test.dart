@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/core/theme/index.dart';
 
 /// Every preset must be readable in **both** 主题模式 settings.
 ///

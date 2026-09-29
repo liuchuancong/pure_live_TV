@@ -5,13 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
+import 'package:pure_live/modules/vod/widgets/handle_video_surface.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/pages/playback/widgets/player_widgets.dart';
-
 
 /// The full-screen music player.
 ///
@@ -63,7 +62,6 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     // A previous visit that left with the picture on lost its texture: mpv
     // keeps decoding into the output it lost track of, so re-entering shows
     // black until the output is rebuilt. One vid cycle re-attaches it (the
-    // viewer's old manual 纯音频 → 显示画面 workaround, automated).
     final player = ref.read(musicPlayerControllerProvider.notifier);
     if (!ref.read(musicPlayerControllerProvider).audioOnly && player.videoSurfaceNeedsReattach) {
       player.videoSurfaceNeedsReattach = false;
@@ -401,4 +399,3 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     );
   }
 }
-

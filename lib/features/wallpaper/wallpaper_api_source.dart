@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/api_proxy_policy.dart';
+import 'package:pure_live/core/common/api_proxy_policy.dart';
 
 /// How a random-image API hands over its picture.
 ///

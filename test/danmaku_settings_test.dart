@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/player/danmaku_config_builder.dart';
-import 'package:pure_live/features/live_play/controllers/danmaku_option_steps.dart';
+import 'package:pure_live/modules/live/playback/controllers/danmaku_option_steps.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 
 /// 弹幕设置 → flame_barrage: every setting the UI offers has to reach the engine, in the

@@ -756,7 +756,6 @@ class HuyaSite
   ///
   /// The entry path and the refresh path share this builder. Reporting *every*
   /// snapshot as off-air — which is what an unconditional "no stream, no play"
-  /// rule amounted to — filed live rooms under 未开播 the moment a refresh ran.
   LiveRoom _buildRoomFromSnapshot(Map<dynamic, dynamic> data, {required String platform, required String roomId}) {
     final liveData = data['liveData'] is Map
         ? Map<String, dynamic>.from(data['liveData'] as Map)

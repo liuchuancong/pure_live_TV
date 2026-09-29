@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 /// Grid spacing settings, hosted on its own page.
 ///

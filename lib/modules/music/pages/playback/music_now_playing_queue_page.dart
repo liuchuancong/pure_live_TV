@@ -4,20 +4,18 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/music/pages/mine/music_recents_page.dart' show MusicSongRow;
+import 'package:pure_live/modules/music/widgets/music_song_row.dart';
 import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 
-/// 正在播放: the music rail's queue page — the playing queue as a full song
 /// table, the player page's queue panel at page size.
 ///
 /// When the queue is homogeneous — an album, or a favourited UP's run of
 /// videos — the top carries that source's card, the video player page's top
 /// bar with a face: the UP avatar, the archive (album) title, the UP name and
-/// a 已收藏 pill when the archive sits in the library. A mixed queue (radio,
 /// search results) renders the plain list only.
 ///
 /// Rows are the shared [MusicSongRow]; tap jumps the queue to that track, and
@@ -179,7 +177,6 @@ class _QueueSource {
 }
 
 /// The video player page's top bar, at queue size: the UP's face, the album
-/// (or UP) title as the headline, the UP name beneath, and the 已收藏 pill
 /// when the source sits in the library.
 class _SourceHeader extends StatelessWidget {
   const _SourceHeader({required this.source, required this.track});

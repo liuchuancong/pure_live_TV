@@ -8,7 +8,6 @@ part of 'video_progress_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// The video module's local watch-progress store, newBV's 已播进度条: every
 /// part that opens reports its position, cards render the progress bar, and a
 /// reopened archive resumes from where it stopped.
 ///
@@ -18,7 +17,6 @@ part of 'video_progress_controller.dart';
 @ProviderFor(VideoProgressController)
 final videoProgressControllerProvider = VideoProgressControllerProvider._();
 
-/// The video module's local watch-progress store, newBV's 已播进度条: every
 /// part that opens reports its position, cards render the progress bar, and a
 /// reopened archive resumes from where it stopped.
 ///
@@ -26,7 +24,6 @@ final videoProgressControllerProvider = VideoProgressControllerProvider._();
 /// its own keys and the two libraries never touch.
 final class VideoProgressControllerProvider
     extends $NotifierProvider<VideoProgressController, VideoProgressState> {
-  /// The video module's local watch-progress store, newBV's 已播进度条: every
   /// part that opens reports its position, cards render the progress bar, and a
   /// reopened archive resumes from where it stopped.
   ///
@@ -62,7 +59,6 @@ final class VideoProgressControllerProvider
 String _$videoProgressControllerHash() =>
     r'885c56e91b6ca39ba2c0443646f975187f8b000c';
 
-/// The video module's local watch-progress store, newBV's 已播进度条: every
 /// part that opens reports its position, cards render the progress bar, and a
 /// reopened archive resumes from where it stopped.
 ///

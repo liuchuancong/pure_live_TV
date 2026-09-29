@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/dialog/backup_import_dialog.dart';
+import 'package:pure_live/core/dialog/backup_import_dialog.dart';
 
 
 /// The menu one backup row opens.

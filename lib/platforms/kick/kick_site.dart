@@ -3,15 +3,15 @@ import 'kick_danmaku.dart';
 import 'kick_hls.dart';
 import 'kick_link.dart';
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/contracts/live_site.dart';
-import 'package:pure_live/shared/contracts/live_search.dart';
-import 'package:pure_live/shared/contracts/live_danmaku.dart';
-import 'package:pure_live/shared/contracts/live_directory.dart';
-import 'package:pure_live/shared/models/live_area/live_area.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/models/live_category/live_category.dart';
-import 'package:pure_live/shared/models/live_play_quality/live_play_quality.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/contracts/live_site.dart';
+import 'package:pure_live/core/contracts/live_search.dart';
+import 'package:pure_live/core/contracts/live_danmaku.dart';
+import 'package:pure_live/core/contracts/live_directory.dart';
+import 'package:pure_live/core/models/live_area/live_area.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/models/live_category/live_category.dart';
+import 'package:pure_live/core/models/live_play_quality/live_play_quality.dart';
 
 class _KickPlayback {
   _KickPlayback(this.slug, Iterable<LivePlayQuality> qualities) : qualities = List.unmodifiable(qualities);

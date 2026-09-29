@@ -7,11 +7,9 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 
-/// The PGC shelf, newBV's 影视: one tab per season type (番剧/国创/纪录片/
-/// 电影/电视剧), each a paged cover grid with the rating badge.
 class VideoPgcPage extends ConsumerStatefulWidget {
   const VideoPgcPage({super.key});
 

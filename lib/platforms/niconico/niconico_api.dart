@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:pure_live/shared/common/index.dart';
+import 'package:pure_live/core/common/index.dart';
 import 'package:pure_live/platforms/niconico/niconico_watch.dart';
 
 typedef NiconicoRequest = Future<({int status, String body})> Function(Uri uri, CancelToken cancel);

@@ -12,9 +12,9 @@ import 'package:pure_live/features/settings/pages/tag_management_section.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 import 'package:pure_live/services/tag_management/tag_management_model.dart';
 import 'package:pure_live/services/tag_management/live_tag.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/dialog/index.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 /// Renders the rebuilt tag management page (chip cloud + add row) and its two
 /// dialogs to PNGs for review without a device.

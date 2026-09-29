@@ -4,7 +4,7 @@
 /// together; single-layer units should import that layer barrel directly.
 library;
 
-export 'package:pure_live/shared/index.dart';
+export 'package:pure_live/core/index.dart';
 export 'package:pure_live/platforms/index.dart';
-export 'package:pure_live/features/iptv/index.dart';
+export 'package:pure_live/modules/live/iptv/index.dart';
 export 'package:pure_live/app/consts/index.dart';

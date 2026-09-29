@@ -5,8 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart'
     show stripTrackOrdinal;
 import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
@@ -130,12 +130,10 @@ class _QueueRow extends StatelessWidget {
   }
 }
 
-/// The 播放列表 over the player, rebuilt on the live_play playlist's steering
 /// model: one [Focus] owns every key (no per-row focusables to steal or lose
 /// focus), the list walks a selected index with wrap, and opening scrolls to
 /// — and selects — the row that is playing right now. OK jumps to the row,
 /// Back / Left close the panel, and a row's long press (pointer) offers
-/// 屏蔽该分P and removal.
 class MusicQueuePanel extends ConsumerStatefulWidget {
   const MusicQueuePanel({super.key, required this.onClose});
 
@@ -217,8 +215,6 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
     );
   }
 
-  /// Long press on a row opens the shared song menu — 下一首播放 (skipped for
-  /// the playing row), 喜欢 toggle, 加入歌单 — plus 删除, which drops the
   /// entry from the queue.
   Future<void> _showRowMenu(int index) async {
     final track = ref.read(musicPlayerControllerProvider).queue[index];

@@ -3,17 +3,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bonsoir/bonsoir.dart';
 import 'package:flutter/widgets.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/utils/date_time_utils.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:pure_live/core/utils/date_time_utils.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/app/bootstrap/app_navigator.dart';
 import 'package:pure_live/services/backup/backup_controller.dart';
-import 'package:pure_live/shared/dialog/backup_import_dialog.dart';
+import 'package:pure_live/core/dialog/backup_import_dialog.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
-import 'package:pure_live/shared/platform/local_network_access.dart';
+import 'package:pure_live/core/platform/local_network_access.dart';
 
 part 'remote_sync_service.g.dart';
 

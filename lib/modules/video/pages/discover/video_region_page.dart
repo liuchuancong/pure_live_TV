@@ -2,14 +2,13 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 
 import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-/// The UGC region browser, newBV's 分区: one tab per region, each showing that
 /// region's ranking feed (`ranking/v2?rid=`) — the guest-readable endpoint
 /// family; the region feed/rcmd endpoints trip the web risk control and are
 /// deliberately not used.

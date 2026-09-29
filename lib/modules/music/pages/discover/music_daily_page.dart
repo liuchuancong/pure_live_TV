@@ -4,14 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/modules/music/services/daily_recommendation_service.dart';
 
-/// 每日推荐: the bmsc brute-force engine — the default fav folder's videos
 /// seed related-video searches, one music pick per seed, cached for the day.
 /// The folder button re-pins the source, a card's long press re-rolls one slot.
 class MusicDailyPage extends ConsumerStatefulWidget {

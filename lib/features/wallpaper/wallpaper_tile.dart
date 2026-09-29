@@ -1,13 +1,13 @@
 import 'dart:math' as math;
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-import 'package:pure_live/shared/common/utils/color_util.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/core/common/utils/color_util.dart';
+import 'package:pure_live/core/theme/index.dart';
 
 /// One grid tile of the wallpaper browser: pictures load a grid-sized copy,
 /// live wallpapers show their poster, gradients are painted locally.

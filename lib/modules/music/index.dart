@@ -1,6 +1,6 @@
 /// The music module (bmsc feature set): the local library, synced playlists,
 /// discovery (dynamics / cloud history / ranking / search) and the
-/// full-screen lyric player. Depends only on modules/media and shared core.
+/// full-screen lyric player. Depends only on modules/vod and shared core.
 ///
 /// Layout: section content hangs off `music_page.dart`; `pages/<domain>/`
 /// holds the surfaces, `controllers/<domain>/` the state, `services/` the

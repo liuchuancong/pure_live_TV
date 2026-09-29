@@ -16,15 +16,12 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$VideoSettingsModel {
 
-/// The rendition (B站 qn) the video player prefers on open. 0 = the play-url
 /// answer's own pick.
  int get preferredQuality;/// Playback rate a video starts at when nothing was restored.
- double get defaultSpeed;/// Card tap opens the detail page first (newBV's 显示视频详情); off = straight
-/// into the player.
+ double get defaultSpeed;/// into the player.
  bool get showVideoDetail;/// newBV's persistent mini progress line on the player's bottom edge.
  bool get persistentProgress;/// The video section the sidebar lands on: index into [VideoSection.values].
- int get startSection;/// The video home's landing top tab: 0 动态 / 1 推荐 / 2 热门.
- int get homeTabIndex;/// The personal page's landing tab: index into its tab list.
+ int get startSection; int get homeTabIndex;/// The personal page's landing tab: index into its tab list.
  int get personalTabIndex;
 /// Create a copy of VideoSettingsModel
 /// with the given fields replaced by the non-null parameter values.
@@ -233,19 +230,16 @@ class _VideoSettingsModel implements VideoSettingsModel {
   const _VideoSettingsModel({this.preferredQuality = 0, this.defaultSpeed = 1.0, this.showVideoDetail = true, this.persistentProgress = true, this.startSection = 0, this.homeTabIndex = 1, this.personalTabIndex = 0});
   factory _VideoSettingsModel.fromJson(Map<String, dynamic> json) => _$VideoSettingsModelFromJson(json);
 
-/// The rendition (B站 qn) the video player prefers on open. 0 = the play-url
 /// answer's own pick.
 @override@JsonKey() final  int preferredQuality;
 /// Playback rate a video starts at when nothing was restored.
 @override@JsonKey() final  double defaultSpeed;
-/// Card tap opens the detail page first (newBV's 显示视频详情); off = straight
 /// into the player.
 @override@JsonKey() final  bool showVideoDetail;
 /// newBV's persistent mini progress line on the player's bottom edge.
 @override@JsonKey() final  bool persistentProgress;
 /// The video section the sidebar lands on: index into [VideoSection.values].
 @override@JsonKey() final  int startSection;
-/// The video home's landing top tab: 0 动态 / 1 推荐 / 2 热门.
 @override@JsonKey() final  int homeTabIndex;
 /// The personal page's landing tab: index into its tab list.
 @override@JsonKey() final  int personalTabIndex;

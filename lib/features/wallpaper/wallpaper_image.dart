@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/utils/cache_manager.dart';
+import 'package:pure_live/core/utils/cache_manager.dart';
 
 /// A wallpaper picture loaded straight from its absolute CDN URL.
 ///

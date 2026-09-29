@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart' show Headers;
-import 'package:pure_live/shared/common/http_client.dart';
+import 'package:pure_live/core/common/http_client.dart';
 
 /// State of one Bilibili QR login attempt.
 enum BiliBiliQrStatus { loading, unscanned, scanned, success, expired, failed }

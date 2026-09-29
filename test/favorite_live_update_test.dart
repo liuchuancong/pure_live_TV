@@ -6,14 +6,14 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dpad/dpad.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:pure_live/features/favorite/favorite_page.dart';
+import 'package:pure_live/modules/live/favorite/favorite_page.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/services/favorites/favorite_settings_model.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
-import 'package:pure_live/shared/widgets/tv_button.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
+import 'package:pure_live/core/widgets/tv_button.dart';
 
 /// Following a room while the favourite grid is alive must show up in the
 /// grid.

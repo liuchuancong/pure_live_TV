@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/core/theme/index.dart';
 
 /// Content that does not colour itself must follow the **palette**, not Material.
 ///

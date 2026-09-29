@@ -5,10 +5,9 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// The audio-only view: the cover in the middle to begin with, then — once the
 /// track has timed lyrics — the same cover on the left with the lines beside it.
@@ -125,8 +124,6 @@ class MusicNowPlayingViewState extends ConsumerState<MusicNowPlayingView> {
   }
 }
 
-/// Strips the ordinal a ripper baked into the title ("003.周杰伦-晴天" →
-/// "周杰伦-晴天"): the queue numbers its rows itself, and a baked-in ordinal
 /// disagrees the moment the source skips a number. Same rule as the video
 /// detail page's part tiles — leading digits count only when a separator
 /// follows, so "24K Magic" keeps its digits.
@@ -263,4 +260,3 @@ class _LyricsLayout extends StatelessWidget {
     );
   }
 }
-

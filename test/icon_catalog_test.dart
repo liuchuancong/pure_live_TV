@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pure_live/shared/consts/icon_catalog.dart';
+import 'package:pure_live/core/consts/icon_catalog.dart';
 import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 
 /// The icon picker stores the chosen entry by its catalog *label*, so labels

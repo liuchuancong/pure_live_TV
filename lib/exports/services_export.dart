@@ -2,4 +2,4 @@
 library;
 
 export 'package:pure_live/services/index.dart';
-export 'package:pure_live/shared/data/db_service.dart';
+export 'package:pure_live/core/data/db_service.dart';

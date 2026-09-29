@@ -6,17 +6,13 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/music/widgets/music_video_card.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 
-
-/// One playlist's track table — the default 喜欢 playlist and every locally
-/// created one. OK plays the row, long press opens the song menu (删除 / 置顶 /
-/// 清除默认歌词), and the track that is playing right now takes the opening
 /// focus while the list scrolls to it.
 class MusicUserPlaylistDetailPage extends ConsumerStatefulWidget {
   const MusicUserPlaylistDetailPage({super.key, required this.playlistId});
@@ -63,7 +59,6 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
   List<MusicTrack> _selectedTracks(List<MusicTrack> tracks) =>
       tracks.where((t) => _selectedIds.contains(t.id)).toList();
 
-  /// 批量喜欢: songs already hearted are left alone.
   void _batchLike(List<MusicTrack> selected) {
     final library = ref.read(musicLibraryControllerProvider);
     final libraryController = ref.read(musicLibraryControllerProvider.notifier);
@@ -77,7 +72,6 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
     ToastUtil.show(i18n('music_batch_liked', args: {'count': '$added'}));
   }
 
-  /// 批量加入歌单: the shared picker picks the target once.
   Future<void> _batchAddToPlaylist(List<MusicTrack> selected) async {
     if (selected.isEmpty) {
       ToastUtil.show(i18n('music_batch_none_selected'));
@@ -92,7 +86,6 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
     ToastUtil.show(i18n('music_batch_added', args: {'count': '${selected.length}'}));
   }
 
-  /// 批量移除 out of THIS playlist (the liked playlist un-hearts instead).
   void _batchRemove(List<MusicTrack> selected) {
     final libraryController = ref.read(musicLibraryControllerProvider.notifier);
     for (final track in selected) {
@@ -223,7 +216,6 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                           style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.secondaryTextColor),
                         ),
                         const Spacer(),
-                        // 多选: the batch entry (喜欢 / 加入歌单 / 移除), the
                         // bilibili-music checkbox table's entry button.
                         TvButton(
                           title: i18n('music_batch_select'),
@@ -287,7 +279,6 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
     const MusicPlayerRoute().push(context);
   }
 
-  /// Long press on a song: 删除 (unlike / remove from this playlist), 置顶,
   /// and — when the viewer once picked a default lyric for it — clearing that
   /// choice back to the automatic chain.
   Future<void> _showSongMenu(BuildContext context, WidgetRef ref, MusicTrack track, int index) async {

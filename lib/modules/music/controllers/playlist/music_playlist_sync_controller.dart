@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_state.dart';
 
 part 'music_playlist_sync_controller.g.dart';
@@ -12,7 +12,6 @@ part 'music_playlist_sync_controller.g.dart';
 /// playlists open offline and survive restarts. Video never reads these keys —
 /// the modules' local data stay strictly separated.
 ///
-/// Also owns 排除分P: parts excluded from playlist playback, the bmsc
 /// "excluded parts" feature.
 @Riverpod(keepAlive: true)
 class MusicPlaylistSyncController extends _$MusicPlaylistSyncController {
@@ -26,7 +25,6 @@ class MusicPlaylistSyncController extends _$MusicPlaylistSyncController {
   }
 
   /// Pulls every folder and its content down to Hive. One slow pass, run from
-  /// the playlist page's "同步全部" button.
   Future<void> syncAll() async {
     try {
       final folders = await BilibiliUgcApi.instance.getMyFavFolders();

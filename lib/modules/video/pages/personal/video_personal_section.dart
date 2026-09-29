@@ -18,7 +18,6 @@ class VideoPersonalSection extends ConsumerStatefulWidget {
 }
 
 class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
-  // 个人页置顶 Tab (newBV's setting); 关注 stays the landing pane while unset.
   int _tab = SettingsService.to.isInitialized ? SettingsService.to.videoState.personalTabIndex.clamp(0, 4) : 0;
 
   static const _tabs = [
@@ -87,6 +86,5 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
   }
 }
 
-/// The follow list, newBV's 关注列表: the account's followed uploaders as a
 /// grid of avatar + name + signature. Tapping opens the UP's space; long-press
 /// unfollows (with a confirm) and drops the row.

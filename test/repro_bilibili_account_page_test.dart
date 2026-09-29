@@ -7,11 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/features/settings/pages/account_bilibili_page.dart';
 import 'package:pure_live/services/cookie_manager/cookie_controller.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/theme/tv_theme_extension.dart';
-import 'package:pure_live/shared/theme/themes/cyber_theme.dart';
+import 'package:pure_live/core/theme/tv_theme_extension.dart';
+import 'package:pure_live/core/theme/themes/cyber_theme.dart';
 
 void main() {
   testWidgets('account bilibili page builds and polls without framework assertions', (tester) async {

@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/dialog/tv_dialog_utils.dart';
-import 'package:pure_live/shared/dialog/tv_select_dialog.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/tv_button.dart';
+import 'package:pure_live/core/dialog/tv_dialog_utils.dart';
+import 'package:pure_live/core/dialog/tv_select_dialog.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/tv_button.dart';
 
 /// A dialog that asks for a value must take the focus with it.
 ///

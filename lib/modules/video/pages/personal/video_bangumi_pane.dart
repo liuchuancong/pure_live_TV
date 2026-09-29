@@ -5,9 +5,9 @@ import 'package:pure_live/services/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class VideoBangumiPane extends ConsumerStatefulWidget {
@@ -103,7 +103,6 @@ class VideoBangumiPaneState extends ConsumerState<VideoBangumiPane> {
     );
   }
 
-  /// 取消追番 against the account, with a confirm — a relationship change,
   /// not a list edit. The card drops on success.
   Future<void> _unfollow(PgcItem item) async {
     final confirmed = await TvDialogUtils.showConfirm(

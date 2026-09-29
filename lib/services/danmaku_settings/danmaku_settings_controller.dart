@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'danmaku_settings_model.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/models/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/utils/toast_util.dart';
-import 'package:pure_live/shared/platform/font_download_manager.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/models/index.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:pure_live/core/platform/font_download_manager.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/services/settings/settings_value.dart';
 

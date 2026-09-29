@@ -6,10 +6,10 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/models/live_room/live_room.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/utils/favorite_operation_util.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/core/models/live_room/live_room.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/utils/favorite_operation_util.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 
 /// Switching a room's tags must survive the dialog it is picked in.
 ///

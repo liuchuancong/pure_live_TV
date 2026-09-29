@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/video/pages/discover/video_pgc_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';

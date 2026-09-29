@@ -10,8 +10,8 @@ import 'package:media_core_logging/media_core_logging.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:pure_live/shared/common/api_proxy_policy.dart';
-import 'package:pure_live/shared/platform/local_network_access.dart';
+import 'package:pure_live/core/common/api_proxy_policy.dart';
+import 'package:pure_live/core/platform/local_network_access.dart';
 
 class AppInitializer {
   static final AppInitializer _instance = AppInitializer._internal();

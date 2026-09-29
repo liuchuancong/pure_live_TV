@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/router/web_router.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// "View logs in a browser" — the page behind the backup & restore row.

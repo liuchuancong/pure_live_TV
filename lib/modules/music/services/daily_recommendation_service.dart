@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/core/utils/hive_pref_util.dart';
 
 /// The brute-force daily recommendation, ported from the bmsc reference:
 ///
-/// - the viewer pins one default fav folder (收藏夹);
 /// - a generation shuffles that folder, takes 30 seeds, and for each seed asks
 ///   bilibili's related-videos endpoint, keeping the FIRST related video that
 ///   is in a music category ([_tidWhitelist]), longer than a minute and not in
@@ -25,7 +24,6 @@ class DailyRecommendationService {
   static const String _historyKey = 'musicRecommendHistory';
   static const String _defaultFolderKey = 'musicDefaultFavFolder';
 
-  /// Music categories only: 音乐综合, MV, 电台, 音乐现场, 音Mad — the
   /// reference's tid whitelist [130, 193, 267, 28, 59].
   static const List<int> _tidWhitelist = [130, 193, 267, 28, 59];
 

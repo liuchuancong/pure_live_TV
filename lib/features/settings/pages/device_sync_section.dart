@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/widgets/remote_sync_pair_qr_card.dart';
+import 'package:pure_live/core/widgets/remote_sync_pair_qr_card.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
