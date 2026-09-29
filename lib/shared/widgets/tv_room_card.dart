@@ -194,6 +194,10 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                         // marker sits beside it. A Wrap, not a Row, so a long
                         // platform name next to the marker folds to a second
                         // line instead of painting past the card edge.
+                        //
+                        // Compact translucent chips, the same cover language
+                        // VideoCard uses — the TvButton mini pill swallowed a
+                        // cover at this cell size.
                         Positioned(
                           left: 12.sp,
                           top: 12.sp,
@@ -202,17 +206,12 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                             runSpacing: 6.sp,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              TvButton(
-                                excludeFocus: true,
-                                title: widget.room.platform.toUpperCase(),
-                                size: TvButtonSize.mini,
-                              ),
+                              _CoverChip(label: widget.room.platform.toUpperCase()),
                               if (widget.showFollowedMark && _followed)
-                                TvButton(
-                                  excludeFocus: true,
-                                  title: i18n('followed'),
-                                  size: TvButtonSize.mini,
-                                  icon: Icon(Icons.favorite, size: 18.sp * textScale),
+                                _CoverChip(
+                                  icon: Icons.favorite,
+                                  iconColor: const Color(0xFFFF5C7A),
+                                  label: i18n('followed'),
                                 ),
                             ],
                           ),
@@ -222,12 +221,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           Positioned(
                             right: 12.sp,
                             top: 12.sp,
-                            child: TvButton(
-                              title: i18n('ui_replay'),
-                              excludeFocus: true,
-                              size: TvButtonSize.mini,
-                              icon: Icon(Icons.videocam_rounded, size: 20.sp * textScale),
-                            ),
+                            child: _CoverChip(icon: Icons.videocam_rounded, label: i18n('ui_replay')),
                           ),
                         if (widget.room.isRecord == false &&
                             widget.room.liveStatus == LiveStatus.live &&
@@ -235,12 +229,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           Positioned(
                             right: 12.sp,
                             bottom: 12.sp,
-                            child: TvButton(
-                              excludeFocus: true,
-                              title: audience,
-                              size: TvButtonSize.mini,
-                              icon: Icon(Icons.whatshot_rounded, size: 20.sp * textScale),
-                            ),
+                            child: _CoverChip(icon: Icons.whatshot_rounded, label: audience),
                           ),
                       ],
                     ),
@@ -348,6 +337,46 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
               widget.onLongPress!.call();
             },
       child: const SizedBox(),
+    );
+  }
+}
+
+/// A compact translucent chip for the cover overlays (platform, followed,
+/// replay, audience). Fixed-size text on purpose — cover meta is an overlay,
+/// exempt from the font-scale resolver like the avatar initial — because a
+/// 2.4x label inside a pill swallowed the artwork.
+class _CoverChip extends StatelessWidget {
+  const _CoverChip({required this.label, this.icon, this.iconColor});
+
+  final String label;
+  final IconData? icon;
+  final Color? iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(8.sp),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 13.sp, color: iconColor ?? Colors.white),
+            SizedBox(width: 4.sp),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
