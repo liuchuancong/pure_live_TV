@@ -46,8 +46,11 @@ class _InfoPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color color = accent ?? Colors.white;
+    // The pill's box is padding-driven and grows with its t16 label; the glyph
+    // inside rides the same factor.
+    final double scale = TvTextScale.factorOf(context);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 3.sp),
+      padding: EdgeInsets.symmetric(horizontal: 10.sp * scale, vertical: 3.sp * scale),
       decoration: BoxDecoration(
         color: filled ? color.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(8.sp),
@@ -56,7 +59,7 @@ class _InfoPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[Icon(icon, size: 16.sp, color: Colors.white70), SizedBox(width: 4.sp)],
+          if (icon != null) ...[Icon(icon, size: 16.sp * scale, color: Colors.white70), SizedBox(width: 4.sp * scale)],
           Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: filled ? Colors.white : Colors.white70)),
         ],
       ),
@@ -293,6 +296,9 @@ class _RoomInfoBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final String audience = _audienceText(room);
+    // The bar's fixed ornaments (avatar, divider, clock glyph) follow the font
+    // the labels beside them are painted at, or the enlarged text outgrew them.
+    final double scale = TvTextScale.factorOf(context);
 
     return IgnorePointer(
       child: Container(
@@ -305,7 +311,7 @@ class _RoomInfoBar extends StatelessWidget {
           ),
         ),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+          padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 12.sp * scale),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.42),
             borderRadius: BorderRadius.circular(18.sp),
@@ -313,8 +319,8 @@ class _RoomInfoBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              TvCommonAvatar(avatarUrl: room.avatar, fallbackName: room.nick, radius: 30.sp),
-              SizedBox(width: 14.sp),
+              TvCommonAvatar(avatarUrl: room.avatar, fallbackName: room.nick, radius: 30.sp * scale),
+              SizedBox(width: 14.sp * scale),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -352,13 +358,14 @@ class _RoomInfoBar extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: 18.sp),
-              Container(width: 1.sp, height: 44.sp, color: Colors.white.withValues(alpha: 0.14)),
-              SizedBox(width: 18.sp),
+              SizedBox(width: 18.sp * scale),
+              Container(width: 1.sp, height: 44.sp * scale, color: Colors.white.withValues(alpha: 0.14)),
+              SizedBox(width: 18.sp * scale),
               // Wall clock: a live stream has no duration, so the time a viewer
-              // glances up for is the time of day.
-              Icon(RemixIcons.time_line, size: 24.sp, color: Colors.white70),
-              SizedBox(width: 8.sp),
+              // glances up for is the time of day. The glyph rides the same
+              // factor as the digits beside it.
+              Icon(RemixIcons.time_line, size: 24.sp * scale, color: Colors.white70),
+              SizedBox(width: 8.sp * scale),
               TvDigitalClock(format: 'HH:mm', style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
             ],
           ),
