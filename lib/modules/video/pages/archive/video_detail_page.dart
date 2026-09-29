@@ -343,6 +343,11 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                   DpadRegion(
                     verticalEdge: DpadEdgeBehavior.leave,
                     horizontalEdge: DpadEdgeBehavior.leave,
+                    // Enter on the geometrically nearest row: the default
+                    // `restore` has no memory on a fresh page and no entry
+                    // mark, and the remote's Down from the header never
+                    // landed in the list.
+                    enter: DpadEnterBehavior.nearest,
                     child: Column(
                       children: [
                         for (final (index, track) in tracks.indexed)

@@ -371,6 +371,11 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                         DpadRegion(
                           verticalEdge: DpadEdgeBehavior.leave,
                           horizontalEdge: DpadEdgeBehavior.leave,
+                          // Enter on the geometrically nearest row, the video
+                          // detail page's working pattern — the default
+                          // `restore` never landed the remote's Down in the
+                          // list on a fresh page.
+                          enter: DpadEnterBehavior.nearest,
                           child: Column(
                             children: [
                               for (final (index, track) in tracks.indexed)
