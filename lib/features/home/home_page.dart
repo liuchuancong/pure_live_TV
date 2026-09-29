@@ -95,54 +95,71 @@ class _HomePageState extends ConsumerState<HomePage> {
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 16.sp * scale),
-                for (final (mode, icon) in [
-                  (AppMode.live, Icons.live_tv_rounded),
-                  (AppMode.video, Icons.movie_outlined),
-                  (AppMode.music, Icons.library_music_outlined),
-                ])
-                  Padding(
-                    padding: EdgeInsets.only(top: 10.sp * scale),
-                    child: TvFocusable(
-                      autofocus: mode == current,
-                      onTap: () => Navigator.pop(context, mode),
-                      builder: (context, focused, child) {
-                        final isSelected = mode == current;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          height: 72.sp * scale,
-                          padding: EdgeInsets.symmetric(horizontal: 20.sp * scale),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? accent.withValues(alpha: 0.18)
-                                : focused
-                                ? accent.withValues(alpha: 0.08)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(14.sp * scale),
-                            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(icon, size: 30.sp * scale, color: isSelected ? accent : tvTheme.secondaryTextColor),
-                              SizedBox(width: 14.sp * scale),
-                              Expanded(
-                                child: Text(
-                                  i18n(switch (mode) {
-                                    AppMode.live => 'mode_live',
-                                    AppMode.video => 'mode_video',
-                                    AppMode.music => 'mode_music',
-                                  }),
-                                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600,
-                                    color: isSelected ? accent : tvTheme.primaryTextColor,
+                // The rows scroll when the enlarged font outgrows the dialog's
+                // max height, and the dialog stays content-sized when they fit:
+                // min-size column + Flexible is what makes both true.
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final (mode, icon) in [
+                          (AppMode.live, Icons.live_tv_rounded),
+                          (AppMode.video, Icons.movie_outlined),
+                          (AppMode.music, Icons.library_music_outlined),
+                        ])
+                          Padding(
+                            padding: EdgeInsets.only(top: 10.sp * scale),
+                            child: TvFocusable(
+                              autofocus: mode == current,
+                              onTap: () => Navigator.pop(context, mode),
+                              builder: (context, focused, child) {
+                                final isSelected = mode == current;
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 120),
+                                  height: 72.sp * scale,
+                                  padding: EdgeInsets.symmetric(horizontal: 20.sp * scale),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? accent.withValues(alpha: 0.18)
+                                        : focused
+                                        ? accent.withValues(alpha: 0.08)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(14.sp * scale),
+                                    border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
                                   ),
-                                ),
-                              ),
-                              if (isSelected) Icon(Icons.check_rounded, size: 26.sp * scale, color: accent),
-                            ],
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        icon,
+                                        size: 30.sp * scale,
+                                        color: isSelected ? accent : tvTheme.secondaryTextColor,
+                                      ),
+                                      SizedBox(width: 14.sp * scale),
+                                      Expanded(
+                                        child: Text(
+                                          i18n(switch (mode) {
+                                            AppMode.live => 'mode_live',
+                                            AppMode.video => 'mode_video',
+                                            AppMode.music => 'mode_music',
+                                          }),
+                                          style: AppTextStyles.t20.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: isSelected ? accent : tvTheme.primaryTextColor,
+                                          ),
+                                        ),
+                                      ),
+                                      if (isSelected) Icon(Icons.check_rounded, size: 26.sp * scale, color: accent),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        );
-                      },
+                      ],
                     ),
                   ),
+                ),
               ],
             ),
           ),
