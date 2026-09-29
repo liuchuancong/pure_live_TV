@@ -40,7 +40,7 @@ void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive)
 /// title from overflowing the cell. The density follows the font scale, so
 /// this is a function of the ambient context rather than a const.
 SliverGridDelegateWithFixedCrossAxisCount defaultVideoGridDelegate(BuildContext context) =>
-    TvAdaptiveGrid.fixed(
+    TvAdaptiveGrid.media(
       context,
       crossAxisCount: 4,
       mainAxisSpacing: 12.0,

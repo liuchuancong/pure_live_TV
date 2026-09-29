@@ -115,14 +115,20 @@ class TvAdaptiveGrid {
   /// The parameter names match [SliverGridDelegateWithFixedCrossAxisCount]'s
   /// so a call site converts by swapping the constructor only — the spacing
   /// arguments keep whatever `.w`/`.sp` semantics the caller already had.
+  ///
+  /// [fontWeight] damps the response for grids whose cells are not mostly
+  /// text: a media card's caption is a small band over a cover, and a cell
+  /// that grows at the full font rate turns a four-column feed into two
+  /// giant cards. `1.0` (the default) responds at the full rate; see [media].
   static SliverGridDelegateWithFixedCrossAxisCount fixed(
     BuildContext context, {
     required int crossAxisCount,
     required double childAspectRatio,
     double mainAxisSpacing = 0.0,
     double crossAxisSpacing = 0.0,
+    double fontWeight = 1.0,
   }) {
-    final double scale = TvTextScale.factorOf(context);
+    final double scale = _dampedFactor(context, fontWeight);
     final int columns = (crossAxisCount / scale).ceil().clamp(1, crossAxisCount * 2);
     return SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: columns,
@@ -130,6 +136,33 @@ class TvAdaptiveGrid {
       mainAxisSpacing: mainAxisSpacing * scale,
       crossAxisSpacing: crossAxisSpacing * scale,
     );
+  }
+
+  /// The damped variant for media-card grids (cover + a caption band): the
+  /// cell follows the font at 40% of the rate, so a 150% font keeps the feed's
+  /// column count instead of collapsing it, while titles still get room.
+  static SliverGridDelegateWithFixedCrossAxisCount media(
+    BuildContext context, {
+    required int crossAxisCount,
+    required double childAspectRatio,
+    double mainAxisSpacing = 0.0,
+    double crossAxisSpacing = 0.0,
+  }) {
+    return fixed(
+      context,
+      crossAxisCount: crossAxisCount,
+      childAspectRatio: childAspectRatio,
+      mainAxisSpacing: mainAxisSpacing,
+      crossAxisSpacing: crossAxisSpacing,
+      fontWeight: 0.4,
+    );
+  }
+
+  /// The font factor damped by [weight]: `1.0` passes the factor through,
+  /// `0.0` pins it at 1.0.
+  static double _dampedFactor(BuildContext context, double weight) {
+    final double factor = TvTextScale.factorOf(context);
+    return 1.0 + (factor - 1.0) * weight;
   }
 
   /// The same language for a max-extent grid: cells are drafted at most

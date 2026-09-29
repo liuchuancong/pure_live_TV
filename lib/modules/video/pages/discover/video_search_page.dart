@@ -133,7 +133,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
           key: ValueKey('video_search_$_keyword'),
           param: param,
           getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-          gridDelegate: TvAdaptiveGrid.fixed(
+          gridDelegate: TvAdaptiveGrid.media(
             context,
             crossAxisCount: themeState.denseRoomLayout,
             mainAxisSpacing: themeState.mainAxisSpacing.w,
@@ -380,7 +380,7 @@ class _PgcResultsState extends ConsumerState<_PgcResults> {
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.fixed(
+        gridDelegate: TvAdaptiveGrid.media(
           context,
           crossAxisCount: 5,
           mainAxisSpacing: 16.w,

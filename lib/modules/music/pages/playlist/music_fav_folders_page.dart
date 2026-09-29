@@ -134,7 +134,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: TvAdaptiveGrid.fixed(
+                  gridDelegate: TvAdaptiveGrid.media(
                     context,
                     crossAxisCount: 4,
                     mainAxisSpacing: 16.w,
@@ -182,7 +182,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: TvAdaptiveGrid.fixed(
+      gridDelegate: TvAdaptiveGrid.media(
         context,
         crossAxisCount: 4,
         mainAxisSpacing: 16.w,

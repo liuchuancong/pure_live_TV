@@ -337,7 +337,7 @@ class _FavPaneState extends ConsumerState<_FavPane> {
               horizontalEdge: DpadEdgeBehavior.leave,
               child: GridView.builder(
                 padding: EdgeInsets.all(24.sp),
-                gridDelegate: TvAdaptiveGrid.fixed(
+                gridDelegate: TvAdaptiveGrid.media(
                   context,
                   crossAxisCount: 5,
                   mainAxisSpacing: 16.w,
@@ -360,7 +360,7 @@ class _FavPaneState extends ConsumerState<_FavPane> {
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.fixed(
+        gridDelegate: TvAdaptiveGrid.media(
           context,
           crossAxisCount: 4,
           mainAxisSpacing: 16.w,
@@ -603,7 +603,7 @@ class _ToViewPaneState extends ConsumerState<_ToViewPane> {
     return DpadRegion(
       child: GridView.builder(
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.fixed(
+        gridDelegate: TvAdaptiveGrid.media(
           context,
           crossAxisCount: 5,
           mainAxisSpacing: 16.w,
@@ -702,7 +702,7 @@ class _BangumiPaneState extends ConsumerState<_BangumiPane> {
       child: GridView.builder(
         controller: _scroll,
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.fixed(
+        gridDelegate: TvAdaptiveGrid.media(
           context,
           crossAxisCount: 5,
           mainAxisSpacing: 16.w,

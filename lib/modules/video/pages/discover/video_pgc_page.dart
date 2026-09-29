@@ -117,7 +117,7 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
                           horizontalEdge: DpadEdgeBehavior.leave,
                           child: GridView.builder(
                             padding: EdgeInsets.all(24.sp),
-                            gridDelegate: TvAdaptiveGrid.fixed(
+                            gridDelegate: TvAdaptiveGrid.media(
                               context,
                               crossAxisCount: 5,
                               mainAxisSpacing: 16.w,

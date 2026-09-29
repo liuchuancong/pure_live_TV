@@ -518,7 +518,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: GridView.builder(
                       padding: EdgeInsets.all(24.sp),
-                      gridDelegate: TvAdaptiveGrid.fixed(
+                      gridDelegate: TvAdaptiveGrid.media(
                         context,
                         crossAxisCount: 4,
                         mainAxisSpacing: 16.w,
@@ -580,7 +580,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: GridView.builder(
                       padding: EdgeInsets.all(24.sp),
-                      gridDelegate: TvAdaptiveGrid.fixed(
+                      gridDelegate: TvAdaptiveGrid.media(
                         context,
                         crossAxisCount: 4,
                         mainAxisSpacing: 16.w,
@@ -812,7 +812,7 @@ class _RankingSectionState extends ConsumerState<_RankingSection> {
       key: const ValueKey('music_ranking_grid'),
       param: _param,
       getNotifier: () => ref.read(pagingCoreProvider(_param).notifier),
-      gridDelegate: TvAdaptiveGrid.fixed(
+      gridDelegate: TvAdaptiveGrid.media(
         context,
         crossAxisCount: themeState.denseRoomLayout,
         mainAxisSpacing: themeState.mainAxisSpacing.w,
@@ -993,7 +993,7 @@ class _DailySectionState extends ConsumerState<_DailySection> {
                   horizontalEdge: DpadEdgeBehavior.leave,
                   child: GridView.builder(
                     padding: EdgeInsets.all(24.sp),
-                    gridDelegate: TvAdaptiveGrid.fixed(
+                    gridDelegate: TvAdaptiveGrid.media(
                       context,
                       crossAxisCount: 4,
                       mainAxisSpacing: 16.w,
@@ -1198,7 +1198,7 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
                       key: ValueKey('music_search_$keyword'),
                       param: param,
                       getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-                      gridDelegate: TvAdaptiveGrid.fixed(
+                      gridDelegate: TvAdaptiveGrid.media(
                         context,
                         crossAxisCount: themeState.denseRoomLayout,
                         mainAxisSpacing: themeState.mainAxisSpacing.w,
