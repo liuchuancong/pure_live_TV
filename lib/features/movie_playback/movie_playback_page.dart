@@ -10,7 +10,6 @@ class MoviePlaybackPage extends ConsumerStatefulWidget {
 
 class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   static const double _pagePadding = 32;
-  static const double _centerWidgetWidth = 520;
   static const double _itemGap = 36;
 
   final TextEditingController _urlController = TextEditingController();
@@ -112,13 +111,13 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // The QR is the page's hero: more than half the row and no
+                  // width cap, so a phone has the largest scannable target a
+                  // 1080p panel can give.
                   Expanded(
-                    flex: 4,
+                    flex: 5,
                     child: Center(
-                      child: SizedBox(
-                        width: _centerWidgetWidth.sp,
-                        child: TvQrCodeCard(qrData: qrCodeAddress, urlText: hintText),
-                      ),
+                      child: TvQrCodeCard(qrData: qrCodeAddress, urlText: hintText),
                     ),
                   ),
                   Container(
@@ -245,35 +244,29 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                   );
                 },
               ),
-              SizedBox(height: 40.sp),
+              SizedBox(height: 32.sp),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 200.sp,
-                    child: TvButton(
-                      title: _isParsing ? i18n('parsing') : i18n('start_parse'),
-                      icon: Icon(Icons.rocket_launch_rounded, size: 28.sp),
-                      iconPosition: TvIconPosition.left,
-                      size: TvButtonSize.medium,
-                      onTap: _handleParse,
-                    ),
+                  TvButton(
+                    title: _isParsing ? i18n('parsing') : i18n('start_parse'),
+                    icon: Icon(Icons.rocket_launch_rounded, size: 22.sp),
+                    iconPosition: TvIconPosition.left,
+                    size: TvButtonSize.small,
+                    onTap: _handleParse,
                   ),
-                  SizedBox(width: 24.sp),
-                  SizedBox(
-                    width: 150.sp,
-                    child: TvButton(
-                      title: i18n('clear'),
-                      icon: Icon(Icons.cleaning_services_rounded, size: 28.sp),
-                      iconPosition: TvIconPosition.left,
-                      size: TvButtonSize.medium,
-                      isSecondary: true,
-                      onTap: () => _urlController.clear(),
-                    ),
+                  SizedBox(width: 16.sp),
+                  TvButton(
+                    title: i18n('clear'),
+                    icon: Icon(Icons.cleaning_services_rounded, size: 22.sp),
+                    iconPosition: TvIconPosition.left,
+                    size: TvButtonSize.small,
+                    isSecondary: true,
+                    onTap: () => _urlController.clear(),
                   ),
                 ],
               ),
-              SizedBox(height: 48.sp),
+              SizedBox(height: 32.sp),
               _buildSupportInfo(currentTvTheme),
             ],
           ),
@@ -287,10 +280,13 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
     // focusable-looking controls; they are only labels, so they render as
     // quiet text chips instead, capped in height and scrollable if they ever
     // outgrow the box. `IgnorePointer` keeps them out of traversal entirely.
+    // Every supported platform shows at once: compact single-line chips in a
+    // free-flowing wrap, no scroll. The chips shrink (fixed 14.sp overlay
+    // text, tight padding) so all ~22 fit inside the card even at the largest
+    // font scale — these are labels, not content.
     return Container(
       width: double.infinity,
-      constraints: BoxConstraints(maxHeight: 220.sp),
-      padding: EdgeInsets.all(20.sp),
+      padding: EdgeInsets.all(16.sp),
       decoration: BoxDecoration(
         color: currentTvTheme.cardColor,
         borderRadius: BorderRadius.circular(16.sp),
@@ -309,31 +305,30 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
             ),
           ),
           SizedBox(height: 12.sp),
-          Flexible(
-            child: SingleChildScrollView(
-              child: IgnorePointer(
-                child: Wrap(
-                  spacing: 10.sp,
-                  runSpacing: 10.sp,
-                  children: [
-                    for (final site in Sites.supportSites)
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 6.sp),
-                        decoration: BoxDecoration(
-                          color: currentTvTheme.backgroundColor.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(10.sp),
-                        ),
-                        child: Text(
-                          site.name,
-                          style: AppTextStyles.t18.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: currentTvTheme.secondaryTextColor,
-                          ),
-                        ),
+          IgnorePointer(
+            child: Wrap(
+              spacing: 8.sp,
+              runSpacing: 8.sp,
+              children: [
+                for (final site in Sites.supportSites)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 4.sp),
+                    decoration: BoxDecoration(
+                      color: currentTvTheme.backgroundColor.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(8.sp),
+                    ),
+                    child: Text(
+                      site.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t14.copyWith(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: currentTvTheme.secondaryTextColor,
                       ),
-                  ],
-                ),
-              ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
