@@ -1,7 +1,8 @@
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/features/home/home_provider.dart';
+import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/features/settings/pages/navigation_menu_meta.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
-import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 
 /// navigation & display - visibility: which entries the side menu shows.
 ///
@@ -19,9 +20,26 @@ class NavVisibilitySectionPage extends ConsumerWidget {
     final overrides = ref.watch(menuIconOverridesProvider);
     final visible = visibleMenuEntries(appState).map((menu) => menu.id).toSet();
 
+    final railExpanded = ref.watch(isMenuExpandedProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // The rail's display mode: collapsed icons or expanded labels. This is
+        // where the old sidebar expand button's job lives now.
+        TvSettingsGroupTitle(title: i18n('navigation_display_mode')),
+        TvSettingsCard(
+          children: [
+            TvSettingsSwitchTile(
+              title: i18n('nav_rail_expanded'),
+              subtitle: i18n('nav_rail_expanded_desc'),
+              icon: Icons.view_sidebar_outlined,
+              value: railExpanded,
+              onChanged: (v) => ref.read(isMenuExpandedProvider.notifier).setExpanded(v),
+            ),
+          ],
+        ),
+        SizedBox(height: 20.sp),
         TvSettingsGroupTitle(title: i18n('navigation_visibility')),
         TvSettingsCard(
           children: [

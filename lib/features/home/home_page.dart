@@ -468,27 +468,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                           child: Column(children: _buildModeRailItems(appMode, isExpanded, textScale)),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 20.sp * textScale),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10.sp * textScale),
-                          child: TvIconButton(
-                            icon: AnimatedRotation(
-                              turns: isExpanded ? 0.5 : 0.0,
-                              duration: const Duration(milliseconds: 250),
-                              curve: Curves.easeOutCubic,
-                              child: const Icon(Icons.arrow_forward_ios_rounded),
-                            ),
-                            // Expanded already spells every entry out; collapsed is
-                            // the state where the arrow needs a name.
-                            label: isExpanded ? null : i18n('menu_short_expand'),
-                            size: TvIconButtonSize.medium,
-                            isSecondary: true,
-                            expand: !isExpanded,
-                            onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
-                          ),
-                        ),
-                      ),
                       _buildAdaptiveItem(
                         ref: ref,
                         item: mySettingsItem,
@@ -620,20 +599,25 @@ class _HomePageState extends ConsumerState<HomePage> {
     // self-sized square read as squeezed under the focus fill next to the
     // wider idle tiles; a row that spans the rail keeps every state the same
     // footprint.
+    // Collapsed rail: self-sized square tiles, centred in the rail. The
+    // full-width row (`expand: true`) read as a stack of rectangles; a square
+    // tile with the two-character name underneath is the compact icon rail.
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10.sp * textScale),
-      child: TvIconButton(
-        icon: Icon(item.icon),
-        // Collapsed rail: the icon alone left the destinations ambiguous, so each
-        // tile carries its two-character name underneath.
-        label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
-        selected: isSelected,
-        size: TvIconButtonSize.large,
-        useFadedFocus: true,
-        isSecondary: !isSelected,
-        expand: true,
-        focusNode: focusNode,
-        onTap: onTap,
+      child: Center(
+        child: TvIconButton(
+          icon: Icon(item.icon),
+          // Collapsed rail: the icon alone left the destinations ambiguous, so each
+          // tile carries its two-character name underneath.
+          label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
+          selected: isSelected,
+          size: TvIconButtonSize.small,
+          useFadedFocus: true,
+          isSecondary: !isSelected,
+          expand: false,
+          focusNode: focusNode,
+          onTap: onTap,
+        ),
       ),
     );
   }

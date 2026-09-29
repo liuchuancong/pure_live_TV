@@ -37,6 +37,7 @@ _AppSettingsModel _$AppSettingsModelFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      sidebarExpanded: json['sidebarExpanded'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$AppSettingsModelToJson(_AppSettingsModel instance) =>
@@ -59,4 +60,5 @@ Map<String, dynamic> _$AppSettingsModelToJson(_AppSettingsModel instance) =>
       'enableMultiView': instance.enableMultiView,
       'enableNewWindowPlay': instance.enableNewWindowPlay,
       'savedMenuIds': instance.savedMenuIds,
+      'sidebarExpanded': instance.sidebarExpanded,
     };

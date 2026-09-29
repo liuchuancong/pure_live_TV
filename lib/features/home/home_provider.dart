@@ -1,13 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/app_export.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/utils/hive_pref_util.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 
 part 'home_provider.g.dart';
 
@@ -39,13 +33,11 @@ class AppModeController extends _$AppModeController {
 
   /// The single top-left button cycles 直播 → 视频 → 音乐: one OK press moves
   /// on, no submenu needed on a remote.
-  void cycle() => setMode(
-        switch (state) {
-          AppMode.live => AppMode.video,
-          AppMode.video => AppMode.music,
-          AppMode.music => AppMode.live,
-        },
-      );
+  void cycle() => setMode(switch (state) {
+    AppMode.live => AppMode.video,
+    AppMode.video => AppMode.music,
+    AppMode.music => AppMode.live,
+  });
 }
 
 /// Selected music-mode sidebar section (index into [MusicSection.values]).
@@ -204,12 +196,19 @@ class SideMenuIndex extends _$SideMenuIndex {
   }
 }
 
+/// The side rail's display mode (collapsed icons / expanded labels).
+///
+/// A preference now, not UI state: the toggle lives in navigation & display
+/// (导航栏显示控制), persisted with the rest of the app settings, so the rail
+/// boots the way the user last chose.
 @riverpod
 class IsMenuExpanded extends _$IsMenuExpanded {
   @override
-  bool build() => false;
+  bool build() => ref.watch(appSettingsControllerProvider.select((s) => s.sidebarExpanded));
 
-  void toggle() {
-    state = !state;
+  void setExpanded(bool expanded) {
+    ref
+        .read(appSettingsControllerProvider.notifier)
+        .update(ref.read(appSettingsControllerProvider).copyWith(sidebarExpanded: expanded));
   }
 }

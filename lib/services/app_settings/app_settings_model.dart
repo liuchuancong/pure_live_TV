@@ -29,6 +29,7 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(true) bool enableMultiView,
     @Default(true) bool enableNewWindowPlay,
     @Default([]) List<String> savedMenuIds,
+    @Default(false) bool sidebarExpanded,
   }) = _AppSettingsModel;
 
   factory AppSettingsModel.fromJson(Map<String, dynamic> json) => _$AppSettingsModelFromJson(json);

@@ -50,6 +50,7 @@ class AppSettingsController extends _$AppSettingsController {
       enableMultiView: HivePrefUtil.getBool('enableMultiView') ?? true,
       enableNewWindowPlay: HivePrefUtil.getBool('enableNewWindowPlay') ?? true,
       savedMenuIds: HivePrefUtil.getStringList('savedMenuIds') ?? [],
+      sidebarExpanded: HivePrefUtil.getBool('sidebarExpanded') ?? false,
     );
   }
 
@@ -166,6 +167,7 @@ class AppSettingsController extends _$AppSettingsController {
     HivePrefUtil.setBool('enableFullScreenDefault', state.enableFullScreenDefault);
     HivePrefUtil.setBool('showSplashPage', state.showSplashPage);
     HivePrefUtil.setStringList('savedMenuIds', state.savedMenuIds);
+    HivePrefUtil.setBool('sidebarExpanded', state.sidebarExpanded);
     HivePrefUtil.setBool('enableAsmrSleepMode', state.enableAsmrSleepMode);
     HivePrefUtil.setInt('asmrSleepMinutes', state.asmrSleepMinutes);
     HivePrefUtil.setBool('useGitHubOriginForUpdates', state.useGitHubOriginForUpdates);
