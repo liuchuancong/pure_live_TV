@@ -75,12 +75,16 @@ class _HomePageState extends ConsumerState<HomePage> {
       builder: (context) {
         final tvTheme = context.tvTheme;
         final accent = tvTheme.focusColor;
+        // The rows carry t20 labels, so the row's every dimension (height,
+        // glyphs, gaps) grows with the font — fixed numbers left the mode
+        // icons stamp-sized next to enlarged text.
+        final double scale = TvTextScale.factorOf(context);
         return Dialog(
           backgroundColor: tvTheme.cardColor,
           // Compact on purpose: a mode picker is three rows, not a page.
           insetPadding: EdgeInsets.symmetric(horizontal: 480.sp, vertical: 240.sp),
           child: Padding(
-            padding: EdgeInsets.all(24.sp),
+            padding: EdgeInsets.all(24.sp * scale),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -90,14 +94,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                   style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 16.sp),
+                SizedBox(height: 16.sp * scale),
                 for (final (mode, icon) in [
                   (AppMode.live, Icons.live_tv_rounded),
                   (AppMode.video, Icons.movie_outlined),
                   (AppMode.music, Icons.library_music_outlined),
                 ])
                   Padding(
-                    padding: EdgeInsets.only(top: 10.sp),
+                    padding: EdgeInsets.only(top: 10.sp * scale),
                     child: TvFocusable(
                       autofocus: mode == current,
                       onTap: () => Navigator.pop(context, mode),
@@ -105,21 +109,21 @@ class _HomePageState extends ConsumerState<HomePage> {
                         final isSelected = mode == current;
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 120),
-                          height: 72.sp,
-                          padding: EdgeInsets.symmetric(horizontal: 20.sp),
+                          height: 72.sp * scale,
+                          padding: EdgeInsets.symmetric(horizontal: 20.sp * scale),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? accent.withValues(alpha: 0.18)
                                 : focused
                                 ? accent.withValues(alpha: 0.08)
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(14.sp),
+                            borderRadius: BorderRadius.circular(14.sp * scale),
                             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
                           ),
                           child: Row(
                             children: [
-                              Icon(icon, size: 30.sp, color: isSelected ? accent : tvTheme.secondaryTextColor),
-                              SizedBox(width: 14.sp),
+                              Icon(icon, size: 30.sp * scale, color: isSelected ? accent : tvTheme.secondaryTextColor),
+                              SizedBox(width: 14.sp * scale),
                               Expanded(
                                 child: Text(
                                   i18n(switch (mode) {
@@ -127,12 +131,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     AppMode.video => 'mode_video',
                                     AppMode.music => 'mode_music',
                                   }),
-                                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
+                                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600,
                                     color: isSelected ? accent : tvTheme.primaryTextColor,
                                   ),
                                 ),
                               ),
-                              if (isSelected) Icon(Icons.check_rounded, size: 26.sp, color: accent),
+                              if (isSelected) Icon(Icons.check_rounded, size: 26.sp * scale, color: accent),
                             ],
                           ),
                         );
