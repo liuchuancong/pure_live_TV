@@ -1,20 +1,143 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart'
+    show stripTrackOrdinal;
+import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 
+/// One queue row, drawn in the live_play playlist's room-card language: the
+/// cover thumb, the title with its album (multi-P) or UP beneath, the part
+/// badge on the right — richer than a bare title, and the row every other
+/// player list already speaks.
+class _QueueRow extends StatelessWidget {
+  const _QueueRow({required this.track, required this.index, required this.isCurrent, required this.selected});
 
-/// The 播放列表 over the player, bmsc's playlist sheet: a header with the
-/// count, the clear button and the play-mode cycle, then one tall row per
-/// track — the playing glyph or index, the title in accent while playing, the
-/// album (multi-P) or artist beneath. Opens scrolled to the playing row; a
-/// row's long press offers 屏蔽该分P and removal.
+  final MusicTrack track;
+  final int index;
+  final bool isCurrent;
+  final bool selected;
+
+  /// Height of one row, margins included — the host list's `itemExtent` and
+  /// its keep-in-view arithmetic read the same constant, so the highlight
+  /// cannot drift off the rows it marks.
+  static double get extent => 96.0.sp;
+
+  @override
+  Widget build(BuildContext context) {
+    final tvTheme = context.tvTheme;
+    final accent = tvTheme.focusColor;
+    final isMulti = track.archive.parts.length > 1;
+
+    final Color foreground = selected ? Colors.white : Colors.white;
+    final Color muted = selected ? Colors.white70 : Colors.white54;
+
+    return Container(
+      height: 88.0.sp,
+      margin: EdgeInsets.symmetric(vertical: 4.sp),
+      padding: EdgeInsets.symmetric(horizontal: 14.sp),
+      decoration: BoxDecoration(
+        color: selected
+            ? accent
+            : isCurrent
+            ? accent.withValues(alpha: 0.22)
+            : Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14.sp),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 34.sp,
+            child: isCurrent
+                ? Icon(Icons.play_arrow_rounded, size: 32.sp, color: selected ? Colors.white : accent)
+                : Text(
+                    '${index + 1}',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: muted),
+                  ),
+          ),
+          SizedBox(width: 12.sp),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10.sp),
+            child: Container(
+              width: 104.sp,
+              height: 64.sp,
+              color: Colors.white.withValues(alpha: 0.08),
+              child: CachedNetworkImage(
+                imageUrl: track.archive.cover,
+                fit: BoxFit.cover,
+                memCacheWidth: 240,
+                fadeInDuration: Duration.zero,
+                errorWidget: (_, _, _) => Icon(Icons.music_note_rounded, size: 26.sp, color: Colors.white24),
+              ),
+            ),
+          ),
+          SizedBox(width: 14.sp),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  stripTrackOrdinal(track.title),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.t18.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isCurrent && !selected ? accent : foreground,
+                  ),
+                ),
+                SizedBox(height: 4.sp),
+                Row(
+                  children: [
+                    Icon(Icons.album_rounded, size: 18.sp, color: muted),
+                    SizedBox(width: 4.sp),
+                    Expanded(
+                      child: Text(
+                        isMulti ? track.archive.title : track.archive.upName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: muted),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (isMulti) ...[
+            SizedBox(width: 8.sp),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+              decoration: BoxDecoration(
+                color: selected ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6.sp),
+              ),
+              child: Text(
+                'P${track.part.page}/${track.archive.parts.length}',
+                style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: selected ? Colors.white : muted),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The 播放列表 over the player, rebuilt on the live_play playlist's steering
+/// model: one [Focus] owns every key (no per-row focusables to steal or lose
+/// focus), the list walks a selected index with wrap, and opening scrolls to
+/// — and selects — the row that is playing right now. OK jumps to the row,
+/// Back / Left close the panel, and a row's long press (pointer) offers
+/// 屏蔽该分P and removal.
 class MusicQueuePanel extends ConsumerStatefulWidget {
-  const MusicQueuePanel({super.key,required this.onClose});
+  const MusicQueuePanel({super.key, required this.onClose});
 
   final VoidCallback onClose;
 
@@ -24,32 +147,55 @@ class MusicQueuePanel extends ConsumerStatefulWidget {
 
 class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
   final ScrollController _scroll = ScrollController();
-  final Map<int, FocusNode> _rowNodes = <int, FocusNode>{};
-  bool _steered = false;
+  final FocusNode _focusNode = FocusNode(debugLabel: 'music/queue-panel');
 
-  FocusNode _nodeAt(int index) => _rowNodes.putIfAbsent(index, FocusNode.new);
+  /// The highlight the remote is walking. It starts on the playing row — the
+  /// whole point of opening the list mid-playback.
+  late int _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = ref.read(musicPlayerControllerProvider).index.clamp(0, 1 << 30);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNode.requestFocus();
+      _scrollToSelection();
+    });
+  }
 
   @override
   void dispose() {
     _scroll.dispose();
-    for (final node in _rowNodes.values) {
-      node.dispose();
-    }
+    _focusNode.dispose();
     super.dispose();
   }
 
-  /// Only the first build steers: rebuilds (progress ticks aside) must not
-  /// drag the user back to the playing row.
-  void _steerToCurrent(int index) {
-    _steered = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scroll.hasClients) return;
-      final target = (index * 106.0).sp - _scroll.position.viewportDimension / 2;
-      _scroll.jumpTo(target.clamp(0.0, _scroll.position.maxScrollExtent));
-      // The keyboard lands ON the playing row: this was the whole complaint —
-      // opened, the panel used to leave focus nowhere and the remote dead.
-      _nodeAt(index).requestFocus();
-    });
+  /// Keeps the highlighted row visible with the live panel's band arithmetic:
+  /// the list only moves when the selection would leave view, and then just
+  /// far enough to keep one row of context on that side.
+  void _scrollToSelection() {
+    if (!_scroll.hasClients) return;
+
+    final position = _scroll.position;
+    final viewport = position.viewportDimension;
+    if (viewport <= 0) return;
+
+    final rowExtent = _QueueRow.extent;
+    final topPadding = 4.0.sp;
+    final margin = rowExtent;
+    final rowTop = topPadding + _selected * rowExtent;
+    final rowBottom = rowTop + rowExtent;
+
+    double? target;
+    if (rowTop < position.pixels + margin) {
+      target = rowTop - margin;
+    } else if (rowBottom > position.pixels + viewport - margin) {
+      target = rowBottom - viewport + margin;
+    }
+    if (target == null) return;
+
+    _scroll.animateTo(target.clamp(0.0, position.maxScrollExtent), duration: const Duration(milliseconds: 140), curve: Curves.easeOut);
   }
 
   Future<void> _confirmClear() async {
@@ -71,64 +217,60 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
     );
   }
 
-  /// Long press on a row: 屏蔽该分P (the archive remembers the skip) or plain
-  /// removal from the queue.
+  /// Long press on a row opens the shared song menu — 下一首播放 (skipped for
+  /// the playing row), 喜欢 toggle, 加入歌单 — plus 删除, which drops the
+  /// entry from the queue.
   Future<void> _showRowMenu(int index) async {
-    final state = ref.read(musicPlayerControllerProvider);
-    final controller = ref.read(musicPlayerControllerProvider.notifier);
-    final libraryController = ref.read(musicLibraryControllerProvider.notifier);
-    final track = state.queue[index];
-    final isMulti = track.archive.parts.length > 1;
+    final track = ref.read(musicPlayerControllerProvider).queue[index];
+    await showMusicSongMenu(context, ref, track: track, onDelete: () async {
+      ref.read(musicPlayerControllerProvider.notifier).removeAt(index);
+    });
+  }
 
-    await TvDialogUtils.show<void>(
-      context: context,
-      builder: (_) => TvDialog(
-        title: track.title,
-        cancelText: i18n('cancel'),
-        width: 560.ts(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (isMulti)
-              TvDialogOptionTile(
-                title: i18n('music_queue_exclude'),
-                subtitle: i18n('music_queue_exclude_hint'),
-                icon: Icon(Icons.not_interested, size: 26.ts(context)),
-                showCheck: false,
-                autofocus: true,
-                onTap: () {
-                  Navigator.of(context).pop();
-                  libraryController.toggleExcludedPart(track.archive.bvid, track.part.cid);
-                  controller.removeAt(index);
-                  ToastUtil.show(i18n('music_part_excluded'));
-                },
-              ),
-            TvDialogOptionTile(
-              title: i18n('music_queue_remove'),
-              icon: Icon(Icons.delete_outline_rounded, size: 26.ts(context)),
-              showCheck: false,
-              onTap: () {
-                Navigator.of(context).pop();
-                controller.removeAt(index);
-                ToastUtil.show(i18n('music_removed_from_queue'));
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+  static bool _isConfirm(LogicalKeyboardKey key) =>
+      key == LogicalKeyboardKey.select ||
+      key == LogicalKeyboardKey.enter ||
+      key == LogicalKeyboardKey.space ||
+      key == LogicalKeyboardKey.numpadEnter ||
+      key == LogicalKeyboardKey.gameButtonA;
+
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    final queue = ref.read(musicPlayerControllerProvider).queue;
+    final count = queue.length;
+    final key = event.logicalKey;
+
+    if (count == 0) {
+      if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.escape) widget.onClose();
+      return KeyEventResult.handled;
+    }
+
+    if (_isConfirm(key)) {
+      ref.read(musicPlayerControllerProvider.notifier).jumpTo(_selected);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.arrowDown) {
+      setState(() {
+        _selected = (_selected + (key == LogicalKeyboardKey.arrowDown ? 1 : -1) + count) % count;
+      });
+      _scrollToSelection();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.escape) {
+      widget.onClose();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(musicPlayerControllerProvider);
     final controller = ref.read(musicPlayerControllerProvider.notifier);
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
+    final accent = context.tvTheme.focusColor;
 
     final queue = state.queue;
-    final playing = state.index;
-    if (!_steered && playing >= 0 && queue.isNotEmpty) _steerToCurrent(playing);
+    final selected = queue.isEmpty ? 0 : _selected.clamp(0, queue.length - 1);
 
     return Container(
       decoration: BoxDecoration(
@@ -184,104 +326,45 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                       style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
                     ),
                   )
-                : ListView.builder(
-                    controller: _scroll,
-                    padding: EdgeInsets.only(left: 12.ts(context), right: 12.ts(context), bottom: 16.ts(context)),
-                    itemCount: queue.length,
-                    itemBuilder: (context, index) {
-                      final track = queue[index];
-                      final isCurrent = index == playing;
-                      final isMulti = track.archive.parts.length > 1;
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 6.ts(context)),
-                        child: TvFocusable(
-                          onTap: () => controller.jumpTo(index),
+                : Focus(
+                    focusNode: _focusNode,
+                    autofocus: true,
+                    onKeyEvent: _onKeyEvent,
+                    child: ListView.builder(
+                      controller: _scroll,
+                      padding: EdgeInsets.only(left: 12.sp, right: 12.sp, top: 4.sp, bottom: 16.sp),
+                      itemCount: queue.length,
+                      // Exact row heights: the scroll arithmetic in
+                      // [_scrollToSelection] is whole-row exact, so the last
+                      // rows of a long queue stay reachable.
+                      itemExtent: _QueueRow.extent,
+                      itemBuilder: (context, index) {
+                        final track = queue[index];
+                        return GestureDetector(
                           onLongPress: () => _showRowMenu(index),
-                          focusNode: _nodeAt(index),
-                          builder: (context, focused, child) {
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 120),
-                              // Content-sized: the fixed 100.sp overflowed by
-                              // a pixel at the largest font setting.
-                              padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 16.ts(context)),
-                              decoration: BoxDecoration(
-                                color: isCurrent
-                                    ? accent.withValues(alpha: 0.22)
-                                    : focused
-                                    ? Colors.white.withValues(alpha: 0.12)
-                                    : Colors.white.withValues(alpha: 0.06),
-                                borderRadius: BorderRadius.circular(14.sp),
-                                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
-                              ),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 36.ts(context),
-                                    child: isCurrent
-                                        ? Icon(Icons.play_arrow_rounded, size: 30.ts(context), color: accent)
-                                        : Text(
-                                            '${index + 1}',
-                                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
-                                          ),
-                                  ),
-                                  SizedBox(width: 12.ts(context)),
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                track.title,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, 
-                                                  color: isCurrent ? accent : Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                            if (isMulti)
-                                              Padding(
-                                                padding: EdgeInsets.only(left: 8.ts(context)),
-                                                child: Text(
-                                                  'P${track.part.page}',
-                                                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 4.ts(context)),
-                                        Row(
-                                          children: [
-                                            Icon(Icons.album_rounded, size: 18.ts(context), color: Colors.white38),
-                                            SizedBox(width: 4.ts(context)),
-                                            Expanded(
-                                              child: Text(
-                                                isMulti ? track.archive.title : track.archive.upName,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
+                          child: _QueueRow(
+                            track: track,
+                            index: index,
+                            isCurrent: index == state.index,
+                            selected: index == selected,
+                          ),
+                        );
+                      },
+                    ),
                   ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.sp, 0, 20.sp, 12.sp),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
+                style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 }
-

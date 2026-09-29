@@ -11,6 +11,7 @@ import 'package:pure_live/modules/music/pages/discover/music_ranking_page.dart';
 import 'package:pure_live/modules/music/pages/mine/music_follow_section.dart';
 import 'package:pure_live/modules/music/pages/mine/music_recents_page.dart';
 import 'package:pure_live/modules/music/pages/music_follow_pane.dart';
+import 'package:pure_live/modules/music/pages/playback/music_now_playing_queue_page.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
 import 'package:pure_live/modules/music/pages/search/music_search_page.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
@@ -52,6 +53,7 @@ class _MusicSectionViewState extends ConsumerState<MusicSectionView> {
     MusicSection.followedUps => const MusicFollowPane(key: ValueKey('music_followed_ups')),
     MusicSection.ranking => const MusicRankingPage(key: ValueKey('music_ranking')),
     MusicSection.search => const MusicSearchPage(key: ValueKey('music_search')),
+    MusicSection.nowPlaying => const MusicNowPlayingQueuePage(key: ValueKey('music_now_playing')),
   };
 
   Widget _childFor(MusicSection section) =>

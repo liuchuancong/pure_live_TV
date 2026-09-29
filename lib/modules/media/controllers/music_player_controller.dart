@@ -403,6 +403,42 @@ class MusicPlayerController extends _$MusicPlayerController {
     state = state.copyWith(mode: state.mode.next);
   }
 
+  /// Sets the play mode directly — the video player page pins 顺序播放 while a
+  /// video is open (video parts do not shuffle or loop) and restores the
+  /// music mode when it leaves.
+  void setPlayMode(MusicPlayMode mode) {
+    if (state.mode == mode) return;
+    state = state.copyWith(mode: mode);
+  }
+
+  /// Whether reaching the queue's end wraps to the first entry.
+  ///
+  /// Music owns the wrap: a song queue that finishes starts over. Video
+  /// playback is strictly sequential — its last part ending is the end, and
+  /// the video player page clears this flag for the duration of a session.
+  bool wrapAtQueueEnd = true;
+
+  /// Set when the player page exits with the picture on: the Flutter side
+  /// tears its texture down while mpv keeps decoding into the output it lost
+  /// track of, so the NEXT page mount shows black until the video output is
+  /// rebuilt. [reattachVideoSurface] does that rebuild — the same vid=no →
+  /// vid=auto cycle the viewer used to perform by toggling 纯音频 twice.
+  bool videoSurfaceNeedsReattach = false;
+
+  /// Forces mpv to rebuild its video output against the freshly mounted
+  /// surface: dropping and restoring the video track re-creates the decoder's
+  /// output with the live texture. Harmless when nothing is wrong.
+  Future<void> reattachVideoSurface() async {
+    final handle = _handle;
+    if (handle == null) return;
+    try {
+      await handle.setAudioOnly(true);
+    } catch (_) {}
+    try {
+      await handle.setAudioOnly(false);
+    } catch (_) {}
+  }
+
   /// Re-opens the current stream at [quality] from the rendition list the last
   /// answer shipped — no new API request, just a fresh mpv load.
   Future<void> switchQuality(int quality) async {
@@ -733,6 +769,10 @@ class MusicPlayerController extends _$MusicPlayerController {
         await _ignoreCancelled(() => handle.seek(Duration.zero));
         await _ignoreCancelled(handle.play);
       case MusicPlayMode.sequence:
+        // The video page runs sequential too, but its last part is THE end —
+        // no wrap, the session just sits finished.
+        if (!wrapAtQueueEnd && state.index >= state.queue.length - 1) return;
+        await next();
       case MusicPlayMode.random:
         await next();
     }

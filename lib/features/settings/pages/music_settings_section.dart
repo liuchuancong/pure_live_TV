@@ -1,4 +1,5 @@
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/models/models.dart';
 
 /// Music-mode settings (music's own section, separate from live/video):
@@ -52,6 +53,10 @@ class MusicSettingsSectionPage extends ConsumerWidget {
                   _ => MusicPlayMode.sequence,
                 };
                 HivePrefUtil.setString(_playModeKey, mode.name);
+                // The bar's mode button is gone (space + stray presses): this
+                // option is the only selector, so it re-rules the live queue
+                // too, not just future sessions.
+                ref.read(musicPlayerControllerProvider.notifier).setPlayMode(mode);
               },
             ),
             TvSettingsSwitchTile(

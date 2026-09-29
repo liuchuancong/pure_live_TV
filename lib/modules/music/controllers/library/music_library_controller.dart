@@ -49,7 +49,6 @@ class MusicLibraryState {
     this.followedUps = const [],
     this.likedSongs = const [],
     this.playlists = const [],
-    this.excludedParts = const {},
   });
 
   final List<MusicArchive> favorites;
@@ -61,11 +60,6 @@ class MusicLibraryState {
   /// Songs hearted from the player — the 喜欢 list, one entry per part.
   final List<MusicTrack> likedSongs;
 
-  /// Per-archive skipped parts (跳过分 P): bvid -> excluded cids. A part here
-  /// vanishes from every queue the archive materializes into; when all parts
-  /// of an archive are excluded the archive simply has nothing to play.
-  final Map<String, List<int>> excludedParts;
-
   /// Locally created playlists (自建歌单).
   final List<MusicUserPlaylist> playlists;
 
@@ -76,15 +70,6 @@ class MusicLibraryState {
 
   bool isSongLiked(String trackId) => likedSongs.any((t) => t.id == trackId);
 
-  List<int> excludedCids(String bvid) => excludedParts[bvid] ?? const [];
-
-  /// The archive's parts with the excluded ones removed — the single filter
-  /// every queue built from this archive must go through.
-  List<MusicTrack> playableParts(MusicArchive archive) {
-    final excluded = (excludedParts[archive.bvid] ?? const <int>[]).toSet();
-    if (excluded.isEmpty) return archive.tracks;
-    return archive.tracks.where((t) => !excluded.contains(t.part.cid)).toList();
-  }
 
   /// User playlists in display order: pinned first (newest pin highest), the
   /// rest newest-created first. The default liked playlist is not in here —
@@ -103,7 +88,6 @@ class MusicLibraryState {
     List<MusicUp>? followedUps,
     List<MusicTrack>? likedSongs,
     List<MusicUserPlaylist>? playlists,
-    Map<String, List<int>>? excludedParts,
   }) {
     return MusicLibraryState(
       favorites: favorites ?? this.favorites,
@@ -111,7 +95,6 @@ class MusicLibraryState {
       followedUps: followedUps ?? this.followedUps,
       likedSongs: likedSongs ?? this.likedSongs,
       playlists: playlists ?? this.playlists,
-      excludedParts: excludedParts ?? this.excludedParts,
     );
   }
 }
@@ -131,7 +114,6 @@ class MusicLibraryController extends _$MusicLibraryController {
       followedUps: _loadUps('musicFollowedUps'),
       likedSongs: _loadTracks('musicLikedSongs'),
       playlists: _loadPlaylists(),
-      excludedParts: _loadExcludedParts(),
     );
   }
 
@@ -379,47 +361,6 @@ class MusicLibraryController extends _$MusicLibraryController {
     HivePrefUtil.setStringList(key, [for (final u in list) jsonEncode(u.toJson())]);
   }
 
-  // ------------------------------------------------------------- 分 P 跳过
-
-  List<int> excludedCids(String bvid) => state.excludedCids(bvid);
-
-  void toggleExcludedPart(String bvid, int cid) {
-    final map = {...state.excludedParts};
-    final cids = [...(map[bvid] ?? const <int>[])];
-    if (cids.contains(cid)) {
-      cids.remove(cid);
-    } else {
-      cids.add(cid);
-    }
-    if (cids.isEmpty) {
-      map.remove(bvid);
-    } else {
-      map[bvid] = cids;
-    }
-    state = state.copyWith(excludedParts: Map.unmodifiable(map));
-    _persistExcludedParts(map);
-  }
-
-  Map<String, List<int>> _loadExcludedParts() {
-    try {
-      final raw = HivePrefUtil.getString('musicExcludedParts');
-      if (raw == null || raw.isEmpty) return const {};
-      final json = jsonDecode(raw);
-      if (json is! Map<String, dynamic>) return const {};
-      return {
-        for (final entry in json.entries)
-          entry.key: [
-            for (final v in (entry.value as List?) ?? const <dynamic>[]) int.tryParse(v?.toString() ?? '') ?? 0,
-          ]..remove(0),
-      };
-    } catch (_) {
-      return const {};
-    }
-  }
-
-  void _persistExcludedParts(Map<String, List<int>> map) {
-    HivePrefUtil.setString('musicExcludedParts', jsonEncode(map));
-  }
 
   /// Track-list codec shared by liked songs and local playlists: archives are
   /// stored once per bvid, tracks as `bvid#cid#page` refs into them. A ref

@@ -123,6 +123,13 @@ class BilibiliPgcApi {
     return PgcSeason.fromJson(Map<String, dynamic>.from(data));
   }
 
+  /// Unfollows a season (取消追番, `pgc/web/follow/del`).
+  Future<void> unfollowSeason({required int seasonId}) async {
+    await _client.postForm('https://api.bilibili.com/pgc/web/follow/del', {
+      'season_id': '$seasonId',
+    });
+  }
+
   /// Playback URLs for one episode, converted into the shared playurl model.
   ///
   /// The muxed mp4 route only (`fnval=0`): bilibili merges video and audio

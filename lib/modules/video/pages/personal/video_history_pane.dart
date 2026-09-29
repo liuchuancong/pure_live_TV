@@ -84,9 +84,11 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
         itemCount: _items.length,
         itemBuilder: (context, index) {
           final item = _items[index];
-          final progress = item.duration > 0 ? (item.progress / item.duration).clamp(0.0, 1.0) : 0.0;
+          final hasProgress = item.progress > 0;
+          final finished = item.finished;
           return TvFocusable(
             onTap: () => openVideoArchive(context, ref, item.archive),
+            onLongPress: () => _delete(item),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
               margin: EdgeInsets.only(bottom: 10.ts(context)),
@@ -107,27 +109,30 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                         borderRadius: BorderRadius.circular(10.sp),
                         child: CachedNetworkImage(
                           imageUrl: item.archive.cover,
-                          width: 180.ts(context),
-                          height: 98.ts(context),
+                          width: 210.ts(context),
+                          height: 122.ts(context),
                           fit: BoxFit.cover,
                           memCacheWidth: 480,
-                          errorWidget: (_, _, _) => Container(width: 180.ts(context), color: Colors.black26),
+                          errorWidget: (_, _, _) => Container(width: 210.ts(context), color: Colors.black26),
                         ),
                       ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 4.sp,
-                          backgroundColor: Colors.white24,
-                          valueColor: AlwaysStoppedAnimation(accent),
+                      // The bar only exists when there is a position to show:
+                      // a zero-width accent line under a fresh entry is noise.
+                      if (hasProgress)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: LinearProgressIndicator(
+                            value: item.duration > 0 ? (item.progress / item.duration).clamp(0.0, 1.0) : null,
+                            minHeight: 4.sp,
+                            backgroundColor: Colors.white24,
+                            valueColor: AlwaysStoppedAnimation(accent),
+                          ),
                         ),
-                      ),
                     ],
                   ),
-                  SizedBox(width: 14.ts(context)),
+                  SizedBox(width: 16.ts(context)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,16 +142,88 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                           item.archive.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18.copyWith(
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.t20.copyWith(
+                            fontWeight: FontWeight.w700,
                             color: tvTheme.primaryTextColor,
                           ),
                         ),
-                        SizedBox(height: 4.ts(context)),
-                        Text(
-                          '${item.archive.upName} · ${(progress * 100).toStringAsFixed(0)}%',
-                          style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
+                        SizedBox(height: 6.ts(context)),
+                        Row(
+                          children: [
+                            if (item.page > 1) ...[
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+                                decoration: BoxDecoration(
+                                  color: accent.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(6.sp),
+                                ),
+                                child: Text(
+                                  'P${item.page}',
+                                  style: AppTextStyles.t15.copyWith(fontWeight: FontWeight.w600, color: accent),
+                                ),
+                              ),
+                              SizedBox(width: 10.ts(context)),
+                            ],
+                            if (item.archive.upName.isNotEmpty)
+                              Flexible(
+                                child: Text(
+                                  item.archive.upName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.t16.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: tvTheme.secondaryTextColor,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
+                        // The third line only when the row has something to
+                        // say: when it was watched, and how far it got. A
+                        // never-started entry with 0% and an empty clock was
+                        // exactly the noise this pane is shedding.
+                        if (item.viewAt > 0 || hasProgress) ...[
+                          SizedBox(height: 6.ts(context)),
+                          Row(
+                            children: [
+                              if (item.viewAt > 0) ...[
+                                Icon(Icons.schedule_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
+                                SizedBox(width: 4.sp),
+                                Text(
+                                  _viewAtLabel(item.viewAt),
+                                  style: AppTextStyles.t16.copyWith(
+                                    fontWeight: FontWeight.w400,
+                                    color: tvTheme.secondaryTextColor,
+                                  ),
+                                ),
+                              ],
+                              if (item.viewAt > 0 && hasProgress) SizedBox(width: 14.ts(context)),
+                              if (hasProgress) ...[
+                                Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
+                                SizedBox(width: 4.sp),
+                                Flexible(
+                                  child: Text(
+                                    finished
+                                        ? i18n('video_history_watched_done')
+                                        : i18n(
+                                            'video_history_progress',
+                                            args: {
+                                              'current': _clock(item.progress),
+                                              'total': _clock(item.duration),
+                                            },
+                                          ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.t16.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: finished ? accent : tvTheme.secondaryTextColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -157,6 +234,40 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
         },
       ),
     );
+  }
+
+  /// Long-press deletes the row from the bilibili watch history and drops it
+  /// from the list.
+  Future<void> _delete(HistoryItem item) async {
+    try {
+      await BilibiliUgcApi.instance.deleteHistory(aid: item.archive.aid, cid: item.cid);
+      if (!mounted) return;
+      setState(() => _items.removeWhere((e) => e.archive.bvid == item.archive.bvid && e.cid == item.cid));
+      ToastUtil.show(i18n('video_history_deleted'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    }
+  }
+
+  /// Watch timestamp, compact for a TV row: today shows the clock, this year
+  /// the date and clock, older entries the full date.
+  String _viewAtLabel(int viewAt) {
+    // The API reports seconds.
+    final time = DateTime.fromMillisecondsSinceEpoch(viewAt * 1000);
+    final now = DateTime.now();
+    String two(int v) => v.toString().padLeft(2, '0');
+    final clock = '${two(time.hour)}:${two(time.minute)}';
+    if (time.year == now.year && time.month == now.month && time.day == now.day) return clock;
+    final date = '${two(time.month)}-${two(time.day)}';
+    return time.year == now.year ? '$date $clock' : '${time.year}-$date $clock';
+  }
+
+  String _clock(int seconds) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    final h = seconds ~/ 3600;
+    final m = seconds.remainder(3600) ~/ 60;
+    final s = seconds.remainder(60);
+    return h > 0 ? '$h:${two(m)}:${two(s)}' : '${two(m)}:${two(s)}';
   }
 }
 

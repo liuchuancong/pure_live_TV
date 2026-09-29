@@ -86,14 +86,25 @@ class BilibiliMusicApi {
   }
 
   /// Related archives of one video (the detail page's Related videos row).
-  Future<List<MusicArchive>> getRelatedVideos({required int aid}) async {
-    final result = await HttpClient.instance.getJson(
-      'https://api.bilibili.com/x/web-interface/archive/related',
-      queryParameters: {'aid': aid.toString()},
-      header: await _client.headers(),
-    );
-    if (result['code'] != 0) {
-      throw Exception('related failed: ${result['code']} ${result['message']}');
+  Future<List<MusicArchive>> getRelatedVideos({required int aid, String bvid = ''}) async {
+    // The endpoint increasingly answers aid-only requests with an error or an
+    // empty list — bvid is what the web player sends. Entries routed in from
+    // some lists carry aid = 0, so bvid leads and aid covers the stragglers.
+    final attempts = <Map<String, String>>[
+      if (bvid.isNotEmpty) {'bvid': bvid},
+      if (aid > 0) {'aid': aid.toString()},
+    ];
+    Object? result;
+    for (final query in attempts) {
+      result = await HttpClient.instance.getJson(
+        'https://api.bilibili.com/x/web-interface/archive/related',
+        queryParameters: query,
+        header: await _client.headers(),
+      );
+      if (result is Map && result['code'] == 0) break;
+    }
+    if (result is! Map || result['code'] != 0) {
+      throw Exception('related failed: ${result is Map ? result['code'] : result}');
     }
     // The endpoint answered `data` as the bare list before, `data.list` today.
     final dynamic data = result['data'];

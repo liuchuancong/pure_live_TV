@@ -9,6 +9,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart'
+    show stripTrackOrdinal;
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
@@ -150,8 +152,7 @@ class MusicRecentsPageState extends ConsumerState<MusicRecentsPage> {
 
 /// One song row in the bmsc TrackTile shape, at TV size: a wide cover, the
 /// title, then icon-led metadata lines — album over author, and for multi-P
-/// archives the part count (with the excluded count in red, like the
-/// reference's `(-n)`) and the duration. Long press removes it from the list.
+/// archives the part count and the duration. Long press removes it from the list.
 class MusicSongRow extends ConsumerWidget {
   const MusicSongRow({
     super.key,
@@ -159,6 +160,7 @@ class MusicSongRow extends ConsumerWidget {
     required this.index,
     required this.onPlay,
     required this.onRemove,
+    this.onMenuRequest,
     this.focusNode,
   });
 
@@ -166,6 +168,10 @@ class MusicSongRow extends ConsumerWidget {
   final int index;
   final VoidCallback onPlay;
   final VoidCallback onRemove;
+
+  /// Right key while focused: the row's context menu. Null keeps plain
+  /// traversal (Right then moves the focus sideways).
+  final VoidCallback? onMenuRequest;
 
   /// External node for callers that steer focus programmatically (the playing
   /// row on return from the player). Null keeps DpadFocusable's own.
@@ -176,14 +182,19 @@ class MusicSongRow extends ConsumerWidget {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
     final state = ref.watch(musicPlayerControllerProvider);
-    final library = ref.watch(musicLibraryControllerProvider);
     final isCurrent = state.current?.archive.bvid == track.archive.bvid && state.current?.part.page == track.part.page;
     final isMulti = track.archive.parts.length > 1;
-    final excludedCount = library.excludedCids(track.archive.bvid).length;
 
     return TvFocusable(
       onTap: onPlay,
       onLongPress: onRemove,
+      onDirection: onMenuRequest == null
+          ? null
+          : (direction) {
+              if (direction != TraversalDirection.right) return false;
+              onMenuRequest!();
+              return true;
+            },
       focusNode: focusNode,
       builder: (context, focused, child) {
         return AnimatedContainer(
@@ -237,7 +248,7 @@ class MusicSongRow extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      track.title,
+                      stripTrackOrdinal(track.title),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.t18.copyWith(
@@ -290,11 +301,6 @@ class MusicSongRow extends ConsumerWidget {
                               color: tvTheme.secondaryTextColor,
                             ),
                           ),
-                          if (excludedCount > 0)
-                            Text(
-                              ' (-$excludedCount)',
-                              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.focusColor),
-                            ),
                           SizedBox(width: 10.sp),
                           Icon(Icons.schedule_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
                           SizedBox(width: 4.sp),

@@ -18,6 +18,11 @@ class TvFocusable extends StatefulWidget {
   /// puts the focus back on the playing row). Null keeps DpadFocusable's own.
   final FocusNode? focusNode;
 
+  /// Directional keys while focused. Return `true` to consume the press
+  /// (a row that opens its context menu on Right, for example); `false` lets
+  /// the dpad layer move the focus. Null keeps plain traversal.
+  final DpadDirectionCallback? onDirection;
+
   const TvFocusable({
     super.key,
     this.child,
@@ -26,6 +31,7 @@ class TvFocusable extends StatefulWidget {
     this.onLongPress,
     this.autofocus = false,
     this.focusNode,
+    this.onDirection,
   });
 
   @override
@@ -46,6 +52,7 @@ class _TvFocusableState extends State<TvFocusable> {
     return DpadFocusable(
       autofocus: widget.autofocus,
       focusNode: widget.focusNode,
+      onDirection: widget.onDirection,
       onSelect: () {
         if (_longPressGate.swallowSelect()) return;
         widget.onTap?.call();

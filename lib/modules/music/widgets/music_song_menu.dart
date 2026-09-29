@@ -23,6 +23,11 @@ enum MusicSongMenuRemove {
 
 /// The unified song long-press menu, the QQ-music set: 下一首播放, 喜欢,
 /// 加入歌单, plus the caller's own rows (置顶 / 清除默认歌词 / 删除).
+///
+/// 下一首播放 (the play-order adjustment — queue the song behind the playing
+/// one) only makes sense for a song that is NOT the one playing now, so it
+/// hides for the current track. [onDelete] adds a plain 删除 row for callers
+/// whose list owns its own removal (the playing queue drops the entry).
 Future<void> showMusicSongMenu(
   BuildContext context,
   WidgetRef ref, {
@@ -32,11 +37,13 @@ Future<void> showMusicSongMenu(
   int? playlistIndex,
   Future<void> Function()? onPin,
   String? removeLabelKey,
+  Future<void> Function()? onDelete,
 }) async {
   final controller = ref.read(musicPlayerControllerProvider.notifier);
   final libraryController = ref.read(musicLibraryControllerProvider.notifier);
   final isLiked = ref.read(musicLibraryControllerProvider).isSongLiked(track.id);
   final hasDefaultLyric = MusicLyricService.instance.manualLyric(track.title) != null;
+  final isCurrent = ref.read(musicPlayerControllerProvider).current?.id == track.id;
 
   await TvDialogUtils.show<void>(
     context: context,
@@ -47,20 +54,22 @@ Future<void> showMusicSongMenu(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _menuTile(
-            context,
-            Icons.low_priority_rounded,
-            i18n('music_play_next'),
-            autofocus: true,
-            onTap: () {
-              Navigator.of(context).pop();
-              unawaited(controller.playNext(track));
-            },
-          ),
+          if (!isCurrent)
+            _menuTile(
+              context,
+              Icons.low_priority_rounded,
+              i18n('music_play_next'),
+              autofocus: true,
+              onTap: () {
+                Navigator.of(context).pop();
+                unawaited(controller.playNext(track));
+              },
+            ),
           _menuTile(
             context,
             isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
             i18n(isLiked ? 'music_song_unliked_menu' : 'music_song_like_menu'),
+            autofocus: isCurrent,
             onTap: () {
               Navigator.of(context).pop();
               libraryController.toggleLikeSong(track);
@@ -71,6 +80,7 @@ Future<void> showMusicSongMenu(
             Icons.playlist_add_rounded,
             i18n('music_add_to_playlist'),
             onTap: () {
+              // Closes this menu first — the picker opens over the page.
               Navigator.of(context).pop();
               showAddToPlaylistDialog(context, ref, track);
             },
@@ -95,6 +105,17 @@ Future<void> showMusicSongMenu(
                 Navigator.of(context).pop();
                 MusicLyricService.instance.clearManualLyric(track.title);
                 ToastUtil.show(i18n('music_lyric_cleared'));
+              },
+            ),
+          if (onDelete != null)
+            _menuTile(
+              context,
+              Icons.delete_outline_rounded,
+              i18n('music_removed_from_queue'),
+              destructive: true,
+              onTap: () {
+                Navigator.of(context).pop();
+                unawaited(onDelete());
               },
             ),
           if (remove != MusicSongMenuRemove.none)

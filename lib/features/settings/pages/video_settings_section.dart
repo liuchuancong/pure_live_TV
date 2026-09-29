@@ -197,9 +197,9 @@ class _InterfaceSettingsGroup extends ConsumerWidget {
   static const _homeTabs = ['video_dynamics', 'video_tab_recommend', 'video_tab_popular'];
   static const _personalTabs = [
     'video_personal_follow',
+    'video_personal_toview',
     'video_personal_fav',
     'video_personal_history',
-    'video_personal_toview',
     'video_personal_bangumi',
   ];
 

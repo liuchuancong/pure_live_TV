@@ -100,7 +100,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 380.sp,
+                        width: 340.sp,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -194,6 +194,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                             ),
                             Expanded(
                               child: DpadRegion(
+                                horizontalEdge: DpadEdgeBehavior.leave,
                                 child: GridView.builder(
                                   padding: EdgeInsets.only(bottom: 16.sp),
                                   gridDelegate: TvAdaptiveGrid.media(
@@ -248,12 +249,14 @@ class _EpisodeTile extends StatelessWidget {
           children: [
             Text(
               episode.longTitle.isEmpty ? '${i18n('video_pgc_episode')} ${episode.title}' : episode.longTitle,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor, height: 1.3),
             ),
-            if (episode.badge.isNotEmpty)
+            if (episode.badge.isNotEmpty) ...[
+              SizedBox(height: 6.sp),
               Text(episode.badge, style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: accent)),
+            ],
           ],
         ),
       ),

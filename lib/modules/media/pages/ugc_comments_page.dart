@@ -7,12 +7,16 @@ import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/models/models.dart';
 
-
 /// A shared TV comments page for one archive (`x/v2/reply/wbi/main`), used by
 /// both music and video modes: hot/newest switch, root list with up to three
 /// inline sub-replies, paging on scroll end, comment like when logged in.
 class UgcCommentsPage extends ConsumerStatefulWidget {
-  const UgcCommentsPage({super.key, required this.oid, this.type = 1, required this.title});
+  const UgcCommentsPage({
+    super.key,
+    required this.oid,
+    this.type = 1,
+    required this.title,
+  });
 
   final int oid;
 
@@ -87,7 +91,11 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
 
   Future<void> _toggleLike(CommentItem comment) async {
     try {
-      await BilibiliUgcApi.instance.likeComment(oid: comment.oid, rpid: comment.rpid, like: !comment.liked);
+      await BilibiliUgcApi.instance.likeComment(
+        oid: comment.oid,
+        rpid: comment.rpid,
+        like: !comment.liked,
+      );
       if (!mounted) return;
       setState(() {
         final at = _comments.indexWhere((c) => c.rpid == comment.rpid);
@@ -125,7 +133,10 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
+            padding: EdgeInsets.symmetric(
+              horizontal: 24.ts(context),
+              vertical: 12.ts(context),
+            ),
             child: Row(
               children: [
                 for (final (index, (label, isHot)) in [
@@ -141,16 +152,27 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                     },
                     builder: (context, focused, child) => AnimatedContainer(
                       duration: const Duration(milliseconds: 120),
-                      padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 10.ts(context)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.ts(context),
+                        vertical: 10.ts(context),
+                      ),
                       decoration: BoxDecoration(
-                        color: _hot == isHot ? accent.withValues(alpha: 0.22) : tvTheme.cardColor,
+                        color: _hot == isHot
+                            ? accent.withValues(alpha: 0.22)
+                            : tvTheme.cardColor,
                         borderRadius: BorderRadius.circular(24.sp),
-                        border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
+                        border: Border.all(
+                          color: focused ? accent : Colors.transparent,
+                          width: 2.ts(context),
+                        ),
                       ),
                       child: Text(
                         label,
-                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, 
-                          color: _hot == isHot ? accent : tvTheme.secondaryTextColor,
+                        style: AppTextStyles.t18.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _hot == isHot
+                              ? accent
+                              : tvTheme.secondaryTextColor,
                         ),
                       ),
                     ),
@@ -162,38 +184,60 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
           ),
           Expanded(
             child: _error != null && _comments.isEmpty
-                ? AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error)
+                ? AppStatusView(
+                    type: AppStatusType.error,
+                    title: i18n('load_failed'),
+                    subtitle: _error,
+                  )
                 : _comments.isEmpty && _loading
-                    ? AppStatusView(type: AppStatusType.loading, title: '', subtitle: '')
-                    : _comments.isEmpty
-                        ? AppStatusView(type: AppStatusType.empty, title: i18n('video_comments_empty'), subtitle: '')
-                        : DpadRegion(
-                            child: ListView.builder(
-                              controller: _scroll,
-                              padding: EdgeInsets.only(bottom: 24.ts(context)),
-                              itemCount: _comments.length + (_hasMore || _loading ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= _comments.length) {
-                                  return Padding(
-                                    padding: EdgeInsets.all(20.ts(context)),
-                                    child: Center(
-                                      child: _loading
-                                          ? SizedBox(
-                                              width: 32.ts(context),
-                                              height: 32.ts(context),
-                                              child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
-                                            )
-                                          : Text(
-                                              i18n('all_results_loaded'),
-                                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                                            ),
+                ? AppStatusView(
+                    type: AppStatusType.loading,
+                    title: '',
+                    subtitle: '',
+                  )
+                : _comments.isEmpty
+                ? AppStatusView(
+                    type: AppStatusType.empty,
+                    title: i18n('video_comments_empty'),
+                    subtitle: '',
+                  )
+                : DpadRegion(
+                    child: ListView.builder(
+                      controller: _scroll,
+                      padding: EdgeInsets.only(bottom: 24.ts(context)),
+                      itemCount:
+                          _comments.length + (_hasMore || _loading ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index >= _comments.length) {
+                          return Padding(
+                            padding: EdgeInsets.all(20.ts(context)),
+                            child: Center(
+                              child: _loading
+                                  ? SizedBox(
+                                      width: 32.ts(context),
+                                      height: 32.ts(context),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 3.sp,
+                                        color: accent,
+                                      ),
+                                    )
+                                  : Text(
+                                      i18n('all_results_loaded'),
+                                      style: AppTextStyles.t14.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                        color: tvTheme.secondaryTextColor,
+                                      ),
                                     ),
-                                  );
-                                }
-                                return _CommentTile(comment: _comments[index], onLike: _toggleLike);
-                              },
                             ),
-                          ),
+                          );
+                        }
+                        return _CommentTile(
+                          comment: _comments[index],
+                          onLike: _toggleLike,
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -203,6 +247,11 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
 
 /// One comment row: avatar, name, time, content, like, and the inline
 /// sub-reply preview rows.
+///
+/// The WHOLE row is the focusable — the tile-to-tile walk is what drives the
+/// list down the screen; the like count is display-only and OK toggles the
+/// like, the one action a comment has. (The old shape had focus only on the
+/// like pill, so Down could not leave a row and the list never scrolled.)
 class _CommentTile extends StatelessWidget {
   const _CommentTile({required this.comment, required this.onLike});
 
@@ -214,129 +263,168 @@ class _CommentTile extends StatelessWidget {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 8.ts(context)),
-      padding: EdgeInsets.all(18.ts(context)),
-      decoration: BoxDecoration(
-        color: tvTheme.cardColor,
-        borderRadius: BorderRadius.circular(16.sp),
-        border: Border.all(color: comment.isTop ? accent.withValues(alpha: 0.5) : Colors.transparent, width: 1.5.ts(context)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: comment.face,
-                  width: 44.ts(context),
-                  height: 44.ts(context),
-                  fit: BoxFit.cover,
-                  errorWidget: (_, _, _) => Icon(Icons.person_rounded, size: 44.ts(context), color: tvTheme.secondaryTextColor),
-                ),
-              ),
-              SizedBox(width: 12.ts(context)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            comment.uname,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
-                          ),
-                        ),
-                        if (comment.isTop) ...[
-                          SizedBox(width: 8.ts(context)),
-                          Text(i18n('video_comments_top'), style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent)),
-                        ],
-                      ],
+    return TvFocusable(
+      onTap: () => onLike(comment),
+      builder: (context, focused, child) => Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: 24.ts(context),
+          vertical: 8.ts(context),
+        ),
+        padding: EdgeInsets.all(18.ts(context)),
+        decoration: BoxDecoration(
+          color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+          borderRadius: BorderRadius.circular(16.sp),
+          border: Border.all(
+            color: focused
+                ? accent
+                : (comment.isTop
+                      ? accent.withValues(alpha: 0.5)
+                      : Colors.transparent),
+            width: focused ? 2.ts(context) : 1.5.ts(context),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: comment.face,
+                    width: 52.ts(context),
+                    height: 52.ts(context),
+                    fit: BoxFit.cover,
+                    errorWidget: (_, _, _) => Icon(
+                      Icons.person_rounded,
+                      size: 52.ts(context),
+                      color: tvTheme.secondaryTextColor,
                     ),
-                    Text(
-                      _timeLabel(comment.ctime),
-                      style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 12.ts(context)),
-              TvFocusable(
-                onTap: () => onLike(comment),
-                builder: (context, focused, child) => Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 8.ts(context)),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18.sp),
-                    color: comment.liked ? accent.withValues(alpha: 0.2) : Colors.transparent,
-                    border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                ),
+                SizedBox(width: 14.ts(context)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        comment.liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                        size: 20.ts(context),
-                        color: comment.liked ? accent : tvTheme.secondaryTextColor,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              comment.uname,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.t18.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: tvTheme.primaryTextColor,
+                              ),
+                            ),
+                          ),
+                          if (comment.isTop) ...[
+                            SizedBox(width: 8.ts(context)),
+                            Text(
+                              i18n('video_comments_top'),
+                              style: AppTextStyles.t15.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: accent,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      if (comment.like > 0) ...[
-                        SizedBox(width: 6.ts(context)),
-                        Text(
-                          readableCount(comment.like.toString()),
-                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                      SizedBox(height: 2.ts(context)),
+                      Text(
+                        _timeLabel(comment.ctime),
+                        style: AppTextStyles.t15.copyWith(
+                          color: tvTheme.secondaryTextColor,
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10.ts(context)),
-          SelectableText(
-            comment.content,
-            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor, height: 1.5),
-          ),
-          if (comment.replies.isNotEmpty) ...[
-            SizedBox(height: 10.ts(context)),
-            Container(
-              padding: EdgeInsets.all(12.ts(context)),
-              decoration: BoxDecoration(
-                color: tvTheme.backgroundColor.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(12.sp),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (final reply in comment.replies)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 6.ts(context)),
-                      child: RichText(
-                        text: TextSpan(
-                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                          children: [
-                            TextSpan(
-                              text: '${reply.uname}: ',
-                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: accent),
-                            ),
-                            TextSpan(text: reply.content),
-                          ],
+                SizedBox(width: 12.ts(context)),
+                // Display-only: OK on the row performs the like.
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      comment.liked
+                          ? Icons.thumb_up_alt_rounded
+                          : Icons.thumb_up_alt_outlined,
+                      size: 24.ts(context),
+                      color: comment.liked
+                          ? accent
+                          : tvTheme.secondaryTextColor,
+                    ),
+                    if (comment.like > 0) ...[
+                      SizedBox(width: 6.ts(context)),
+                      Text(
+                        readableCount(comment.like.toString()),
+                        style: AppTextStyles.t16.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: tvTheme.secondaryTextColor,
                         ),
                       ),
-                    ),
-                  if (comment.rcount > comment.replies.length)
-                    Text(
-                      '${i18n('video_comments_more_replies')} ${comment.rcount}',
-                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: accent),
-                    ),
-                ],
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 10.ts(context)),
+            Text(
+              comment.content,
+              style: AppTextStyles.t19.copyWith(
+                fontWeight: FontWeight.w500,
+                color: tvTheme.primaryTextColor,
+                height: 1.5,
               ),
             ),
+            if (comment.replies.isNotEmpty) ...[
+              SizedBox(height: 10.ts(context)),
+              Container(
+                padding: EdgeInsets.all(12.ts(context)),
+                decoration: BoxDecoration(
+                  color: tvTheme.backgroundColor.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12.sp),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final reply in comment.replies)
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 6.ts(context)),
+                        child: RichText(
+                          text: TextSpan(
+                            style: AppTextStyles.t16.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: tvTheme.secondaryTextColor,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: '${reply.uname}: ',
+                                style: AppTextStyles.t16.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: accent,
+                                ),
+                              ),
+                              TextSpan(text: reply.content),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (comment.rcount > comment.replies.length)
+                      Text(
+                        '${i18n('video_comments_more_replies')} ${comment.rcount}',
+                        style: AppTextStyles.t16.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: accent,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

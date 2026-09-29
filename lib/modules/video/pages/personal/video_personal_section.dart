@@ -23,9 +23,9 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
 
   static const _tabs = [
     ('video_personal_follow', Icons.person_outline_rounded),
+    ('video_personal_toview', Icons.watch_later_outlined),
     ('video_personal_fav', Icons.favorite_border),
     ('video_personal_history', Icons.history_rounded),
-    ('video_personal_toview', Icons.watch_later_outlined),
     ('video_personal_bangumi', Icons.movie_filter_outlined),
   ];
 
@@ -76,9 +76,9 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
         Expanded(
           child: switch (_tab) {
             0 => const VideoFollowPane(),
-            1 => const VideoFavPane(),
-            2 => const VideoHistoryPane(),
-            3 => const VideoToViewPane(),
+            1 => const VideoToViewPane(),
+            2 => const VideoFavPane(),
+            3 => const VideoHistoryPane(),
             _ => const VideoBangumiPane(),
           },
         ),

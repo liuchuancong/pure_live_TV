@@ -95,6 +95,16 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: accent),
               ),
               const Spacer(),
+              // The QQ/网易云/酷狗 import — the empty state carries it too,
+              // but this is the header people actually live in: a shelf that
+              // already has playlists must not lose the import entry.
+              TvButton(
+                title: i18n('music_import_playlist'),
+                icon: Icon(Icons.download_rounded, size: 24.sp),
+                size: TvButtonSize.mini,
+                onTap: () => showImportPlaylistDialog(context, ref),
+              ),
+              SizedBox(width: 12.sp),
               TvButton(
                 title: i18n('music_create_playlist'),
                 icon: Icon(Icons.playlist_add_rounded, size: 24.sp),

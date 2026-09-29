@@ -19,7 +19,6 @@ class MusicPlaylistSyncController extends _$MusicPlaylistSyncController {
   static const String _foldersKey = 'musicSyncFolders';
   static const String _tracksKey = 'musicSyncFolderTracks';
   static const String _timesKey = 'musicSyncTimes';
-  static const String _excludedKey = 'musicExcludedParts';
 
   @override
   MusicPlaylistSyncState build() {
@@ -95,46 +94,6 @@ class MusicPlaylistSyncController extends _$MusicPlaylistSyncController {
       syncedAt: {...state.syncedAt}..remove(folderId),
     );
     _persistAll();
-  }
-
-  // ---------------------------------------------------------------- 排除分P
-
-  Map<String, List<int>> get _excluded => Map.fromEntries([
-    for (final entry in HivePrefUtil.getStringList(_excludedKey) ?? const <String>[])
-      if (jsonDecode(entry) case final Map<String, dynamic> map)
-        MapEntry(map['bvid']?.toString() ?? '', [
-          for (final c in (map['cids'] as List?) ?? const <dynamic>[]) int.tryParse(c.toString()) ?? 0,
-        ]),
-  ]);
-
-  List<int> excludedParts(String bvid) => _excluded[bvid] ?? const [];
-
-  /// Flips one part's excluded flag — excluded parts are skipped when a
-  /// playlist queue advances.
-  void toggleExcludedPart(String bvid, int cid) {
-    final map = _excluded;
-    final cids = [...(map[bvid] ?? const <int>[])];
-    if (cids.contains(cid)) {
-      cids.remove(cid);
-    } else {
-      cids.add(cid);
-    }
-    if (cids.isEmpty) {
-      map.remove(bvid);
-    } else {
-      map[bvid] = cids;
-    }
-    HivePrefUtil.setStringList(_excludedKey, [
-      for (final entry in map.entries) jsonEncode({'bvid': entry.key, 'cids': entry.value}),
-    ]);
-    state = state.copyWith();
-  }
-
-  /// Filters a queue by the stored exclusions; an empty result keeps the input.
-  List<MusicTrack> filterExcluded(List<MusicTrack> tracks) {
-    final excluded = _excluded;
-    final kept = tracks.where((t) => !(excluded[t.archive.bvid] ?? const []).contains(t.part.cid)).toList();
-    return kept.isEmpty ? tracks : kept;
   }
 
   // ---------------------------------------------------------------- storage

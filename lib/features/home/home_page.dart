@@ -162,10 +162,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
         ];
       case AppMode.music:
-        // Four rail destinations over the top-tab groups (see kMusicRailGroups):
-        // 搜索, then 歌单 on its own, then the discovery and library groups —
-        // the tabbed sections live behind the content pane's tab bar.
+        // Five rail destinations over the top-tab groups (see kMusicRailGroups):
+        // 正在播放, then 搜索, 歌单 on its own, then the discovery and library
+        // groups — the tabbed sections live behind the content pane's tab bar.
         const labels = <(String, IconData)>[
+          ('music_now_playing', Icons.queue_music_rounded),
           ('music_tab_search', Icons.search_rounded),
           ('music_playlists', Icons.playlist_add_check_rounded),
           ('music_discover', Icons.explore_outlined),
@@ -449,8 +450,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Padding(
                   padding: EdgeInsets.all(8.sp),
                   // Music and video own the whole pane (their own rail above,
-                  // login-gated content below); only live mode runs the
-                  // keep-alive home stack.
+                  // login-gated content below); live mode runs the keep-alive
+                  // home stack here, and the music/video sections run their
+                  // own keep-alive cache inside their section views.
                   child: !isLiveMode
                       ? Container(
                           key: ValueKey('mode_${appMode.name}'),

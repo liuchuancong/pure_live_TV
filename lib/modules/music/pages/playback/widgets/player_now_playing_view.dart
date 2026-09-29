@@ -125,6 +125,14 @@ class MusicNowPlayingViewState extends ConsumerState<MusicNowPlayingView> {
   }
 }
 
+/// Strips the ordinal a ripper baked into the title ("003.周杰伦-晴天" →
+/// "周杰伦-晴天"): the queue numbers its rows itself, and a baked-in ordinal
+/// disagrees the moment the source skips a number. Same rule as the video
+/// detail page's part tiles — leading digits count only when a separator
+/// follows, so "24K Magic" keeps its digits.
+final RegExp _leadingOrdinal = RegExp(r'^\d{1,4}\s*[.、，,\-–—_:：)·．]\s*');
+String stripTrackOrdinal(String raw) => raw.replaceFirst(_leadingOrdinal, '');
+
 /// The cover in the middle of the screen with the name under it.
 class _PosterLayout extends StatelessWidget {
   const _PosterLayout({super.key, required this.track, required this.resolving, required this.status});
@@ -171,7 +179,7 @@ class _PosterLayout extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 120.sp),
             child: Text(
-              track.title,
+              stripTrackOrdinal(track.title),
               style: AppTextStyles.t34.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -237,7 +245,7 @@ class _LyricsLayout extends StatelessWidget {
                 ),
                 SizedBox(height: 28.sp),
                 Text(
-                  track.title,
+                  stripTrackOrdinal(track.title),
                   style: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
                   textAlign: TextAlign.center,
                   maxLines: 2,

@@ -42,7 +42,13 @@ class MusicPlayerSettingsPanel extends ConsumerWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(8.sp, 0, 8.sp, 16.sp),
-              child: MusicSettingsSectionPage(),
+              // The autofocus Focus is what pulls the keyboard into the popup:
+              // without it the page's root below keeps the focus and the
+              // opened panel looks dead to the remote until a lucky arrow.
+              child: Focus(
+                autofocus: true,
+                child: MusicSettingsSectionPage(),
+              ),
             ),
           ),
         ],

@@ -1,4 +1,3 @@
-import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
@@ -26,11 +25,6 @@ class VideoDetailPage extends ConsumerStatefulWidget {
 }
 
 class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
-  /// The related-videos row's region, so the header button can drop the focus
-  /// straight onto its first card — walking down through every part row to
-  /// reach the row was the whole complaint.
-  final GlobalKey<DpadRegionState> _relatedRegionKey = GlobalKey<DpadRegionState>();
-
   MusicArchive? _detail;
   List<MusicArchive> _related = [];
   String? _error;
@@ -55,7 +49,10 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
       setState(() => _error = e.toString());
     }
     try {
-      final related = await BilibiliMusicApi.instance.getRelatedVideos(aid: widget.archive.aid);
+      final related = await BilibiliMusicApi.instance.getRelatedVideos(
+        aid: widget.archive.aid,
+        bvid: widget.archive.bvid,
+      );
       if (!mounted) return;
       setState(() => _related = related);
     } catch (_) {
@@ -336,7 +333,11 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                           '${i18n('music_tracks_title')}（${tracks.length}）',
                           style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                         ),
-                        const Spacer(),
+                        SizedBox(width: 16.sp),
+                        // Next to the title, not parked at the row's far end:
+                        // pressing Down from the button then lands on the
+                        // first part instead of hunting across a full-width
+                        // row.
                         TvButton(
                           title: i18n('music_play_all'),
                           icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
@@ -369,31 +370,27 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                         style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                       ),
                     ),
-                    DpadRegion(
-                      key: _relatedRegionKey,
-                      horizontalEdge: DpadEdgeBehavior.leave,
-                      verticalEdge: DpadEdgeBehavior.leave,
-                      enter: DpadEnterBehavior.nearest,
-                      // A shrinkWrap horizontal viewport has an unbounded cross
-                      // axis inside the page's vertical scroller and crashes
-                      // layout — pin the row's height, scaled with the font so
-                      // an enlarged setting still fits the two text lines under
-                      // the cover.
-                      child: SizedBox(
-                        height: 300.sp * 9 / 16 + 108.sp * textScale,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.only(bottom: 16.sp),
-                          itemCount: _related.length,
-                          separatorBuilder: (_, _) => SizedBox(width: 12.sp),
-                          itemBuilder: (context, index) {
-                            final related = _related[index];
-                            return SizedBox(
-                              width: 300.sp,
-                              child: VideoCard(archive: related, onTap: () => VideoDetailRoute(related).push(context)),
-                            );
-                          },
-                        ),
+                    // Bare focusables, no DpadRegion wrapper: the region is a
+                    // traversal-group boundary, and the Down key from the last
+                    // part row could not enter it at all (while Right sneaked
+                    // in at some far card — the wrong-row complaint). The
+                    // favour detail page proved bare rows in a scroll view are
+                    // reachable, so the cards sit directly in the tree and
+                    // Down lands on the first one.
+                    SizedBox(
+                      height: 300.sp * 9 / 16 + 108.sp * textScale,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.only(bottom: 16.sp),
+                        itemCount: _related.length,
+                        separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+                        itemBuilder: (context, index) {
+                          final related = _related[index];
+                          return SizedBox(
+                            width: 300.sp,
+                            child: VideoCard(archive: related, onTap: () => VideoDetailRoute(related).push(context)),
+                          );
+                        },
                       ),
                     ),
                   ],

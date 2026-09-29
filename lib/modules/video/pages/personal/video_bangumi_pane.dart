@@ -97,17 +97,39 @@ class VideoBangumiPaneState extends ConsumerState<VideoBangumiPane> {
             );
           }
           final item = _items[index];
-          return _BangumiCard(item: item);
+          return _BangumiCard(item: item, onUnfollow: () => _unfollow(item));
         },
       ),
     );
   }
+
+  /// 取消追番 against the account, with a confirm — a relationship change,
+  /// not a list edit. The card drops on success.
+  Future<void> _unfollow(PgcItem item) async {
+    final confirmed = await TvDialogUtils.showConfirm(
+      context: context,
+      title: i18n('video_bangumi_unfollow'),
+      message: i18n('video_bangumi_unfollow_confirm', args: {'title': item.title}),
+      confirmText: i18n('ui_confirm'),
+      cancelText: i18n('cancel'),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await BilibiliPgcApi.instance.unfollowSeason(seasonId: item.seasonId);
+      if (!mounted) return;
+      setState(() => _items.removeWhere((e) => e.seasonId == item.seasonId));
+      ToastUtil.show(i18n('video_bangumi_unfollowed'));
+    } catch (_) {
+      if (mounted) ToastUtil.show(i18n('video_action_failed'));
+    }
+  }
 }
 
 class _BangumiCard extends StatelessWidget {
-  const _BangumiCard({required this.item});
+  const _BangumiCard({required this.item, required this.onUnfollow});
 
   final PgcItem item;
+  final VoidCallback onUnfollow;
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +138,7 @@ class _BangumiCard extends StatelessWidget {
 
     return TvFocusable(
       onTap: () => VideoSeasonRoute(item).push(context),
+      onLongPress: onUnfollow,
       builder: (context, focused, child) => AnimatedContainer(
         duration: TvFocusStyle.focusDuration(focused),
         curve: TvFocusStyle.curve,

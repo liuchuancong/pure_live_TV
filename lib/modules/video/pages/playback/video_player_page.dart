@@ -13,7 +13,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/api/bilibili_danmaku_api.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
 import 'package:pure_live/modules/video/widgets/vod_danmaku_overlay.dart';
 import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
@@ -22,10 +21,13 @@ import 'package:pure_live/modules/video/controllers/playback/video_progress_cont
 
 /// The video-mode player, modelled on newBV's layer scheme:
 ///
-/// - the picture is always on; controls start visible with the focus on play;
-/// - OK toggles the controls, left/right seek ±10s with newBV's acceleration
-///   (consecutive presses within 200ms grow the step by 5s, up to 60s);
+/// - the picture is always on; the bar starts hidden (live_play's overlay
+///   model) and OK raises it with the focus on play;
+/// - left/right seek ±10s with newBV's acceleration (consecutive presses
+///   within 200ms grow the step by 5s, up to 60s);
 /// - Up opens the part list, Down closes it;
+/// - without a key for five seconds the bar slides away — every bar key and
+///   every panel close re-arms the countdown, an open panel pauses it;
 /// - Back peels one layer: any menu → part list → controls → exit page.
 ///
 /// Beyond the base scheme this page carries the newBV player extras: the
@@ -45,7 +47,11 @@ class VideoPlayerPage extends ConsumerStatefulWidget {
 class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   final FocusNode _rootNode = FocusNode();
   final FocusNode _playNode = FocusNode();
-  bool _controlsVisible = true;
+
+  /// live_play's overlay model: the bar starts hidden, OK raises it, and it
+  /// hides itself five seconds after the last key — in menus-open state the
+  /// countdown is paused instead.
+  bool _controlsVisible = false;
   bool _partsOpen = false;
   bool _commentsOpen = false;
   final ScrollController _commentsScroll = ScrollController();
@@ -67,16 +73,28 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   int _lastExtrasCid = 0;
   int _lastHeartbeatAt = 0;
   Timer? _progressTimer;
+  Timer? _autoHideTimer;
+  static const Duration _autoHideAfter = Duration(seconds: 5);
   String? _lastTrackId;
+
+  /// Video parts are not songs: 顺序播放 only, and the queue's end is the end.
+  /// The mode the music player held before this page is restored on exit.
+  MusicPlayMode? _modeBeforeVideo;
 
   @override
   void initState() {
     super.initState();
     WakelockPlus.enable().catchError((Object _) {});
     EmojiManager().preload('bilibili');
+    final player = ref.read(musicPlayerControllerProvider.notifier);
+    _modeBeforeVideo = ref.read(musicPlayerControllerProvider).mode;
+    player.setPlayMode(MusicPlayMode.sequence);
+    player.wrapAtQueueEnd = false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _playNode.requestFocus();
+      // The bar starts hidden (live_play's entry): the root owns the keyboard
+      // until OK raises the bar.
+      _rootNode.requestFocus();
       // The video settings' player defaults (newBV's 播放设置): the preferred
       // rendition rides the next resolve, the default rate applies once on
       // entry — a rate the user set (or a restored session carried) stands.
@@ -100,11 +118,34 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   @override
   void dispose() {
     _progressTimer?.cancel();
+    _autoHideTimer?.cancel();
     _commentsScroll.dispose();
     WakelockPlus.disable().catchError((Object _) {});
+    // Video is not a resident session: back closes the video and tears the
+    // player down — unlike music, whose queue keeps playing behind the UI.
+    final player = ref.read(musicPlayerControllerProvider.notifier);
+    player.wrapAtQueueEnd = true;
+    unawaited(player.stop());
+    if (_modeBeforeVideo != null) player.setPlayMode(_modeBeforeVideo!);
     _rootNode.dispose();
     _playNode.dispose();
     super.dispose();
+  }
+
+  /// Video part stepping: sequential, no wrap. The ends answer with a toast —
+  /// unlike the music queue, whose next() cycles to the other end.
+  Future<void> _gotoPart(int delta) async {
+    final state = ref.read(musicPlayerControllerProvider);
+    final target = state.index + delta;
+    if (target < 0) {
+      ToastUtil.show(i18n('video_part_first'));
+      return;
+    }
+    if (target >= state.queue.length) {
+      ToastUtil.show(i18n('video_part_last'));
+      return;
+    }
+    await ref.read(musicPlayerControllerProvider.notifier).jumpTo(target);
   }
 
   /// Subtitles, the viewer count and the heartbeat are per part.
@@ -183,14 +224,27 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
         );
   }
 
+  /// live_play's clock: five seconds after the last key the bar slides away.
+  /// Every bar key re-arms this through [_ControlBar.onInteraction].
+  void _armAutoHide() {
+    _autoHideTimer?.cancel();
+    _autoHideTimer = Timer(_autoHideAfter, () {
+      if (!mounted || !_controlsVisible) return;
+      _hideControls();
+    });
+  }
+
   void _showControls() {
+    _autoHideTimer?.cancel();
     setState(() => _controlsVisible = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _controlsVisible) _playNode.requestFocus();
     });
+    _armAutoHide();
   }
 
   void _hideControls() {
+    _autoHideTimer?.cancel();
     setState(() => _controlsVisible = false);
     _rootNode.requestFocus();
   }
@@ -210,22 +264,23 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.mediaTrackNext) {
-      controller.next();
+      unawaited(_gotoPart(1));
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.mediaTrackPrevious) {
-      controller.previous();
+      unawaited(_gotoPart(-1));
       return KeyEventResult.handled;
     }
 
     // Back peels one layer: menus, then parts, then the controls, then the
-    // page pops. (Popping never stops the video — the shared controller keeps
-    // playing.)
+    // page pops — and the pop disposes the player. Video is not a resident
+    // session like the music queue.
     if (event.logicalKey == LogicalKeyboardKey.escape ||
         event.logicalKey == LogicalKeyboardKey.goBack ||
         event.logicalKey == LogicalKeyboardKey.browserBack) {
       if (_qualityOpen) {
         setState(() => _qualityOpen = false);
+        _armAutoHide();
         return KeyEventResult.handled;
       }
       if (_commentsOpen) {
@@ -251,37 +306,37 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       // The bar owns left/right/OK/now — only Up reaches here (bubbled, the
       // bar zone returns it ignored): it opens the parts list.
       if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        _autoHideTimer?.cancel();
         setState(() => _partsOpen = true);
         return KeyEventResult.handled;
       }
       return KeyEventResult.ignored;
     }
 
-    // Controls hidden: the root owns the keyboard. A seek raises the bar and
-    // lands the focus on it — the viewer asked for the controls, and the bar's
-    // own keys (walk / seek / OK) take over from there.
+    // Controls hidden: the root owns the keyboard. Left/Right seek without
+    // raising the bar, so a held key streams KeyRepeatEvents through the same
+    // call and walks newBV's acceleration up to 60s — raising the bar would
+    // hand the repeats to the bar's index walk instead.
     if (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter) {
       _showControls();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       controller.seekAccelerated(-1);
-      _showControls();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
       controller.seekAccelerated(1);
-      _showControls();
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-      // Hidden-state Up/Down walk the queue — the live player's channel
-      // switch, which for on-demand playback is prev/next part's track.
-      controller.previous();
+      // Hidden-state Up/Down step parts — sequential, no wrap, a toast at
+      // each end.
+      unawaited(_gotoPart(-1));
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-      controller.next();
+      unawaited(_gotoPart(1));
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -292,6 +347,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _controlsVisible) _playNode.requestFocus();
     });
+    _armAutoHide();
   }
 
   /// In-player comments (newBV's player comments): pages the shared reply API
@@ -317,6 +373,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
   void _openComments(MusicTrack? track) {
     final oid = track?.archive.aid ?? 0;
     if (oid <= 0) return;
+    _autoHideTimer?.cancel();
     setState(() {
       _commentsOpen = true;
       if (_commentsPage == 0) _loadComments(oid);
@@ -328,71 +385,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _controlsVisible) _playNode.requestFocus();
     });
-  }
-
-  /// TV send-danmaku flow: a dialog with the soft keyboard, then the web
-  /// send endpoint; the comment is echoed locally on success.
-  Future<void> _showSendDialog(MusicTrack track) async {
-    final api = BilibiliDanmakuApi.instance;
-    if (!BilibiliUgcApi.instance.isLoggedIn) {
-      ToastUtil.show(i18n('video_action_need_login'));
-      return;
-    }
-    final controller = TextEditingController();
-    final sent = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        final tvTheme = context.tvTheme;
-        return Dialog(
-          backgroundColor: tvTheme.cardColor,
-          insetPadding: EdgeInsets.symmetric(horizontal: 460.sp, vertical: 280.sp),
-          child: Padding(
-            padding: EdgeInsets.all(24.sp),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  i18n('video_danmaku_send'),
-                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16.sp),
-                TvInputField(
-                  controller: controller,
-                  hint: i18n('video_danmaku_send_hint'),
-                  height: 64.sp,
-                  maxLines: 1,
-                  onSubmitted: (value) => Navigator.pop(context, value.trim().isNotEmpty),
-                ),
-                SizedBox(height: 16.sp),
-                TvButton(
-                  title: i18n('send'),
-                  icon: Icon(Icons.send_rounded, size: 24.sp),
-                  onTap: controller.text.trim().isNotEmpty ? () => Navigator.pop(context, true) : null,
-                ),
-                SizedBox(height: 4.sp),
-                Text(
-                  i18n('video_danmaku_send_rules'),
-                  style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-    final text = controller.text.trim();
-    controller.dispose();
-    if (sent != true || text.isEmpty) return;
-    try {
-      await api.sendDanmaku(aid: track.archive.aid, cid: track.part.cid, message: text, bvid: track.archive.bvid);
-      _danmakuKey.currentState?.inject(text);
-      if (mounted) ToastUtil.show(i18n('video_danmaku_sent'));
-    } catch (_) {
-      if (mounted) ToastUtil.show(i18n('video_action_failed'));
-    }
+    _armAutoHide();
   }
 
   @override
@@ -594,10 +587,21 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                         excluding: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen,
                         child: _ControlBar(
                           playNode: _playNode,
-                          onOpenParts: () => setState(() => _partsOpen = true),
-                          onOpenQuality: () => setState(() => _qualityOpen = true),
-                          onOpenDanmakuSettings: () => const DanmakuSettingsRoute().push(context),
-                          onSendDanmaku: (track == null || track.part.cid <= 0) ? null : () => _showSendDialog(track),
+                          onInteraction: _armAutoHide,
+                          onPrevPart: () => unawaited(_gotoPart(-1)),
+                          onNextPart: () => unawaited(_gotoPart(1)),
+                          onOpenParts: () {
+                            _autoHideTimer?.cancel();
+                            setState(() => _partsOpen = true);
+                          },
+                          onOpenQuality: () {
+                            _autoHideTimer?.cancel();
+                            setState(() => _qualityOpen = true);
+                          },
+                          onOpenDanmakuSettings: () {
+                            _autoHideTimer?.cancel();
+                            const DanmakuSettingsRoute().push(context);
+                          },
                           commentsEnabled: track != null && track.archive.aid > 0,
                           onOpenComments: () => _openComments(track),
                           danmakuOn: _danmakuOn,
@@ -812,12 +816,14 @@ enum _BarZone { bar, seek }
 class _ControlBar extends ConsumerStatefulWidget {
   const _ControlBar({
     required this.playNode,
+    required this.onInteraction,
+    required this.onPrevPart,
+    required this.onNextPart,
     required this.onOpenParts,
     required this.onOpenQuality,
     required this.onOpenDanmakuSettings,
     required this.commentsEnabled,
     required this.onOpenComments,
-    required this.onSendDanmaku,
     required this.danmakuOn,
     required this.subtitleOn,
     required this.aspectFill,
@@ -829,12 +835,20 @@ class _ControlBar extends ConsumerStatefulWidget {
   /// The bar's single key owner. The page requests it when the controls rise,
   /// so focus lands inside the bar instead of fighting it.
   final FocusNode playNode;
+
+  /// Every handled key lands here: the page re-arms the 5s auto-hide clock —
+  /// the live bar's `keepControlsAlive`.
+  final VoidCallback onInteraction;
+
+  /// Part stepping owned by the page: sequential with a toast at each end —
+  /// these are video parts, not songs in a queue that wraps.
+  final VoidCallback onPrevPart;
+  final VoidCallback onNextPart;
   final VoidCallback onOpenParts;
   final VoidCallback onOpenQuality;
   final VoidCallback onOpenDanmakuSettings;
   final bool commentsEnabled;
   final VoidCallback onOpenComments;
-  final VoidCallback? onSendDanmaku;
   final bool danmakuOn;
   final bool subtitleOn;
   final bool aspectFill;
@@ -863,7 +877,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
     });
   }
 
-  static const int _itemCount = 14;
+  static const int _itemCount = 13;
 
   static String _timeLabel(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -886,6 +900,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
     final key = event.logicalKey;
 
     if (_isConfirm(key)) {
+      widget.onInteraction();
       if (_zone == _BarZone.seek) {
         setState(() => _zone = _BarZone.bar);
         return KeyEventResult.handled;
@@ -897,6 +912,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
     switch (key) {
       case LogicalKeyboardKey.arrowLeft:
       case LogicalKeyboardKey.arrowRight:
+        widget.onInteraction();
         final int delta = key == LogicalKeyboardKey.arrowLeft ? -1 : 1;
         if (_zone == _BarZone.seek) {
           controller.seekAccelerated(delta);
@@ -907,12 +923,14 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
         return KeyEventResult.handled;
       case LogicalKeyboardKey.arrowDown:
         if (_zone == _BarZone.bar) {
+          widget.onInteraction();
           setState(() => _zone = _BarZone.seek);
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;
       case LogicalKeyboardKey.arrowUp:
         if (_zone == _BarZone.seek) {
+          widget.onInteraction();
           setState(() => _zone = _BarZone.bar);
           return KeyEventResult.handled;
         }
@@ -928,11 +946,11 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     switch (index) {
       case 0:
-        unawaited(controller.previous());
+        widget.onPrevPart();
       case 1:
         unawaited(controller.togglePlayPause());
       case 2:
-        unawaited(controller.next());
+        widget.onNextPart();
       case 3:
         unawaited(controller.seekAccelerated(-1));
       case 4:
@@ -948,12 +966,10 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
       case 9:
         if (widget.commentsEnabled) widget.onOpenComments();
       case 10:
-        widget.onSendDanmaku?.call();
-      case 11:
         widget.onOpenDanmakuSettings();
-      case 12:
+      case 11:
         widget.onToggleSubtitle?.call();
-      case 13:
+      case 12:
         widget.onToggleAspect();
     }
   }
@@ -989,11 +1005,11 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
 
             final buttons = <({String label, Widget icon, bool active, bool secondary, VoidCallback? onTap})>[
               (
-                label: i18n('music_prev'),
+                label: i18n('video_prev_part'),
                 icon: const Icon(Icons.skip_previous_rounded),
                 active: false,
                 secondary: true,
-                onTap: () => controller.previous(),
+                onTap: widget.onPrevPart,
               ),
               (
                 label: i18n('music_play'),
@@ -1003,11 +1019,11 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                 onTap: () => controller.togglePlayPause(),
               ),
               (
-                label: i18n('music_next'),
+                label: i18n('video_next_part'),
                 icon: const Icon(Icons.skip_next_rounded),
                 active: false,
                 secondary: true,
-                onTap: () => controller.next(),
+                onTap: widget.onNextPart,
               ),
               (
                 label: i18n('music_seek_back'),
@@ -1040,7 +1056,7 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                 onTap: widget.onOpenQuality,
               ),
               (
-                label: i18n('music_tracks_title'),
+                label: i18n('video_parts_title'),
                 icon: Icon(Icons.playlist_play_rounded, size: 22.sp),
                 active: false,
                 secondary: true,
@@ -1059,13 +1075,6 @@ class _ControlBarState extends ConsumerState<_ControlBar> {
                 active: false,
                 secondary: true,
                 onTap: widget.commentsEnabled ? widget.onOpenComments : null,
-              ),
-              (
-                label: i18n('video_danmaku_send'),
-                icon: Icon(Icons.edit_outlined, size: 22.sp),
-                active: false,
-                secondary: true,
-                onTap: widget.onSendDanmaku,
               ),
               (
                 label: i18n('video_danmaku_settings'),

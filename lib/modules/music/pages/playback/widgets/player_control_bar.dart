@@ -244,8 +244,10 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
   // data
   // =========================
 
-  /// The bar: transport, the mode/quality/picture group, the queue and lyric
-  /// entries, then the kernel and settings. The seek ±10s buttons are gone —
+  /// The bar: transport, the quality/picture group, the queue and lyric
+  /// entries, then the kernel and settings. The play-mode button lives in the
+  /// settings panel now — a mode flip from a stray press reordered the whole
+  /// queue's behaviour. The seek ±10s buttons are gone —
   /// the seek zone under the bar owns left/right with press acceleration,
   /// exactly like the live player, whose bar carries no seek buttons either.
   /// The interaction buttons (关注专辑/关注UP主/喜欢) are gone too: they live
@@ -271,11 +273,6 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
         icon: Icons.skip_next_rounded,
         label: i18n('music_next'),
         onSelect: () => unawaited(controller.next()),
-      ),
-      _BarAction(
-        icon: Icons.repeat_rounded,
-        label: i18n(state.mode.i18nKey),
-        onSelect: () => unawaited(controller.cycleMode()),
       ),
       // Quality rides with the DASH answer: a muxed mp4 fallback offers no
       // rendition list, so the button only exists when there is one to pick —

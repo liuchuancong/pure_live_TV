@@ -11,19 +11,22 @@ import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/pages/playback/widgets/player_widgets.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 
 /// The full-screen music player.
 ///
 /// Remote model — one key handler owns the page and steers an index, the way the
 /// live player does, so there is no per-button focus ring to hunt for:
-/// - controls hidden: OK brings them back, left/right seek ±10s;
+/// - controls hidden: OK brings them back, left/right seek with newBV's press
+///   acceleration (a long press streams repeats through the same call and
+///   walks the step up to 60s), up/down previous/next;
 /// - bar up: left/right walk its buttons with wrap, OK activates the highlighted
-///   one, down drops into the seek bar (left/right seek there), up opens the
-///   queue, Back peels one layer out (queue → controls → page);
-/// - video mode without a key press for five seconds slides the bar away — the
-///   lyrics and poster views keep it, because nothing there is being watched.
+///   one, down drops into the seek bar (left/right seek there), Back peels one
+///   layer out (queue → controls → page). The playlist opens from its bar
+///   button only; no key shortcut raises it.
+/// - without a key for five seconds the bar slides away in every view —
+///   video, lyrics and poster alike (live_play's overlay model): the bar
+///   starts hidden, OK raises it, and every key re-arms the countdown.
 ///
 /// Leaving the page does not stop the music — the queue keeps playing while the
 /// viewer browses, which is the whole point of a music mode on a TV.
@@ -36,13 +39,12 @@ class MusicPlayerPage extends ConsumerStatefulWidget {
 
 class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
   final FocusNode _rootNode = FocusNode(debugLabel: 'music/page');
-  bool _controlsVisible = true;
+
+  /// live_play's entry: the bar starts hidden — OK raises it, and it hides
+  /// itself five seconds after the last key, in every view.
+  bool _controlsVisible = false;
   bool _queueOpen = false;
   bool _settingsOpen = false;
-
-  /// The live_play follow gesture: a second Left press inside the window is
-  /// the follow toggle, so a single stray Left costs nothing.
-  DateTime _lastLeftPress = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Whether the next bar activation should land in the seek zone — the
   /// hidden-state arrow seeks raise the bar with the keyboard already there.
@@ -58,12 +60,29 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     super.initState();
     WakelockPlus.enable().catchError((Object _) {});
     _armAutoHide();
+    // A previous visit that left with the picture on lost its texture: mpv
+    // keeps decoding into the output it lost track of, so re-entering shows
+    // black until the output is rebuilt. One vid cycle re-attaches it (the
+    // viewer's old manual 纯音频 → 显示画面 workaround, automated).
+    final player = ref.read(musicPlayerControllerProvider.notifier);
+    if (!ref.read(musicPlayerControllerProvider).audioOnly && player.videoSurfaceNeedsReattach) {
+      player.videoSurfaceNeedsReattach = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(player.reattachVideoSurface());
+      });
+    }
   }
 
   @override
   void dispose() {
     WakelockPlus.disable().catchError((Object _) {});
     _autoHideTimer?.cancel();
+    // Leaving with the picture on: the texture dies with this page while the
+    // resident session keeps playing — flag the re-attach for the next mount.
+    final player = ref.read(musicPlayerControllerProvider.notifier);
+    if (!ref.read(musicPlayerControllerProvider).audioOnly && player.handle != null) {
+      player.videoSurfaceNeedsReattach = true;
+    }
     _rootNode.dispose();
     super.dispose();
   }
@@ -113,12 +132,8 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     if (_queueOpen) return KeyEventResult.ignored;
 
     if (_controlsVisible) {
-      // The bar owns left/right/OK/down; up is the page's, and it opens the
-      // queue — the layer above the bar, mirroring the live player.
-      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-        _openQueue();
-        return KeyEventResult.handled;
-      }
+      // The bar owns left/right/OK/down. Up is left unhandled so the bar's own
+      // rows can take it; the playlist itself opens from its bar button only.
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
         _hideControls();
         return KeyEventResult.handled;
@@ -142,9 +157,10 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
       return KeyEventResult.handled;
     }
 
-    // Controls hidden: live_play's model — Right opens the playlist, a
-    // double-pressed Left follows the album, Up/Down walk the queue, OK
-    // raises the bar (whose seek zone owns the ±10s).
+    // Controls hidden: live_play's model — OK raises the bar, Up/Down walk the
+    // queue, and Left/Right seek with newBV's press acceleration. Holding the
+    // key streams KeyRepeatEvents through the same call, so a long press walks
+    // the step up to 60s without the bar ever getting in the way.
     final controller = ref.read(musicPlayerControllerProvider.notifier);
     if (event.logicalKey == LogicalKeyboardKey.select ||
         event.logicalKey == LogicalKeyboardKey.enter) {
@@ -152,19 +168,11 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-      _openQueue();
+      controller.seekAccelerated(1);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      final now = DateTime.now();
-      final isDouble = now.difference(_lastLeftPress) < const Duration(milliseconds: 350);
-      _lastLeftPress = now;
-      if (isDouble) {
-        final track = ref.read(musicPlayerControllerProvider).current;
-        if (track != null) {
-          ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(track.archive);
-        }
-      }
+      controller.seekAccelerated(-1);
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -242,8 +250,8 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     final tvTheme = context.tvTheme;
     final track = state.current;
 
-    // The picture and the lyrics views hide the bar on different clocks: going
-    // to video mode starts the countdown, coming back to the lyrics cancels it.
+    // Switching between the picture and the lyrics view is a key-driven mode
+    // change too: it re-arms the same 5s countdown every key uses.
     ref.listen(musicPlayerControllerProvider.select((s) => s.audioOnly), (_, _) => _armAutoHide());
 
     // The remote's Back walks the system pop channel, not the key-event one:

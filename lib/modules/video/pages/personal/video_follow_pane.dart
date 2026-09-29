@@ -83,86 +83,78 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
       return AppStatusView(type: AppStatusType.empty, title: i18n('video_follow_empty'), subtitle: '');
     }
 
-    // newBV's 关注列表: full-width rows in a plain list — wide rows in an
-    // aspect-ratio grid overflowed under sidebar-constrained widths.
-    return ListView.builder(
+    // The UP cards on a grid — five columns under the sidebar-constrained
+    // pane, cells sized taller than the content ever grows (avatar + two
+    // ellipsized lines, all font-scale aware) so the old grid overflow does
+    // not come back.
+    return GridView.builder(
       padding: EdgeInsets.all(24.sp),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 5,
+        childAspectRatio: 1.25,
+        crossAxisSpacing: 14.sp,
+        mainAxisSpacing: 14.sp,
+      ),
       itemCount: follows.length + (_hasMore || _loading ? 1 : 0),
       itemBuilder: (context, index) {
         if (index >= follows.length) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) _loadMore();
           });
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 14.sp),
-            child: Center(
-              child: _loading
-                  ? SizedBox(
-                      width: 28.sp,
-                      height: 28.sp,
-                      child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
-                    )
-                  : const SizedBox.shrink(),
-            ),
+          return Center(
+            child: _loading
+                ? SizedBox(
+                    width: 28.sp,
+                    height: 28.sp,
+                    child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                  )
+                : const SizedBox.shrink(),
           );
         }
         final follow = follows[index];
-        return Padding(
-          padding: EdgeInsets.only(bottom: 12.sp),
-          child: TvFocusable(
-            onTap: () => UgcUserSpaceRoute(follow.mid, follow.name).push(context),
-            onLongPress: () => unawaited(_unfollow(index)),
-            builder: (context, focused, child) => Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 14.sp),
-              decoration: BoxDecoration(
-                color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(16.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-              ),
-              child: Row(
-                children: [
-                  // The avatar circle, newBV's 关注列表 cell.
-                  ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: follow.face,
-                      width: 88.sp,
-                      height: 88.sp,
-                      fit: BoxFit.cover,
-                      placeholder: (_, _) => ColoredBox(color: tvTheme.cardColor),
-                      errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
-                    ),
+        return TvFocusable(
+          onTap: () => UgcUserSpaceRoute(follow.mid, follow.name).push(context),
+          onLongPress: () => unawaited(_unfollow(index)),
+          builder: (context, focused, child) => Container(
+            padding: EdgeInsets.all(16.sp),
+            decoration: BoxDecoration(
+              color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+              borderRadius: BorderRadius.circular(16.sp),
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // The avatar circle, newBV's 关注列表 cell, promoted to the
+                // card's face.
+                ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: follow.face,
+                    width: 96.sp,
+                    height: 96.sp,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 192,
+                    placeholder: (_, _) => ColoredBox(color: tvTheme.cardColor),
+                    errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
                   ),
-                  SizedBox(width: 16.sp),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          follow.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t16.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: tvTheme.primaryTextColor,
-                          ),
-                        ),
-                        if (follow.sign.isNotEmpty) ...[
-                          SizedBox(height: 4.sp),
-                          Text(
-                            follow.sign,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t14.copyWith(
-                              fontWeight: FontWeight.w300,
-                              color: tvTheme.secondaryTextColor,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                ),
+                SizedBox(height: 12.sp),
+                Text(
+                  follow.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
+                ),
+                if (follow.sign.isNotEmpty) ...[
+                  SizedBox(height: 4.sp),
+                  Text(
+                    follow.sign,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, color: tvTheme.secondaryTextColor),
                   ),
                 ],
-              ),
+              ],
             ),
           ),
         );
