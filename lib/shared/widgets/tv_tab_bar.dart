@@ -203,7 +203,7 @@ class _TvTabBarState extends State<TvTabBar> {
     // app font scale: the label is a `.sp` size the scaler grows again, so a
     // panel-sized pill clipped it once the user enlarged the font.
     final double textScale = TvTextScale.factorOf(context);
-    final double height = 64.0.w * textScale;
+    final double height = 64.0.h * textScale.clamp(1.0, 1.2);
     final borderRadius = BorderRadius.circular(height / 2);
 
     return DpadRegion(
@@ -258,7 +258,7 @@ class _TvTabBarState extends State<TvTabBar> {
                           );
                         }
                         const Color foregroundColor = Colors.white;
-                        final TextStyle baseStyle = AppTextStyles.t26.copyWith(fontWeight: FontWeight.w500);
+                        final TextStyle baseStyle = AppTextStyles.t22.copyWith(fontWeight: FontWeight.w500);
 
                         return AnimatedContainer(
                           duration: TvFocusStyle.focusDuration(isFocused),

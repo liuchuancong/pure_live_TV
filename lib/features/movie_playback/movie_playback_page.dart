@@ -1,4 +1,3 @@
-import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/exports.dart';
 
 class MoviePlaybackPage extends ConsumerStatefulWidget {
@@ -109,36 +108,14 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // The QR is the page's hero: more than half the row and no
-                  // width cap, so a phone has the largest scannable target a
-                  // 1080p panel can give.
-                  Expanded(
-                    flex: 5,
-                    child: Center(
-                      child: TvQrCodeCard(qrData: qrCodeAddress, urlText: hintText),
-                    ),
-                  ),
-                  Container(
-                    width: 2.sp,
-                    margin: EdgeInsets.symmetric(vertical: _pagePadding.sp),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          currentTvTheme.primaryTextColor.withValues(alpha: 0.12),
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                  _buildInputSection(currentTvTheme, themeColor),
-                ],
+              Expanded(
+                flex: 5,
+                child: Center(
+                  child: TvQrCodeCard(qrData: qrCodeAddress, urlText: hintText),
+                ),
               ),
+
+              _buildInputSection(currentTvTheme, themeColor),
             ],
           ),
         ),
@@ -199,75 +176,25 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   Widget _buildInputSection(TvThemeData currentTvTheme, Color themeColor) {
     return Expanded(
       flex: 6,
-      child: Padding(
-        padding: EdgeInsets.all(_pagePadding.sp),
-        child: DpadRegion(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // What the phone pushed last, so the parse button has context.
-              Text(
-                _lastReceivedUrl.isEmpty ? i18n('movie_wait_phone_sync') : _lastReceivedUrl,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t18.copyWith(
-                  color: currentTvTheme.secondaryTextColor,
-                  height: 1.4,
-                ),
-              ),
-              SizedBox(height: 24.sp),
-              Row(
-                children: [
-                  TvButton(
-                    title: _isParsing ? i18n('parsing') : i18n('start_parse'),
-                    icon: Icon(Icons.rocket_launch_rounded, size: 22.sp),
-                    iconPosition: TvIconPosition.left,
-                    size: TvButtonSize.small,
-                    onTap: _isParsing ? null : _handleParse,
-                  ),
-                ],
-              ),
-              SizedBox(height: 32.sp),
-              _buildSupportInfo(currentTvTheme),
-            ],
-          ),
-        ),
-      ),
+      child: Padding(padding: EdgeInsets.all(_pagePadding.sp), child: _buildSupportInfo(currentTvTheme)),
     );
   }
 
   Widget _buildSupportInfo(TvThemeData currentTvTheme) {
-    // 22 sites as mini *buttons* filled the whole right half with chunky
-    // focusable-looking controls; they are only labels, so they render as
-    // quiet text chips instead, capped in height and scrollable if they ever
-    // outgrow the box. `IgnorePointer` keeps them out of traversal entirely.
-    // Every supported platform shows at once: compact single-line chips in a
-    // free-flowing wrap, no scroll. The chips shrink (fixed 14.sp overlay
-    // text, tight padding) so all ~22 fit inside the card even at the largest
-    // font scale — these are labels, not content.
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.sp),
-      decoration: BoxDecoration(
-        color: currentTvTheme.cardColor,
-        borderRadius: BorderRadius.circular(16.sp),
-        border: Border.all(color: currentTvTheme.secondaryTextColor.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            i18n('movie_support_sites'),
-            style: AppTextStyles.t18.copyWith(
-              fontWeight: FontWeight.w500,
-              color: currentTvTheme.secondaryTextColor,
-              height: 1,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TvSettingsGroupTitle(title: i18n('movie_support_sites')),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.sp),
+          decoration: BoxDecoration(
+            color: currentTvTheme.cardColor,
+            borderRadius: BorderRadius.circular(16.sp),
+            border: Border.all(color: currentTvTheme.secondaryTextColor.withValues(alpha: 0.2)),
           ),
-          SizedBox(height: 12.sp),
-          IgnorePointer(
+          child: IgnorePointer(
             child: Wrap(
               spacing: 8.sp,
               runSpacing: 8.sp,
@@ -293,8 +220,8 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

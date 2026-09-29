@@ -335,11 +335,27 @@ abstract class _$SideMenuIndex extends $Notifier<int> {
   }
 }
 
+/// The side rail's display mode (collapsed icons / expanded labels).
+///
+/// A preference now, not UI state: the toggle lives in navigation & display
+/// (导航栏显示控制), persisted with the rest of the app settings, so the rail
+/// boots the way the user last chose.
+
 @ProviderFor(IsMenuExpanded)
 final isMenuExpandedProvider = IsMenuExpandedProvider._();
 
+/// The side rail's display mode (collapsed icons / expanded labels).
+///
+/// A preference now, not UI state: the toggle lives in navigation & display
+/// (导航栏显示控制), persisted with the rest of the app settings, so the rail
+/// boots the way the user last chose.
 final class IsMenuExpandedProvider
     extends $NotifierProvider<IsMenuExpanded, bool> {
+  /// The side rail's display mode (collapsed icons / expanded labels).
+  ///
+  /// A preference now, not UI state: the toggle lives in navigation & display
+  /// (导航栏显示控制), persisted with the rest of the app settings, so the rail
+  /// boots the way the user last chose.
   IsMenuExpandedProvider._()
     : super(
         from: null,
@@ -367,7 +383,13 @@ final class IsMenuExpandedProvider
   }
 }
 
-String _$isMenuExpandedHash() => r'598d50c35faf3c61e534df456cdbca4a42bda573';
+String _$isMenuExpandedHash() => r'9774ae4c304e7976c761fa026b514019cdffa671';
+
+/// The side rail's display mode (collapsed icons / expanded labels).
+///
+/// A preference now, not UI state: the toggle lives in navigation & display
+/// (导航栏显示控制), persisted with the rest of the app settings, so the rail
+/// boots the way the user last chose.
 
 abstract class _$IsMenuExpanded extends $Notifier<bool> {
   bool build();

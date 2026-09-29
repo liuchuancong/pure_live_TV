@@ -275,7 +275,13 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-      _showControls();
+      // Hidden-state Up/Down walk the queue — the live player's channel
+      // switch, which for on-demand playback is prev/next part's track.
+      controller.previous();
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+      controller.next();
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;

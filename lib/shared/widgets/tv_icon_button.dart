@@ -120,7 +120,7 @@ class TvIconButton extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
-                          style: AppTextStyles.t18.copyWith(
+                          style: AppTextStyles.t16.copyWith(
                             fontWeight: FontWeight.w500,
                             // The glyph stays the brightest thing in the tile;
                             // the caption is a step quieter when idle so the
@@ -152,10 +152,10 @@ class TvIconButton extends StatelessWidget {
   /// untouched next to text the user had enlarged.
   (double, double) _getSizeConfig(double textScale) {
     return switch (size) {
-      TvIconButtonSize.large => (80.0.w * textScale, 40.0.w * textScale),
-      TvIconButtonSize.medium => (64.0.w * textScale, 32.0.w * textScale),
-      TvIconButtonSize.small => (50.0.w * textScale, 24.0.w * textScale),
-      TvIconButtonSize.mini => (38.0.w * textScale, 18.0.w * textScale),
+      TvIconButtonSize.large => (72.0.w * textScale, 40.0.w * textScale),
+      TvIconButtonSize.medium => (56.0.w * textScale, 36.0.w * textScale),
+      TvIconButtonSize.small => (48.0.w * textScale, 24.0.w * textScale),
+      TvIconButtonSize.mini => (36.0.w * textScale, 18.0.w * textScale),
     };
   }
 }

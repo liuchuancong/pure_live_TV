@@ -324,7 +324,7 @@ class _AppStatusViewState extends State<AppStatusView> {
     final Color parsedColor = setting.themeState.loadingStyleColor ?? widget.iconColor ?? tvTheme.focusColor;
     // The empty state's sentences follow the app font, and so do its loader
     // and artwork: a fixed disc would sit beside text twice its size.
-    final double textScale = TvTextScale.factorOf(context);
+    final double textScale = TvTextScale.factorOf(context).clamp(1.0, 1.1);
     final double size = (widget.isMini ? 32.sp : 48.sp) * textScale;
     return tvInlineLoading(context, size: size, color: parsedColor);
   }
@@ -336,7 +336,7 @@ class _AppStatusViewState extends State<AppStatusView> {
     if (widget.type == AppStatusType.loading) {
       return ExcludeFocus(child: Center(child: _buildLoadingWidget(context)));
     }
-
+    final textScaler = TvTextScale.factorOf(context).clamp(1.0, 1.1);
     final String finalTitle =
         widget.title ?? (widget.type == AppStatusType.error ? i18n('network_error_title') : i18n('status_empty_title'));
     final String finalSubtitle =
@@ -347,8 +347,9 @@ class _AppStatusViewState extends State<AppStatusView> {
         widget.buttonTextIcon ??
         Icon(
           widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded,
-          size: 24.sp * TvTextScale.factorOf(context),
+          size: 24.sp * textScaler,
         );
+
     // The column must survive extreme font scales (a 720p panel's lift plus
     // the user's slider tops out near 2x):
     // while it fits its box it stays centered exactly as before, and once it
@@ -357,14 +358,12 @@ class _AppStatusViewState extends State<AppStatusView> {
       child: LayoutBuilder(
         builder: (context, constraints) => SingleChildScrollView(
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0,
-            ),
+            constraints: BoxConstraints(minHeight: constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.all((widget.isMini ? 8.sp : 22.sp) * TvTextScale.factorOf(context)),
+                  padding: EdgeInsets.all((widget.isMini ? 8.sp : 22.sp) * textScaler),
                   // Accent-tinted disc instead of a grey-on-grey circle: the empty
                   // state is the page's voice, it should carry the palette.
                   decoration: BoxDecoration(
@@ -373,30 +372,35 @@ class _AppStatusViewState extends State<AppStatusView> {
                     border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.sp),
                   ),
                   child: Icon(
-                    widget.icon ?? (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
-                    size: (widget.isMini ? 36.sp : 64.sp) * TvTextScale.factorOf(context),
+                    widget.icon ??
+                        (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
+                    size: (widget.isMini ? 36.sp : 64.sp) * textScaler,
                     color: widget.iconColor ?? tvTheme.focusColor,
                   ),
                 ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
-                if (!widget.isMini) SizedBox(height: 12.h * TvTextScale.factorOf(context)),
+                if (!widget.isMini) SizedBox(height: 40.h * textScaler),
                 if (!widget.isMini || finalTitle.isNotEmpty) ...[
                   Text(
                     finalTitle,
-                    style: AppTextStyles.t28.copyWith(
+                    style: AppTextStyles.t24.copyWith(
                       fontWeight: FontWeight.w600,
+                      fontSize: 24.sp * textScaler,
                       color: widget.titleColor ?? tvTheme.primaryTextColor,
                     ),
                   ),
                 ],
                 if (!widget.isMini || finalSubtitle.isNotEmpty) ...[
-                  SizedBox(height: 6.sp * TvTextScale.factorOf(context)),
+                  SizedBox(height: 6.sp * textScaler),
                   Text(
                     finalSubtitle,
-                    style: AppTextStyles.t28.copyWith(color: widget.subtitleColor ?? tvTheme.secondaryTextColor),
+                    style: AppTextStyles.t24.copyWith(
+                      color: widget.subtitleColor ?? tvTheme.secondaryTextColor,
+                      fontSize: 24.sp * textScaler,
+                    ),
                   ),
                 ],
                 if (!widget.isMini && (widget.onTap != null || widget.onSecondaryTap != null)) ...[
-                  SizedBox(height: 24.sp * TvTextScale.factorOf(context)),
+                  SizedBox(height: 24.sp * textScaler),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -413,9 +417,7 @@ class _AppStatusViewState extends State<AppStatusView> {
                       if (widget.onSecondaryTap != null)
                         TvButton(
                           title: widget.secondaryButtonText ?? i18n('search_live'),
-                          icon:
-                              widget.secondaryButtonIcon ??
-                              Icon(Icons.search_rounded, size: 24.sp * TvTextScale.factorOf(context)),
+                          icon: widget.secondaryButtonIcon ?? Icon(Icons.search_rounded, size: 24.sp * textScaler),
                           iconPosition: TvIconPosition.left,
                           size: TvButtonSize.small,
                           isSecondary: true,

@@ -126,6 +126,22 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
       return KeyEventResult.ignored;
     }
 
+    // Media keys work in every layer, like the video player's handling.
+    if (event.logicalKey == LogicalKeyboardKey.mediaPlayPause ||
+        event.logicalKey == LogicalKeyboardKey.mediaPlay ||
+        event.logicalKey == LogicalKeyboardKey.mediaPause) {
+      ref.read(musicPlayerControllerProvider.notifier).togglePlayPause();
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.mediaTrackNext) {
+      ref.read(musicPlayerControllerProvider.notifier).next();
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.mediaTrackPrevious) {
+      ref.read(musicPlayerControllerProvider.notifier).previous();
+      return KeyEventResult.handled;
+    }
+
     // Controls hidden: live_play's model — Right opens the playlist, a
     // double-pressed Left follows the album, Up/Down walk the queue, OK
     // raises the bar (whose seek zone owns the ±10s).
