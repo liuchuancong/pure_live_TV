@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dpad/dpad.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,6 +101,10 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     // start (bmsc pauses instead of cascade-skipping, and so do we).
     final tracks = library.playableParts(archive);
     final excludedCount = archive.tracks.length - tracks.length;
+    // Vertical rhythm follows the app font setting, and the whole page scrolls
+    // like the video detail page: a fixed-height left column overflowed by
+    // hundreds of pixels once the enlarged font met the 720p legibility lift.
+    final double textScale = TvTextScale.factorOf(context);
 
     return TvPageScaffold(
       title: i18n('music_archive_title'),
@@ -113,18 +118,21 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
             )
           : _detail == null
               ? Center(child: AppStatusView(type: AppStatusType.loading, title: '', subtitle: ''))
-              : Padding(
+              : SingleChildScrollView(
                   padding: EdgeInsets.all(24.sp),
-                  child: Row(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Left column: the archive itself.
-                      SizedBox(
-                        width: 420.sp,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
+                      // ================================================ header row
+                      // The video detail page's arrangement: the cover on the
+                      // left, the title, stats, UP and the action chips to its
+                      // right.
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 400.sp,
+                            child: ClipRRect(
                               borderRadius: BorderRadius.circular(16.sp),
                               child: AspectRatio(
                                 aspectRatio: 16 / 9,
@@ -135,215 +143,248 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 16.sp),
-                            Text(
-                              archive.title,
-                              style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor, height: 1.35),
-                            ),
-                            SizedBox(height: 10.sp),
-                            Row(
+                          ),
+                          SizedBox(width: 32.sp),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.person_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                SizedBox(width: 6.sp),
-                                Expanded(
-                                  child: Text(
-                                    archive.upName,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 6.sp),
-                            Row(
-                              children: [
-                                Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                SizedBox(width: 6.sp),
                                 Text(
-                                  readableCount(archive.playCount.toString()),
-                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                                ),
-                                SizedBox(width: 16.sp),
-                                Icon(Icons.format_quote_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                SizedBox(width: 6.sp),
-                                Text(
-                                  readableCount(archive.barrageCount.toString()),
-                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                                ),
-                                if (archive.publishDate.isNotEmpty) ...[
-                                  SizedBox(width: 16.sp),
-                                  Text(
-                                    archive.publishDate,
-                                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            SizedBox(height: 14.sp),
-                            // The interaction row, the same actions the video
-                            // detail page leads with.
-                            Wrap(
-                              spacing: 10.sp,
-                              runSpacing: 10.sp,
-                              children: [
-                                TvButton(
-                                  title: i18n('video_action_like'),
-                                  icon: Icon(
-                                    _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                                    size: 22.sp,
-                                  ),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: !_liked,
-                                  onTap: () => _runAction(
-                                    () async {
-                                      await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
-                                      setState(() => _liked = !_liked);
-                                    },
-                                    'video_action_liked',
+                                  archive.title,
+                                  style: AppTextStyles.t24.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: tvTheme.primaryTextColor,
+                                    height: 1.35,
                                   ),
                                 ),
-                                TvButton(
-                                  title: i18n('video_action_fav'),
-                                  icon: Icon(
-                                    _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
-                                    size: 22.sp,
-                                  ),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: !_favoured,
-                                  onTap: () => _runAction(
-                                    () async {
-                                      await BilibiliUgcApi.instance.favDeal(aid: archive.aid, addFolderIds: const []);
-                                      await _loadStates(archive.aid);
-                                    },
-                                    'video_action_faved',
-                                  ),
-                                ),
-                                TvButton(
-                                  title: i18n('video_action_triple'),
-                                  icon: Icon(Icons.recommend_rounded, size: 22.sp),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: true,
-                                  onTap: () => _runAction(
-                                    () => BilibiliUgcApi.instance.tripleAction(archive.aid),
-                                    'video_action_trpled',
-                                  ),
-                                ),
-                                TvButton(
-                                  title: i18n('video_comments_title'),
-                                  icon: Icon(Icons.comment_outlined, size: 22.sp),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: true,
-                                  onTap: archive.aid > 0
-                                      ? () => UgcCommentsRoute(
-                                            UgcCommentsArgs(oid: archive.aid, title: archive.title),
-                                          ).push(context)
-                                      : null,
-                                ),
-                                TvButton(
-                                  title: i18n('music_skip_parts'),
-                                  icon: Icon(Icons.playlist_remove_rounded, size: 22.sp),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: true,
-                                  onTap: archive.tracks.length > 1
-                                      ? () => _showExcludedPartsDialog(archive)
-                                      : null,
-                                ),
-                                TvButton(
-                                  title: i18n(
-                                    library.isFavorite(archive.bvid) ? 'music_unfollow_album' : 'music_follow_album',
-                                  ),
-                                  icon: Icon(
-                                    library.isFavorite(archive.bvid)
-                                        ? Icons.favorite_rounded
-                                        : Icons.favorite_border_rounded,
-                                    size: 22.sp,
-                                  ),
-                                  size: TvButtonSize.mini,
-                                  isSecondary: !library.isFavorite(archive.bvid),
-                                  onTap: () => ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(archive),
-                                ),
-                                if (archive.upMid > 0)
-                                  TvButton(
-                                    title: i18n(followingUp ? 'music_unfollow_up' : 'music_follow_up'),
-                                    icon: Icon(
-                                      followingUp ? Icons.person_remove_outlined : Icons.person_add_alt_outlined,
-                                      size: 22.sp,
+                                SizedBox(height: 10.sp),
+                                Row(
+                                  children: [
+                                    Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
+                                    SizedBox(width: 6.sp),
+                                    Text(
+                                      readableCount(archive.playCount.toString()),
+                                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                     ),
-                                    size: TvButtonSize.mini,
-                                    isSecondary: !followingUp,
-                                    onTap: () => ref
-                                        .read(musicLibraryControllerProvider.notifier)
-                                        .toggleFollowUp(MusicUp(mid: archive.upMid, name: archive.upName, face: archive.upFace)),
-                                  ),
-                              ],
-                            ),
-                            if (archive.description.isNotEmpty) ...[
-                              SizedBox(height: 12.sp),
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  child: Text(
-                                    archive.description,
-                                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, 
-                                      color: tvTheme.secondaryTextColor,
-                                      height: 1.5,
+                                    SizedBox(width: 16.sp),
+                                    Icon(Icons.format_quote_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
+                                    SizedBox(width: 6.sp),
+                                    Text(
+                                      readableCount(archive.barrageCount.toString()),
+                                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                     ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 32.sp),
-                      // Right column: the parts.
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    '${i18n('music_tracks_title')}（${tracks.length}${excludedCount > 0 ? '，${i18n('music_parts_skipped')} $excludedCount' : ''}）',
-                                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
-                                  ),
-                                  const Spacer(),
-                                  TvButton(
-                                    title: i18n('music_play_all'),
-                                    icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
-                                    size: TvButtonSize.mini,
-                                    onTap: () => _playAll(tracks, 0),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: tracks.length == 1 && tracks.first.part.cid == 0
-                                  ? Center(
-                                      child: Text(
-                                        i18n('music_archive_no_parts'),
-                                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                                    if (archive.publishDate.isNotEmpty) ...[
+                                      SizedBox(width: 16.sp),
+                                      Text(
+                                        archive.publishDate,
+                                        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                       ),
-                                    )
-                                  : ListView.separated(
-                                      padding: EdgeInsets.only(bottom: 16.sp),
-                                      itemCount: tracks.length,
-                                      separatorBuilder: (_, _) => SizedBox(height: 8.sp),
-                                      itemBuilder: (context, index) {
-                                        final track = tracks[index];
-                                        return _PartTile(
-                                          track: track,
-                                          index: index,
-                                          onTap: () => _playAll(tracks, index),
-                                        );
-                                      },
+                                    ],
+                                  ],
+                                ),
+                                SizedBox(height: 16.sp),
+                                // The UP row: avatar-led, opens the user space.
+                                TvFocusable(
+                                  onTap: archive.upMid > 0
+                                      ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
+                                      : null,
+                                  builder: (context, focused, child) => AnimatedContainer(
+                                    duration: const Duration(milliseconds: 120),
+                                    padding: EdgeInsets.all(12.sp),
+                                    decoration: BoxDecoration(
+                                      color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+                                      borderRadius: BorderRadius.circular(20.sp),
+                                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
                                     ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName),
+                                        SizedBox(width: 12.sp),
+                                        Flexible(
+                                          child: Text(
+                                            archive.upName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.t16.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 16.sp),
+                                // The interaction row, the same actions the video
+                                // detail page leads with.
+                                Wrap(
+                                  spacing: 10.sp,
+                                  runSpacing: 10.sp,
+                                  children: [
+                                    TvButton(
+                                      title: i18n('video_action_like'),
+                                      icon: Icon(
+                                        _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
+                                        size: 22.sp,
+                                      ),
+                                      size: TvButtonSize.mini,
+                                      isSecondary: !_liked,
+                                      onTap: () => _runAction(
+                                        () async {
+                                          await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
+                                          setState(() => _liked = !_liked);
+                                        },
+                                        'video_action_liked',
+                                      ),
+                                    ),
+                                    TvButton(
+                                      title: i18n('video_action_fav'),
+                                      icon: Icon(
+                                        _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
+                                        size: 22.sp,
+                                      ),
+                                      size: TvButtonSize.mini,
+                                      isSecondary: !_favoured,
+                                      onTap: () => _runAction(
+                                        () async {
+                                          await BilibiliUgcApi.instance.favDeal(aid: archive.aid, addFolderIds: const []);
+                                          await _loadStates(archive.aid);
+                                        },
+                                        'video_action_faved',
+                                      ),
+                                    ),
+                                    TvButton(
+                                      title: i18n('video_action_triple'),
+                                      icon: Icon(Icons.recommend_rounded, size: 22.sp),
+                                      size: TvButtonSize.mini,
+                                      isSecondary: true,
+                                      onTap: () => _runAction(
+                                        () => BilibiliUgcApi.instance.tripleAction(archive.aid),
+                                        'video_action_trpled',
+                                      ),
+                                    ),
+                                    TvButton(
+                                      title: i18n('video_comments_title'),
+                                      icon: Icon(Icons.comment_outlined, size: 22.sp),
+                                      size: TvButtonSize.mini,
+                                      isSecondary: true,
+                                      onTap: archive.aid > 0
+                                          ? () => UgcCommentsRoute(
+                                                UgcCommentsArgs(oid: archive.aid, title: archive.title),
+                                              ).push(context)
+                                          : null,
+                                    ),
+                                    TvButton(
+                                      title: i18n('music_skip_parts'),
+                                      icon: Icon(Icons.playlist_remove_rounded, size: 22.sp),
+                                      size: TvButtonSize.mini,
+                                      isSecondary: true,
+                                      onTap: archive.tracks.length > 1
+                                          ? () => _showExcludedPartsDialog(archive)
+                                          : null,
+                                    ),
+                                    TvButton(
+                                      title: i18n(
+                                        library.isFavorite(archive.bvid) ? 'music_unfollow_album' : 'music_follow_album',
+                                      ),
+                                      icon: Icon(
+                                        library.isFavorite(archive.bvid)
+                                            ? Icons.favorite_rounded
+                                            : Icons.favorite_border_rounded,
+                                        size: 22.sp,
+                                      ),
+                                      size: TvButtonSize.mini,
+                                      isSecondary: !library.isFavorite(archive.bvid),
+                                      onTap: () => ref.read(musicLibraryControllerProvider.notifier).toggleFavorite(archive),
+                                    ),
+                                    if (archive.upMid > 0)
+                                      TvButton(
+                                        title: i18n(followingUp ? 'music_unfollow_up' : 'music_follow_up'),
+                                        icon: Icon(
+                                          followingUp ? Icons.person_remove_outlined : Icons.person_add_alt_outlined,
+                                          size: 22.sp,
+                                        ),
+                                        size: TvButtonSize.mini,
+                                        isSecondary: !followingUp,
+                                        onTap: () => ref
+                                            .read(musicLibraryControllerProvider.notifier)
+                                            .toggleFollowUp(
+                                              MusicUp(mid: archive.upMid, name: archive.upName, face: archive.upFace),
+                                            ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (archive.description.isNotEmpty) ...[
+                        SizedBox(height: 20.sp),
+                        // The description in its own card, like the video
+                        // detail page's grey block under the header.
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(18.sp),
+                          decoration: BoxDecoration(
+                            color: tvTheme.cardColor,
+                            borderRadius: BorderRadius.circular(16.sp),
+                          ),
+                          child: Text(
+                            archive.description,
+                            style: AppTextStyles.t14.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: tvTheme.secondaryTextColor,
+                              height: 1.55,
+                            ),
+                          ),
+                        ),
+                      ],
+                      SizedBox(height: 24.sp),
+                      // ==================================================== parts
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
+                        child: Row(
+                          children: [
+                            Text(
+                              '${i18n('music_tracks_title')}（${tracks.length}${excludedCount > 0 ? '，${i18n('music_parts_skipped')} $excludedCount' : ''}）',
+                              style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
+                            ),
+                            const Spacer(),
+                            TvButton(
+                              title: i18n('music_play_all'),
+                              icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                              size: TvButtonSize.mini,
+                              onTap: () => _playAll(tracks, 0),
                             ),
                           ],
                         ),
                       ),
+                      if (tracks.length == 1 && tracks.first.part.cid == 0)
+                        Text(
+                          i18n('music_archive_no_parts'),
+                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                        )
+                      else
+                        DpadRegion(
+                          verticalEdge: DpadEdgeBehavior.leave,
+                          horizontalEdge: DpadEdgeBehavior.leave,
+                          child: Column(
+                            children: [
+                              for (final (index, track) in tracks.indexed)
+                                Padding(
+                                  padding: EdgeInsets.only(bottom: 8.sp * textScale),
+                                  child: _PartTile(
+                                    track: track,
+                                    index: index,
+                                    onTap: () => _playAll(tracks, index),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -407,6 +448,9 @@ class _PartTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+    // The video detail page's track row: the row's height and its number slot
+    // follow the font, or the enlarged label clipped inside the fixed box.
+    final double textScale = TvTextScale.factorOf(context);
 
     return TvFocusable(
       onTap: onTap,
@@ -414,8 +458,8 @@ class _PartTile extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
-          height: 76.sp,
-          padding: EdgeInsets.symmetric(horizontal: 16.sp),
+          height: 76.sp * textScale,
+          padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale),
           decoration: BoxDecoration(
             color: tvTheme.cardColor,
             borderRadius: BorderRadius.circular(14.sp),
@@ -424,7 +468,7 @@ class _PartTile extends StatelessWidget {
           child: Row(
             children: [
               SizedBox(
-                width: 40.sp,
+                width: 40.sp * textScale,
                 child: Text(
                   '${index + 1}',
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
