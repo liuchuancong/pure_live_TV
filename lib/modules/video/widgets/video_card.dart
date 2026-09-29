@@ -150,16 +150,24 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                             children: [
                               Icon(Icons.play_arrow_rounded, size: 18.sp, color: Colors.white.withValues(alpha: 0.9)),
                               SizedBox(width: 2.sp),
-                              Text(
-                                _wan(archive.playCount),
-                                style: AppTextStyles.t14W500.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                              Flexible(
+                                child: Text(
+                                  _wan(archive.playCount),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.t14W500.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                                ),
                               ),
                               SizedBox(width: 10.sp),
                               Icon(Icons.comment_outlined, size: 16.sp, color: Colors.white.withValues(alpha: 0.9)),
                               SizedBox(width: 2.sp),
-                              Text(
-                                _wan(archive.barrageCount),
-                                style: AppTextStyles.t14W500.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                              Flexible(
+                                child: Text(
+                                  _wan(archive.barrageCount),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.t14W500.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                                ),
                               ),
                               const Spacer(),
                               if (_durationLabel.isNotEmpty)
@@ -258,22 +266,33 @@ class _VideoCardState extends ConsumerState<VideoCard> {
             ),
             SizedBox(height: 8.sp),
             // -------------------------------------------------- the info block
-            Text(
-              archive.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14W600.copyWith(
-                color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
-                height: 1.3,
-              ),
-            ),
-            SizedBox(height: 4.sp),
-            Text(
-              archive.upName + (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14W300.copyWith(
-                color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
+            // Flexible on purpose: the grid cell's height is fixed, so at a
+            // large font scale the two text lines must shrink to what fits
+            // (they already ellipsize) instead of pushing the Column past the
+            // cell edge.
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    archive.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.t14W600.copyWith(
+                      color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+                      height: 1.3,
+                    ),
+                  ),
+                  SizedBox(height: 4.sp),
+                  Text(
+                    archive.upName + (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.t14W300.copyWith(
+                      color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
