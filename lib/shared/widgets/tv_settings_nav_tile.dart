@@ -58,8 +58,8 @@ class TvSettingsGroupTitle extends StatelessWidget {
       padding: EdgeInsets.only(left: 8.sp, bottom: 8.sp),
       child: Text(
         title,
-        style: AppTextStyles.t16W600.copyWith(
-          fontWeight: FontWeight.bold,
+        style: AppTextStyles.t16.copyWith(
+          fontWeight: FontWeight.w600,
           color: theme.focusColor.withValues(alpha: 0.85),
           letterSpacing: 0.5,
         ),

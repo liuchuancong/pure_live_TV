@@ -131,7 +131,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
                   widget.title ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
                 ),
           ),
           if (widget.actions != null) ...[

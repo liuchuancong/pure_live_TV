@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -69,7 +68,7 @@ class _VideoSettingsSectionPageState extends ConsumerState<VideoSettingsSectionP
                     ),
                     child: Text(
                       i18n(labelKey),
-                      style: AppTextStyles.t20W600.copyWith(
+                      style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
                         color: _group == index ? tvTheme.primaryTextColor : tvTheme.secondaryTextColor,
                       ),
                     ),

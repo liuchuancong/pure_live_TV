@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// 新建歌单 / 编辑歌单: one name field. With [playlist] it renames in place;
@@ -74,12 +73,12 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
                         playlist.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t18W500.copyWith(color: tvTheme.primaryTextColor),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                       ),
                     ),
                     Text(
                       '${playlist.tracks.length}',
-                      style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                      style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                     ),
                   ],
                 ),
@@ -103,7 +102,10 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
                 children: [
                   Icon(Icons.add_rounded, size: 26.sp, color: tvTheme.focusColor),
                   SizedBox(width: 12.sp),
-                  Text(i18n('music_create_playlist'), style: AppTextStyles.t18W500.copyWith(color: tvTheme.focusColor)),
+                  Text(
+                    i18n('music_create_playlist'),
+                    style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.focusColor),
+                  ),
                 ],
               ),
             ),

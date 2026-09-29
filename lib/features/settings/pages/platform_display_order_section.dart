@@ -1,9 +1,8 @@
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 
 /// platform display — platform order: the order the platform tabs appear in.
@@ -60,7 +59,7 @@ class PlatformDisplayOrderSectionPage extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: 4.sp),
             child: Text(
               i18n('platform_display_hidden_hint', args: {'names': hidden.map((site) => site.name).join(' · ')}),
-              style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
+              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),
             ),
           ),
         ],
@@ -139,7 +138,7 @@ class _SiteOrderTile extends StatelessWidget {
             SizedBox(width: 4.sp),
             Text(
               '$position/$total',
-              style: AppTextStyles.t20W600.copyWith(
+              style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
                 color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
               ),
             ),

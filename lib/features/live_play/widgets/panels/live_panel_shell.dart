@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/theme/index.dart';
 
 /// Shared shell for the side panels: title bar, key hints and content.
 ///
@@ -29,7 +28,7 @@ class LivePanelShell extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                 ),
               ),
               ?trailing,
@@ -42,7 +41,7 @@ class LivePanelShell extends StatelessWidget {
             child: Text(
               hint!,
               maxLines: 2,
-              style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
             ),
           ),
         Divider(height: 1, color: tvTheme.secondaryTextColor.withValues(alpha: 0.2)),
@@ -126,7 +125,7 @@ class LiveOptionRow extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t16W500.copyWith(
+                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, 
                       color: focused ? tvTheme.primaryTextColor : tvTheme.secondaryTextColor,
                     ),
                   ),
@@ -135,7 +134,7 @@ class LiveOptionRow extends StatelessWidget {
                 SizedBox(width: 6.sp),
                 Text(
                   value,
-                  style: AppTextStyles.t16W600.copyWith(
+                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, 
                     color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
                   ),
                 ),
@@ -216,7 +215,7 @@ class LiveActionRow extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16W500.copyWith(
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, 
                           color: focused ? tvTheme.primaryTextColor : (accent ? tvTheme.primaryTextColor : tvTheme.secondaryTextColor),
                         ),
                       ),
@@ -225,7 +224,7 @@ class LiveActionRow extends StatelessWidget {
                           subtitle!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                         ),
                     ],
                   ),

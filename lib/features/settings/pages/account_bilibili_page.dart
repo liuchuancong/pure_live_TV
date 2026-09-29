@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -87,7 +86,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                                       : (cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined')),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t28W600.copyWith(color: theme.primaryTextColor),
+                                  style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: theme.primaryTextColor),
                                 ),
                                 if (account.name.isNotEmpty && cookies.bilibiliUid > 0) ...[
                                   SizedBox(height: 4.h),
@@ -95,7 +94,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                                     'UID ${cookies.bilibiliUid}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.t16W300.copyWith(color: theme.secondaryTextColor),
+                                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
                                   ),
                                 ],
                               ],
@@ -126,7 +125,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                   children: [
                     Icon(Icons.check_circle_outline_rounded, size: 20.sp, color: theme.focusColor),
                     SizedBox(width: 8.sp),
-                    Text(_message, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+                    Text(_message, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor)),
                   ],
                 ),
               ],
@@ -285,7 +284,7 @@ class _BilibiliQrLoginViewState extends ConsumerState<BilibiliQrLoginView> {
           Text(
             _statusText,
             textAlign: TextAlign.center,
-            style: AppTextStyles.t20W500.copyWith(color: context.tvTheme.secondaryTextColor),
+            style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),
           ),
         ],
       ],

@@ -1,7 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// One option inside a dialog.
 ///
@@ -80,7 +80,10 @@ class TvDialogOptionTile extends StatelessWidget {
           child: Row(
             children: [
               if (icon != null) ...[
-                IconTheme(data: IconThemeData(size: 24.sp, color: foreground), child: icon!),
+                IconTheme(
+                  data: IconThemeData(size: 24.sp, color: foreground),
+                  child: icon!,
+                ),
                 SizedBox(width: 14.sp),
               ],
               Expanded(
@@ -92,14 +95,17 @@ class TvDialogOptionTile extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t20W500.copyWith(color: foreground, fontWeight: FontWeight.w600),
+                      style: AppTextStyles.t20.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: foreground,
+                      ),
                     ),
                     if (subtitle != null && subtitle!.isNotEmpty)
                       Text(
                         subtitle!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16W500.copyWith(color: muted),
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: muted),
                       ),
                   ],
                 ),

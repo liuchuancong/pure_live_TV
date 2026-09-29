@@ -1,10 +1,8 @@
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 
@@ -212,7 +210,7 @@ class SettingsCatalogView extends ConsumerWidget {
                   trailing: hasUpdate && entry.path == AppRoutes.kAbout
                       ? Text(
                           i18n('new_version_found'),
-                          style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.focusColor),
+                          style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor),
                         )
                       : null,
                   onTap: () => settingsSectionRoutes[entry.path]?.push(context),

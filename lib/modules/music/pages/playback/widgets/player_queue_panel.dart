@@ -1,13 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+
 
 /// The 播放列表 over the player, bmsc's playlist sheet: a header with the
 /// count, the clear button and the play-mode cycle, then one tall row per
@@ -66,7 +65,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
         },
         child: Text(
           i18n('music_queue_clear_confirm'),
-          style: TextStyle(fontSize: (20 * AppFontScale.user).sp, height: 1.5, color: context.tvTheme.primaryTextColor),
+          style: AppTextStyles.t20.copyWith(height: 1.5, color: context.tvTheme.primaryTextColor),
         ),
       ),
     );
@@ -147,7 +146,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                 Expanded(
                   child: Text(
                     '${i18n('music_tab_queue')}（${queue.length}）',
-                    style: AppTextStyles.t20W600.copyWith(color: Colors.white),
+                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   ),
                 ),
                 TvIconButton(
@@ -182,7 +181,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                 ? Center(
                     child: Text(
                       i18n('music_queue_empty'),
-                      style: AppTextStyles.t16W500.copyWith(color: Colors.white54),
+                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
                     ),
                   )
                 : ListView.builder(
@@ -222,7 +221,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                                         ? Icon(Icons.play_arrow_rounded, size: 30.sp, color: accent)
                                         : Text(
                                             '${index + 1}',
-                                            style: AppTextStyles.t16W500.copyWith(color: Colors.white54),
+                                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
                                           ),
                                   ),
                                   SizedBox(width: 12.sp),
@@ -238,7 +237,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                                                 track.title,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: AppTextStyles.t18W600.copyWith(
+                                                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, 
                                                   color: isCurrent ? accent : Colors.white,
                                                 ),
                                               ),
@@ -248,7 +247,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                                                 padding: EdgeInsets.only(left: 8.sp),
                                                 child: Text(
                                                   'P${track.part.page}',
-                                                  style: AppTextStyles.t16W500.copyWith(color: Colors.white38),
+                                                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
                                                 ),
                                               ),
                                           ],
@@ -263,7 +262,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                                                 isMulti ? track.archive.title : track.archive.upName,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: AppTextStyles.t16W500.copyWith(color: Colors.white54),
+                                                style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white54),
                                               ),
                                             ),
                                           ],

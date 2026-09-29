@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -19,7 +18,7 @@ class AgreementPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(i18n('agreement_title'), textAlign: TextAlign.center, style: AppTextStyles.t40W700),
+              Text(i18n('agreement_title'), textAlign: TextAlign.center, style: AppTextStyles.t40.copyWith(fontWeight: FontWeight.w700)),
               AppStyle.vGap40,
               Flexible(
                 child: SingleChildScrollView(
@@ -27,7 +26,7 @@ class AgreementPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(i18n('agreement_welcome'), style: AppTextStyles.t28W700),
+                      Text(i18n('agreement_welcome'), style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w700)),
                       AppStyle.vGap24,
 
                       Padding(
@@ -48,7 +47,7 @@ class AgreementPage extends StatelessWidget {
                       ),
                       AppStyle.vGap32,
 
-                      Text(i18n('agreement_footer'), style: AppTextStyles.t28W700),
+                      Text(i18n('agreement_footer'), style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w700)),
                     ],
                   ),
                 ),

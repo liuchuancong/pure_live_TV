@@ -1,8 +1,7 @@
-import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/services/cache/cache_controller.dart';
 
 /// Cache and data management, mirroring the mobile page: the current size
@@ -94,7 +93,10 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
         if (_result.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.sp, top: 8.sp),
-            child: Text(_result, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+            child: Text(
+              _result,
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor),
+            ),
           ),
       ],
     );

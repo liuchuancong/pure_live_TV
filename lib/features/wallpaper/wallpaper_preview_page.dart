@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -620,7 +619,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               Expanded(
                 child: Text(
                   _title(item),
-                  style: TextStyle(fontSize: (20 * AppFontScale.user).sp, color: Colors.white, fontWeight: FontWeight.w600),
+                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -628,7 +627,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               if (!widget.args.isApiMode && items.length > 1)
                 Text(
                   '${_index + 1}/${items.length}',
-                  style: TextStyle(fontSize: (20 * AppFontScale.user).sp, color: Colors.white70),
+                  style: AppTextStyles.t20.copyWith(color: Colors.white70),
                 ),
               if (_isVideo) ...[
                 SizedBox(width: 18.sp),
@@ -661,7 +660,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
           children: [
             Text(
               i18nOr('wallpaper_preview_hint', '←→ 选择按钮 · OK 确认 · 返回退出'),
-              style: TextStyle(fontSize: (18 * AppFontScale.user).sp, color: Colors.white70),
+              style: AppTextStyles.t18.copyWith(color: Colors.white70),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -808,7 +807,7 @@ class _PreviewActionButtonState extends State<_PreviewActionButton> {
                 SizedBox(width: 10.sp),
                 Text(
                   widget.action.label,
-                  style: TextStyle(fontSize: (20 * AppFontScale.user).sp, color: foreground, fontWeight: FontWeight.w600),
+                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: foreground),
                 ),
               ],
             ),

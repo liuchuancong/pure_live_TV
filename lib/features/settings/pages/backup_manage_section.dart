@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -213,12 +212,12 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
           if (_result.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
-              child: Text(_result, style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: theme.focusColor)),
+              child: Text(_result, style: AppTextStyles.t16.copyWith(color: theme.focusColor)),
             ),
           if (_busy)
             Padding(
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
-              child: Text(i18n('ui_exporting'), style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: theme.primaryTextColor)),
+              child: Text(i18n('ui_exporting'), style: AppTextStyles.t16.copyWith(color: theme.primaryTextColor)),
             ),
         ],
       ),

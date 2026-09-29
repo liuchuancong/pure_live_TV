@@ -1,7 +1,6 @@
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/platforms/sites.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_routes.dart';

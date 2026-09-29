@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/services/app_settings/app_settings_model.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
@@ -111,7 +111,11 @@ class PlayerRoomRow extends ConsumerWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16W600.copyWith(color: foreground, fontSize: titleSize),
+                        style: AppTextStyles.t16.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: foreground,
+                          fontSize: titleSize,
+                        ),
                       ),
                     ),
                     if (showFollowAction)
@@ -132,7 +136,7 @@ class PlayerRoomRow extends ConsumerWidget {
                     nick,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(color: muted, fontSize: nickSize),
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: muted, fontSize: nickSize),
                   ),
               ],
             ),
@@ -145,14 +149,15 @@ class PlayerRoomRow extends ConsumerWidget {
               if (room.platform.trim().isNotEmpty)
                 Text(
                   room.platform.toUpperCase(),
-                  style: AppTextStyles.t14W600.copyWith(color: muted, fontSize: platformSize),
+                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: muted, fontSize: platformSize),
                 ),
               SizedBox(height: large ? 3.sp : 0),
               Text(
                 trailing ?? _meta(app, ref.read(appSettingsControllerProvider.notifier)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14W500.copyWith(
+                style: AppTextStyles.t14.copyWith(
+                  fontWeight: FontWeight.w500,
                   color: selected ? Colors.white : tvTheme.focusColor,
                   fontSize: metaSize,
                 ),
@@ -203,7 +208,9 @@ class _FollowLabel extends StatelessWidget {
     // on a normal row it is the accent itself. An unfollowed row is muted so the
     // followed ones stand out.
     final Color color = selected ? Colors.white : accent;
-    final Color background = selected ? Colors.white.withValues(alpha: 0.22) : color.withValues(alpha: followed ? 0.22 : 0.10);
+    final Color background = selected
+        ? Colors.white.withValues(alpha: 0.22)
+        : color.withValues(alpha: followed ? 0.22 : 0.10);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
@@ -214,7 +221,7 @@ class _FollowLabel extends StatelessWidget {
       ),
       child: Text(
         followed ? i18n('followed') : i18n('follow'),
-        style: AppTextStyles.t14W500.copyWith(
+        style: AppTextStyles.t14.copyWith(
           color: color,
           fontSize: (14 * AppFontScale.user).sp * scale,
           fontWeight: followed ? FontWeight.w600 : FontWeight.w500,

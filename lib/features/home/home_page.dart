@@ -1,5 +1,4 @@
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/modules/media/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/features/hot/hot_page.dart';
@@ -90,7 +89,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               children: [
                 Text(
                   i18n('mode_picker_title'),
-                  style: AppTextStyles.t22W700.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 16.sp),
@@ -130,7 +129,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     AppMode.video => 'mode_video',
                                     AppMode.music => 'mode_music',
                                   }),
-                                  style: AppTextStyles.t20W600.copyWith(
+                                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
                                     color: isSelected ? accent : tvTheme.primaryTextColor,
                                   ),
                                 ),
@@ -410,7 +409,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         padding: EdgeInsets.only(bottom: 6.sp * textScale),
                         child: TvDigitalClock(
                           format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
-                          style: AppTextStyles.t20W600.copyWith(
+                          style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
                             color: currentTvTheme.primaryTextColor,
                             height: 1,
                             letterSpacing: 1.5,
@@ -420,7 +419,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       if (isExpanded)
                         TvDigitalClock(
                           format: 'yyyy/MM/dd',
-                          style: AppTextStyles.t14W500.copyWith(color: currentTvTheme.secondaryTextColor, height: 1),
+                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: currentTvTheme.secondaryTextColor, height: 1),
                         ),
                       SizedBox(height: 15.sp * textScale),
                       Padding(

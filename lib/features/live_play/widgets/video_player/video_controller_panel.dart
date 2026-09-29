@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/player/index.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/tv_focus_style.dart';
@@ -529,7 +527,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
             children: [
               Padding(
                 padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
-                child: Text(_panelTitle, style: AppTextStyles.t20W600.copyWith(color: Colors.white)),
+                child: Text(
+                  _panelTitle,
+                  style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
+                ),
               ),
               Flexible(
                 child: ListView.builder(
@@ -665,10 +666,8 @@ class _Pill extends StatelessWidget {
     // Bigger than the t20 the bar started with — the label is what the viewer
     // actually reads from the couch, so it should not be the smallest thing on
     // the pill.
-    final TextStyle textStyle = (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
-      color: foreground,
-      fontSize: (22 * AppFontScale.user).sp,
-    );
+    final TextStyle textStyle = (selected ? AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600) : AppTextStyles.t20)
+        .copyWith(color: foreground);
 
     // The same focus recipe the app's standard controls use (TvFocusStyle):
     // a lift, an accent ring and a soft accent halo, so the bar's buttons glow

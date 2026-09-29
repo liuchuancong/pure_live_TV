@@ -113,13 +113,12 @@ class TvIconButton extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: AppTextStyles.t14W500.copyWith(
+                            style: AppTextStyles.t14.copyWith(
+                              fontWeight: FontWeight.w500,
                               // The glyph stays the brightest thing in the tile;
                               // the caption is a step quieter when idle so the
                               // focused/selected state still reads as "on".
-                              color: selected || isFocused
-                                  ? foregroundColor
-                                  : foregroundColor.withValues(alpha: 0.78),
+                              color: selected || isFocused ? foregroundColor : foregroundColor.withValues(alpha: 0.78),
                               height: 1,
                             ),
                           ),

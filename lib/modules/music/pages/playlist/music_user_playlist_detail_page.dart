@@ -1,16 +1,16 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+
 
 /// One playlist's track table — the default 喜欢 playlist and every locally
 /// created one. OK plays the row, long press opens the song menu (删除 / 置顶 /
@@ -95,7 +95,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                   padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 10.sp),
                   child: Row(
                     children: [
-                      Text('（${tracks.length}）', style: AppTextStyles.t22W700.copyWith(color: tvTheme.secondaryTextColor)),
+                      Text('（${tracks.length}）', style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.secondaryTextColor)),
                       const Spacer(),
                       TvButton(
                         title: i18n('music_now_playing'),
@@ -261,7 +261,7 @@ class _PlaylistTrackRow extends StatelessWidget {
                 width: 44.sp,
                 child: isCurrent
                     ? Icon(Icons.graphic_eq_rounded, size: 30.sp, color: accent)
-                    : Text('${index + 1}', style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor)),
+                    : Text('${index + 1}', style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor)),
               ),
               SizedBox(width: 8.sp),
               ClipRRect(
@@ -291,7 +291,7 @@ class _PlaylistTrackRow extends StatelessWidget {
                             track.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t18W600.copyWith(
+                            style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, 
                               color: isCurrent ? accent : tvTheme.primaryTextColor,
                             ),
                           ),
@@ -303,7 +303,7 @@ class _PlaylistTrackRow extends StatelessWidget {
                           MusicVideoCard.formatDuration(
                             track.part.duration > 0 ? track.part.duration : track.archive.duration,
                           ),
-                          style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                         ),
                       ],
                     ),
@@ -317,7 +317,7 @@ class _PlaylistTrackRow extends StatelessWidget {
                             track.archive.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                         ),
                         SizedBox(width: 10.sp),
@@ -328,7 +328,7 @@ class _PlaylistTrackRow extends StatelessWidget {
                             track.archive.upName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                         ),
                       ],

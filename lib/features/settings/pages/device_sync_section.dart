@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -7,8 +6,8 @@ import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/widgets/remote_sync_pair_qr_card.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
-import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
+import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
 
 /// Device sync — the TV end of the LAN sync (39888), and nothing else.
 ///
@@ -220,7 +219,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                     Expanded(
                       child: Text(
                         i18nOr('remote_sync_no_devices', 'No devices discovered yet'),
-                        style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
                       ),
                     ),
                   ],
@@ -249,14 +248,14 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                           children: [
                             Text(
                               device.name,
-                              style: AppTextStyles.t18W500,
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             SizedBox(height: 2.h),
                             Text(
                               '${device.address} · ${device.platform.isEmpty ? '—' : device.platform}',
-                              style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor),
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -326,12 +325,12 @@ class _PairingCodeRow extends StatelessWidget {
         SizedBox(width: 10.sp),
         Text(
           i18n('remote_sync_pairing_code'),
-          style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor),
+          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
         ),
         SizedBox(width: 12.sp),
         Text(
           code,
-          style: AppTextStyles.t20W700.copyWith(color: theme.focusColor, letterSpacing: 4),
+          style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: theme.focusColor, letterSpacing: 4),
         ),
       ],
     );
@@ -384,11 +383,11 @@ class _ServiceStatusPill extends StatelessWidget {
                   : (error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...')),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t18W500.copyWith(color: theme.primaryTextColor),
+              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: theme.primaryTextColor),
             ),
           ),
           SizedBox(width: 12.sp),
-          Text(label, style: AppTextStyles.t16W500.copyWith(color: badgeColor)),
+          Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: badgeColor)),
         ],
       ),
     );
@@ -414,7 +413,7 @@ class _ReceiveNoticeRow extends StatelessWidget {
             notice,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.t18W500.copyWith(color: color),
+            style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: color),
           ),
         ),
       ],
@@ -450,7 +449,7 @@ class _StepBullet extends StatelessWidget {
             padding: EdgeInsets.only(top: 3.sp),
             child: Text(
               text,
-              style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor, height: 1.35),
+              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor, height: 1.35),
             ),
           ),
         ),

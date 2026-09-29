@@ -1,10 +1,10 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/utils/dpad_long_press_gate.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/services/area_images/area_image_matcher.dart';
 
 class TvAreaCard extends StatefulWidget {
@@ -80,55 +80,59 @@ class _TvAreaCardState extends State<TvAreaCard> {
                     // after the name, so an enlarged app font shrinks the tile
                     // instead of pushing the label out of the cell.
                     Expanded(
-                  child: Center(
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: ClipRRect(
-                        borderRadius: imageRadius,
-                        clipBehavior: Clip.antiAlias,
-                        child: displayImageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: displayImageUrl,
-                                cacheManager: CustomImageCacheManager.instance,
-                                // Area artwork renders inside a small card: decode at that
-                                // size and keep the cached copy bounded.
-                                memCacheWidth: 320,
-                                fit: BoxFit.contain,
-                                imageBuilder: (context, imageProvider) {
-                                  // Clip the actual decoded image, not just its parent.
-                                  return ClipRRect(
-                                    borderRadius: imageRadius,
-                                    clipBehavior: Clip.antiAlias,
-                                    child: Image(
-                                      image: imageProvider,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      fit: BoxFit.contain,
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: ClipRRect(
+                            borderRadius: imageRadius,
+                            clipBehavior: Clip.antiAlias,
+                            child: displayImageUrl.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: displayImageUrl,
+                                    cacheManager: CustomImageCacheManager.instance,
+                                    // Area artwork renders inside a small card: decode at that
+                                    // size and keep the cached copy bounded.
+                                    memCacheWidth: 320,
+                                    fit: BoxFit.contain,
+                                    imageBuilder: (context, imageProvider) {
+                                      // Clip the actual decoded image, not just its parent.
+                                      return ClipRRect(
+                                        borderRadius: imageRadius,
+                                        clipBehavior: Clip.antiAlias,
+                                        child: Image(
+                                          image: imageProvider,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      );
+                                    },
+                                    placeholder: (context, url) => AppStatusView(
+                                      type: AppStatusType.loading,
+                                      title: "",
+                                      subtitle: "",
+                                      isMini: true,
                                     ),
-                                  );
-                                },
-                                placeholder: (context, url) =>
-                                    AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
-                                errorWidget: (context, url, error) {
-                                  // A dead/expired picture (borrowed matches included)
-                                  // is dropped from the match cache; the next category
-                                  // refresh picks another one.
-                                  AreaImageMatcher.instance.reportBroken(url);
-                                  return AppStatusView(
-                                    type: AppStatusType.error,
-                                    title: "",
-                                    subtitle: "",
-                                    isMini: true,
-                                  );
-                                },
-                              )
-                            : Center(
-                                child: Icon(Icons.live_tv_rounded, size: 40.sp, color: titleColor),
-                              ),
+                                    errorWidget: (context, url, error) {
+                                      // A dead/expired picture (borrowed matches included)
+                                      // is dropped from the match cache; the next category
+                                      // refresh picks another one.
+                                      AreaImageMatcher.instance.reportBroken(url);
+                                      return AppStatusView(
+                                        type: AppStatusType.error,
+                                        title: "",
+                                        subtitle: "",
+                                        isMini: true,
+                                      );
+                                    },
+                                  )
+                                : Center(
+                                    child: Icon(Icons.live_tv_rounded, size: 40.sp, color: titleColor),
+                                  ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
                     SizedBox(height: nameGap),
                     // The name is sized by the text it holds, never by a fixed
                     // box: the old `SizedBox(height: 32.sp)` clipped a two-line
@@ -141,7 +145,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
                         maxLines: nameLines,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.t20W600.copyWith(
+                        style: AppTextStyles.t20.copyWith(
                           color: titleColor,
                           fontSize: (17 * AppFontScale.user).sp,
                           height: 1.15,

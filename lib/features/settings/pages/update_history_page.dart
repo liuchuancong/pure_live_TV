@@ -1,5 +1,4 @@
 import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -168,7 +167,7 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
         alignment: Alignment.centerLeft,
         child: Text(
           label,
-          style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor),
+          style: AppTextStyles.t17.copyWith(color: tvTheme.secondaryTextColor),
         ),
       ),
     );
@@ -243,12 +242,12 @@ Future<void> showReleaseNotesDialog({
                         padding: EdgeInsets.only(bottom: 12.sp),
                         child: Text(
                           i18n('version_published_at', args: <String, String>{'date': release.date}),
-                          style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t16.copyWith(color: tvTheme.secondaryTextColor),
                         ),
                       ),
                     Text(
                       notes.isEmpty ? i18n('update_no_notes') : notes,
-                      style: TextStyle(fontSize: (18 * AppFontScale.user).sp, height: 1.5, color: tvTheme.primaryTextColor),
+                      style: AppTextStyles.t18.copyWith(height: 1.5, color: tvTheme.primaryTextColor),
                     ),
                   ],
                 ),
@@ -258,7 +257,7 @@ Future<void> showReleaseNotesDialog({
               SizedBox(height: 16.sp),
               Text(
                 i18n('update_assets'),
-                style: TextStyle(fontSize: (17 * AppFontScale.user).sp, fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
+                style: AppTextStyles.t17.copyWith(fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
               ),
               SizedBox(height: 10.sp),
               Wrap(

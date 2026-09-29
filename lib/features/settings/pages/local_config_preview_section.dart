@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/services/backup/backup_controller.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/services/backup/backup_controller.dart';
 
 /// Read-only preview of the local configuration.
 ///
@@ -41,7 +39,10 @@ class _LocalConfigPreviewSectionPageState extends ConsumerState<LocalConfigPrevi
     final tvTheme = context.tvTheme;
 
     if (_error.isNotEmpty) {
-      return Text(_error, style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor));
+      return Text(
+        _error,
+        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+      );
     }
 
     return Column(
@@ -49,19 +50,21 @@ class _LocalConfigPreviewSectionPageState extends ConsumerState<LocalConfigPrevi
       children: [
         Text(
           '${i18n('backup_version')} v$_version   ·   ${i18n('backup_settings')} $_sectionCount',
-          style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
         ),
         SizedBox(height: 12.sp),
         // Bordered rather than rounded: the TV pages mark regions with a border.
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(16.sp),
-          decoration: BoxDecoration(
-            border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.3)),
-          ),
+          decoration: BoxDecoration(border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.3))),
           child: SelectableText(
             _json,
-            style: AppTextStyles.t16W500.copyWith(color: tvTheme.primaryTextColor, height: 1.5),
+            style: AppTextStyles.t16.copyWith(
+              fontWeight: FontWeight.w500,
+              color: tvTheme.primaryTextColor,
+              height: 1.5,
+            ),
           ),
         ),
       ],

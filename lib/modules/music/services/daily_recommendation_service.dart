@@ -3,8 +3,7 @@ import 'dart:math';
 
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 
 /// The brute-force daily recommendation, ported from the bmsc reference:

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:pure_live/player/index.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -68,7 +67,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
                 icon: Remix.global_line,
                 trailing: Text(
                   proxyEnabled ? i18n('enabled') : i18n('disabled'),
-                  style: AppTextStyles.t16W600.copyWith(
+                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, 
                     color: proxyEnabled ? context.tvTheme.focusColor : context.tvTheme.secondaryTextColor,
                   ),
                 ),

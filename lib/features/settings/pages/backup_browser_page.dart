@@ -1,4 +1,3 @@
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -30,7 +29,7 @@ class BackupBrowserSectionPage extends StatelessWidget {
             child: Center(
               child: Text(
                 i18n('backup_browser_hint'),
-                style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
               ),
             ),
           ),

@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/web_router.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 import 'package:pure_live/services/settings/settings.dart';
@@ -223,7 +222,7 @@ class _BlockEntryAddDialogState extends ConsumerState<BlockEntryAddDialog> {
             if (_error.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: 10.sp),
-                child: Text(_error, style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.focusColor)),
+                child: Text(_error, style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor)),
               ),
           ],
         ),
@@ -253,11 +252,11 @@ class BlockEntryDetailDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: AppTextStyles.t26W600),
+            Text(value, style: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w600)),
             SizedBox(height: 16.sp),
             Text(
               i18nOr('block_delete_confirm', '确定要删除这条屏蔽项吗？'),
-              style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: context.tvTheme.secondaryTextColor),
+              style: AppTextStyles.t17.copyWith(color: context.tvTheme.secondaryTextColor),
             ),
           ],
         ),

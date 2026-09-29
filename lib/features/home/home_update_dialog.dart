@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/utils/toast_util.dart';
 import 'package:pure_live/shared/utils/version_util.dart';
 import 'package:pure_live/shared/platform/file_utils.dart';
@@ -95,21 +94,21 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
               Expanded(
                 child: RichText(
                   text: TextSpan(
-                    style: AppTextStyles.t24W600.copyWith(color: theme.primaryTextColor),
+                    style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w600, color: theme.primaryTextColor),
                     children: [
                       TextSpan(text: 'v${VersionUtil.version}'),
                       TextSpan(
                         text: '  →  ',
-                        style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
                       ),
                       TextSpan(
                         text: 'v${VersionUtil.latestVersion}',
-                        style: AppTextStyles.t24W600.copyWith(color: theme.focusColor),
+                        style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w600, color: theme.focusColor),
                       ),
                       if (VersionUtil.prerelease)
                         TextSpan(
                           text: '  ${i18nOr('update_prerelease', 'pre-release')}',
-                          style: AppTextStyles.t16W500.copyWith(color: const Color(0xFFFFA726)),
+                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: const Color(0xFFFFA726)),
                         ),
                     ],
                   ),
@@ -122,7 +121,7 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
           if (VersionUtil.latestUpdateLog.isNotEmpty) ...[
             Text(
               i18nOr('update_changelog', 'What is new'),
-              style: AppTextStyles.t18W500.copyWith(color: theme.secondaryTextColor),
+              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: theme.secondaryTextColor),
             ),
             SizedBox(height: 8.sp),
             Container(
@@ -136,7 +135,7 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
               child: SingleChildScrollView(
                 child: Text(
                   VersionUtil.latestUpdateLog,
-                  style: AppTextStyles.t18W300.copyWith(color: theme.primaryTextColor, height: 1.5),
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.primaryTextColor, height: 1.5),
                 ),
               ),
             ),

@@ -1,20 +1,18 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
+import 'package:pure_live/services/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/video/models/video_pgc_models.dart';
-import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
-import 'package:pure_live/services/index.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/video/widgets/video_card.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+
 
 /// The full-type search section, newBV's search screen for TV: hotwords while
 /// idle, then video / user / movie results per keyword.
@@ -167,7 +165,7 @@ class _HotwordBoard extends StatelessWidget {
       return Center(
         child: Text(
           i18n('music_search_empty_hint'),
-          style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
         ),
       );
     }
@@ -181,7 +179,7 @@ class _HotwordBoard extends StatelessWidget {
               children: [
                 Icon(Icons.local_fire_department_rounded, size: 26.sp, color: accent),
                 SizedBox(width: 8.sp),
-                Text(i18n('video_search_hotwords'), style: AppTextStyles.t20W600.copyWith(color: accent)),
+                Text(i18n('video_search_hotwords'), style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent)),
               ],
             ),
             SizedBox(height: 16.sp),
@@ -206,14 +204,14 @@ class _HotwordBoard extends StatelessWidget {
                         children: [
                           Text(
                             '${index + 1}',
-                            style: AppTextStyles.t16W700.copyWith(
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w700, 
                               color: index < 3 ? Colors.redAccent : tvTheme.secondaryTextColor,
                             ),
                           ),
                           SizedBox(width: 8.sp),
                           Text(
                             word.keyword,
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.primaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                           ),
                         ],
                       ),
@@ -303,7 +301,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
                           user.uname,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
+                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                         ),
                         if (user.sign.isNotEmpty)
                           Text(
@@ -317,7 +315,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
                   ),
                   Text(
                     '${readableCount(user.fans.toString())} ${i18n('video_followers')}',
-                    style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                   ),
                 ],
               ),
@@ -422,7 +420,7 @@ class _PgcResultsState extends ConsumerState<_PgcResults> {
                         season.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                       ),
                     ),
                   ),

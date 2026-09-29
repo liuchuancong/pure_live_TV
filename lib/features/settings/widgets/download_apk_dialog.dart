@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
@@ -192,7 +191,7 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
                   _fileName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.t17.copyWith(color: tvTheme.secondaryTextColor),
                 ),
               ),
             ],
@@ -215,10 +214,7 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
             _statusText(state, downloading: downloading, ready: ready, failed: failed),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: (18 * AppFontScale.user).sp,
-              color: failed ? tvTheme.secondaryTextColor : tvTheme.primaryTextColor,
-            ),
+            style: AppTextStyles.t18.copyWith(color: failed ? tvTheme.secondaryTextColor : tvTheme.primaryTextColor),
           ),
           SizedBox(height: 28.sp),
           // The action set follows the phase: cancel while the transfer runs,

@@ -258,7 +258,7 @@ class _TvTabBarState extends State<TvTabBar> {
                           );
                         }
                         const Color foregroundColor = Colors.white;
-                        final TextStyle baseStyle = AppTextStyles.t26W500;
+                        final TextStyle baseStyle = AppTextStyles.t26.copyWith(fontWeight: FontWeight.w500);
 
                         return AnimatedContainer(
                           duration: TvFocusStyle.focusDuration(isFocused),
@@ -308,19 +308,14 @@ class _TvTabBarState extends State<TvTabBar> {
                           SizedBox(
                             width: 24.w * textScale,
                             height: 24.w * textScale,
-                            child: Center(child: FittedBox(fit: BoxFit.contain, child: tab.icon)),
+                            child: Center(
+                              child: FittedBox(fit: BoxFit.contain, child: tab.icon),
+                            ),
                           ),
                           SizedBox(width: 10.w * textScale),
                         ],
                         // Never wrap: ellipsize instead, so the pill stays one line.
-                        Center(
-                          child: Text(
-                            tab.title,
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                        Center(child: Text(tab.title, maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis)),
                       ],
                     ),
                   ),

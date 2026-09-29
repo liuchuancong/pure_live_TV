@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/exports.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 
 class MoviePlaybackPage extends ConsumerStatefulWidget {
   const MoviePlaybackPage({super.key});
@@ -155,9 +154,8 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
         children: [
           Text(
             i18n('movie_paste_link'),
-            style: AppTextStyles.t18W500.copyWith(
-              fontSize: (30 * AppFontScale.user).sp,
-              fontWeight: FontWeight.bold,
+            style: AppTextStyles.t18.copyWith(
+              fontWeight: FontWeight.w500,
               color: currentTvTheme.primaryTextColor,
               height: 1,
             ),
@@ -185,9 +183,8 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                 ),
                 Text(
                   isServerRunning ? i18n('movie_lan_started') : i18n('movie_lan_stopped'),
-                  style: TextStyle(
+                  style: AppTextStyles.t20.copyWith(
                     color: isServerRunning ? currentTvTheme.focusColor : Colors.redAccent,
-                    fontSize: (20 * AppFontScale.user).sp,
                     height: 1,
                   ),
                 ),
@@ -305,7 +302,11 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
         children: [
           Text(
             i18n('movie_support_sites'),
-            style: AppTextStyles.t18W500.copyWith(fontSize: (20 * AppFontScale.user).sp, color: currentTvTheme.secondaryTextColor, height: 1),
+            style: AppTextStyles.t18.copyWith(
+              fontWeight: FontWeight.w500,
+              color: currentTvTheme.secondaryTextColor,
+              height: 1,
+            ),
           ),
           SizedBox(height: 12.sp),
           Flexible(
@@ -324,7 +325,10 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                         ),
                         child: Text(
                           site.name,
-                          style: AppTextStyles.t18W500.copyWith(color: currentTvTheme.secondaryTextColor),
+                          style: AppTextStyles.t18.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: currentTvTheme.secondaryTextColor,
+                          ),
                         ),
                       ),
                   ],

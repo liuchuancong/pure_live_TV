@@ -1,5 +1,4 @@
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -161,7 +160,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
             padding: EdgeInsets.only(left: 16.w, top: 10.h),
             child: Text(
               _status,
-              style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: theme.focusColor),
+              style: AppTextStyles.t16.copyWith(color: theme.focusColor),
             ),
           ),
       ],

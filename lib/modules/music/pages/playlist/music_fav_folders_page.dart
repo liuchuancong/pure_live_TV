@@ -4,10 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
@@ -61,7 +59,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
               children: [
                 Text(
                   '${i18n('music_playlists')}（1）',
-                  style: AppTextStyles.t22W700.copyWith(color: accent),
+                  style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: accent),
                 ),
                 const Spacer(),
                 TvButton(
@@ -94,7 +92,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
             children: [
               Text(
                 '${i18n('music_playlists')}（${entries.length + sync.folders.length}）',
-                style: AppTextStyles.t22W700.copyWith(color: accent),
+                style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: accent),
               ),
               const Spacer(),
               TvButton(
@@ -130,7 +128,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 SizedBox(height: 16.sp),
                 Text(
                   '${i18n('music_playlists_title')}（${sync.folders.length}）',
-                  style: AppTextStyles.t18W600.copyWith(color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
                 ),
                 SizedBox(height: 12.sp),
                 GridView.builder(
@@ -268,7 +266,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
         },
         child: Text(
           i18n('music_delete_playlist_confirm'),
-          style: TextStyle(fontSize: (20 * AppFontScale.user).sp, height: 1.5, color: context.tvTheme.primaryTextColor),
+          style: AppTextStyles.t20.copyWith(height: 1.5, color: context.tvTheme.primaryTextColor),
         ),
       ),
     );
@@ -389,7 +387,7 @@ class _PlaylistCard extends StatelessWidget {
                       entry.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
+                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                     ),
                   ),
                 ],
@@ -476,7 +474,7 @@ class _FolderCard extends StatelessWidget {
                       ),
                       child: Text(
                         isSyncing ? '...' : '${folder.mediaCount}',
-                        style: AppTextStyles.t14W600.copyWith(color: Colors.white),
+                        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                       ),
                     ),
                   ),
@@ -492,7 +490,7 @@ class _FolderCard extends StatelessWidget {
                     folder.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t16W600.copyWith(color: tvTheme.primaryTextColor),
+                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                   ),
                   SizedBox(height: 4.sp),
                   Text(

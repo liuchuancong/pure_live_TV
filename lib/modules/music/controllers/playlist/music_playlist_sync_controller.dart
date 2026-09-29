@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_state.dart';
 
 part 'music_playlist_sync_controller.g.dart';

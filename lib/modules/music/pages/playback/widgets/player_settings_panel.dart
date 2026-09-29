@@ -28,7 +28,7 @@ class MusicPlayerSettingsPanel extends ConsumerWidget {
               children: [
                 SizedBox(width: 6.sp),
                 Expanded(
-                  child: Text(i18n('settings'), style: AppTextStyles.t20W600.copyWith(color: Colors.white)),
+                  child: Text(i18n('settings'), style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
                 ),
                 TvIconButton(
                   icon: const Icon(Icons.close_rounded),

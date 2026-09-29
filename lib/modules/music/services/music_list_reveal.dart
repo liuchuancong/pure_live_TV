@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 
 /// Puts a list back on the track that is playing when the player page closes:
 /// the row scrolls into view and takes the focus, so returning reads as "here

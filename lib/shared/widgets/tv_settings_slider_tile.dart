@@ -53,7 +53,7 @@ class TvSettingsSliderTile extends StatelessWidget {
         maxLines: 1,
         // The focused row fills with the palette's focus surface; its ink, not
         // the accent, reads on it.
-        style: AppTextStyles.t20W600.copyWith(
+        style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
           color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
         ),
       ),

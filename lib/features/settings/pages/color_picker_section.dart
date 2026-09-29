@@ -1,5 +1,4 @@
 ﻿import 'package:dpad/dpad.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -146,7 +145,10 @@ class _ColorTile extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14W500.copyWith(color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor),
+                style: AppTextStyles.t14.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor,
+                ),
               ),
             ],
           ),

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -124,7 +123,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
                   : _logApplying
                   ? i18n('local_log_applying')
                   : i18n('enable_local_log_desc'),
-icon: logState.storedEnableLog ? Icons.receipt_long_outlined : Icons.description_outlined,
+              icon: logState.storedEnableLog ? Icons.receipt_long_outlined : Icons.description_outlined,
               value: logState.storedEnableLog,
               onChanged: _logApplying ? null : _toggleLog,
             ),
@@ -141,7 +140,10 @@ icon: logState.storedEnableLog ? Icons.receipt_long_outlined : Icons.description
         if (_result.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.sp, top: 10.sp),
-            child: Text(_result, style: AppTextStyles.t16W500.copyWith(color: theme.focusColor)),
+            child: Text(
+              _result,
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor),
+            ),
           ),
       ],
     );

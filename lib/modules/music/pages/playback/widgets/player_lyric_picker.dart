@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 
 /// The lyric picker: every candidate the chain found, one row each with the
@@ -38,7 +38,7 @@ class MusicLyricPickerDialog extends StatelessWidget {
                 children: [
                   const CircularProgressIndicator(),
                   SizedBox(height: 16.sp),
-                  Text(i18n('ui_loading'), style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor)),
+                  Text(i18n('ui_loading'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor)),
                 ],
               );
             }
@@ -46,7 +46,7 @@ class MusicLyricPickerDialog extends StatelessWidget {
             final candidates = snapshot.data ?? const <MusicLyricCandidate>[];
             if (candidates.isEmpty) {
               return Center(
-                child: Text(i18n('music_lyric_none'), style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor)),
+                child: Text(i18n('music_lyric_none'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor)),
               );
             }
 

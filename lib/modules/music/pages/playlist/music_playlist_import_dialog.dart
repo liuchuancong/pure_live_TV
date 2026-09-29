@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/music/api/music_provider.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/services/playlist_matcher.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// 歌单导入, the bmsc playlist importer: one of the other music platforms
 /// (网易云 / QQ 音乐 / 酷狗音乐) plus the playlist id (or a pasted share link —
@@ -62,11 +61,7 @@ Future<void> showImportPlaylistDialog(BuildContext context, WidgetRef ref) async
         children: [
           TvInputField(controller: nameController, hint: i18n('music_playlist_name_hint'), maxLines: 1),
           SizedBox(height: 12.sp),
-          TvInputField(
-            controller: idController,
-            hint: '${i18n('music_import_id_hint')} ($platform:...)',
-            maxLines: 1,
-          ),
+          TvInputField(controller: idController, hint: '${i18n('music_import_id_hint')} ($platform:...)', maxLines: 1),
         ],
       ),
     ),
@@ -136,7 +131,7 @@ Future<void> showImportPlaylistDialog(BuildContext context, WidgetRef ref) async
                 pausedLabel.isNotEmpty
                     ? pausedLabel
                     : '${i18n('music_import_matching')} ${processed + 1 > triples.length ? triples.length : processed + 1}/${triples.length}',
-                style: AppTextStyles.t18W500.copyWith(color: context.tvTheme.primaryTextColor),
+                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.primaryTextColor),
               ),
               SizedBox(height: 16.sp),
               LinearProgressIndicator(
@@ -147,7 +142,10 @@ Future<void> showImportPlaylistDialog(BuildContext context, WidgetRef ref) async
               SizedBox(height: 16.sp),
               Text(
                 '${i18n('music_import_matched')} ${matched.length}',
-                style: AppTextStyles.t16W500.copyWith(color: context.tvTheme.secondaryTextColor),
+                style: AppTextStyles.t16.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: context.tvTheme.secondaryTextColor,
+                ),
               ),
               SizedBox(height: 24.sp),
               Row(

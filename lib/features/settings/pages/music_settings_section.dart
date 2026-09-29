@@ -1,6 +1,6 @@
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 
 /// Music-mode settings (music's own section, separate from live/video):
 /// the defaults the shared VOD engine boots with in music mode.

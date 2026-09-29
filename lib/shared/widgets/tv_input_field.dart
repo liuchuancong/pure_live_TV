@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
+import 'package:pure_live/shared/theme/styles/styles.dart';
 import 'package:pure_live/shared/theme/tv_theme_data.dart';
 import 'package:android_tv_text_field/native_textfield_tv.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -183,7 +183,6 @@ class _TvInputFieldState extends State<TvInputField> {
         borderWidth: 0,
         // Matches the fallback backend, so the same field does not resize its
         // text when it lands on a platform that uses the native view.
-        fontSize: (28 * AppFontScale.user).sp,
         textAlign: widget.textAlign,
         onSubmitted: widget.onSubmitted,
       );
@@ -449,7 +448,7 @@ class _TvTextFieldFallbackState extends State<_TvTextFieldFallback> {
               maxLines: widget.maxLines ?? 100,
               overflow: TextOverflow.ellipsis,
               textAlign: widget.textAlign,
-              style: TextStyle(color: text.isEmpty ? widget.hintColor : widget.textColor, fontSize: (28 * AppFontScale.user).sp),
+              style: AppTextStyles.t28.copyWith(color: text.isEmpty ? widget.hintColor : widget.textColor),
             ),
           ),
         ),
@@ -467,12 +466,12 @@ class _TvTextFieldFallbackState extends State<_TvTextFieldFallback> {
         minLines: widget.minLines,
         maxLines: widget.maxLines,
         maxLength: widget.maxLength,
-        style: TextStyle(color: widget.textColor, fontSize: (28 * AppFontScale.user).sp),
+        style: AppTextStyles.t28.copyWith(color: widget.textColor),
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: TextStyle(color: widget.hintColor, fontSize: (24 * AppFontScale.user).sp),
+          hintStyle: AppTextStyles.t24.copyWith(color: widget.hintColor),
           isDense: true,
-          counterStyle: TextStyle(color: widget.hintColor, fontSize: (18 * AppFontScale.user).sp),
+          counterStyle: AppTextStyles.t18.copyWith(color: widget.hintColor),
           contentPadding: EdgeInsets.symmetric(vertical: 2.sp),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,

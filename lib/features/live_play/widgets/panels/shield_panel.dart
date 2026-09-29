@@ -1,14 +1,12 @@
 import 'dart:async';
-
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/services/favorites/favorite_room_controller.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/features/live_play/widgets/panels/player_index_panel.dart';
 
 /// Keyword shield, as an index list like the reference's shield panel.
 ///
@@ -54,8 +52,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
     notifier.onDanmakuFilterUpdated = _syncFromRemote;
     notifier.seedDanmakuFilters(SettingsService.to.favState.shieldList);
     final remoteState = ref.read(tvRemoteReceiverProvider);
-    final running =
-        remoteState is AsyncData && (remoteState.value?.isRunning ?? false);
+    final running = remoteState is AsyncData && (remoteState.value?.isRunning ?? false);
     if (!running) unawaited(notifier.startServer());
   }
 
@@ -94,9 +91,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
       final value = remoteState.value;
       if (value != null && value.isRunning) serverUrl = value.serverUrl;
     }
-    final String qrData = serverUrl.isEmpty
-        ? ''
-        : '$serverUrl${WebRemoteRouter.danmakuFilter}';
+    final String qrData = serverUrl.isEmpty ? '' : '$serverUrl${WebRemoteRouter.danmakuFilter}';
 
     return PlayerIndexPanel(
       title: '${i18n('danmaku_filter')} · ${words.length}',
@@ -104,12 +99,7 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
       // of the word list.
       showCloseRow: false,
       rows: <PlayerPanelRow>[
-        for (final String word in words)
-          PlayerPanelRow(
-            label: word,
-            icon: Icons.block_rounded,
-            value: i18n('delete'),
-          ),
+        for (final String word in words) PlayerPanelRow(label: word, icon: Icons.block_rounded, value: i18n('delete')),
       ],
       selectedIndex: words.isEmpty ? 0 : _index.clamp(0, words.length - 1),
       emptyHint: i18nOr('empty_shield_title', i18n('ui_none')),
@@ -137,11 +127,9 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                   SizedBox(width: 12.sp),
                   Expanded(
                     child: Text(
-                      i18nOr(
-                        'ui_remote_starting',
-                        'Starting the phone remote service...',
-                      ),
-                      style: AppTextStyles.t14W500.copyWith(
+                      i18nOr('ui_remote_starting', 'Starting the phone remote service...'),
+                      style: AppTextStyles.t14.copyWith(
+                        fontWeight: FontWeight.w500,
                         color: context.tvTheme.secondaryTextColor,
                       ),
                     ),
@@ -155,7 +143,10 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                 children: [
                   Text(
                     i18n('danmaku_keyword_block'),
-                    style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
+                    style: AppTextStyles.t14.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: context.tvTheme.secondaryTextColor,
+                    ),
                   ),
                   SizedBox(height: 4.sp),
                   TvQrCodeCard(qrData: qrData, qrSize: 120, urlText: qrData),
@@ -165,7 +156,8 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
               Center(
                 child: Text(
                   i18nOr('danmaku_shield_qr_hint', '手机扫码编辑屏蔽词'),
-                  style: AppTextStyles.t14W500.copyWith(
+                  style: AppTextStyles.t14.copyWith(
+                    fontWeight: FontWeight.w500,
                     color: context.tvTheme.secondaryTextColor,
                   ),
                 ),

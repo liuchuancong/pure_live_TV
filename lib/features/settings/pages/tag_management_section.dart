@@ -1,10 +1,8 @@
 import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/styles/styles.dart';
 import 'package:pure_live/services/tag_management/live_tag.dart';
 import 'package:pure_live/services/tag_management/tag_management_controller.dart';
 
@@ -99,7 +97,7 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
               child: Text(
                 _result,
-                style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.focusColor),
+                style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor),
               ),
             ),
         ],
@@ -195,7 +193,7 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
                 padding: EdgeInsets.only(top: 10.sp),
                 child: Text(
                   _error,
-                  style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: tvTheme.focusColor),
+                  style: AppTextStyles.t16.copyWith(color: tvTheme.focusColor),
                 ),
               ),
           ],
@@ -227,12 +225,12 @@ class _TagDetailDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(tag.name, style: AppTextStyles.t26W600),
+            Text(tag.name, style: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w600)),
             if (tag.description.isNotEmpty) ...[
               SizedBox(height: 8.sp),
               Text(
                 tag.description,
-                style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor),
+                style: AppTextStyles.t17.copyWith(color: tvTheme.secondaryTextColor),
               ),
             ],
           ],

@@ -1,18 +1,18 @@
 import 'dart:async';
-
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/music/pages/playback/widgets/player_widgets.dart';
-import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/widgets/handle_video_surface.dart';
+import 'package:pure_live/modules/music/services/music_lyric_service.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/pages/playback/widgets/player_widgets.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+
 
 /// The full-screen music player.
 ///
@@ -287,20 +287,20 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                           track?.title ?? i18n('music_player_title'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t22W700.copyWith(color: Colors.white),
+                          style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
                         ),
                       ),
                       SizedBox(width: 12.sp),
                       if (track != null && track.archive.parts.length > 1)
                         Text(
                           'P${track.part.page}/${track.archive.parts.length}',
-                          style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                         ),
                       SizedBox(width: 12.sp),
                       if (BilibiliMusicApi.qualityLabel(state.quality).isNotEmpty)
                         Text(
                           BilibiliMusicApi.qualityLabel(state.quality),
-                          style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                         ),
                       SizedBox(width: 12.sp),
                       if (track != null)
@@ -310,7 +310,7 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                             track.archive.upName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t18W500.copyWith(color: Colors.white70),
+                            style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                           ),
                         ),
                     ],

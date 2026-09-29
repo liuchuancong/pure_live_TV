@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/app/router/web_router.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/app/router/web_router.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// "View logs in a browser" — the page behind the backup & restore row.
 ///
@@ -29,10 +29,7 @@ class LogViewerPage extends StatelessWidget {
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(24.sp),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(20.sp),
-          ),
+          decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(20.sp)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -57,7 +54,10 @@ class LogViewerPage extends StatelessWidget {
                     SizedBox(height: 10.sp),
                     _StepBullet(
                       icon: Icons.description_outlined,
-                      text: i18nOr('log_viewer_step_enable', 'Nothing to view until local logging is enabled in log management'),
+                      text: i18nOr(
+                        'log_viewer_step_enable',
+                        'Nothing to view until local logging is enabled in log management',
+                      ),
                     ),
                   ],
                 ),
@@ -89,7 +89,7 @@ class _StepBullet extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: AppTextStyles.t14W500.copyWith(color: theme.secondaryTextColor),
+            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: theme.secondaryTextColor),
           ),
         ),
       ],

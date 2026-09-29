@@ -1,14 +1,14 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/player/models/player_engine.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+
 
 /// Which part of the control layer the remote is steering.
 enum _BarZone { bar, seek, options }
@@ -445,7 +445,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                             padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
                             child: Text(
                               _panel == _BarPanel.quality ? i18n('music_quality') : i18n('music_core_title'),
-                              style: AppTextStyles.t20W600.copyWith(color: Colors.white),
+                              style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                             ),
                           ),
                           Flexible(
@@ -476,7 +476,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                   children: [
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(_timeLabel(position), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
+                      child: Text(_timeLabel(position), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
                     ),
                     SizedBox(width: 16.sp),
                     Expanded(
@@ -490,7 +490,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                     SizedBox(width: 16.sp),
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(_timeLabel(duration), style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
+                      child: Text(_timeLabel(duration), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
                     ),
                   ],
                 ),
@@ -575,7 +575,7 @@ class _OptionPill extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t16W500.copyWith(color: selected ? Colors.white : Colors.white70),
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: selected ? Colors.white : Colors.white70),
             ),
           ),
           if (active) ...[SizedBox(width: 8.sp), Icon(Icons.check_rounded, size: 20.sp, color: accent)],

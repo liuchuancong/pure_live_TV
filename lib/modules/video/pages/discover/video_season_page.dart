@@ -1,15 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/video/api/video_pgc_api.dart';
-import 'package:pure_live/modules/video/models/video_pgc_models.dart';
+
 
 /// One season's page, newBV's PGC detail: cover, rating, synopsis and the
 /// episode list. Playing an episode builds a queue of [MusicTrack]s whose
@@ -37,7 +36,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
 
   Future<void> _load() async {
     try {
-      final season = await VideoPgcApi.instance.getSeasonDetail(seasonId: widget.item.seasonId);
+      final season = await BilibiliPgcApi.instance.getSeasonDetail(seasonId: widget.item.seasonId);
       if (!mounted) return;
       setState(() => _season = season);
     } catch (e) {
@@ -51,7 +50,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
   void _ensureResolver() {
     MusicPlayerController.modulePlayUrlResolver ??= (track) async {
       if (track.part.epId <= 0) return null;
-      return VideoPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
+      return BilibiliPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
     };
   }
 
@@ -124,13 +123,13 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                                   SizedBox(width: 6.sp),
                                   Text(
                                     season.rating.toStringAsFixed(1),
-                                    style: AppTextStyles.t20W700.copyWith(color: Colors.amber),
+                                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: Colors.amber),
                                   ),
                                   SizedBox(width: 16.sp),
                                 ],
                                 Text(
                                   '${season.episodes.length} ${i18n('video_pgc_episodes_unit')}',
-                                  style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                 ),
                               ],
                             ),
@@ -149,7 +148,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                                       ),
                                       child: Text(
                                         style,
-                                        style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                       ),
                                     ),
                                 ],
@@ -181,7 +180,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                                 children: [
                                   Text(
                                     '${i18n('video_pgc_episodes_title')}（${season.episodes.length}）',
-                                    style: AppTextStyles.t20W600.copyWith(color: accent),
+                                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                                   ),
                                   const Spacer(),
                                   TvButton(
@@ -250,10 +249,10 @@ class _EpisodeTile extends StatelessWidget {
               episode.longTitle.isEmpty ? '${i18n('video_pgc_episode')} ${episode.title}' : episode.longTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14W500.copyWith(color: tvTheme.primaryTextColor),
+              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
             ),
             if (episode.badge.isNotEmpty)
-              Text(episode.badge, style: AppTextStyles.t14W500.copyWith(color: accent)),
+              Text(episode.badge, style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: accent)),
           ],
         ),
       ),

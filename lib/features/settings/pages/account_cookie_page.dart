@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/features/remote/tv_remote_receiver.dart';
 import 'package:pure_live/features/remote/models/server_state.dart';
 import 'package:pure_live/features/settings/pages/account_settings_section.dart';
-import 'package:pure_live/platforms/douyu/douyu_utils.dart';
-import 'package:pure_live/platforms/sites.dart';
 
 /// One platform's cookie page: the cookie itself is entered on the phone.
 ///
@@ -236,7 +235,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
               child: Text(
                 i18n('cookie_scan_hint', args: {'name': widget.platform.name}),
                 textAlign: TextAlign.center,
-                style: AppTextStyles.t18W300.copyWith(color: theme.secondaryTextColor, height: 1.4),
+                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor, height: 1.4),
               ),
             ),
 
@@ -326,7 +325,7 @@ class _StatusLine extends StatelessWidget {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: AppTextStyles.t16W500.copyWith(color: color),
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: color),
             ),
           ),
         ],

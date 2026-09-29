@@ -1,14 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+
 
 /// The bilibili cloud watch history (bmsc's cloud history screen), cursor
 /// paged. Rows show the watched progress bar; tapping opens the archive.
@@ -129,7 +129,7 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
             children: [
               Text(
                 '${i18n('music_cloud_history')}（${_items.length}）',
-                style: AppTextStyles.t20W600.copyWith(color: accent),
+                style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
               ),
               const Spacer(),
               TvButton(
@@ -159,7 +159,7 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
                         height: 56.sp,
                         child: CircularProgressIndicator(strokeWidth: 5.sp, color: accent),
                       )
-                    : Text(i18n('all_results_loaded'), style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor)),
+                    : Text(i18n('all_results_loaded'), style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor)),
               ),
             );
           }
@@ -241,7 +241,7 @@ class _HistoryRow extends StatelessWidget {
                     item.archive.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t18W600.copyWith(color: tvTheme.primaryTextColor),
+                    style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                   ),
                   SizedBox(height: 4.sp),
                   Text(
@@ -260,7 +260,7 @@ class _HistoryRow extends StatelessWidget {
                 padding: EdgeInsets.only(right: 8.sp),
                 child: Text(
                   i18n('music_history_finished'),
-                  style: AppTextStyles.t14W600.copyWith(color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
                 ),
               ),
           ],

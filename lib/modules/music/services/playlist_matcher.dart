@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 
 /// Track → bilibili-video matching, ported from the bmsc playlist importer
 /// (playlist_search_screen's rankScore + search loop).

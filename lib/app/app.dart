@@ -1,5 +1,4 @@
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:go_transitions/go_transitions.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';

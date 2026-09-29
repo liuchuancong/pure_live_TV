@@ -3,24 +3,23 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
 import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/features/home/home_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
+import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/services/daily_recommendation_service.dart';
-import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
@@ -160,7 +159,7 @@ class _SongListSectionState extends ConsumerState<_SongListSection> {
             SizedBox(height: 14.sp),
             Text(
               i18n(isFavorites ? 'music_empty_favorites' : 'music_empty_recents'),
-              style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
             ),
           ],
         ),
@@ -178,7 +177,7 @@ class _SongListSectionState extends ConsumerState<_SongListSection> {
                 // The list shows every track of every archive flattened, so the
                 // count must be the row count, not the archive count.
                 '${i18n(isFavorites ? 'music_favorites' : 'music_recents')}（${tracks.length}）',
-                style: AppTextStyles.t24W700.copyWith(color: tvTheme.primaryTextColor),
+                style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
               ),
               const Spacer(),
               // One press from anywhere above the long list: the mini bar's
@@ -309,7 +308,7 @@ class _SongRow extends ConsumerWidget {
                 width: 44.sp,
                 child: isCurrent
                     ? Icon(Icons.graphic_eq_rounded, size: 30.sp, color: accent)
-                    : Text('${index + 1}', style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor)),
+                    : Text('${index + 1}', style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor)),
               ),
               SizedBox(width: 8.sp),
               ClipRRect(
@@ -336,7 +335,7 @@ class _SongRow extends ConsumerWidget {
                       track.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t18W600.copyWith(color: isCurrent ? accent : tvTheme.primaryTextColor),
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: isCurrent ? accent : tvTheme.primaryTextColor),
                     ),
                     SizedBox(height: 4.sp),
                     Row(
@@ -348,7 +347,7 @@ class _SongRow extends ConsumerWidget {
                             track.archive.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                         ),
                         SizedBox(width: 10.sp),
@@ -359,7 +358,7 @@ class _SongRow extends ConsumerWidget {
                             track.archive.upName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                         ),
                       ],
@@ -372,12 +371,12 @@ class _SongRow extends ConsumerWidget {
                           SizedBox(width: 4.sp),
                           Text(
                             'P${track.part.page}/${track.archive.parts.length}',
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                           if (excludedCount > 0)
                             Text(
                               ' (-$excludedCount)',
-                              style: AppTextStyles.t16W500.copyWith(color: tvTheme.focusColor),
+                              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.focusColor),
                             ),
                           SizedBox(width: 10.sp),
                           Icon(Icons.schedule_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
@@ -386,7 +385,7 @@ class _SongRow extends ConsumerWidget {
                             MusicVideoCard.formatDuration(
                               track.part.duration > 0 ? track.part.duration : track.archive.duration,
                             ),
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                         ],
                       ),
@@ -398,7 +397,7 @@ class _SongRow extends ConsumerWidget {
                           SizedBox(width: 4.sp),
                           Text(
                             MusicVideoCard.formatDuration(track.archive.duration),
-                            style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                           ),
                         ],
                       ),
@@ -446,7 +445,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
             SizedBox(height: 14.sp),
             Text(
               i18n('music_empty_favorites'),
-              style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
             ),
           ],
         ),
@@ -474,7 +473,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
               children: [
                 Text(
                   '${i18n('music_selected')} ${_selectedAlbums.length}',
-                  style: AppTextStyles.t16W600.copyWith(color: accent),
+                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: accent),
                 ),
                 const Spacer(),
                 TvButton(
@@ -512,7 +511,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                 ? Center(
                     child: Text(
                       i18n('music_empty_favorites'),
-                      style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                     ),
                   )
                 : DpadRegion(
@@ -573,7 +572,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                 ? Center(
                     child: Text(
                       i18n('music_empty_ups'),
-                      style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                     ),
                   )
                 : DpadRegion(
@@ -755,7 +754,7 @@ class _AuthorCard extends ConsumerWidget {
                       up.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t18W600.copyWith(
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, 
                         color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                       ),
                     ),
@@ -765,7 +764,7 @@ class _AuthorCard extends ConsumerWidget {
                         sign.asData!.value,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t14W500.copyWith(
+                        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, 
                           color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
                           height: 1.3,
                         ),
@@ -893,7 +892,7 @@ class _DailySectionState extends ConsumerState<_DailySection> {
                 ? Center(
                     child: Text(
                       i18n('music_no_folders'),
-                      style: AppTextStyles.t16W500.copyWith(color: context.tvTheme.secondaryTextColor),
+                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),
                     ),
                   )
                 : ListView.builder(
@@ -963,7 +962,7 @@ class _DailySectionState extends ConsumerState<_DailySection> {
                   SizedBox(height: 14.sp),
                   Text(
                     i18n('music_daily_need_folder'),
-                    style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                    style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                   ),
                 ],
               ),
@@ -1125,7 +1124,7 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
                           Center(
                             child: Text(
                               i18n('music_search_empty_hint'),
-                              style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                             ),
                           )
                         else ...[
@@ -1133,7 +1132,7 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
                             children: [
                               Icon(Icons.local_fire_department_rounded, size: 26.sp, color: accent),
                               SizedBox(width: 8.sp),
-                              Text(i18n('video_search_hotwords'), style: AppTextStyles.t20W600.copyWith(color: accent)),
+                              Text(i18n('video_search_hotwords'), style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent)),
                             ],
                           ),
                           SizedBox(height: 16.sp),
@@ -1158,14 +1157,14 @@ class _SearchSectionState extends ConsumerState<_SearchSection> {
                                       children: [
                                         Text(
                                           '${index + 1}',
-                                          style: AppTextStyles.t14W700.copyWith(
+                                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700, 
                                             color: index < 3 ? Colors.redAccent : tvTheme.secondaryTextColor,
                                           ),
                                         ),
                                         SizedBox(width: 8.sp),
                                         Text(
                                           word.keyword,
-                                          style: AppTextStyles.t16W500.copyWith(color: tvTheme.primaryTextColor),
+                                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                                         ),
                                       ],
                                     ),
@@ -1283,14 +1282,14 @@ class MusicMiniBar extends ConsumerWidget {
                                         track?.title ?? i18n('music_player_title'),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.t18W700.copyWith(color: tvTheme.primaryTextColor),
+                                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
                                       ),
                                       SizedBox(height: 2.sp),
                                       Text(
                                         track?.archive.upName ?? '',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                       ),
                                     ],
                                   ),
@@ -1298,7 +1297,7 @@ class MusicMiniBar extends ConsumerWidget {
                                 SizedBox(width: 12.sp),
                                 Text(
                                   '${MusicVideoCard.formatDuration(position.inSeconds)} / ${MusicVideoCard.formatDuration(duration.inSeconds)}',
-                                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                 ),
                               ],
                             ),

@@ -1,4 +1,3 @@
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/consts/app_consts.dart';
 import 'package:pure_live/app/router/app_router.dart';

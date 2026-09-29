@@ -289,7 +289,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                               TvMarqueeText(
                                 text: widget.room.title,
                                 isFocused: isFocused,
-                                style: (compact ? AppTextStyles.t14W700 : AppTextStyles.t22W700).copyWith(
+                                style: (compact ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700) : AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700)).copyWith(
                                   color: titleColor,
                                 ),
                               ),
@@ -298,7 +298,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                                 widget.room.nick,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: (compact ? AppTextStyles.t14W500 : AppTextStyles.t18W500).copyWith(
+                                style: (compact ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500) : AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500)).copyWith(
                                   color: subtitleColor,
                                 ),
                               ),

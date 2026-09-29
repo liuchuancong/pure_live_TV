@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'music_playlist_sync_state.dart';
@@ -9,6 +9,7 @@ part of 'music_playlist_sync_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -30,16 +31,21 @@ $MusicPlaylistSyncStateCopyWith<MusicPlaylistSyncState> get copyWith => _$MusicP
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MusicPlaylistSyncState&&const DeepCollectionEquality().equals(other.folders, folders)&&const DeepCollectionEquality().equals(other.folderTracks, folderTracks)&&const DeepCollectionEquality().equals(other.syncedAt, syncedAt)&&(identical(other.syncingFolderId, syncingFolderId) || other.syncingFolderId == syncingFolderId)&&(identical(other.error, error) || other.error == error));
+  final _this = this as MusicPlaylistSyncState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MusicPlaylistSyncState&&const DeepCollectionEquality().equals(other.folders, _this.folders)&&const DeepCollectionEquality().equals(other.folderTracks, _this.folderTracks)&&const DeepCollectionEquality().equals(other.syncedAt, _this.syncedAt)&&(identical(other.syncingFolderId, _this.syncingFolderId) || other.syncingFolderId == _this.syncingFolderId)&&(identical(other.error, _this.error) || other.error == _this.error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(folders),const DeepCollectionEquality().hash(folderTracks),const DeepCollectionEquality().hash(syncedAt),syncingFolderId,error);
+int get hashCode {
+  final _this = this as MusicPlaylistSyncState;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.folders),const DeepCollectionEquality().hash(_this.folderTracks),const DeepCollectionEquality().hash(_this.syncedAt),_this.syncingFolderId,_this.error);
+}
 
 @override
 String toString() {
-  return 'MusicPlaylistSyncState(folders: $folders, folderTracks: $folderTracks, syncedAt: $syncedAt, syncingFolderId: $syncingFolderId, error: $error)';
+  final _this = this as MusicPlaylistSyncState;
+  return 'MusicPlaylistSyncState(folders: ${_this.folders}, folderTracks: ${_this.folderTracks}, syncedAt: ${_this.syncedAt}, syncingFolderId: ${_this.syncingFolderId}, error: ${_this.error})';
 }
 
 
@@ -68,7 +74,7 @@ class _$MusicPlaylistSyncStateCopyWithImpl<$Res>
 /// Create a copy of MusicPlaylistSyncState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? folders = null,Object? folderTracks = null,Object? syncedAt = null,Object? syncingFolderId = null,Object? error = null,}) {
-  return _then(_self.copyWith(
+  return _then(MusicPlaylistSyncState(
 folders: null == folders ? _self.folders : folders // ignore: cast_nullable_to_non_nullable
 as List<FavFolder>,folderTracks: null == folderTracks ? _self.folderTracks : folderTracks // ignore: cast_nullable_to_non_nullable
 as Map<int, List<MusicArchive>>,syncedAt: null == syncedAt ? _self.syncedAt : syncedAt // ignore: cast_nullable_to_non_nullable
@@ -215,7 +221,7 @@ return $default(_that.folders,_that.folderTracks,_that.syncedAt,_that.syncingFol
 
 
 class _MusicPlaylistSyncState implements MusicPlaylistSyncState {
-  const _MusicPlaylistSyncState({final  List<FavFolder> folders = const [], final  Map<int, List<MusicArchive>> folderTracks = const {}, final  Map<int, DateTime> syncedAt = const {}, this.syncingFolderId = 0, this.error = ''}): _folders = folders,_folderTracks = folderTracks,_syncedAt = syncedAt;
+  const _MusicPlaylistSyncState({ List<FavFolder> folders = const [],  Map<int, List<MusicArchive>> folderTracks = const {},  Map<int, DateTime> syncedAt = const {}, this.syncingFolderId = 0, this.error = ''}): _folders = folders,_folderTracks = folderTracks,_syncedAt = syncedAt;
   
 
 /// Cached fav folders (created ones; collected folders sync on demand).
@@ -260,16 +266,18 @@ _$MusicPlaylistSyncStateCopyWith<_MusicPlaylistSyncState> get copyWith => __$Mus
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MusicPlaylistSyncState&&const DeepCollectionEquality().equals(other._folders, _folders)&&const DeepCollectionEquality().equals(other._folderTracks, _folderTracks)&&const DeepCollectionEquality().equals(other._syncedAt, _syncedAt)&&(identical(other.syncingFolderId, syncingFolderId) || other.syncingFolderId == syncingFolderId)&&(identical(other.error, error) || other.error == error));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MusicPlaylistSyncState&&const DeepCollectionEquality().equals(other.folders, _folders)&&const DeepCollectionEquality().equals(other.folderTracks, _folderTracks)&&const DeepCollectionEquality().equals(other.syncedAt, _syncedAt)&&(identical(other.syncingFolderId, syncingFolderId) || other.syncingFolderId == syncingFolderId)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_folders),const DeepCollectionEquality().hash(_folderTracks),const DeepCollectionEquality().hash(_syncedAt),syncingFolderId,error);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_folders),const DeepCollectionEquality().hash(_folderTracks),const DeepCollectionEquality().hash(_syncedAt),syncingFolderId,error);
+}
 
 @override
 String toString() {
-  return 'MusicPlaylistSyncState(folders: $folders, folderTracks: $folderTracks, syncedAt: $syncedAt, syncingFolderId: $syncingFolderId, error: $error)';
+    return 'MusicPlaylistSyncState(folders: $folders, folderTracks: $folderTracks, syncedAt: $syncedAt, syncingFolderId: $syncingFolderId, error: $error)';
 }
 
 

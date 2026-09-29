@@ -3651,7 +3651,7 @@ class $$ProvidersTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ProvidersTable, Provider>(table),
                   $$ProvidersTableReferences(db, table, e),
                 ),
               )
@@ -4398,7 +4398,7 @@ class $$ChannelsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ChannelsTable, Channel>(table),
                   $$ChannelsTableReferences(db, table, e),
                 ),
               )
@@ -4674,7 +4674,16 @@ class $$ChannelGroupsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ChannelGroupsTable, ChannelGroup>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ChannelGroupsTable,
+                    ChannelGroup
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -4958,7 +4967,7 @@ class $$FavoriteListsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$FavoriteListsTable, FavoriteList>(table),
                   $$FavoriteListsTableReferences(db, table, e),
                 ),
               )
@@ -5337,7 +5346,9 @@ class $$FavoriteListChannelsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$FavoriteListChannelsTable, FavoriteListChannel>(
+                    table,
+                  ),
                   $$FavoriteListChannelsTableReferences(db, table, e),
                 ),
               )
@@ -5637,7 +5648,7 @@ class $$FailoverGroupsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$FailoverGroupsTable, FailoverGroup>(table),
                   $$FailoverGroupsTableReferences(db, table, e),
                 ),
               )
@@ -6001,7 +6012,10 @@ class $$FailoverGroupChannelsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<
+                    $FailoverGroupChannelsTable,
+                    FailoverGroupChannel
+                  >(table),
                   $$FailoverGroupChannelsTableReferences(db, table, e),
                 ),
               )

@@ -1,6 +1,5 @@
 ﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/app/consts/app_consts.dart';
 import 'package:pure_live/app/router/app_routes.dart';
@@ -191,7 +190,8 @@ class _LoadingStyleTile extends StatelessWidget {
                     maxLines: 1,
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(
+                    style: AppTextStyles.t14.copyWith(
+                      fontWeight: FontWeight.w500,
                       color: focused || active ? accent : tvTheme.secondaryTextColor,
                     ),
                   ),

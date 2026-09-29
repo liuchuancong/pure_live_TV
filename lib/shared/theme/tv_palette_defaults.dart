@@ -22,7 +22,7 @@ class TvPaletteDefaults extends StatelessWidget {
     return IconTheme(
       data: IconThemeData(color: theme.primaryTextColor),
       child: DefaultTextStyle(
-        style: AppTextStyles.t16W500.copyWith(color: theme.primaryTextColor),
+        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.primaryTextColor),
         child: child,
       ),
     );

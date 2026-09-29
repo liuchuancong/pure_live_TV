@@ -1,14 +1,14 @@
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_lyric/flutter_lyric.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+
 
 /// The audio-only view: the cover in the middle to begin with, then — once the
 /// track has timed lyrics — the same cover on the left with the lines beside it.
@@ -172,17 +172,17 @@ class _PosterLayout extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 120.sp),
             child: Text(
               track.title,
-              style: AppTextStyles.t34W700.copyWith(color: Colors.white),
+              style: AppTextStyles.t34.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           SizedBox(height: 12.sp),
-          Text(track.archive.upName, style: AppTextStyles.t20W500.copyWith(color: Colors.white70)),
+          Text(track.archive.upName, style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
           if (status.isNotEmpty) ...[
             SizedBox(height: 14.sp),
-            Text(status, style: AppTextStyles.t18W500.copyWith(color: Colors.white38)),
+            Text(status, style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white38)),
           ],
         ],
       ),
@@ -201,9 +201,9 @@ class _LyricsLayout extends StatelessWidget {
   /// One style for every panel instance: bigger than the package default so it
   /// reads at TV distance.
   static final LyricStyle style = LyricStyles.default1.copyWith(
-    textStyle: AppTextStyles.t20W500.copyWith(color: Colors.white60, height: 1.6),
-    activeStyle: AppTextStyles.t26W700.copyWith(color: Colors.white, height: 1.6),
-    translationStyle: AppTextStyles.t16W500.copyWith(color: Colors.white38),
+    textStyle: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: Colors.white60, height: 1.6),
+    activeStyle: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w700, color: Colors.white, height: 1.6),
+    translationStyle: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
     lineGap: 18,
   );
 
@@ -238,13 +238,13 @@ class _LyricsLayout extends StatelessWidget {
                 SizedBox(height: 28.sp),
                 Text(
                   track.title,
-                  style: AppTextStyles.t26W700.copyWith(color: Colors.white),
+                  style: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 10.sp),
-                Text(track.archive.upName, style: AppTextStyles.t18W500.copyWith(color: Colors.white70)),
+                Text(track.archive.upName, style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
               ],
             ),
           ),

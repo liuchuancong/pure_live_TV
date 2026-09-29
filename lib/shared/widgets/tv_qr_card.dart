@@ -74,7 +74,7 @@ class TvQrCodeCard extends StatelessWidget {
                   urlText!,
                   textAlign: TextAlign.center,
                   maxLines: 1,
-                  style: AppTextStyles.t24W600.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                 ),
               ),
             ),

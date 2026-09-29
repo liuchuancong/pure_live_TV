@@ -1,8 +1,6 @@
 import 'package:pure_live/shared/widgets/index.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
@@ -53,7 +51,7 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
               icon: Icons.system_update_alt_rounded,
               trailing: newVersionHint == null
                   ? null
-                  : Text(i18n('new_version_found'), style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.focusColor)),
+                  : Text(i18n('new_version_found'), style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor)),
               onTap: () => const AppUpdateRoute().push(context),
             ),
           ],

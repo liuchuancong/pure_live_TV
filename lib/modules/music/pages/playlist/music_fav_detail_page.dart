@@ -3,10 +3,9 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
 /// One synced playlist's track table (bmsc's fav detail): an in-list search
@@ -58,7 +57,7 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
               children: [
                 Text(
                   '${tracks.length} ${i18n('music_tracks_unit')}',
-                  style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                 ),
                 SizedBox(width: 16.sp),
                 SizedBox(
@@ -182,7 +181,10 @@ class _TrackRow extends StatelessWidget {
           children: [
             SizedBox(
               width: 44.sp,
-              child: Text('${index + 1}', style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor)),
+              child: Text(
+                '${index + 1}',
+                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+              ),
             ),
             Expanded(
               child: Column(
@@ -193,7 +195,8 @@ class _TrackRow extends StatelessWidget {
                     track.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t16W500.copyWith(
+                    style: AppTextStyles.t16.copyWith(
+                      fontWeight: FontWeight.w500,
                       color: excluded ? tvTheme.secondaryTextColor : tvTheme.primaryTextColor,
                     ),
                   ),

@@ -1,12 +1,11 @@
+import 'package:pure_live/shared/dialog/index.dart';
+import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/shared/consts/app_consts.dart';
+import 'package:pure_live/shared/i18n/locale_helper.dart';
+import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 import 'package:pure_live/features/settings/pages/navigation_menu_meta.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
-import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
-import 'package:pure_live/shared/consts/app_consts.dart';
-import 'package:pure_live/shared/dialog/index.dart';
-import 'package:pure_live/shared/i18n/locale_helper.dart';
-import 'package:pure_live/shared/theme/index.dart';
-import 'package:pure_live/shared/widgets/index.dart';
 
 /// navigation & display — ordering: the order of the entries in the side menu.
 ///
@@ -56,7 +55,7 @@ class NavOrderSectionPage extends ConsumerWidget {
             child: Text(
               '${i18n('ui_move_hidden_entry')}: '
               '${hidden.map(navigationMenuTitle).join(' · ')}',
-              style: AppTextStyles.t14W500.copyWith(color: context.tvTheme.secondaryTextColor),
+              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),
             ),
           ),
         ],
@@ -142,7 +141,7 @@ class _MenuOrderTile extends StatelessWidget {
             SizedBox(width: 4.sp),
             Text(
               '$position/$total',
-              style: AppTextStyles.t20W600.copyWith(
+              style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
                 color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
               ),
             ),

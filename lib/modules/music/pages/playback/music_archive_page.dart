@@ -1,14 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/media/widgets/music_video_card.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// One archive's track list (its parts), with Play all starting the queue.
@@ -138,7 +138,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                             SizedBox(height: 16.sp),
                             Text(
                               archive.title,
-                              style: AppTextStyles.t22W700.copyWith(color: tvTheme.primaryTextColor, height: 1.35),
+                              style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor, height: 1.35),
                             ),
                             SizedBox(height: 10.sp),
                             Row(
@@ -150,7 +150,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                     archive.upName,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                   ),
                                 ),
                               ],
@@ -162,20 +162,20 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                 SizedBox(width: 6.sp),
                                 Text(
                                   readableCount(archive.playCount.toString()),
-                                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                 ),
                                 SizedBox(width: 16.sp),
                                 Icon(Icons.format_quote_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
                                 SizedBox(width: 6.sp),
                                 Text(
                                   readableCount(archive.barrageCount.toString()),
-                                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                 ),
                                 if (archive.publishDate.isNotEmpty) ...[
                                   SizedBox(width: 16.sp),
                                   Text(
                                     archive.publishDate,
-                                    style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor),
+                                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                   ),
                                 ],
                               ],
@@ -284,7 +284,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                 child: SingleChildScrollView(
                                   child: Text(
                                     archive.description,
-                                    style: AppTextStyles.t16W500.copyWith(
+                                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, 
                                       color: tvTheme.secondaryTextColor,
                                       height: 1.5,
                                     ),
@@ -307,7 +307,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                 children: [
                                   Text(
                                     '${i18n('music_tracks_title')}（${tracks.length}${excludedCount > 0 ? '，${i18n('music_parts_skipped')} $excludedCount' : ''}）',
-                                    style: AppTextStyles.t20W600.copyWith(color: accent),
+                                    style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                                   ),
                                   const Spacer(),
                                   TvButton(
@@ -324,7 +324,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                   ? Center(
                                       child: Text(
                                         i18n('music_archive_no_parts'),
-                                        style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                                       ),
                                     )
                                   : ListView.separated(
@@ -427,7 +427,7 @@ class _PartTile extends StatelessWidget {
                 width: 40.sp,
                 child: Text(
                   '${index + 1}',
-                  style: AppTextStyles.t18W500.copyWith(color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                 ),
               ),
               Expanded(
@@ -435,13 +435,13 @@ class _PartTile extends StatelessWidget {
                   track.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t18W500.copyWith(color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                 ),
               ),
               SizedBox(width: 12.sp),
               Text(
                 MusicVideoCard.formatDuration(track.part.duration > 0 ? track.part.duration : track.archive.duration),
-                style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
               ),
             ],
           ),

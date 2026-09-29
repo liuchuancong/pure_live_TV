@@ -1,5 +1,4 @@
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -277,7 +276,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                 padding: EdgeInsets.fromLTRB(20.sp, 14.sp, 20.sp, 6.sp),
                 child: Text(
                   widget.title,
-                  style: AppTextStyles.t20W600.copyWith(color: tvTheme.primaryTextColor, fontSize: (20 * AppFontScale.user).sp * scale),
+                  style: AppTextStyles.of(20 * scale).copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                 ),
               ),
               if (widget.header != null) widget.header!,
@@ -286,7 +285,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                     ? Center(
                         child: Text(
                           widget.emptyHint ?? i18nOr('ui_empty', 'Empty'),
-                          style: AppTextStyles.t16W500.copyWith(color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                         ),
                       )
                     : ListView.builder(
@@ -321,7 +320,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                   widget.onAdjustLeft != null
                       ? i18nOr('ui_panel_keys_adjust', '↑↓ 选择 · ←→ 调整 · OK 确认')
                       : i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
-                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor, fontSize: (14 * AppFontScale.user).sp * scale),
+                  style: AppTextStyles.of(14 * scale).copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                 ),
               ),
             ],
@@ -383,18 +382,15 @@ class _PanelRow extends StatelessWidget {
                   row.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t16W500.copyWith(
-                    color: foreground,
-                    fontWeight: FontWeight.w600,
-                    fontSize: (16 * AppFontScale.user).sp * scale,
-                  ),
+                  style: AppTextStyles.of(16 * scale).copyWith(fontWeight: FontWeight.w600, 
+                    color: foreground),
                 ),
                 if (row.subtitle != null && row.subtitle!.isNotEmpty)
                   Text(
                     row.subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(color: muted, fontSize: (14 * AppFontScale.user).sp * scale),
+                    style: AppTextStyles.of(14 * scale).copyWith(fontWeight: FontWeight.w500, color: muted),
                   ),
               ],
             ),
@@ -403,7 +399,7 @@ class _PanelRow extends StatelessWidget {
             SizedBox(width: 12.sp),
             Text(
               row.value!,
-              style: AppTextStyles.t16W500.copyWith(color: foreground, fontSize: (16 * AppFontScale.user).sp * scale),
+              style: AppTextStyles.of(16 * scale).copyWith(fontWeight: FontWeight.w500, color: foreground),
             ),
           ],
         ],
