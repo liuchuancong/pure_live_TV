@@ -1,21 +1,19 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-
+import 'dart:async';
+import 'dart:convert';
 import 'package:media_core/media_core.dart';
-import 'package:media_core_media_kit/media_core_media_kit.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/player/core/playback_header_resolver.dart';
-import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/player/models/player_engine.dart';
+import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/player/global_player_service.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:media_core_media_kit/media_core_media_kit.dart';
+import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
+import 'package:pure_live/player/core/playback_header_resolver.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/music/services/music_audio_cache.dart';
-import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/media/models/models.dart';
 
 part 'music_player_controller.g.dart';
 
@@ -203,7 +201,8 @@ class MusicPlayerController extends _$MusicPlayerController {
         if (archive == null) continue;
         final page = int.tryParse(parts[1]) ?? 1;
         final part =
-            archive.parts.where((p) => p.page == page).firstOrNull ?? (archive.parts.isEmpty ? null : archive.parts.first);
+            archive.parts.where((p) => p.page == page).firstOrNull ??
+            (archive.parts.isEmpty ? null : archive.parts.first);
         if (part == null) continue;
         tracks.add(MusicTrack(archive: archive, part: part));
       }
@@ -517,39 +516,33 @@ class MusicPlayerController extends _$MusicPlayerController {
   ///
   /// - video → audio: mpv drops the video track in place, the sound keeps
   ///   playing, no re-open.
-  /// - audio → video: if the open source is the audio-only stream there *is*
-  ///   no video track to restore, so the cached DASH pair is re-opened and
-  ///   playback resumes at the current position — the dynamic switch the
-  ///   music player's 歌词/视频 toggle rides on.
+  /// - audio → video: when the open primary carries a video track the switch
+  ///   is the same in-place `vid=auto`. The cached file and the audio m4s
+  ///   carry NO video track to restore — asking mpv for one on them is the
+  ///   "toggled to 显示画面 but no picture" state — so that toggle re-opens
+  ///   the DASH pair and resumes at the current position.
   ///
   /// A re-open that fails keeps the sound and puts the mode back: a video stream
   /// that is expired or refused is not a dead track, and letting it reach the
   /// failure path is what made "显示画面" skip to the next song.
-  /// Switches between 纯音乐 and 显示画面 without touching the stream.
-  ///
-  /// Both views share one player: the DASH pair (or the mp4) is always opened
-  /// whole, so the toggle is the native video-track switch — instant, and the
-  /// position never moves (the reference client's behaviour). The one reopen
-  /// left is audio-only playing the locally cached file, which carries no
-  /// picture: showing it needs the network pair.
   Future<void> toggleAudioOnly() async {
     final audioOnly = !state.audioOnly;
     final handle = _handle;
     state = state.copyWith(audioOnly: audioOnly);
 
-    if (!audioOnly && _playingLocalFile) {
+    if (!audioOnly && !_videoPrimaryOpen) {
       final position = handle?.position ?? Duration.zero;
       final track = state.current;
       final bvid = _currentBvid;
       if (track != null && bvid != null) {
-        // The cached file carries no picture: say it is loading instead of
+        // The open primary carries no picture: say it is loading instead of
         // leaving the toggle silent while the network pair re-opens.
         state = state.copyWith(resolving: true);
         try {
-          // The answer that fed the cache may be hours old, and a stale DASH
-          // audio URL is exactly the silent-video failure — the picture
-          // streams while the expired audio 403s. Re-resolve instead of
-          // replaying the stored answer.
+          // The stored answer may be hours old, and a stale DASH audio URL is
+          // exactly the silent-video failure — the picture streams while the
+          // expired audio 403s. Re-resolve instead of replaying the stored
+          // answer.
           var fresh = await modulePlayUrlResolver?.call(track);
           fresh ??= await _api.getPlayUrls(bvid: bvid, cid: track.part.cid);
           await _openUrls(track, fresh, bvid);
@@ -573,6 +566,12 @@ class MusicPlayerController extends _$MusicPlayerController {
 
   /// Whether the open source is the cache's local file rather than the network.
   bool _playingLocalFile = false;
+
+  /// Whether the open primary carries a video track (the video m4s). Toggling
+  /// back to 显示画面 is the instant in-place `vid=auto` only when this is
+  /// true; the cached file and the audio m4s carry no video track to restore,
+  /// so that toggle must re-open the network pair.
+  bool _videoPrimaryOpen = true;
 
   /// Drops back to the audio stream at [position] after the picture could not be
   /// opened, keeping the track playing.
@@ -710,7 +709,7 @@ class MusicPlayerController extends _$MusicPlayerController {
     // Music keeps one player for the whole queue: the handle below is reused
     // across tracks, and only [stop] / [pauseForLive] (live or video taking
     // the speakers) / a backend switch tear it down. Every open resets the
-    // per-source state a reused player carries — see the audio-file and
+    // per-source state a reused player carries — see the audio-files and
     // header resets below.
     // Music can be the first thing the user plays in a session; the live
     // bootstrap otherwise owns this call. Idempotent.
@@ -730,8 +729,8 @@ class MusicPlayerController extends _$MusicPlayerController {
     _playingLocalFile = false;
     String openUrl = urls.videoUrl;
     var openProtocol = SourceProtocol.https;
-    // Whether the primary source is the video-only m4s — only then does the
-    // DASH audio ride along as mpv's external audio-file track.
+    // Whether the primary source is the video m4s — only then does the DASH
+    // audio ride along as mpv's external audio-files track.
     var videoPrimary = true;
     if (state.audioOnly) {
       final File? cached = await MusicAudioCache.instance.cachedFile(track.id);
@@ -741,71 +740,39 @@ class MusicPlayerController extends _$MusicPlayerController {
         _playingLocalFile = true;
         videoPrimary = false;
       } else if (urls.audioUrl != null && urls.audioUrl!.isNotEmpty) {
-        // No cache yet: the AUDIO m4s becomes the primary source, like the
-        // pre-cache builds. Opening the video m4s and hanging the audio on
-        // mpv's audio-file input stalled every first play of a track: mpv
-        // waits for the external track's demuxer to initialize, and a slow
-        // CDN open blocked playback start indefinitely (stuck at open).
         openUrl = urls.audioUrl!;
         videoPrimary = false;
       }
     }
+    _videoPrimaryOpen = videoPrimary;
 
-    final PlayerHandle handle = _handle ?? await kernel.create(
-      config: const PlayerConfig(name: 'music', autoPlay: true),
-      preferredBackend: _preferredBackend,
-    );
+    final PlayerHandle handle =
+        _handle ??
+        await kernel.create(
+          config: const PlayerConfig(name: 'music', autoPlay: true),
+          preferredBackend: _preferredBackend,
+        );
     _handle = handle;
-
-    // DASH video+audio are separate streams and the source model carries one
-    // URI: the video plays as the primary source and the audio rides along on
-    // mpv's audio-file input. Both CDN requests need the same headers, so they
-    // are appended to the player-wide http-header-fields as well.
-    // 纯音乐 plays the cached file with no attachment (there is nothing to
-    // attach to — the file is the finished audio), and a no-cache audio-only
-    // open takes the audio m4s itself as primary — a single stream, no
-    // external track. Only a video-primary open hangs the audio on mpv's
-    // audio-file input.
-    //
-    // Runs on every open, fresh or reused: a reused player still holds the
-    // previous track's attachment and headers, and both would bleed into this
-    // one.
-    final String attachedAudio =
-        videoPrimary && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty
+    final String attachedAudio = videoPrimary && urls.isDash && urls.audioUrl != null && urls.audioUrl!.isNotEmpty
         ? urls.audioUrl!
         : '';
     final adapter = handle.adapter;
     if (adapter is MediaKitPlayerAdapter) {
-      // media_kit's Player proxy does not surface setProperty/command; the
-      // native player behind `platform` does. Same dynamic hop the adapter's
-      // own property helper takes.
       final native = adapter.player.platform;
       if (native != null) {
-        // Each write stands alone: one rejection must not silently skip the
-        // rest (an audio-file without its headers answers 403, and the DASH
-        // video stream has no audio of its own to fall back to).
-        // ignore: avoid_dynamic_calls
-        await (native as dynamic).setProperty('audio-file', attachedAudio).catchError((Object _) {});
-        // The header list survives on a reused player: clear it, then one
-        // `add` per header (a comma-bearing UA would split if the whole list
-        // went through one string).
-        try {
+        // Clearing through the property API writes ONE EMPTY PATH into the
+        // list: mpv parses '' as a path, fails to demux it, and the adapter
+        // reports the spurious "Cannot open file ''" as a playback failure —
+        // which wakes the recovery sweep to race the next open. change-list
+        // clr is the string-level clear that stays an empty list.
+        if (attachedAudio.isEmpty) {
+          try {
+            // ignore: avoid_dynamic_calls
+            await (native as dynamic).command(['change-list', 'audio-files', 'clr', '']);
+          } catch (_) {}
+        } else {
           // ignore: avoid_dynamic_calls
-          await (native as dynamic).setProperty('http-header-fields', '');
-        } catch (_) {}
-        final userAgent = headers['user-agent'] ?? '';
-        final referer = headers['referer'] ?? '';
-        if (userAgent.isNotEmpty) {
-          try {
-            // ignore: avoid_dynamic_calls
-            await (native as dynamic).command(['add', 'http-header-fields', 'User-Agent: $userAgent']);
-          } catch (_) {}
-        }
-        if (referer.isNotEmpty) {
-          try {
-            // ignore: avoid_dynamic_calls
-            await (native as dynamic).command(['add', 'http-header-fields', 'Referer: $referer']);
-          } catch (_) {}
+          await (native as dynamic).setProperty('audio-files', attachedAudio).catchError((Object _) {});
         }
       }
     }
@@ -905,6 +872,11 @@ class MusicPlayerController extends _$MusicPlayerController {
   Future<void> _releaseHandle() async {
     _events?.cancel();
     _events = null;
+    // The next player starts with no external audio track on record and no
+    // open primary, so neither the stale-attachment clear nor the audio→video
+    // re-open decision can act on a value the dead player owned.
+    _attachedAudioUrl = null;
+    _videoPrimaryOpen = false;
     final handle = _handle;
     _handle = null;
     if (handle == null) return;
