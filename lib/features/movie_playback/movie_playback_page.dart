@@ -12,8 +12,10 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   static const double _pagePadding = 32;
   static const double _itemGap = 36;
 
-  final TextEditingController _urlController = TextEditingController();
   bool _isParsing = false;
+
+  /// The URL the phone pushed last; the only input path left.
+  String _lastReceivedUrl = '';
   dynamic _remoteReceiverNotifier;
 
   @override
@@ -29,7 +31,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   void _bindRemoteCallbacks() {
     if (_remoteReceiverNotifier == null) return;
     _remoteReceiverNotifier.onMovieReceived = (inputText) {
-      _urlController.text = inputText;
+      _lastReceivedUrl = inputText;
       _handleParse();
     };
   }
@@ -39,12 +41,11 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
     if (_remoteReceiverNotifier != null) {
       _remoteReceiverNotifier.onMovieReceived = null;
     }
-    _urlController.dispose();
     super.dispose();
   }
 
   Future<void> _handleParse() async {
-    final url = _urlController.text.trim();
+    final url = _lastReceivedUrl.trim();
     if (url.isEmpty || _isParsing) return;
 
     setState(() => _isParsing = true);
@@ -205,64 +206,25 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TvInputField(
-                controller: _urlController,
-                hint: i18n('movie_wait_phone_sync'),
-                height: 72.sp,
-                maxLines: 1,
-                onSubmitted: (url) => _handleParse,
-                postFixWidget: GestureDetector(
-                  onTap: _handleParse,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 6.sp),
-                    child: Icon(Icons.search_rounded, color: themeColor, size: 32.sp),
-                  ),
+              // What the phone pushed last, so the parse button has context.
+              Text(
+                _lastReceivedUrl.isEmpty ? i18n('movie_wait_phone_sync') : _lastReceivedUrl,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.t18.copyWith(
+                  color: currentTvTheme.secondaryTextColor,
+                  height: 1.4,
                 ),
-                builder: (content, isFocused) {
-                  return AnimatedScale(
-                    scale: isFocused ? 1.04 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOutCubic,
-                      height: 80.sp,
-                      padding: EdgeInsets.symmetric(horizontal: 18.sp, vertical: 12.sp),
-                      decoration: BoxDecoration(
-                        color: currentTvTheme.backgroundColor,
-                        borderRadius: BorderRadius.circular(32.sp),
-                        border: Border.all(color: themeColor, width: isFocused ? 2.5.sp : 1.5.sp),
-                        boxShadow: [
-                          BoxShadow(
-                            color: themeColor.withValues(alpha: isFocused ? 0.5 : 0.35),
-                            blurRadius: 12.sp,
-                          ),
-                        ],
-                      ),
-                      child: content,
-                    ),
-                  );
-                },
               ),
-              SizedBox(height: 32.sp),
+              SizedBox(height: 24.sp),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   TvButton(
                     title: _isParsing ? i18n('parsing') : i18n('start_parse'),
                     icon: Icon(Icons.rocket_launch_rounded, size: 22.sp),
                     iconPosition: TvIconPosition.left,
                     size: TvButtonSize.small,
-                    onTap: _handleParse,
-                  ),
-                  SizedBox(width: 16.sp),
-                  TvButton(
-                    title: i18n('clear'),
-                    icon: Icon(Icons.cleaning_services_rounded, size: 22.sp),
-                    iconPosition: TvIconPosition.left,
-                    size: TvButtonSize.small,
-                    isSecondary: true,
-                    onTap: () => _urlController.clear(),
+                    onTap: _isParsing ? null : _handleParse,
                   ),
                 ],
               ),
