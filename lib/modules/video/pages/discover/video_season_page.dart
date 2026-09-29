@@ -196,7 +196,8 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                               child: DpadRegion(
                                 child: GridView.builder(
                                   padding: EdgeInsets.only(bottom: 16.sp),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  gridDelegate: TvAdaptiveGrid.fixed(
+                                    context,
                                     crossAxisCount: 4,
                                     mainAxisSpacing: 12.w,
                                     crossAxisSpacing: 12.w,

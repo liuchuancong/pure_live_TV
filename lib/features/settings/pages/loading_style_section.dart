@@ -68,7 +68,8 @@ class LoadingStyleSectionPage extends ConsumerWidget {
             // stays sane on a 1080p box and on a 4K panel, and the tiles keep
             // the density of the mobile grid instead of becoming huge blocks.
             sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              gridDelegate: TvAdaptiveGrid.maxExtent(
+                context,
                 maxCrossAxisExtent: 190.w,
                 mainAxisSpacing: 10.w,
                 crossAxisSpacing: 10.w,

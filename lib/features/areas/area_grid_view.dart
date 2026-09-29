@@ -101,7 +101,8 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
               key: ValueKey('page_$currentCategoryIndex'),
               param: currentParam,
               getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: TvAdaptiveGrid.fixed(
+                context,
                 crossAxisCount: 8,
                 mainAxisSpacing: mainSpacing.w,
                 crossAxisSpacing: crossSpacing.w,

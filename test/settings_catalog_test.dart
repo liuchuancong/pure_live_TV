@@ -19,26 +19,29 @@ void main() {
   test('the menu has the desktop groups, in order', () {
     expect(settingsCatalog.map((group) => group.titleKey).toList(), <String>[
       'theme_settings',
+      'music_settings',
+      'video_settings',
       'iptv_settings',
       'refresh_settings',
-      'video_settings',
       'player_kernel_settings',
       'network_proxy_settings',
       'general_settings',
+      'platform_settings_group',
       'data_manage',
       'backup_manage',
       'about',
     ]);
 
-    expect(settingsCatalog.map((group) => group.entries.length).toList(), <int>[1, 1, 1, 1, 1, 1, 3, 1, 1, 1]);
+    expect(settingsCatalog.map((group) => group.entries.length).toList(), <int>[1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1]);
   });
 
   test('menu rows use the desktop paths and labels', () {
     expect(catalogPaths(), <String>[
       AppRoutes.kSettingsTheme,
+      AppRoutes.kSettingsMusic,
+      AppRoutes.kSettingsVideo,
       AppRoutes.kIptv,
       AppRoutes.kSettingsRefresh,
-      AppRoutes.kSettingsVideo,
       AppRoutes.kSettingsPlayerKernel,
       AppRoutes.kSettingsProxy,
       AppRoutes.kSettingsGeneral,
@@ -60,7 +63,6 @@ void main() {
     expect(settingsSectionTitleKey(AppRoutes.kSettingsRenderer), 'video_output_driver');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsAudioOutput), 'audio_output_driver');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsDanmuShield), 'danmaku_keyword_block');
-    expect(settingsSectionTitleKey(AppRoutes.kSettingsFont), 'font_settings_title');
     expect(settingsSectionTitleKey(AppRoutes.kSettingsHotAreas), 'platform_display');
 
     // A page may be titled differently from the menu row that opens it.
@@ -101,7 +103,6 @@ void main() {
       AppRoutes.kSettingsRenderer,
       AppRoutes.kSettingsAudioOutput,
       AppRoutes.kSettingsDanmaku,
-      AppRoutes.kSettingsFont,
       AppRoutes.kSettingsFontFamily,
       AppRoutes.kSettingsPage,
       AppRoutes.kSettingsAudience,

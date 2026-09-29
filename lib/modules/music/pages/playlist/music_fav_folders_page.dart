@@ -134,7 +134,8 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: TvAdaptiveGrid.fixed(
+                    context,
                     crossAxisCount: 4,
                     mainAxisSpacing: 16.w,
                     crossAxisSpacing: 16.w,
@@ -181,7 +182,8 @@ class MusicFavFoldersPage extends ConsumerWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: TvAdaptiveGrid.fixed(
+        context,
         crossAxisCount: 4,
         mainAxisSpacing: 16.w,
         crossAxisSpacing: 16.w,

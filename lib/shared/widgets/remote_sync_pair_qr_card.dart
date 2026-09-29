@@ -101,8 +101,11 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
               ),
             ),
           SizedBox(height: 10.sp),
+          // The hint tracks the QR width (the 300.sp code plus its padding) and
+          // its line budget grows with the text: a fixed width + fixed two lines
+          // truncated the enlarged hint mid-sentence.
           SizedBox(
-            width: 340.sp,
+            width: 340.sp * TvTextScale.factorOf(context),
             child: Text(
               i18nOr('remote_sync_pair_hint', 'Open PureLive on your phone and scan this code to sync settings.'),
               textAlign: TextAlign.center,

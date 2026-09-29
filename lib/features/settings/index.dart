@@ -5,7 +5,6 @@ export 'pages/cache_settings_section.dart';
 export 'pages/color_picker_section.dart';
 export 'pages/danmaku_settings_section.dart';
 export 'pages/decoder_settings_section.dart';
-export 'pages/font_settings_section.dart';
 export 'pages/general_settings_section.dart';
 export 'pages/grid_spacing_section.dart';
 export 'pages/icon_picker_section.dart';

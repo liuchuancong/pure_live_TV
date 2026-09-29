@@ -116,7 +116,8 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           // A -352 risk-controlled category is the bilibili session gate: the
           // The sign-in button leads to the account (cookie) settings.
           onGoLogin: () => const AccountSettingsRoute().push(context),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: TvAdaptiveGrid.fixed(
+            context,
             crossAxisCount: themeState.denseRoomLayout,
             mainAxisSpacing: mainSpacing.w,
             crossAxisSpacing: crossSpacing.w,

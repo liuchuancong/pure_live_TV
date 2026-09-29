@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/features/live_play/models/live_play_args.dart';
 import 'package:pure_live/features/live_play/controllers/live_play_controller.dart';
-import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/features/live_play/widgets/panels/player_room_row.dart';
 
 /// Dialog that switches the current playback to another room.
@@ -48,11 +47,6 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
   /// hard-coded — pass a size in from there, or derive it from
   /// `MediaQuery.textScalerOf(context).scale(...)`.
   static const double _listTextScale = 1.0;
-
-  /// Estimated row height used by [_revealRow]; roughly the pre-scale value
-  /// (66) multiplied by the scale above, so the auto-scroll target matches
-  /// the taller rows on screen.
-  static const double _rowExtentBase = 96;
 
   final FocusNode _focusNode = FocusNode(debugLabel: 'room-switch');
   final ScrollController _scrollController = ScrollController();
@@ -241,7 +235,11 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       return;
     }
 
-    final double rowExtent = (_rowExtentBase * PlayerPanelLayout.fontSize).sp;
+    // The rows render at PlayerRoomRow.extentOf(large: true); deriving the
+    // extent from the same source keeps the auto-scroll target on the rows
+    // actually on screen (the panel font stepper and the app font setting both
+    // grow them).
+    final double rowExtent = PlayerRoomRow.extentOf(context, large: true);
 
     final double target = (index * rowExtent) - 150.sp;
 

@@ -1,5 +1,6 @@
 ﻿import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -63,7 +64,8 @@ class WallpaperItemsPage extends ConsumerWidget {
           key: ValueKey<String>('wallpaper_${source.id}_${category.id}'),
           param: param,
           getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: TvAdaptiveGrid.fixed(
+            context,
             crossAxisCount: 4,
             mainAxisSpacing: 16.w,
             crossAxisSpacing: 16.w,

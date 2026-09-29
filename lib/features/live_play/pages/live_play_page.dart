@@ -46,7 +46,10 @@ class LivePlayPage extends ConsumerWidget {
                 bottom: 24.sp,
                 left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.sp : null,
                 right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.sp,
-                width: 400.sp,
+                // The frame tracks the same text factor the panels inside size
+                // themselves by (400 design px at 100%): a fixed frame clipped
+                // an enlarged panel's rows instead of growing with them.
+                width: 400.sp * TvTextScale.factorOf(context),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20.sp),
                   child: Container(

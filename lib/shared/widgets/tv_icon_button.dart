@@ -22,6 +22,13 @@ class TvIconButton extends StatelessWidget {
   final bool selected;
   final bool useFadedFocus;
 
+  /// Stretches to the width the parent gives instead of sizing to the square
+  /// tile — the collapsed sidebar rail's full-width menu look. The content
+  /// stays centred, the focus fill covers the whole row, and the scale lift is
+  /// dropped (a full-width row lifting 1.08 paints over its neighbours; the
+  /// ring + glow + fill carry the state on their own).
+  final bool expand;
+
   /// A short caption painted under the icon, for callers whose icons alone are
   /// ambiguous (the collapsed home sidebar names each destination with two
   /// characters).
@@ -44,6 +51,7 @@ class TvIconButton extends StatelessWidget {
     this.isSecondary = false,
     this.selected = false,
     this.useFadedFocus = false,
+    this.expand = false,
     this.label,
     this.focusNode,
   });
@@ -60,78 +68,81 @@ class TvIconButton extends StatelessWidget {
     // full-radius circle of the icon-only button.
     final borderRadius = BorderRadius.circular(captioned ? boxSize * 0.28 : boxSize / 2);
 
-    return UnconstrainedBox(
-      child: DpadFocusable(
-        autofocus: autofocus,
-        focusNode: focusNode,
-        onSelect: onTap,
-        effects: [
-          ...TvFocusStyle.effects(activeTheme, borderRadius, scale: 1.08),
-          DpadCustomEffect((context, state, child) {
-            final isFocused = state.focused;
+    final Widget button = DpadFocusable(
+      autofocus: autofocus,
+      focusNode: focusNode,
+      onSelect: onTap,
+      effects: [
+        ...TvFocusStyle.effects(activeTheme, borderRadius, scale: expand ? 1.0 : 1.08),
+        DpadCustomEffect((context, state, child) {
+          final isFocused = state.focused;
 
-            late Color bgColor;
-            late Color foregroundColor;
+          late Color bgColor;
+          late Color foregroundColor;
 
-            // House style: icon buttons are white in every state and every
-            // theme mode, matching TvButton.
-            if (selected) {
-              bgColor = activeTheme.focusColor;
-              foregroundColor = Colors.white;
-            } else if (isFocused && useFadedFocus) {
-              bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
-              foregroundColor = Colors.white;
-            } else if (isFocused) {
-              bgColor = activeTheme.focusColor;
-              foregroundColor = Colors.white;
-            } else {
-              bgColor = isSecondary
-                  ? activeTheme.buttonSurface.withValues(alpha: 0.45)
-                  : activeTheme.buttonSurface.withValues(alpha: activeTheme.isLight ? 0.85 : 0.75);
-              foregroundColor = Colors.white;
-            }
+          // House style: icon buttons are white in every state and every
+          // theme mode, matching TvButton.
+          if (selected) {
+            bgColor = activeTheme.focusColor;
+            foregroundColor = Colors.white;
+          } else if (isFocused && useFadedFocus) {
+            bgColor = activeTheme.focusColor.withValues(alpha: 0.5);
+            foregroundColor = Colors.white;
+          } else if (isFocused) {
+            bgColor = activeTheme.focusColor;
+            foregroundColor = Colors.white;
+          } else {
+            bgColor = isSecondary
+                ? activeTheme.buttonSurface.withValues(alpha: 0.45)
+                : activeTheme.buttonSurface.withValues(alpha: activeTheme.isLight ? 0.85 : 0.75);
+            foregroundColor = Colors.white;
+          }
 
-            return AnimatedContainer(
-              duration: TvFocusStyle.focusDuration(isFocused),
-              curve: TvFocusStyle.curve,
-              width: boxSize,
-              height: boxSize,
-              decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
-              child: IconTheme(
-                // The caption shares the tile with the glyph, so the glyph gives
-                // up a little of its own to keep both balanced.
-                data: IconThemeData(size: captioned ? iconSize * 0.8 : iconSize, color: foregroundColor),
-                child: captioned
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          child,
-                          SizedBox(height: 2.sp * textScale),
-                          Text(
-                            label!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.t14.copyWith(
-                              fontWeight: FontWeight.w500,
-                              // The glyph stays the brightest thing in the tile;
-                              // the caption is a step quieter when idle so the
-                              // focused/selected state still reads as "on".
-                              color: selected || isFocused ? foregroundColor : foregroundColor.withValues(alpha: 0.78),
-                              height: 1,
-                            ),
+          return AnimatedContainer(
+            duration: TvFocusStyle.focusDuration(isFocused),
+            curve: TvFocusStyle.curve,
+            width: expand ? double.infinity : boxSize,
+            height: boxSize,
+            decoration: BoxDecoration(color: bgColor, borderRadius: borderRadius),
+            child: IconTheme(
+              // The caption shares the tile with the glyph, so the glyph gives
+              // up a little of its own to keep both balanced.
+              data: IconThemeData(size: captioned ? iconSize * 0.8 : iconSize, color: foregroundColor),
+              child: captioned
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        child,
+                        SizedBox(height: 2.sp * textScale),
+                        Text(
+                          label!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.t14.copyWith(
+                            fontWeight: FontWeight.w500,
+                            // The glyph stays the brightest thing in the tile;
+                            // the caption is a step quieter when idle so the
+                            // focused/selected state still reads as "on".
+                            color: selected || isFocused ? foregroundColor : foregroundColor.withValues(alpha: 0.78),
+                            height: 1,
                           ),
-                        ],
-                      )
-                    : child,
-              ),
-            );
-          }),
-        ],
-        child: Center(child: icon),
-      ),
+                        ),
+                      ],
+                    )
+                  : child,
+            ),
+          );
+        }),
+      ],
+      child: Center(child: icon),
     );
+
+    // The self-sized square floats free of the parent's constraints; an
+    // expanded row is sized by the parent and must not wrap one.
+    if (expand) return button;
+    return UnconstrainedBox(child: button);
   }
 
   /// Tile and glyph, in design pixels multiplied by the app font scale.

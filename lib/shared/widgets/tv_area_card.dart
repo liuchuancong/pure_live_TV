@@ -67,9 +67,10 @@ class _TvAreaCardState extends State<TvAreaCard> {
                 // sized by its text, so a cell too small for two lines would
                 // paint the second one over the artwork: it gets one ellipsised
                 // line instead. The line height is exact — the style pins
-                // `height: 1.15`, so a line is `fontSize * 1.15` at the scale
-                // the text is drawn at.
-                final double nameLineHeight = 15.sp * 1.15 * textScale;
+                // `height: 1.15` and the name is 17 design px (the same base
+                // the style below uses), so a line is `fontSize * 1.15` at the
+                // scale the text is drawn at.
+                final double nameLineHeight = 17.sp * 1.15 * textScale;
                 final double nameGap = 8.sp * textScale;
                 final int nameLines = constraints.maxHeight - nameGap >= nameLineHeight * 2 ? 2 : 1;
                 return Column(

@@ -236,7 +236,6 @@ const Map<String, String> settingsSectionTitleKeys = <String, String>{
   AppRoutes.kSettingsColorPicker: 'ui_choose_color',
   AppRoutes.kSettingsIconPicker: 'ui_choose_icon',
   AppRoutes.kSettingsPage: 'page_settings',
-  AppRoutes.kSettingsFont: 'font_settings_title',
   AppRoutes.kSettingsFontFamily: 'font_family_settings',
   // The danmaku-only font manager is the same page in its danmaku scope; without
   // its own entry it falls back to the generic system settings title.

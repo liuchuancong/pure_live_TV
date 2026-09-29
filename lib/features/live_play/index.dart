@@ -8,7 +8,6 @@ export 'states/live_play_state.dart';
 export 'widgets/danmaku/danmaku_list_view.dart';
 export 'widgets/danmaku/danmaku_overlay.dart';
 export 'widgets/panels/danmaku_settings_panel.dart';
-export 'widgets/panels/live_panel_shell.dart';
 export 'widgets/panels/playlist_panel.dart';
 export 'widgets/panels/shield_panel.dart';
 export 'widgets/video_player/playback_failure_overlay.dart';

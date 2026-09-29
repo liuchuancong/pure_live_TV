@@ -57,7 +57,7 @@ class _PlaylistPanelState extends ConsumerState<PlaylistPanel> {
       onAdjustRight: (i) => _toggleFollow(rooms[i]),
       onClose: controller.toggleSidePanel,
       showCloseRow: false,
-      rowExtent: PlayerRoomRow.extentOf(large: _largeRows),
+      rowExtent: PlayerRoomRow.extentOf(context, large: _largeRows),
       rowBuilder: (context, i, selected) => PlayerRoomRow(
         room: rooms[i],
         selected: selected,

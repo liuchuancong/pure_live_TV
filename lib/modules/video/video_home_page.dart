@@ -37,13 +37,16 @@ void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive)
 /// newBV's home grid density: a fixed 4 columns with its own spacing and a
 /// cell aspect sized to the card — the 1.6:1 cover plus a two-line title and
 /// the UP line come to about 1.15 total, and a little slack keeps a one-line
-/// title from overflowing the cell.
-const defaultVideoGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-  crossAxisCount: 4,
-  mainAxisSpacing: 12.0,
-  crossAxisSpacing: 24.0,
-  childAspectRatio: 1.0,
-);
+/// title from overflowing the cell. The density follows the font scale, so
+/// this is a function of the ambient context rather than a const.
+SliverGridDelegateWithFixedCrossAxisCount defaultVideoGridDelegate(BuildContext context) =>
+    TvAdaptiveGrid.fixed(
+      context,
+      crossAxisCount: 4,
+      mainAxisSpacing: 12.0,
+      crossAxisSpacing: 24.0,
+      childAspectRatio: 1.0,
+    );
 
 /// Content of one video section. Login is enforced by the home shell's
 /// [BilibiliLoginGate], not here.
@@ -135,7 +138,7 @@ class _PagedGridTabState<W extends _PagedGridTab> extends ConsumerState<W> {
       key: ValueKey('video_grid_${widget.tabKey}'),
       param: param,
       getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-      gridDelegate: defaultVideoGridDelegate,
+      gridDelegate: defaultVideoGridDelegate(context),
       itemBuilder: (context, archive, index) => VideoCard(
         archive: archive,
         onTap: () => openVideoArchive(context, ref, archive),

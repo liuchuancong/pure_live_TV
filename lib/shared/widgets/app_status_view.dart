@@ -349,72 +349,84 @@ class _AppStatusViewState extends State<AppStatusView> {
           widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded,
           size: 24.sp * TvTextScale.factorOf(context),
         );
+    // The column must survive extreme font scales (real devices run 2.4x):
+    // while it fits its box it stays centered exactly as before, and once it
+    // outgrows the box it scrolls instead of painting an overflow stripe.
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all((widget.isMini ? 8.sp : 22.sp) * TvTextScale.factorOf(context)),
-            // Accent-tinted disc instead of a grey-on-grey circle: the empty
-            // state is the page's voice, it should carry the palette.
-            decoration: BoxDecoration(
-              color: tvTheme.focusColor.withValues(alpha: 0.10),
-              shape: BoxShape.circle,
-              border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.sp),
+      child: LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0,
             ),
-            child: Icon(
-              widget.icon ?? (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
-              size: (widget.isMini ? 36.sp : 64.sp) * TvTextScale.factorOf(context),
-              color: widget.iconColor ?? tvTheme.focusColor,
-            ),
-          ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
-          if (!widget.isMini) SizedBox(height: 12.h * TvTextScale.factorOf(context)),
-          if (!widget.isMini || finalTitle.isNotEmpty) ...[
-            Text(
-              finalTitle,
-              style: AppTextStyles.t28.copyWith(
-                fontWeight: FontWeight.w600,
-                color: widget.titleColor ?? tvTheme.primaryTextColor,
-              ),
-            ),
-          ],
-          if (!widget.isMini || finalSubtitle.isNotEmpty) ...[
-            SizedBox(height: 6.sp * TvTextScale.factorOf(context)),
-            Text(
-              finalSubtitle,
-              style: AppTextStyles.t28.copyWith(color: widget.subtitleColor ?? tvTheme.secondaryTextColor),
-            ),
-          ],
-          if (!widget.isMini && (widget.onTap != null || widget.onSecondaryTap != null)) ...[
-            SizedBox(height: 24.sp * TvTextScale.factorOf(context)),
-            Row(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (widget.onTap != null)
-                  TvButton(
-                    title: finalButtonText,
-                    icon: finalIcon,
-                    autofocus: true,
-                    iconPosition: TvIconPosition.left,
-                    size: TvButtonSize.small,
-                    onTap: widget.onTap,
+                Container(
+                  padding: EdgeInsets.all((widget.isMini ? 8.sp : 22.sp) * TvTextScale.factorOf(context)),
+                  // Accent-tinted disc instead of a grey-on-grey circle: the empty
+                  // state is the page's voice, it should carry the palette.
+                  decoration: BoxDecoration(
+                    color: tvTheme.focusColor.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.sp),
                   ),
-                if (widget.onTap != null && widget.onSecondaryTap != null) SizedBox(width: 16.sp),
-                if (widget.onSecondaryTap != null)
-                  TvButton(
-                    title: widget.secondaryButtonText ?? i18n('search_live'),
-                    icon:
-                        widget.secondaryButtonIcon ??
-                        Icon(Icons.search_rounded, size: 24.sp * TvTextScale.factorOf(context)),
-                    iconPosition: TvIconPosition.left,
-                    size: TvButtonSize.small,
-                    isSecondary: true,
-                    onTap: widget.onSecondaryTap,
+                  child: Icon(
+                    widget.icon ?? (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
+                    size: (widget.isMini ? 36.sp : 64.sp) * TvTextScale.factorOf(context),
+                    color: widget.iconColor ?? tvTheme.focusColor,
                   ),
+                ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
+                if (!widget.isMini) SizedBox(height: 12.h * TvTextScale.factorOf(context)),
+                if (!widget.isMini || finalTitle.isNotEmpty) ...[
+                  Text(
+                    finalTitle,
+                    style: AppTextStyles.t28.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: widget.titleColor ?? tvTheme.primaryTextColor,
+                    ),
+                  ),
+                ],
+                if (!widget.isMini || finalSubtitle.isNotEmpty) ...[
+                  SizedBox(height: 6.sp * TvTextScale.factorOf(context)),
+                  Text(
+                    finalSubtitle,
+                    style: AppTextStyles.t28.copyWith(color: widget.subtitleColor ?? tvTheme.secondaryTextColor),
+                  ),
+                ],
+                if (!widget.isMini && (widget.onTap != null || widget.onSecondaryTap != null)) ...[
+                  SizedBox(height: 24.sp * TvTextScale.factorOf(context)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (widget.onTap != null)
+                        TvButton(
+                          title: finalButtonText,
+                          icon: finalIcon,
+                          autofocus: true,
+                          iconPosition: TvIconPosition.left,
+                          size: TvButtonSize.small,
+                          onTap: widget.onTap,
+                        ),
+                      if (widget.onTap != null && widget.onSecondaryTap != null) SizedBox(width: 16.sp),
+                      if (widget.onSecondaryTap != null)
+                        TvButton(
+                          title: widget.secondaryButtonText ?? i18n('search_live'),
+                          icon:
+                              widget.secondaryButtonIcon ??
+                              Icon(Icons.search_rounded, size: 24.sp * TvTextScale.factorOf(context)),
+                          iconPosition: TvIconPosition.left,
+                          size: TvButtonSize.small,
+                          isSecondary: true,
+                          onTap: widget.onSecondaryTap,
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }

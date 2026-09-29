@@ -109,7 +109,7 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
                         padding: EdgeInsets.all(24.sp),
                         // newBV's density, sized for VideoCard (cover +
                         // two-line title + UP line) — the shared delegate.
-                        gridDelegate: defaultVideoGridDelegate,
+                        gridDelegate: defaultVideoGridDelegate(context),
                         itemCount: archives?.length ?? 0,
                         itemBuilder: (context, index) {
                           final archive = archives![index];

@@ -165,7 +165,8 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                       SliverPadding(
                         padding: EdgeInsets.symmetric(horizontal: 24.sp),
                         sliver: SliverGrid(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate: TvAdaptiveGrid.fixed(
+                            context,
                             crossAxisCount: 5,
                             mainAxisSpacing: 16.w,
                             crossAxisSpacing: 16.w,

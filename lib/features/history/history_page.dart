@@ -84,7 +84,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         emptyScene: EmptyScene.history,
                         onEmptyGoHot: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.hot.value),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: TvAdaptiveGrid.fixed(
+                          context,
                           crossAxisCount: themeState.denseRoomLayout,
                           mainAxisSpacing: mainSpacing.w,
                           crossAxisSpacing: crossSpacing.w,

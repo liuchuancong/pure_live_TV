@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/shared/utils/hive_pref_util.dart';
 
 /// Layout of the player's side panels: which edge, how far from it, and how big
@@ -26,6 +27,18 @@ class PlayerPanelLayout {
 
   /// Panel text scale, 1.0 = the default size.
   static double get fontSize => _read<double>(_fontSizeKey, HivePrefUtil.getDouble) ?? 1.0;
+
+  /// The multiplier every panel *box* must follow: the panel's own font size on
+  /// top of the app-wide text factor (user font setting × panel correction ×
+  /// system accessibility — [TvTextScale.factorOf]).
+  ///
+  /// The panel's text is painted at exactly this product: tier sizes go through
+  /// `AppTextStyles.of(n * fontSize)`, which folds in the user scale, and the
+  /// ambient scaler paints the rest. A row height, an icon slot or the panel
+  /// width derived from `.sp` alone stayed put while the glyphs inside grew —
+  /// the label was then clipped, which is how the playlist rows broke. Boxes
+  /// read this; text never does (the resolver is the one exit for text).
+  static double boxScaleOf(BuildContext context) => fontSize * TvTextScale.factorOf(context);
 
   /// Reads [key], or null when the preference store is not up yet.
   ///

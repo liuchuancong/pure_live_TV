@@ -196,7 +196,6 @@ abstract final class AppRoutes {
   static const kSettingsRenderer = "/settings/renderer";
   static const kSettingsAudioOutput = "/settings/audio_output";
   static const kSettingsDanmaku = "/settings/danmaku";
-  static const kSettingsFont = "/settings/font";
   static const kSettingsFontFamily = "/settings/fonts";
   static const kSettingsFontFamilyDanmaku = "/settingsFontFamilyDanmaku";
   static const kAppUpdate = "/app_update";

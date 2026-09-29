@@ -134,7 +134,8 @@ class _HotPageState extends ConsumerState<HotPage> {
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         emptyScene: EmptyScene.hot,
                         onGoLogin: () => const AccountSettingsRoute().push(context),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: TvAdaptiveGrid.fixed(
+                          context,
                           crossAxisCount: themeState.denseRoomLayout,
                           mainAxisSpacing: mainSpacing.w,
                           crossAxisSpacing: crossSpacing.w,

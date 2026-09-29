@@ -137,11 +137,6 @@ RouteBase get $settingsShellRoute => ShellRouteData.$route(
       factory: $DanmakuSettingsRoute._fromState,
     ),
     GoRouteData.$route(
-      path: '/settings/font',
-      hasOverriddenOnExit: false,
-      factory: $FontSettingsRoute._fromState,
-    ),
-    GoRouteData.$route(
       path: '/settings/fonts',
       hasOverriddenOnExit: false,
       factory: $FontFamilyRoute._fromState,
@@ -676,27 +671,6 @@ mixin $DanmakuSettingsRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/settings/danmaku');
-
-  @override
-  void go(BuildContext context) => context.go(location);
-
-  @override
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
-
-  @override
-  void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
-
-  @override
-  void replace(BuildContext context) => context.replace(location);
-}
-
-mixin $FontSettingsRoute on GoRouteData {
-  static FontSettingsRoute _fromState(GoRouterState state) =>
-      const FontSettingsRoute();
-
-  @override
-  String get location => GoRouteData.$location('/settings/font');
 
   @override
   void go(BuildContext context) => context.go(location);

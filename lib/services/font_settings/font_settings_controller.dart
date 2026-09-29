@@ -52,11 +52,6 @@ class FontSettingsController extends _$FontSettingsController {
 
     return FontSettingsModel(
       textScaleFactor: HivePrefUtil.getDouble('textScaleFactor') ?? 1.0,
-      fontSizeBodySmall: HivePrefUtil.getDouble('fontSizeBodySmall') ?? 12.0,
-      fontSizeBodyMedium: HivePrefUtil.getDouble('fontSizeBodyMedium') ?? 13.0,
-      fontSizeBodyLarge: HivePrefUtil.getDouble('fontSizeBodyLarge') ?? 14.0,
-      fontSizeTitleMedium: HivePrefUtil.getDouble('fontSizeTitleMedium') ?? 15.0,
-      fontSizeTitleLarge: HivePrefUtil.getDouble('fontSizeTitleLarge') ?? 20.0,
       fontFamilyName: HivePrefUtil.getString(_familyKey) ?? 'Default',
     );
   }
@@ -115,11 +110,6 @@ class FontSettingsController extends _$FontSettingsController {
   Future<void> updateSettings(FontSettingsModel newModel) async {
     state = AsyncData(newModel);
     HivePrefUtil.setDouble('textScaleFactor', newModel.textScaleFactor);
-    HivePrefUtil.setDouble('fontSizeBodySmall', newModel.fontSizeBodySmall);
-    HivePrefUtil.setDouble('fontSizeBodyMedium', newModel.fontSizeBodyMedium);
-    HivePrefUtil.setDouble('fontSizeBodyLarge', newModel.fontSizeBodyLarge);
-    HivePrefUtil.setDouble('fontSizeTitleMedium', newModel.fontSizeTitleMedium);
-    HivePrefUtil.setDouble('fontSizeTitleLarge', newModel.fontSizeTitleLarge);
     HivePrefUtil.setString(_familyKey, newModel.fontFamilyName);
   }
 

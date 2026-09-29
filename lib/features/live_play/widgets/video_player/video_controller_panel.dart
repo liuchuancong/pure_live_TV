@@ -503,12 +503,16 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     TvThemeData tvTheme, {
     required bool switching,
   }) {
+    // Every dimension here holds t20 text (the title, the option rows), so the
+    // card grows with the font — a fixed 380.sp card ellipsised the enlarged
+    // labels and the fixed row rung clipped them outright.
+    final double scale = TvTextScale.factorOf(context);
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.sp),
+      padding: EdgeInsets.only(bottom: 12.sp * scale),
       child: Center(
         child: Container(
-          width: _optionsWidth.sp,
-          constraints: BoxConstraints(maxHeight: 560.sp),
+          width: _optionsWidth.sp * scale,
+          constraints: BoxConstraints(maxHeight: 560.sp * scale),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(16.sp),
@@ -521,22 +525,24 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
+                padding: EdgeInsets.fromLTRB(24.sp * scale, 14.sp * scale, 24.sp * scale, 6.sp * scale),
                 child: Text(
                   _panelTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                 ),
               ),
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  padding: EdgeInsets.only(bottom: 12.sp),
+                  padding: EdgeInsets.only(bottom: 12.sp * scale),
                   itemCount: options.length,
                   itemBuilder: (context, index) {
                     final bool selected = index == _optionIndex;
                     final option = options[index];
                     return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 4.sp * scale),
                       child: _Pill(
                         label: option.label,
                         selected: selected,
@@ -558,20 +564,23 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
   }
 
   Widget _buildBar(List<_PanelAction> actions, TvThemeData tvTheme) {
+    // The band's height tracks the pills inside it (see _Pill): a fixed band
+    // clipped the enlarged labels instead of growing with them.
+    final double scale = TvTextScale.factorOf(context);
     return Container(
       // A touch taller than the pills need, so the black band reads as the
       // bar's own ground rather than a tight box around the pills.
-      height: _barHeight.sp + 32.sp,
+      height: (_barHeight + 32).sp * scale,
       alignment: Alignment.center,
       // The band under the pills: live content above it stays clean, the
       // buttons always sit on black.
       color: Colors.black.withValues(alpha: 0.55),
-      padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 16.sp),
+      padding: EdgeInsets.symmetric(horizontal: 20.sp * scale, vertical: 16.sp * scale),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemCount: actions.length,
-        separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+        separatorBuilder: (_, _) => SizedBox(width: 12.sp * scale),
         itemBuilder: (context, index) {
           final action = actions[index];
           return KeyedSubtree(
@@ -658,6 +667,12 @@ class _Pill extends StatelessWidget {
     // The ring has to read on both the accent-filled and the translucent pill.
     final Color loadingColor = selected ? Colors.white : accent;
 
+    // Every dimension here is a box that exists because of the label (a t20
+    // style the resolver grows, and the ambient scaler grows again at paint
+    // time), so they all follow the painted factor: a fixed 52.sp pill clipped
+    // the enlarged label instead of growing with it.
+    final double scale = TvTextScale.factorOf(context);
+
     // Bigger than the t20 the bar started with — the label is what the viewer
     // actually reads from the couch, so it should not be the smallest thing on
     // the pill.
@@ -667,7 +682,7 @@ class _Pill extends StatelessWidget {
     // The same focus recipe the app's standard controls use (TvFocusStyle):
     // a lift, an accent ring and a soft accent halo, so the bar's buttons glow
     // like the home page's back/menu buttons instead of only changing fill.
-    final BorderRadius radius = BorderRadius.circular((_height / 3).sp);
+    final BorderRadius radius = BorderRadius.circular((_height / 3).sp * scale);
 
     return AnimatedScale(
       scale: selected ? 1.05 : 1.0,
@@ -676,9 +691,9 @@ class _Pill extends StatelessWidget {
       child: AnimatedContainer(
         duration: TvFocusStyle.focusDuration(selected),
         curve: TvFocusStyle.curve,
-        height: _height.sp,
+        height: _height.sp * scale,
         alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(horizontal: _hPadding.sp),
+        padding: EdgeInsets.symmetric(horizontal: _hPadding.sp * scale),
         decoration: BoxDecoration(
           color: background,
           borderRadius: radius,
@@ -691,21 +706,21 @@ class _Pill extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (loading)
-              tvInlineLoading(context, size: _iconSize.sp, color: loadingColor)
+              tvInlineLoading(context, size: _iconSize.sp * scale, color: loadingColor)
             else if (asset != null)
               SvgPicture.asset(
                 asset!,
-                width: _iconSize.sp,
-                height: _iconSize.sp,
+                width: _iconSize.sp * scale,
+                height: _iconSize.sp * scale,
                 colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
               )
             else if (icon != null)
-              Icon(icon, size: _iconSize.sp, color: foreground),
-            if (loading || asset != null || icon != null) SizedBox(width: _gap.sp),
+              Icon(icon, size: _iconSize.sp * scale, color: foreground),
+            if (loading || asset != null || icon != null) SizedBox(width: _gap.sp * scale),
             Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
             if (trailing != null) ...[
-              SizedBox(width: _gap.sp),
-              Icon(trailing, size: _trailingSize.sp, color: foreground),
+              SizedBox(width: _gap.sp * scale),
+              Icon(trailing, size: _trailingSize.sp * scale, color: foreground),
             ],
           ],
         ),

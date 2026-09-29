@@ -68,7 +68,8 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                         param: currentParam,
                         getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                         emptyScene: EmptyScene.favoriteAreas,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: TvAdaptiveGrid.fixed(
+                          context,
                           crossAxisCount: 8,
                           mainAxisSpacing: mainSpacing.w,
                           crossAxisSpacing: crossSpacing.w,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
 import 'package:pure_live/services/app_settings/app_settings_model.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
@@ -59,13 +58,21 @@ class PlayerRoomRow extends ConsumerWidget {
   ///
   /// The row draws itself with these numbers and the host list sets its
   /// `itemExtent` and its keep-in-view arithmetic from the same source, so the
-  /// highlight cannot drift away from the rows it is meant to mark.
-  static double extentOf({bool large = false}) => large ? 96.sp : (66 * PlayerPanelLayout.fontSize).sp;
+  /// highlight cannot drift away from the rows it is meant to mark. The base is
+  /// multiplied by [PlayerPanelLayout.boxScaleOf] — the exact factor the row's
+  /// text is painted at — so an enlarged app font grows the rows with their
+  /// labels instead of clipping them.
+  static double extentOf(BuildContext context, {bool large = false}) =>
+      (large ? 96.0 : 66.0).sp * PlayerPanelLayout.boxScaleOf(context);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final TvThemeData tvTheme = context.tvTheme;
     final double scale = PlayerPanelLayout.fontSize;
+    // Boxes and icons follow the full painted factor (panel font size × user
+    // font setting × panel correction × system accessibility); the text sizes
+    // go through AppTextStyles.of, which folds the same user factor in.
+    final double boxScale = PlayerPanelLayout.boxScaleOf(context);
     final AppSettingsModel app = ref.watch(appSettingsControllerProvider);
 
     final String title = room.title.trim().isNotEmpty ? room.title.trim() : i18n('untitled_room');
@@ -74,20 +81,20 @@ class PlayerRoomRow extends ConsumerWidget {
     final Color foreground = selected ? Colors.white : tvTheme.primaryTextColor;
     final Color muted = selected ? Colors.white70 : tvTheme.secondaryTextColor;
 
-    final double rowHeight = large ? 88.sp : (60 * scale).sp;
+    final double rowHeight = (large ? 88.0 : 60.0).sp * boxScale;
     final double rowRadius = large ? 14.sp : 10.sp;
     final double horizontalPadding = large ? 18.sp : 12.sp;
 
-    final double avatarRadius = large ? 30.sp : 20.sp * scale;
+    final double avatarRadius = (large ? 30.0 : 20.0).sp * boxScale;
 
-    final double titleSize = large ? 20.sp : 16.sp * scale;
-    final double nickSize = large ? 16.sp : 14.sp * scale;
-    final double platformSize = large ? 15.sp : 13.sp * scale;
-    final double metaSize = large ? 15.sp : 13.sp * scale;
+    final double titleSize = (large ? 20.0 : 16.0) * scale;
+    final double nickSize = (large ? 16.0 : 14.0) * scale;
+    final double platformSize = (large ? 15.0 : 13.0) * scale;
+    final double metaSize = (large ? 15.0 : 13.0) * scale;
 
     return Container(
       height: rowHeight,
-      margin: EdgeInsets.symmetric(vertical: large ? 4.sp : (3 * scale).sp),
+      margin: EdgeInsets.symmetric(vertical: (large ? 4.0 : 3.0).sp * boxScale),
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       decoration: BoxDecoration(
         color: selected
@@ -111,10 +118,13 @@ class PlayerRoomRow extends ConsumerWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16.copyWith(
+                        // of(n * scale), never a raw `.sp` copyWith: the raw size
+                        // replaced the resolver's fontSize and silently dropped
+                        // the user's font setting — large rows were frozen at
+                        // their design size whatever the slider said.
+                        style: AppTextStyles.of(titleSize).copyWith(
                           fontWeight: FontWeight.w600,
                           color: foreground,
-                          fontSize: titleSize,
                         ),
                       ),
                     ),
@@ -132,12 +142,12 @@ class PlayerRoomRow extends ConsumerWidget {
                 ),
                 if (nick.isNotEmpty) SizedBox(height: large ? 3.sp : 0),
                 if (nick.isNotEmpty)
-                  Text(
-                    nick,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: muted, fontSize: nickSize),
-                  ),
+              Text(
+                nick,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.of(nickSize).copyWith(fontWeight: FontWeight.w500, color: muted),
+              ),
               ],
             ),
           ),
@@ -149,17 +159,16 @@ class PlayerRoomRow extends ConsumerWidget {
               if (room.platform.trim().isNotEmpty)
                 Text(
                   room.platform.toUpperCase(),
-                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: muted, fontSize: platformSize),
+                  style: AppTextStyles.of(platformSize).copyWith(fontWeight: FontWeight.w600, color: muted),
                 ),
               SizedBox(height: large ? 3.sp : 0),
               Text(
                 trailing ?? _meta(app, ref.read(appSettingsControllerProvider.notifier)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14.copyWith(
+                style: AppTextStyles.of(metaSize).copyWith(
                   fontWeight: FontWeight.w500,
                   color: selected ? Colors.white : tvTheme.focusColor,
-                  fontSize: metaSize,
                 ),
               ),
             ],
@@ -221,9 +230,8 @@ class _FollowLabel extends StatelessWidget {
       ),
       child: Text(
         followed ? i18n('followed') : i18n('follow'),
-        style: AppTextStyles.t14.copyWith(
+        style: AppTextStyles.of(14 * scale).copyWith(
           color: color,
-          fontSize: (14 * AppFontScale.user).sp * scale,
           fontWeight: followed ? FontWeight.w600 : FontWeight.w500,
         ),
       ),

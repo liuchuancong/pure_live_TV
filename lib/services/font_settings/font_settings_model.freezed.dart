@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$FontSettingsModel {
 
- double get textScaleFactor; double get fontSizeBodySmall; double get fontSizeBodyMedium; double get fontSizeBodyLarge; double get fontSizeTitleMedium; double get fontSizeTitleLarge; String get fontFamilyName;
+ double get textScaleFactor; String get fontFamilyName;
 /// Create a copy of FontSettingsModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $FontSettingsModelCopyWith<FontSettingsModel> get copyWith => _$FontSettingsMode
 @override
 bool operator ==(Object other) {
   final _this = this as FontSettingsModel;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FontSettingsModel&&(identical(other.textScaleFactor, _this.textScaleFactor) || other.textScaleFactor == _this.textScaleFactor)&&(identical(other.fontSizeBodySmall, _this.fontSizeBodySmall) || other.fontSizeBodySmall == _this.fontSizeBodySmall)&&(identical(other.fontSizeBodyMedium, _this.fontSizeBodyMedium) || other.fontSizeBodyMedium == _this.fontSizeBodyMedium)&&(identical(other.fontSizeBodyLarge, _this.fontSizeBodyLarge) || other.fontSizeBodyLarge == _this.fontSizeBodyLarge)&&(identical(other.fontSizeTitleMedium, _this.fontSizeTitleMedium) || other.fontSizeTitleMedium == _this.fontSizeTitleMedium)&&(identical(other.fontSizeTitleLarge, _this.fontSizeTitleLarge) || other.fontSizeTitleLarge == _this.fontSizeTitleLarge)&&(identical(other.fontFamilyName, _this.fontFamilyName) || other.fontFamilyName == _this.fontFamilyName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FontSettingsModel&&(identical(other.textScaleFactor, _this.textScaleFactor) || other.textScaleFactor == _this.textScaleFactor)&&(identical(other.fontFamilyName, _this.fontFamilyName) || other.fontFamilyName == _this.fontFamilyName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as FontSettingsModel;
-  return Object.hash(runtimeType,_this.textScaleFactor,_this.fontSizeBodySmall,_this.fontSizeBodyMedium,_this.fontSizeBodyLarge,_this.fontSizeTitleMedium,_this.fontSizeTitleLarge,_this.fontFamilyName);
+  return Object.hash(runtimeType,_this.textScaleFactor,_this.fontFamilyName);
 }
 
 @override
 String toString() {
   final _this = this as FontSettingsModel;
-  return 'FontSettingsModel(textScaleFactor: ${_this.textScaleFactor}, fontSizeBodySmall: ${_this.fontSizeBodySmall}, fontSizeBodyMedium: ${_this.fontSizeBodyMedium}, fontSizeBodyLarge: ${_this.fontSizeBodyLarge}, fontSizeTitleMedium: ${_this.fontSizeTitleMedium}, fontSizeTitleLarge: ${_this.fontSizeTitleLarge}, fontFamilyName: ${_this.fontFamilyName})';
+  return 'FontSettingsModel(textScaleFactor: ${_this.textScaleFactor}, fontFamilyName: ${_this.fontFamilyName})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $FontSettingsModelCopyWith<$Res>  {
   factory $FontSettingsModelCopyWith(FontSettingsModel value, $Res Function(FontSettingsModel) _then) = _$FontSettingsModelCopyWithImpl;
 @useResult
 $Res call({
- double textScaleFactor, double fontSizeBodySmall, double fontSizeBodyMedium, double fontSizeBodyLarge, double fontSizeTitleMedium, double fontSizeTitleLarge, String fontFamilyName
+ double textScaleFactor, String fontFamilyName
 });
 
 
@@ -71,14 +71,9 @@ class _$FontSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of FontSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? textScaleFactor = null,Object? fontSizeBodySmall = null,Object? fontSizeBodyMedium = null,Object? fontSizeBodyLarge = null,Object? fontSizeTitleMedium = null,Object? fontSizeTitleLarge = null,Object? fontFamilyName = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? textScaleFactor = null,Object? fontFamilyName = null,}) {
   return _then(FontSettingsModel(
 textScaleFactor: null == textScaleFactor ? _self.textScaleFactor : textScaleFactor // ignore: cast_nullable_to_non_nullable
-as double,fontSizeBodySmall: null == fontSizeBodySmall ? _self.fontSizeBodySmall : fontSizeBodySmall // ignore: cast_nullable_to_non_nullable
-as double,fontSizeBodyMedium: null == fontSizeBodyMedium ? _self.fontSizeBodyMedium : fontSizeBodyMedium // ignore: cast_nullable_to_non_nullable
-as double,fontSizeBodyLarge: null == fontSizeBodyLarge ? _self.fontSizeBodyLarge : fontSizeBodyLarge // ignore: cast_nullable_to_non_nullable
-as double,fontSizeTitleMedium: null == fontSizeTitleMedium ? _self.fontSizeTitleMedium : fontSizeTitleMedium // ignore: cast_nullable_to_non_nullable
-as double,fontSizeTitleLarge: null == fontSizeTitleLarge ? _self.fontSizeTitleLarge : fontSizeTitleLarge // ignore: cast_nullable_to_non_nullable
 as double,fontFamilyName: null == fontFamilyName ? _self.fontFamilyName : fontFamilyName // ignore: cast_nullable_to_non_nullable
 as String,
   ));
@@ -165,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double textScaleFactor,  double fontSizeBodySmall,  double fontSizeBodyMedium,  double fontSizeBodyLarge,  double fontSizeTitleMedium,  double fontSizeTitleLarge,  String fontFamilyName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double textScaleFactor,  String fontFamilyName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FontSettingsModel() when $default != null:
-return $default(_that.textScaleFactor,_that.fontSizeBodySmall,_that.fontSizeBodyMedium,_that.fontSizeBodyLarge,_that.fontSizeTitleMedium,_that.fontSizeTitleLarge,_that.fontFamilyName);case _:
+return $default(_that.textScaleFactor,_that.fontFamilyName);case _:
   return orElse();
 
 }
@@ -186,10 +181,10 @@ return $default(_that.textScaleFactor,_that.fontSizeBodySmall,_that.fontSizeBody
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double textScaleFactor,  double fontSizeBodySmall,  double fontSizeBodyMedium,  double fontSizeBodyLarge,  double fontSizeTitleMedium,  double fontSizeTitleLarge,  String fontFamilyName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double textScaleFactor,  String fontFamilyName)  $default,) {final _that = this;
 switch (_that) {
 case _FontSettingsModel():
-return $default(_that.textScaleFactor,_that.fontSizeBodySmall,_that.fontSizeBodyMedium,_that.fontSizeBodyLarge,_that.fontSizeTitleMedium,_that.fontSizeTitleLarge,_that.fontFamilyName);case _:
+return $default(_that.textScaleFactor,_that.fontFamilyName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +201,10 @@ return $default(_that.textScaleFactor,_that.fontSizeBodySmall,_that.fontSizeBody
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double textScaleFactor,  double fontSizeBodySmall,  double fontSizeBodyMedium,  double fontSizeBodyLarge,  double fontSizeTitleMedium,  double fontSizeTitleLarge,  String fontFamilyName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double textScaleFactor,  String fontFamilyName)?  $default,) {final _that = this;
 switch (_that) {
 case _FontSettingsModel() when $default != null:
-return $default(_that.textScaleFactor,_that.fontSizeBodySmall,_that.fontSizeBodyMedium,_that.fontSizeBodyLarge,_that.fontSizeTitleMedium,_that.fontSizeTitleLarge,_that.fontFamilyName);case _:
+return $default(_that.textScaleFactor,_that.fontFamilyName);case _:
   return null;
 
 }
@@ -221,15 +216,10 @@ return $default(_that.textScaleFactor,_that.fontSizeBodySmall,_that.fontSizeBody
 @JsonSerializable()
 
 class _FontSettingsModel implements FontSettingsModel {
-  const _FontSettingsModel({this.textScaleFactor = 1.0, this.fontSizeBodySmall = 12.0, this.fontSizeBodyMedium = 13.0, this.fontSizeBodyLarge = 14.0, this.fontSizeTitleMedium = 15.0, this.fontSizeTitleLarge = 20.0, this.fontFamilyName = 'Default'});
+  const _FontSettingsModel({this.textScaleFactor = 1.0, this.fontFamilyName = 'Default'});
   factory _FontSettingsModel.fromJson(Map<String, dynamic> json) => _$FontSettingsModelFromJson(json);
 
 @override@JsonKey() final  double textScaleFactor;
-@override@JsonKey() final  double fontSizeBodySmall;
-@override@JsonKey() final  double fontSizeBodyMedium;
-@override@JsonKey() final  double fontSizeBodyLarge;
-@override@JsonKey() final  double fontSizeTitleMedium;
-@override@JsonKey() final  double fontSizeTitleLarge;
 @override@JsonKey() final  String fontFamilyName;
 
 /// Create a copy of FontSettingsModel
@@ -245,18 +235,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FontSettingsModel&&(identical(other.textScaleFactor, textScaleFactor) || other.textScaleFactor == textScaleFactor)&&(identical(other.fontSizeBodySmall, fontSizeBodySmall) || other.fontSizeBodySmall == fontSizeBodySmall)&&(identical(other.fontSizeBodyMedium, fontSizeBodyMedium) || other.fontSizeBodyMedium == fontSizeBodyMedium)&&(identical(other.fontSizeBodyLarge, fontSizeBodyLarge) || other.fontSizeBodyLarge == fontSizeBodyLarge)&&(identical(other.fontSizeTitleMedium, fontSizeTitleMedium) || other.fontSizeTitleMedium == fontSizeTitleMedium)&&(identical(other.fontSizeTitleLarge, fontSizeTitleLarge) || other.fontSizeTitleLarge == fontSizeTitleLarge)&&(identical(other.fontFamilyName, fontFamilyName) || other.fontFamilyName == fontFamilyName));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FontSettingsModel&&(identical(other.textScaleFactor, textScaleFactor) || other.textScaleFactor == textScaleFactor)&&(identical(other.fontFamilyName, fontFamilyName) || other.fontFamilyName == fontFamilyName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,textScaleFactor,fontSizeBodySmall,fontSizeBodyMedium,fontSizeBodyLarge,fontSizeTitleMedium,fontSizeTitleLarge,fontFamilyName);
+    return Object.hash(runtimeType,textScaleFactor,fontFamilyName);
 }
 
 @override
 String toString() {
-    return 'FontSettingsModel(textScaleFactor: $textScaleFactor, fontSizeBodySmall: $fontSizeBodySmall, fontSizeBodyMedium: $fontSizeBodyMedium, fontSizeBodyLarge: $fontSizeBodyLarge, fontSizeTitleMedium: $fontSizeTitleMedium, fontSizeTitleLarge: $fontSizeTitleLarge, fontFamilyName: $fontFamilyName)';
+    return 'FontSettingsModel(textScaleFactor: $textScaleFactor, fontFamilyName: $fontFamilyName)';
 }
 
 
@@ -267,7 +257,7 @@ abstract mixin class _$FontSettingsModelCopyWith<$Res> implements $FontSettingsM
   factory _$FontSettingsModelCopyWith(_FontSettingsModel value, $Res Function(_FontSettingsModel) _then) = __$FontSettingsModelCopyWithImpl;
 @override @useResult
 $Res call({
- double textScaleFactor, double fontSizeBodySmall, double fontSizeBodyMedium, double fontSizeBodyLarge, double fontSizeTitleMedium, double fontSizeTitleLarge, String fontFamilyName
+ double textScaleFactor, String fontFamilyName
 });
 
 
@@ -284,14 +274,9 @@ class __$FontSettingsModelCopyWithImpl<$Res>
 
 /// Create a copy of FontSettingsModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? textScaleFactor = null,Object? fontSizeBodySmall = null,Object? fontSizeBodyMedium = null,Object? fontSizeBodyLarge = null,Object? fontSizeTitleMedium = null,Object? fontSizeTitleLarge = null,Object? fontFamilyName = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? textScaleFactor = null,Object? fontFamilyName = null,}) {
   return _then(_FontSettingsModel(
 textScaleFactor: null == textScaleFactor ? _self.textScaleFactor : textScaleFactor // ignore: cast_nullable_to_non_nullable
-as double,fontSizeBodySmall: null == fontSizeBodySmall ? _self.fontSizeBodySmall : fontSizeBodySmall // ignore: cast_nullable_to_non_nullable
-as double,fontSizeBodyMedium: null == fontSizeBodyMedium ? _self.fontSizeBodyMedium : fontSizeBodyMedium // ignore: cast_nullable_to_non_nullable
-as double,fontSizeBodyLarge: null == fontSizeBodyLarge ? _self.fontSizeBodyLarge : fontSizeBodyLarge // ignore: cast_nullable_to_non_nullable
-as double,fontSizeTitleMedium: null == fontSizeTitleMedium ? _self.fontSizeTitleMedium : fontSizeTitleMedium // ignore: cast_nullable_to_non_nullable
-as double,fontSizeTitleLarge: null == fontSizeTitleLarge ? _self.fontSizeTitleLarge : fontSizeTitleLarge // ignore: cast_nullable_to_non_nullable
 as double,fontFamilyName: null == fontFamilyName ? _self.fontFamilyName : fontFamilyName // ignore: cast_nullable_to_non_nullable
 as String,
   ));

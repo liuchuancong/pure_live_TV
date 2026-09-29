@@ -3,6 +3,7 @@ import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/consts/app_theme_consts.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
+import 'package:pure_live/services/font_settings/font_settings_model.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class ThemeSettingsSectionPage extends ConsumerWidget {
@@ -16,11 +17,14 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
     final loadingStyles = AppConsts.allStyles;
     final tvTheme = context.tvTheme;
     final Color loadingColor = themeState.loadingStyleColor ?? tvTheme.focusColor;
+    final fontSettings = ref.watch(fontSettingsControllerProvider).value ?? const FontSettingsModel();
+    final font = ref.read(fontSettingsControllerProvider.notifier);
+    final double fontTextScale = fontSettings.textScaleFactor;
     // The mobile row shows which family is active, so the row is not just a
     // blind entry point into the font manager.
     final String currentFontName = () {
       // A locked weight stores a derived family id (`X::700`); display the base.
-      final String id = ref.watch(fontSettingsControllerProvider).value?.fontFamilyName ?? 'Default';
+      final String id = fontSettings.fontFamilyName;
       if (id == 'Default' || id.isEmpty) return i18n('font_default');
       return FontDownloadManager.baseFamilyId(id);
     }();
@@ -121,14 +125,21 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
             ],
           ),
           SizedBox(height: 20.sp),
+          // The one global scale lives here, not on a sub-page: the per-level
+          // fine-tuning (body/title sizes) is gone — a single multiplier keeps
+          // every tier's contrast intact, which is what the fine-tuning broke.
           TvSettingsGroupTitle(title: i18n('text_size_settings')),
           TvSettingsCard(
             children: [
-              TvSettingsNavTile(
-                title: i18n('font_settings_title'),
-                subtitle: i18n('font_settings_desc'),
-                icon: Remix.font_size,
-                onTap: () => const FontSettingsRoute().push(context),
+              TvSettingsSliderTile(
+                title: i18n('ui_global_text_scale'),
+                icon: Icons.format_size_rounded,
+                value: fontTextScale,
+                min: 0.8,
+                max: 1.6,
+                step: 0.05,
+                displayValue: '${(fontTextScale * 100).toStringAsFixed(0)}%',
+                onChanged: (v) => font.updateSettings(fontSettings.copyWith(textScaleFactor: v)),
               ),
             ],
           ),

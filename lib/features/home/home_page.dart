@@ -438,19 +438,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                       Padding(
                         padding: EdgeInsets.only(bottom: 20.sp * textScale),
-                        child: TvIconButton(
-                          icon: AnimatedRotation(
-                            turns: isExpanded ? 0.5 : 0.0,
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOutCubic,
-                            child: const Icon(Icons.arrow_forward_ios_rounded),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10.sp * textScale),
+                          child: TvIconButton(
+                            icon: AnimatedRotation(
+                              turns: isExpanded ? 0.5 : 0.0,
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeOutCubic,
+                              child: const Icon(Icons.arrow_forward_ios_rounded),
+                            ),
+                            // Expanded already spells every entry out; collapsed is
+                            // the state where the arrow needs a name.
+                            label: isExpanded ? null : i18n('menu_short_expand'),
+                            size: TvIconButtonSize.medium,
+                            isSecondary: true,
+                            expand: !isExpanded,
+                            onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
                           ),
-                          // Expanded already spells every entry out; collapsed is
-                          // the state where the arrow needs a name.
-                          label: isExpanded ? null : i18n('menu_short_expand'),
-                          size: TvIconButtonSize.medium,
-                          isSecondary: true,
-                          onTap: () => ref.read(isMenuExpandedProvider.notifier).toggle(),
                         ),
                       ),
                       _buildAdaptiveItem(
@@ -580,17 +584,25 @@ class _HomePageState extends ConsumerState<HomePage> {
       ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.05, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
     }
 
-    return TvIconButton(
-      icon: Icon(item.icon),
-      // Collapsed rail: the icon alone left the destinations ambiguous, so each
-      // tile carries its two-character name underneath.
-      label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
-      selected: isSelected,
-      size: TvIconButtonSize.medium,
-      useFadedFocus: true,
-      isSecondary: !isSelected,
-      focusNode: focusNode,
-      onTap: onTap,
+    // Full-width row, content centred — the settings menu's language. The old
+    // self-sized square read as squeezed under the focus fill next to the
+    // wider idle tiles; a row that spans the rail keeps every state the same
+    // footprint.
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10.sp * textScale),
+      child: TvIconButton(
+        icon: Icon(item.icon),
+        // Collapsed rail: the icon alone left the destinations ambiguous, so each
+        // tile carries its two-character name underneath.
+        label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
+        selected: isSelected,
+        size: TvIconButtonSize.medium,
+        useFadedFocus: true,
+        isSecondary: !isSelected,
+        expand: true,
+        focusNode: focusNode,
+        onTap: onTap,
+      ),
     );
   }
 

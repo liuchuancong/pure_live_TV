@@ -165,13 +165,15 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
     );
   }
 
-  /// Row height, including its margins, scaled by panel font size.
+  /// Row height, including its margins, scaled by the panel font size **and**
+  /// the app-wide text factor — the row's text is painted at that product, so
+  /// the box has to follow it or the enlarged glyphs clip inside a fixed row.
   ///
   /// Panels whose rows are drawn by a `rowBuilder` pass [rowExtent] instead: the
   /// playlist's room rows are taller than a plain label row, and the height has to
   /// match what the row widget actually renders or the highlight drifts a little
   /// further out of view with every step.
-  double get _rowExtent => widget.rowExtent ?? (66 * PlayerPanelLayout.fontSize).sp;
+  double get _rowExtent => widget.rowExtent ?? 66.sp * PlayerPanelLayout.boxScaleOf(context);
 
   /// Top padding of the row list, matching the [ListView] below.
   double get _listPadding => 4.sp;
@@ -263,7 +265,10 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
         autofocus: true,
         onKeyEvent: _onKeyEvent,
         child: SizedBox(
-          width: widget.width.sp,
+          // The width tracks the text factor with the content: a fixed 400.sp
+          // panel kept its width while every label inside grew, and the labels
+          // answered by wrapping into ellipsis chains.
+          width: widget.width.sp * TvTextScale.factorOf(context),
           // No decoration of its own: the host container (live_play page's
           // side-panel frame) paints the surface and the single border. A
           // border here too drew two frames one inside the other.
@@ -351,9 +356,12 @@ class _PanelRow extends StatelessWidget {
     // would be unreadable — danmaku settings used to paint its focused row black.
     final Color foreground = selected ? Colors.white : theme.primaryTextColor;
     final Color muted = selected ? Colors.white70 : theme.secondaryTextColor;
+    // Text sizes take `scale` through AppTextStyles.of; the boxes and icons
+    // here take the full box scale, or the row clips what its text grew into.
+    final double boxScale = PlayerPanelLayout.boxScaleOf(context);
     return Container(
-      height: (60 * scale).sp,
-      margin: EdgeInsets.symmetric(vertical: (3 * scale).sp),
+      height: 60.sp * boxScale,
+      margin: EdgeInsets.symmetric(vertical: 3.sp * boxScale),
       padding: EdgeInsets.symmetric(horizontal: 16.sp),
       decoration: BoxDecoration(
         color: selected ? accent : (row.active ? accent.withValues(alpha: 0.22) : theme.subtleRowFill),
@@ -364,12 +372,12 @@ class _PanelRow extends StatelessWidget {
           if (row.asset != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.sp * scale),
+              child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.sp * boxScale),
             )
           else if (row.icon != null)
             Padding(
               padding: EdgeInsets.only(right: 10.sp),
-              child: Icon(row.icon, size: 24.sp * scale, color: foreground),
+              child: Icon(row.icon, size: 24.sp * boxScale, color: foreground),
             ),
           Expanded(
             child: Column(

@@ -303,14 +303,16 @@ class _TvTabBarState extends State<TvTabBar> {
                         // 24x24 icon slot (TvButton.medium's size), scaled with the
                         // label: platform logos differ in size and must align with
                         // it. A tab item's icon is built without a context, so the
-                        // slot scales whatever it is given.
+                        // slot scales whatever it is given. No `Center` around the
+                        // FittedBox on purpose: Center hands it loose constraints
+                        // and a FittedBox then adopts the child's own size and
+                        // never scales up — the pill grew with the font while the
+                        // logo stayed at its drafted 26px.
                         if (tab.icon != null) ...[
                           SizedBox(
                             width: 24.w * textScale,
                             height: 24.w * textScale,
-                            child: Center(
-                              child: FittedBox(fit: BoxFit.contain, child: tab.icon),
-                            ),
+                            child: FittedBox(fit: BoxFit.contain, child: tab.icon),
                           ),
                           SizedBox(width: 10.w * textScale),
                         ],

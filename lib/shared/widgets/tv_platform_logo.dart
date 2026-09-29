@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/theme/index.dart';
 
 /// A platform's logo with a neutral fallback.
 ///
@@ -12,18 +12,21 @@ class TvPlatformLogo extends StatelessWidget {
 
   final String logo;
 
-  /// Design pixels, both width and height.
+  /// Design pixels, both width and height, before the font-scale factor.
   final double size;
 
   @override
   Widget build(BuildContext context) {
+    // The rows this leads grow their labels with the app font setting; the
+    // logo grows with them so the row keeps one visual rhythm.
+    final double scaled = size.sp * TvTextScale.factorOf(context);
     return Image.asset(
       logo,
-      width: size.sp,
-      height: size.sp,
+      width: scaled,
+      height: scaled,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) =>
-          Icon(Icons.live_tv_rounded, size: size.sp, color: context.tvTheme.secondaryTextColor),
+          Icon(Icons.live_tv_rounded, size: scaled, color: context.tvTheme.secondaryTextColor),
     );
   }
 }

@@ -39,7 +39,8 @@ class IconPickerSectionPage extends StatelessWidget {
       ),
       child: GridView.builder(
         padding: EdgeInsets.all(16.sp),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: TvAdaptiveGrid.fixed(
+          context,
           crossAxisCount: 12,
           mainAxisSpacing: 12.sp,
           crossAxisSpacing: 12.sp,

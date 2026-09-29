@@ -135,14 +135,9 @@ String? _fontFamilyOf(FontSettingsModel? font) {
 }
 
 TextTheme _textThemeFor(FontSettingsModel? font, TextTheme base) {
-  if (font == null) return base;
-  return base.copyWith(
-    bodySmall: base.bodySmall?.copyWith(fontSize: font.fontSizeBodySmall),
-    bodyMedium: base.bodyMedium?.copyWith(fontSize: font.fontSizeBodyMedium),
-    bodyLarge: base.bodyLarge?.copyWith(fontSize: font.fontSizeBodyLarge),
-    titleMedium: base.titleMedium?.copyWith(fontSize: font.fontSizeTitleMedium),
-    titleLarge: base.titleLarge?.copyWith(fontSize: font.fontSizeTitleLarge),
-  );
+  // The family only: sizes come from the AppTextStyles resolver (and the
+  // Material fallbacks scale with the ambient TextScaler at paint time).
+  return base.apply(fontFamily: _fontFamilyOf(font));
 }
 
 ColorScheme _schemeFor(TvThemeData tvTheme, Brightness brightness) {

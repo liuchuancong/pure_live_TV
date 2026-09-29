@@ -94,3 +94,61 @@ class TvTextScale {
 extension TvTextScaledLength on num {
   double ts(BuildContext context) => toDouble() * TvTextScale.factorOf(context);
 }
+
+/// Grid delegates whose density follows the text.
+///
+/// A fixed `crossAxisCount` + `childAspectRatio` pair is drafted against the
+/// 100% font: the card titles inside the cells grow with the setting while the
+/// cells stay put, and past ~120% the labels wrap into ellipsis chains. The
+/// fix is the grid's own two knobs:
+///
+/// - **Columns** shrink as the font grows (`count / scale`, rounded up), so
+///   each cell gets wider. Rounding to whole columns can leave the cell short
+///   of its full k-fold width.
+/// - **Aspect ratio** hands that shortfall back as height: the cell's text
+///   band ends up with at least its k-fold room at every scale, whatever the
+///   column rounding did. At 100% both knobs are the drafted values, so the
+///   grids look exactly as before.
+class TvAdaptiveGrid {
+  const TvAdaptiveGrid._();
+
+  /// The parameter names match [SliverGridDelegateWithFixedCrossAxisCount]'s
+  /// so a call site converts by swapping the constructor only — the spacing
+  /// arguments keep whatever `.w`/`.sp` semantics the caller already had.
+  static SliverGridDelegateWithFixedCrossAxisCount fixed(
+    BuildContext context, {
+    required int crossAxisCount,
+    required double childAspectRatio,
+    double mainAxisSpacing = 0.0,
+    double crossAxisSpacing = 0.0,
+  }) {
+    final double scale = TvTextScale.factorOf(context);
+    final int columns = (crossAxisCount / scale).ceil().clamp(1, crossAxisCount * 2);
+    return SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: columns,
+      childAspectRatio: childAspectRatio * crossAxisCount / (scale * columns),
+      mainAxisSpacing: mainAxisSpacing * scale,
+      crossAxisSpacing: crossAxisSpacing * scale,
+    );
+  }
+
+  /// The same language for a max-extent grid: cells are drafted at most
+  /// `maxCrossAxisExtent` wide, so the extent grows with the text and the
+  /// cells with it. The aspect is untouched — a wider cell is already a
+  /// proportionally taller one.
+  static SliverGridDelegateWithMaxCrossAxisExtent maxExtent(
+    BuildContext context, {
+    required double maxCrossAxisExtent,
+    required double childAspectRatio,
+    double mainAxisSpacing = 0.0,
+    double crossAxisSpacing = 0.0,
+  }) {
+    final double scale = TvTextScale.factorOf(context);
+    return SliverGridDelegateWithMaxCrossAxisExtent(
+      maxCrossAxisExtent: maxCrossAxisExtent * scale,
+      childAspectRatio: childAspectRatio,
+      mainAxisSpacing: mainAxisSpacing * scale,
+      crossAxisSpacing: crossAxisSpacing * scale,
+    );
+  }
+}

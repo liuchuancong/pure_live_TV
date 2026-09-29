@@ -56,11 +56,6 @@ class LegacySettingsMigration {
         "exitChoose": HivePrefUtil.getString("exitChoose"),
 
         // Font
-        "fontSizeBodySmall": HivePrefUtil.getDouble("fontSizeBodySmall"),
-        "fontSizeBodyMedium": HivePrefUtil.getDouble("fontSizeBodyMedium"),
-        "fontSizeBodyLarge": HivePrefUtil.getDouble("fontSizeBodyLarge"),
-        "fontSizeTitleMedium": HivePrefUtil.getDouble("fontSizeTitleMedium"),
-        "fontSizeTitleLarge": HivePrefUtil.getDouble("fontSizeTitleLarge"),
         "fontFamilyName": HivePrefUtil.getString("fontFamilyName"),
         "danmakuFontFamilyName": HivePrefUtil.getString("danmakuFontFamilyName"),
 

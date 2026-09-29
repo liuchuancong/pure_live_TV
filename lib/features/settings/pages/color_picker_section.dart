@@ -76,7 +76,8 @@ class ColorPickerSectionPage extends StatelessWidget {
         padding: EdgeInsets.all(16.w),
         // Extent-based, not a fixed column count: the swatches stay small on any
         // panel size instead of ballooning on a 4K screen.
-        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        gridDelegate: TvAdaptiveGrid.maxExtent(
+          context,
           maxCrossAxisExtent: 150.w,
           mainAxisSpacing: 10.w,
           crossAxisSpacing: 10.w,

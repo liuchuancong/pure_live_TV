@@ -65,7 +65,6 @@ final Map<String, WidgetBuilder> settingsPageRoutes = <String, WidgetBuilder>{
   AppRoutes.kSettingsRenderer: (context) => const RendererSettingsSectionPage(),
   AppRoutes.kSettingsAudioOutput: (context) => const AudioOutputSettingsSectionPage(),
   AppRoutes.kSettingsDanmaku: (context) => const DanmakuSettingsSectionPage(),
-  AppRoutes.kSettingsFont: (context) => const FontSettingsSectionPage(),
   AppRoutes.kSettingsFontFamily: (context) => const FontFamilyManagerSectionPage(),
   AppRoutes.kSettingsFontFamilyDanmaku: (context) => const FontFamilyManagerSectionPage(danmaku: true),
   AppRoutes.kSettingsPage: (context) => const PageSettingsSectionPage(),
@@ -126,7 +125,6 @@ final Map<String, GoRouteData> settingsSectionRoutes = <String, GoRouteData>{
   AppRoutes.kSettingsRenderer: const RendererSettingsRoute(),
   AppRoutes.kSettingsAudioOutput: const AudioOutputSettingsRoute(),
   AppRoutes.kSettingsDanmaku: const DanmakuSettingsRoute(),
-  AppRoutes.kSettingsFont: const FontSettingsRoute(),
   AppRoutes.kSettingsFontFamily: const FontFamilyRoute(),
   AppRoutes.kSettingsFontFamilyDanmaku: const FontFamilyDanmakuRoute(),
   AppRoutes.kSettingsPage: const PageSettingsRoute(),
@@ -315,14 +313,6 @@ class AudioOutputSettingsRoute extends GoRouteData with $AudioOutputSettingsRout
 /// `kSettingsDanmaku`.
 class DanmakuSettingsRoute extends GoRouteData with $DanmakuSettingsRoute {
   const DanmakuSettingsRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
-}
-
-/// `kSettingsFont`.
-class FontSettingsRoute extends GoRouteData with $FontSettingsRoute {
-  const FontSettingsRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) => settingsSection(context, state);
@@ -591,7 +581,6 @@ class AboutRoute extends GoRouteData with $AboutRoute {
     TypedGoRoute<RendererSettingsRoute>(path: AppRoutes.kSettingsRenderer),
     TypedGoRoute<AudioOutputSettingsRoute>(path: AppRoutes.kSettingsAudioOutput),
     TypedGoRoute<DanmakuSettingsRoute>(path: AppRoutes.kSettingsDanmaku),
-    TypedGoRoute<FontSettingsRoute>(path: AppRoutes.kSettingsFont),
     TypedGoRoute<FontFamilyRoute>(path: AppRoutes.kSettingsFontFamily),
     TypedGoRoute<FontFamilyDanmakuRoute>(path: AppRoutes.kSettingsFontFamilyDanmaku),
     TypedGoRoute<PageSettingsRoute>(path: AppRoutes.kSettingsPage),

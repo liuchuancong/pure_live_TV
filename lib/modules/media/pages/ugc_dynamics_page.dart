@@ -83,7 +83,8 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
       child: GridView.builder(
         controller: _scroll,
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: TvAdaptiveGrid.fixed(
+          context,
           crossAxisCount: 4,
           mainAxisSpacing: 16.w,
           crossAxisSpacing: 16.w,
