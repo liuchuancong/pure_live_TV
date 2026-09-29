@@ -82,6 +82,21 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
     }
   }
 
+  /// Flips the favoured state against the user's own default folder: the
+  /// fav-deal API only changes what the id lists name, so the old
+  /// "add to nothing" call succeeded while storing nothing.
+  Future<void> _toggleFavoured() async {
+    final folders = await BilibiliUgcApi.instance.getMyFavFolders();
+    if (folders.isEmpty) throw Exception('no fav folder');
+    final int aid = (_detail ?? widget.archive).aid;
+    await BilibiliUgcApi.instance.favDeal(
+      aid: aid,
+      addFolderIds: _favoured ? const [] : [folders.first.id],
+      delFolderIds: _favoured ? [folders.first.id] : const [],
+    );
+    await _loadStates(aid);
+  }
+
   void _playAll(List<MusicTrack> tracks, int startIndex) {
     // Music mode listens: the queue starts audio-only, and the player page's
     // toggle brings the picture back on demand.
@@ -247,13 +262,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                                       ),
                                       size: TvButtonSize.mini,
                                       isSecondary: !_favoured,
-                                      onTap: () => _runAction(
-                                        () async {
-                                          await BilibiliUgcApi.instance.favDeal(aid: archive.aid, addFolderIds: const []);
-                                          await _loadStates(archive.aid);
-                                        },
-                                        'video_action_faved',
-                                      ),
+                                      onTap: () => _runAction(_toggleFavoured, 'video_action_faved'),
                                     ),
                                     TvButton(
                                       title: i18n('video_action_triple'),

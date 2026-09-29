@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 
 /// One archive's page in video mode, newBV's detail screen restyled for the
@@ -94,6 +94,23 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     }
   }
 
+  /// Flips the favoured state against the user's own default folder: the
+  /// fav-deal API only changes what the id lists name, so favouriting has to
+  /// name a folder (the first created one, bilibili's 默认收藏夹) and
+  /// unfavouriting has to name the same one for removal.
+  Future<void> _toggleFavoured() async {
+    final folders = await BilibiliUgcApi.instance.getMyFavFolders();
+    if (folders.isEmpty) throw Exception('no fav folder');
+    final int folderId = folders.first.id;
+    final int aid = (_detail ?? widget.archive).aid;
+    await BilibiliUgcApi.instance.favDeal(
+      aid: aid,
+      addFolderIds: _favoured ? const [] : [folderId],
+      delFolderIds: _favoured ? [folderId] : const [],
+    );
+    await _loadStates(aid);
+  }
+
   void _play(List<MusicTrack> tracks, int startIndex) {
     // Video mode keeps the picture on.
     ref.read(musicPlayerControllerProvider.notifier).playQueue(tracks, startIndex: startIndex, audioOnly: false);
@@ -113,7 +130,9 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     return TvPageScaffold(
       title: i18n('video_detail_title'),
       child: _error != null && _detail == null
-          ? Center(child: AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error))
+          ? Center(
+              child: AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error),
+            )
           : SingleChildScrollView(
               padding: EdgeInsets.all(24.sp),
               child: Column(
@@ -132,25 +151,14 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                           child: Stack(
                             children: [
                               AspectRatio(
-                                aspectRatio: 16 / 10,
+                                aspectRatio: 16 / 9,
                                 child: CachedNetworkImage(
                                   imageUrl: archive.cover,
                                   fit: BoxFit.cover,
                                   memCacheWidth: 900,
                                 ),
                               ),
-                              Positioned.fill(
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      stops: const [0.35, 1.0],
-                                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.82)],
-                                    ),
-                                  ),
-                                ),
-                              ),
+
                               if (archive.tname.isNotEmpty)
                                 Positioned(
                                   left: 14.sp,
@@ -178,14 +186,21 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                           children: [
                             Text(
                               archive.title,
-                              style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor, height: 1.35),
+                              style: AppTextStyles.t24.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: tvTheme.primaryTextColor,
+                                height: 1.35,
+                              ),
                             ),
                             SizedBox(height: 10.sp),
                             Text(
                               '${i18n('video_action_played')} ${readableCount(archive.playCount.toString())}'
                               ' · ${i18n('video_danmaku_stat', args: {'count': readableCount(archive.barrageCount.toString())})}'
                               ' · ${archive.publishDate}',
-                              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                              style: AppTextStyles.t14.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: tvTheme.secondaryTextColor,
+                              ),
                             ),
                             SizedBox(height: 16.sp),
                             // The UP row: avatar-led, opens the user space.
@@ -211,7 +226,8 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                         archive.upName,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w700, 
+                                        style: AppTextStyles.t16.copyWith(
+                                          fontWeight: FontWeight.w700,
                                           color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                                         ),
                                       ),
@@ -231,22 +247,16 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   icon: _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
                                   label: i18n('video_action_like'),
                                   active: _liked,
-                                  onTap: () => _runAction(
-                                    () async {
-                                      await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
-                                      setState(() => _liked = !_liked);
-                                    },
-                                    'video_action_liked',
-                                  ),
-                                  // Long-press: the one-touch triple, like newBV's
-                                  // shortcut — like, coin and favourite together.
-                                  onLongPress: () => _runAction(
-                                    () async {
-                                      await BilibiliUgcApi.instance.tripleAction(archive.aid);
-                                      await _loadStates(archive.aid);
-                                    },
-                                    'video_action_trpled',
-                                  ),
+                                  onTap: () => _runAction(() async {
+                                    await BilibiliUgcApi.instance.setLike(archive.aid, like: !_liked);
+                                    setState(() => _liked = !_liked);
+                                  }, 'video_action_liked'),
+                                  // No long-press shortcut here on purpose: a
+                                  // focusable with a long-select loses its mouse
+                                  // tap (the d-pad layer holds the tap to
+                                  // disambiguate the hold), and on the emulator
+                                  // that made the like chip unclickable. 一键三连
+                                  // has its own chip.
                                 ),
                                 _ActionChip(
                                   icon: Icons.toll_rounded,
@@ -260,13 +270,11 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   icon: _favoured ? Icons.star_rounded : Icons.star_outline_rounded,
                                   label: i18n('video_action_fav'),
                                   active: _favoured,
-                                  onTap: () => _runAction(
-                                    () async {
-                                      await BilibiliUgcApi.instance.favDeal(aid: archive.aid, addFolderIds: const []);
-                                      await _loadStates(archive.aid);
-                                    },
-                                    'video_action_faved',
-                                  ),
+                                  // Favouriting needs a real target folder: an
+                                  // empty add-folder list is the API's "change
+                                  // nothing", so the old call succeeded and
+                                  // stored nothing.
+                                  onTap: () => _runAction(_toggleFavoured, 'video_action_faved'),
                                 ),
                                 _ActionChip(
                                   icon: Icons.recommend_rounded,
@@ -289,8 +297,8 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   label: i18n('video_comments_title'),
                                   onTap: archive.aid > 0
                                       ? () => UgcCommentsRoute(
-                                            UgcCommentsArgs(oid: archive.aid, title: archive.title),
-                                          ).push(context)
+                                          UgcCommentsArgs(oid: archive.aid, title: archive.title),
+                                        ).push(context)
                                       : null,
                                 ),
                               ],
@@ -307,13 +315,11 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                     Container(
                       width: double.infinity,
                       padding: EdgeInsets.all(18.sp),
-                      decoration: BoxDecoration(
-                        color: tvTheme.cardColor,
-                        borderRadius: BorderRadius.circular(16.sp),
-                      ),
+                      decoration: BoxDecoration(color: tvTheme.cardColor, borderRadius: BorderRadius.circular(16.sp)),
                       child: Text(
                         archive.description,
-                        style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, 
+                        style: AppTextStyles.t14.copyWith(
+                          fontWeight: FontWeight.w500,
                           color: tvTheme.secondaryTextColor,
                           height: 1.55,
                         ),
@@ -343,21 +349,13 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                   DpadRegion(
                     verticalEdge: DpadEdgeBehavior.leave,
                     horizontalEdge: DpadEdgeBehavior.leave,
-                    // Enter on the geometrically nearest row: the default
-                    // `restore` has no memory on a fresh page and no entry
-                    // mark, and the remote's Down from the header never
-                    // landed in the list.
                     enter: DpadEnterBehavior.nearest,
                     child: Column(
                       children: [
                         for (final (index, track) in tracks.indexed)
                           Padding(
                             padding: EdgeInsets.only(bottom: 8.sp),
-                            child: _PartTile(
-                              track: track,
-                              index: index,
-                              onTap: () => _play(tracks, index),
-                            ),
+                            child: _PartTile(track: track, index: index, onTap: () => _play(tracks, index)),
                           ),
                       ],
                     ),
@@ -392,10 +390,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                             final related = _related[index];
                             return SizedBox(
                               width: 300.sp,
-                              child: VideoCard(
-                                archive: related,
-                                onTap: () => VideoDetailRoute(related).push(context),
-                              ),
+                              child: VideoCard(archive: related, onTap: () => VideoDetailRoute(related).push(context)),
                             );
                           },
                         ),
@@ -411,16 +406,12 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
 
 /// One interaction chip: a compact icon+label pill in the focused palette.
 class _ActionChip extends StatelessWidget {
-  const _ActionChip({required this.icon, required this.label, this.active = false, this.onTap, this.onLongPress});
+  const _ActionChip({required this.icon, required this.label, this.active = false, this.onTap});
 
   final IconData icon;
   final String label;
   final bool active;
   final VoidCallback? onTap;
-
-  /// The long-press shortcut, newBV's one-touch triple (like + coin + favourite)
-  /// on the like chip.
-  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -432,7 +423,6 @@ class _ActionChip extends StatelessWidget {
 
     return TvFocusable(
       onTap: onTap,
-      onLongPress: onLongPress,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 10.sp * scale),
@@ -440,8 +430,8 @@ class _ActionChip extends StatelessWidget {
           color: active
               ? accent.withValues(alpha: 0.2)
               : focused
-                  ? tvTheme.focusedCardColor
-                  : tvTheme.cardColor,
+              ? tvTheme.focusedCardColor
+              : tvTheme.cardColor,
           borderRadius: BorderRadius.circular(24.sp),
           border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
         ),
@@ -452,7 +442,8 @@ class _ActionChip extends StatelessWidget {
             SizedBox(width: 8.sp * scale),
             Text(
               label,
-              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, 
+              style: AppTextStyles.t14.copyWith(
+                fontWeight: FontWeight.w600,
                 color: active ? accent : (focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor),
               ),
             ),
@@ -506,7 +497,8 @@ class _PartTile extends StatelessWidget {
                 width: 40.sp,
                 child: Text(
                   '${index + 1}',
-                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, 
+                  style: AppTextStyles.t18.copyWith(
+                    fontWeight: FontWeight.w500,
                     color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
                   ),
                 ),
@@ -516,7 +508,8 @@ class _PartTile extends StatelessWidget {
                   _displayTitle(track.title),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, 
+                  style: AppTextStyles.t18.copyWith(
+                    fontWeight: FontWeight.w500,
                     color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                   ),
                 ),
@@ -524,7 +517,8 @@ class _PartTile extends StatelessWidget {
               SizedBox(width: 12.sp),
               Text(
                 MusicVideoCard.formatDuration(track.part.duration > 0 ? track.part.duration : track.archive.duration),
-                style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, 
+                style: AppTextStyles.t16.copyWith(
+                  fontWeight: FontWeight.w500,
                   color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
                 ),
               ),
