@@ -1,16 +1,16 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_import_dialog.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_user_playlist_detail_page.dart';
+import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
 /// The playlist shelf, QQ music's 我的歌单 shape: the default 喜欢 playlist
 /// mounted on top, then the locally created ones (置顶 first), then every
@@ -134,13 +134,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: TvAdaptiveGrid.media(
-                    context,
-                    crossAxisCount: 6,
-                    mainAxisSpacing: 16.w,
-                    crossAxisSpacing: 16.w,
-                    childAspectRatio: 1.15,
-                  ),
+                  gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                   itemCount: sync.folders.length,
                   itemBuilder: (context, index) {
                     final folder = sync.folders[index];
@@ -188,16 +182,16 @@ class MusicFavFoldersPage extends ConsumerWidget {
         crossAxisCount: 6,
         mainAxisSpacing: 16.w,
         crossAxisSpacing: 16.w,
-        childAspectRatio: 0.95,
+        childAspectRatio: 1.5,
       ),
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index];
         return _PlaylistCard(
           entry: entry,
-          onOpen: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => MusicUserPlaylistDetailPage(playlistId: entry.id)),
-          ),
+          onOpen: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => MusicUserPlaylistDetailPage(playlistId: entry.id))),
           onLongPress: entry.isLiked ? null : () => _showPlaylistMenu(context, ref, entry),
         );
       },
@@ -524,7 +518,12 @@ class _FolderCard extends StatelessWidget {
           color: tvTheme.cardColor,
           borderRadius: BorderRadius.circular(16.sp),
           border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
-          boxShadow: [BoxShadow(color: accent.withValues(alpha: focused ? 0.25 : 0), blurRadius: focused ? 18.sp : 0)],
+          boxShadow: [
+            BoxShadow(
+              color: accent.withValues(alpha: focused ? 0.25 : 0),
+              blurRadius: focused ? 18.sp : 0,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

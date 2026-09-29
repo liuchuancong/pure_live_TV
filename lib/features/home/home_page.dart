@@ -4,7 +4,10 @@ import 'package:pure_live/features/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/music/music_page.dart';
+import 'package:pure_live/modules/music/music_section.dart';
+import 'package:pure_live/modules/music/music_section_view.dart';
+import 'package:pure_live/modules/music/widgets/music_mini_bar.dart';
+
 import 'package:pure_live/features/areas/areas_page.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/features/history/history_page.dart';
@@ -595,15 +598,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       ).animate().fadeIn(duration: 150.ms).slideX(begin: -0.05, end: 0, duration: 200.ms, curve: Curves.easeOutCubic);
     }
 
-    // Full-width row, content centred — the settings menu's language. The old
-    // self-sized square read as squeezed under the focus fill next to the
-    // wider idle tiles; a row that spans the rail keeps every state the same
-    // footprint.
-    // Collapsed rail: self-sized square tiles, centred in the rail. The
-    // full-width row (`expand: true`) read as a stack of rectangles; a square
-    // tile with the two-character name underneath is the compact icon rail.
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10.sp * textScale),
+      padding: EdgeInsets.symmetric(horizontal: 10.sp),
       child: Center(
         child: TvIconButton(
           icon: Icon(item.icon),
