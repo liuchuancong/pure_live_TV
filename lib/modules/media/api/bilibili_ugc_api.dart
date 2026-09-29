@@ -314,6 +314,16 @@ class BilibiliUgcApi {
     });
   }
 
+  /// Deletes one archive's row from the bilibili watch history
+  /// (`x/v2/history/delete`, POST with the part's cid as `kid=1`).
+  Future<void> deleteHistory({required int aid, required int cid}) async {
+    _post('https://api.bilibili.com/x/v2/history/delete', {
+      'kid': '1',
+      'aid': '$aid',
+      'cid': '$cid',
+    });
+  }
+
   /// The watch-later list (`x/v2/history/toview`).
   Future<List<ToViewItem>> getToView() async {
     _ensureLogin();

@@ -67,6 +67,44 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
     }
   }
 
+  /// Long press on a history row: removes the record from the bilibili
+  /// watch history and drops it from this list.
+  Future<void> _showRowMenu(BuildContext context, WidgetRef ref, HistoryItem item) async {
+    await TvDialogUtils.show<void>(
+      context: context,
+      builder: (_) => TvDialog(
+        title: item.archive.title,
+        cancelText: i18n('cancel'),
+        width: 560.sp,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TvDialogOptionTile(
+              title: i18n('music_history_delete'),
+              icon: Icon(Icons.delete_outline_rounded, size: 26.sp),
+              showCheck: false,
+              autofocus: true,
+              onTap: () {
+                Navigator.of(context).pop();
+                _deleteRow(item);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteRow(HistoryItem item) async {
+    try {
+      await BilibiliUgcApi.instance.deleteHistory(aid: item.archive.aid, cid: item.cid);
+      setState(() => _items.removeWhere((it) => it.archive.bvid == item.archive.bvid));
+      ToastUtil.show(i18n('music_history_deleted'));
+    } catch (_) {
+      ToastUtil.show(i18n('music_history_delete_failed'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
@@ -126,7 +164,10 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
             );
           }
           final item = _items[index];
-          return _HistoryRow(item: item);
+          return _HistoryRow(
+            item: item,
+            onLongPress: () => _showRowMenu(context, ref, item),
+          );
         },
       ),
           ),
@@ -137,9 +178,10 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
 }
 
 class _HistoryRow extends StatelessWidget {
-  const _HistoryRow({required this.item});
+  const _HistoryRow({required this.item, required this.onLongPress});
 
   final HistoryItem item;
+  final VoidCallback onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -149,6 +191,7 @@ class _HistoryRow extends StatelessWidget {
 
     return TvFocusable(
       onTap: () => VideoDetailRoute(item.archive).push(context),
+      onLongPress: onLongPress,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         margin: EdgeInsets.only(bottom: 10.sp),
