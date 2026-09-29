@@ -1,8 +1,8 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/app/router/router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/features/areas/platform_provider.dart';
 import 'package:pure_live/features/areas/category_provider.dart';
-import 'package:pure_live/app/router/router.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class AreaGridView extends ConsumerStatefulWidget {
@@ -65,12 +65,6 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
     }).toList();
 
     final currentParam = _pagingParams[currentCategoryIndex];
-    // column/row spacing are an offset from the 6.0 design default, so the untouched
-    // default reproduces the original 32 design-pixel gap.
-    final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = themeState.crossAxisSpacing;
-    final double mainSpacing = themeState.mainAxisSpacing;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -101,13 +95,7 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
               key: ValueKey('page_$currentCategoryIndex'),
               param: currentParam,
               getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
-              gridDelegate: TvAdaptiveGrid.fixed(
-                context,
-                crossAxisCount: 8,
-                mainAxisSpacing: mainSpacing.w,
-                crossAxisSpacing: crossSpacing.w,
-                childAspectRatio: 1.3,
-              ),
+              gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
               itemBuilder: (context, area, index) => TvAreaCard(
                 area: area,
                 onTap: () {

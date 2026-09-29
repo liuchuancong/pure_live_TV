@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
@@ -117,13 +118,7 @@ class _VideoPgcPageState extends ConsumerState<VideoPgcPage> {
                           horizontalEdge: DpadEdgeBehavior.leave,
                           child: GridView.builder(
                             padding: EdgeInsets.all(24.sp),
-                            gridDelegate: TvAdaptiveGrid.media(
-                              context,
-                              crossAxisCount: 5,
-                              mainAxisSpacing: 16.w,
-                              crossAxisSpacing: 16.w,
-                              childAspectRatio: 0.72,
-                            ),
+                            gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                             itemCount: items.length + (_hasMoreOf[_type] == true || _loading ? 1 : 0),
                             itemBuilder: (context, index) {
                               if (index >= items.length) {

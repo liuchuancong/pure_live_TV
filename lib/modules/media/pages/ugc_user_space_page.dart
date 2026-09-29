@@ -1,5 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
@@ -165,13 +166,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                       SliverPadding(
                         padding: EdgeInsets.symmetric(horizontal: 24.sp),
                         sliver: SliverGrid(
-                          gridDelegate: TvAdaptiveGrid.media(
-                            context,
-                            crossAxisCount: 5,
-                            mainAxisSpacing: 16.w,
-                            crossAxisSpacing: 16.w,
-                            childAspectRatio: 0.95,
-                          ),
+                          gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                           delegate: SliverChildBuilderDelegate(
                             childCount: _uploads.length + (_hasMore ? 1 : 0),
                             (context, index) {

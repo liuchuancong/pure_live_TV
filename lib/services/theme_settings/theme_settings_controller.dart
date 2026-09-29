@@ -1,8 +1,4 @@
-import 'theme_settings_model.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'theme_settings_controller.g.dart';
@@ -23,7 +19,7 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   static const int defaultRoomCardColumns = 4;
 
   /// Dense-room-layout levels, as grid columns: standard / dense.
-  static const List<int> roomCardColumnsOptions = <int>[4, 5];
+  static const List<int> roomCardColumnsOptions = <int>[4, 5, 6];
 
   /// Grid cell aspect (width / height) for the room-card grids at [columns].
   ///
@@ -32,8 +28,33 @@ class ThemeSettingsController extends _$ThemeSettingsController {
   /// so the cell relatively heightens as the density grows.
   static double roomCardAspectRatio(int columns) => switch (columns) {
     5 => 1.25,
+    // The playlist shelf's tuned density: six narrow columns want the taller
+    // cell, not an even flatter one.
+    6 => 1.5,
     _ => 1.3,
   };
+
+  /// The one delegate every **card grid** takes — TvRoomCard, TvAreaCard, the
+  /// video and music media cards: the user's density setting
+  /// ([ThemeSettingsModel.denseRoomLayout]) picks the column count, the ratio
+  /// matched to it keeps the covers from starving their info row as the
+  /// density grows, and the grid-gap settings set the spacing. One settings
+  /// page tunes every shelf in the app.
+  ///
+  /// Special small grids stay exempt: the colour/icon/loading pickers, the
+  /// wallpaper tiles, episode chips and queue rows — none of them is a poster
+  /// card.
+  static SliverGridDelegateWithFixedCrossAxisCount cardGridDelegate(BuildContext context, WidgetRef ref) {
+    final ThemeSettingsModel themeState = ref.watch(themeSettingsControllerProvider);
+    final int columns = themeState.denseRoomLayout;
+    return TvAdaptiveGrid.fixed(
+      context,
+      crossAxisCount: columns,
+      mainAxisSpacing: themeState.mainAxisSpacing.w,
+      crossAxisSpacing: themeState.crossAxisSpacing.w,
+      childAspectRatio: roomCardAspectRatio(columns),
+    );
+  }
 
   static bool _hasSwitchedOnce = false;
   static final Set<String> _loadingStyleKeys = AppConsts.allStyles

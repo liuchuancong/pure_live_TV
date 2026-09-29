@@ -5,16 +5,14 @@ import 'package:pure_live/services/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
-
-
 
 /// The video personal center, newBV's personal sections over the logged-in
 /// account: fav folders (server-side), cloud history, watch later. Nothing
@@ -66,14 +64,12 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
                           ? tvTheme.focusedCardColor
                           : tvTheme.cardColor,
                       borderRadius: BorderRadius.circular(34.sp),
-                      border: Border.all(
-                        color: focused ? tvTheme.focusColor : Colors.transparent,
-                        width: 2.sp,
-                      ),
+                      border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
                     ),
                     child: Text(
                       i18n(label),
-                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, 
+                      style: AppTextStyles.t18.copyWith(
+                        fontWeight: FontWeight.w600,
                         color: _tab == index ? tvTheme.focusColor : tvTheme.secondaryTextColor,
                       ),
                     ),
@@ -235,7 +231,10 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
                           follow.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
+                          style: AppTextStyles.t16.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: tvTheme.primaryTextColor,
+                          ),
                         ),
                         if (follow.sign.isNotEmpty) ...[
                           SizedBox(height: 4.sp),
@@ -243,7 +242,10 @@ class _FollowPaneState extends ConsumerState<_FollowPane> {
                             follow.sign,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w300, color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t14.copyWith(
+                              fontWeight: FontWeight.w300,
+                              color: tvTheme.secondaryTextColor,
+                            ),
                           ),
                         ],
                       ],
@@ -337,13 +339,7 @@ class _FavPaneState extends ConsumerState<_FavPane> {
               horizontalEdge: DpadEdgeBehavior.leave,
               child: GridView.builder(
                 padding: EdgeInsets.all(24.sp),
-                gridDelegate: TvAdaptiveGrid.media(
-                  context,
-                  crossAxisCount: 5,
-                  mainAxisSpacing: 16.w,
-                  crossAxisSpacing: 16.w,
-                  childAspectRatio: 0.95,
-                ),
+                gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                 itemCount: _resources!.length,
                 itemBuilder: (context, index) {
                   final archive = _resources![index].toArchive();
@@ -360,13 +356,7 @@ class _FavPaneState extends ConsumerState<_FavPane> {
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.media(
-          context,
-          crossAxisCount: 4,
-          mainAxisSpacing: 16.w,
-          crossAxisSpacing: 16.w,
-          childAspectRatio: 1.3,
-        ),
+        gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _folders!.length,
         itemBuilder: (context, index) {
           final folder = _folders![index];
@@ -472,7 +462,9 @@ class _HistoryPaneState extends ConsumerState<_HistoryPane> {
       return AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error);
     }
     if (_items.isEmpty && _loading) return AppStatusView(type: AppStatusType.loading, title: '', subtitle: '');
-    if (_items.isEmpty) return AppStatusView(type: AppStatusType.empty, title: i18n('music_history_empty'), subtitle: '');
+    if (_items.isEmpty) {
+      return AppStatusView(type: AppStatusType.empty, title: i18n('music_history_empty'), subtitle: '');
+    }
 
     return DpadRegion(
       child: ListView.builder(
@@ -532,7 +524,10 @@ class _HistoryPaneState extends ConsumerState<_HistoryPane> {
                           item.archive.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
+                          style: AppTextStyles.t18.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: tvTheme.primaryTextColor,
+                          ),
                         ),
                         SizedBox(height: 4.sp),
                         Text(
@@ -603,13 +598,7 @@ class _ToViewPaneState extends ConsumerState<_ToViewPane> {
     return DpadRegion(
       child: GridView.builder(
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.media(
-          context,
-          crossAxisCount: 5,
-          mainAxisSpacing: 16.w,
-          crossAxisSpacing: 16.w,
-          childAspectRatio: 0.95,
-        ),
+        gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _items!.length,
         itemBuilder: (context, index) {
           final archive = _items![index].archive;
@@ -702,13 +691,7 @@ class _BangumiPaneState extends ConsumerState<_BangumiPane> {
       child: GridView.builder(
         controller: _scroll,
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.media(
-          context,
-          crossAxisCount: 5,
-          mainAxisSpacing: 16.w,
-          crossAxisSpacing: 16.w,
-          childAspectRatio: 0.72,
-        ),
+        gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _items.length) {

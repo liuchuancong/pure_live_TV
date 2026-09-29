@@ -1,14 +1,12 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
-import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/media/models/models.dart';
+import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
-
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The UGC region browser, newBV's 分区: one tab per region, each showing that
 /// region's ranking feed (`ranking/v2?rid=`) — the guest-readable endpoint
@@ -91,7 +89,10 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
         TvTabBar(
           tabs: [
             for (final (_, labelKey, icon) in _regions)
-              TvTabItemData(title: i18n(labelKey), icon: Text(icon, style: AppTextStyles.t20)),
+              TvTabItemData(
+                title: i18n(labelKey),
+                icon: Text(icon, style: AppTextStyles.t20),
+              ),
           ],
           currentIndex: _selected,
           refreshing: _loading,
@@ -102,25 +103,25 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
           child: _loading
               ? AppStatusView(type: AppStatusType.loading, title: '', subtitle: '')
               : _errors[rid] != null
-                  ? AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _errors[rid])
-                  : DpadRegion(
-                      horizontalEdge: DpadEdgeBehavior.leave,
-                      child: GridView.builder(
-                        padding: EdgeInsets.all(24.sp),
-                        // newBV's density, sized for VideoCard (cover +
-                        // two-line title + UP line) — the shared delegate.
-                        gridDelegate: defaultVideoGridDelegate(context),
-                        itemCount: archives?.length ?? 0,
-                        itemBuilder: (context, index) {
-                          final archive = archives![index];
-                          return VideoCard(
-                            archive: archive,
-                            badge: '${index + 1}',
-                            onTap: () => openVideoArchive(context, ref, archive),
-                          );
-                        },
-                      ),
-                    ),
+              ? AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _errors[rid])
+              : DpadRegion(
+                  horizontalEdge: DpadEdgeBehavior.leave,
+                  child: GridView.builder(
+                    padding: EdgeInsets.all(24.sp),
+                    // newBV's density, sized for VideoCard (cover +
+                    // two-line title + UP line) — the shared delegate.
+                    gridDelegate: defaultVideoGridDelegate(context, ref),
+                    itemCount: archives?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final archive = archives![index];
+                      return VideoCard(
+                        archive: archive,
+                        badge: '${index + 1}',
+                        onTap: () => openVideoArchive(context, ref, archive),
+                      );
+                    },
+                  ),
+                ),
         ),
       ],
     );

@@ -380,13 +380,7 @@ class _PgcResultsState extends ConsumerState<_PgcResults> {
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.media(
-          context,
-          crossAxisCount: 5,
-          mainAxisSpacing: 16.w,
-          crossAxisSpacing: 16.w,
-          childAspectRatio: 0.72,
-        ),
+        gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _seasons.length,
         itemBuilder: (context, index) {
           final season = _seasons[index];

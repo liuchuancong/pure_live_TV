@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:pure_live/services/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
+import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
+import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
+import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_pgc_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
 import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';
 import 'package:pure_live/modules/video/pages/personal/video_personal_page.dart';
-import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/services/index.dart';
+import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 
 /// Video mode sections. The section rail lives in the home sidebar; this file
 /// builds section content only, so the mode swaps the whole navigation.
@@ -28,9 +27,7 @@ void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive)
     VideoDetailRoute(archive).push(context);
     return;
   }
-  ref
-      .read(musicPlayerControllerProvider.notifier)
-      .playQueue(archive.tracks, startIndex: 0, audioOnly: false);
+  ref.read(musicPlayerControllerProvider.notifier).playQueue(archive.tracks, startIndex: 0, audioOnly: false);
   const VideoPlayerRoute().push(context);
 }
 
@@ -39,14 +36,8 @@ void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive)
 /// the UP line come to about 1.15 total, and a little slack keeps a one-line
 /// title from overflowing the cell. The density follows the font scale, so
 /// this is a function of the ambient context rather than a const.
-SliverGridDelegateWithFixedCrossAxisCount defaultVideoGridDelegate(BuildContext context) =>
-    TvAdaptiveGrid.media(
-      context,
-      crossAxisCount: 4,
-      mainAxisSpacing: 12.0,
-      crossAxisSpacing: 24.0,
-      childAspectRatio: 1.0,
-    );
+SliverGridDelegateWithFixedCrossAxisCount defaultVideoGridDelegate(BuildContext context, WidgetRef ref) =>
+    ThemeSettingsController.cardGridDelegate(context, ref);
 
 /// Content of one video section. Login is enforced by the home shell's
 /// [BilibiliLoginGate], not here.
@@ -138,11 +129,9 @@ class _PagedGridTabState<W extends _PagedGridTab> extends ConsumerState<W> {
       key: ValueKey('video_grid_${widget.tabKey}'),
       param: param,
       getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-      gridDelegate: defaultVideoGridDelegate(context),
-      itemBuilder: (context, archive, index) => VideoCard(
-        archive: archive,
-        onTap: () => openVideoArchive(context, ref, archive),
-      ),
+      gridDelegate: defaultVideoGridDelegate(context, ref),
+      itemBuilder: (context, archive, index) =>
+          VideoCard(archive: archive, onTap: () => openVideoArchive(context, ref, archive)),
     );
   }
 }

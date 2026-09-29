@@ -1,12 +1,13 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/video/video_home_page.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/media/widgets/music_video_card.dart';
-import 'package:pure_live/modules/media/models/models.dart';
 
 /// The followed users' video feed (bmsc/newBV's dynamics), shared by the
 /// music and video home rails: one grid paging the offset-based API.
@@ -83,13 +84,7 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
       child: GridView.builder(
         controller: _scroll,
         padding: EdgeInsets.all(24.sp),
-        gridDelegate: TvAdaptiveGrid.media(
-          context,
-          crossAxisCount: 4,
-          mainAxisSpacing: 16.w,
-          crossAxisSpacing: 16.w,
-          childAspectRatio: 1.05,
-        ),
+        gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _items.length) {

@@ -568,13 +568,7 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: GridView.builder(
                       padding: EdgeInsets.all(24.sp),
-                      gridDelegate: TvAdaptiveGrid.media(
-                        context,
-                        crossAxisCount: 4,
-                        mainAxisSpacing: 16.w,
-                        crossAxisSpacing: 16.w,
-                        childAspectRatio: 1.05,
-                      ),
+                      gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                       itemCount: library.favorites.length,
                       itemBuilder: (context, index) {
                         final archive = library.favorites[index];
@@ -1043,13 +1037,7 @@ class _DailySectionState extends ConsumerState<_DailySection> {
                   horizontalEdge: DpadEdgeBehavior.leave,
                   child: GridView.builder(
                     padding: EdgeInsets.all(24.sp),
-                    gridDelegate: TvAdaptiveGrid.media(
-                      context,
-                      crossAxisCount: 4,
-                      mainAxisSpacing: 16.w,
-                      crossAxisSpacing: 16.w,
-                      childAspectRatio: 1.05,
-                    ),
+                    gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                     itemCount: recs.length,
                     itemBuilder: (context, index) {
                       final archive = recs[index];
