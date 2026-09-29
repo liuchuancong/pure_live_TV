@@ -279,6 +279,34 @@ class MusicPlayerController extends _$MusicPlayerController {
     await _openCurrent();
   }
 
+  /// Mainstream 下一首播放: puts [track] right after the playing one. With no
+  /// queue at all the track starts playing by itself. A track already sitting
+  /// in the next slot reports and does nothing.
+  Future<void> playNext(MusicTrack track) async {
+    if (state.queue.isEmpty) {
+      await playQueue([track]);
+      return;
+    }
+    final queue = List<MusicTrack>.from(state.queue);
+    final existing = queue.indexWhere((t) => t.id == track.id);
+    if (existing >= 0) {
+      if (existing == state.index + 1) {
+        ToastUtil.show(i18n('music_already_next'));
+        return;
+      }
+      queue.removeAt(existing);
+      var insertAt = state.index + 1;
+      if (existing < state.index) insertAt -= 1;
+      queue.insert(insertAt.clamp(0, queue.length), track);
+      state = state.copyWith(queue: List.unmodifiable(queue));
+      ToastUtil.show(i18n('music_set_next'));
+      return;
+    }
+    queue.insert((state.index + 1).clamp(0, queue.length), track);
+    state = state.copyWith(queue: List.unmodifiable(queue));
+    ToastUtil.show(i18n('music_set_next'));
+  }
+
   /// Jumps within the current queue.
   Future<void> jumpTo(int index) async {
     if (index < 0 || index >= state.queue.length || index == state.index) return;

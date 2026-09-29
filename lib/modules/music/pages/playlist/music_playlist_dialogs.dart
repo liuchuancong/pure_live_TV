@@ -8,10 +8,10 @@ import 'package:pure_live/modules/music/controllers/library/music_library_contro
 
 /// 新建歌单 / 编辑歌单: one name field. With [playlist] it renames in place;
 /// without it a new playlist is created. The controller refuses empty names.
-Future<void> showPlaylistNameDialog(BuildContext context, WidgetRef ref, {MusicUserPlaylist? playlist}) {
+Future<String?> showPlaylistNameDialog(BuildContext context, WidgetRef ref, {MusicUserPlaylist? playlist}) {
   final editing = playlist != null;
   final controller = TextEditingController(text: editing ? playlist.name : '');
-  return TvDialogUtils.show<void>(
+  return TvDialogUtils.show<String>(
     context: context,
     builder: (_) => TvDialog(
       title: i18n(editing ? 'music_edit_playlist' : 'music_create_playlist'),
@@ -21,10 +21,11 @@ Future<void> showPlaylistNameDialog(BuildContext context, WidgetRef ref, {MusicU
         final libraryController = ref.read(musicLibraryControllerProvider.notifier);
         if (editing) {
           libraryController.renamePlaylist(playlist.id, controller.text);
+          Navigator.of(context).pop(playlist.id);
         } else {
-          libraryController.createPlaylist(controller.text);
+          final id = libraryController.createPlaylist(controller.text);
+          Navigator.of(context).pop(id);
         }
-        Navigator.of(context).pop();
       },
       child: TvInputField(controller: controller, hint: i18n('music_playlist_name_hint'), maxLines: 1),
     ),
@@ -111,4 +112,47 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
       ),
     ),
   );
+}
+
+/// Picks one local playlist (creating one on the fly counts). Returns the id,
+/// or null when cancelled.
+Future<String?> showPlaylistPicker(BuildContext context, WidgetRef ref) async {
+  final playlists = ref.read(musicLibraryControllerProvider).orderedPlaylists;
+  if (playlists.isEmpty) {
+    return showPlaylistNameDialog(context, ref);
+  }
+
+  String? picked;
+  await TvDialogUtils.show<void>(
+    context: context,
+    builder: (_) => TvDialog(
+      title: i18n('music_save_to_playlist'),
+      cancelText: i18n('cancel'),
+      width: 560.sp,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (index, playlist) in playlists.indexed)
+            TvDialogOptionTile(
+              title: playlist.name,
+              subtitle: '${playlist.tracks.length}',
+              icon: Icon(Icons.queue_music_rounded, size: 26.sp),
+              showCheck: false,
+              autofocus: index == 0,
+              onTap: () => Navigator.of(context).pop(playlist.id),
+            ),
+          TvDialogOptionTile(
+            title: i18n('music_create_playlist'),
+            icon: Icon(Icons.add_rounded, size: 26.sp),
+            showCheck: false,
+            onTap: () async {
+              final id = await showPlaylistNameDialog(context, ref);
+              if (context.mounted) Navigator.of(context).pop(id);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+  return picked;
 }

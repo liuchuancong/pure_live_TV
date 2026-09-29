@@ -293,6 +293,23 @@ class MusicLibraryController extends _$MusicLibraryController {
     ToastUtil.show(i18n('music_added_to_playlist'));
   }
 
+  /// Batch-adds [tracks] to a playlist, silently skipping the ones it already
+  /// holds — the batch save (关注 albums → 歌单) toasts a summary once instead
+  /// of a toast per track. Returns how many actually landed.
+  int addTracksToPlaylist(String id, List<MusicTrack> tracks) {
+    final at = state.playlists.indexWhere((p) => p.id == id);
+    if (at < 0) return 0;
+    final playlist = state.playlists[at];
+    final known = playlist.tracks.map((t) => t.id).toSet();
+    final fresh = <MusicTrack>[];
+    for (final track in tracks) {
+      if (known.add(track.id)) fresh.add(track);
+    }
+    if (fresh.isEmpty) return 0;
+    _replacePlaylist(at, playlist.copyWith(tracks: List.unmodifiable([...playlist.tracks, ...fresh])));
+    return fresh.length;
+  }
+
   void removeTrackFromPlaylist(String id, String trackId) {
     final at = state.playlists.indexWhere((p) => p.id == id);
     if (at < 0) return;

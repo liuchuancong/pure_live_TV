@@ -20,6 +20,7 @@ import 'package:pure_live/services/theme_settings/theme_settings_controller.dart
 import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/services/daily_recommendation_service.dart';
+import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 import 'package:pure_live/modules/music/pages/discover/music_cloud_history_page.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
@@ -112,6 +113,7 @@ class MusicSectionView extends ConsumerWidget {
     );
   }
 }
+
 
 /// Favorites / Recently played: the QQ music song-table — index, cover, title+singer,
 /// duration — with a Play all header and long-press removal.
@@ -214,13 +216,13 @@ class _SongListSectionState extends ConsumerState<_SongListSection> {
                   index: index,
                   focusNode: _reveal.nodeFor(track),
                   onPlay: () => _play(context, ref, tracks, index),
-                  onRemove: () {
-                    if (isFavorites) {
-                      libraryController.removeFavorite(track.archive.bvid);
-                    } else {
-                      libraryController.removeRecent(track.archive.bvid);
-                    }
-                  },
+                  onRemove: () => showMusicSongMenu(
+                    context,
+                    ref,
+                    track: track,
+                    remove: isFavorites ? MusicSongMenuRemove.none : MusicSongMenuRemove.recent,
+                    removeLabelKey: 'music_remove_from_recent',
+                  ),
                 );
               },
             ),
@@ -414,6 +416,11 @@ class _FollowSection extends ConsumerStatefulWidget {
 class _FollowSectionState extends ConsumerState<_FollowSection> {
   int _tab = 0;
 
+  /// The album tab's multi-select save (关注 albums into one playlist):
+  /// long press enters the mode, taps toggle, the bar saves to a playlist.
+  bool _selectingAlbums = false;
+  final Set<String> _selectedAlbums = <String>{};
+
   @override
   Widget build(BuildContext context) {
     final library = ref.watch(musicLibraryControllerProvider);
@@ -450,6 +457,45 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
             onTabChange: (index) => setState(() => _tab = index),
           ),
         ),
+        if (_selectingAlbums && _tab == 0)
+          Padding(
+            padding: EdgeInsets.fromLTRB(24.sp, 0, 24.sp, 10.sp),
+            child: Row(
+              children: [
+                Text(
+                  '${i18n('music_selected')} ${_selectedAlbums.length}',
+                  style: AppTextStyles.t16W600.copyWith(color: accent),
+                ),
+                const Spacer(),
+                TvButton(
+                  title: i18n('music_select_all'),
+                  size: TvButtonSize.mini,
+                  onTap: () => setState(() {
+                    _selectedAlbums
+                      ..clear()
+                      ..addAll([for (final a in library.favorites) a.bvid]);
+                  }),
+                ),
+                SizedBox(width: 12.sp),
+                TvButton(
+                  title: i18n('cancel'),
+                  size: TvButtonSize.mini,
+                  isSecondary: true,
+                  onTap: () => setState(() {
+                    _selectingAlbums = false;
+                    _selectedAlbums.clear();
+                  }),
+                ),
+                SizedBox(width: 12.sp),
+                TvButton(
+                  title: i18n('music_save_to_playlist'),
+                  icon: Icon(Icons.playlist_add_rounded, size: 22.sp),
+                  size: TvButtonSize.mini,
+                  onTap: _selectedAlbums.isEmpty ? null : () => _saveSelectedToPlaylist(),
+                ),
+              ],
+            ),
+          ),
         if (_tab == 0)
           Expanded(
             child: library.favorites.isEmpty
@@ -472,10 +518,40 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
                       itemCount: library.favorites.length,
                       itemBuilder: (context, index) {
                         final archive = library.favorites[index];
-                        return MusicVideoCard(
-                          archive: archive,
-                          onTap: () => MusicArchiveRoute(archive).push(context),
-                          onLongPress: () => _confirmUnfollowArchive(context, ref, archive),
+                        final selected = _selectedAlbums.contains(archive.bvid);
+                        void toggle() => setState(() {
+                          selected ? _selectedAlbums.remove(archive.bvid) : _selectedAlbums.add(archive.bvid);
+                        });
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            MusicVideoCard(
+                              archive: archive,
+                              // Selection mode retasks the taps: OK toggles
+                              // the check instead of opening the detail page.
+                              onTap: _selectingAlbums ? toggle : () => MusicArchiveRoute(archive).push(context),
+                              onLongPress: () {
+                                if (_selectingAlbums) {
+                                  toggle();
+                                  return;
+                                }
+                                _confirmUnfollowArchive(context, ref, archive);
+                              },
+                            ),
+                            if (selected)
+                              Positioned(
+                                left: 10.sp,
+                                top: 10.sp,
+                                child: IgnorePointer(
+                                  child: Container(
+                                    width: 44.sp,
+                                    height: 44.sp,
+                                    decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                                    child: Icon(Icons.check_rounded, size: 28.sp, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                          ],
                         );
                       },
                     ),
@@ -515,7 +591,39 @@ class _FollowSectionState extends ConsumerState<_FollowSection> {
       ],
     );
   }
+/// Saves the selected albums into one playlist: every album's full part
+  /// list is fetched (search stubs carry no cids) and added with silent
+  /// dedupe — the toast reports added and skipped in one line.
+  Future<void> _saveSelectedToPlaylist() async {
+    final library = ref.read(musicLibraryControllerProvider);
+    final archives = library.favorites.where((a) => _selectedAlbums.contains(a.bvid)).toList();
+    if (archives.isEmpty) return;
+    final id = await showPlaylistPicker(context, ref);
+    if (id == null || !mounted) return;
+    final libraryController = ref.read(musicLibraryControllerProvider.notifier);
+    var added = 0;
+    var skipped = 0;
+    for (final archive in archives) {
+      try {
+        final detail = await BilibiliMusicApi.instance.getArchiveDetail(archive.bvid);
+        final tracks = detail.tracks;
+        final landed = libraryController.addTracksToPlaylist(id, tracks);
+        added += landed;
+        skipped += tracks.length - landed;
+      } catch (_) {
+        skipped += 1;
+      }
+    }
+    if (!mounted) return;
+    ToastUtil.show(i18n('music_added_skipped', args: {'added': '$added', 'skipped': '$skipped'}));
+    setState(() {
+      _selectingAlbums = false;
+      _selectedAlbums.clear();
+    });
+  }
+
 }
+
 
 /// Long press on a followed album: one explicit row, not a silent side effect.
 Future<void> _confirmUnfollowArchive(BuildContext context, WidgetRef ref, MusicArchive archive) async {
@@ -529,10 +637,20 @@ Future<void> _confirmUnfollowArchive(BuildContext context, WidgetRef ref, MusicA
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TvDialogOptionTile(
+            title: i18n('music_play_album'),
+            icon: Icon(Icons.play_circle_fill_rounded, size: 26.sp),
+            showCheck: false,
+            autofocus: true,
+            onTap: () {
+              Navigator.of(context).pop();
+              ref.read(musicPlayerControllerProvider.notifier).playQueue(archive.tracks);
+              const MusicPlayerRoute().push(context);
+            },
+          ),
+          TvDialogOptionTile(
             title: i18n('music_unfollow_album'),
             icon: Icon(Icons.favorite_border_rounded, size: 26.sp),
             showCheck: false,
-            autofocus: true,
             onTap: () {
               Navigator.of(context).pop();
               ref.read(musicLibraryControllerProvider.notifier).removeFavorite(archive.bvid);
