@@ -1,4 +1,5 @@
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/utils/dpad_long_press_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,7 +15,7 @@ import 'package:pure_live/modules/media/models/models.dart';
 /// as the cover's bottom bar), [pubTime] (overrides the archive's own publish
 /// date in the caption) and [onLongPress] let the video module's grids reuse
 /// the same shell.
-class MusicVideoCard extends StatelessWidget {
+class MusicVideoCard extends StatefulWidget {
   const MusicVideoCard({
     super.key,
     required this.archive,
@@ -41,15 +42,29 @@ class MusicVideoCard extends StatelessWidget {
   /// Caption date; null falls back to the archive's own publish date.
   final String? pubTime;
 
+  @override
+  State<MusicVideoCard> createState() => _MusicVideoCardState();
+
   static String formatDuration(int seconds) {
     if (seconds <= 0) return '';
     final m = seconds ~/ 60;
     final s = seconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
+}
+
+class _MusicVideoCardState extends State<MusicVideoCard> {
+  /// TvRoomCard's long-press gate: a hold opens this card's long-press action,
+  /// and the hold's release must never also fire the tap on its way out.
+  final DpadLongPressGate _longPressGate = DpadLongPressGate();
 
   @override
   Widget build(BuildContext context) {
+    final MusicArchive archive = widget.archive;
+    final String badge = widget.badge;
+    final String? pubTime = widget.pubTime;
+    final bool showDuration = widget.showDuration;
+    final double progress = widget.progress;
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(18.sp);
 
@@ -136,7 +151,7 @@ class MusicVideoCard extends StatelessWidget {
                       Positioned(
                         right: 12.sp,
                         bottom: 12.sp,
-                        child: _CoverChip(label: formatDuration(archive.duration)),
+                        child: _CoverChip(label: MusicVideoCard.formatDuration(archive.duration)),
                       ),
                     if (progress > 0)
                       Positioned(
@@ -207,8 +222,16 @@ class MusicVideoCard extends StatelessWidget {
     return DpadFocusable(
       autofocus: false,
       effects: effects,
-      onSelect: onTap,
-      onLongSelect: onLongPress,
+      onSelect: () {
+        if (_longPressGate.swallowSelect()) return;
+        widget.onTap?.call();
+      },
+      onLongSelect: widget.onLongPress == null
+          ? null
+          : () {
+              _longPressGate.markLongPress();
+              widget.onLongPress!.call();
+            },
       child: const SizedBox(),
     );
   }

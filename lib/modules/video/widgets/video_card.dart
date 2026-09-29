@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dpad/dpad.dart';
+import 'package:pure_live/shared/utils/dpad_long_press_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/app/router/app_router.dart';
@@ -34,6 +35,9 @@ class VideoCard extends ConsumerStatefulWidget {
 }
 
 class _VideoCardState extends ConsumerState<VideoCard> {
+  /// TvRoomCard's long-press gate — see [DpadLongPressGate].
+  final DpadLongPressGate _longPressGate = DpadLongPressGate();
+
   bool _actionsOpen = false;
 
   /// "3.2万" style, the same 万-abbreviation the reference uses.
@@ -316,8 +320,18 @@ class _VideoCardState extends ConsumerState<VideoCard> {
 
     return DpadFocusable(
       effects: effects,
-      onSelect: widget.onTap,
-      onLongSelect: archive.aid > 0 ? () => setState(() => _actionsOpen = true) : null,
+      // TvRoomCard's long-press gate: opening the actions row on a hold must
+      // not also fire the hold's release as a tap.
+      onSelect: () {
+        if (_longPressGate.swallowSelect()) return;
+        widget.onTap.call();
+      },
+      onLongSelect: archive.aid > 0
+          ? () {
+              _longPressGate.markLongPress();
+              setState(() => _actionsOpen = true);
+            }
+          : null,
       child: const SizedBox.shrink(),
     );
   }
