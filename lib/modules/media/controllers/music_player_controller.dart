@@ -8,6 +8,7 @@ import 'package:media_core_media_kit/media_core_media_kit.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/player/core/playback_header_resolver.dart';
 import 'package:pure_live/player/global_player_service.dart';
 import 'package:pure_live/player/models/player_engine.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
@@ -719,7 +720,9 @@ class MusicPlayerController extends _$MusicPlayerController {
     _currentUrls = urls;
     _currentBvid = bvid;
 
-    final headers = await _api.streamHeaders(bvid);
+    // The VOD branch of the playback header resolver: the live bilibili
+    // policy with the video-page Referer.
+    final headers = await PlaybackHeaderResolver.resolveVod(bvid: bvid);
 
     // 纯音乐 prefers the cached file: once a track has been heard, replaying it
     // asks nothing from the network. The file carries no picture, so the video
