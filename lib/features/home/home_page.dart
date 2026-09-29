@@ -428,7 +428,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                         padding: EdgeInsets.only(bottom: 6.sp * textScale),
                         child: TvDigitalClock(
                           format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
-                          style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
+                          style: AppTextStyles.t20.copyWith(
+                            fontWeight: FontWeight.w600,
                             color: currentTvTheme.primaryTextColor,
                             height: 1,
                             letterSpacing: 1.5,
@@ -438,7 +439,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       if (isExpanded)
                         TvDigitalClock(
                           format: 'yyyy/MM/dd',
-                          style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: currentTvTheme.secondaryTextColor, height: 1),
+                          style: AppTextStyles.t14.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: currentTvTheme.secondaryTextColor,
+                            height: 1,
+                          ),
                         ),
                       SizedBox(height: 15.sp * textScale),
                       Padding(
@@ -617,7 +622,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         // tile carries its two-character name underneath.
         label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
         selected: isSelected,
-        size: TvIconButtonSize.medium,
+        size: TvIconButtonSize.large,
         useFadedFocus: true,
         isSecondary: !isSelected,
         expand: true,

@@ -61,18 +61,17 @@ class TvQrCodeCard extends StatelessWidget {
         ),
         if (urlText?.isNotEmpty ?? false) ...[
           SizedBox(height: 10.sp),
-          // scaleDown against the code's own width: a long label (hash-route
-          // URLs ran ~40 chars at 24sp) used to overflow the line and clip off
-          // the edge of the screen, so the address and port were never visible.
-          // The card's width IS the code's width, and the bound must be finite
-          // — `SizedBox(width: double.infinity)` here sat inside this file's
-          // own outer FittedBox, whose child gets unbounded constraints, and
-          // that infinity crashed the whole layout (the movie page's pairing
-          // card was where it fired).
+          // scaleDown against a bound wider than the code itself (and growing
+          // with the font): a long address line (hash-route URLs ran ~40 chars
+          // at 24sp) squeezed against the bare code width turned into dust —
+          // the whole point of the label is that it stays readable. The bound
+          // must stay finite: this label row sits inside this file's own outer
+          // FittedBox, whose child gets unbounded constraints, and a
+          // `double.infinity` here crashed the whole layout.
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.sp),
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: qrSize.sp),
+              constraints: BoxConstraints(maxWidth: qrSize.sp * 1.6 * TvTextScale.factorOf(context)),
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.center,

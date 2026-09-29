@@ -2894,7 +2894,7 @@
   "video_danmaku_send_rules": "Follow community rules; sent to bilibili in real time",
   "video_danmaku_sent": "Danmaku sent",
   "send": "Send",
-  "cookie_scan_hint": "A remote cannot type a cookie this long: scan the code, paste or sign in on the phone, and this device syncs it automatically.",
+  "cookie_scan_hint": "Scan, sign in on the phone, and this TV syncs it",
   "music_lyric_pick": "Pick lyrics",
   "music_lyric_none": "No usable lyrics found",
   "music_lyric_picked": "Lyrics saved as the default for this track",
