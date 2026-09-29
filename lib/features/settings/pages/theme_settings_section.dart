@@ -136,7 +136,12 @@ class ThemeSettingsSectionPage extends ConsumerWidget {
                 icon: Icons.format_size_rounded,
                 value: fontTextScale,
                 min: 0.8,
-                max: 1.6,
+                // The user scale stacks on the panel's legibility correction
+                // (1.5x on a 720p TV), so 1.6 here painted at 2.4x and broke
+                // every layout that followed the font. 1.3 keeps the worst
+                // case at 1.95x — past what the panel lift already gives,
+                // short of the zone where grids collapse and dialogs scroll.
+                max: 1.3,
                 step: 0.05,
                 displayValue: '${(fontTextScale * 100).toStringAsFixed(0)}%',
                 onChanged: (v) => font.updateSettings(fontSettings.copyWith(textScaleFactor: v)),

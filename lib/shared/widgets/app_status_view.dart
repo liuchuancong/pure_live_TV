@@ -349,7 +349,8 @@ class _AppStatusViewState extends State<AppStatusView> {
           widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded,
           size: 24.sp * TvTextScale.factorOf(context),
         );
-    // The column must survive extreme font scales (real devices run 2.4x):
+    // The column must survive extreme font scales (a 720p panel's lift plus
+    // the user's slider tops out near 2x):
     // while it fits its box it stays centered exactly as before, and once it
     // outgrows the box it scrolls instead of painting an overflow stripe.
     return Center(

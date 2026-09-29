@@ -51,7 +51,10 @@ class FontSettingsController extends _$FontSettingsController {
     await _restoreFontFamily(HivePrefUtil.getString(_familyKey) ?? 'Default');
 
     return FontSettingsModel(
-      textScaleFactor: HivePrefUtil.getDouble('textScaleFactor') ?? 1.0,
+      // Clamp the stored scale into the slider's range: a value saved under the
+      // old 1.6 max paints at 2.4x on a 720p panel once the legibility
+      // correction stacks on, which is where every scaled layout broke.
+      textScaleFactor: (HivePrefUtil.getDouble('textScaleFactor') ?? 1.0).clamp(0.8, 1.3),
       fontFamilyName: HivePrefUtil.getString(_familyKey) ?? 'Default',
     );
   }

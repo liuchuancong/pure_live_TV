@@ -278,18 +278,22 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                               TvMarqueeText(
                                 text: widget.room.title,
                                 isFocused: isFocused,
-                                style: (compact ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700) : AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700)).copyWith(
-                                  color: titleColor,
-                                ),
+                                style:
+                                    (compact
+                                            ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700)
+                                            : AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700))
+                                        .copyWith(color: titleColor),
                               ),
                               SizedBox(height: (compact ? 2.sp : 4.sp) * textScale),
                               Text(
                                 widget.room.nick,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: (compact ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500) : AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500)).copyWith(
-                                  color: subtitleColor,
-                                ),
+                                style:
+                                    (compact
+                                            ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500)
+                                            : AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500))
+                                        .copyWith(color: subtitleColor),
                               ),
                             ],
                           ),
@@ -355,24 +359,21 @@ class _CoverChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 5.sp),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(8.sp),
+        color: Colors.black.withValues(alpha: 0.98),
+        borderRadius: BorderRadius.circular(20.sp),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
-            Icon(icon, size: 13.sp, color: iconColor ?? Colors.white),
-            SizedBox(width: 4.sp),
-          ],
+          if (icon != null) ...[Icon(icon, size: 13.sp, color: iconColor ?? Colors.white), SizedBox(width: 4.sp)],
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: Colors.white),
+              style: AppTextStyles.t14.copyWith(fontSize: 14.sp, color: Colors.white),
             ),
           ),
         ],
