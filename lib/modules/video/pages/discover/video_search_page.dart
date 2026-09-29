@@ -138,7 +138,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
             crossAxisCount: themeState.denseRoomLayout,
             mainAxisSpacing: themeState.mainAxisSpacing.w,
             crossAxisSpacing: themeState.crossAxisSpacing.w,
-            childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout) + 0.14,
+            childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
           ),
           itemBuilder: (context, archive, index) => VideoCard(
             archive: archive,

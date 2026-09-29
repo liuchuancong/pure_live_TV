@@ -161,11 +161,12 @@ class _PgcCard extends StatelessWidget {
     return TvFocusable(
       onTap: () => VideoSeasonRoute(item).push(context),
       builder: (context, focused, child) => AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
+        duration: TvFocusStyle.focusDuration(focused),
+        curve: TvFocusStyle.curve,
         decoration: BoxDecoration(
-          color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(14.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
+          color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+          borderRadius: BorderRadius.circular(24.sp),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,26 +177,19 @@ class _PgcCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(14.sp)),
+                    borderRadius: BorderRadius.circular(24.sp),
                     child: CachedNetworkImage(
                       imageUrl: item.cover,
                       fit: BoxFit.cover,
                       memCacheWidth: 480,
-                      errorWidget: (_, _, _) => Container(color: Colors.black26),
+                      errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
                     ),
                   ),
                   if (item.badge.isNotEmpty)
                     Positioned(
-                      left: 8.sp,
-                      top: 8.sp,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 3.sp),
-                        decoration: BoxDecoration(
-                          color: accent.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(8.sp),
-                        ),
-                        child: Text(item.badge, style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
-                      ),
+                      left: 12.sp,
+                      top: 12.sp,
+                      child: TvCoverChip(label: item.badge),
                     ),
                   if (item.rating > 0)
                     Positioned(
@@ -213,24 +207,27 @@ class _PgcCard extends StatelessWidget {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: EdgeInsets.all(8.sp),
+                padding: EdgeInsets.all(10.sp),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        item.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
+                    TvMarqueeText(
+                      text: item.title,
+                      isFocused: focused,
+                      style: AppTextStyles.t14.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                       ),
                     ),
+                    SizedBox(height: 4.sp),
                     if (item.subtitle.isNotEmpty)
                       Text(
                         item.subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor),
+                        style: AppTextStyles.t14.copyWith(
+                          color: focused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor,
+                        ),
                       ),
                   ],
                 ),

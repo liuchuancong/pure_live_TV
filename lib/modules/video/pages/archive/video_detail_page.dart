@@ -346,19 +346,19 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                       ],
                     ),
                   ),
-                  DpadRegion(
-                    verticalEdge: DpadEdgeBehavior.leave,
-                    horizontalEdge: DpadEdgeBehavior.leave,
-                    enter: DpadEnterBehavior.nearest,
-                    child: Column(
-                      children: [
-                        for (final (index, track) in tracks.indexed)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 8.sp),
-                            child: _PartTile(track: track, index: index, onTap: () => _play(tracks, index)),
-                          ),
-                      ],
-                    ),
+                  // Plain focusables, no wrapping region: the favour detail
+                  // page and the player panels prove bare rows in a scroll
+                  // view are reachable by the remote, while this page's region
+                  // wrapper (a traversal-group boundary) was exactly what the
+                  // Down key could not cross.
+                  Column(
+                    children: [
+                      for (final (index, track) in tracks.indexed)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 8.sp),
+                          child: _PartTile(track: track, index: index, onTap: () => _play(tracks, index)),
+                        ),
+                    ],
                   ),
                   if (_related.isNotEmpty) ...[
                     SizedBox(height: 16.sp),

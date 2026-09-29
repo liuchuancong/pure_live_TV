@@ -117,11 +117,12 @@ class _BangumiCard extends StatelessWidget {
     return TvFocusable(
       onTap: () => VideoSeasonRoute(item).push(context),
       builder: (context, focused, child) => AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
+        duration: TvFocusStyle.focusDuration(focused),
+        curve: TvFocusStyle.curve,
         decoration: BoxDecoration(
-          color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(14.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
+          color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
+          borderRadius: BorderRadius.circular(24.sp),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,13 +130,13 @@ class _BangumiCard extends StatelessWidget {
             Expanded(
               flex: 5,
               child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(14.sp)),
+                borderRadius: BorderRadius.circular(24.sp),
                 child: CachedNetworkImage(
                   imageUrl: item.cover,
                   fit: BoxFit.cover,
                   width: double.infinity,
                   memCacheWidth: 480,
-                  errorWidget: (_, _, _) => Container(color: Colors.black26),
+                  errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
                 ),
               ),
             ),
@@ -143,11 +144,13 @@ class _BangumiCard extends StatelessWidget {
               flex: 2,
               child: Padding(
                 padding: EdgeInsets.all(8.sp),
-                child: Text(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
+                child: TvMarqueeText(
+                  text: item.title,
+                  isFocused: focused,
+                  style: AppTextStyles.t14.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+                  ),
                 ),
               ),
             ),
