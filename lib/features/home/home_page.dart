@@ -4,20 +4,19 @@ import 'package:pure_live/features/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/music/music_section.dart';
-import 'package:pure_live/modules/music/music_section_view.dart';
-import 'package:pure_live/modules/music/widgets/music_mini_bar.dart';
-
 import 'package:pure_live/features/areas/areas_page.dart';
+import 'package:pure_live/modules/music/music_section.dart';
 import 'package:pure_live/features/home/home_provider.dart';
-import 'package:pure_live/features/history/history_page.dart';
 import 'package:pure_live/modules/video/video_section.dart';
-import 'package:pure_live/modules/video/video_section_view.dart';
+import 'package:pure_live/features/history/history_page.dart';
 import 'package:pure_live/features/search/tv_search_page.dart';
 import 'package:pure_live/features/favorite/favorite_page.dart';
+import 'package:pure_live/modules/music/music_section_view.dart';
+import 'package:pure_live/modules/video/video_section_view.dart';
 import 'package:pure_live/features/home/home_update_dialog.dart';
 import 'package:pure_live/features/home/exit_confirm_dialog.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
+import 'package:pure_live/modules/music/widgets/music_mini_bar.dart';
 import 'package:pure_live/features/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/features/favorite_areas/favorite_areas_page.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
@@ -69,109 +68,65 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  /// The mode picker dialog (bmsc's login-placeholder spirit: an explicit
-  /// choice, not a blind cycle). Picking a different mode first closes
-  /// whatever the previous module was playing — the speakers pass cleanly.
+  /// The mode picker (bmsc's login-placeholder spirit: an explicit choice,
+  /// not a blind cycle). The chrome is the 加入歌单 dialog's, verbatim — same
+  /// TvDialog width, title, row recipe and cancel — only the icons and the
+  /// labels differ. Picking a different mode first closes whatever the
+  /// previous module was playing — the speakers pass cleanly.
   Future<void> _showModeDialog() async {
     final current = ref.read(appModeControllerProvider);
-    final selected = await showDialog<AppMode>(
+    final AppMode? selected = await showDialog<AppMode>(
       context: context,
       builder: (context) {
         final tvTheme = context.tvTheme;
-        final accent = tvTheme.focusColor;
-        // The rows carry t20 labels, so the row's every dimension (height,
-        // glyphs, gaps) grows with the font — fixed numbers left the mode
-        // icons stamp-sized next to enlarged text.
-        final double scale = TvTextScale.factorOf(context);
-        return Dialog(
-          backgroundColor: tvTheme.cardColor,
-          // Compact on purpose: a mode picker is three rows, not a page. The
-          // vertical inset is half the old one: at the largest font the rows
-          // are nearly twice their drafted height, and 240.sp left the dialog
-          // clipping its own last row.
-          insetPadding: EdgeInsets.symmetric(horizontal: 480.sp, vertical: 120.sp),
-          child: Padding(
-            padding: EdgeInsets.all(24.sp * scale),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  i18n('mode_picker_title'),
-                  style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16.sp * scale),
-                // The rows scroll when the enlarged font outgrows the dialog's
-                // max height, and the dialog stays content-sized when they fit:
-                // min-size column + Flexible is what makes both true. The
-                // trailing padding keeps the last row clear of the dialog's
-                // rounded edge even while scrolled to the end.
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (final (mode, icon) in [
-                          (AppMode.live, Icons.live_tv_rounded),
-                          (AppMode.video, Icons.movie_outlined),
-                          (AppMode.music, Icons.library_music_outlined),
-                        ])
-                          Padding(
-                            padding: EdgeInsets.only(top: 10.sp * scale),
-                            child: TvFocusable(
-                              autofocus: mode == current,
-                              onTap: () => Navigator.pop(context, mode),
-                              builder: (context, focused, child) {
-                                final isSelected = mode == current;
-                                return AnimatedContainer(
-                                  duration: const Duration(milliseconds: 120),
-                                  height: 72.sp * scale,
-                                  padding: EdgeInsets.symmetric(horizontal: 20.sp * scale),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? accent.withValues(alpha: 0.18)
-                                        : focused
-                                        ? accent.withValues(alpha: 0.08)
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(14.sp * scale),
-                                    border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        icon,
-                                        size: 30.sp * scale,
-                                        color: isSelected ? accent : tvTheme.secondaryTextColor,
-                                      ),
-                                      SizedBox(width: 14.sp * scale),
-                                      Expanded(
-                                        child: Text(
-                                          i18n(switch (mode) {
-                                            AppMode.live => 'mode_live',
-                                            AppMode.video => 'mode_video',
-                                            AppMode.music => 'mode_music',
-                                          }),
-                                          style: AppTextStyles.t20.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            color: isSelected ? accent : tvTheme.primaryTextColor,
-                                          ),
-                                        ),
-                                      ),
-                                      if (isSelected) Icon(Icons.check_rounded, size: 26.sp * scale, color: accent),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        SizedBox(height: 4.sp * scale),
-                      ],
+
+        Widget modeRow(AppMode mode, IconData icon) {
+          final bool isSelected = mode == current;
+          return TvFocusable(
+            autofocus: isSelected,
+            onTap: () => Navigator.pop(context, mode),
+            builder: (context, focused, child) => AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+              decoration: BoxDecoration(
+                color: focused ? tvTheme.cardColor : Colors.transparent,
+                borderRadius: BorderRadius.circular(12.sp),
+                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, size: 26.sp, color: tvTheme.focusColor),
+                  SizedBox(width: 12.sp),
+                  Expanded(
+                    child: Text(
+                      i18n(switch (mode) {
+                        AppMode.live => 'mode_live',
+                        AppMode.video => 'mode_video',
+                        AppMode.music => 'mode_music',
+                      }),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                     ),
                   ),
-                ),
-              ],
+                  if (isSelected) Icon(Icons.check_rounded, size: 26.sp, color: tvTheme.focusColor),
+                ],
+              ),
             ),
+          );
+        }
+
+        return TvDialog(
+          title: i18n('mode_picker_title'),
+          cancelText: i18n('cancel'),
+          width: 640.sp,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              modeRow(AppMode.live, Icons.live_tv_rounded),
+              modeRow(AppMode.video, Icons.movie_outlined),
+              modeRow(AppMode.music, Icons.library_music_outlined),
+            ],
           ),
         );
       },
@@ -589,7 +544,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           title: item.title,
           icon: Icon(item.icon, size: 36.sp * textScale),
           iconPosition: TvIconPosition.left,
-          size: TvButtonSize.small,
+          size: TvButtonSize.medium,
           isSecondary: !isSelected,
           selected: isSelected,
           useFadedFocus: true,
@@ -608,7 +563,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           // tile carries its two-character name underneath.
           label: item.shortTitle.isEmpty ? item.title : item.shortTitle,
           selected: isSelected,
-          size: TvIconButtonSize.small,
+          size: TvIconButtonSize.medium,
           useFadedFocus: true,
           isSecondary: !isSelected,
           expand: false,
