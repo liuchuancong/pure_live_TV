@@ -2949,5 +2949,6 @@
   "music_tab_follow": "Follow",
   "empty_watch_history_title": "No watch history",
   "empty_watch_history_subtitle": "Watch history is saved automatically",
-  "empty_watch_history_action": "Browse Popular"
+  "empty_watch_history_action": "Browse Popular",
+  "music_tab_ups": "UPs"
 }

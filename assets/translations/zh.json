@@ -2949,5 +2949,6 @@
   "music_tab_follow": "关注",
   "empty_watch_history_title": "暂无观看记录",
   "empty_watch_history_subtitle": "观看记录将自动保存",
-  "empty_watch_history_action": "浏览热门"
+  "empty_watch_history_action": "浏览热门",
+  "music_tab_ups": "UP主"
 }

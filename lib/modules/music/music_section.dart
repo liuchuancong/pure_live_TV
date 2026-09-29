@@ -13,7 +13,7 @@ const List<List<MusicSection>> kMusicRailGroups = [
   [MusicSection.search],
   [MusicSection.playlists],
   [MusicSection.daily, MusicSection.dynamics, MusicSection.ranking],
-  [MusicSection.favorites, MusicSection.recents, MusicSection.history, MusicSection.followedUps],
+  [MusicSection.favorites, MusicSection.followedUps, MusicSection.recents, MusicSection.history],
 ];
 
 /// Which rail group [section] belongs to.
@@ -30,5 +30,5 @@ String musicSectionTabLabel(MusicSection section) => switch (section) {
   MusicSection.recents => i18n('music_short_recents'),
   MusicSection.playlists => i18n('music_short_playlists'),
   MusicSection.history => i18n('music_short_history'),
-  MusicSection.followedUps => i18n('music_tab_follow'),
+  MusicSection.followedUps => i18n('music_tab_ups'),
 };
