@@ -2942,5 +2942,9 @@
   "video_action_up_page": "UP 主主页",
   "music_clear_tracks": "清空歌曲",
   "music_clear_tracks_confirm": "确定清空该歌单的全部歌曲？",
-  "music_sync_folder": "同步更新"
+  "music_sync_folder": "同步更新",
+  "navigation_display_mode": "导航栏显示方式",
+  "nav_rail_expanded": "展开导航栏",
+  "nav_rail_expanded_desc": "开启后显示完整菜单名称，关闭仅显示图标",
+  "music_tab_follow": "关注"
 }

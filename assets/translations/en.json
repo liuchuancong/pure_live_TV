@@ -2942,5 +2942,9 @@
   "video_action_up_page": "Uploader Home",
   "music_clear_tracks": "Clear tracks",
   "music_clear_tracks_confirm": "Clear every track in this playlist?",
-  "music_sync_folder": "Sync now"
+  "music_sync_folder": "Sync now",
+  "navigation_display_mode": "Navigation display mode",
+  "nav_rail_expanded": "Expanded navigation rail",
+  "nav_rail_expanded_desc": "Show full menu labels; off shows icons only",
+  "music_tab_follow": "Follow"
 }

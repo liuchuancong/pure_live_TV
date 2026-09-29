@@ -17,6 +17,7 @@ import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/modules/music/pages/music_follow_pane.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_fav_folders_page.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/services/daily_recommendation_service.dart';
@@ -40,7 +41,7 @@ final musicUpSignProvider = FutureProvider.family<String, int>((ref, mid) async 
 /// Music mode sections. The section rail itself lives in the home sidebar —
 /// this file only builds section content, so the mode swaps the whole
 /// navigation instead of nesting its own.
-enum MusicSection { favorites, daily, recents, playlists, dynamics, history, ranking, search }
+enum MusicSection { favorites, daily, recents, playlists, dynamics, history, ranking, followedUps, search }
 
 /// The rail's four destinations, newBV's top-tab pattern: 搜索 and 歌单 on
 /// their own (a single-section group renders bare, no tab bar), then the
@@ -50,7 +51,7 @@ const List<List<MusicSection>> kMusicRailGroups = [
   [MusicSection.search],
   [MusicSection.playlists],
   [MusicSection.daily, MusicSection.dynamics, MusicSection.ranking],
-  [MusicSection.favorites, MusicSection.recents, MusicSection.history],
+  [MusicSection.favorites, MusicSection.recents, MusicSection.history, MusicSection.followedUps],
 ];
 
 /// Which rail group [section] belongs to.
@@ -67,6 +68,7 @@ String _musicSectionTabLabel(MusicSection section) => switch (section) {
   MusicSection.recents => i18n('music_short_recents'),
   MusicSection.playlists => i18n('music_short_playlists'),
   MusicSection.history => i18n('music_short_history'),
+  MusicSection.followedUps => i18n('music_tab_follow'),
 };
 
 /// Content of one music section. The section rail lives in the home sidebar;
@@ -90,6 +92,7 @@ class MusicSectionView extends ConsumerWidget {
       MusicSection.playlists => const MusicFavFoldersPage(key: ValueKey('music_playlists')),
       MusicSection.dynamics => const UgcDynamicsPage(key: ValueKey('music_dynamics')),
       MusicSection.history => const MusicCloudHistoryPage(key: ValueKey('music_history')),
+      MusicSection.followedUps => const MusicFollowPane(key: ValueKey('music_followed_ups')),
       MusicSection.ranking => const _RankingSection(key: ValueKey('music_ranking')),
       MusicSection.search => const _SearchSection(key: ValueKey('music_search')),
     };
