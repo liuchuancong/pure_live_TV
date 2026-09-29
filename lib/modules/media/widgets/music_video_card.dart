@@ -67,6 +67,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
     final double progress = widget.progress;
     final tvTheme = context.tvTheme;
     final borderRadius = BorderRadius.circular(18.sp);
+    final double textScale = TvTextScale.factorOf(context);
 
     final List<DpadEffect> effects = [
       DpadScaleEffect(
@@ -168,47 +169,34 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                   ],
                 ),
               ),
-              // Caption: the title over two lines, then the UP row.
+              // Caption: TvRoomCard's info row — the UP avatar leads a fixed
+              // slot, the title marquees while focused, and the UP name (with
+              // the publish date, when known) sits beneath.
               Padding(
-                padding: EdgeInsets.fromLTRB(10.sp, 10.sp, 12.sp, 10.sp),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                padding: EdgeInsets.fromLTRB(10.sp, 8.sp * textScale, 12.sp, 8.sp * textScale),
+                child: Row(
                   children: [
-                    Text(
-                      archive.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: titleColor, height: 1.3),
-                    ),
-                    SizedBox(height: 6.sp),
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 5.sp, vertical: 1.sp),
-                          decoration: BoxDecoration(
-                            color: secondaryColor.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(4.sp),
+                    TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName, radius: 20.sp),
+                    SizedBox(width: 10.sp),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TvMarqueeText(
+                            text: archive.title,
+                            isFocused: isFocused,
+                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w700, color: titleColor),
                           ),
-                          child: Text(
-                            'UP',
-                            style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700, color: secondaryColor, height: 1.1),
-                          ),
-                        ),
-                        SizedBox(width: 6.sp),
-                        Expanded(
-                          child: Text(
-                            archive.upName,
+                          SizedBox(height: 3.sp * textScale),
+                          Text(
+                            date.isNotEmpty ? '${archive.upName} · $date' : archive.upName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: secondaryColor),
                           ),
-                        ),
-                        if (date.isNotEmpty) ...[
-                          SizedBox(width: 8.sp),
-                          Text(date, style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: secondaryColor)),
                         ],
-                      ],
+                      ),
                     ),
                   ],
                 ),
