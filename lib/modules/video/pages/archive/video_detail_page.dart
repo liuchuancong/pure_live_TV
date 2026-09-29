@@ -421,13 +421,16 @@ class _ActionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+    // The chip's box is padding-driven and grows with its label; the glyph
+    // rides the same factor instead of staying at its drafted pixels.
+    final double scale = TvTextScale.factorOf(context);
 
     return TvFocusable(
       onTap: onTap,
       onLongPress: onLongPress,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 10.sp * scale),
         decoration: BoxDecoration(
           color: active
               ? accent.withValues(alpha: 0.2)
@@ -440,8 +443,8 @@ class _ActionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 22.sp, color: active ? accent : tvTheme.secondaryTextColor),
-            SizedBox(width: 8.sp),
+            Icon(icon, size: 22.sp * scale, color: active ? accent : tvTheme.secondaryTextColor),
+            SizedBox(width: 8.sp * scale),
             Text(
               label,
               style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, 

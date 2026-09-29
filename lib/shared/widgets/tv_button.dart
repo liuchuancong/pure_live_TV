@@ -124,7 +124,7 @@ class TvButton extends StatelessWidget {
       onSelect: excludeFocus ? null : onTap,
       focusNode: focusNode,
       effects: buildEffects(),
-      child: _buildLayout(baseTextStyle, space),
+      child: _buildLayout(baseTextStyle, space, iconSize),
     );
 
     if (excludeFocus) {
@@ -173,14 +173,26 @@ class TvButton extends StatelessWidget {
     };
   }
 
-  Widget _buildLayout(TextStyle textStyle, double space) {
+  Widget _buildLayout(TextStyle textStyle, double space, double iconSize) {
     final textWidget = Center(widthFactor: 1.0, child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis));
+
+    // The slot is tight-sized to the button's own scaled icon size and the
+    // icon FittedBox-fits it: callers pass `Icon(..., size: 22.sp)` with an
+    // explicit size that overrides this button's IconTheme, so without the
+    // slot every button icon stayed at its drafted pixels while the pill and
+    // its label grew with the font. Any icon widget — Icon, SVG, a rotated or
+    // badged one — scales to the slot the same way.
+    Widget iconSlot(Widget icon) => SizedBox(
+      width: iconSize,
+      height: iconSize,
+      child: FittedBox(fit: BoxFit.contain, child: icon),
+    );
 
     if (icon == null) {
       return Center(child: textWidget);
     }
     if (title.isEmpty && icon != null) {
-      return Center(child: icon!);
+      return Center(child: iconSlot(icon!));
     }
     // The text is the flexible part: a button squeezed by its parent (a tight
     // cell, a narrow bar) ellipsizes its label instead of overflowing the
@@ -189,14 +201,14 @@ class TvButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: switch (iconPosition) {
-        TvIconPosition.left => [icon!, SizedBox(width: space), Flexible(child: textWidget)],
-        TvIconPosition.right => [Flexible(child: textWidget), SizedBox(width: space), icon!],
+        TvIconPosition.left => [iconSlot(icon!), SizedBox(width: space), Flexible(child: textWidget)],
+        TvIconPosition.right => [Flexible(child: textWidget), SizedBox(width: space), iconSlot(icon!)],
         TvIconPosition.top => [
           Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              icon!,
+              iconSlot(icon!),
               SizedBox(height: space),
               Flexible(child: textWidget),
             ],
@@ -209,7 +221,7 @@ class TvButton extends StatelessWidget {
             children: [
               Flexible(child: textWidget),
               SizedBox(height: space),
-              icon!,
+              iconSlot(icon!),
             ],
           ),
         ],

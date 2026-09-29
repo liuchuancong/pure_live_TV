@@ -63,12 +63,15 @@ class TvDialogOptionTile extends StatelessWidget {
         final bool highlighted = focused || selected;
         final Color foreground = highlighted ? Colors.white : tvTheme.primaryTextColor;
         final Color muted = highlighted ? Colors.white70 : tvTheme.secondaryTextColor;
+        // The row's labels are resolver-scaled; the leading and check glyphs
+        // ride the same factor instead of staying at their drafted pixels.
+        final double scale = TvTextScale.factorOf(context);
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeInOut,
-          constraints: BoxConstraints(minHeight: 60.sp),
-          padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 10.sp),
+          constraints: BoxConstraints(minHeight: 60.sp * scale),
+          padding: EdgeInsets.symmetric(horizontal: 20.sp * scale, vertical: 10.sp * scale),
           decoration: BoxDecoration(
             color: highlighted ? tvTheme.focusColor : tvTheme.subtleRowFill,
             borderRadius: BorderRadius.circular(radius.sp),
@@ -81,10 +84,10 @@ class TvDialogOptionTile extends StatelessWidget {
             children: [
               if (icon != null) ...[
                 IconTheme(
-                  data: IconThemeData(size: 24.sp, color: foreground),
+                  data: IconThemeData(size: 24.sp * scale, color: foreground),
                   child: icon!,
                 ),
-                SizedBox(width: 14.sp),
+                SizedBox(width: 14.sp * scale),
               ],
               Expanded(
                 child: Column(
@@ -112,8 +115,8 @@ class TvDialogOptionTile extends StatelessWidget {
               ),
               if (trailing != null) ...[SizedBox(width: 12.sp), trailing!],
               if (selected && showCheck) ...[
-                SizedBox(width: 12.sp),
-                Icon(Icons.check_circle_rounded, size: 26.sp, color: foreground),
+                SizedBox(width: 12.sp * scale),
+                Icon(Icons.check_circle_rounded, size: 26.sp * scale, color: foreground),
               ],
             ],
           ),
