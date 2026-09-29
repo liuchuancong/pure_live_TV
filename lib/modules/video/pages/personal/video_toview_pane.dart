@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:pure_live/shared/theme/tv_text_scale.dart';
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
@@ -9,7 +8,6 @@ import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 
 class VideoToViewPane extends ConsumerStatefulWidget {

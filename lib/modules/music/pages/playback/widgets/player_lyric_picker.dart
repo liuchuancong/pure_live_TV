@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/shared/theme/tv_text_scale.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
