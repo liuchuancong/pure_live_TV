@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
@@ -215,7 +216,7 @@ class _FollowLabel extends StatelessWidget {
         followed ? i18n('followed') : i18n('follow'),
         style: AppTextStyles.t14W500.copyWith(
           color: color,
-          fontSize: 14.sp * scale,
+          fontSize: (14 * AppFontScale.user).sp * scale,
           fontWeight: followed ? FontWeight.w600 : FontWeight.w500,
         ),
       ),

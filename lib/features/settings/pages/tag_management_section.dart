@@ -1,4 +1,5 @@
 import 'package:pure_live/shared/dialog/index.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
@@ -98,7 +99,7 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
               child: Text(
                 _result,
-                style: TextStyle(fontSize: 16.sp, color: context.tvTheme.focusColor),
+                style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.focusColor),
               ),
             ),
         ],
@@ -194,7 +195,7 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
                 padding: EdgeInsets.only(top: 10.sp),
                 child: Text(
                   _error,
-                  style: TextStyle(fontSize: 16.sp, color: tvTheme.focusColor),
+                  style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: tvTheme.focusColor),
                 ),
               ),
           ],
@@ -231,7 +232,7 @@ class _TagDetailDialog extends StatelessWidget {
               SizedBox(height: 8.sp),
               Text(
                 tag.description,
-                style: TextStyle(fontSize: 17.sp, color: tvTheme.secondaryTextColor),
+                style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor),
               ),
             ],
           ],

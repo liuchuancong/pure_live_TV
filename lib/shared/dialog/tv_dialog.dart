@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/dialog/tv_dialog_focus_guard.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:pure_live/shared/widgets/tv_button.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -87,7 +88,7 @@ class TvDialog extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: tvTheme.primaryTextColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 32.sp,
+                        fontSize: (32 * AppFontScale.user).sp,
                       ),
                     ),
                   ),

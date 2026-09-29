@@ -1,5 +1,6 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:pure_live/features/live_play/player_panel_layout.dart';
@@ -276,7 +277,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                 padding: EdgeInsets.fromLTRB(20.sp, 14.sp, 20.sp, 6.sp),
                 child: Text(
                   widget.title,
-                  style: AppTextStyles.t20W600.copyWith(color: tvTheme.primaryTextColor, fontSize: 20.sp * scale),
+                  style: AppTextStyles.t20W600.copyWith(color: tvTheme.primaryTextColor, fontSize: (20 * AppFontScale.user).sp * scale),
                 ),
               ),
               if (widget.header != null) widget.header!,
@@ -320,7 +321,7 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                   widget.onAdjustLeft != null
                       ? i18nOr('ui_panel_keys_adjust', '↑↓ 选择 · ←→ 调整 · OK 确认')
                       : i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
-                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor, fontSize: 14.sp * scale),
+                  style: AppTextStyles.t14W500.copyWith(color: tvTheme.secondaryTextColor, fontSize: (14 * AppFontScale.user).sp * scale),
                 ),
               ),
             ],
@@ -385,7 +386,7 @@ class _PanelRow extends StatelessWidget {
                   style: AppTextStyles.t16W500.copyWith(
                     color: foreground,
                     fontWeight: FontWeight.w600,
-                    fontSize: 16.sp * scale,
+                    fontSize: (16 * AppFontScale.user).sp * scale,
                   ),
                 ),
                 if (row.subtitle != null && row.subtitle!.isNotEmpty)
@@ -393,7 +394,7 @@ class _PanelRow extends StatelessWidget {
                     row.subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14W500.copyWith(color: muted, fontSize: 14.sp * scale),
+                    style: AppTextStyles.t14W500.copyWith(color: muted, fontSize: (14 * AppFontScale.user).sp * scale),
                   ),
               ],
             ),
@@ -402,7 +403,7 @@ class _PanelRow extends StatelessWidget {
             SizedBox(width: 12.sp),
             Text(
               row.value!,
-              style: AppTextStyles.t16W500.copyWith(color: foreground, fontSize: 16.sp * scale),
+              style: AppTextStyles.t16W500.copyWith(color: foreground, fontSize: (16 * AppFontScale.user).sp * scale),
             ),
           ],
         ],

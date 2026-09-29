@@ -4,6 +4,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:markdown_widget/config/configs.dart';
 import 'package:markdown_widget/widget/all.dart';
 import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -61,7 +62,7 @@ class AppDownloadPage extends ConsumerWidget {
                             SizedBox(height: 2.sp),
                             Text(
                               i18n('android_desc'),
-                              style: TextStyle(fontSize: 17.sp, color: context.tvTheme.secondaryTextColor),
+                              style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: context.tvTheme.secondaryTextColor),
                             ),
                           ],
                         ),
@@ -102,7 +103,7 @@ class AppDownloadPage extends ConsumerWidget {
                   padding: EdgeInsets.fromLTRB(20.w, 2.h, 20.w, 4.h),
                   child: Text(
                     i18n('update_renderer_desc'),
-                    style: TextStyle(fontSize: 16.sp, color: context.tvTheme.secondaryTextColor),
+                    style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.secondaryTextColor),
                   ),
                 ),
                 // One section per published ABI, the mobile update page's
@@ -121,7 +122,7 @@ class AppDownloadPage extends ConsumerWidget {
                       state.phase == AppUpdatePhase.checking
                           ? i18n('check_update')
                           : i18n('already_latest_version'),
-                      style: TextStyle(fontSize: 17.sp, color: context.tvTheme.secondaryTextColor),
+                      style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: context.tvTheme.secondaryTextColor),
                     ),
                   ),
                 if (state.phase == AppUpdatePhase.readyToInstall)
@@ -139,7 +140,7 @@ class AppDownloadPage extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             i18n('update_package_ready'),
-                            style: TextStyle(fontSize: 16.sp, color: context.tvTheme.secondaryTextColor),
+                            style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.secondaryTextColor),
                           ),
                         ),
                       ],
@@ -152,7 +153,7 @@ class AppDownloadPage extends ConsumerWidget {
                       state.error,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16.sp, color: context.tvTheme.secondaryTextColor),
+                      style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: context.tvTheme.secondaryTextColor),
                     ),
                   ),
               ],
@@ -222,7 +223,7 @@ class _AbiDownloadSection extends ConsumerWidget {
               Text(_abiLabel(abi), style: AppTextStyles.t18W600),
               if (sizeText != null && sizeText!.isNotEmpty) ...<Widget>[
                 SizedBox(width: 12.sp),
-                Text(sizeText!, style: TextStyle(fontSize: 16.sp, color: tvTheme.secondaryTextColor)),
+                Text(sizeText!, style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor)),
               ],
             ],
           ),
@@ -274,7 +275,7 @@ class _ReleaseNotesMarkdown extends ConsumerWidget {
     if (markdown.isEmpty) {
       return Text(
         i18n('update_no_notes'),
-        style: TextStyle(fontSize: 17.sp, color: context.tvTheme.secondaryTextColor),
+        style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: context.tvTheme.secondaryTextColor),
       );
     }
 
@@ -286,10 +287,10 @@ class _ReleaseNotesMarkdown extends ConsumerWidget {
       data: markdown,
       config: baseConfig.copy(
         configs: [
-          PConfig(textStyle: TextStyle(fontSize: 19.sp, height: 1.5, color: ink)),
-          H1Config(style: TextStyle(fontSize: 25.sp, fontWeight: FontWeight.bold, color: ink)),
-          H2Config(style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: ink)),
-          H3Config(style: TextStyle(fontSize: 19.sp, fontWeight: FontWeight.bold, color: ink)),
+          PConfig(textStyle: TextStyle(fontSize: (19 * AppFontScale.user).sp, height: 1.5, color: ink)),
+          H1Config(style: TextStyle(fontSize: (25 * AppFontScale.user).sp, fontWeight: FontWeight.bold, color: ink)),
+          H2Config(style: TextStyle(fontSize: (22 * AppFontScale.user).sp, fontWeight: FontWeight.bold, color: ink)),
+          H3Config(style: TextStyle(fontSize: (19 * AppFontScale.user).sp, fontWeight: FontWeight.bold, color: ink)),
         ],
       ),
     );

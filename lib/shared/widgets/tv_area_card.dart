@@ -1,6 +1,7 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/shared/utils/dpad_long_press_gate.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -142,7 +143,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
                         textAlign: TextAlign.center,
                         style: AppTextStyles.t20W600.copyWith(
                           color: titleColor,
-                          fontSize: 17.sp,
+                          fontSize: (17 * AppFontScale.user).sp,
                           height: 1.15,
                           fontWeight: isFocused ? FontWeight.w700 : FontWeight.w600,
                         ),

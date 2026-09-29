@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -248,7 +249,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
                       ),
                       child: Text(
                         i18nOr('wallpaper_immersive_hint', '↑↓ 切换 · OK 设为壁纸 · 返回退出'),
-                        style: TextStyle(fontSize: 20.sp, color: Colors.white),
+                        style: TextStyle(fontSize: (20 * AppFontScale.user).sp, color: Colors.white),
                       ),
                     ),
                   ),

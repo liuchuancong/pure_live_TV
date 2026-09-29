@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:remixicon/remixicon.dart';
 import 'package:pure_live/player/index.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pure_live/shared/theme/index.dart';
 import 'package:pure_live/exports/package_export.dart';
@@ -666,7 +667,7 @@ class _Pill extends StatelessWidget {
     // the pill.
     final TextStyle textStyle = (selected ? AppTextStyles.t20W600 : AppTextStyles.t20).copyWith(
       color: foreground,
-      fontSize: 22.sp,
+      fontSize: (22 * AppFontScale.user).sp,
     );
 
     // The same focus recipe the app's standard controls use (TvFocusStyle):

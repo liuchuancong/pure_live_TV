@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/dialog/tv_dialog.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -65,7 +66,7 @@ class _TvConfirmDialogState extends State<TvConfirmDialog> {
       child: widget.message != null
           ? Text(
               widget.message!,
-              style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: 24.sp),
+              style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: (24 * AppFontScale.user).sp),
             )
           : const SizedBox.shrink(),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/settings/pages/update_history_page.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -170,7 +171,7 @@ class AppUpdatePage extends ConsumerWidget {
                     : state.historyError != null
                     ? i18n('update_history_failed')
                     : i18n('update_no_history'),
-                style: TextStyle(fontSize: 17.sp, color: tvTheme.secondaryTextColor),
+                style: TextStyle(fontSize: (17 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor),
               ),
             ),
           ),
@@ -212,7 +213,7 @@ class _UpdateHeroHeader extends StatelessWidget {
           SizedBox(height: 14.sp),
           Text(
             i18n('ui_pure_live_tv'),
-            style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: tvTheme.primaryTextColor),
+            style: TextStyle(fontSize: (22 * AppFontScale.user).sp, fontWeight: FontWeight.bold, color: tvTheme.primaryTextColor),
           ),
           if (hasVersion) ...<Widget>[
             SizedBox(height: 8.sp),
@@ -224,7 +225,7 @@ class _UpdateHeroHeader extends StatelessWidget {
               ),
               child: Text(
                 'v$version+$buildNumber',
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: tvTheme.focusColor),
+                style: TextStyle(fontSize: (16 * AppFontScale.user).sp, fontWeight: FontWeight.w600, color: tvTheme.focusColor),
               ),
             ),
           ],

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
@@ -65,7 +66,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
         },
         child: Text(
           i18n('music_queue_clear_confirm'),
-          style: TextStyle(fontSize: 20.sp, height: 1.5, color: context.tvTheme.primaryTextColor),
+          style: TextStyle(fontSize: (20 * AppFontScale.user).sp, height: 1.5, color: context.tvTheme.primaryTextColor),
         ),
       ),
     );

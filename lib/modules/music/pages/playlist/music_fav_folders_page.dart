@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
 import 'package:pure_live/modules/media/models/bilibili_ugc_models.dart';
@@ -267,7 +268,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
         },
         child: Text(
           i18n('music_delete_playlist_confirm'),
-          style: TextStyle(fontSize: 20.sp, height: 1.5, color: context.tvTheme.primaryTextColor),
+          style: TextStyle(fontSize: (20 * AppFontScale.user).sp, height: 1.5, color: context.tvTheme.primaryTextColor),
         ),
       ),
     );

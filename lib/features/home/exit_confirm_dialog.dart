@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
@@ -26,7 +27,7 @@ class _ExitConfirmDialog extends StatelessWidget {
           Text(
             i18nOr('exit_confirm_message', '感谢使用纯粹直播 TV，期待下次再见。'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 22.sp, height: 1.5, color: tvTheme.primaryTextColor),
+            style: TextStyle(fontSize: (22 * AppFontScale.user).sp, height: 1.5, color: tvTheme.primaryTextColor),
           ),
           SizedBox(height: 24.sp),
           Center(
@@ -50,7 +51,7 @@ class _ExitConfirmDialog extends StatelessWidget {
               SizedBox(width: 8.sp),
               Text(
                 i18n('support_donate'),
-                style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: tvTheme.primaryTextColor),
+                style: TextStyle(fontSize: (22 * AppFontScale.user).sp, fontWeight: FontWeight.bold, color: tvTheme.primaryTextColor),
               ),
             ],
           ),
@@ -58,7 +59,7 @@ class _ExitConfirmDialog extends StatelessWidget {
           Text(
             i18nOr('exit_donate_message', '项目全程开源免费，无任何付费门槛。若是本应用给您带来便利，欢迎微信扫码请开发者喝瓶牛奶，支持后续更新维护。'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20.sp, height: 1.5, color: tvTheme.secondaryTextColor),
+            style: TextStyle(fontSize: (20 * AppFontScale.user).sp, height: 1.5, color: tvTheme.secondaryTextColor),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -354,7 +355,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 20.sp,
+                  fontSize: (20 * AppFontScale.user).sp,
                   height: 1.15,
                   fontWeight: i == _tabIndex ? FontWeight.w600 : FontWeight.w400,
                   color: i == _tabIndex ? accent : Colors.white70,

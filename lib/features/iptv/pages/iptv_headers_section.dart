@@ -1,4 +1,5 @@
 import 'package:pure_live/shared/widgets/index.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/dialog/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
@@ -101,7 +102,7 @@ class _IptvHeadersSectionPageState extends ConsumerState<IptvHeadersSectionPage>
         if (_status.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.w, top: 10.h),
-            child: Text(_status, style: TextStyle(fontSize: 16.sp, color: theme.focusColor)),
+            child: Text(_status, style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: theme.focusColor)),
           ),
       ],
     );

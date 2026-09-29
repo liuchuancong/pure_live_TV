@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/index.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
@@ -69,7 +70,7 @@ class RemoteSyncQrCard extends ConsumerWidget {
             Expanded(
               child: Text(
                 error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...'),
-                style: TextStyle(fontSize: 16.sp, color: tvTheme.secondaryTextColor),
+                style: TextStyle(fontSize: (16 * AppFontScale.user).sp, color: tvTheme.secondaryTextColor),
               ),
             ),
           ],

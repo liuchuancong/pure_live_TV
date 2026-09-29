@@ -2,6 +2,7 @@ import 'tv_dialog.dart';
 import 'tv_dialog_option_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/shared/theme/tv_theme_x.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/shared/i18n/locale_helper.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -114,7 +115,7 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
             )
           : Text(
               widget.emptyHint ?? i18n('no_data'),
-              style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: 24.sp),
+              style: TextStyle(color: tvTheme.secondaryTextColor, fontSize: (24 * AppFontScale.user).sp),
             ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 import 'package:pure_live/shared/common/utils/color_util.dart';
 import 'package:pure_live/shared/theme/index.dart';
@@ -186,7 +187,7 @@ class WallpaperBadge extends StatelessWidget {
         color: Colors.black.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(6.sp),
       ),
-      child: Text(text, style: TextStyle(fontSize: 15.sp, color: Colors.white)),
+      child: Text(text, style: TextStyle(fontSize: (15 * AppFontScale.user).sp, color: Colors.white)),
     );
   }
 }

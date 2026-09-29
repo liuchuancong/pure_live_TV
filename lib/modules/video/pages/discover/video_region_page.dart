@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:pure_live/shared/theme/typography/app_font_scale.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/models/bilibili_music_models.dart';
@@ -91,7 +92,7 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
         TvTabBar(
           tabs: [
             for (final (_, labelKey, icon) in _regions)
-              TvTabItemData(title: i18n(labelKey), icon: Text(icon, style: TextStyle(fontSize: 20.sp))),
+              TvTabItemData(title: i18n(labelKey), icon: Text(icon, style: TextStyle(fontSize: (20 * AppFontScale.user).sp))),
           ],
           currentIndex: _selected,
           refreshing: _loading,
