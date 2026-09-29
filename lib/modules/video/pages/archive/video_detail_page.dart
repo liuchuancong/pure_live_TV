@@ -462,6 +462,17 @@ class _PartTile extends StatelessWidget {
   final int index;
   final VoidCallback onTap;
 
+  /// Strips the ordinal a ripper baked into the title ("001.周杰伦-晴天" →
+  /// "周杰伦-晴天"): the list numbers its rows itself, and the two disagree
+  /// the moment the source skips a number. Leading digits count as an ordinal
+  /// only when a separator follows — "24K Magic" keeps its digits.
+  static final RegExp _leadingIndex = RegExp(r'^\d{1,4}\s*[.、，,\-–—_:：)·．]\s*');
+
+  static String _displayTitle(String raw) {
+    final String stripped = raw.replaceFirst(_leadingIndex, '');
+    return stripped.trim().isEmpty ? raw : stripped;
+  }
+
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
@@ -494,7 +505,7 @@ class _PartTile extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  track.title,
+                  _displayTitle(track.title),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, 
