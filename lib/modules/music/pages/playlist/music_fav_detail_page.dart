@@ -162,6 +162,11 @@ class _TrackRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
+    // No fixed height: the row is as tall as its two labels plus scaled
+    // padding — the old fixed 72.sp painted the yellow overflow stripe once
+    // the enlarged font met the panel lift, exactly what the playlist track
+    // rows fixed by sizing to their content.
+    final double textScale = TvTextScale.factorOf(context);
 
     return TvFocusable(
       focusNode: focusNode,
@@ -170,8 +175,7 @@ class _TrackRow extends StatelessWidget {
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         margin: EdgeInsets.only(bottom: 8.sp),
-        height: 72.sp,
-        padding: EdgeInsets.symmetric(horizontal: 16.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.sp * textScale, vertical: 12.sp * textScale),
         decoration: BoxDecoration(
           color: excluded ? tvTheme.cardColor.withValues(alpha: 0.4) : tvTheme.cardColor,
           borderRadius: BorderRadius.circular(14.sp),
@@ -180,7 +184,7 @@ class _TrackRow extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 44.sp,
+              width: 44.sp * textScale,
               child: Text(
                 '${index + 1}',
                 style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
