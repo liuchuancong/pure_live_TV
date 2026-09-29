@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:pure_live/modules/video/video_section.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/media/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';

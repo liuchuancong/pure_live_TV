@@ -1,85 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/media/models/models.dart';
-import 'package:pure_live/modules/video/widgets/video_card.dart';
-import 'package:pure_live/modules/media/api/bilibili_pgc_api.dart';
 import 'package:pure_live/modules/media/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/media/pages/ugc_dynamics_page.dart';
-import 'package:pure_live/modules/video/pages/discover/video_pgc_page.dart';
-import 'package:pure_live/modules/video/pages/discover/video_region_page.dart';
-import 'package:pure_live/modules/video/pages/discover/video_search_page.dart';
-import 'package:pure_live/modules/video/pages/personal/video_personal_page.dart';
-import 'package:pure_live/modules/media/controllers/music_player_controller.dart';
-
-/// Video mode sections. The section rail lives in the home sidebar; this file
-/// builds section content only, so the mode swaps the whole navigation.
-enum VideoSection { home, region, pgc, search, personal }
-
-/// One card tap, one behaviour (newBV's 显示视频详情): detail-first when the
-/// video setting asks for it, otherwise straight into the player with the
-/// whole archive queued.
-void openVideoArchive(BuildContext context, WidgetRef ref, MusicArchive archive) {
-  final showDetail = SettingsService.to.isInitialized && SettingsService.to.videoState.showVideoDetail;
-  if (showDetail) {
-    VideoDetailRoute(archive).push(context);
-    return;
-  }
-  ref.read(musicPlayerControllerProvider.notifier).playQueue(archive.tracks, startIndex: 0, audioOnly: false);
-  const VideoPlayerRoute().push(context);
-}
-
-/// newBV's home grid density: a fixed 4 columns with its own spacing and a
-/// cell aspect sized to the card — the 1.6:1 cover plus a two-line title and
-/// the UP line come to about 1.15 total, and a little slack keeps a one-line
-/// title from overflowing the cell. The density follows the font scale, so
-/// this is a function of the ambient context rather than a const.
-SliverGridDelegateWithFixedCrossAxisCount defaultVideoGridDelegate(BuildContext context, WidgetRef ref) =>
-    ThemeSettingsController.cardGridDelegate(context, ref);
-
-/// Content of one video section. Login is enforced by the home shell's
-/// [BilibiliLoginGate], not here.
-class VideoSectionView extends ConsumerWidget {
-  const VideoSectionView({super.key, required this.section});
-
-  final VideoSection section;
-
-  /// The video module owns the PGC endpoints; the shared VOD engine asks this
-  /// hook for episode urls. Idempotent.
-  void _ensurePgcResolver() {
-    MusicPlayerController.modulePlayUrlResolver ??= (track) async {
-      if (track.part.epId <= 0) return null;
-      return BilibiliPgcApi.instance.getPlayUrls(epId: track.part.epId, cid: track.part.cid);
-    };
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    _ensurePgcResolver();
-
-    return switch (section) {
-      VideoSection.home => const _VideoHomePage(key: ValueKey('video_home')),
-      VideoSection.region => const VideoRegionPage(key: ValueKey('video_region')),
-      VideoSection.pgc => const VideoPgcPage(key: ValueKey('video_pgc')),
-      VideoSection.search => const VideoSearchSection(key: ValueKey('video_search')),
-      VideoSection.personal => const VideoPersonalSection(key: ValueKey('video_personal')),
-    };
-  }
-}
+import 'package:pure_live/modules/video/video_section.dart';
+import 'package:pure_live/modules/video/widgets/video_card.dart';
 
 /// Video home, newBV's HomeContent: a top tab bar over 动态/推荐/热门 — the
 /// three feeds the reference puts on its home screen. The tab order follows
 /// the reference (动态 first) and each tab keeps its own paged grid.
-class _VideoHomePage extends ConsumerStatefulWidget {
-  const _VideoHomePage({super.key});
+class VideoHomePage extends ConsumerStatefulWidget {
+  const VideoHomePage({super.key});
 
   @override
-  ConsumerState<_VideoHomePage> createState() => _VideoHomePageState();
+  ConsumerState<VideoHomePage> createState() => VideoHomePageState();
 }
 
-class _VideoHomePageState extends ConsumerState<_VideoHomePage> {
+class VideoHomePageState extends ConsumerState<VideoHomePage> {
   // 首页置顶 Tab (newBV's setting): the landing top tab, 推荐 while unset.
   int _tab = SettingsService.to.isInitialized ? SettingsService.to.videoState.homeTabIndex.clamp(0, 2) : 1;
 

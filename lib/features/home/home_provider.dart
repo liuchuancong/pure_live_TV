@@ -1,6 +1,7 @@
 import 'package:pure_live/exports/exports.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pure_live/modules/video/video_home_page.dart';
+import 'package:pure_live/modules/video/video_section.dart';
+
 import 'package:pure_live/services/menu_icons/menu_icon_controller.dart';
 
 part 'home_provider.g.dart';
