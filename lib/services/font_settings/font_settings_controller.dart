@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart' as p;
+import 'dart:convert';
 import 'font_settings_model.dart';
+import 'package:path/path.dart' as p;
 import 'package:flutter/services.dart';
-import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:pure_live/app/bootstrap/app_path_manager.dart';
 
 part 'font_settings_controller.g.dart';
 
@@ -54,7 +54,7 @@ class FontSettingsController extends _$FontSettingsController {
       // Clamp the stored scale into the slider's range: a value saved under the
       // old 1.6 max paints at 2.4x on a 720p panel once the legibility
       // correction stacks on, which is where every scaled layout broke.
-      textScaleFactor: (HivePrefUtil.getDouble('textScaleFactor') ?? 1.0).clamp(0.8, 1.3),
+      textScaleFactor: (HivePrefUtil.getDouble('textScaleFactor') ?? 1.0).clamp(0.8, 1.6),
       fontFamilyName: HivePrefUtil.getString(_familyKey) ?? 'Default',
     );
   }
@@ -131,9 +131,7 @@ class FontSettingsController extends _$FontSettingsController {
 
     // The theme reads the family the engine actually registered: the base id
     // for the whole family, the derived id for a locked weight.
-    final String familyName = locked
-        ? FontDownloadManager.lockedFamilyId(fontModel.id, targetFileName)
-        : fontModel.id;
+    final String familyName = locked ? FontDownloadManager.lockedFamilyId(fontModel.id, targetFileName) : fontModel.id;
 
     final FontSettingsModel? current = state.value;
     if (current != null) {
