@@ -328,12 +328,7 @@ class _TvTabBarState extends State<TvTabBar> {
           // Sits below the pills, in the gap the page leaves under this bar; the
           // bar's own height is unchanged, so nothing below it moves.
           if (widget.showRefreshLine && (widget.refreshing || _refreshing))
-            Positioned(
-              left: 16.ts(context),
-              right: 16.ts(context),
-              bottom: -8.ts(context),
-              child: const _TabRefreshLine(),
-            ),
+            Positioned(left: 16.sp, right: 16.sp, bottom: -8.ts(context), child: const _TabRefreshLine()),
         ],
       ),
     );

@@ -1,8 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
@@ -195,7 +192,7 @@ class _HistoryRow extends StatelessWidget {
       onLongPress: onLongPress,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        margin: EdgeInsets.only(bottom: 10.ts(context)),
+        margin: EdgeInsets.only(bottom: 10.sp),
         // Content-sized: a fixed 118.ts(context) overflowed once the three text lines
         // scaled past it at the largest font setting.
         padding: EdgeInsets.all(10.ts(context)),
@@ -258,7 +255,7 @@ class _HistoryRow extends StatelessWidget {
             ),
             if (item.finished)
               Padding(
-                padding: EdgeInsets.only(right: 8.ts(context)),
+                padding: EdgeInsets.only(right: 8.sp),
                 child: Text(
                   i18n('music_history_finished'),
                   style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),

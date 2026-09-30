@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
@@ -351,7 +348,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                   SizedBox(height: 24.ts(context)),
                   // ==================================================== parts
                   Padding(
-                    padding: EdgeInsets.only(left: 8.ts(context), bottom: 12.ts(context)),
+                    padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
                     child: Row(
                       children: [
                         Text(
@@ -378,7 +375,7 @@ class _MusicArchivePageState extends ConsumerState<MusicArchivePage> {
                       children: [
                         for (final (index, track) in tracks.indexed)
                           Padding(
-                            padding: EdgeInsets.only(bottom: 8.ts(context) * textScale),
+                            padding: EdgeInsets.only(bottom: 8.sp * textScale),
                             child: _PartTile(track: track, index: index, onTap: () => _playAll(tracks, index)),
                           ),
                       ],

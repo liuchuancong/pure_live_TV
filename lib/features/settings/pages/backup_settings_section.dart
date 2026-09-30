@@ -137,7 +137,7 @@ class BackupSettingsSectionPageState extends ConsumerState<BackupSettingsSection
         ),
         if (_result.isNotEmpty)
           Padding(
-            padding: EdgeInsets.only(left: 16.ts(context), top: 10.ts(context)),
+            padding: EdgeInsets.only(left: 16.sp, top: 10.sp),
             child: Text(
               _result,
               style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor),

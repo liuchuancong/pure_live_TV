@@ -87,13 +87,13 @@ class VideoPartsPanelState extends ConsumerState<VideoPartsPanel> {
           Expanded(
             child: ListView.builder(
               controller: _scroll,
-              padding: EdgeInsets.only(left: 16.ts(context), right: 16.ts(context), bottom: 16.ts(context)),
+              padding: EdgeInsets.only(left: 16.sp, right: 16.sp, bottom: 16.sp),
               itemCount: state.queue.length,
               itemBuilder: (context, index) {
                 final track = state.queue[index];
                 final isCurrent = index == state.index;
                 return Padding(
-                  padding: EdgeInsets.only(bottom: 8.ts(context)),
+                  padding: EdgeInsets.only(bottom: 8.sp),
                   child: TvFocusable(
                     focusNode: _nodeAt(index),
                     onTap: () => controller.jumpTo(index),

@@ -1,19 +1,19 @@
-﻿import 'package:dpad/dpad.dart';
+import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/pagination/paging_core.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/core/pagination/base_paged_tv_view.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/core/pagination/models/paging_param.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 /// The wallpaper grid of one source/category.
 ///

@@ -134,7 +134,7 @@ class RemoteSyncStepBullet extends StatelessWidget {
         SizedBox(width: 12.ts(context)),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.only(top: 3.ts(context)),
+            padding: EdgeInsets.only(top: 3.sp),
             child: Text(
               text,
               style: AppTextStyles.t18.copyWith(

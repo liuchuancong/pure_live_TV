@@ -498,7 +498,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     // labels and the fixed row rung clipped them outright.
     final double scale = TvTextScale.factorOf(context);
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.ts(context) * scale),
+      padding: EdgeInsets.only(bottom: 12.sp * scale),
       child: Center(
         child: Container(
           width: _optionsWidth.ts(context) * scale,
@@ -535,7 +535,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  padding: EdgeInsets.only(bottom: 12.ts(context) * scale),
+                  padding: EdgeInsets.only(bottom: 12.sp * scale),
                   itemCount: options.length,
                   itemBuilder: (context, index) {
                     final bool selected = index == _optionIndex;

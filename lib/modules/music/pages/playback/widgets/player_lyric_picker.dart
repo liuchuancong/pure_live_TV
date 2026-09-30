@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 
@@ -8,7 +7,7 @@ import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 /// manual pick) is marked; picking a row remembers it for every later play of
 /// this track.
 class MusicLyricPickerDialog extends StatelessWidget {
-  const MusicLyricPickerDialog({super.key,required this.track});
+  const MusicLyricPickerDialog({super.key, required this.track});
 
   final MusicTrack track;
 
@@ -37,7 +36,10 @@ class MusicLyricPickerDialog extends StatelessWidget {
                 children: [
                   const CircularProgressIndicator(),
                   SizedBox(height: 16.ts(context)),
-                  Text(i18n('ui_loading'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor)),
+                  Text(
+                    i18n('ui_loading'),
+                    style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
+                  ),
                 ],
               );
             }
@@ -45,7 +47,10 @@ class MusicLyricPickerDialog extends StatelessWidget {
             final candidates = snapshot.data ?? const <MusicLyricCandidate>[];
             if (candidates.isEmpty) {
               return Center(
-                child: Text(i18n('music_lyric_none'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor)),
+                child: Text(
+                  i18n('music_lyric_none'),
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
+                ),
               );
             }
 
@@ -60,7 +65,7 @@ class MusicLyricPickerDialog extends StatelessWidget {
                     ? i18n('music_lyric_manual_source')
                     : candidate.source;
                 return Padding(
-                  padding: EdgeInsets.only(bottom: 10.ts(context)),
+                  padding: EdgeInsets.only(bottom: 10.sp),
                   child: TvDialogOptionTile(
                     title: candidate.title,
                     subtitle: '$source${candidate.artist.isEmpty ? '' : ' · ${candidate.artist}'}',
@@ -80,4 +85,3 @@ class MusicLyricPickerDialog extends StatelessWidget {
     );
   }
 }
-

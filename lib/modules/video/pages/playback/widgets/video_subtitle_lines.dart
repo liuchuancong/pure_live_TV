@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
-import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 
 /// The subtitle line stack, driven by a timer against the handle position.
@@ -52,7 +51,7 @@ class _SubtitleLinesState extends State<SubtitleLines> {
       children: [
         for (final line in _text.split('\n').take(2))
           Container(
-            margin: EdgeInsets.only(top: 4.ts(context)),
+            margin: EdgeInsets.only(top: 4.sp),
             padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 6.ts(context)),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.55),

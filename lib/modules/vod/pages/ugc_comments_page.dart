@@ -1,7 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/vod/pages/widgets/ugc_comment_tile.dart';
@@ -169,7 +167,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                 : DpadRegion(
                     child: ListView.builder(
                       controller: _scroll,
-                      padding: EdgeInsets.only(bottom: 24.ts(context)),
+                      padding: EdgeInsets.only(bottom: 24.sp),
                       itemCount: _comments.length + (_hasMore || _loading ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index >= _comments.length) {

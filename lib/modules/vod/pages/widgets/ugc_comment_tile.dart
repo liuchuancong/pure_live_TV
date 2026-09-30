@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -21,20 +20,13 @@ class UgcCommentTile extends StatelessWidget {
     return TvFocusable(
       onTap: () => onLike(comment),
       builder: (context, focused, child) => Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: 24.ts(context),
-          vertical: 8.ts(context),
-        ),
+        margin: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 8.ts(context)),
         padding: EdgeInsets.all(18.ts(context)),
         decoration: BoxDecoration(
           color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
           borderRadius: BorderRadius.circular(16.ts(context)),
           border: Border.all(
-            color: focused
-                ? accent
-                : (comment.isTop
-                      ? accent.withValues(alpha: 0.5)
-                      : Colors.transparent),
+            color: focused ? accent : (comment.isTop ? accent.withValues(alpha: 0.5) : Colors.transparent),
             width: focused ? 2.ts(context) : 1.5.ts(context),
           ),
         ),
@@ -49,11 +41,8 @@ class UgcCommentTile extends StatelessWidget {
                     width: 52.ts(context),
                     height: 52.ts(context),
                     fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => Icon(
-                      Icons.person_rounded,
-                      size: 52.ts(context),
-                      color: tvTheme.secondaryTextColor,
-                    ),
+                    errorWidget: (_, _, _) =>
+                        Icon(Icons.person_rounded, size: 52.ts(context), color: tvTheme.secondaryTextColor),
                   ),
                 ),
                 SizedBox(width: 14.ts(context)),
@@ -78,10 +67,7 @@ class UgcCommentTile extends StatelessWidget {
                             SizedBox(width: 8.ts(context)),
                             Text(
                               i18n('video_comments_top'),
-                              style: AppTextStyles.t15.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: accent,
-                              ),
+                              style: AppTextStyles.t15.copyWith(fontWeight: FontWeight.w600, color: accent),
                             ),
                           ],
                         ],
@@ -89,9 +75,7 @@ class UgcCommentTile extends StatelessWidget {
                       SizedBox(height: 2.ts(context)),
                       Text(
                         _timeLabel(comment.ctime),
-                        style: AppTextStyles.t15.copyWith(
-                          color: tvTheme.secondaryTextColor,
-                        ),
+                        style: AppTextStyles.t15.copyWith(color: tvTheme.secondaryTextColor),
                       ),
                     ],
                   ),
@@ -102,13 +86,9 @@ class UgcCommentTile extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      comment.liked
-                          ? Icons.thumb_up_alt_rounded
-                          : Icons.thumb_up_alt_outlined,
+                      comment.liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
                       size: 24.ts(context),
-                      color: comment.liked
-                          ? accent
-                          : tvTheme.secondaryTextColor,
+                      color: comment.liked ? accent : tvTheme.secondaryTextColor,
                     ),
                     if (comment.like > 0) ...[
                       SizedBox(width: 6.ts(context)),
@@ -146,7 +126,7 @@ class UgcCommentTile extends StatelessWidget {
                   children: [
                     for (final reply in comment.replies)
                       Padding(
-                        padding: EdgeInsets.only(bottom: 6.ts(context)),
+                        padding: EdgeInsets.only(bottom: 6.sp),
                         child: RichText(
                           text: TextSpan(
                             style: AppTextStyles.t16.copyWith(
@@ -156,10 +136,7 @@ class UgcCommentTile extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: '${reply.uname}: ',
-                                style: AppTextStyles.t16.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: accent,
-                                ),
+                                style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: accent),
                               ),
                               TextSpan(text: reply.content),
                             ],
@@ -169,10 +146,7 @@ class UgcCommentTile extends StatelessWidget {
                     if (comment.rcount > comment.replies.length)
                       Text(
                         '${i18n('video_comments_more_replies')} ${comment.rcount}',
-                        style: AppTextStyles.t16.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: accent,
-                        ),
+                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: accent),
                       ),
                   ],
                 ),

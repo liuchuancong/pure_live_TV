@@ -147,7 +147,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final item in menuList)
             Padding(
-              padding: EdgeInsets.only(bottom: 20.ts(context)),
+              padding: EdgeInsets.only(bottom: 20.sp),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: item,
@@ -174,7 +174,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final (index2, (labelKey, icon)) in labels.indexed)
             Padding(
-              padding: EdgeInsets.only(bottom: 20.ts(context)),
+              padding: EdgeInsets.only(bottom: 20.sp),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: AppMenuItem(index: index2, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
@@ -199,7 +199,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return [
           for (final (railIndex, (sectionIndex, labelKey, icon)) in entries.indexed)
             Padding(
-              padding: EdgeInsets.only(bottom: 20.ts(context)),
+              padding: EdgeInsets.only(bottom: 20.sp),
               child: _buildAdaptiveItem(
                 ref: ref,
                 item: AppMenuItem(index: railIndex, title: i18n(labelKey), shortTitle: i18n(labelKey), icon: icon),
@@ -387,7 +387,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       // mode switch must be reachable no matter how far the
                       // section list has scrolled.
                       Padding(
-                        padding: EdgeInsets.only(bottom: 6.ts(context)),
+                        padding: EdgeInsets.only(bottom: 6.sp),
                         child: TvDigitalClock(
                           format: isExpanded ? 'HH:mm:ss' : 'HH:mm',
                           style: AppTextStyles.t20.copyWith(
@@ -409,7 +409,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       SizedBox(height: 15.ts(context)),
                       Padding(
-                        padding: EdgeInsets.only(bottom: 20.ts(context)),
+                        padding: EdgeInsets.only(bottom: 20.sp),
                         child: _buildModeButton(appMode, isExpanded, textScale),
                       ),
                       // The active mode's own navigation — live destinations,

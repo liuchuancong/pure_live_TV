@@ -1,8 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/music_section.dart';
 import 'package:pure_live/modules/music/widgets/music_song_row.dart';
@@ -109,12 +106,7 @@ class MusicRecentsPageState extends ConsumerState<MusicRecentsPage> {
             verticalEdge: DpadEdgeBehavior.leave,
             horizontalEdge: DpadEdgeBehavior.leave,
             child: ListView.separated(
-              padding: EdgeInsets.only(
-                left: 20.ts(context),
-                right: 20.ts(context),
-                bottom: 16.ts(context),
-                top: 16.ts(context),
-              ),
+              padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
               itemCount: tracks.length,
               separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
               itemBuilder: (context, index) {

@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-
 import 'package:pure_live/services/settings/settings.dart';
 
 /// The user's font-scale preference — the single source of the multiplier.

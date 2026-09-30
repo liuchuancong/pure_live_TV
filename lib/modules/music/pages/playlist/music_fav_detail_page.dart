@@ -1,8 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
@@ -273,7 +270,7 @@ class _TrackRow extends StatelessWidget {
       onTap: onPlay,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        margin: EdgeInsets.only(bottom: 8.ts(context)),
+        margin: EdgeInsets.only(bottom: 8.sp),
         padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale, vertical: 12.ts(context) * textScale),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,

@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -90,7 +88,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
             onLongPress: () => _delete(item),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.ts(context)),
+              margin: EdgeInsets.only(bottom: 10.sp),
               // No fixed height: the 98.ts(context) cover + padding + border size the
               // row. A pinned 118.ts(context) left 94.ts(context) of content room for a 98.ts(context)
               // cover — the 4px difference was the bottom overflow.

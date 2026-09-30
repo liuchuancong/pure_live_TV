@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/services/index.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/video/pages/personal/video_fav_pane.dart';
 import 'package:pure_live/modules/video/pages/personal/video_follow_pane.dart';
 import 'package:pure_live/modules/video/pages/personal/video_toview_pane.dart';
@@ -35,7 +32,7 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
       children: [
         // newBV's personal top bar: centred pills, one per pane.
         Padding(
-          padding: EdgeInsets.only(top: 16.ts(context), bottom: 8.ts(context)),
+          padding: EdgeInsets.only(top: 16.sp, bottom: 8.sp),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

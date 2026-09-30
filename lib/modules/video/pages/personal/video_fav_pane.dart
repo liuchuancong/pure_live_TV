@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/services/index.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -169,8 +166,8 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
                               : _coverFallback(accent),
                         ),
                         Positioned(
-                          right: 8.ts(context),
-                          top: 8.ts(context),
+                          right: 8.sp,
+                          top: 8.sp,
                           child: TvCoverChip(label: '${folder.mediaCount}'),
                         ),
                       ],

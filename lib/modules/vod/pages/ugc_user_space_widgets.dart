@@ -123,7 +123,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                   SliverToBoxAdapter(
                     child: UgcSpaceHeaderCard(info: _info!, onToggleFollow: _toggleFollow),
                   ),
-                  SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
+                  SliverPadding(padding: EdgeInsets.only(top: 12.sp)),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
@@ -156,7 +156,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                       ),
                     ),
                   ),
-                  SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
+                  SliverPadding(padding: EdgeInsets.only(top: 12.sp)),
                   SliverPadding(
                     padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
                     sliver: SliverGrid(

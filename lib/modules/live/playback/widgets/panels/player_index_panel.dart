@@ -378,12 +378,12 @@ class _PanelRow extends StatelessWidget {
         children: [
           if (row.asset != null)
             Padding(
-              padding: EdgeInsets.only(right: 10.ts(context)),
+              padding: EdgeInsets.only(right: 10.sp),
               child: SvgOrIcon(asset: row.asset, icon: row.icon, color: foreground, size: 24.ts(context) * boxScale),
             )
           else if (row.icon != null)
             Padding(
-              padding: EdgeInsets.only(right: 10.ts(context)),
+              padding: EdgeInsets.only(right: 10.sp),
               child: Icon(row.icon, size: 24.ts(context) * boxScale, color: foreground),
             ),
           Expanded(

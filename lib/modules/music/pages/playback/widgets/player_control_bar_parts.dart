@@ -416,7 +416,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
               children: [
                 if (_panel != _BarPanel.none && options.isNotEmpty)
                   Padding(
-                    padding: EdgeInsets.only(bottom: 12.ts(context)),
+                    padding: EdgeInsets.only(bottom: 12.sp),
                     child: Container(
                       constraints: BoxConstraints(maxHeight: 480.ts(context)),
                       decoration: BoxDecoration(
@@ -437,7 +437,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                           Flexible(
                             child: ListView.builder(
                               shrinkWrap: true,
-                              padding: EdgeInsets.only(bottom: 12.ts(context)),
+                              padding: EdgeInsets.only(bottom: 12.sp),
                               itemCount: options.length,
                               itemBuilder: (context, index) {
                                 final option = options[index];

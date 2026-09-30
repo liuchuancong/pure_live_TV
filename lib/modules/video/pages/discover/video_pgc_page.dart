@@ -1,12 +1,8 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 class VideoPgcPage extends ConsumerStatefulWidget {
   const VideoPgcPage({super.key});
@@ -181,14 +177,14 @@ class _PgcCard extends StatelessWidget {
                   ),
                   if (item.badge.isNotEmpty)
                     Positioned(
-                      left: 12.ts(context),
-                      top: 12.ts(context),
+                      left: 12.sp,
+                      top: 12.sp,
                       child: TvCoverChip(label: item.badge),
                     ),
                   if (item.rating > 0)
                     Positioned(
-                      right: 8.ts(context),
-                      bottom: 8.ts(context),
+                      right: 8.sp,
+                      bottom: 8.sp,
                       child: TvCoverChip(
                         icon: Icons.star_rounded,
                         label: item.rating.toStringAsFixed(1),

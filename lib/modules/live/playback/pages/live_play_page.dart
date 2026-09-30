@@ -42,8 +42,8 @@ class LivePlayPage extends ConsumerWidget {
             // keeps the whole screen and the danmaku keep their geometry.
             if (state.showSidePanel)
               Positioned(
-                top: 24.ts(context),
-                bottom: 24.ts(context),
+                top: 24.sp,
+                bottom: 24.sp,
                 left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.ts(context) : null,
                 right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.ts(context),
                 // The frame tracks the same text factor the panels inside size

@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -128,13 +127,13 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                     // font-scale resolver.
                     if (label.isNotEmpty)
                       Positioned(
-                        left: 12.ts(context),
-                        top: 12.ts(context),
+                        left: 12.sp,
+                        top: 12.sp,
                         child: TvCoverChip(label: label),
                       ),
                     Positioned(
-                      left: 12.ts(context),
-                      bottom: 12.ts(context),
+                      left: 12.sp,
+                      bottom: 12.sp,
                       child: Wrap(
                         spacing: 8.ts(context),
                         runSpacing: 6.ts(context),
@@ -153,8 +152,8 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                     ),
                     if (showDuration && archive.duration > 0)
                       Positioned(
-                        right: 12.ts(context),
-                        bottom: 12.ts(context),
+                        right: 12.sp,
+                        bottom: 12.sp,
                         child: TvCoverChip(label: MusicVideoCard.formatDuration(archive.duration)),
                       ),
                     if (progress > 0)

@@ -32,7 +32,7 @@ class AgreementPage extends StatelessWidget {
                       AppStyle.vGap24,
 
                       Padding(
-                        padding: EdgeInsets.only(left: 28.0.ts(context), right: 8.0.ts(context)),
+                        padding: EdgeInsets.only(left: 28.0.sp, right: 8.0.sp),
 
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,

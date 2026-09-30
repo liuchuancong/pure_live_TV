@@ -1,28 +1,28 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/core/pagination/paging_core.dart';
 import 'package:pure_live/core/common/utils/color_util.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_immersive_page.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/core/pagination/models/paging_param.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
+import 'package:pure_live/services/background_config/background_blur.dart';
+import 'package:pure_live/features/wallpaper/wallpaper_immersive_page.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
 import 'package:pure_live/services/background_config/local/wallpaper_video.dart';
-import 'package:pure_live/services/background_config/background_blur.dart';
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
+
 part 'wallpaper_preview_page_parts.dart';

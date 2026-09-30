@@ -213,7 +213,7 @@ class _BlockEntryAddDialogState extends ConsumerState<BlockEntryAddDialog> {
             TvInputField(controller: _controller, focusNode: _focusNode, hint: i18n('block_danmaku_keyword')),
             if (_error.isNotEmpty)
               Padding(
-                padding: EdgeInsets.only(top: 10.ts(context)),
+                padding: EdgeInsets.only(top: 10.sp),
                 child: Text(_error, style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor)),
               ),
           ],

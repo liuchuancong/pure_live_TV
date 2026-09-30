@@ -173,7 +173,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsets.only(left: 8.ts(context), bottom: 12.ts(context)),
+                          padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
                           child: Row(
                             children: [
                               Text(
@@ -194,7 +194,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                           child: DpadRegion(
                             horizontalEdge: DpadEdgeBehavior.leave,
                             child: GridView.builder(
-                              padding: EdgeInsets.only(bottom: 16.ts(context)),
+                              padding: EdgeInsets.only(bottom: 16.sp),
                               gridDelegate: TvAdaptiveGrid.media(
                                 context,
                                 crossAxisCount: 4,

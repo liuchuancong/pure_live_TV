@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/vod/widgets/handle_video_surface.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
@@ -294,8 +291,8 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
                     top: _controlsVisible ? 24.ts(context) : -120.ts(context),
-                    left: 48.ts(context),
-                    right: 48.ts(context),
+                    left: 48.sp,
+                    right: 48.sp,
                     child: IgnorePointer(
                       ignoring: !_controlsVisible,
                       child: Row(
@@ -343,8 +340,8 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                     duration: const Duration(milliseconds: 260),
                     curve: Curves.easeOutCubic,
                     bottom: _controlsVisible ? 32.ts(context) : -180.ts(context),
-                    left: 48.ts(context),
-                    right: 48.ts(context),
+                    left: 48.sp,
+                    right: 48.sp,
                     child: IgnorePointer(
                       ignoring: !_controlsVisible || _queueOpen,
                       // Hidden must also mean unfocusable: a parked-offscreen bar
@@ -367,9 +364,9 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                   // -------------------------------------------------- settings panel
                   if (_settingsOpen)
                     Positioned(
-                      top: 100.ts(context),
-                      bottom: 100.ts(context),
-                      right: 48.ts(context),
+                      top: 100.sp,
+                      bottom: 100.sp,
+                      right: 48.sp,
                       width: 640.ts(context),
                       child: MusicPlayerSettingsPanel(onClose: _closeSettings),
                     ),
@@ -380,9 +377,9 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
                   // ------------------------------------------------------ queue panel
                   if (_queueOpen && !_settingsOpen)
                     Positioned(
-                      top: 100.ts(context),
-                      bottom: 100.ts(context),
-                      right: 48.ts(context),
+                      top: 100.sp,
+                      bottom: 100.sp,
+                      right: 48.sp,
                       width: 520.ts(context),
                       child: MusicQueuePanel(onClose: _closeQueue),
                     ),

@@ -20,7 +20,7 @@ class VideoPlaybackSettingsGroup extends ConsumerWidget {
     final bool globalMute = ref.watch(volumeSettingsControllerProvider).globalVolumeMute;
 
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: 4.ts(context)),
+      padding: EdgeInsets.only(top: 4.sp),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

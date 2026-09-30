@@ -1,8 +1,5 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 
@@ -64,7 +61,7 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
             onTap: () => UgcUserSpaceRoute(user.mid, user.uname).push(context),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.ts(context)),
+              margin: EdgeInsets.only(bottom: 10.sp),
               padding: EdgeInsets.all(14.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,

@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
@@ -85,13 +84,13 @@ class MusicPlaylistCard extends StatelessWidget {
                     ),
                     if (entry.pinned)
                       Positioned(
-                        left: 12.ts(context),
-                        top: 12.ts(context),
+                        left: 12.sp,
+                        top: 12.sp,
                         child: TvCoverChip(icon: Icons.push_pin_rounded, label: ''),
                       ),
                     Positioned(
-                      right: 12.ts(context),
-                      bottom: 12.ts(context),
+                      right: 12.sp,
+                      bottom: 12.sp,
                       child: TvCoverChip(label: '${entry.tracks.length}'),
                     ),
                   ],
@@ -99,7 +98,7 @@ class MusicPlaylistCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 4.ts(context)),
+              padding: EdgeInsets.only(top: 4.sp),
               child: Row(
                 children: [
                   if (entry.isLiked) ...[
@@ -194,8 +193,8 @@ class MusicFolderCard extends StatelessWidget {
                         : _coverFallback(context, accent),
                   ),
                   Positioned(
-                    right: 8.ts(context),
-                    top: 8.ts(context),
+                    right: 8.sp,
+                    top: 8.sp,
                     child: TvCoverChip(label: isSyncing ? '...' : '${folder.mediaCount}'),
                   ),
                 ],

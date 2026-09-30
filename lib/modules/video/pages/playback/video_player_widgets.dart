@@ -472,7 +472,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                             return Align(
                               alignment: Alignment.bottomRight,
                               child: Padding(
-                                padding: EdgeInsets.only(right: 48.ts(context), bottom: 64.ts(context)),
+                                padding: EdgeInsets.only(right: 48.sp, bottom: 64.sp),
                                 child: Icon(
                                   Icons.pause_circle_outline_rounded,
                                   size: 72.ts(context),
@@ -492,7 +492,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     Positioned(
                       left: 0,
                       right: 0,
-                      bottom: 140.ts(context),
+                      bottom: 140.sp,
                       child: IgnorePointer(
                         child: SubtitleLines(cues: _subtitleCues, handle: controller.handle!),
                       ),
@@ -503,8 +503,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
                     top: _controlsVisible ? 24.ts(context) : -120.ts(context),
-                    left: 48.ts(context),
-                    right: 48.ts(context),
+                    left: 48.sp,
+                    right: 48.sp,
                     child: IgnorePointer(
                       ignoring: !_controlsVisible,
                       child: Row(
@@ -561,8 +561,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
                     bottom: _controlsVisible ? 32.ts(context) : -160.ts(context),
-                    left: 48.ts(context),
-                    right: 48.ts(context),
+                    left: 48.sp,
+                    right: 48.sp,
                     child: IgnorePointer(
                       ignoring: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen,
                       child: ExcludeFocus(
@@ -637,9 +637,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   // ----------------------------------------------- comments panel
                   if (_commentsOpen && track != null)
                     Positioned(
-                      top: 100.ts(context),
-                      bottom: 100.ts(context),
-                      right: 48.ts(context),
+                      top: 100.sp,
+                      bottom: 100.sp,
+                      right: 48.sp,
                       width: 620.ts(context),
                       child: VideoCommentsPanel(
                         oid: track.archive.aid,
@@ -655,9 +655,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   // -------------------------------------------------- parts panel
                   if (_partsOpen)
                     Positioned(
-                      top: 100.ts(context),
-                      bottom: 100.ts(context),
-                      right: 48.ts(context),
+                      top: 100.sp,
+                      bottom: 100.sp,
+                      right: 48.sp,
                       width: 520.ts(context),
                       child: VideoPartsPanel(onClose: _closeParts),
                     ),
@@ -665,8 +665,8 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   // ------------------------------------------------- quality menu
                   if (_qualityOpen)
                     Positioned(
-                      top: 100.ts(context),
-                      right: 48.ts(context),
+                      top: 100.sp,
+                      right: 48.sp,
                       width: 320.ts(context),
                       child: VideoQualityMenu(onClose: () => setState(() => _qualityOpen = false)),
                     ),

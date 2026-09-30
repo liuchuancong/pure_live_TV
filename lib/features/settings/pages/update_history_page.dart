@@ -228,7 +228,7 @@ Future<void> showReleaseNotesDialog({required BuildContext context, required Rel
                   children: <Widget>[
                     if (release.date.isNotEmpty)
                       Padding(
-                        padding: EdgeInsets.only(bottom: 12.ts(context)),
+                        padding: EdgeInsets.only(bottom: 12.sp),
                         child: Text(
                           i18n('version_published_at', args: <String, String>{'date': release.date}),
                           style: AppTextStyles.t16.copyWith(color: tvTheme.secondaryTextColor),

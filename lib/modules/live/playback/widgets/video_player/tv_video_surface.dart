@@ -270,7 +270,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
               _RoomInfoBar(room: room),
               if (state.showChannelBanner)
                 Padding(
-                  padding: EdgeInsets.only(top: 10.ts(context)),
+                  padding: EdgeInsets.only(top: 10.sp),
                   child: _ChannelBannerToast(text: state.channelBanner!),
                 ),
             ],
@@ -282,7 +282,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         Positioned(
           left: 0,
           right: 0,
-          top: 64.ts(context),
+          top: 64.sp,
           child: _ChannelBannerToast(text: state.channelBanner!),
         ),
       );

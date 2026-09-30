@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -177,9 +174,9 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                         // card's TvButton pills are sized for its cell, and at a
                         // 160px video cell they swallow the cover (and overflow).
                         Positioned(
-                          left: 10.ts(context),
-                          right: 10.ts(context),
-                          bottom: 6.ts(context),
+                          left: 10.sp,
+                          right: 10.sp,
+                          bottom: 6.sp,
                           child: Row(
                             children: [
                               TvCoverChip(icon: Icons.play_arrow_rounded, label: _wan(archive.playCount)),
@@ -193,8 +190,8 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                         // The region/rank chip anchors the top-left corner.
                         if (badge.isNotEmpty)
                           Positioned(
-                            left: 10.ts(context),
-                            top: 10.ts(context),
+                            left: 10.sp,
+                            top: 10.sp,
                             child: TvCoverChip(label: badge),
                           ),
                         // Watched progress along the cover's bottom edge.
@@ -248,7 +245,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                   // steps as the room card's nick line.
                   Padding(
                     padding: EdgeInsets.only(
-                      left: 10.ts(context),
+                      left: 10.sp,
                       top: (compact ? 6.ts(context) : 16.ts(context)) * textScale,
                       right: compact ? 10.ts(context) : 16.ts(context),
                       bottom: (compact ? 6.ts(context) : 8.ts(context)) * textScale,

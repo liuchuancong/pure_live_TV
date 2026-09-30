@@ -157,8 +157,8 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
                             ),
                             if (selected)
                               Positioned(
-                                left: 10.ts(context),
-                                top: 10.ts(context),
+                                left: 10.sp,
+                                top: 10.sp,
                                 child: IgnorePointer(
                                   child: Container(
                                     width: 44.ts(context),

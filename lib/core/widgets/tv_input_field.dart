@@ -1,11 +1,5 @@
 import 'dart:io' show Platform;
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:pure_live/core/theme/tv_theme_x.dart';
-import 'package:pure_live/core/theme/styles/styles.dart';
-import 'package:pure_live/core/theme/tv_theme_data.dart';
-import 'package:pure_live/core/theme/tv_text_scale.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:android_tv_text_field/native_textfield_tv.dart';
 
 /// The TV text field: one look, two backends.
@@ -215,13 +209,13 @@ class _TvInputFieldState extends State<TvInputField> {
         Container(
           width: double.infinity,
           padding: EdgeInsets.only(
-            left: 12.ts(context),
+            left: 12.sp,
             right: widget.postFixWidget == null && !widget.showPasswordToggle ? 12.ts(context) : 50.ts(context),
           ),
           child: Row(children: [Expanded(child: inputCore)]),
         ),
         Positioned(
-          right: 12.ts(context),
+          right: 12.sp,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

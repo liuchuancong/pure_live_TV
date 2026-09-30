@@ -180,7 +180,7 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
             TvInputField(controller: _description, hint: i18n('tag_desc_hint')),
             if (_error.isNotEmpty)
               Padding(
-                padding: EdgeInsets.only(top: 10.ts(context)),
+                padding: EdgeInsets.only(top: 10.sp),
                 child: Text(_error, style: AppTextStyles.t16.copyWith(color: tvTheme.focusColor)),
               ),
           ],

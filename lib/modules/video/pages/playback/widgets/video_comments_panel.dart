@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
-import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 
@@ -118,7 +117,7 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
                   )
                 : ListView.builder(
                     controller: widget.scroll,
-                    padding: EdgeInsets.only(left: 16.ts(context), right: 16.ts(context), bottom: 16.ts(context)),
+                    padding: EdgeInsets.only(left: 16.sp, right: 16.sp, bottom: 16.sp),
                     itemCount: widget.comments.length + (widget.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index >= widget.comments.length) {
@@ -195,7 +194,7 @@ class _CommentTile extends StatelessWidget {
     final hasThread = comment.rcount > 0;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 8.ts(context)),
+      margin: EdgeInsets.only(bottom: 8.sp),
       padding: EdgeInsets.all(12.ts(context)),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.06),
@@ -275,13 +274,13 @@ class _CommentTile extends StatelessWidget {
           ],
           if (expanded)
             Padding(
-              padding: EdgeInsets.only(left: 18.ts(context), top: 6.ts(context)),
+              padding: EdgeInsets.only(left: 18.sp, top: 6.sp),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   for (final reply in replies)
                     Padding(
-                      padding: EdgeInsets.only(bottom: 4.ts(context)),
+                      padding: EdgeInsets.only(bottom: 4.sp),
                       child: Text.rich(
                         TextSpan(
                           children: [

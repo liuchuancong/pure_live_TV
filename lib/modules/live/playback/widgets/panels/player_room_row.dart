@@ -127,7 +127,7 @@ class PlayerRoomRow extends ConsumerWidget {
                     ),
                     if (showFollowAction)
                       Padding(
-                        padding: EdgeInsets.only(left: 8.ts(context)),
+                        padding: EdgeInsets.only(left: 8.sp),
                         child: _FollowLabel(
                           followed: favorite,
                           selected: selected,

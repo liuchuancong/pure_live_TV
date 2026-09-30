@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:media_core/media_core.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
@@ -50,7 +48,7 @@ class VideoQualityMenu extends ConsumerWidget {
           ),
           for (final option in state.qualityOptions)
             Padding(
-              padding: EdgeInsets.only(left: 12.ts(context), right: 12.ts(context), bottom: 8.ts(context)),
+              padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 8.sp),
               child: TvFocusable(
                 autofocus: option.quality == state.quality,
                 onTap: () {

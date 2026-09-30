@@ -181,7 +181,7 @@ class VideoUserResultsState extends ConsumerState<VideoUserResults> {
             onTap: () => UgcUserSpaceRoute(user.mid, user.uname).push(context),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.ts(context)),
+              margin: EdgeInsets.only(bottom: 10.sp),
               padding: EdgeInsets.all(14.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,

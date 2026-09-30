@@ -108,7 +108,7 @@ class DecoderSettingsSectionPage extends ConsumerWidget {
           Padding(
             // custom driver & hardware accel (kernel page) is what puts --hwdec on the mpv
             // command line; without it this choice is ignored.
-            padding: EdgeInsets.only(left: 8.ts(context), bottom: 8.ts(context), right: 8.ts(context)),
+            padding: EdgeInsets.only(left: 8.sp, bottom: 8.sp, right: 8.sp),
             child: Text(
               i18nOr('ui_takes_effect_only_with_custom_player_output', i18n('custom_output_hwdec')),
               style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),

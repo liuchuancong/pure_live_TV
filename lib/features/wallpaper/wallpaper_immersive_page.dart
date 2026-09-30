@@ -231,7 +231,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
-                      margin: EdgeInsets.only(bottom: 48.ts(context)),
+                      margin: EdgeInsets.only(bottom: 48.sp),
                       padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 14.ts(context)),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.65),

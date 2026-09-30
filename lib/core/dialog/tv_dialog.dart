@@ -83,7 +83,7 @@ class TvDialog extends StatelessWidget {
               children: [
                 if (title != null)
                   Padding(
-                    padding: EdgeInsets.only(bottom: 24.ts(context)),
+                    padding: EdgeInsets.only(bottom: 24.sp),
                     child: Text(
                       title!,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -101,7 +101,7 @@ class TvDialog extends StatelessWidget {
                     children: [
                       if (cancelText != null)
                         Padding(
-                          padding: EdgeInsets.only(right: 16.ts(context)),
+                          padding: EdgeInsets.only(right: 16.sp),
                           child: TvButton(
                             title: cancelText!,
                             size: TvButtonSize.mini,

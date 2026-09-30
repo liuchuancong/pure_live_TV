@@ -1,9 +1,9 @@
 import 'tv_settings_card.dart';
 import 'tv_settings_menu_tile.dart';
-import 'tv_settings_nav_tile.dart';
 import 'tv_settings_switch_tile.dart';
 import 'tv_settings_slider_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:pure_live/core/widgets/tv_settings_nav_tile.dart';
 
 extension AppLayoutFactory on BuildContext {
   Widget buildGroupTitle(String text) {

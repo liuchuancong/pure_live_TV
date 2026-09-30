@@ -1,10 +1,6 @@
 import 'dart:math' as math;
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/core/theme/index.dart';
-import 'package:pure_live/core/widgets/index.dart';
-import 'package:pure_live/core/common/utils/color_util.dart';
-import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
 /// One grid tile of the wallpaper browser: pictures load a grid-sized copy,
@@ -65,20 +61,20 @@ class WallpaperTile extends StatelessWidget {
             ColoredBox(color: theme.cardColor, child: _buildPreview(context, theme)),
             if (item.bytes != null)
               Positioned(
-                right: 6.ts(context),
-                bottom: 6.ts(context),
+                right: 6.sp,
+                bottom: 6.sp,
                 child: WallpaperBadge(text: sizeLabel(item.bytes!)),
               ),
             if (kind == BackgroundKind.video)
               Positioned(
-                left: 6.ts(context),
-                bottom: 6.ts(context),
+                left: 6.sp,
+                bottom: 6.sp,
                 child: Icon(Icons.play_circle_fill, size: 20.ts(context), color: Colors.white.withValues(alpha: 0.9)),
               ),
             if (current)
               Positioned(
-                right: 6.ts(context),
-                top: 6.ts(context),
+                right: 6.sp,
+                top: 6.sp,
                 child: Icon(Icons.check_circle, size: 20.ts(context), color: theme.focusColor),
               ),
           ],

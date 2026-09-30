@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
@@ -158,14 +155,14 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
 
                               if (archive.tname.isNotEmpty)
                                 Positioned(
-                                  left: 14.ts(context),
-                                  top: 14.ts(context),
+                                  left: 14.sp,
+                                  top: 14.sp,
                                   child: TvButton(excludeFocus: true, title: archive.tname, size: TvButtonSize.mini),
                                 ),
                               if (archive.duration > 0)
                                 Positioned(
-                                  right: 14.ts(context),
-                                  bottom: 12.ts(context),
+                                  right: 14.sp,
+                                  bottom: 12.sp,
                                   child: TvButton(
                                     excludeFocus: true,
                                     title: MusicVideoCard.formatDuration(archive.duration),
@@ -335,7 +332,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                   SizedBox(height: 24.ts(context)),
                   // ==================================================== parts
                   Padding(
-                    padding: EdgeInsets.only(left: 8.ts(context), bottom: 12.ts(context)),
+                    padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
                     child: Row(
                       children: [
                         Text(
@@ -365,7 +362,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                     children: [
                       for (final (index, track) in tracks.indexed)
                         Padding(
-                          padding: EdgeInsets.only(bottom: 8.ts(context)),
+                          padding: EdgeInsets.only(bottom: 8.sp),
                           child: _PartTile(track: track, index: index, onTap: () => _play(tracks, index)),
                         ),
                     ],
@@ -373,7 +370,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                   if (_related.isNotEmpty) ...[
                     SizedBox(height: 16.ts(context)),
                     Padding(
-                      padding: EdgeInsets.only(left: 8.ts(context), bottom: 10.ts(context)),
+                      padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
                       child: Text(
                         i18n('video_related_title'),
                         style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
@@ -390,7 +387,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                       height: 300.ts(context) * 9 / 16 + 108.ts(context),
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.only(bottom: 16.ts(context)),
+                        padding: EdgeInsets.only(bottom: 16.sp),
                         itemCount: _related.length,
                         separatorBuilder: (_, _) => SizedBox(width: 12.ts(context)),
                         itemBuilder: (context, index) {

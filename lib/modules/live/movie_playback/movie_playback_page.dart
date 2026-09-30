@@ -153,7 +153,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
                 Container(
                   width: 10.ts(context),
                   height: 10.ts(context),
-                  margin: EdgeInsets.only(right: 8.ts(context)),
+                  margin: EdgeInsets.only(right: 8.sp),
                   decoration: BoxDecoration(
                     color: isServerRunning ? currentTvTheme.focusColor : Colors.redAccent,
                     shape: BoxShape.circle,

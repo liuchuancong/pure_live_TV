@@ -1,14 +1,8 @@
 import 'package:dpad/dpad.dart';
-import 'package:flutter/material.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/app/router/app_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/exports/exports.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/services/cache/cache_controller.dart';
 import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 class TvRoomCard extends ConsumerStatefulWidget {
   const TvRoomCard({
@@ -203,8 +197,8 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                         // VideoCard uses — the TvButton mini pill swallowed a
                         // cover at this cell size.
                         Positioned(
-                          left: 12.ts(context),
-                          top: 12.ts(context),
+                          left: 12.sp,
+                          top: 12.sp,
                           child: Wrap(
                             spacing: 8.ts(context),
                             runSpacing: 6.ts(context),
@@ -223,16 +217,16 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
 
                         if (widget.room.isRecord == true)
                           Positioned(
-                            right: 12.ts(context),
-                            top: 12.ts(context),
+                            right: 12.sp,
+                            top: 12.sp,
                             child: TvCoverChip(icon: Icons.videocam_rounded, label: i18n('ui_replay')),
                           ),
                         if (widget.room.isRecord == false &&
                             widget.room.liveStatus == LiveStatus.live &&
                             audience.isNotEmpty)
                           Positioned(
-                            right: 12.ts(context),
-                            bottom: 12.ts(context),
+                            right: 12.sp,
+                            bottom: 12.sp,
                             child: TvCoverChip(icon: Icons.whatshot_rounded, label: audience),
                           ),
                       ],
@@ -246,7 +240,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                   // leading, which gives way to the title instead.
                   Padding(
                     padding: EdgeInsets.only(
-                      left: 10.ts(context),
+                      left: 10.sp,
                       top: (compact ? 6.ts(context) : 16.ts(context)) * textScale,
                       right: compact ? 10.ts(context) : 16.ts(context),
                       bottom: (compact ? 6.ts(context) : 8.ts(context)) * textScale,

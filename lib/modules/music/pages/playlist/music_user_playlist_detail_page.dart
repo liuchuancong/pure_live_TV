@@ -263,12 +263,7 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: ListView.separated(
                       controller: _scroll,
-                      padding: EdgeInsets.only(
-                        left: 20.ts(context),
-                        right: 20.ts(context),
-                        bottom: 16.ts(context),
-                        top: 16.ts(context),
-                      ),
+                      padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
                       itemCount: tracks.length,
                       separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
                       itemBuilder: (context, index) {

@@ -125,7 +125,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 postFixWidget: GestureDetector(
                   onTap: () => _onSearchSubmit(_searchController.text),
                   child: Padding(
-                    padding: EdgeInsets.only(right: 16.ts(context)),
+                    padding: EdgeInsets.only(right: 16.sp),
                     child: Icon(Icons.search_rounded, color: tvTheme.secondaryTextColor, size: 28.ts(context)),
                   ),
                 ),
@@ -191,7 +191,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 8.ts(context), bottom: 10.ts(context)),
+            padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
             child: Text(
               '${i18n('search_history')}（${i18n('history_long_press_delete')}）',
               style: AppTextStyles.t20.copyWith(color: themeColor),

@@ -91,9 +91,9 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
             horizontalEdge: DpadEdgeBehavior.leave,
             child: ListView.separated(
               padding: EdgeInsets.only(
-                left: 20.ts(context),
-                right: 20.ts(context),
-                bottom: 16.ts(context),
+                left: 20.sp,
+                right: 20.sp,
+                bottom: 16.sp,
                 top: source == null ? 16.ts(context) : 6.ts(context),
               ),
               itemCount: queue.length,
