@@ -87,16 +87,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // column/row spacing are an offset from the 6.0 design default, so the untouched
-    // default reproduces the original 32 design-pixel gap.
-    final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = themeState.crossAxisSpacing;
-    final double mainSpacing = themeState.mainAxisSpacing;
-
-    // The rooms this category has loaded so far. The player takes it as the
-    // up/down channel list and fills the playlist panel with it, so a room
-    // opened from a category switches within that category instead of falling
-    // back to watch history.
+    ref.watch(themeSettingsControllerProvider);
     final List<LiveRoom> rooms = ref.watch(pagingCoreProvider(_currentParam).select((state) => state.items));
 
     return TvPageScaffold(
@@ -116,13 +107,7 @@ class _AreaRoomsPageState extends ConsumerState<AreaRoomsPage> {
           // A -352 risk-controlled category is the bilibili session gate: the
           // The sign-in button leads to the account (cookie) settings.
           onGoLogin: () => const AccountSettingsRoute().push(context),
-          gridDelegate: TvAdaptiveGrid.fixed(
-            context,
-            crossAxisCount: themeState.denseRoomLayout,
-            mainAxisSpacing: mainSpacing.w,
-            crossAxisSpacing: crossSpacing.w,
-            childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
-          ),
+          gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
           itemBuilder: (context, room, index) => TvRoomCard(
             room: room,
             index: index,

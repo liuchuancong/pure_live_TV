@@ -1,7 +1,7 @@
 ﻿import 'package:dpad/dpad.dart';
+import 'package:pure_live/domains/device/index.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/domains/device/index.dart';
 import 'package:pure_live/modules/live/search/tv_search_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
@@ -143,11 +143,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    // column/row spacing are an offset from the 6.0 design default, so the untouched
-    // default reproduces the original 32 design-pixel gap.
-    final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = themeState.crossAxisSpacing;
-    final double mainSpacing = themeState.mainAxisSpacing;
+    ref.watch(themeSettingsControllerProvider);
 
     // The results this search has loaded so far. The player takes it as the
     // up/down channel list and fills the playlist panel with it, so a room
@@ -165,13 +161,7 @@ class _TvSearchResultPageState extends ConsumerState<TvSearchResultPage> {
           param: _currentParam,
           getNotifier: () => ref.read(pagingCoreProvider(_currentParam).notifier),
           emptyScene: EmptyScene.searchResult,
-          gridDelegate: TvAdaptiveGrid.fixed(
-            context,
-            crossAxisCount: themeState.denseRoomLayout,
-            mainAxisSpacing: mainSpacing.w,
-            crossAxisSpacing: crossSpacing.w,
-            childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
-          ),
+          gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
           itemBuilder: (context, room, index) => TvRoomCard(
             room: room,
             index: index,

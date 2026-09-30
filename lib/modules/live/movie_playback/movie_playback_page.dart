@@ -110,7 +110,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                flex: 5,
+                flex: 4,
                 child: Center(
                   child: TvQrCodeCard(qrData: qrCodeAddress, urlText: hintText),
                 ),
@@ -187,39 +187,29 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         TvSettingsGroupTitle(title: i18n('movie_support_sites')),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(16.ts(context)),
-          decoration: BoxDecoration(
-            color: currentTvTheme.cardColor,
-            borderRadius: BorderRadius.circular(16.ts(context)),
-            border: Border.all(color: currentTvTheme.secondaryTextColor.withValues(alpha: 0.2)),
-          ),
-          child: IgnorePointer(
-            child: Wrap(
-              spacing: 8.ts(context),
-              runSpacing: 8.ts(context),
-              children: [
-                for (final site in Sites.supportSites)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.ts(context), vertical: 4.ts(context)),
-                    decoration: BoxDecoration(
-                      color: currentTvTheme.backgroundColor.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(8.ts(context)),
-                    ),
-                    child: Text(
-                      site.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t14.copyWith(
-                        fontSize: 14.ts(context),
-                        fontWeight: FontWeight.w500,
-                        color: currentTvTheme.secondaryTextColor,
-                      ),
+        IgnorePointer(
+          child: Wrap(
+            spacing: 8.ts(context),
+            runSpacing: 8.ts(context),
+            children: [
+              for (final site in Sites.supportSites)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.ts(context), vertical: 4.ts(context)),
+                  decoration: BoxDecoration(
+                    color: currentTvTheme.backgroundColor.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(8.ts(context)),
+                  ),
+                  child: Text(
+                    site.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.t16.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: currentTvTheme.secondaryTextColor,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ],

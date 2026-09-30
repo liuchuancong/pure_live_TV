@@ -95,7 +95,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(
-              width: _centerWidgetWidth.ts(context),
+              width: _centerWidgetWidth.sp,
               child: const RemoteSyncQrCard(width: 240, route: WebRemoteRouter.search),
             ),
             SizedBox(height: (_itemGap * 0.7).sp),
@@ -118,7 +118,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
               child: TvInputField(
                 controller: _searchController,
                 hint: i18n('search_room_hint'),
-                height: 76.ts(context),
+                height: 60.ts(context),
                 maxLines: 1,
                 onChanged: (text) => ref.read(tvSearchNotifierProvider.notifier).updateKeyword(text),
                 onSubmitted: _onSearchSubmit,
@@ -133,14 +133,14 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     curve: Curves.easeOutCubic,
-                    height: 76.ts(context),
+                    height: 60.ts(context),
                     padding: EdgeInsets.symmetric(horizontal: 28.ts(context)),
                     decoration: BoxDecoration(
                       color: tvTheme.cardColor,
                       borderRadius: BorderRadius.circular(38.ts(context)),
                       border: Border.all(
                         color: isFocused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
-                        width: isFocused ? 2.ts(context) : 1.5.ts(context),
+                        width: isFocused ? 2.sp : 1.5.sp,
                       ),
                     ),
                     child: content,

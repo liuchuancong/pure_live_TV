@@ -23,11 +23,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   Widget build(BuildContext context) {
     final historyPageState = ref.watch(historyPageProvider);
     final currentRooms = historyPageState.rooms;
-    // column/row spacing are an offset from the 6.0 design default, so the untouched
-    // default reproduces the original 32 design-pixel gap.
-    final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = themeState.crossAxisSpacing;
-    final double mainSpacing = themeState.mainAxisSpacing;
+    ref.watch(themeSettingsControllerProvider);
 
     final currentParam = PagingParam<LiveRoom>(
       mode: PagingMode.localReactive,
@@ -83,13 +79,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                       getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                       emptyScene: EmptyScene.history,
                       onEmptyGoHot: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.hot.value),
-                      gridDelegate: TvAdaptiveGrid.fixed(
-                        context,
-                        crossAxisCount: themeState.denseRoomLayout,
-                        mainAxisSpacing: mainSpacing.w,
-                        crossAxisSpacing: crossSpacing.w,
-                        childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
-                      ),
+                      gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                       itemBuilder: (context, room, index) => TvRoomCard(
                         room: room,
                         index: index,

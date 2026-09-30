@@ -51,7 +51,10 @@ class ThemeSettingsController extends _$ThemeSettingsController {
     double? gridAspectRatio,
   }) {
     final ThemeSettingsModel themeState = ref.watch(themeSettingsControllerProvider);
-    final int columns = gridColums ?? themeState.denseRoomLayout;
+    int columns = gridColums ?? themeState.denseRoomLayout;
+    if (TvTextScale.factorOf(context) > 1.0) {
+      columns -= 1.clamp(1, columns);
+    }
     return TvAdaptiveGrid.fixed(
       context,
       crossAxisCount: columns,

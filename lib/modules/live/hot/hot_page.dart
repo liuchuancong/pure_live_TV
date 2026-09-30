@@ -76,12 +76,7 @@ class _HotPageState extends ConsumerState<HotPage> {
     if (tabsState.sites.isEmpty) {
       return const SizedBox.shrink();
     }
-
-    // column/row spacing are an offset from the 6.0 design default, so the untouched
-    // default reproduces the original 32 design-pixel gap.
-    final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = themeState.crossAxisSpacing;
-    final double mainSpacing = themeState.mainAxisSpacing;
+    ref.watch(themeSettingsControllerProvider);
 
     final List<TvTabItemData> tabItems = tabsState.sites.map(TvTabItemData.site).toList();
 
@@ -134,13 +129,7 @@ class _HotPageState extends ConsumerState<HotPage> {
                       getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                       emptyScene: EmptyScene.hot,
                       onGoLogin: () => const AccountSettingsRoute().push(context),
-                      gridDelegate: TvAdaptiveGrid.fixed(
-                        context,
-                        crossAxisCount: themeState.denseRoomLayout,
-                        mainAxisSpacing: mainSpacing.w,
-                        crossAxisSpacing: crossSpacing.w,
-                        childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
-                      ),
+                      gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                       itemBuilder: (context, room, index) => TvRoomCard(
                         room: room,
                         index: index,

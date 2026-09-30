@@ -1,6 +1,5 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
@@ -11,8 +10,8 @@ import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/core/pagination/base_paged_tv_view.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
 import 'package:pure_live/core/pagination/models/paging_param.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
 /// The wallpaper grid of one source/category.
@@ -64,13 +63,7 @@ class WallpaperItemsPage extends ConsumerWidget {
           key: ValueKey<String>('wallpaper_${source.id}_${category.id}'),
           param: param,
           getNotifier: () => ref.read(pagingCoreProvider(param).notifier),
-          gridDelegate: TvAdaptiveGrid.fixed(
-            context,
-            crossAxisCount: 4,
-            mainAxisSpacing: 16.w,
-            crossAxisSpacing: 16.w,
-            childAspectRatio: 16 / 9,
-          ),
+          gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
           itemBuilder: (context, item, index) => WallpaperTile(
             item: item,
             kind: source.kind,

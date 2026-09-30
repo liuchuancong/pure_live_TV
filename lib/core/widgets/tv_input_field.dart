@@ -246,7 +246,7 @@ class _TvInputFieldState extends State<TvInputField> {
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.ts(context)),
+          borderRadius: BorderRadius.circular(38.ts(context)),
           color: resolvedBgColor,
           border: Border.all(color: _isFocused ? resolvedFocusedBorder : resolvedUnfocusedBorder, width: 2.ts(context)),
         ),
@@ -257,7 +257,7 @@ class _TvInputFieldState extends State<TvInputField> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.ts(context)),
+        borderRadius: BorderRadius.circular(38.ts(context)),
         // Built only while focused.
         //
         // The list used to hold a BoxShadow at all times, with the idle state

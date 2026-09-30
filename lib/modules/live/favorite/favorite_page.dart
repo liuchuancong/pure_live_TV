@@ -243,15 +243,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
   @override
   Widget build(BuildContext context) {
     final favoriteState = ref.watch(favoriteProvider);
-    // column/row spacing are an offset from the 6.0 design default, so the untouched
-    // default reproduces the original 32 design-pixel gap.
-    final themeState = ref.watch(themeSettingsControllerProvider);
-    final double crossSpacing = themeState.crossAxisSpacing;
-    final double mainSpacing = themeState.mainAxisSpacing;
-
-    // The playlist mirrors the page's source: live, then replay, then offline,
-    // scoped to the platform tab — so up/down walks the same groups the page
-    // shows instead of only the live slice.
+    ref.watch(themeSettingsControllerProvider);
     final favorites = ref.read(favoriteProvider.notifier);
     final liveRooms = favorites.getPlaylistRooms();
 
@@ -384,13 +376,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
                       // search action next to the refresh one); EmptyScene.favorite stays as
                       // the fallback for any path that reaches the view without it.
                       emptyScene: EmptyScene.favorite,
-                      gridDelegate: TvAdaptiveGrid.fixed(
-                        context,
-                        crossAxisCount: themeState.denseRoomLayout,
-                        mainAxisSpacing: mainSpacing.w,
-                        crossAxisSpacing: crossSpacing.w,
-                        childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
-                      ),
+                      gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                       itemBuilder: (context, room, index) => TvRoomCard(
                         room: room,
                         index: index,
