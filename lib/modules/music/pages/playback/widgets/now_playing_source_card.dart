@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/vod/models/models.dart';
+
 /// The homogeneous queue's source: one UP (and, for an album, one archive).
 class NowPlayingQueueSource {
   const NowPlayingQueueSource({
@@ -25,7 +26,7 @@ class NowPlayingQueueSource {
 /// The video player page's top bar, at queue size: the UP's face, the album
 /// when the source sits in the library.
 class NowPlayingSourceHeader extends StatelessWidget {
-  const NowPlayingSourceHeader({super.key,required this.source, required this.track});
+  const NowPlayingSourceHeader({super.key, required this.source, required this.track});
 
   final NowPlayingQueueSource source;
   final MusicTrack track;
@@ -79,7 +80,7 @@ class NowPlayingSourceHeader extends StatelessWidget {
                       if (source.isFavorited) ...[
                         SizedBox(width: 10.sp),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+                          padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
                           decoration: BoxDecoration(
                             color: accent.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(6.sp),

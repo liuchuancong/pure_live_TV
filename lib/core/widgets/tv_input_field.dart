@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pure_live/core/theme/tv_theme_x.dart';
 import 'package:pure_live/core/theme/styles/styles.dart';
 import 'package:pure_live/core/theme/tv_theme_data.dart';
+import 'package:pure_live/core/theme/tv_text_scale.dart';
 import 'package:android_tv_text_field/native_textfield_tv.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
@@ -472,7 +473,7 @@ class _TvTextFieldFallbackState extends State<_TvTextFieldFallback> {
           hintStyle: AppTextStyles.t24.copyWith(color: widget.hintColor),
           isDense: true,
           counterStyle: AppTextStyles.t18.copyWith(color: widget.hintColor),
-          contentPadding: EdgeInsets.symmetric(vertical: 2.sp),
+          contentPadding: EdgeInsets.symmetric(vertical: 2.ts(context)),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,

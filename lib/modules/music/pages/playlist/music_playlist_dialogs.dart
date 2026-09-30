@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// without it a new playlist is created. The controller refuses empty names.
@@ -57,7 +57,7 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
             },
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+              padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
               decoration: BoxDecoration(
                 color: focused ? tvTheme.cardColor : Colors.transparent,
                 borderRadius: BorderRadius.circular(12.sp),
@@ -92,7 +92,7 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
               },
               builder: (context, focused, child) => AnimatedContainer(
                 duration: const Duration(milliseconds: 120),
-                padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+                padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
                 decoration: BoxDecoration(
                   color: focused ? tvTheme.cardColor : Colors.transparent,
                   borderRadius: BorderRadius.circular(12.sp),
@@ -126,7 +126,7 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
             },
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+              padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
               decoration: BoxDecoration(
                 color: focused ? tvTheme.cardColor : Colors.transparent,
                 borderRadius: BorderRadius.circular(12.sp),

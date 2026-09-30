@@ -5,7 +5,6 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-
 /// The subtitle line stack, driven by a timer against the handle position.
 class SubtitleLines extends StatefulWidget {
   const SubtitleLines({super.key, required this.cues, required this.handle});
@@ -55,7 +54,7 @@ class _SubtitleLinesState extends State<SubtitleLines> {
         for (final line in _text.split('\n').take(2))
           Container(
             margin: EdgeInsets.only(top: 4.sp),
-            padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 6.sp),
+            padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 6.ts(context)),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(8.sp),

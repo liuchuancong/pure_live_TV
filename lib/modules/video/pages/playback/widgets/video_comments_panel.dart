@@ -220,7 +220,7 @@ class _CommentTile extends StatelessWidget {
                 onTap: onLike,
                 builder: (context, focused, _) => AnimatedContainer(
                   duration: const Duration(milliseconds: 120),
-                  padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 4.sp),
+                  padding: EdgeInsets.symmetric(horizontal: 10.ts(context), vertical: 4.ts(context)),
                   decoration: BoxDecoration(
                     color: liked(comment)
                         ? accent.withValues(alpha: 0.18)

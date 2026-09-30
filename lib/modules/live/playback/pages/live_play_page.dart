@@ -99,7 +99,7 @@ class _SidePanel extends ConsumerWidget {
     // The panel carries its own visible back row now, so the old d-pad collapse
     // button is just a hint.
     final collapse = Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 10.sp),
+      padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 10.ts(context)),
       child: Text(
         i18nOr('ui_panel_keys', '↑↓ select · OK confirm · ← back'),
         style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),

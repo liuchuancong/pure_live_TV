@@ -69,7 +69,7 @@ class TvQrCodeCard extends StatelessWidget {
             // FittedBox, whose child gets unbounded constraints, and a
             // `double.infinity` here crashed the whole layout.
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.sp),
+              padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: qrSize.ts(context) * 1.6 * TvTextScale.factorOf(context)),
                 child: FittedBox(

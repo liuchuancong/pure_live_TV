@@ -85,7 +85,7 @@ class _IconTile extends StatelessWidget {
               width: focused || active ? 2.sp : 1.sp,
             ),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 4.sp, vertical: 8.sp),
+          padding: EdgeInsets.symmetric(horizontal: 4.ts(context), vertical: 8.ts(context)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

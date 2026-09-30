@@ -1,6 +1,5 @@
 part of 'wallpaper_preview_page.dart';
 
-
 /// What one button in the preview's action bar does.
 enum _PreviewActionKind { prev, next, fresh, fit, blur, mask, apply, playPause, immersive }
 
@@ -388,9 +387,9 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             initialIndex: _index,
           );
 
-    final int? finalIndex = await Navigator.of(context).push<int>(
-      MaterialPageRoute(builder: (_) => WallpaperImmersivePage(args: immersiveArgs)),
-    );
+    final int? finalIndex = await Navigator.of(
+      context,
+    ).push<int>(MaterialPageRoute(builder: (_) => WallpaperImmersivePage(args: immersiveArgs)));
 
     if (!mounted) return;
     // The immersive page may have moved on; take its position back so both
@@ -461,7 +460,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
         fit: StackFit.expand,
         children: [
           // Blur sits under the mask: blur the media first, then the mask, so what the
-  // preview shows is what the applied background looks like.
+          // preview shows is what the applied background looks like.
           wallpaperBlurred(_buildViewer(bgState, item), bgState.blurSigma),
           // The mask the app applies over this wallpaper, drawn here too so the
           // mask action shows what it does: before, the button moved a number
@@ -472,7 +471,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
             const Positioned.fill(
               child: IgnorePointer(
                 child: Center(
-                  child: SizedBox(height: 44, width: 44, child: AppStatusView(type: AppStatusType.loading, isMini: true)),
+                  child: SizedBox(
+                    height: 44,
+                    width: 44,
+                    child: AppStatusView(type: AppStatusType.loading, isMini: true),
+                  ),
                 ),
               ),
             ),
@@ -483,7 +486,6 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       ),
     );
   }
-
 
   List<BackgroundItem> _resolveItems(WidgetRef ref) {
     if (widget.args.isApiMode) return const <BackgroundItem>[];
@@ -521,12 +523,11 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
   Widget _buildMask(BackgroundConfigModel bgState) {
     if (bgState.maskOpacity <= 0) return const SizedBox.shrink();
     final bool lightSurface = context.tvTheme.backgroundColor.computeLuminance() > 0.5;
-    return ColoredBox(
-      color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: bgState.maskOpacity),
-    );
+    return ColoredBox(color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: bgState.maskOpacity));
   }
 
-  Widget _buildViewer(BackgroundConfigModel bgState, BackgroundItem item) {    if (widget.args.isApiMode) {
+  Widget _buildViewer(BackgroundConfigModel bgState, BackgroundItem item) {
+    if (widget.args.isApiMode) {
       final bytes = _apiBytes;
       if (bytes == null) {
         return _apiLoading
@@ -579,7 +580,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       left: 0,
       right: 0,
       child: IgnorePointer(
-          child: Container(
+        child: Container(
           padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 40.sp),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -599,10 +600,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
                 ),
               ),
               if (!widget.args.isApiMode && items.length > 1)
-                Text(
-                  '${_index + 1}/${items.length}',
-                  style: AppTextStyles.t20.copyWith(color: Colors.white70),
-                ),
+                Text('${_index + 1}/${items.length}', style: AppTextStyles.t20.copyWith(color: Colors.white70)),
               if (_isVideo) ...[
                 SizedBox(width: 18.sp),
                 Icon(Icons.volume_up_rounded, size: 18.sp, color: Colors.white70),
@@ -681,12 +679,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
 /// framework move the highlight with ←/→. Nothing here talks to the page or
 /// manipulates the focus tree, so the route can pop cleanly.
 class _PreviewActionButton extends StatefulWidget {
-  const _PreviewActionButton({
-    required this.action,
-    required this.onActivate,
-    this.focusNode,
-    this.autofocus = false,
-  });
+  const _PreviewActionButton({required this.action, required this.onActivate, this.focusNode, this.autofocus = false});
 
   final _PreviewAction action;
   final VoidCallback onActivate;
@@ -765,7 +758,7 @@ class _PreviewActionButtonState extends State<_PreviewActionButton> {
             duration: const Duration(milliseconds: 120),
             curve: Curves.easeOutCubic,
             height: 56.sp,
-            padding: EdgeInsets.symmetric(horizontal: 24.sp),
+            padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
             decoration: BoxDecoration(color: fill, borderRadius: radius),
             child: Row(
               mainAxisSize: MainAxisSize.min,

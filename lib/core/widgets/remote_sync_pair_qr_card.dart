@@ -83,7 +83,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
           else
             Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 18.sp),
+              padding: EdgeInsets.symmetric(vertical: 18.ts(context)),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,

@@ -187,7 +187,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
       focusNode: widget.playNode,
       onKeyEvent: _onKey,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 18.sp),
+        padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 18.ts(context)),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.72),
           borderRadius: BorderRadius.circular(24.sp),

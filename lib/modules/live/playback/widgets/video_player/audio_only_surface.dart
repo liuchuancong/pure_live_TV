@@ -84,7 +84,7 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
         ),
         Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 48.sp),
+            padding: EdgeInsets.symmetric(horizontal: 48.ts(context)),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -138,7 +138,7 @@ class _AudioOnlyBadge extends StatelessWidget {
     final tvTheme = context.tvTheme;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 12.sp),
+      padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 12.ts(context)),
       decoration: BoxDecoration(
         color: tvTheme.cardColor.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(999),
@@ -153,7 +153,10 @@ class _AudioOnlyBadge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(i18n('ui_audio_only'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor)),
+              Text(
+                i18n('ui_audio_only'),
+                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
+              ),
             ],
           ),
         ],

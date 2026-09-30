@@ -6,7 +6,6 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
-
 class VideoPartsPanel extends ConsumerStatefulWidget {
   const VideoPartsPanel({super.key, required this.onClose});
 
@@ -102,7 +101,7 @@ class VideoPartsPanelState extends ConsumerState<VideoPartsPanel> {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 120),
                         height: 64.sp,
-                        padding: EdgeInsets.symmetric(horizontal: 14.sp),
+                        padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
                         decoration: BoxDecoration(
                           color: isCurrent ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(12.sp),

@@ -39,7 +39,7 @@ class _DanmakuListViewState extends ConsumerState<DanmakuListView> {
 
     if (messages.isEmpty) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
         child: Text(
           session.statusText ?? i18n('ui_no_danmaku_yet'),
           style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -50,7 +50,7 @@ class _DanmakuListViewState extends ConsumerState<DanmakuListView> {
     _scrollToBottom();
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
+      padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 8.ts(context)),
       itemCount: messages.length,
       itemBuilder: (context, index) {
         return _MessageTile(message: messages[index]);
@@ -71,7 +71,7 @@ class _MessageTile extends StatelessWidget {
     final color = Color.fromARGB(255, message.color.r, message.color.g, message.color.b);
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.sp),
+      padding: EdgeInsets.symmetric(vertical: 4.ts(context)),
       child: Text.rich(
         TextSpan(
           children: [
@@ -82,7 +82,10 @@ class _MessageTile extends StatelessWidget {
               ),
             TextSpan(
               text: message.message,
-              style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: isChat ? color : tvTheme.secondaryTextColor),
+              style: AppTextStyles.t14.copyWith(
+                fontWeight: FontWeight.w500,
+                color: isChat ? color : tvTheme.secondaryTextColor,
+              ),
             ),
           ],
         ),

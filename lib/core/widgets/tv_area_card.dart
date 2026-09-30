@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/typography/app_font_scale.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/area_images/area_image_matcher.dart';
 
 class TvAreaCard extends StatefulWidget {
@@ -140,7 +140,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
                     // name even at 100% and hid it completely once the app font
                     // was enlarged. [nameLines] keeps it bounded either way.
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 4.ts(context)),
                       child: Text(
                         area.areaName,
                         maxLines: nameLines,

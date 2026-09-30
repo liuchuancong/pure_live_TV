@@ -1,14 +1,15 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:pure_live/core/widgets/index.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/theme/tv_text_scale.dart';
+import 'package:pure_live/services/settings/settings.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_args.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';
 import 'package:pure_live/services/background_config/background_controller.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/i18n/locale_helper.dart';
-import 'package:pure_live/core/utils/toast_util.dart';
-import 'package:pure_live/core/widgets/index.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 /// Background settings home.
 ///
@@ -30,7 +31,7 @@ class WallpaperPage extends ConsumerWidget {
     return TvPageScaffold(
       title: i18n('ui_background_settings'),
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

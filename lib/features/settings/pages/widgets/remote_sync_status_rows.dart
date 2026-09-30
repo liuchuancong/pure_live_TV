@@ -3,10 +3,11 @@ import 'package:pure_live/exports/package_export.dart';
 /// Status colours shared by the service pill and the receive notice.
 const Color remoteSyncOkColor = Color(0xFF4CAF50);
 const Color remoteSyncFailColor = Color(0xFFEF5350);
+
 /// The 6-digit code every settings request must carry. Shown large: it is read
 /// off the screen and typed on the other device.
 class RemoteSyncPairingCodeRow extends StatelessWidget {
-  const RemoteSyncPairingCodeRow({super.key,required this.code});
+  const RemoteSyncPairingCodeRow({super.key, required this.code});
 
   final String code;
 
@@ -33,11 +34,7 @@ class RemoteSyncPairingCodeRow extends StatelessWidget {
 
 /// Service status pill: dot + address/error + running label.
 class RemoteSyncServiceStatusPill extends StatelessWidget {
-  const RemoteSyncServiceStatusPill({super.key,
-    required this.started,
-    required this.address,
-    required this.error,
-  });
+  const RemoteSyncServiceStatusPill({super.key, required this.started, required this.address, required this.error});
 
   final bool started;
   final String address;
@@ -51,7 +48,7 @@ class RemoteSyncServiceStatusPill extends StatelessWidget {
     final String label = running ? i18n('ui_running') : i18n('ui_stopped');
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 10.sp),
+      padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 10.ts(context)),
       decoration: BoxDecoration(
         color: badgeColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12.sp),
@@ -68,16 +65,17 @@ class RemoteSyncServiceStatusPill extends StatelessWidget {
           SizedBox(width: 10.sp),
           Flexible(
             child: Text(
-              running
-                  ? address
-                  : (error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...')),
+              running ? address : (error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...')),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: theme.primaryTextColor),
             ),
           ),
           SizedBox(width: 12.sp),
-          Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: badgeColor)),
+          Text(
+            label,
+            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: badgeColor),
+          ),
         ],
       ),
     );
@@ -86,7 +84,7 @@ class RemoteSyncServiceStatusPill extends StatelessWidget {
 
 /// Result of the last inbound settings push, kept on screen after the toast.
 class RemoteSyncReceiveNoticeRow extends StatelessWidget {
-  const RemoteSyncReceiveNoticeRow({super.key,required this.notice, required this.ok});
+  const RemoteSyncReceiveNoticeRow({super.key, required this.notice, required this.ok});
 
   final String notice;
   final bool ok;
@@ -113,7 +111,7 @@ class RemoteSyncReceiveNoticeRow extends StatelessWidget {
 
 /// Guide step row: icon + description.
 class RemoteSyncStepBullet extends StatelessWidget {
-  const RemoteSyncStepBullet({super.key,required this.icon, required this.text});
+  const RemoteSyncStepBullet({super.key, required this.icon, required this.text});
 
   final IconData icon;
   final String text;
@@ -139,7 +137,11 @@ class RemoteSyncStepBullet extends StatelessWidget {
             padding: EdgeInsets.only(top: 3.sp),
             child: Text(
               text,
-              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor, height: 1.35),
+              style: AppTextStyles.t18.copyWith(
+                fontWeight: FontWeight.w300,
+                color: theme.secondaryTextColor,
+                height: 1.35,
+              ),
             ),
           ),
         ),

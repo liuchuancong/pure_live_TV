@@ -47,7 +47,7 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
                   builder: (context, focused, _) => AnimatedContainer(
                     duration: const Duration(milliseconds: 120),
                     curve: Curves.easeOutCubic,
-                    padding: EdgeInsets.symmetric(horizontal: 34.sp, vertical: 12.sp),
+                    padding: EdgeInsets.symmetric(horizontal: 34.ts(context), vertical: 12.ts(context)),
                     decoration: BoxDecoration(
                       // The active pill is the tinted one, like the reference.
                       color: _tab == index

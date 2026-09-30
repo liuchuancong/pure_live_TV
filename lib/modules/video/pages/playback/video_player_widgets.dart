@@ -1,6 +1,5 @@
 part of 'video_player_page.dart';
 
-
 /// The video-mode player, modelled on newBV's layer scheme:
 ///
 /// - the picture is always on; the bar starts hidden (live_play's overlay
@@ -432,7 +431,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                           if (state.error.isNotEmpty) {
                             return Center(
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 14.sp),
+                                padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 14.ts(context)),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withValues(alpha: 0.72),
                                   borderRadius: BorderRadius.circular(16.sp),

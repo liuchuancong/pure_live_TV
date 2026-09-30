@@ -50,7 +50,7 @@ class _InfoPill extends StatelessWidget {
     // inside rides the same factor.
     final double scale = TvTextScale.factorOf(context);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.sp * scale, vertical: 3.sp * scale),
+      padding: EdgeInsets.symmetric(horizontal: 10.ts(context) * scale, vertical: 3.ts(context) * scale),
       decoration: BoxDecoration(
         color: filled ? color.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(8.sp),
@@ -60,7 +60,13 @@ class _InfoPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[Icon(icon, size: 16.sp * scale, color: Colors.white70), SizedBox(width: 4.sp * scale)],
-          Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: filled ? Colors.white : Colors.white70)),
+          Text(
+            label,
+            style: AppTextStyles.t16.copyWith(
+              fontWeight: FontWeight.w600,
+              color: filled ? Colors.white : Colors.white70,
+            ),
+          ),
         ],
       ),
     );
@@ -205,7 +211,10 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                       SizedBox(height: 12.sp),
                       Text(
                         loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
-                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                        style: AppTextStyles.t16.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: tvTheme.secondaryTextColor,
+                        ),
                       ),
                     ],
                   ),
@@ -244,7 +253,9 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
     // seconds after entry, and - most of all - under a failure overlay, which
     // cannot name the room it is about. The toast sits under the card while the
     // card is up instead of on top of it.
-    if (room != null && !state.isOffline && (state.showRoomInfo || state.showControls || state.fetchingDetail || showError)) {
+    if (room != null &&
+        !state.isOffline &&
+        (state.showRoomInfo || state.showControls || state.fetchingDetail || showError)) {
       children.add(
         Positioned(
           left: 0,
@@ -265,7 +276,12 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
       );
     } else if (state.showChannelBanner) {
       children.add(
-        Positioned(left: 0, right: 0, top: 64.sp, child: _ChannelBannerToast(text: state.channelBanner!)),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 64.sp,
+          child: _ChannelBannerToast(text: state.channelBanner!),
+        ),
       );
     }
 
@@ -311,7 +327,7 @@ class _RoomInfoBar extends StatelessWidget {
           ),
         ),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 12.sp * scale),
+          padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * scale, vertical: 12.ts(context) * scale),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.42),
             borderRadius: BorderRadius.circular(18.sp),
@@ -366,7 +382,10 @@ class _RoomInfoBar extends StatelessWidget {
               // factor as the digits beside it.
               Icon(RemixIcons.time_line, size: 24.sp * scale, color: Colors.white70),
               SizedBox(width: 8.sp * scale),
-              TvDigitalClock(format: 'HH:mm', style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
+              TvDigitalClock(
+                format: 'HH:mm',
+                style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
+              ),
             ],
           ),
         ),
@@ -388,7 +407,7 @@ class _ChannelBannerToast extends StatelessWidget {
     return IgnorePointer(
       child: Center(
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+          padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(12.sp),

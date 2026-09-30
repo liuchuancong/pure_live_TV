@@ -2,8 +2,9 @@ import 'tv_dialog.dart';
 import 'tv_dialog_option_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/tv_theme_x.dart';
-import 'package:pure_live/core/theme/typography/app_font_scale.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/theme/tv_text_scale.dart';
+import 'package:pure_live/core/theme/typography/app_font_scale.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// One toggleable row of [TvMultiSelectDialog].
@@ -87,7 +88,7 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
               child: ListView.separated(
                 controller: _scrollController,
                 shrinkWrap: true,
-                padding: EdgeInsets.symmetric(vertical: 2.sp),
+                padding: EdgeInsets.symmetric(vertical: 2.ts(context)),
                 itemCount: widget.items.length,
                 separatorBuilder: (_, _) => SizedBox(height: 12.sp),
                 itemBuilder: (_, index) {

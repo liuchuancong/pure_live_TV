@@ -1,6 +1,5 @@
 part of 'room_switch_dialog.dart';
 
-
 /// Dialog that switches the current playback to another room.
 ///
 /// Only rooms the device already knows are offered: the followed rooms that are
@@ -330,7 +329,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeOut,
-              padding: EdgeInsets.symmetric(horizontal: 22.sp, vertical: 9.sp),
+              padding: EdgeInsets.symmetric(horizontal: 22.ts(context), vertical: 9.ts(context)),
               decoration: BoxDecoration(
                 color: i == _tabIndex ? accent.withValues(alpha: 0.16) : Colors.white.withValues(alpha: 0.035),
                 borderRadius: BorderRadius.circular(20.sp),
@@ -343,9 +342,11 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
                 titles[i],
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t20.copyWith(height: 1.15,
+                style: AppTextStyles.t20.copyWith(
+                  height: 1.15,
                   fontWeight: i == _tabIndex ? FontWeight.w600 : FontWeight.w400,
-                  color: i == _tabIndex ? accent : Colors.white70),
+                  color: i == _tabIndex ? accent : Colors.white70,
+                ),
               ),
             ),
           ),

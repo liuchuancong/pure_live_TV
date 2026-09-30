@@ -1,21 +1,21 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/modules/vod/index.dart';
-import 'package:pure_live/modules/live/hot/hot_page.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/live/areas/areas_page.dart';
+import 'package:pure_live/modules/live/hot/hot_page.dart';
 import 'package:pure_live/modules/music/music_section.dart';
 import 'package:pure_live/features/home/home_provider.dart';
 import 'package:pure_live/modules/video/video_section.dart';
-import 'package:pure_live/modules/live/history/history_page.dart';
-import 'package:pure_live/modules/live/search/tv_search_page.dart';
-import 'package:pure_live/modules/live/favorite/favorite_page.dart';
+import 'package:pure_live/modules/live/areas/areas_page.dart';
 import 'package:pure_live/modules/music/music_section_view.dart';
 import 'package:pure_live/modules/video/video_section_view.dart';
 import 'package:pure_live/features/home/home_update_dialog.dart';
+import 'package:pure_live/modules/live/history/history_page.dart';
 import 'package:pure_live/features/home/exit_confirm_dialog.dart';
+import 'package:pure_live/modules/live/search/tv_search_page.dart';
 import 'package:pure_live/features/settings/tv_settings_page.dart';
+import 'package:pure_live/modules/live/favorite/favorite_page.dart';
 import 'package:pure_live/modules/music/widgets/music_mini_bar.dart';
 import 'package:pure_live/modules/live/movie_playback/movie_playback_page.dart';
 import 'package:pure_live/modules/live/favorite_areas/favorite_areas_page.dart';
@@ -85,7 +85,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             onTap: () => Navigator.pop(context, mode),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 12.sp),
+              padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
               decoration: BoxDecoration(
                 color: focused ? tvTheme.cardColor : Colors.transparent,
                 borderRadius: BorderRadius.circular(12.sp),
@@ -553,7 +553,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10.sp),
+      padding: EdgeInsets.symmetric(horizontal: 10.ts(context)),
       child: Center(
         child: TvIconButton(
           icon: Icon(item.icon),

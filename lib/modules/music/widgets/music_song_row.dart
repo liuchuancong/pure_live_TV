@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/vod/models/models.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart' show stripTrackOrdinal;
 
 /// One song row in the bmsc TrackTile shape, shared by every music list:
@@ -63,7 +63,7 @@ class MusicSongRow extends ConsumerWidget {
           curve: Curves.easeOutCubic,
           // Content-sized, like the reference's tile: a fixed height overflowed
           // by a pixel once the three text lines scaled past it.
-          padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 10.sp),
+          padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 10.ts(context)),
           decoration: BoxDecoration(
             color: isCurrent
                 ? accent.withValues(alpha: 0.14)

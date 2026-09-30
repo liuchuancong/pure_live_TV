@@ -12,7 +12,6 @@ import 'package:pure_live/services/background_config/background_controller.dart'
 import 'package:pure_live/services/background_config/background_config_model.dart';
 import 'package:pure_live/services/background_config/remote/background_catalog.dart';
 
-
 /// Full-screen wallpaper viewer, a route of its own with no permanent buttons.
 ///
 /// Up/Down moves through the sequence, OK applies the item as the app
@@ -47,11 +46,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
   @override
   void initState() {
     super.initState();
-    _sequence = WallpaperSequence(
-      args: widget.args,
-      ref: ref,
-      initialIndex: widget.args.initialIndex,
-    );
+    _sequence = WallpaperSequence(args: widget.args, ref: ref, initialIndex: widget.args.initialIndex);
     if (widget.args.isApiMode) {
       unawaited(_fetchApi(initial: true));
     }
@@ -237,7 +232,7 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
                     alignment: Alignment.bottomCenter,
                     child: Container(
                       margin: EdgeInsets.only(bottom: 48.sp),
-                      padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 14.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 14.ts(context)),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(28.sp),
@@ -321,8 +316,6 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
   /// themes darken, so the preview matches the result.
   Widget _buildMask(BackgroundConfigModel bgState) {
     final bool lightSurface = context.tvTheme.backgroundColor.computeLuminance() > 0.5;
-    return ColoredBox(
-      color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: bgState.maskOpacity),
-    );
+    return ColoredBox(color: (lightSurface ? Colors.white : Colors.black).withValues(alpha: bgState.maskOpacity));
   }
 }

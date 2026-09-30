@@ -4,14 +4,14 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pure_live/modules/video/widgets/video_action_chip.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/video/widgets/video_action_chip.dart';
 import 'package:pure_live/modules/vod/domain/providers/vod_providers.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// One archive's page in video mode, newBV's detail screen restyled for the
 /// TV grid: a poster with the gradient scrim and cover badges, the avatar-led
@@ -100,11 +100,13 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     if (folders.isEmpty) throw Exception('no fav folder');
     final int folderId = folders.first.id;
     final int aid = (_detail ?? widget.archive).aid;
-    await ref.read(ugcRepositoryProvider).favDeal(
-      aid: aid,
-      addFolderIds: _favoured ? const [] : [folderId],
-      delFolderIds: _favoured ? [folderId] : const [],
-    );
+    await ref
+        .read(ugcRepositoryProvider)
+        .favDeal(
+          aid: aid,
+          addFolderIds: _favoured ? const [] : [folderId],
+          delFolderIds: _favoured ? [folderId] : const [],
+        );
     await _loadStates(aid);
   }
 
@@ -398,6 +400,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
     );
   }
 }
+
 class _PartTile extends StatelessWidget {
   const _PartTile({required this.track, required this.index, required this.onTap});
 
@@ -426,7 +429,7 @@ class _PartTile extends StatelessWidget {
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOutCubic,
           height: 76.ts(context),
-          padding: EdgeInsets.symmetric(horizontal: 16.sp),
+          padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
           decoration: BoxDecoration(
             color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
             borderRadius: BorderRadius.circular(18.sp),

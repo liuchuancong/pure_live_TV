@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// One interaction chip: a compact icon+label pill in the focused palette.
 class VideoActionChip extends StatelessWidget {
@@ -23,7 +23,7 @@ class VideoActionChip extends StatelessWidget {
       onTap: onTap,
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 10.sp * scale),
+        padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * scale, vertical: 10.ts(context) * scale),
         decoration: BoxDecoration(
           color: active
               ? accent.withValues(alpha: 0.2)

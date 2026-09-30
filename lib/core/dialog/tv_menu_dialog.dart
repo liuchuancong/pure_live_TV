@@ -2,6 +2,7 @@ import 'tv_dialog.dart';
 import 'tv_dialog_option_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/theme/tv_text_scale.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvMenuItem<T> {
@@ -26,13 +27,7 @@ class TvMenuDialog<T> extends StatelessWidget {
   final T? selectedValue;
   final ValueChanged<T>? onSelected;
 
-  const TvMenuDialog({
-    super.key,
-    required this.title,
-    required this.items,
-    this.selectedValue,
-    this.onSelected,
-  });
+  const TvMenuDialog({super.key, required this.title, required this.items, this.selectedValue, this.onSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +39,7 @@ class TvMenuDialog<T> extends StatelessWidget {
         constraints: BoxConstraints(maxHeight: 500.sp),
         child: ListView.separated(
           shrinkWrap: true,
-          padding: EdgeInsets.symmetric(vertical: 2.sp),
+          padding: EdgeInsets.symmetric(vertical: 2.ts(context)),
           itemCount: items.length,
           separatorBuilder: (_, _) => SizedBox(height: 12.sp),
           itemBuilder: (_, index) {

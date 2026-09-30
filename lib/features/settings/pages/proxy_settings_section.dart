@@ -176,11 +176,11 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
+          padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 8.ts(context)),
           child: TvInputField(controller: host, hint: i18n('ui_proxy_host_e_g_127_0_0_1'), maxLines: 1),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
+          padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 8.ts(context)),
           child: TvInputField(controller: port, hint: i18n('ui_proxy_port_e_g_7890'), maxLines: 1),
         ),
         TvSettingsOptionTile(

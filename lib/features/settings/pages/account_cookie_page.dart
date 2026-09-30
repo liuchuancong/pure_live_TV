@@ -109,8 +109,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       return;
     }
 
-    final ({String? longTerm, String? did}) credentials =
-        DouyuUtils.refreshCredentials(cookie);
+    final ({String? longTerm, String? did}) credentials = DouyuUtils.refreshCredentials(cookie);
 
     if (credentials.longTerm == null || credentials.did == null) {
       setState(() => _message = i18n('douyu_cookie_refresh_no_credentials'));
@@ -124,14 +123,10 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
 
     final CookieModel cookies = ref.read(cookieControllerProvider);
 
-    if (cookies.douyuLtp0 != credentials.longTerm ||
-        cookies.douyuDid != credentials.did) {
+    if (cookies.douyuLtp0 != credentials.longTerm || cookies.douyuDid != credentials.did) {
       ref
           .read(cookieControllerProvider.notifier)
-          .setDouyuCredentials(
-            ltp0: credentials.longTerm!,
-            did: credentials.did!,
-          );
+          .setDouyuCredentials(ltp0: credentials.longTerm!, did: credentials.did!);
     }
 
     setState(() => _renewing = true);
@@ -149,10 +144,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       _renewing = false;
       _message = renewed == null
           ? i18n('douyu_cookie_refresh_no_change')
-          : i18n(
-              'douyu_cookie_refresh_ok',
-              args: {'time': _douyuExpiryLabel(renewed)},
-            );
+          : i18n('douyu_cookie_refresh_ok', args: {'time': _douyuExpiryLabel(renewed)});
     });
   }
 
@@ -177,10 +169,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
             : DouyuUtils.canRefreshSession(cookie)
             ? i18n('douyu_cookie_valid_auto_renew', args: {'time': at})
             : i18n('douyu_cookie_valid_needs_repaste', args: {'time': at}),
-      'expiredRefreshable' => i18n(
-        'douyu_cookie_expired_refreshable',
-        args: {'time': at},
-      ),
+      'expiredRefreshable' => i18n('douyu_cookie_expired_refreshable', args: {'time': at}),
       _ => i18n('douyu_cookie_expired', args: {'time': at}),
     };
   }
@@ -190,9 +179,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
   /// rule, which is what a renewal starts over.
   static String _douyuExpiryLabel(String cookie) {
     final DateTime? expiry = DouyuUtils.sessionExpiry(cookie);
-    return _formatExpiry(
-      expiry ?? DateTime.now().add(DouyuUtils.webCookieLifetime),
-    );
+    return _formatExpiry(expiry ?? DateTime.now().add(DouyuUtils.webCookieLifetime));
   }
 
   static String _formatExpiry(DateTime expiry) {
@@ -209,9 +196,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     final theme = context.tvTheme;
     final CookieModel cookies = ref.watch(cookieControllerProvider);
     final String stored = widget.platform.read(cookies);
-    final bool configured = _isDouyu
-        ? DouyuUtils.hasSession(stored)
-        : stored.isNotEmpty;
+    final bool configured = _isDouyu ? DouyuUtils.hasSession(stored) : stored.isNotEmpty;
 
     // Centred rather than split into columns: the page has one job, and the
     // phone does it. Same shell as the bilibili account page — a bounded
@@ -219,10 +204,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
     // above is a scroll view with unbounded height, and an Align alone under
     // it cannot apply the vertical centering, so the QR block stuck to the top
     // read as broken on a tall panel.
-    final double contentHeight =
-        MediaQuery.sizeOf(context).height -
-        kToolbarHeight -
-        MediaQuery.paddingOf(context).top;
+    final double contentHeight = MediaQuery.sizeOf(context).height - kToolbarHeight - MediaQuery.paddingOf(context).top;
     return SizedBox(
       height: contentHeight,
       child: Align(
@@ -240,12 +222,8 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                     SizedBox(
                       height: 220.h,
                       child: AppStatusView(
-                        type: _phoneStarting
-                            ? AppStatusType.loading
-                            : AppStatusType.empty,
-                        subtitle: _phoneStarting
-                            ? i18n('ui_loading')
-                            : i18n('remote_service_unavailable'),
+                        type: _phoneStarting ? AppStatusType.loading : AppStatusType.empty,
+                        subtitle: _phoneStarting ? i18n('ui_loading') : i18n('remote_service_unavailable'),
                         isMini: true,
                         icon: Remix.smartphone_line,
                       ),
@@ -254,22 +232,16 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                     Padding(
                       padding: EdgeInsets.all(16.sp),
                       child: Center(
-                        child: TvQrCodeCard(
-                          qrData: _phoneUrl,
-                          urlText: _phoneUrl,
-                        ),
+                        child: TvQrCodeCard(qrData: _phoneUrl, urlText: _phoneUrl),
                       ),
                     ),
                 ],
               ),
               SizedBox(height: 14.h),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.sp),
+                padding: EdgeInsets.symmetric(horizontal: 12.ts(context)),
                 child: Text(
-                  i18n(
-                    'cookie_scan_hint',
-                    args: {'name': widget.platform.name},
-                  ),
+                  i18n('cookie_scan_hint', args: {'name': widget.platform.name}),
                   textAlign: TextAlign.center,
                   style: AppTextStyles.t18.copyWith(
                     fontWeight: FontWeight.w300,
@@ -284,9 +256,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
               if (configured) ...[
                 SizedBox(height: 18.h),
                 _StatusLine(
-                  text: _isDouyu
-                      ? _douyuSessionSummary(stored)
-                      : i18n('cookie_configured'),
+                  text: _isDouyu ? _douyuSessionSummary(stored) : i18n('cookie_configured'),
                   color: const Color(0xFF4CAF50),
                   icon: Icons.verified_rounded,
                 ),
@@ -301,9 +271,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                       subtitle: i18n('douyu_force_renewal_hint'),
                       icon: Icons.autorenew_rounded,
                       value: cookies.douyuForceRenewal,
-                      onChanged: (value) => ref
-                          .read(cookieControllerProvider.notifier)
-                          .setDouyuForceRenewal(value),
+                      onChanged: (value) => ref.read(cookieControllerProvider.notifier).setDouyuForceRenewal(value),
                     ),
                   ],
                 ),
@@ -323,9 +291,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                       size: TvButtonSize.medium,
                       isSecondary: true,
                       icon: Icon(Remix.refresh_line, size: 20.sp),
-                      onTap: _renewing || !configured
-                          ? null
-                          : () => unawaited(_renewDouyuSession()),
+                      onTap: _renewing || !configured ? null : () => unawaited(_renewDouyuSession()),
                     ),
                   TvButton(
                     title: i18n('clear'),
@@ -339,11 +305,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
 
               if (_message.isNotEmpty) ...[
                 SizedBox(height: 18.h),
-                _StatusLine(
-                  text: _message,
-                  color: theme.focusColor,
-                  icon: Icons.check_circle_outline_rounded,
-                ),
+                _StatusLine(text: _message, color: theme.focusColor, icon: Icons.check_circle_outline_rounded),
               ],
             ],
           ),
@@ -356,11 +318,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
 /// Icon + line of state: the shape both the stored-state row and the result of
 /// an action take.
 class _StatusLine extends StatelessWidget {
-  const _StatusLine({
-    required this.text,
-    required this.color,
-    required this.icon,
-  });
+  const _StatusLine({required this.text, required this.color, required this.icon});
 
   final String text;
   final Color color;
@@ -369,7 +327,7 @@ class _StatusLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12.sp),
+      padding: EdgeInsets.symmetric(horizontal: 12.ts(context)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -379,10 +337,7 @@ class _StatusLine extends StatelessWidget {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: AppTextStyles.t16.copyWith(
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: color),
             ),
           ),
         ],
@@ -393,12 +348,7 @@ class _StatusLine extends StatelessWidget {
 
 /// One platform whose cookie the app stores.
 class CookiePlatform {
-  const CookiePlatform({
-    required this.siteId,
-    required this.name,
-    required this.read,
-    required this.apply,
-  });
+  const CookiePlatform({required this.siteId, required this.name, required this.read, required this.apply});
 
   /// Platform id in `Sites`. Also the phone page's route segment: the QR above
   /// is built as `/#/cookie/<siteId>`, so a platform whose cookie this app

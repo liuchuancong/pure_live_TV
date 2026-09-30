@@ -47,7 +47,7 @@ class NavOrderSectionPage extends ConsumerWidget {
         if (hidden.isNotEmpty) ...[
           SizedBox(height: 12.sp),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4.sp),
+            padding: EdgeInsets.symmetric(horizontal: 4.ts(context)),
             child: Text(
               '${i18n('ui_move_hidden_entry')}: '
               '${hidden.map(navigationMenuTitle).join(' · ')}',
@@ -63,12 +63,7 @@ class NavOrderSectionPage extends ConsumerWidget {
   ///
   /// Each row names the entry that currently holds that position, so "3 · categories"
   /// reads as "put it where categories is now".
-  Future<void> _pickPosition(
-    BuildContext context,
-    WidgetRef ref,
-    List<HomeMenu> ordered,
-    int currentIndex,
-  ) async {
+  Future<void> _pickPosition(BuildContext context, WidgetRef ref, List<HomeMenu> ordered, int currentIndex) async {
     final int? target = await TvDialogUtils.showSelect<int>(
       context: context,
       title: i18n('ui_move_to'),
@@ -137,7 +132,8 @@ class _MenuOrderTile extends StatelessWidget {
             SizedBox(width: 4.sp),
             Text(
               '$position/$total',
-              style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
+              style: AppTextStyles.t20.copyWith(
+                fontWeight: FontWeight.w600,
                 color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
               ),
             ),

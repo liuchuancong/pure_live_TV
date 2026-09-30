@@ -123,7 +123,7 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
                                   onTap: () => _submit(word.keyword),
                                   builder: (context, focused, child) => AnimatedContainer(
                                     duration: const Duration(milliseconds: 120),
-                                    padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 10.sp),
+                                    padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 10.ts(context)),
                                     decoration: BoxDecoration(
                                       color: tvTheme.cardColor,
                                       borderRadius: BorderRadius.circular(24.sp),

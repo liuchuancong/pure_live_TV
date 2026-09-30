@@ -1,6 +1,6 @@
-import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
+import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
 
 /// version history — the release list the update page links to, plus local update log.
 ///
@@ -47,7 +47,7 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
         ),
       ],
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -160,10 +160,7 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(
-          label,
-          style: AppTextStyles.t17.copyWith(color: tvTheme.secondaryTextColor),
-        ),
+        child: Text(label, style: AppTextStyles.t17.copyWith(color: tvTheme.secondaryTextColor)),
       ),
     );
   }
@@ -210,10 +207,7 @@ String releaseSubtitle(ReleaseModel release) {
 /// Shared with online update's preview rows. Downloading any release listed here is also the
 /// rollback path: the asset button opens the download dialog on that url, which the controller
 /// takes through the same mirrors and the same installer as the newest release.
-Future<void> showReleaseNotesDialog({
-  required BuildContext context,
-  required ReleaseModel release,
-}) async {
+Future<void> showReleaseNotesDialog({required BuildContext context, required ReleaseModel release}) async {
   await TvDialogUtils.show<void>(
     context: context,
     builder: (dialogContext) {

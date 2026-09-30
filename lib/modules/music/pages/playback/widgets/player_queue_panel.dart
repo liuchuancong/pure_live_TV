@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart'
-    show stripTrackOrdinal;
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart' show stripTrackOrdinal;
 
 /// One queue row, drawn in the live_play playlist's room-card language: the
 /// cover thumb, the title with its album (multi-P) or UP beneath, the part
@@ -39,8 +38,8 @@ class _QueueRow extends StatelessWidget {
 
     return Container(
       height: 88.0.sp,
-      margin: EdgeInsets.symmetric(vertical: 4.sp),
-      padding: EdgeInsets.symmetric(horizontal: 14.sp),
+      margin: EdgeInsets.symmetric(vertical: 4.ts(context)),
+      padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
       decoration: BoxDecoration(
         color: selected
             ? accent
@@ -113,7 +112,7 @@ class _QueueRow extends StatelessWidget {
           if (isMulti) ...[
             SizedBox(width: 8.sp),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+              padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
               decoration: BoxDecoration(
                 color: selected ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(6.sp),
@@ -193,7 +192,11 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
     }
     if (target == null) return;
 
-    _scroll.animateTo(target.clamp(0.0, position.maxScrollExtent), duration: const Duration(milliseconds: 140), curve: Curves.easeOut);
+    _scroll.animateTo(
+      target.clamp(0.0, position.maxScrollExtent),
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOut,
+    );
   }
 
   Future<void> _confirmClear() async {
@@ -218,9 +221,14 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
   /// entry from the queue.
   Future<void> _showRowMenu(int index) async {
     final track = ref.read(musicPlayerControllerProvider).queue[index];
-    await showMusicSongMenu(context, ref, track: track, onDelete: () async {
-      ref.read(musicPlayerControllerProvider.notifier).removeAt(index);
-    });
+    await showMusicSongMenu(
+      context,
+      ref,
+      track: track,
+      onDelete: () async {
+        ref.read(musicPlayerControllerProvider.notifier).removeAt(index);
+      },
+    );
   }
 
   static bool _isConfirm(LogicalKeyboardKey key) =>

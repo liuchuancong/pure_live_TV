@@ -38,7 +38,7 @@ class TvSettingsCard extends StatelessWidget {
         border: Border.all(color: tvTheme.cardColor.withValues(alpha: 0.10), width: 1.sp),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 4.sp, horizontal: 4.sp),
+        padding: EdgeInsets.symmetric(vertical: 4.ts(context), horizontal: 4.ts(context)),
         child: Column(
           children: List.generate(validChildren.length, (index) {
             return Column(children: [validChildren[index]]);

@@ -30,11 +30,14 @@ class BilibiliLoginGate extends ConsumerWidget {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 120),
             curve: Curves.easeOutCubic,
-            padding: EdgeInsets.symmetric(horizontal: 48.sp, vertical: 36.sp),
+            padding: EdgeInsets.symmetric(horizontal: 48.ts(context), vertical: 36.ts(context)),
             decoration: BoxDecoration(
               color: tvTheme.cardColor,
               borderRadius: BorderRadius.circular(24.sp),
-              border: Border.all(color: focused ? accent : accent.withValues(alpha: 0.4), width: focused ? 2.5.sp : 1.5.sp),
+              border: Border.all(
+                color: focused ? accent : accent.withValues(alpha: 0.4),
+                width: focused ? 2.5.sp : 1.5.sp,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: accent.withValues(alpha: focused ? 0.4 : 0),
@@ -58,7 +61,7 @@ class BilibiliLoginGate extends ConsumerWidget {
                 ),
                 SizedBox(height: 20.sp),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 32.sp, vertical: 12.sp),
+                  padding: EdgeInsets.symmetric(horizontal: 32.ts(context), vertical: 12.ts(context)),
                   decoration: BoxDecoration(
                     color: focused ? accent : accent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(28.sp),
@@ -70,7 +73,10 @@ class BilibiliLoginGate extends ConsumerWidget {
                       SizedBox(width: 10.sp),
                       Text(
                         i18n('bili_login_action'),
-                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: focused ? Colors.white : accent),
+                        style: AppTextStyles.t18.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: focused ? Colors.white : accent,
+                        ),
                       ),
                     ],
                   ),

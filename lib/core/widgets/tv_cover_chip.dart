@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/index.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// A compact translucent chip for cover overlays (platform, followed, replay,
 /// audience, type, counts, duration) — the one cover-badge language every
@@ -20,7 +20,7 @@ class TvCoverChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 5.sp),
+      padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 5.ts(context)),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.98),
         borderRadius: BorderRadius.circular(20.sp),

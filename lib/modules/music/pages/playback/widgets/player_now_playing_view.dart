@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lyric/flutter_lyric.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
@@ -16,7 +16,7 @@ import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 /// the cover travels out of the centre instead of the page jumping between two
 /// unrelated layouts.
 class MusicNowPlayingView extends ConsumerStatefulWidget {
-  const MusicNowPlayingView({super.key,required this.track, required this.resolving, this.lyricRevision = 0});
+  const MusicNowPlayingView({super.key, required this.track, required this.resolving, this.lyricRevision = 0});
 
   final MusicTrack track;
   final bool resolving;
@@ -79,13 +79,13 @@ class MusicNowPlayingViewState extends ConsumerState<MusicNowPlayingView> {
           cid: widget.track.part.cid,
         )
         .then((lrc) {
-      if (!mounted || _loadedKey != key) return;
-      setState(() {
-        _loading = false;
-        _empty = lrc == null;
-      });
-      if (lrc != null) controller.loadLyric(lrc);
-    });
+          if (!mounted || _loadedKey != key) return;
+          setState(() {
+            _loading = false;
+            _empty = lrc == null;
+          });
+          if (lrc != null) controller.loadLyric(lrc);
+        });
   }
 
   @override
@@ -174,7 +174,7 @@ class _PosterLayout extends StatelessWidget {
           ),
           SizedBox(height: 36.sp),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 120.sp),
+            padding: EdgeInsets.symmetric(horizontal: 120.ts(context)),
             child: Text(
               stripTrackOrdinal(track.title),
               style: AppTextStyles.t34.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
@@ -184,10 +184,16 @@ class _PosterLayout extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12.sp),
-          Text(track.archive.upName, style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
+          Text(
+            track.archive.upName,
+            style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+          ),
           if (status.isNotEmpty) ...[
             SizedBox(height: 14.sp),
-            Text(status, style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white38)),
+            Text(
+              status,
+              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
+            ),
           ],
         ],
       ),
@@ -216,7 +222,7 @@ class _LyricsLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 64.sp, vertical: 96.sp),
+      padding: EdgeInsets.symmetric(horizontal: 64.ts(context), vertical: 96.ts(context)),
       child: Row(
         children: [
           Expanded(
@@ -249,12 +255,18 @@ class _LyricsLayout extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 10.sp),
-                Text(track.archive.upName, style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
+                Text(
+                  track.archive.upName,
+                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                ),
               ],
             ),
           ),
           SizedBox(width: 48.sp),
-          Expanded(flex: 6, child: LyricView(controller: lyric, style: style)),
+          Expanded(
+            flex: 6,
+            child: LyricView(controller: lyric, style: style),
+          ),
         ],
       ),
     );

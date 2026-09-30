@@ -53,7 +53,7 @@ class PlatformDisplayOrderSectionPage extends ConsumerWidget {
         if (hidden.isNotEmpty) ...[
           SizedBox(height: 12.sp),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4.sp),
+            padding: EdgeInsets.symmetric(horizontal: 4.ts(context)),
             child: Text(
               i18n('platform_display_hidden_hint', args: {'names': hidden.map((site) => site.name).join(' · ')}),
               style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),
@@ -135,7 +135,8 @@ class _SiteOrderTile extends StatelessWidget {
             SizedBox(width: 4.sp),
             Text(
               '$position/$total',
-              style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
+              style: AppTextStyles.t20.copyWith(
+                fontWeight: FontWeight.w600,
                 color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
               ),
             ),

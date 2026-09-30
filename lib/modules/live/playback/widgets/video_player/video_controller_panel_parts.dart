@@ -532,7 +532,10 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
                     final bool selected = index == _optionIndex;
                     final option = options[index];
                     return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.sp * scale, vertical: 4.sp * scale),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.ts(context) * scale,
+                        vertical: 4.ts(context) * scale,
+                      ),
                       child: _Pill(
                         label: option.label,
                         selected: selected,
@@ -565,7 +568,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       // The band under the pills: live content above it stays clean, the
       // buttons always sit on black.
       color: Colors.black.withValues(alpha: 0.55),
-      padding: EdgeInsets.symmetric(horizontal: 20.sp * scale, vertical: 16.sp * scale),
+      padding: EdgeInsets.symmetric(horizontal: 20.ts(context) * scale, vertical: 16.ts(context) * scale),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,

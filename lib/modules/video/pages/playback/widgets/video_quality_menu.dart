@@ -6,7 +6,6 @@ import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
-
 /// The quality menu, one entry per rendition the current stream answer ships.
 class VideoQualityMenu extends ConsumerWidget {
   const VideoQualityMenu({super.key, required this.onClose});
@@ -64,7 +63,7 @@ class VideoQualityMenu extends ConsumerWidget {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 120),
                     height: 56.sp,
-                    padding: EdgeInsets.symmetric(horizontal: 14.sp),
+                    padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
                     decoration: BoxDecoration(
                       color: isCurrent ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(12.sp),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/features/settings/pages/update_history_page.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
-import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/core/i18n/locale_helper.dart';
-import 'package:pure_live/core/models/release_model/release_model.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/services/app_update/app_update_service.dart';
+import 'package:pure_live/core/models/release_model/release_model.dart';
+import 'package:pure_live/features/settings/pages/update_history_page.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 /// online update: the running version and its check state, the pending release with its
 /// notes and assets, and a way into version history.
@@ -40,7 +40,7 @@ class AppUpdatePage extends ConsumerWidget {
         ),
       ],
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -101,11 +101,7 @@ class AppUpdatePage extends ConsumerWidget {
       case AppUpdatePhase.checking:
         return SizedBox(
           height: 180.h,
-          child: AppStatusView(
-            type: AppStatusType.loading,
-            subtitle: i18n('check_update'),
-            isMini: true,
-          ),
+          child: AppStatusView(type: AppStatusType.loading, subtitle: i18n('check_update'), isMini: true),
         );
       case AppUpdatePhase.upToDate:
         return SizedBox(
@@ -217,7 +213,7 @@ class _UpdateHeroHeader extends StatelessWidget {
           if (hasVersion) ...<Widget>[
             SizedBox(height: 8.sp),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 4.sp),
+              padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 4.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.focusColor.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(999.sp),

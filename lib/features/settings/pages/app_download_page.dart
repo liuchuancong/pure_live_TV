@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
-import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/services/app_update/app_update_service.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/features/settings/pages/widgets/app_download_sections.dart';
 
 /// The download page behind the update page's current-version row - the TV twin of the mobile
@@ -30,7 +30,7 @@ class AppDownloadPage extends ConsumerWidget {
     return TvPageScaffold(
       title: i18n('version_update'),
       child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -115,9 +115,7 @@ class AppDownloadPage extends ConsumerWidget {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     child: Text(
-                      state.phase == AppUpdatePhase.checking
-                          ? i18n('check_update')
-                          : i18n('already_latest_version'),
+                      state.phase == AppUpdatePhase.checking ? i18n('check_update') : i18n('already_latest_version'),
                       style: AppTextStyles.t17.copyWith(color: context.tvTheme.secondaryTextColor),
                     ),
                   ),
@@ -188,4 +186,3 @@ class AppDownloadPage extends ConsumerWidget {
     return <String>[for (final String mirror in appUpdateAssetMirrors) '$mirror$origin', origin];
   }
 }
-

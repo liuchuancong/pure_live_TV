@@ -1,6 +1,5 @@
 part of 'player_control_bar.dart';
 
-
 /// Which part of the control layer the remote is steering.
 enum _BarZone { bar, seek, options }
 
@@ -31,7 +30,8 @@ class _BarAction {
 /// activates: no per-button focus ring to lose, and no d-pad hop that can land
 /// on a button next to the one the ring was on.
 class MusicControlBar extends ConsumerStatefulWidget {
-  const MusicControlBar({super.key,
+  const MusicControlBar({
+    super.key,
     required this.active,
     required this.activateInSeekZone,
     required this.onQueue,
@@ -349,12 +349,13 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
       _panel = panel;
       _zone = _BarZone.options;
       _optionIndex = switch (panel) {
-        _BarPanel.quality => currentQuality == null
-            ? 0
-            : ref
-                  .read(musicPlayerControllerProvider)
-                  .qualityOptions
-                  .indexWhere((option) => option.quality == currentQuality),
+        _BarPanel.quality =>
+          currentQuality == null
+              ? 0
+              : ref
+                    .read(musicPlayerControllerProvider)
+                    .qualityOptions
+                    .indexWhere((option) => option.quality == currentQuality),
         _BarPanel.kernel => const [
           BackendIds.mediaKit,
           BackendIds.fijk,
@@ -392,7 +393,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
       focusNode: _node,
       onKeyEvent: _onKey,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 18.sp),
+        padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 18.ts(context)),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.72),
           borderRadius: BorderRadius.circular(24.sp),
@@ -442,7 +443,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                                 final option = options[index];
                                 final bool selected = index == _optionIndex;
                                 return Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 4.sp),
+                                  padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 4.ts(context)),
                                   child: _OptionPill(
                                     label: option.label,
                                     selected: selected,
@@ -461,7 +462,10 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                   children: [
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(_timeLabel(position), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
+                      child: Text(
+                        _timeLabel(position),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                      ),
                     ),
                     SizedBox(width: 16.sp),
                     Expanded(
@@ -475,7 +479,10 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                     SizedBox(width: 16.sp),
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: 120.sp),
-                      child: Text(_timeLabel(duration), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70)),
+                      child: Text(
+                        _timeLabel(duration),
+                        style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                      ),
                     ),
                   ],
                 ),
@@ -549,7 +556,7 @@ class _OptionPill extends StatelessWidget {
     return AnimatedContainer(
       duration: TvFocusStyle.focusDuration(selected),
       curve: TvFocusStyle.curve,
-      padding: EdgeInsets.symmetric(horizontal: 20.sp * scale, vertical: 10.sp * scale),
+      padding: EdgeInsets.symmetric(horizontal: 20.ts(context) * scale, vertical: 10.ts(context) * scale),
       decoration: BoxDecoration(
         color: selected ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.sp),
@@ -563,7 +570,10 @@ class _OptionPill extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: selected ? Colors.white : Colors.white70),
+              style: AppTextStyles.t16.copyWith(
+                fontWeight: FontWeight.w500,
+                color: selected ? Colors.white : Colors.white70,
+              ),
             ),
           ),
           if (active) ...[SizedBox(width: 8.sp * scale), Icon(Icons.check_rounded, size: 20.sp * scale, color: accent)],
@@ -576,7 +586,8 @@ class _OptionPill extends StatelessWidget {
 /// The seek bar. It has no FocusNode of its own — the bar's index steers it, so
 /// the highlight it draws is the zone the remote is in.
 class MusicProgressBar extends StatelessWidget {
-  const MusicProgressBar({super.key,
+  const MusicProgressBar({
+    super.key,
     required this.position,
     required this.duration,
     required this.focused,
@@ -613,20 +624,14 @@ class MusicProgressBar extends StatelessWidget {
               widthFactor: progress,
               child: Container(
                 margin: EdgeInsets.all(3.sp),
-                decoration: BoxDecoration(
-                  color: accent,
-                  borderRadius: BorderRadius.circular(8.sp),
-                ),
+                decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(8.sp)),
               ),
             ),
             if (focused)
               Align(
-                alignment: Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ??
-                    Alignment.centerLeft,
-                child: Container(
-                  width: 4.sp,
-                  color: Colors.white,
-                ),
+                alignment:
+                    Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ?? Alignment.centerLeft,
+                child: Container(width: 4.sp, color: Colors.white),
               ),
           ],
         ),

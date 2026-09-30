@@ -279,7 +279,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                 padding: EdgeInsets.fromLTRB(20.sp, 14.sp, 20.sp, 6.sp),
                 child: Text(
                   widget.title,
-                  style: AppTextStyles.of(20 * scale).copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
+                  style: AppTextStyles.of(
+                    20 * scale,
+                  ).copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                 ),
               ),
               if (widget.header != null) widget.header!,
@@ -288,12 +290,15 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                     ? Center(
                         child: Text(
                           widget.emptyHint ?? i18nOr('ui_empty', 'Empty'),
-                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t16.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: tvTheme.secondaryTextColor,
+                          ),
                         ),
                       )
                     : ListView.builder(
                         controller: _scrollController,
-                        padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 4.sp),
+                        padding: EdgeInsets.symmetric(horizontal: 12.ts(context), vertical: 4.ts(context)),
                         itemCount: rows.length,
                         // Every row is exactly this tall, so the list knows its own
                         // scroll extent instead of estimating it from the children it
@@ -323,7 +328,9 @@ class _PlayerIndexPanelState extends State<PlayerIndexPanel> {
                   widget.onAdjustLeft != null
                       ? i18nOr('ui_panel_keys_adjust', '↑↓ 选择 · ←→ 调整 · OK 确认')
                       : i18nOr('ui_panel_keys', '↑↓ 选择 · OK 确认 · ← 返回'),
-                  style: AppTextStyles.of(14 * scale).copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                  style: AppTextStyles.of(
+                    14 * scale,
+                  ).copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                 ),
               ),
             ],
@@ -361,8 +368,8 @@ class _PanelRow extends StatelessWidget {
     final double boxScale = PlayerPanelLayout.boxScaleOf(context);
     return Container(
       height: 60.sp * boxScale,
-      margin: EdgeInsets.symmetric(vertical: 3.sp * boxScale),
-      padding: EdgeInsets.symmetric(horizontal: 16.sp),
+      margin: EdgeInsets.symmetric(vertical: 3.ts(context) * boxScale),
+      padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
       decoration: BoxDecoration(
         color: selected ? accent : (row.active ? accent.withValues(alpha: 0.22) : theme.subtleRowFill),
         borderRadius: BorderRadius.circular(10.sp),
@@ -388,8 +395,7 @@ class _PanelRow extends StatelessWidget {
                   row.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.of(16 * scale).copyWith(fontWeight: FontWeight.w600, 
-                    color: foreground),
+                  style: AppTextStyles.of(16 * scale).copyWith(fontWeight: FontWeight.w600, color: foreground),
                 ),
                 if (row.subtitle != null && row.subtitle!.isNotEmpty)
                   Text(

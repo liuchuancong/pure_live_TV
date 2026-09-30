@@ -71,7 +71,7 @@ class TvDialogOptionTile extends StatelessWidget {
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeInOut,
           constraints: BoxConstraints(minHeight: 60.sp * scale),
-          padding: EdgeInsets.symmetric(horizontal: 20.sp * scale, vertical: 10.sp * scale),
+          padding: EdgeInsets.symmetric(horizontal: 20.ts(context) * scale, vertical: 10.ts(context) * scale),
           decoration: BoxDecoration(
             color: highlighted ? tvTheme.focusColor : tvTheme.subtleRowFill,
             borderRadius: BorderRadius.circular(radius.ts(context)),

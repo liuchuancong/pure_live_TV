@@ -135,7 +135,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                     duration: const Duration(milliseconds: 150),
                     curve: Curves.easeOutCubic,
                     height: 76.sp * scale,
-                    padding: EdgeInsets.symmetric(horizontal: 28.sp * scale),
+                    padding: EdgeInsets.symmetric(horizontal: 28.ts(context) * scale),
                     decoration: BoxDecoration(
                       color: tvTheme.cardColor,
                       borderRadius: BorderRadius.circular(38.sp * scale),
@@ -206,7 +206,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const ClampingScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 8.sp),
+                padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
                 itemCount: history.length + 1,
                 separatorBuilder: (_, _) => SizedBox(width: 10.sp),
                 itemBuilder: (context, index) {

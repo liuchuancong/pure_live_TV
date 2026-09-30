@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/live/playback/player_panel_layout.dart';
 import 'package:pure_live/services/app_settings/app_settings_model.dart';
+import 'package:pure_live/modules/live/playback/player_panel_layout.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 /// One room, drawn as the mobile app's *small-screen* room card
@@ -122,10 +122,7 @@ class PlayerRoomRow extends ConsumerWidget {
                         // replaced the resolver's fontSize and silently dropped
                         // the user's font setting — large rows were frozen at
                         // their design size whatever the slider said.
-                        style: AppTextStyles.of(titleSize).copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: foreground,
-                        ),
+                        style: AppTextStyles.of(titleSize).copyWith(fontWeight: FontWeight.w600, color: foreground),
                       ),
                     ),
                     if (showFollowAction)
@@ -142,12 +139,12 @@ class PlayerRoomRow extends ConsumerWidget {
                 ),
                 if (nick.isNotEmpty) SizedBox(height: large ? 3.sp : 0),
                 if (nick.isNotEmpty)
-              Text(
-                nick,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.of(nickSize).copyWith(fontWeight: FontWeight.w500, color: muted),
-              ),
+                  Text(
+                    nick,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.of(nickSize).copyWith(fontWeight: FontWeight.w500, color: muted),
+                  ),
               ],
             ),
           ),
@@ -166,10 +163,9 @@ class PlayerRoomRow extends ConsumerWidget {
                 trailing ?? _meta(app, ref.read(appSettingsControllerProvider.notifier)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.of(metaSize).copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: selected ? Colors.white : tvTheme.focusColor,
-                ),
+                style: AppTextStyles.of(
+                  metaSize,
+                ).copyWith(fontWeight: FontWeight.w500, color: selected ? Colors.white : tvTheme.focusColor),
               ),
             ],
           ),
@@ -222,7 +218,7 @@ class _FollowLabel extends StatelessWidget {
         : color.withValues(alpha: followed ? 0.22 : 0.10);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+      padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(6.sp),
@@ -230,10 +226,9 @@ class _FollowLabel extends StatelessWidget {
       ),
       child: Text(
         followed ? i18n('followed') : i18n('follow'),
-        style: AppTextStyles.of(14 * scale).copyWith(
-          color: color,
-          fontWeight: followed ? FontWeight.w600 : FontWeight.w500,
-        ),
+        style: AppTextStyles.of(
+          14 * scale,
+        ).copyWith(color: color, fontWeight: followed ? FontWeight.w600 : FontWeight.w500),
       ),
     );
   }

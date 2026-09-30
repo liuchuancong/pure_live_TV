@@ -152,7 +152,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                           children: [
                             if (item.page > 1) ...[
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 2.sp),
+                                padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
                                 decoration: BoxDecoration(
                                   color: accent.withValues(alpha: 0.14),
                                   borderRadius: BorderRadius.circular(6.sp),
@@ -207,10 +207,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                                         ? i18n('video_history_watched_done')
                                         : i18n(
                                             'video_history_progress',
-                                            args: {
-                                              'current': _clock(item.progress),
-                                              'total': _clock(item.duration),
-                                            },
+                                            args: {'current': _clock(item.progress), 'total': _clock(item.duration)},
                                           ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,

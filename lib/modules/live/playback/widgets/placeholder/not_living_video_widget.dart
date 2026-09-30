@@ -6,7 +6,6 @@ import 'package:pure_live/modules/live/playback/states/live_play_state.dart';
 import 'package:pure_live/modules/live/playback/dialogs/room_switch_dialog.dart';
 import 'package:pure_live/modules/live/playback/controllers/live_play_controller.dart';
 
-
 /// "This room is not broadcasting" placeholder.
 ///
 /// Ported from the reference client's `NotLivingVideoWidget`: the room loaded
@@ -99,8 +98,7 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
   /// Room the switch dialog removes from its lists. When the detail request
   /// never produced a room, the route's hint is all we have — an empty room
   /// still opens the dialog with every other channel available.
-  LiveRoom _fallbackRoom() =>
-      widget.args.room ?? LiveRoom(roomId: widget.args.roomId, platform: widget.args.platform);
+  LiveRoom _fallbackRoom() => widget.args.room ?? LiveRoom(roomId: widget.args.roomId, platform: widget.args.platform);
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +187,7 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(horizontal: 22.sp, vertical: 12.sp),
+        padding: EdgeInsets.symmetric(horizontal: 22.ts(context), vertical: 12.ts(context)),
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(12.sp),
@@ -203,7 +201,10 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
           children: [
             Icon(icon, size: 20.sp, color: Colors.white),
             SizedBox(width: 8.sp),
-            Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
+            Text(
+              label,
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
+            ),
           ],
         ),
       ),

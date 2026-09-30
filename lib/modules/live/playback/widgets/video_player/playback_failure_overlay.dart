@@ -17,12 +17,7 @@ class PlaybackFailureOverlay extends StatefulWidget {
   final VoidCallback onRetry;
   final VoidCallback onRefreshRoom;
 
-  const PlaybackFailureOverlay({
-    super.key,
-    required this.message,
-    required this.onRetry,
-    required this.onRefreshRoom,
-  });
+  const PlaybackFailureOverlay({super.key, required this.message, required this.onRetry, required this.onRefreshRoom});
 
   @override
   State<PlaybackFailureOverlay> createState() => _PlaybackFailureOverlayState();
@@ -165,7 +160,7 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(horizontal: 22.sp * scale, vertical: 12.sp * scale),
+        padding: EdgeInsets.symmetric(horizontal: 22.ts(context) * scale, vertical: 12.ts(context) * scale),
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(12.sp),
@@ -179,7 +174,10 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
           children: [
             Icon(icon, size: 20.sp * scale, color: Colors.white),
             SizedBox(width: 8.sp * scale),
-            Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white)),
+            Text(
+              label,
+              style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
+            ),
           ],
         ),
       ),

@@ -23,7 +23,7 @@ class BackupBrowserSectionPage extends StatelessWidget {
           Center(child: RemoteSyncQrCard(width: 320, route: WebRemoteRouter.sync)),
           SizedBox(height: 20.sp),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.sp),
+            padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
             child: Center(
               child: Text(
                 i18n('backup_browser_hint'),

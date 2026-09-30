@@ -140,7 +140,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
           ),
           Spacer(),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
+            padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 8.ts(context)),
             decoration: BoxDecoration(
               color: isServerRunning
                   ? currentTvTheme.focusColor.withValues(alpha: 0.1)
@@ -202,7 +202,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               children: [
                 for (final site in Sites.supportSites)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 4.sp),
+                    padding: EdgeInsets.symmetric(horizontal: 10.ts(context), vertical: 4.ts(context)),
                     decoration: BoxDecoration(
                       color: currentTvTheme.backgroundColor.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8.sp),

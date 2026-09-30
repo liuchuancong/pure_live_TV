@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/player/global_player_service.dart';
+import 'package:pure_live/features/settings/pages/widgets/video_danmaku_settings_group.dart';
 import 'package:pure_live/features/settings/pages/widgets/video_playback_settings_group.dart';
 import 'package:pure_live/features/settings/pages/widgets/video_interface_settings_group.dart';
-import 'package:pure_live/features/settings/pages/widgets/video_danmaku_settings_group.dart';
 
 /// Video settings in newBV's settings shape: a left menu of groups over a
 /// settings pages: what a video opens at (quality/speed/detail-first), where
@@ -47,7 +47,7 @@ class _VideoSettingsSectionPageState extends ConsumerState<VideoSettingsSectionP
                   builder: (context, focused, _) => AnimatedContainer(
                     duration: const Duration(milliseconds: 120),
                     curve: Curves.easeOutCubic,
-                    padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 18.sp),
+                    padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 18.ts(context)),
                     decoration: BoxDecoration(
                       // The active group reads as newBV's left menu item: a
                       // filled dark pill while selected, the tinted card on
@@ -58,14 +58,12 @@ class _VideoSettingsSectionPageState extends ConsumerState<VideoSettingsSectionP
                           ? tvTheme.focusedCardColor.withValues(alpha: 0.7)
                           : tvTheme.cardColor,
                       borderRadius: BorderRadius.circular(20.sp),
-                      border: Border.all(
-                        color: focused ? tvTheme.focusColor : Colors.transparent,
-                        width: 2.sp,
-                      ),
+                      border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
                     ),
                     child: Text(
                       i18n(labelKey),
-                      style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
+                      style: AppTextStyles.t20.copyWith(
+                        fontWeight: FontWeight.w600,
                         color: _group == index ? tvTheme.primaryTextColor : tvTheme.secondaryTextColor,
                       ),
                     ),

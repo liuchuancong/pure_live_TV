@@ -321,7 +321,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
                 if (favoriteState.visibleTags.isNotEmpty)
                   Container(
                     height: 44.sp,
-                    padding: EdgeInsets.symmetric(horizontal: 8.sp),
+                    padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: favoriteState.visibleTags.length + 1,
@@ -332,7 +332,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
                             : favoriteState.selectedTagId == favoriteState.visibleTags[index - 1].id;
 
                         return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6.sp),
+                          padding: EdgeInsets.symmetric(horizontal: 6.ts(context)),
                           key: ValueKey(isAllTag ? 'tag_all' : 'tag_${favoriteState.visibleTags[index - 1].id}'),
                           child: TvButton(
                             title: isAllTag ? i18n('recorder_tab_all') : favoriteState.visibleTags[index - 1].name,
