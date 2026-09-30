@@ -503,6 +503,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                             size: TvButtonSize.mini,
                             isSecondary: !action.active,
                             selected: _zone == _BarZone.bar && _barIndex == index,
+                            disableScale: true,
                             onTap: () => _activateAt(index),
                           ),
                         ),

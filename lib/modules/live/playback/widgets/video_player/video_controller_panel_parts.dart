@@ -682,46 +682,41 @@ class _Pill extends StatelessWidget {
     // like the home page's back/menu buttons instead of only changing fill.
     final BorderRadius radius = BorderRadius.circular((_height / 3).sp * TvTextScale.factorOf(context));
 
-    return AnimatedScale(
-      scale: selected ? 1.05 : 1.0,
+    return AnimatedContainer(
       duration: TvFocusStyle.focusDuration(selected),
       curve: TvFocusStyle.curve,
-      child: AnimatedContainer(
-        duration: TvFocusStyle.focusDuration(selected),
-        curve: TvFocusStyle.curve,
-        height: _height.ts(context),
-        alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(horizontal: _hPadding.ts(context)),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: radius,
-          // No ring and no halo: a BoxDecoration border insets the fill by its
-          // width, so even a transparent 2.5sp ring showed the dark bar through
-          // as a black edge around the selected pill. The solid accent fill
-          // plus the scale lift is the whole selected treatment.
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (loading)
-              tvInlineLoading(context, size: _iconSize.ts(context), color: loadingColor)
-            else if (asset != null)
-              SvgPicture.asset(
-                asset!,
-                width: _iconSize.ts(context),
-                height: _iconSize.ts(context),
-                colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
-              )
-            else if (icon != null)
-              Icon(icon, size: _iconSize.ts(context), color: foreground),
-            if (loading || asset != null || icon != null) SizedBox(width: _gap.ts(context)),
-            Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
-            if (trailing != null) ...[
-              SizedBox(width: _gap.ts(context)),
-              Icon(trailing, size: _trailingSize.ts(context), color: foreground),
-            ],
+      height: _height.ts(context),
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(horizontal: _hPadding.ts(context)),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: radius,
+        // No ring and no halo: a BoxDecoration border insets the fill by its
+        // width, so even a transparent 2.5sp ring showed the dark bar through
+        // as a black edge around the selected pill. The solid accent fill
+        // is the whole selected treatment.
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (loading)
+            tvInlineLoading(context, size: _iconSize.ts(context), color: loadingColor)
+          else if (asset != null)
+            SvgPicture.asset(
+              asset!,
+              width: _iconSize.ts(context),
+              height: _iconSize.ts(context),
+              colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
+            )
+          else if (icon != null)
+            Icon(icon, size: _iconSize.ts(context), color: foreground),
+          if (loading || asset != null || icon != null) SizedBox(width: _gap.ts(context)),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
+          if (trailing != null) ...[
+            SizedBox(width: _gap.ts(context)),
+            Icon(trailing, size: _trailingSize.ts(context), color: foreground),
           ],
-        ),
+        ],
       ),
     );
   }

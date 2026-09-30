@@ -19,6 +19,7 @@ class TvButton extends StatelessWidget {
   final bool excludeFocus;
   final bool selected;
   final bool useFadedFocus;
+  final bool disableScale;
   final FocusNode? focusNode;
 
   const TvButton({
@@ -33,6 +34,7 @@ class TvButton extends StatelessWidget {
     this.excludeFocus = false,
     this.selected = false,
     this.useFadedFocus = false,
+    this.disableScale = false,
     this.focusNode,
   });
 
@@ -50,7 +52,21 @@ class TvButton extends StatelessWidget {
       if (!excludeFocus) {
         // The shared focus language: scale + accent ring + (dark-only) halo.
         // See [TvFocusStyle] for why these numbers, and only these, are used.
-        list.addAll(TvFocusStyle.effects(activeTheme, borderRadius, scale: 1.06));
+        // Scale can be disabled for buttons where the lift is unwanted (e.g. playback bars).
+        if (!disableScale) {
+          list.add(DpadScaleEffect(scale: 1.06, pressedScale: 0.97, duration: TvFocusStyle.duration, curve: TvFocusStyle.curve));
+        }
+        list.add(DpadBorderEffect(color: activeTheme.focusColor, width: 2.5, borderRadius: borderRadius, duration: TvFocusStyle.duration));
+        list.add(
+          DpadGlowEffect(
+            color: activeTheme.focusColor,
+            opacity: activeTheme.isLight ? 1.0 : 0.75,
+            blurRadius: activeTheme.isLight ? 0 : 18,
+            spreadRadius: activeTheme.isLight ? 2 : 1.5,
+            borderRadius: borderRadius,
+            duration: TvFocusStyle.duration,
+          ),
+        );
       }
       list.add(
         DpadCustomEffect((ctx, state, child) {

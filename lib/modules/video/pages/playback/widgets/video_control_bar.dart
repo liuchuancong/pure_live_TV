@@ -443,33 +443,28 @@ class _BarPillState extends State<_BarPill> {
 
     return GestureDetector(
       onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: widget.selected ? 1.05 : 1.0,
+      child: AnimatedContainer(
         duration: TvFocusStyle.focusDuration(widget.selected),
         curve: TvFocusStyle.curve,
-        child: AnimatedContainer(
-          duration: TvFocusStyle.focusDuration(widget.selected),
-          curve: TvFocusStyle.curve,
-          height: _BarPill._height.ts(context),
-          alignment: Alignment.center,
-          padding: EdgeInsets.symmetric(horizontal: _BarPill._hPadding.ts(context)),
-          decoration: BoxDecoration(
-            color: widget.selected ? widget.accent : Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular((_BarPill._height / 3).ts(context)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconTheme.merge(
-                data: IconThemeData(
-                  color: widget.selected ? foreground : (widget.active ? widget.accent : Colors.white70),
-                ),
-                child: widget.icon,
+        height: _BarPill._height.ts(context),
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: _BarPill._hPadding.ts(context)),
+        decoration: BoxDecoration(
+          color: widget.selected ? widget.accent : Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular((_BarPill._height / 3).ts(context)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconTheme.merge(
+              data: IconThemeData(
+                color: widget.selected ? foreground : (widget.active ? widget.accent : Colors.white70),
               ),
-              SizedBox(width: _BarPill._gap.ts(context)),
-              Text(widget.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
-            ],
-          ),
+              child: widget.icon,
+            ),
+            SizedBox(width: _BarPill._gap.ts(context)),
+            Text(widget.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
+          ],
         ),
       ),
     );

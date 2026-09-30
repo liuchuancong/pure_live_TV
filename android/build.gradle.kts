@@ -23,27 +23,6 @@ allprojects {
     }
 }
 
-val pubspecVersionCode: String by lazy {
-    try {
-        val pubspecFile = rootProject.file("../pubspec.yaml")
-        if (pubspecFile.exists()) {
-            val versionLine = pubspecFile.readLines().find { it.trim().startsWith("version:") }
-            versionLine?.substringAfterLast("+")?.trim() ?: "1"
-        } else {
-            "1"
-        }
-    } catch (e: Exception) {
-        "1"
-    }
-}
-
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use { load(it) }
-    }
-}
-
 val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
