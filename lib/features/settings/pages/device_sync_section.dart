@@ -4,6 +4,7 @@ import 'package:pure_live/core/widgets/remote_sync_pair_qr_card.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_device.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_protocol.dart';
+import 'package:pure_live/features/settings/pages/widgets/remote_sync_status_rows.dart';
 
 /// Device sync — the TV end of the LAN sync (39888), and nothing else.
 ///
@@ -145,7 +146,7 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _ServiceStatusPill(
+                    RemoteSyncServiceStatusPill(
                       started: snapshot.started,
                       address: snapshot.address,
                       error: snapshot.error,
@@ -155,27 +156,27 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
                     // already discovered have to ask the operator for it.
                     if (snapshot.pairingCode.isNotEmpty) ...[
                       SizedBox(height: 14.sp),
-                      _PairingCodeRow(code: snapshot.pairingCode),
+                      RemoteSyncPairingCodeRow(code: snapshot.pairingCode),
                     ],
                     // A phone that pushes its settings leaves the TV otherwise
                     // unchanged, so the last result stays on screen: the toast
                     // is usually gone by the time the operator looks up.
                     if (snapshot.lastReceiveNotice.isNotEmpty) ...[
                       SizedBox(height: 12.sp),
-                      _ReceiveNoticeRow(notice: snapshot.lastReceiveNotice, ok: snapshot.lastReceiveOk),
+                      RemoteSyncReceiveNoticeRow(notice: snapshot.lastReceiveNotice, ok: snapshot.lastReceiveOk),
                     ],
                     SizedBox(height: 20.sp),
-                    _StepBullet(
+                    RemoteSyncStepBullet(
                       icon: Icons.qr_code_scanner_rounded,
                       text: i18nOr('remote_sync_step_scan', 'Scan the QR code with pure_live on another device'),
                     ),
                     SizedBox(height: 10.sp),
-                    _StepBullet(
+                    RemoteSyncStepBullet(
                       icon: Icons.cloud_download_outlined,
                       text: i18nOr('remote_sync_step_pull', 'Confirm on that device to push its settings here'),
                     ),
                     SizedBox(height: 10.sp),
-                    _StepBullet(
+                    RemoteSyncStepBullet(
                       icon: Icons.devices_other_rounded,
                       text: i18nOr('remote_sync_step_pair', 'Or pick a discovered device below to pull from it'),
                     ),
@@ -299,155 +300,6 @@ class DeviceSyncSectionPageState extends ConsumerState<DeviceSyncSectionPage> {
               onSelect: _syncing ? null : () => unawaited(_pullByAddress()),
             ),
           ],
-        ),
-      ],
-    );
-  }
-}
-
-/// The 6-digit code every settings request must carry. Shown large: it is read
-/// off the screen and typed on the other device.
-class _PairingCodeRow extends StatelessWidget {
-  const _PairingCodeRow({required this.code});
-
-  final String code;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.tvTheme;
-    return Row(
-      children: [
-        Icon(Icons.pin_rounded, size: 22.sp, color: theme.secondaryTextColor),
-        SizedBox(width: 10.sp),
-        Text(
-          i18n('remote_sync_pairing_code'),
-          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
-        ),
-        SizedBox(width: 12.sp),
-        Text(
-          code,
-          style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: theme.focusColor, letterSpacing: 4),
-        ),
-      ],
-    );
-  }
-}
-
-/// Status colours shared by the service pill and the receive notice.
-const Color _serviceOkColor = Color(0xFF4CAF50);
-const Color _serviceFailColor = Color(0xFFEF5350);
-
-/// Service status pill: dot + address/error + running label.
-class _ServiceStatusPill extends StatelessWidget {
-  const _ServiceStatusPill({
-    required this.started,
-    required this.address,
-    required this.error,
-  });
-
-  final bool started;
-  final String address;
-  final String? error;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.tvTheme;
-    final running = started;
-    final Color badgeColor = running ? _serviceOkColor : _serviceFailColor;
-    final String label = running ? i18n('ui_running') : i18n('ui_stopped');
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.sp, vertical: 10.sp),
-      decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12.sp),
-        border: Border.all(color: badgeColor.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 10.sp,
-            height: 10.sp,
-            decoration: BoxDecoration(color: badgeColor, shape: BoxShape.circle),
-          ),
-          SizedBox(width: 10.sp),
-          Flexible(
-            child: Text(
-              running
-                  ? address
-                  : (error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...')),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: theme.primaryTextColor),
-            ),
-          ),
-          SizedBox(width: 12.sp),
-          Text(label, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: badgeColor)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Result of the last inbound settings push, kept on screen after the toast.
-class _ReceiveNoticeRow extends StatelessWidget {
-  const _ReceiveNoticeRow({required this.notice, required this.ok});
-
-  final String notice;
-  final bool ok;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = ok ? _serviceOkColor : _serviceFailColor;
-    return Row(
-      children: [
-        Icon(ok ? Icons.check_circle_rounded : Icons.error_outline_rounded, size: 20.sp, color: color),
-        SizedBox(width: 8.sp),
-        Expanded(
-          child: Text(
-            notice,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: color),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Guide step row: icon + description.
-class _StepBullet extends StatelessWidget {
-  const _StepBullet({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.tvTheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 30.sp,
-          height: 30.sp,
-          decoration: BoxDecoration(
-            color: theme.focusColor.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(8.sp),
-          ),
-          child: Icon(icon, size: 17.sp, color: theme.focusColor),
-        ),
-        SizedBox(width: 12.sp),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(top: 3.sp),
-            child: Text(
-              text,
-              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor, height: 1.35),
-            ),
-          ),
         ),
       ],
     );

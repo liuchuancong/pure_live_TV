@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/video/video_section.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/pages/widgets/ugc_space_header_card.dart';
+import 'package:pure_live/modules/vod/pages/widgets/ugc_space_upload_card.dart';
 
 
 /// A shared UP-space page: the header card (avatar, sign, followers, follow
@@ -129,7 +129,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                   child: CustomScrollView(
                     controller: _scroll,
                     slivers: [
-                      SliverToBoxAdapter(child: _HeaderCard(info: _info!, onToggleFollow: _toggleFollow)),
+                      SliverToBoxAdapter(child: UgcSpaceHeaderCard(info: _info!, onToggleFollow: _toggleFollow)),
                       SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
                       SliverToBoxAdapter(
                         child: Padding(
@@ -183,7 +183,7 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                                 );
                               }
                               final upload = _uploads[index];
-                              return _UploadCard(archive: upload, mid: widget.mid);
+                              return UgcSpaceUploadCard(archive: upload, mid: widget.mid);
                             },
                           ),
                         ),
@@ -191,148 +191,6 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
                     ],
                   ),
                 ),
-    );
-  }
-}
-
-class _HeaderCard extends StatelessWidget {
-  const _HeaderCard({required this.info, required this.onToggleFollow});
-
-  final UserSpaceInfo info;
-  final VoidCallback onToggleFollow;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24.ts(context)),
-      padding: EdgeInsets.all(20.ts(context)),
-      decoration: BoxDecoration(
-        color: tvTheme.cardColor,
-        borderRadius: BorderRadius.circular(20.sp),
-      ),
-      child: Row(
-        children: [
-          ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: info.face,
-              width: 96.ts(context),
-              height: 96.ts(context),
-              fit: BoxFit.cover,
-              errorWidget: (_, _, _) => Icon(Icons.person_rounded, size: 96.ts(context), color: tvTheme.secondaryTextColor),
-            ),
-          ),
-          SizedBox(width: 20.ts(context)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(info.name, style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor)),
-                if (info.sign.isNotEmpty) ...[
-                  SizedBox(height: 6.ts(context)),
-                  Text(
-                    info.sign,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-                  ),
-                ],
-                SizedBox(height: 8.ts(context)),
-                Row(
-                  children: [
-                    _Stat(label: i18n('video_followers'), value: readableCount(info.followers.toString())),
-                    SizedBox(width: 24.ts(context)),
-                    _Stat(label: i18n('video_following'), value: readableCount(info.following.toString())),
-                    SizedBox(width: 24.ts(context)),
-                    _Stat(label: i18n('video_uploads_title'), value: readableCount(info.videoCount.toString())),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 16.ts(context)),
-          TvButton(
-            title: i18n(info.isFollowed ? 'video_unfollow' : 'video_follow'),
-            icon: Icon(info.isFollowed ? Icons.done_rounded : Icons.add_rounded, size: 24.ts(context)),
-            size: TvButtonSize.mini,
-            isSecondary: info.isFollowed,
-            onTap: onToggleFollow,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(value, style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor)),
-        Text(label, style: AppTextStyles.t14.copyWith(color: tvTheme.secondaryTextColor)),
-      ],
-    );
-  }
-}
-
-class _UploadCard extends StatelessWidget {
-  const _UploadCard({required this.archive, required this.mid});
-
-  final MusicArchive archive;
-  final int mid;
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) => TvFocusable(
-      onTap: () => openVideoArchive(context, ref, archive),
-      builder: (context, focused, child) => AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        decoration: BoxDecoration(
-          color: context.tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(14.sp),
-          border: Border.all(
-            color: focused ? context.tvTheme.focusColor : Colors.transparent,
-            width: 2.ts(context),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(14.sp)),
-                child: CachedNetworkImage(
-                  imageUrl: archive.cover,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  memCacheWidth: 480,
-                  errorWidget: (_, _, _) => Container(color: Colors.black26),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(10.ts(context)),
-              child: Text(
-                archive.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.primaryTextColor),
-              ),
-            ),
-          ],
-        ),
-      ),
-      ),
     );
   }
 }

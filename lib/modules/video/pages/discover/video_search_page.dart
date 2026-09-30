@@ -12,6 +12,9 @@ import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/modules/video/pages/discover/widgets/video_hotword_board.dart';
+import 'package:pure_live/modules/video/pages/discover/widgets/video_user_results.dart';
+import 'package:pure_live/modules/video/pages/discover/widgets/video_pgc_results.dart';
 
 
 /// The full-type search section, newBV's search screen for TV: hotwords while
@@ -106,7 +109,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
           ),
         ),
         Expanded(
-          child: _keyword.isEmpty ? _HotwordBoard(hotwords: _hotwords, onPick: _submit) : _buildResults(),
+          child: _keyword.isEmpty ? VideoHotwordBoard(hotwords: _hotwords, onPick: _submit) : _buildResults(),
         ),
       ],
     );
@@ -115,9 +118,9 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
   Widget _buildResults() {
     switch (_typeIndex) {
       case 1:
-        return _UserResults(keyword: _keyword);
+        return VideoUserResults(keyword: _keyword);
       case 2:
-        return _PgcResults(keyword: _keyword);
+        return VideoPgcResults(keyword: _keyword);
       default:
         final themeState = ref.watch(themeSettingsControllerProvider);
         final param = _videoParams.putIfAbsent(
@@ -149,95 +152,7 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
   }
 }
 
-/// The idle board: trending words from the search square, the entry newBV's
-/// TV search starts from.
-class _HotwordBoard extends StatelessWidget {
-  const _HotwordBoard({required this.hotwords, required this.onPick});
-
-  final List<Hotword> hotwords;
-  final ValueChanged<String> onPick;
-
-  @override
-  Widget build(BuildContext context) {
-    final tvTheme = context.tvTheme;
-    final accent = tvTheme.focusColor;
-
-    if (hotwords.isEmpty) {
-      return Center(
-        child: Text(
-          i18n('music_search_empty_hint'),
-          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
-        ),
-      );
-    }
-    return DpadRegion(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(24.sp),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.local_fire_department_rounded, size: 26.sp, color: accent),
-                SizedBox(width: 8.sp),
-                Text(i18n('video_search_hotwords'), style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent)),
-              ],
-            ),
-            SizedBox(height: 16.sp),
-            Wrap(
-              spacing: 12.sp,
-              runSpacing: 12.sp,
-              children: [
-                for (final (index, word) in hotwords.indexed)
-                  TvFocusable(
-                    autofocus: index == 0,
-                    onTap: () => onPick(word.keyword),
-                    builder: (context, focused, child) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 120),
-                      padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 10.sp),
-                      decoration: BoxDecoration(
-                        color: tvTheme.cardColor,
-                        borderRadius: BorderRadius.circular(24.sp),
-                        border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${index + 1}',
-                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w700, 
-                              color: index < 3 ? Colors.redAccent : tvTheme.secondaryTextColor,
-                            ),
-                          ),
-                          SizedBox(width: 8.sp),
-                          Text(
-                            word.keyword,
-                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// User results: a list row per UP, opening the shared user-space page.
-class _UserResults extends ConsumerStatefulWidget {
-  const _UserResults({required this.keyword});
-
-  final String keyword;
-
-  @override
-  ConsumerState<_UserResults> createState() => _UserResultsState();
-}
-
-class _UserResultsState extends ConsumerState<_UserResults> {
+class VideoUserResultsState extends ConsumerState<VideoUserResults> {
   final List<SearchUserItem> _users = [];
   bool _loading = false;
   String? _error;
@@ -328,17 +243,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
   }
 }
 
-/// Movie results: PGC seasons, straight into the season page.
-class _PgcResults extends ConsumerStatefulWidget {
-  const _PgcResults({required this.keyword});
-
-  final String keyword;
-
-  @override
-  ConsumerState<_PgcResults> createState() => _PgcResultsState();
-}
-
-class _PgcResultsState extends ConsumerState<_PgcResults> {
+class VideoPgcResultsState extends ConsumerState<VideoPgcResults> {
   List<SearchPgcItem> _seasons = [];
   bool _loading = false;
   String? _error;
