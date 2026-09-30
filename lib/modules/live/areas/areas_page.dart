@@ -2,9 +2,9 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/modules/live/areas/area_grid_view.dart';
-import 'package:pure_live/modules/live/areas/area_display_config.dart';
 import 'package:pure_live/modules/live/areas/category_provider.dart';
 import 'package:pure_live/modules/live/areas/platform_provider.dart';
+import 'package:pure_live/modules/live/areas/area_display_config.dart';
 
 class AreasPage extends ConsumerStatefulWidget {
   const AreasPage({super.key});
@@ -32,8 +32,12 @@ class _AreasPageState extends ConsumerState<AreasPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AreasPlatformTabs(tabs: tabItems, currentIndex: platformState.currentPlatformIndex, siteId: currentSite.id),
-                SizedBox(height: 16.sp),
+                AreasPlatformTabs(
+                  tabs: tabItems,
+                  currentIndex: platformState.currentPlatformIndex,
+                  siteId: currentSite.id,
+                ),
+                SizedBox(height: 16.ts(context)),
                 Expanded(
                   child: TvTabView(
                     memoryKey: "areas_tab_view_content_${platformState.currentPlatformIndex}",

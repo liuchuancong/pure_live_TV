@@ -42,20 +42,20 @@ class AppDownloadPage extends ConsumerWidget {
                   child: Row(
                     children: <Widget>[
                       Container(
-                        padding: EdgeInsets.all(10.sp),
+                        padding: EdgeInsets.all(10.ts(context)),
                         decoration: BoxDecoration(
                           color: context.tvTheme.focusColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12.sp),
+                          borderRadius: BorderRadius.circular(12.ts(context)),
                         ),
-                        child: Icon(Icons.android_rounded, color: context.tvTheme.focusColor, size: 28.sp),
+                        child: Icon(Icons.android_rounded, color: context.tvTheme.focusColor, size: 28.ts(context)),
                       ),
-                      SizedBox(width: 14.sp),
+                      SizedBox(width: 14.ts(context)),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text('Android', style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600)),
-                            SizedBox(height: 2.sp),
+                            SizedBox(height: 2.ts(context)),
                             Text(
                               i18n('android_desc'),
                               style: AppTextStyles.t17.copyWith(color: context.tvTheme.secondaryTextColor),
@@ -73,23 +73,23 @@ class AppDownloadPage extends ConsumerWidget {
                   padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
                   child: Row(
                     children: <Widget>[
-                      Icon(Icons.layers_rounded, size: 20.sp, color: context.tvTheme.secondaryTextColor),
-                      SizedBox(width: 10.sp),
+                      Icon(Icons.layers_rounded, size: 20.ts(context), color: context.tvTheme.secondaryTextColor),
+                      SizedBox(width: 10.ts(context)),
                       Text(i18n('update_renderer'), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600)),
-                      SizedBox(width: 16.sp),
+                      SizedBox(width: 16.ts(context)),
                       TvButton(
                         title: i18n('update_renderer_impeller'),
                         size: TvButtonSize.small,
                         selected: state.rendererVariant != 'skia',
-                        icon: Icon(Icons.bolt_rounded, size: 18.sp),
+                        icon: Icon(Icons.bolt_rounded, size: 18.ts(context)),
                         onTap: () => controller.pickRenderer('impeller'),
                       ),
-                      SizedBox(width: 12.sp),
+                      SizedBox(width: 12.ts(context)),
                       TvButton(
                         title: i18n('update_renderer_skia'),
                         size: TvButtonSize.small,
                         selected: state.rendererVariant == 'skia',
-                        icon: Icon(Icons.memory_rounded, size: 18.sp),
+                        icon: Icon(Icons.memory_rounded, size: 18.ts(context)),
                         onTap: () => controller.pickRenderer('skia'),
                       ),
                     ],
@@ -127,10 +127,10 @@ class AppDownloadPage extends ConsumerWidget {
                         TvButton(
                           title: i18n('update_install_now'),
                           size: TvButtonSize.small,
-                          icon: Icon(Icons.install_mobile_rounded, size: 18.sp),
+                          icon: Icon(Icons.install_mobile_rounded, size: 18.ts(context)),
                           onTap: () => controller.installDownloaded(),
                         ),
-                        SizedBox(width: 16.sp),
+                        SizedBox(width: 16.ts(context)),
                         Expanded(
                           child: Text(
                             i18n('update_package_ready'),
@@ -152,9 +152,9 @@ class AppDownloadPage extends ConsumerWidget {
                   ),
               ],
             ),
-            SizedBox(height: 24.sp),
+            SizedBox(height: 24.ts(context)),
             TvSettingsGroupTitle(title: i18n('update_log')),
-            SizedBox(height: 8.sp),
+            SizedBox(height: 8.ts(context)),
             TvSettingsCard(
               children: <Widget>[
                 Padding(
@@ -163,7 +163,7 @@ class AppDownloadPage extends ConsumerWidget {
                 ),
               ],
             ),
-            SizedBox(height: 40.sp),
+            SizedBox(height: 40.ts(context)),
           ],
         ),
       ),

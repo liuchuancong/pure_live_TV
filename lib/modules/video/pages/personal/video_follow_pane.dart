@@ -5,7 +5,6 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class VideoFollowPane extends ConsumerStatefulWidget {
   const VideoFollowPane({super.key});
@@ -88,12 +87,12 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
     // ellipsized lines, all font-scale aware) so the old grid overflow does
     // not come back.
     return GridView.builder(
-      padding: EdgeInsets.all(24.sp),
+      padding: EdgeInsets.all(24.ts(context)),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 5,
         childAspectRatio: 1.25,
-        crossAxisSpacing: 14.sp,
-        mainAxisSpacing: 14.sp,
+        crossAxisSpacing: 14.ts(context),
+        mainAxisSpacing: 14.ts(context),
       ),
       itemCount: follows.length + (_hasMore || _loading ? 1 : 0),
       itemBuilder: (context, index) {
@@ -104,9 +103,9 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
           return Center(
             child: _loading
                 ? SizedBox(
-                    width: 28.sp,
-                    height: 28.sp,
-                    child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                    width: 28.ts(context),
+                    height: 28.ts(context),
+                    child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
                   )
                 : const SizedBox.shrink(),
           );
@@ -116,11 +115,11 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
           onTap: () => UgcUserSpaceRoute(follow.mid, follow.name).push(context),
           onLongPress: () => unawaited(_unfollow(index)),
           builder: (context, focused, child) => Container(
-            padding: EdgeInsets.all(16.sp),
+            padding: EdgeInsets.all(16.ts(context)),
             decoration: BoxDecoration(
               color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
-              borderRadius: BorderRadius.circular(16.sp),
-              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+              borderRadius: BorderRadius.circular(16.ts(context)),
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -129,15 +128,15 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
                 ClipOval(
                   child: CachedNetworkImage(
                     imageUrl: follow.face,
-                    width: 96.sp,
-                    height: 96.sp,
+                    width: 96.ts(context),
+                    height: 96.ts(context),
                     fit: BoxFit.cover,
                     memCacheWidth: 192,
                     placeholder: (_, _) => ColoredBox(color: tvTheme.cardColor),
                     errorWidget: (_, _, _) => ColoredBox(color: tvTheme.cardColor),
                   ),
                 ),
-                SizedBox(height: 12.sp),
+                SizedBox(height: 12.ts(context)),
                 Text(
                   follow.name,
                   maxLines: 1,
@@ -145,7 +144,7 @@ class VideoFollowPaneState extends ConsumerState<VideoFollowPane> {
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                 ),
                 if (follow.sign.isNotEmpty) ...[
-                  SizedBox(height: 4.sp),
+                  SizedBox(height: 4.ts(context)),
                   Text(
                     follow.sign,
                     maxLines: 1,

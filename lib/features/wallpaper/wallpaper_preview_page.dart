@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +17,6 @@ import 'package:pure_live/features/wallpaper/wallpaper_tile.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_immersive_page.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_image.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_paging.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/pagination/models/paging_param.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_api_source.dart';
 import 'package:pure_live/features/wallpaper/wallpaper_display_options.dart';

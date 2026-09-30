@@ -35,7 +35,7 @@ class AppUpdatePage extends ConsumerWidget {
         TvButton(
           title: i18n('check_update'),
           size: TvButtonSize.mini,
-          icon: Icon(Remix.refresh_line, size: 22.sp),
+          icon: Icon(Remix.refresh_line, size: 22.ts(context)),
           onTap: state.phase == AppUpdatePhase.checking ? null : () => controller.check(userInitiated: true),
         ),
       ],
@@ -45,7 +45,7 @@ class AppUpdatePage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             _UpdateHeroHeader(version: state.currentVersion, buildNumber: state.currentBuild),
-            SizedBox(height: 24.sp),
+            SizedBox(height: 24.ts(context)),
             TvSettingsGroupTitle(title: i18n('about')),
             TvSettingsCard(
               children: <Widget>[
@@ -65,10 +65,10 @@ class AppUpdatePage extends ConsumerWidget {
             ),
             // A new version is no longer an inline card: the download page
             // behind the current-version row carries it, this row keeps the hint.
-            SizedBox(height: 24.sp),
+            SizedBox(height: 24.ts(context)),
             TvSettingsGroupTitle(title: i18n('update_history')),
             TvSettingsCard(children: <Widget>[_buildHistory(context, state, controller)]),
-            SizedBox(height: 40.sp),
+            SizedBox(height: 40.ts(context)),
           ],
         ),
       ),
@@ -192,31 +192,35 @@ class _UpdateHeroHeader extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Container(
-            width: 96.sp,
-            height: 96.sp,
+            width: 96.ts(context),
+            height: 96.ts(context),
             decoration: BoxDecoration(
               color: tvTheme.cardColor,
-              borderRadius: BorderRadius.circular(24.sp),
-              border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.sp),
+              borderRadius: BorderRadius.circular(24.ts(context)),
+              border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.ts(context)),
               boxShadow: [
-                BoxShadow(color: tvTheme.focusColor.withValues(alpha: 0.25), blurRadius: 18.sp, spreadRadius: 2.sp),
+                BoxShadow(
+                  color: tvTheme.focusColor.withValues(alpha: 0.25),
+                  blurRadius: 18.ts(context),
+                  spreadRadius: 2.ts(context),
+                ),
               ],
             ),
-            padding: EdgeInsets.all(14.sp),
+            padding: EdgeInsets.all(14.ts(context)),
             child: Image.asset('assets/icons/icon.png', fit: BoxFit.contain),
           ),
-          SizedBox(height: 14.sp),
+          SizedBox(height: 14.ts(context)),
           Text(
             i18n('ui_pure_live_tv'),
             style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
           ),
           if (hasVersion) ...<Widget>[
-            SizedBox(height: 8.sp),
+            SizedBox(height: 8.ts(context)),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 4.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.focusColor.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(999.sp),
+                borderRadius: BorderRadius.circular(999.ts(context)),
               ),
               child: Text(
                 'v$version+$buildNumber',

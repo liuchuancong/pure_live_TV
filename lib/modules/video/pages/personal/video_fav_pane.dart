@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// folder cards speak the cover-card visual — the folder's art (its first
 /// video's cover) fills the card with a count chip on the corner, the title
@@ -141,10 +140,13 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
               curve: Curves.easeOutCubic,
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(16.sp),
+                borderRadius: BorderRadius.circular(16.ts(context)),
                 border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.ts(context)),
                 boxShadow: [
-                  BoxShadow(color: accent.withValues(alpha: focused ? 0.25 : 0), blurRadius: focused ? 18.sp : 0),
+                  BoxShadow(
+                    color: accent.withValues(alpha: focused ? 0.25 : 0),
+                    blurRadius: focused ? 18.ts(context) : 0,
+                  ),
                 ],
               ),
               child: Column(
@@ -155,7 +157,7 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
                       fit: StackFit.expand,
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(16.sp)),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(16.ts(context))),
                           child: cover.isNotEmpty
                               ? CachedNetworkImage(
                                   imageUrl: cover,
@@ -167,15 +169,15 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
                               : _coverFallback(accent),
                         ),
                         Positioned(
-                          right: 8.sp,
-                          top: 8.sp,
+                          right: 8.ts(context),
+                          top: 8.ts(context),
                           child: TvCoverChip(label: '${folder.mediaCount}'),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(10.sp),
+                    padding: EdgeInsets.all(10.ts(context)),
                     child: Text(
                       folder.title,
                       maxLines: 1,
@@ -194,7 +196,7 @@ class VideoFavPaneState extends ConsumerState<VideoFavPane> {
 
   Widget _coverFallback(Color accent) => Container(
     color: accent.withValues(alpha: 0.15),
-    child: Icon(Icons.folder_special_outlined, size: 56.sp, color: accent),
+    child: Icon(Icons.folder_special_outlined, size: 56.ts(context), color: accent),
   );
 }
 

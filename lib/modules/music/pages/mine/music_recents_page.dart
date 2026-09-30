@@ -5,10 +5,9 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/music_section.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/music/widgets/music_song_row.dart';
 import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
-import 'package:pure_live/modules/music/widgets/music_song_row.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
@@ -49,10 +48,10 @@ class MusicRecentsPageState extends ConsumerState<MusicRecentsPage> {
           children: [
             Icon(
               isFavorites ? Icons.favorite_border_rounded : Icons.history_rounded,
-              size: 72.sp,
+              size: 72.ts(context),
               color: accent.withValues(alpha: 0.5),
             ),
-            SizedBox(height: 14.sp),
+            SizedBox(height: 14.ts(context)),
             Text(
               i18n(isFavorites ? 'music_empty_favorites' : 'music_empty_recents'),
               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -66,7 +65,7 @@ class MusicRecentsPageState extends ConsumerState<MusicRecentsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 10.sp),
+          padding: EdgeInsets.fromLTRB(20.ts(context), 16.ts(context), 20.ts(context), 10.ts(context)),
           child: Row(
             children: [
               Text(
@@ -80,23 +79,23 @@ class MusicRecentsPageState extends ConsumerState<MusicRecentsPage> {
               // destination is the full player anyway.
               TvButton(
                 title: i18n('music_now_playing'),
-                icon: Icon(Icons.music_note_rounded, size: 24.sp),
+                icon: Icon(Icons.music_note_rounded, size: 24.ts(context)),
                 size: TvButtonSize.mini,
                 isSecondary: true,
                 onTap: () => const MusicPlayerRoute().push(context),
               ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               TvButton(
                 title: i18n('music_play_all'),
-                icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                icon: Icon(Icons.play_circle_fill_rounded, size: 28.ts(context)),
                 size: TvButtonSize.mini,
                 onTap: () => _play(context, ref, tracks, 0),
               ),
               if (!isFavorites) ...[
-                SizedBox(width: 12.sp),
+                SizedBox(width: 12.ts(context)),
                 TvButton(
                   title: i18n('music_clear_recents'),
-                  icon: Icon(Icons.delete_outline_rounded, size: 24.sp),
+                  icon: Icon(Icons.delete_outline_rounded, size: 24.ts(context)),
                   size: TvButtonSize.mini,
                   isSecondary: true,
                   onTap: () => libraryController.clearRecents(),
@@ -110,9 +109,14 @@ class MusicRecentsPageState extends ConsumerState<MusicRecentsPage> {
             verticalEdge: DpadEdgeBehavior.leave,
             horizontalEdge: DpadEdgeBehavior.leave,
             child: ListView.separated(
-              padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: 16.sp),
+              padding: EdgeInsets.only(
+                left: 20.ts(context),
+                right: 20.ts(context),
+                bottom: 16.ts(context),
+                top: 16.ts(context),
+              ),
               itemCount: tracks.length,
-              separatorBuilder: (_, _) => SizedBox(height: 4.sp),
+              separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
               itemBuilder: (context, index) {
                 final track = tracks[index];
                 _reveal.bindRow(track, context);

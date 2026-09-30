@@ -111,18 +111,18 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
       // viewer reaches for, and a footer QR scrolled off-screen as soon as the
       // word list grew.
       header: Padding(
-        padding: EdgeInsets.fromLTRB(12.sp, 4.sp, 12.sp, 8.sp),
+        padding: EdgeInsets.fromLTRB(12.ts(context), 4.ts(context), 12.ts(context), 8.ts(context)),
         child: Column(
           children: [
             if (qrData.isEmpty)
               Row(
                 children: [
                   SizedBox(
-                    width: 18.sp,
-                    height: 18.sp,
-                    child: tvInlineLoading(context, size: 18.sp),
+                    width: 18.ts(context),
+                    height: 18.ts(context),
+                    child: tvInlineLoading(context, size: 18.ts(context)),
                   ),
-                  SizedBox(width: 12.sp),
+                  SizedBox(width: 12.ts(context)),
                   Expanded(
                     child: Text(
                       i18nOr('ui_remote_starting', 'Starting the phone remote service...'),
@@ -146,11 +146,11 @@ class _ShieldPanelState extends ConsumerState<ShieldPanel> {
                       color: context.tvTheme.secondaryTextColor,
                     ),
                   ),
-                  SizedBox(height: 4.sp),
+                  SizedBox(height: 4.ts(context)),
                   TvQrCodeCard(qrData: qrData, qrSize: 120, urlText: qrData),
                 ],
               ),
-              SizedBox(height: 6.sp),
+              SizedBox(height: 6.ts(context)),
               Center(
                 child: Text(
                   i18nOr('danmaku_shield_qr_hint', '手机扫码编辑屏蔽词'),

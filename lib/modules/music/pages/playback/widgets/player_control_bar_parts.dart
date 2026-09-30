@@ -396,10 +396,10 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
         padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 18.ts(context)),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(24.sp),
+          borderRadius: BorderRadius.circular(24.ts(context)),
           border: Border.all(
             color: tvTheme.focusColor.withValues(alpha: seekZone ? 0.9 : 0.35),
-            width: seekZone ? 2.sp : 1.sp,
+            width: seekZone ? 2.ts(context) : 1.ts(context),
           ),
         ),
         child: StreamBuilder<PlaybackState>(
@@ -416,19 +416,19 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
               children: [
                 if (_panel != _BarPanel.none && options.isNotEmpty)
                   Padding(
-                    padding: EdgeInsets.only(bottom: 12.sp),
+                    padding: EdgeInsets.only(bottom: 12.ts(context)),
                     child: Container(
-                      constraints: BoxConstraints(maxHeight: 480.sp),
+                      constraints: BoxConstraints(maxHeight: 480.ts(context)),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.92),
-                        borderRadius: BorderRadius.circular(16.sp),
+                        borderRadius: BorderRadius.circular(16.ts(context)),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(24.sp, 14.sp, 24.sp, 6.sp),
+                            padding: EdgeInsets.fromLTRB(24.ts(context), 14.ts(context), 24.ts(context), 6.ts(context)),
                             child: Text(
                               _panel == _BarPanel.quality ? i18n('music_quality') : i18n('music_core_title'),
                               style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
@@ -437,7 +437,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                           Flexible(
                             child: ListView.builder(
                               shrinkWrap: true,
-                              padding: EdgeInsets.only(bottom: 12.sp),
+                              padding: EdgeInsets.only(bottom: 12.ts(context)),
                               itemCount: options.length,
                               itemBuilder: (context, index) {
                                 final option = options[index];
@@ -461,13 +461,13 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                 Row(
                   children: [
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 120.sp),
+                      constraints: BoxConstraints(maxWidth: 120.ts(context)),
                       child: Text(
                         _timeLabel(position),
                         style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                       ),
                     ),
-                    SizedBox(width: 16.sp),
+                    SizedBox(width: 16.ts(context)),
                     Expanded(
                       child: MusicProgressBar(
                         position: position,
@@ -476,9 +476,9 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                         onInteraction: widget.onInteraction,
                       ),
                     ),
-                    SizedBox(width: 16.sp),
+                    SizedBox(width: 16.ts(context)),
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 120.sp),
+                      constraints: BoxConstraints(maxWidth: 120.ts(context)),
                       child: Text(
                         _timeLabel(duration),
                         style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
@@ -486,11 +486,11 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16.sp),
+                SizedBox(height: 16.ts(context)),
                 Wrap(
                   alignment: WrapAlignment.center,
-                  spacing: 12.sp,
-                  runSpacing: 10.sp,
+                  spacing: 12.ts(context),
+                  runSpacing: 10.ts(context),
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     for (final (index, action) in actions.indexed)
@@ -499,7 +499,7 @@ class MusicControlBarState extends ConsumerState<MusicControlBar> {
                           key: _barKey(index),
                           child: TvButton(
                             title: action.label,
-                            icon: Icon(action.icon, size: 22.sp),
+                            icon: Icon(action.icon, size: 22.ts(context)),
                             size: TvButtonSize.mini,
                             isSecondary: !action.active,
                             selected: _zone == _BarZone.bar && _barIndex == index,
@@ -559,8 +559,8 @@ class _OptionPill extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 20.ts(context) * scale, vertical: 10.ts(context) * scale),
       decoration: BoxDecoration(
         color: selected ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12.sp),
-        border: Border.all(color: selected ? accent : Colors.transparent, width: 2.sp),
+        borderRadius: BorderRadius.circular(12.ts(context)),
+        border: Border.all(color: selected ? accent : Colors.transparent, width: 2.ts(context)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -576,7 +576,10 @@ class _OptionPill extends StatelessWidget {
               ),
             ),
           ),
-          if (active) ...[SizedBox(width: 8.sp * scale), Icon(Icons.check_rounded, size: 20.sp * scale, color: accent)],
+          if (active) ...[
+            SizedBox(width: 8.ts(context) * scale),
+            Icon(Icons.check_rounded, size: 20.ts(context) * scale, color: accent),
+          ],
         ],
       ),
     );
@@ -611,11 +614,11 @@ class MusicProgressBar extends StatelessWidget {
       onTap: onInteraction,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        height: focused ? 22.sp : 16.sp,
-        margin: EdgeInsets.symmetric(vertical: focused ? 6.sp : 10.sp),
+        height: focused ? 22.ts(context) : 16.ts(context),
+        margin: EdgeInsets.symmetric(vertical: focused ? 6.ts(context) : 10.ts(context)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(11.sp),
-          border: Border.all(color: focused ? accent : Colors.white24, width: focused ? 2.sp : 1.sp),
+          borderRadius: BorderRadius.circular(11.ts(context)),
+          border: Border.all(color: focused ? accent : Colors.white24, width: focused ? 2.ts(context) : 1.ts(context)),
         ),
         child: Stack(
           children: [
@@ -623,15 +626,15 @@ class MusicProgressBar extends StatelessWidget {
               alignment: Alignment.centerLeft,
               widthFactor: progress,
               child: Container(
-                margin: EdgeInsets.all(3.sp),
-                decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(8.sp)),
+                margin: EdgeInsets.all(3.ts(context)),
+                decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(8.ts(context))),
               ),
             ),
             if (focused)
               Align(
                 alignment:
                     Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ?? Alignment.centerLeft,
-                child: Container(width: 4.sp, color: Colors.white),
+                child: Container(width: 4.ts(context), color: Colors.white),
               ),
           ],
         ),

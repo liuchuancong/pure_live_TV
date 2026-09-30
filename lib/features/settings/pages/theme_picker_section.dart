@@ -27,7 +27,7 @@ class ThemePickerSectionPage extends ConsumerWidget {
                 subtitle: theme.id == current.id ? i18n('ui_current_theme') : null,
                 leading: _ThemeSwatch(theme: theme, active: theme.id == current.id),
                 trailing: theme.id == current.id
-                    ? Icon(Icons.check_rounded, size: 30.sp, color: tvTheme.focusColor)
+                    ? Icon(Icons.check_rounded, size: 30.ts(context), color: tvTheme.focusColor)
                     : null,
                 onTap: () => controller.switchTheme(theme),
               ),
@@ -51,17 +51,17 @@ class _ThemeSwatch extends StatelessWidget {
     final tvTheme = context.tvTheme;
 
     return Container(
-      width: 44.sp,
-      height: 44.sp,
+      width: 44.ts(context),
+      height: 44.ts(context),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: theme.cardColor,
         border: Border.all(
           color: active ? tvTheme.focusColor : theme.focusColor.withValues(alpha: 0.7),
-          width: 2.sp,
+          width: 2.ts(context),
         ),
       ),
-      child: Container(width: 20.sp, height: 20.sp, color: theme.focusColor),
+      child: Container(width: 20.ts(context), height: 20.ts(context), color: theme.focusColor),
     );
   }
 }

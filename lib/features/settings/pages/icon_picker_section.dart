@@ -32,18 +32,18 @@ class IconPickerSectionPage extends StatelessWidget {
           TvButton(
             title: i18n('reset'),
             size: TvButtonSize.mini,
-            icon: Icon(Remix.restart_line, size: 22.sp),
+            icon: Icon(Remix.restart_line, size: 22.ts(context)),
             onTap: () => context.pop(const IconPickResult(null)),
           ),
         ],
       ),
       child: GridView.builder(
-        padding: EdgeInsets.all(16.sp),
+        padding: EdgeInsets.all(16.ts(context)),
         gridDelegate: TvAdaptiveGrid.fixed(
           context,
           crossAxisCount: 12,
-          mainAxisSpacing: 12.sp,
-          crossAxisSpacing: 12.sp,
+          mainAxisSpacing: 12.ts(context),
+          crossAxisSpacing: 12.ts(context),
           childAspectRatio: 1.15,
         ),
         itemCount: kIconCatalog.length,
@@ -82,15 +82,19 @@ class _IconTile extends StatelessWidget {
             // of the TV settings surfaces.
             border: Border.all(
               color: focused || active ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
-              width: focused || active ? 2.sp : 1.sp,
+              width: focused || active ? 2.ts(context) : 1.ts(context),
             ),
           ),
           padding: EdgeInsets.symmetric(horizontal: 4.ts(context), vertical: 8.ts(context)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(option.icon, size: 34.sp, color: focused || active ? tvTheme.focusColor : tvTheme.primaryTextColor),
-              SizedBox(height: 6.sp),
+              Icon(
+                option.icon,
+                size: 34.ts(context),
+                color: focused || active ? tvTheme.focusColor : tvTheme.primaryTextColor,
+              ),
+              SizedBox(height: 6.ts(context)),
               Text(
                 option.label,
                 maxLines: 1,

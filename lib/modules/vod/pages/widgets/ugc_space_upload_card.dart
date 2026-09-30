@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/vod/models/models.dart';
 class UgcSpaceUploadCard extends StatelessWidget {
   const UgcSpaceUploadCard({super.key,required this.archive, required this.mid});
 
@@ -20,7 +19,7 @@ class UgcSpaceUploadCard extends StatelessWidget {
         duration: const Duration(milliseconds: 120),
         decoration: BoxDecoration(
           color: context.tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(14.sp),
+          borderRadius: BorderRadius.circular(14.ts(context)),
           border: Border.all(
             color: focused ? context.tvTheme.focusColor : Colors.transparent,
             width: 2.ts(context),
@@ -31,7 +30,7 @@ class UgcSpaceUploadCard extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(14.sp)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(14.ts(context))),
                 child: CachedNetworkImage(
                   imageUrl: archive.cover,
                   fit: BoxFit.cover,

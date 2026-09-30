@@ -92,7 +92,7 @@ class _TvAppBarState extends State<TvAppBar> with RouteAware {
     }
 
     // The bar holds the back button and the title, both drawn at the app font
-    // scale: a fixed 66.sp bar let an enlarged back button run over its own
+    // scale: a fixed 66.ts(context) bar let an enlarged back button run over its own
     // edge, so the bar follows the text and keeps its chrome together.
 
     return Container(

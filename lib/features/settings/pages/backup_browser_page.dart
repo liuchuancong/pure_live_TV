@@ -21,7 +21,7 @@ class BackupBrowserSectionPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(child: RemoteSyncQrCard(width: 320, route: WebRemoteRouter.sync)),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
             child: Center(

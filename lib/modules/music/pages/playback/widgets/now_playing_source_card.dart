@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The homogeneous queue's source: one UP (and, for an album, one archive).
 class NowPlayingQueueSource {
@@ -37,18 +36,18 @@ class NowPlayingSourceHeader extends StatelessWidget {
     final accent = tvTheme.focusColor;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.sp, 0, 20.sp, 6.sp),
+      padding: EdgeInsets.fromLTRB(20.ts(context), 0, 20.ts(context), 6.ts(context)),
       child: Container(
-        padding: EdgeInsets.all(16.sp),
+        padding: EdgeInsets.all(16.ts(context)),
         decoration: BoxDecoration(
           color: accent.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(16.sp),
+          borderRadius: BorderRadius.circular(16.ts(context)),
           border: Border.all(color: accent.withValues(alpha: 0.35)),
         ),
         child: Row(
           children: [
-            TvCommonAvatar(avatarUrl: source.upFace, fallbackName: source.upName, radius: 40.sp),
-            SizedBox(width: 16.sp),
+            TvCommonAvatar(avatarUrl: source.upFace, fallbackName: source.upName, radius: 40.ts(context)),
+            SizedBox(width: 16.ts(context)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,12 +58,12 @@ class NowPlayingSourceHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
                   ),
-                  SizedBox(height: 4.sp),
+                  SizedBox(height: 4.ts(context)),
                   Row(
                     children: [
                       if (source.showUpName) ...[
-                        Icon(Icons.person_outline_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                        SizedBox(width: 4.sp),
+                        Icon(Icons.person_outline_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.ts(context)),
                         Flexible(
                           child: Text(
                             source.upName,
@@ -78,12 +77,12 @@ class NowPlayingSourceHeader extends StatelessWidget {
                         ),
                       ],
                       if (source.isFavorited) ...[
-                        SizedBox(width: 10.sp),
+                        SizedBox(width: 10.ts(context)),
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
                           decoration: BoxDecoration(
                             color: accent.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(6.sp),
+                            borderRadius: BorderRadius.circular(6.ts(context)),
                           ),
                           child: Text(
                             i18n('followed'),
@@ -96,19 +95,19 @@ class NowPlayingSourceHeader extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(width: 12.sp),
+            SizedBox(width: 12.ts(context)),
             ClipRRect(
-              borderRadius: BorderRadius.circular(10.sp),
+              borderRadius: BorderRadius.circular(10.ts(context)),
               child: CachedNetworkImage(
                 imageUrl: track.archive.cover,
-                width: 132.sp,
-                height: 84.sp,
+                width: 132.ts(context),
+                height: 84.ts(context),
                 fit: BoxFit.cover,
                 memCacheWidth: 320,
                 fadeInDuration: Duration.zero,
                 errorWidget: (_, _, _) => Container(
                   color: accent.withValues(alpha: 0.12),
-                  child: Icon(Icons.music_note_rounded, size: 30.sp, color: accent),
+                  child: Icon(Icons.music_note_rounded, size: 30.ts(context), color: accent),
                 ),
               ),
             ),

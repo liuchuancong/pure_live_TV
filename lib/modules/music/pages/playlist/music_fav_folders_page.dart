@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/modules/music/widgets/music_playlist_cards.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_import_dialog.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/music/widgets/music_playlist_cards.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_user_playlist_detail_page.dart';
 import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
@@ -51,7 +51,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
+            padding: EdgeInsets.fromLTRB(24.ts(context), 16.ts(context), 24.ts(context), 8.ts(context)),
             child: Row(
               children: [
                 Text(
@@ -61,14 +61,14 @@ class MusicFavFoldersPage extends ConsumerWidget {
                 const Spacer(),
                 TvButton(
                   title: i18n('music_import_playlist'),
-                  icon: Icon(Icons.download_rounded, size: 24.sp),
+                  icon: Icon(Icons.download_rounded, size: 24.ts(context)),
                   size: TvButtonSize.mini,
                   onTap: () => showImportPlaylistDialog(context, ref),
                 ),
-                SizedBox(width: 12.sp),
+                SizedBox(width: 12.ts(context)),
                 TvButton(
                   title: i18n('music_create_playlist'),
-                  icon: Icon(Icons.playlist_add_rounded, size: 24.sp),
+                  icon: Icon(Icons.playlist_add_rounded, size: 24.ts(context)),
                   size: TvButtonSize.mini,
                   onTap: () => showPlaylistNameDialog(context, ref),
                 ),
@@ -84,7 +84,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
+          padding: EdgeInsets.fromLTRB(24.ts(context), 16.ts(context), 24.ts(context), 8.ts(context)),
           child: Row(
             children: [
               Text(
@@ -96,28 +96,28 @@ class MusicFavFoldersPage extends ConsumerWidget {
               // already has playlists must not lose the import entry.
               TvButton(
                 title: i18n('music_import_playlist'),
-                icon: Icon(Icons.download_rounded, size: 24.sp),
+                icon: Icon(Icons.download_rounded, size: 24.ts(context)),
                 size: TvButtonSize.mini,
                 onTap: () => showImportPlaylistDialog(context, ref),
               ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               TvButton(
                 title: i18n('music_create_playlist'),
-                icon: Icon(Icons.playlist_add_rounded, size: 24.sp),
+                icon: Icon(Icons.playlist_add_rounded, size: 24.ts(context)),
                 size: TvButtonSize.mini,
                 onTap: () => showPlaylistNameDialog(context, ref),
               ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               if (sync.syncingFolderId != 0)
                 SizedBox(
-                  width: 28.sp,
-                  height: 28.sp,
-                  child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                  width: 28.ts(context),
+                  height: 28.ts(context),
+                  child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
                 )
               else
                 TvButton(
                   title: i18n('music_sync_all'),
-                  icon: Icon(Icons.sync_rounded, size: 24.sp),
+                  icon: Icon(Icons.sync_rounded, size: 24.ts(context)),
                   size: TvButtonSize.mini,
                   isSecondary: true,
                   onTap: syncController.syncAll,
@@ -127,16 +127,16 @@ class MusicFavFoldersPage extends ConsumerWidget {
         ),
         Expanded(
           child: ListView(
-            padding: EdgeInsets.fromLTRB(24.sp, 8.sp, 24.sp, 24.sp),
+            padding: EdgeInsets.fromLTRB(24.ts(context), 8.ts(context), 24.ts(context), 24.ts(context)),
             children: [
               _shelfGrid(context, ref, entries, includeLoading: false),
               if (sync.folders.isNotEmpty) ...[
-                SizedBox(height: 16.sp),
+                SizedBox(height: 16.ts(context)),
                 Text(
                   '${i18n('music_playlists_title')}（${sync.folders.length}）',
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
                 ),
-                SizedBox(height: 12.sp),
+                SizedBox(height: 12.ts(context)),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -177,7 +177,12 @@ class MusicFavFoldersPage extends ConsumerWidget {
     );
   }
 
-  Widget _shelfGrid(BuildContext context, WidgetRef ref, List<MusicPlaylistEntry> entries, {required bool includeLoading}) {
+  Widget _shelfGrid(
+    BuildContext context,
+    WidgetRef ref,
+    List<MusicPlaylistEntry> entries, {
+    required bool includeLoading,
+  }) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -214,7 +219,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
       builder: (_) => TvDialog(
         title: playlist.name,
         cancelText: i18n('cancel'),
-        width: 560.sp,
+        width: 560.ts(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -222,7 +227,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
               title: i18n(playlist.pinnedAt > 0 ? 'music_unpin' : 'music_pin'),
               icon: Icon(
                 playlist.pinnedAt > 0 ? Icons.vertical_align_bottom_rounded : Icons.vertical_align_top_rounded,
-                size: 26.sp,
+                size: 26.ts(context),
               ),
               showCheck: false,
               autofocus: true,
@@ -233,7 +238,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
             ),
             TvDialogOptionTile(
               title: i18n('music_edit_playlist'),
-              icon: Icon(Icons.edit_outlined, size: 26.sp),
+              icon: Icon(Icons.edit_outlined, size: 26.ts(context)),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();
@@ -242,7 +247,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
             ),
             TvDialogOptionTile(
               title: i18n('music_clear_tracks'),
-              icon: Icon(Icons.clear_all_rounded, size: 26.sp),
+              icon: Icon(Icons.clear_all_rounded, size: 26.ts(context)),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();
@@ -251,7 +256,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
             ),
             TvDialogOptionTile(
               title: i18n('music_delete_playlist'),
-              icon: Icon(Icons.delete_outline_rounded, size: 26.sp),
+              icon: Icon(Icons.delete_outline_rounded, size: 26.ts(context)),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();
@@ -293,13 +298,13 @@ class MusicFavFoldersPage extends ConsumerWidget {
       builder: (_) => TvDialog(
         title: folder.title,
         cancelText: i18n('cancel'),
-        width: 560.sp,
+        width: 560.ts(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TvDialogOptionTile(
               title: i18n('music_sync_folder'),
-              icon: Icon(Icons.sync_rounded, size: 26.sp),
+              icon: Icon(Icons.sync_rounded, size: 26.ts(context)),
               showCheck: false,
               autofocus: true,
               onTap: () {
@@ -309,7 +314,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
             ),
             TvDialogOptionTile(
               title: i18n('music_clear_tracks'),
-              icon: Icon(Icons.clear_all_rounded, size: 26.sp),
+              icon: Icon(Icons.clear_all_rounded, size: 26.ts(context)),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();
@@ -318,7 +323,7 @@ class MusicFavFoldersPage extends ConsumerWidget {
             ),
             TvDialogOptionTile(
               title: i18n('music_delete_playlist'),
-              icon: Icon(Icons.delete_outline_rounded, size: 26.sp),
+              icon: Icon(Icons.delete_outline_rounded, size: 26.ts(context)),
               showCheck: false,
               onTap: () {
                 Navigator.of(context).pop();

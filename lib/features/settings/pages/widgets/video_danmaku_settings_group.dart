@@ -1,5 +1,6 @@
-import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/exports/package_export.dart';
+
 /// The danmaku group: the three danmaku destinations.
 class VideoDanmakuSettingsGroup extends ConsumerWidget {
   const VideoDanmakuSettingsGroup({super.key});
@@ -7,7 +8,7 @@ class VideoDanmakuSettingsGroup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: 4.sp),
+      padding: EdgeInsets.only(top: 4.ts(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

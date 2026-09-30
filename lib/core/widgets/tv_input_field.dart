@@ -7,7 +7,6 @@ import 'package:pure_live/core/theme/styles/styles.dart';
 import 'package:pure_live/core/theme/tv_theme_data.dart';
 import 'package:pure_live/core/theme/tv_text_scale.dart';
 import 'package:android_tv_text_field/native_textfield_tv.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The TV text field: one look, two backends.
 ///
@@ -134,7 +133,7 @@ class _TvInputFieldState extends State<TvInputField> {
   @override
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
-    final resolvedHeight = widget.height ?? 60.sp;
+    final resolvedHeight = widget.height ?? 60.ts(context);
 
     final resolvedBgColor = widget.builder != null
         ? Colors.transparent
@@ -216,13 +215,13 @@ class _TvInputFieldState extends State<TvInputField> {
         Container(
           width: double.infinity,
           padding: EdgeInsets.only(
-            left: 12.sp,
-            right: widget.postFixWidget == null && !widget.showPasswordToggle ? 12.sp : 50.sp,
+            left: 12.ts(context),
+            right: widget.postFixWidget == null && !widget.showPasswordToggle ? 12.ts(context) : 50.ts(context),
           ),
           child: Row(children: [Expanded(child: inputCore)]),
         ),
         Positioned(
-          right: 12.sp,
+          right: 12.ts(context),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -234,7 +233,7 @@ class _TvInputFieldState extends State<TvInputField> {
                   ),
                   onPressed: () => setState(() => _isObscure = !_isObscure),
                 ),
-                SizedBox(width: 4.sp),
+                SizedBox(width: 4.ts(context)),
               ],
               if (widget.postFixWidget != null) widget.postFixWidget!,
             ],
@@ -253,9 +252,9 @@ class _TvInputFieldState extends State<TvInputField> {
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.sp),
+          borderRadius: BorderRadius.circular(12.ts(context)),
           color: resolvedBgColor,
-          border: Border.all(color: _isFocused ? resolvedFocusedBorder : resolvedUnfocusedBorder, width: 2.sp),
+          border: Border.all(color: _isFocused ? resolvedFocusedBorder : resolvedUnfocusedBorder, width: 2.ts(context)),
         ),
         child: content,
       );
@@ -264,7 +263,7 @@ class _TvInputFieldState extends State<TvInputField> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.sp),
+        borderRadius: BorderRadius.circular(12.ts(context)),
         // Built only while focused.
         //
         // The list used to hold a BoxShadow at all times, with the idle state
@@ -276,7 +275,11 @@ class _TvInputFieldState extends State<TvInputField> {
         // crisper focus indicator.
         boxShadow: _isFocused && !currentTvTheme.isLight
             ? <BoxShadow>[
-                BoxShadow(color: resolvedFocusedBorder.withValues(alpha: 0.55), blurRadius: 0.sp, spreadRadius: 2.0.sp),
+                BoxShadow(
+                  color: resolvedFocusedBorder.withValues(alpha: 0.55),
+                  blurRadius: 0.ts(context),
+                  spreadRadius: 2.0.ts(context),
+                ),
               ]
             : const <BoxShadow>[],
       ),

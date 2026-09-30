@@ -91,15 +91,19 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
                 ScaleTransition(
                   scale: _scale,
                   child: Container(
-                    padding: EdgeInsets.all(6.sp),
+                    padding: EdgeInsets.all(6.ts(context)),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.55), width: 2.sp),
+                      border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.55), width: 2.ts(context)),
                     ),
-                    child: TvCommonAvatar(avatarUrl: avatar, fallbackName: room?.nick, radius: compact ? 56.sp : 76.sp),
+                    child: TvCommonAvatar(
+                      avatarUrl: avatar,
+                      fallbackName: room?.nick,
+                      radius: compact ? 56.ts(context) : 76.ts(context),
+                    ),
                   ),
                 ),
-                SizedBox(height: compact ? 20.sp : 32.sp),
+                SizedBox(height: compact ? 20.ts(context) : 32.ts(context)),
                 Text(
                   title,
                   maxLines: 2,
@@ -108,7 +112,7 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
                   style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                 ),
                 if ((room?.nick ?? '').isNotEmpty) ...[
-                  SizedBox(height: 10.sp),
+                  SizedBox(height: 10.ts(context)),
                   Text(
                     room!.nick,
                     maxLines: 1,
@@ -116,7 +120,7 @@ class _AudioOnlySurfaceState extends State<AudioOnlySurface> with SingleTickerPr
                     style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
                   ),
                 ],
-                SizedBox(height: compact ? 18.sp : 26.sp),
+                SizedBox(height: compact ? 18.ts(context) : 26.ts(context)),
                 _AudioOnlyBadge(compact: compact),
               ],
             ),
@@ -147,8 +151,8 @@ class _AudioOnlyBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Remix.headphone_line, size: 24.sp, color: tvTheme.focusColor),
-          SizedBox(width: 10.sp),
+          Icon(Remix.headphone_line, size: 24.ts(context), color: tvTheme.focusColor),
+          SizedBox(width: 10.ts(context)),
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,

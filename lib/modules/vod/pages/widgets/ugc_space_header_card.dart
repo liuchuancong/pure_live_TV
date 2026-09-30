@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 class UgcSpaceHeaderCard extends StatelessWidget {
   const UgcSpaceHeaderCard({super.key,required this.info, required this.onToggleFollow});
 
@@ -18,7 +17,7 @@ class UgcSpaceHeaderCard extends StatelessWidget {
       padding: EdgeInsets.all(20.ts(context)),
       decoration: BoxDecoration(
         color: tvTheme.cardColor,
-        borderRadius: BorderRadius.circular(20.sp),
+        borderRadius: BorderRadius.circular(20.ts(context)),
       ),
       child: Row(
         children: [

@@ -6,7 +6,6 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/widgets/handle_video_surface.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
@@ -160,8 +159,7 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
     // key streams KeyRepeatEvents through the same call, so a long press walks
     // the step up to 60s without the bar ever getting in the way.
     final controller = ref.read(musicPlayerControllerProvider.notifier);
-    if (event.logicalKey == LogicalKeyboardKey.select ||
-        event.logicalKey == LogicalKeyboardKey.enter) {
+    if (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter) {
       _showControls();
       return KeyEventResult.handled;
     }
@@ -269,133 +267,131 @@ class _MusicPlayerPageState extends ConsumerState<MusicPlayerPage> {
         }
       },
       child: TvScaffold(
-      openingFocus: _rootNode,
-      child: ColoredBox(
-        color: Colors.black,
-        child: DpadRegion(
-        memoryKey: 'music_player',
-        child: Focus(
-          focusNode: _rootNode,
-          onKeyEvent: _onRootKey,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // ---------------------------------------------------- the picture
-              // Video keeps the picture; audio-only becomes the now-playing view:
-              // the cover alone in the middle, and the synced lyrics beside it
-              // once they arrive.
-              if (controller.handle != null && !state.audioOnly)
-                HandleVideoSurface(handle: controller.handle!, fit: BoxFit.contain)
-              else if (track != null)
-                MusicNowPlayingView(track: track, resolving: state.resolving, lyricRevision: _lyricRevision)
-              else
-                PlayerIdleSurface(track: track, resolving: state.resolving),
+        openingFocus: _rootNode,
+        child: ColoredBox(
+          color: Colors.black,
+          child: DpadRegion(
+            memoryKey: 'music_player',
+            child: Focus(
+              focusNode: _rootNode,
+              onKeyEvent: _onRootKey,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // ---------------------------------------------------- the picture
+                  // Video keeps the picture; audio-only becomes the now-playing view:
+                  // the cover alone in the middle, and the synced lyrics beside it
+                  // once they arrive.
+                  if (controller.handle != null && !state.audioOnly)
+                    HandleVideoSurface(handle: controller.handle!, fit: BoxFit.contain)
+                  else if (track != null)
+                    MusicNowPlayingView(track: track, resolving: state.resolving, lyricRevision: _lyricRevision)
+                  else
+                    PlayerIdleSurface(track: track, resolving: state.resolving),
 
-              // --------------------------------------------------- top info bar
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
-                top: _controlsVisible ? 24.sp : -120.sp,
-                left: 48.sp,
-                right: 48.sp,
-                child: IgnorePointer(
-                  ignoring: !_controlsVisible,
-                  child: Row(
-                    children: [
-                      Icon(Icons.music_note_rounded, size: 28.sp, color: tvTheme.focusColor),
-                      SizedBox(width: 10.sp),
-                      Expanded(
-                        child: Text(
-                          track?.title ?? i18n('music_player_title'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(width: 12.sp),
-                      if (track != null && track.archive.parts.length > 1)
-                        Text(
-                          'P${track.part.page}/${track.archive.parts.length}',
-                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
-                        ),
-                      SizedBox(width: 12.sp),
-                      if (BilibiliMusicApi.qualityLabel(state.quality).isNotEmpty)
-                        Text(
-                          BilibiliMusicApi.qualityLabel(state.quality),
-                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
-                        ),
-                      SizedBox(width: 12.sp),
-                      if (track != null)
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 220.sp),
-                          child: Text(
-                            track.archive.upName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                  // --------------------------------------------------- top info bar
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    top: _controlsVisible ? 24.ts(context) : -120.ts(context),
+                    left: 48.ts(context),
+                    right: 48.ts(context),
+                    child: IgnorePointer(
+                      ignoring: !_controlsVisible,
+                      child: Row(
+                        children: [
+                          Icon(Icons.music_note_rounded, size: 28.ts(context), color: tvTheme.focusColor),
+                          SizedBox(width: 10.ts(context)),
+                          Expanded(
+                            child: Text(
+                              track?.title ?? i18n('music_player_title'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ------------------------------------------------ bottom control bar
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 260),
-                curve: Curves.easeOutCubic,
-                bottom: _controlsVisible ? 32.sp : -180.sp,
-                left: 48.sp,
-                right: 48.sp,
-                child: IgnorePointer(
-                  ignoring: !_controlsVisible || _queueOpen,
-                  // Hidden must also mean unfocusable: a parked-offscreen bar
-                  // that keeps its buttons focusable lets the remote land on
-                  // controls the viewer cannot see.
-                  child: ExcludeFocus(
-                    excluding: !_controlsVisible || _queueOpen,
-                    child: MusicControlBar(
-                      active: _controlsVisible && !_queueOpen && !_settingsOpen,
-                      onSettings: _openSettings,
-                      activateInSeekZone: _activateInSeekZone,
-                      onQueue: _openQueue,
-                      onInteraction: _armAutoHide,
-                      onPickLyric: _showLyricPicker,
+                          SizedBox(width: 12.ts(context)),
+                          if (track != null && track.archive.parts.length > 1)
+                            Text(
+                              'P${track.part.page}/${track.archive.parts.length}',
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                            ),
+                          SizedBox(width: 12.ts(context)),
+                          if (BilibiliMusicApi.qualityLabel(state.quality).isNotEmpty)
+                            Text(
+                              BilibiliMusicApi.qualityLabel(state.quality),
+                              style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                            ),
+                          SizedBox(width: 12.ts(context)),
+                          if (track != null)
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 220.ts(context)),
+                              child: Text(
+                                track.archive.upName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
 
-              // -------------------------------------------------- settings panel
-              if (_settingsOpen)
-                Positioned(
-                  top: 100.sp,
-                  bottom: 100.sp,
-                  right: 48.sp,
-                  width: 640.sp,
-                  child: MusicPlayerSettingsPanel(onClose: _closeSettings),
-                ),
-
-              // --------------------------------------- flush-bottom progress line
-              Positioned(left: 0, right: 0, bottom: 0, child: MusicBottomProgressLine()),
-
-              // ------------------------------------------------------ queue panel
-              if (_queueOpen && !_settingsOpen)
-                Positioned(
-                  top: 100.sp,
-                  bottom: 100.sp,
-                  right: 48.sp,
-                  width: 520.sp,
-                  child: MusicQueuePanel(
-                    onClose: _closeQueue,
+                  // ------------------------------------------------ bottom control bar
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
+                    bottom: _controlsVisible ? 32.ts(context) : -180.ts(context),
+                    left: 48.ts(context),
+                    right: 48.ts(context),
+                    child: IgnorePointer(
+                      ignoring: !_controlsVisible || _queueOpen,
+                      // Hidden must also mean unfocusable: a parked-offscreen bar
+                      // that keeps its buttons focusable lets the remote land on
+                      // controls the viewer cannot see.
+                      child: ExcludeFocus(
+                        excluding: !_controlsVisible || _queueOpen,
+                        child: MusicControlBar(
+                          active: _controlsVisible && !_queueOpen && !_settingsOpen,
+                          onSettings: _openSettings,
+                          activateInSeekZone: _activateInSeekZone,
+                          onQueue: _openQueue,
+                          onInteraction: _armAutoHide,
+                          onPickLyric: _showLyricPicker,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-            ],
+
+                  // -------------------------------------------------- settings panel
+                  if (_settingsOpen)
+                    Positioned(
+                      top: 100.ts(context),
+                      bottom: 100.ts(context),
+                      right: 48.ts(context),
+                      width: 640.ts(context),
+                      child: MusicPlayerSettingsPanel(onClose: _closeSettings),
+                    ),
+
+                  // --------------------------------------- flush-bottom progress line
+                  Positioned(left: 0, right: 0, bottom: 0, child: MusicBottomProgressLine()),
+
+                  // ------------------------------------------------------ queue panel
+                  if (_queueOpen && !_settingsOpen)
+                    Positioned(
+                      top: 100.ts(context),
+                      bottom: 100.ts(context),
+                      right: 48.ts(context),
+                      width: 520.ts(context),
+                      child: MusicQueuePanel(onClose: _closeQueue),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-    ),
-    ),
     );
   }
 }

@@ -7,7 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/modules/video/widgets/video_action_chip.dart';
 import 'package:pure_live/modules/vod/domain/providers/vod_providers.dart';
@@ -132,7 +131,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
               child: AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error),
             )
           : SingleChildScrollView(
-              padding: EdgeInsets.all(24.sp),
+              padding: EdgeInsets.all(24.ts(context)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -143,9 +142,9 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 400.sp,
+                        width: 400.ts(context),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24.sp),
+                          borderRadius: BorderRadius.circular(24.ts(context)),
                           child: Stack(
                             children: [
                               AspectRatio(
@@ -159,14 +158,14 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
 
                               if (archive.tname.isNotEmpty)
                                 Positioned(
-                                  left: 14.sp,
-                                  top: 14.sp,
+                                  left: 14.ts(context),
+                                  top: 14.ts(context),
                                   child: TvButton(excludeFocus: true, title: archive.tname, size: TvButtonSize.mini),
                                 ),
                               if (archive.duration > 0)
                                 Positioned(
-                                  right: 14.sp,
-                                  bottom: 12.sp,
+                                  right: 14.ts(context),
+                                  bottom: 12.ts(context),
                                   child: TvButton(
                                     excludeFocus: true,
                                     title: MusicVideoCard.formatDuration(archive.duration),
@@ -177,7 +176,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 32.sp),
+                      SizedBox(width: 32.ts(context)),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +189,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                 height: 1.35,
                               ),
                             ),
-                            SizedBox(height: 10.sp),
+                            SizedBox(height: 10.ts(context)),
                             Text(
                               '${i18n('video_action_played')} ${readableCount(archive.playCount.toString())}'
                               ' · ${i18n('video_danmaku_stat', args: {'count': readableCount(archive.barrageCount.toString())})}'
@@ -200,7 +199,7 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                 color: tvTheme.secondaryTextColor,
                               ),
                             ),
-                            SizedBox(height: 16.sp),
+                            SizedBox(height: 16.ts(context)),
                             // The UP row: avatar-led, opens the user space.
                             TvFocusable(
                               onTap: archive.upMid > 0
@@ -208,17 +207,20 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                   : null,
                               builder: (context, focused, child) => AnimatedContainer(
                                 duration: const Duration(milliseconds: 120),
-                                padding: EdgeInsets.all(12.sp),
+                                padding: EdgeInsets.all(12.ts(context)),
                                 decoration: BoxDecoration(
                                   color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
-                                  borderRadius: BorderRadius.circular(20.sp),
-                                  border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                                  borderRadius: BorderRadius.circular(20.ts(context)),
+                                  border: Border.all(
+                                    color: focused ? accent : Colors.transparent,
+                                    width: 2.ts(context),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName),
-                                    SizedBox(width: 12.sp),
+                                    SizedBox(width: 12.ts(context)),
                                     Flexible(
                                       child: Text(
                                         archive.upName,
@@ -230,16 +232,20 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                                         ),
                                       ),
                                     ),
-                                    Icon(Icons.chevron_right_rounded, size: 24.sp, color: tvTheme.secondaryTextColor),
+                                    Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 24.ts(context),
+                                      color: tvTheme.secondaryTextColor,
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
-                            SizedBox(height: 16.sp),
+                            SizedBox(height: 16.ts(context)),
                             // Interaction chips.
                             Wrap(
-                              spacing: 10.sp,
-                              runSpacing: 10.sp,
+                              spacing: 10.ts(context),
+                              runSpacing: 10.ts(context),
                               children: [
                                 VideoActionChip(
                                   icon: _liked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
@@ -306,13 +312,16 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                     ],
                   ),
                   if (archive.description.isNotEmpty) ...[
-                    SizedBox(height: 20.sp),
+                    SizedBox(height: 20.ts(context)),
                     // The description in its own card, like the reference's
                     // grey block under the header.
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.all(18.sp),
-                      decoration: BoxDecoration(color: tvTheme.cardColor, borderRadius: BorderRadius.circular(16.sp)),
+                      padding: EdgeInsets.all(18.ts(context)),
+                      decoration: BoxDecoration(
+                        color: tvTheme.cardColor,
+                        borderRadius: BorderRadius.circular(16.ts(context)),
+                      ),
                       child: Text(
                         archive.description,
                         style: AppTextStyles.t14.copyWith(
@@ -323,24 +332,24 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                       ),
                     ),
                   ],
-                  SizedBox(height: 24.sp),
+                  SizedBox(height: 24.ts(context)),
                   // ==================================================== parts
                   Padding(
-                    padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
+                    padding: EdgeInsets.only(left: 8.ts(context), bottom: 12.ts(context)),
                     child: Row(
                       children: [
                         Text(
                           '${i18n('music_tracks_title')}（${tracks.length}）',
                           style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                         ),
-                        SizedBox(width: 16.sp),
+                        SizedBox(width: 16.ts(context)),
                         // Next to the title, not parked at the row's far end:
                         // pressing Down from the button then lands on the
                         // first part instead of hunting across a full-width
                         // row.
                         TvButton(
                           title: i18n('music_play_all'),
-                          icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                          icon: Icon(Icons.play_circle_fill_rounded, size: 28.ts(context)),
                           size: TvButtonSize.mini,
                           onTap: () => _play(tracks, 0),
                         ),
@@ -356,15 +365,15 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                     children: [
                       for (final (index, track) in tracks.indexed)
                         Padding(
-                          padding: EdgeInsets.only(bottom: 8.sp),
+                          padding: EdgeInsets.only(bottom: 8.ts(context)),
                           child: _PartTile(track: track, index: index, onTap: () => _play(tracks, index)),
                         ),
                     ],
                   ),
                   if (_related.isNotEmpty) ...[
-                    SizedBox(height: 16.sp),
+                    SizedBox(height: 16.ts(context)),
                     Padding(
-                      padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
+                      padding: EdgeInsets.only(left: 8.ts(context), bottom: 10.ts(context)),
                       child: Text(
                         i18n('video_related_title'),
                         style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
@@ -378,16 +387,16 @@ class _VideoDetailPageState extends ConsumerState<VideoDetailPage> {
                     // reachable, so the cards sit directly in the tree and
                     // Down lands on the first one.
                     SizedBox(
-                      height: 300.sp * 9 / 16 + 108.ts(context),
+                      height: 300.ts(context) * 9 / 16 + 108.ts(context),
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.only(bottom: 16.sp),
+                        padding: EdgeInsets.only(bottom: 16.ts(context)),
                         itemCount: _related.length,
-                        separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+                        separatorBuilder: (_, _) => SizedBox(width: 12.ts(context)),
                         itemBuilder: (context, index) {
                           final related = _related[index];
                           return SizedBox(
-                            width: 300.sp,
+                            width: 300.ts(context),
                             child: VideoCard(archive: related, onTap: () => VideoDetailRoute(related).push(context)),
                           );
                         },
@@ -432,13 +441,13 @@ class _PartTile extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.ts(context)),
           decoration: BoxDecoration(
             color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
-            borderRadius: BorderRadius.circular(18.sp),
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+            borderRadius: BorderRadius.circular(18.ts(context)),
+            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
           ),
           child: Row(
             children: [
               SizedBox(
-                width: 40.sp,
+                width: 40.ts(context),
                 child: Text(
                   '${index + 1}',
                   style: AppTextStyles.t18.copyWith(
@@ -458,7 +467,7 @@ class _PartTile extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               Text(
                 MusicVideoCard.formatDuration(track.part.duration > 0 ? track.part.duration : track.archive.duration),
                 style: AppTextStyles.t16.copyWith(

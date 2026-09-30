@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// The WHOLE row is the focusable — the tile-to-tile walk is what drives the
 /// list down the screen; the like count is display-only and OK toggles the
@@ -29,7 +28,7 @@ class UgcCommentTile extends StatelessWidget {
         padding: EdgeInsets.all(18.ts(context)),
         decoration: BoxDecoration(
           color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(16.sp),
+          borderRadius: BorderRadius.circular(16.ts(context)),
           border: Border.all(
             color: focused
                 ? accent
@@ -140,7 +139,7 @@ class UgcCommentTile extends StatelessWidget {
                 padding: EdgeInsets.all(12.ts(context)),
                 decoration: BoxDecoration(
                   color: tvTheme.backgroundColor.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12.sp),
+                  borderRadius: BorderRadius.circular(12.ts(context)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

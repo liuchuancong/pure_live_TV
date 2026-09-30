@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/tv_settings_row.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvSettingsSliderTile extends StatelessWidget {
   final String title;
@@ -53,7 +52,8 @@ class TvSettingsSliderTile extends StatelessWidget {
         maxLines: 1,
         // The focused row fills with the palette's focus surface; its ink, not
         // the accent, reads on it.
-        style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, 
+        style: AppTextStyles.t20.copyWith(
+          fontWeight: FontWeight.w600,
           color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
         ),
       ),
@@ -74,17 +74,17 @@ class _SliderTrack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 8.sp,
+      height: 8.ts(context),
       decoration: BoxDecoration(
         color: track.withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(4.sp),
+        borderRadius: BorderRadius.circular(4.ts(context)),
       ),
       child: Align(
         alignment: Alignment.centerLeft,
         child: FractionallySizedBox(
           widthFactor: progress,
           child: DecoratedBox(
-            decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(4.sp)),
+            decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(4.ts(context))),
             child: const SizedBox.expand(),
           ),
         ),

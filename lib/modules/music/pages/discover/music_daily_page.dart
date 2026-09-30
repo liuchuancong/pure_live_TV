@@ -6,7 +6,6 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/modules/music/services/daily_recommendation_service.dart';
@@ -73,9 +72,9 @@ class MusicDailyPageState extends ConsumerState<MusicDailyPage> {
         builder: (_) => TvDialog(
           title: i18n('music_pick_folder'),
           cancelText: i18n('cancel'),
-          width: 640.sp,
+          width: 640.ts(context),
           child: SizedBox(
-            height: 480.sp,
+            height: 480.ts(context),
             child: folders.isEmpty
                 ? Center(
                     child: Text(
@@ -117,12 +116,12 @@ class MusicDailyPageState extends ConsumerState<MusicDailyPage> {
     final accent = tvTheme.focusColor;
 
     final header = Padding(
-      padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
+      padding: EdgeInsets.fromLTRB(24.ts(context), 16.ts(context), 24.ts(context), 8.ts(context)),
       child: Row(
         children: [
           TvButton(
             title: folder?.title ?? i18n('music_pick_folder'),
-            icon: Icon(Icons.folder_outlined, size: 24.sp),
+            icon: Icon(Icons.folder_outlined, size: 24.ts(context)),
             size: TvButtonSize.mini,
             isSecondary: true,
             onTap: _pickFolder,
@@ -130,7 +129,7 @@ class MusicDailyPageState extends ConsumerState<MusicDailyPage> {
           const Spacer(),
           TvButton(
             title: i18n('music_regenerate'),
-            icon: Icon(Icons.refresh_rounded, size: 24.sp),
+            icon: Icon(Icons.refresh_rounded, size: 24.ts(context)),
             size: TvButtonSize.mini,
             isSecondary: true,
             onTap: folder == null || _loading ? null : () => _load(force: true),
@@ -149,8 +148,8 @@ class MusicDailyPageState extends ConsumerState<MusicDailyPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.folder_off_outlined, size: 72.sp, color: accent.withValues(alpha: 0.5)),
-                  SizedBox(height: 14.sp),
+                  Icon(Icons.folder_off_outlined, size: 72.ts(context), color: accent.withValues(alpha: 0.5)),
+                  SizedBox(height: 14.ts(context)),
                   Text(
                     i18n('music_daily_need_folder'),
                     style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -180,7 +179,7 @@ class MusicDailyPageState extends ConsumerState<MusicDailyPage> {
               : DpadRegion(
                   horizontalEdge: DpadEdgeBehavior.leave,
                   child: GridView.builder(
-                    padding: EdgeInsets.all(24.sp),
+                    padding: EdgeInsets.all(24.ts(context)),
                     gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
                     itemCount: recs.length,
                     itemBuilder: (context, index) {
@@ -204,13 +203,13 @@ class MusicDailyPageState extends ConsumerState<MusicDailyPage> {
       builder: (_) => TvDialog(
         title: i18n('music_re_recommend'),
         cancelText: i18n('cancel'),
-        width: 560.sp,
+        width: 560.ts(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TvDialogOptionTile(
               title: i18n('music_re_recommend'),
-              icon: Icon(Icons.refresh_rounded, size: 26.sp),
+              icon: Icon(Icons.refresh_rounded, size: 26.ts(context)),
               showCheck: false,
               autofocus: true,
               onTap: () {

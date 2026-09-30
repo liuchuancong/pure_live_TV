@@ -4,7 +4,6 @@ import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class VideoCommentsPanel extends StatefulWidget {
   const VideoCommentsPanel({
@@ -82,17 +81,17 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(24.sp),
+        borderRadius: BorderRadius.circular(24.ts(context)),
         border: Border.all(color: accent.withValues(alpha: 0.5)),
       ),
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(20.sp),
+            padding: EdgeInsets.all(20.ts(context)),
             child: Row(
               children: [
-                Icon(Icons.comment_outlined, size: 28.sp, color: accent),
-                SizedBox(width: 10.sp),
+                Icon(Icons.comment_outlined, size: 28.ts(context), color: accent),
+                SizedBox(width: 10.ts(context)),
                 Expanded(
                   child: Text(
                     i18n('video_comments_title'),
@@ -112,14 +111,14 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
             child: widget.comments.isEmpty && widget.loading
                 ? Center(
                     child: SizedBox(
-                      width: 40.sp,
-                      height: 40.sp,
-                      child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                      width: 40.ts(context),
+                      height: 40.ts(context),
+                      child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
                     ),
                   )
                 : ListView.builder(
                     controller: widget.scroll,
-                    padding: EdgeInsets.only(left: 16.sp, right: 16.sp, bottom: 16.sp),
+                    padding: EdgeInsets.only(left: 16.ts(context), right: 16.ts(context), bottom: 16.ts(context)),
                     itemCount: widget.comments.length + (widget.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index >= widget.comments.length) {
@@ -129,13 +128,13 @@ class VideoCommentsPanelState extends State<VideoCommentsPanel> {
                           }
                         });
                         return Padding(
-                          padding: EdgeInsets.all(14.sp),
+                          padding: EdgeInsets.all(14.ts(context)),
                           child: Center(
                             child: widget.loading
                                 ? SizedBox(
-                                    width: 26.sp,
-                                    height: 26.sp,
-                                    child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                                    width: 26.ts(context),
+                                    height: 26.ts(context),
+                                    child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
                                   )
                                 : const SizedBox.shrink(),
                           ),
@@ -196,11 +195,11 @@ class _CommentTile extends StatelessWidget {
     final hasThread = comment.rcount > 0;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 8.sp),
-      padding: EdgeInsets.all(12.sp),
+      margin: EdgeInsets.only(bottom: 8.ts(context)),
+      padding: EdgeInsets.all(12.ts(context)),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12.sp),
+        borderRadius: BorderRadius.circular(12.ts(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,18 +226,18 @@ class _CommentTile extends StatelessWidget {
                         : focused
                         ? Colors.white.withValues(alpha: 0.12)
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10.sp),
-                    border: Border.all(color: focused ? accent : Colors.transparent, width: 1.5.sp),
+                    borderRadius: BorderRadius.circular(10.ts(context)),
+                    border: Border.all(color: focused ? accent : Colors.transparent, width: 1.5.ts(context)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         liked(comment) ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                        size: 16.sp,
+                        size: 16.ts(context),
                         color: liked(comment) ? accent : Colors.white54,
                       ),
-                      SizedBox(width: 4.sp),
+                      SizedBox(width: 4.ts(context)),
                       Text(
                         readableCount(like(comment).toString()),
                         style: AppTextStyles.t14.copyWith(
@@ -252,13 +251,13 @@ class _CommentTile extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 6.sp),
+          SizedBox(height: 6.ts(context)),
           Text(
             comment.content,
             style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: Colors.white, height: 1.4),
           ),
           if (hasThread) ...[
-            SizedBox(height: 6.sp),
+            SizedBox(height: 6.ts(context)),
             TvFocusable(
               onTap: onToggleReplies,
               builder: (context, focused, _) => Text(
@@ -276,13 +275,13 @@ class _CommentTile extends StatelessWidget {
           ],
           if (expanded)
             Padding(
-              padding: EdgeInsets.only(left: 18.sp, top: 6.sp),
+              padding: EdgeInsets.only(left: 18.ts(context), top: 6.ts(context)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   for (final reply in replies)
                     Padding(
-                      padding: EdgeInsets.only(bottom: 4.sp),
+                      padding: EdgeInsets.only(bottom: 4.ts(context)),
                       child: Text.rich(
                         TextSpan(
                           children: [

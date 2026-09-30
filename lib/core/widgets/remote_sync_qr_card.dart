@@ -6,7 +6,6 @@ import 'package:pure_live/app/router/web_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/domains/device/tv_remote_receiver.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The "open the web form" card: a QR carrying the web remote's
 /// `http://ip:port/#/route` address, served by the alfred web server. A phone
@@ -46,22 +45,22 @@ class RemoteSyncQrCard extends ConsumerWidget {
       }
       return Container(
         width: width.ts(context),
-        padding: EdgeInsets.all(16.sp),
+        padding: EdgeInsets.all(16.ts(context)),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(24.sp),
-          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.5), width: 1.sp),
+          borderRadius: BorderRadius.circular(24.ts(context)),
+          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.5), width: 1.ts(context)),
         ),
         child: Row(
           children: <Widget>[
             SizedBox(
-              width: 18.sp,
-              height: 18.sp,
+              width: 18.ts(context),
+              height: 18.ts(context),
               child: error == null
                   ? const CircularProgressIndicator(strokeWidth: 2)
                   : Icon(Icons.error_outline_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
             ),
-            SizedBox(width: 10.sp),
+            SizedBox(width: 10.ts(context)),
             Expanded(
               child: Text(
                 error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...'),

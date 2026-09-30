@@ -4,10 +4,8 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
-
 import 'package:pure_live/modules/video/widgets/video_card.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// region's ranking feed (`ranking/v2?rid=`) — the guest-readable endpoint
 /// family; the region feed/rcmd endpoints trip the web risk control and are
@@ -107,7 +105,7 @@ class _VideoRegionPageState extends ConsumerState<VideoRegionPage> {
               : DpadRegion(
                   horizontalEdge: DpadEdgeBehavior.leave,
                   child: GridView.builder(
-                    padding: EdgeInsets.all(24.sp),
+                    padding: EdgeInsets.all(24.ts(context)),
                     // newBV's density, sized for VideoCard (cover +
                     // two-line title + UP line) — the shared delegate.
                     gridDelegate: defaultVideoGridDelegate(context, ref),

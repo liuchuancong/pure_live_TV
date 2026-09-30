@@ -1,7 +1,5 @@
 part of 'ugc_user_space_page.dart';
 
-
-
 /// A shared UP-space page: the header card (avatar, sign, followers, follow
 /// button) over a paged uploads grid. Music opens it from comment/track
 /// authors, video from detail cards — one implementation for both.
@@ -86,17 +84,19 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
     try {
       await BilibiliUgcApi.instance.setFollowing(widget.mid, follow: !(_info?.isFollowed ?? false));
       if (!mounted) return;
-      setState(() => _info = UserSpaceInfo(
-        mid: _info!.mid,
-        name: _info!.name,
-        face: _info!.face,
-        sign: _info!.sign,
-        followers: _info!.followers,
-        following: _info!.following,
-        videoCount: _info!.videoCount,
-        isFollowed: !_info!.isFollowed,
-        level: _info!.level,
-      ));
+      setState(
+        () => _info = UserSpaceInfo(
+          mid: _info!.mid,
+          name: _info!.name,
+          face: _info!.face,
+          sign: _info!.sign,
+          followers: _info!.followers,
+          following: _info!.following,
+          videoCount: _info!.videoCount,
+          isFollowed: !_info!.isFollowed,
+          level: _info!.level,
+        ),
+      );
       ToastUtil.show(_info!.isFollowed ? i18n('video_follow_done') : i18n('video_unfollow_done'));
     } catch (_) {
       ToastUtil.show(i18n('video_action_need_login'));
@@ -115,73 +115,75 @@ class _UgcUserSpacePageState extends ConsumerState<UgcUserSpacePage> {
       child: _loadingHeader
           ? AppStatusView(type: AppStatusType.loading, title: '', subtitle: '')
           : _error != null && _info == null
-              ? AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error)
-              : DpadRegion(
-                  child: CustomScrollView(
-                    controller: _scroll,
-                    slivers: [
-                      SliverToBoxAdapter(child: UgcSpaceHeaderCard(info: _info!, onToggleFollow: _toggleFollow)),
-                      SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
-                          child: Row(
-                            children: [
-                              Text(
-                                '${i18n('video_uploads_title')}（${_info!.videoCount}）',
-                                style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
-                              ),
-                              const Spacer(),
-                              TvButton(
-                                title: i18n(_order == 'pubdate' ? 'video_order_newest' : 'video_order_most_played'),
-                                icon: Icon(
-                                  _order == 'pubdate' ? Icons.schedule_rounded : Icons.local_fire_department_outlined,
-                                  size: 22.ts(context),
-                                ),
-                                size: TvButtonSize.mini,
-                                isSecondary: true,
-                                onTap: () {
-                                  setState(() {
-                                    _order = _order == 'pubdate' ? 'click' : 'pubdate';
-                                    _uploads.clear();
-                                    _page = 0;
-                                    _hasMore = true;
-                                  });
-                                  _loadMore();
-                                },
-                              ),
-                            ],
+          ? AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error)
+          : DpadRegion(
+              child: CustomScrollView(
+                controller: _scroll,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: UgcSpaceHeaderCard(info: _info!, onToggleFollow: _toggleFollow),
+                  ),
+                  SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
+                      child: Row(
+                        children: [
+                          Text(
+                            '${i18n('video_uploads_title')}（${_info!.videoCount}）',
+                            style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                           ),
-                        ),
-                      ),
-                      SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
-                      SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
-                        sliver: SliverGrid(
-                          gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
-                          delegate: SliverChildBuilderDelegate(
-                            childCount: _uploads.length + (_hasMore ? 1 : 0),
-                            (context, index) {
-                              if (index >= _uploads.length) {
-                                return Center(
-                                  child: _loadingMore
-                                      ? SizedBox(
-                                          width: 32.ts(context),
-                                          height: 32.ts(context),
-                                          child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
-                                        )
-                                      : const SizedBox.shrink(),
-                                );
-                              }
-                              final upload = _uploads[index];
-                              return UgcSpaceUploadCard(archive: upload, mid: widget.mid);
+                          const Spacer(),
+                          TvButton(
+                            title: i18n(_order == 'pubdate' ? 'video_order_newest' : 'video_order_most_played'),
+                            icon: Icon(
+                              _order == 'pubdate' ? Icons.schedule_rounded : Icons.local_fire_department_outlined,
+                              size: 22.ts(context),
+                            ),
+                            size: TvButtonSize.mini,
+                            isSecondary: true,
+                            onTap: () {
+                              setState(() {
+                                _order = _order == 'pubdate' ? 'click' : 'pubdate';
+                                _uploads.clear();
+                                _page = 0;
+                                _hasMore = true;
+                              });
+                              _loadMore();
                             },
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  SliverPadding(padding: EdgeInsets.only(top: 12.ts(context))),
+                  SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
+                    sliver: SliverGrid(
+                      gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
+                      delegate: SliverChildBuilderDelegate(childCount: _uploads.length + (_hasMore ? 1 : 0), (
+                        context,
+                        index,
+                      ) {
+                        if (index >= _uploads.length) {
+                          return Center(
+                            child: _loadingMore
+                                ? SizedBox(
+                                    width: 32.ts(context),
+                                    height: 32.ts(context),
+                                    child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
+                                  )
+                                : const SizedBox.shrink(),
+                          );
+                        }
+                        final upload = _uploads[index];
+                        return UgcSpaceUploadCard(archive: upload, mid: widget.mid);
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

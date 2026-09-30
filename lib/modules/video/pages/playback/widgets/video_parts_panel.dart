@@ -39,7 +39,7 @@ class VideoPartsPanelState extends ConsumerState<VideoPartsPanel> {
     _steered = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scroll.hasClients) return;
-      // Row stride: 64.sp height + 8.sp bottom margin.
+      // Row stride: 64.ts(context) height + 8.ts(context) bottom margin.
       final target = (index * 72.0).sp - _scroll.position.viewportDimension / 2;
       _scroll.jumpTo(target.clamp(0.0, _scroll.position.maxScrollExtent));
       _nodeAt(index).requestFocus();
@@ -58,17 +58,17 @@ class VideoPartsPanelState extends ConsumerState<VideoPartsPanel> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(24.sp),
+        borderRadius: BorderRadius.circular(24.ts(context)),
         border: Border.all(color: accent.withValues(alpha: 0.5)),
       ),
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(20.sp),
+            padding: EdgeInsets.all(20.ts(context)),
             child: Row(
               children: [
-                Icon(Icons.playlist_play_rounded, size: 28.sp, color: accent),
-                SizedBox(width: 10.sp),
+                Icon(Icons.playlist_play_rounded, size: 28.ts(context), color: accent),
+                SizedBox(width: 10.ts(context)),
                 Expanded(
                   child: Text(
                     '${i18n('music_tracks_title')}（${state.queue.length}）',
@@ -87,32 +87,32 @@ class VideoPartsPanelState extends ConsumerState<VideoPartsPanel> {
           Expanded(
             child: ListView.builder(
               controller: _scroll,
-              padding: EdgeInsets.only(left: 16.sp, right: 16.sp, bottom: 16.sp),
+              padding: EdgeInsets.only(left: 16.ts(context), right: 16.ts(context), bottom: 16.ts(context)),
               itemCount: state.queue.length,
               itemBuilder: (context, index) {
                 final track = state.queue[index];
                 final isCurrent = index == state.index;
                 return Padding(
-                  padding: EdgeInsets.only(bottom: 8.sp),
+                  padding: EdgeInsets.only(bottom: 8.ts(context)),
                   child: TvFocusable(
                     focusNode: _nodeAt(index),
                     onTap: () => controller.jumpTo(index),
                     builder: (context, focused, child) {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 120),
-                        height: 64.sp,
+                        height: 64.ts(context),
                         padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
                         decoration: BoxDecoration(
                           color: isCurrent ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(12.sp),
-                          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                          borderRadius: BorderRadius.circular(12.ts(context)),
+                          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                         ),
                         child: Row(
                           children: [
                             SizedBox(
-                              width: 32.sp,
+                              width: 32.ts(context),
                               child: isCurrent
-                                  ? Icon(Icons.play_arrow_rounded, size: 26.sp, color: accent)
+                                  ? Icon(Icons.play_arrow_rounded, size: 26.ts(context), color: accent)
                                   : Text(
                                       '${index + 1}',
                                       style: AppTextStyles.t16.copyWith(
@@ -121,7 +121,7 @@ class VideoPartsPanelState extends ConsumerState<VideoPartsPanel> {
                                       ),
                                     ),
                             ),
-                            SizedBox(width: 10.sp),
+                            SizedBox(width: 10.ts(context)),
                             Expanded(
                               child: Text(
                                 track.title,

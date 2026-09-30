@@ -3,7 +3,6 @@ import 'tv_dialog_option_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/theme/tv_text_scale.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvSelectItem<T> {
   final String title;
@@ -62,7 +61,7 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
 
   void _scrollToSelected() {
     if (!_scrollController.hasClients) return;
-    final itemHeight = 72.sp;
+    final itemHeight = 72.ts(context);
     final offset = selectedIndex * itemHeight;
     _scrollController.jumpTo(offset.clamp(0, _scrollController.position.maxScrollExtent));
     if (_selectedNode.canRequestFocus) _selectedNode.requestFocus();
@@ -91,13 +90,13 @@ class _TvSelectDialogState<T> extends State<TvSelectDialog<T>> {
       onCancel: () => Navigator.of(context).pop(),
       initialFocusNode: _selectedNode,
       child: Container(
-        constraints: BoxConstraints(maxHeight: 500.sp),
+        constraints: BoxConstraints(maxHeight: 500.ts(context)),
         child: ListView.separated(
           controller: _scrollController,
           shrinkWrap: true,
           padding: EdgeInsets.symmetric(vertical: 2.ts(context)),
           itemCount: widget.items.length,
-          separatorBuilder: (_, _) => SizedBox(height: 12.sp),
+          separatorBuilder: (_, _) => SizedBox(height: 12.ts(context)),
           itemBuilder: (_, index) {
             final item = widget.items[index];
             final isSelected = index == selectedIndex;

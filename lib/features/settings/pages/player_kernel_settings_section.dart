@@ -65,7 +65,8 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
                 icon: Remix.global_line,
                 trailing: Text(
                   proxyEnabled ? i18n('enabled') : i18n('disabled'),
-                  style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, 
+                  style: AppTextStyles.t16.copyWith(
+                    fontWeight: FontWeight.w600,
                     color: proxyEnabled ? context.tvTheme.focusColor : context.tvTheme.secondaryTextColor,
                   ),
                 ),
@@ -74,7 +75,7 @@ class PlayerKernelSettingsSectionPage extends ConsumerWidget {
             TvSettingsSwitchTile(
               title: i18n('enable_codec'),
               subtitle: i18n('gpu_decode'),
-icon: playerState.enableCodec ? Remix.speed_up_line : Remix.speed_line,
+              icon: playerState.enableCodec ? Remix.speed_up_line : Remix.speed_line,
               value: playerState.enableCodec,
               onChanged: (v) => player.updateSettings(playerState.copyWith(enableCodec: v)),
             ),
@@ -83,16 +84,16 @@ icon: playerState.enableCodec ? Remix.speed_up_line : Remix.speed_line,
         // Everything below configures mpv itself, so the reference shows it only
         // for the MPV kernel.
         if (isMpv) ...[
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           if (Platform.isAndroid)
             TvSettingsSwitchTile(
               title: i18n('compat_mode'),
               subtitle: i18n('compat_mode_subtitle'),
-icon: playerState.playerCompatMode ? Remix.shield_check_line : Remix.shield_line,
+              icon: playerState.playerCompatMode ? Remix.shield_check_line : Remix.shield_line,
               value: playerState.playerCompatMode,
               onChanged: (v) => player.updateSettings(playerState.copyWith(playerCompatMode: v)),
             ),
-          SizedBox(height: 8.sp),
+          SizedBox(height: 8.ts(context)),
           TvSettingsGroupTitle(title: i18n('mpv_advanced_settings')),
           // The reference clusters the warning, the official docs link and the
           // reset above the settings card. A TV row is one focus stop, so the
@@ -110,7 +111,7 @@ icon: playerState.playerCompatMode ? Remix.shield_check_line : Remix.shield_line
             icon: Remix.restart_line,
             onTap: player.resetMpvPlayerSettings,
           ),
-          SizedBox(height: 8.sp),
+          SizedBox(height: 8.ts(context)),
           TvSettingsCard(
             children: [
               TvSettingsSwitchTile(
@@ -144,7 +145,7 @@ icon: playerState.playerCompatMode ? Remix.shield_check_line : Remix.shield_line
               ),
             ],
           ),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('audio_settings')),
           TvSettingsCard(
             children: [
@@ -161,7 +162,7 @@ icon: playerState.playerCompatMode ? Remix.shield_check_line : Remix.shield_line
             ],
           ),
         ],
-        SizedBox(height: 24.sp),
+        SizedBox(height: 24.ts(context)),
       ],
     );
   }

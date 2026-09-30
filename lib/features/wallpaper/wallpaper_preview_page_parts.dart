@@ -581,7 +581,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       right: 0,
       child: IgnorePointer(
         child: Container(
-          padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 40.sp),
+          padding: EdgeInsets.fromLTRB(24.ts(context), 16.ts(context), 24.ts(context), 40.ts(context)),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -602,8 +602,8 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               if (!widget.args.isApiMode && items.length > 1)
                 Text('${_index + 1}/${items.length}', style: AppTextStyles.t20.copyWith(color: Colors.white70)),
               if (_isVideo) ...[
-                SizedBox(width: 18.sp),
-                Icon(Icons.volume_up_rounded, size: 18.sp, color: Colors.white70),
+                SizedBox(width: 18.ts(context)),
+                Icon(Icons.volume_up_rounded, size: 18.ts(context), color: Colors.white70),
               ],
             ],
           ),
@@ -618,7 +618,7 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
       right: 0,
       bottom: 0,
       child: Container(
-        padding: EdgeInsets.fromLTRB(24.sp, 40.sp, 24.sp, 20.sp),
+        padding: EdgeInsets.fromLTRB(24.ts(context), 40.ts(context), 24.ts(context), 20.ts(context)),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
@@ -636,15 +636,15 @@ class _WallpaperPreviewPageState extends ConsumerState<WallpaperPreviewPage> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 18.sp),
+            SizedBox(height: 18.ts(context)),
             // The bar is a normal focus scope now. OrderedTraversalPolicy
             // keeps ←/→ following the on-screen order, so adding or removing
             // the playback buttons never breaks navigation.
             FocusTraversalGroup(
               policy: OrderedTraversalPolicy(),
               child: Wrap(
-                spacing: 10.sp,
-                runSpacing: 10.sp,
+                spacing: 10.ts(context),
+                runSpacing: 10.ts(context),
                 children: [
                   for (int i = 0; i < actions.length; i++)
                     _PreviewActionButton(
@@ -736,7 +736,7 @@ class _PreviewActionButtonState extends State<_PreviewActionButton> {
   @override
   Widget build(BuildContext context) {
     final theme = context.tvTheme;
-    final radius = BorderRadius.circular(26.sp);
+    final radius = BorderRadius.circular(26.ts(context));
     final Color fill = _focused ? theme.focusColor : theme.cardColor;
     final Color foreground = Colors.white;
 
@@ -757,7 +757,7 @@ class _PreviewActionButtonState extends State<_PreviewActionButton> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 120),
             curve: Curves.easeOutCubic,
-            height: 56.sp,
+            height: 56.ts(context),
             padding: EdgeInsets.symmetric(horizontal: 24.ts(context)),
             decoration: BoxDecoration(color: fill, borderRadius: radius),
             child: Row(
@@ -765,13 +765,13 @@ class _PreviewActionButtonState extends State<_PreviewActionButton> {
               children: [
                 if (widget.action.busy)
                   SizedBox(
-                    width: 26.sp,
-                    height: 26.sp,
+                    width: 26.ts(context),
+                    height: 26.ts(context),
                     child: const AppStatusView(type: AppStatusType.loading, isMini: true, iconColor: Colors.white),
                   )
                 else
-                  Icon(widget.action.icon, size: 24.sp, color: foreground),
-                SizedBox(width: 10.sp),
+                  Icon(widget.action.icon, size: 24.ts(context), color: foreground),
+                SizedBox(width: 10.ts(context)),
                 Text(
                   widget.action.label,
                   style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: foreground),

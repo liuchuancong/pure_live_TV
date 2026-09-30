@@ -31,7 +31,7 @@ class RendererSettingsSectionPage extends ConsumerWidget {
         TvSettingsGroupTitle(title: i18n('video_output_driver')),
         if (!playerState.customPlayerOutput)
           Padding(
-            padding: EdgeInsets.only(left: 8.sp, bottom: 8.sp, right: 8.sp),
+            padding: EdgeInsets.only(left: 8.ts(context), bottom: 8.ts(context), right: 8.ts(context)),
             child: Text(
               i18nOr('ui_takes_effect_only_with_custom_player_output', i18n('custom_output_hwdec')),
               style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: context.tvTheme.secondaryTextColor),
@@ -44,13 +44,13 @@ class RendererSettingsSectionPage extends ConsumerWidget {
                 title: PlayerConsts.optionLabelFor(PlayerConsts.videoRenderersList, key, languageCode),
                 icon: key == currentKey ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
                 trailing: key == currentKey
-                    ? Icon(Icons.check_rounded, size: 26.sp, color: context.tvTheme.focusColor)
+                    ? Icon(Icons.check_rounded, size: 26.ts(context), color: context.tvTheme.focusColor)
                     : const SizedBox.shrink(),
                 onTap: () => player.updateSettings(playerState.copyWith(videoOutputDriver: key)),
               ),
           ],
         ),
-        SizedBox(height: 24.sp),
+        SizedBox(height: 24.ts(context)),
       ],
     );
   }

@@ -210,7 +210,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
       child: Align(
         alignment: Alignment.center,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 660.sp),
+          constraints: BoxConstraints(maxWidth: 660.ts(context)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -230,7 +230,7 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
                     )
                   else
                     Padding(
-                      padding: EdgeInsets.all(16.sp),
+                      padding: EdgeInsets.all(16.ts(context)),
                       child: Center(
                         child: TvQrCodeCard(qrData: _phoneUrl, urlText: _phoneUrl),
                       ),
@@ -282,22 +282,22 @@ class _AccountCookiePageState extends ConsumerState<AccountCookiePage> {
               // it, and two of them do not fit on one line in every locale.
               Wrap(
                 alignment: WrapAlignment.center,
-                spacing: 20.sp,
-                runSpacing: 12.sp,
+                spacing: 20.ts(context),
+                runSpacing: 12.ts(context),
                 children: [
                   if (_isDouyu)
                     TvButton(
                       title: i18n('douyu_cookie_refresh_now'),
                       size: TvButtonSize.medium,
                       isSecondary: true,
-                      icon: Icon(Remix.refresh_line, size: 20.sp),
+                      icon: Icon(Remix.refresh_line, size: 20.ts(context)),
                       onTap: _renewing || !configured ? null : () => unawaited(_renewDouyuSession()),
                     ),
                   TvButton(
                     title: i18n('clear'),
                     size: TvButtonSize.medium,
                     isSecondary: true,
-                    icon: Icon(Remix.delete_bin_6_line, size: 20.sp),
+                    icon: Icon(Remix.delete_bin_6_line, size: 20.ts(context)),
                     onTap: configured ? _clear : null,
                   ),
                 ],
@@ -331,8 +331,8 @@ class _StatusLine extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20.sp, color: color),
-          SizedBox(width: 8.sp),
+          Icon(icon, size: 20.ts(context), color: color),
+          SizedBox(width: 8.ts(context)),
           Flexible(
             child: Text(
               text,

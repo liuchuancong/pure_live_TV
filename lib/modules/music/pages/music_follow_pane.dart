@@ -1,11 +1,9 @@
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 
 /// the account's followed uploaders as full-width rows — avatar, name,
@@ -96,8 +94,8 @@ class _MusicFollowPaneState extends ConsumerState<MusicFollowPane> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 5,
         childAspectRatio: 1.25,
-        crossAxisSpacing: 14.sp,
-        mainAxisSpacing: 14.sp,
+        crossAxisSpacing: 14.ts(context),
+        mainAxisSpacing: 14.ts(context),
       ),
       itemCount: follows.length + (_hasMore || _loading ? 1 : 0),
       itemBuilder: (context, index) {
@@ -110,7 +108,7 @@ class _MusicFollowPaneState extends ConsumerState<MusicFollowPane> {
                 ? SizedBox(
                     width: 28.ts(context),
                     height: 28.ts(context),
-                    child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                    child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
                   )
                 : const SizedBox.shrink(),
           );
@@ -123,7 +121,7 @@ class _MusicFollowPaneState extends ConsumerState<MusicFollowPane> {
             padding: EdgeInsets.all(16.ts(context)),
             decoration: BoxDecoration(
               color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
-              borderRadius: BorderRadius.circular(16.sp),
+              borderRadius: BorderRadius.circular(16.ts(context)),
               border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
             ),
             child: Column(

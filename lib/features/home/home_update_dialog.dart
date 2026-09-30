@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
 
@@ -21,10 +20,7 @@ class HomeUpdateDialog {
 
     if (!context.mounted || !hasUpdate) return;
 
-    await TvDialogUtils.show(
-      context: context,
-      builder: (dialogContext) => const _UpdateDialogBody(),
-    );
+    await TvDialogUtils.show(context: context, builder: (dialogContext) => const _UpdateDialogBody());
   }
 }
 
@@ -80,12 +76,8 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
           // Version comparison row.
           Row(
             children: [
-              Icon(
-                Icons.system_update_alt_rounded,
-                size: 28.ts(context),
-                color: theme.focusColor,
-              ),
-              SizedBox(width: 12.sp),
+              Icon(Icons.system_update_alt_rounded, size: 28.ts(context), color: theme.focusColor),
+              SizedBox(width: 12.ts(context)),
               Expanded(
                 child: RichText(
                   text: TextSpan(
@@ -103,7 +95,10 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
                       if (VersionUtil.prerelease)
                         TextSpan(
                           text: '  ${i18nOr('update_prerelease', 'pre-release')}',
-                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: const Color(0xFFFFA726)),
+                          style: AppTextStyles.t16.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFFFFA726),
+                          ),
                         ),
                     ],
                   ),
@@ -111,26 +106,30 @@ class _UpdateDialogBodyState extends ConsumerState<_UpdateDialogBody> {
               ),
             ],
           ),
-          SizedBox(height: 16.sp),
+          SizedBox(height: 16.ts(context)),
           // Changelog card.
           if (VersionUtil.latestUpdateLog.isNotEmpty) ...[
             Text(
               i18nOr('update_changelog', 'What is new'),
               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: theme.secondaryTextColor),
             ),
-            SizedBox(height: 8.sp),
+            SizedBox(height: 8.ts(context)),
             Container(
               width: double.infinity,
-              constraints: BoxConstraints(maxHeight: 260.sp),
-              padding: EdgeInsets.all(16.sp),
+              constraints: BoxConstraints(maxHeight: 260.ts(context)),
+              padding: EdgeInsets.all(16.ts(context)),
               decoration: BoxDecoration(
                 color: theme.backgroundColor,
-                borderRadius: BorderRadius.circular(12.sp),
+                borderRadius: BorderRadius.circular(12.ts(context)),
               ),
               child: SingleChildScrollView(
                 child: Text(
                   VersionUtil.latestUpdateLog,
-                  style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.primaryTextColor, height: 1.5),
+                  style: AppTextStyles.t18.copyWith(
+                    fontWeight: FontWeight.w300,
+                    color: theme.primaryTextColor,
+                    height: 1.5,
+                  ),
                 ),
               ),
             ),

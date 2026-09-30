@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/controllers/playback/video_progress_controller.dart';
 
 /// The video-mode card, newBV's SmallVideoCard: a cover with the play/danmaku
@@ -19,12 +18,7 @@ import 'package:pure_live/modules/video/controllers/playback/video_progress_cont
 /// (focusedCardColor / cardColor, 24sp radius, 2sp accent edge), cover
 /// flexing inside it, on-cover pills as TvButton mini, marquee title.
 class VideoCard extends ConsumerStatefulWidget {
-  const VideoCard({
-    super.key,
-    required this.archive,
-    required this.onTap,
-    this.badge = '',
-  });
+  const VideoCard({super.key, required this.archive, required this.onTap, this.badge = ''});
 
   final MusicArchive archive;
   final VoidCallback onTap;
@@ -85,15 +79,11 @@ class _VideoCardState extends ConsumerState<VideoCard> {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
     final archive = widget.archive;
-    final progress = ref.watch(
-      videoProgressControllerProvider.select(
-        (s) => s.entries[archive.bvid]?.percent ?? 0.0,
-      ),
-    );
+    final progress = ref.watch(videoProgressControllerProvider.select((s) => s.entries[archive.bvid]?.percent ?? 0.0));
 
     final badge = widget.badge.isNotEmpty ? widget.badge : archive.tname;
 
-    final borderRadius = BorderRadius.circular(24.sp);
+    final borderRadius = BorderRadius.circular(24.ts(context));
     // The visuals fold into a DpadCustomEffect: DpadFocusable takes effects
     // or a builder, never both (the assertion that filled every grid cell
     // with the error view).
@@ -106,17 +96,12 @@ class _VideoCardState extends ConsumerState<VideoCard> {
       ),
       // Light palette: the 18px glow is a grey smear on white; crisp ring.
       tvTheme.isLight
-          ? DpadGlowEffect(
-              color: tvTheme.focusColor,
-              opacity: 1,
-              spreadRadius: 2.sp,
-              blurRadius: 0,
-            )
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.ts(context), blurRadius: 0)
           : DpadGlowEffect(
               color: tvTheme.focusColor,
               opacity: 0.75,
-              blurRadius: 18.sp,
-              spreadRadius: 1.5.sp,
+              blurRadius: 18.ts(context),
+              spreadRadius: 1.5.ts(context),
             ),
       DpadCustomEffect((context, state, _) {
         final isFocused = state.focused;
@@ -126,15 +111,9 @@ class _VideoCardState extends ConsumerState<VideoCard> {
             if (mounted && _actionsOpen) setState(() => _actionsOpen = false);
           });
         }
-        final bgColor = isFocused
-            ? tvTheme.focusedCardColor
-            : tvTheme.cardColor;
-        final titleColor = isFocused
-            ? tvTheme.onFocusedCard
-            : tvTheme.primaryTextColor;
-        final subtitleColor = isFocused
-            ? tvTheme.onFocusedCardSecondary
-            : tvTheme.secondaryTextColor;
+        final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
+        final titleColor = isFocused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
+        final subtitleColor = isFocused ? tvTheme.onFocusedCardSecondary : tvTheme.secondaryTextColor;
 
         return AnimatedContainer(
           duration: TvFocusStyle.focusDuration(isFocused),
@@ -142,10 +121,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,
-            border: Border.all(
-              color: isFocused ? tvTheme.focusColor : Colors.transparent,
-              width: 2.sp,
-            ),
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -166,7 +142,7 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                         Container(
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24.sp),
+                            borderRadius: BorderRadius.circular(24.ts(context)),
                             color: tvTheme.cardColor,
                           ),
                           child: CachedNetworkImage(
@@ -175,21 +151,11 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                             memCacheWidth: 640,
                             placeholder: (context, url) => Container(
                               color: tvTheme.cardColor,
-                              child: AppStatusView(
-                                type: AppStatusType.loading,
-                                title: "",
-                                subtitle: "",
-                                isMini: true,
-                              ),
+                              child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: "", isMini: true),
                             ),
                             errorWidget: (context, url, error) => Container(
                               color: tvTheme.cardColor,
-                              child: AppStatusView(
-                                type: AppStatusType.error,
-                                title: "",
-                                subtitle: "",
-                                isMini: true,
-                              ),
+                              child: AppStatusView(type: AppStatusType.error, title: "", subtitle: "", isMini: true),
                             ),
                           ),
                         ),
@@ -197,15 +163,12 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                         Align(
                           alignment: Alignment.bottomCenter,
                           child: Container(
-                            height: 64.sp,
+                            height: 64.ts(context),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.72),
-                                ],
+                                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
                               ),
                             ),
                           ),
@@ -214,31 +177,24 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                         // card's TvButton pills are sized for its cell, and at a
                         // 160px video cell they swallow the cover (and overflow).
                         Positioned(
-                          left: 10.sp,
-                          right: 10.sp,
-                          bottom: 6.sp,
+                          left: 10.ts(context),
+                          right: 10.ts(context),
+                          bottom: 6.ts(context),
                           child: Row(
                             children: [
-                              TvCoverChip(
-                                icon: Icons.play_arrow_rounded,
-                                label: _wan(archive.playCount),
-                              ),
-                              SizedBox(width: 6.sp),
-                              TvCoverChip(
-                                icon: Icons.comment_outlined,
-                                label: _wan(archive.barrageCount),
-                              ),
+                              TvCoverChip(icon: Icons.play_arrow_rounded, label: _wan(archive.playCount)),
+                              SizedBox(width: 6.ts(context)),
+                              TvCoverChip(icon: Icons.comment_outlined, label: _wan(archive.barrageCount)),
                               const Spacer(),
-                              if (_durationLabel.isNotEmpty)
-                                TvCoverChip(label: _durationLabel),
+                              if (_durationLabel.isNotEmpty) TvCoverChip(label: _durationLabel),
                             ],
                           ),
                         ),
                         // The region/rank chip anchors the top-left corner.
                         if (badge.isNotEmpty)
                           Positioned(
-                            left: 10.sp,
-                            top: 10.sp,
+                            left: 10.ts(context),
+                            top: 10.ts(context),
                             child: TvCoverChip(label: badge),
                           ),
                         // Watched progress along the cover's bottom edge.
@@ -246,13 +202,11 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                           Align(
                             alignment: Alignment.bottomCenter,
                             child: SizedBox(
-                              height: 4.sp,
+                              height: 4.ts(context),
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
-                                  ColoredBox(
-                                    color: Colors.white.withValues(alpha: 0.25),
-                                  ),
+                                  ColoredBox(color: Colors.white.withValues(alpha: 0.25)),
                                   FractionallySizedBox(
                                     alignment: Alignment.centerLeft,
                                     widthFactor: progress.clamp(0.0, 1.0),
@@ -272,25 +226,14 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                                 IconButton(
                                   tooltip: i18n('video_action_toview'),
                                   onPressed: _watchLater,
-                                  icon: Icon(
-                                    Icons.watch_later_outlined,
-                                    size: 30.sp,
-                                    color: Colors.white,
-                                  ),
+                                  icon: Icon(Icons.watch_later_outlined, size: 30.ts(context), color: Colors.white),
                                 ),
                                 IconButton(
                                   tooltip: i18n('video_action_up_page'),
                                   onPressed: archive.upMid > 0
-                                      ? () => UgcUserSpaceRoute(
-                                          archive.upMid,
-                                          archive.upName,
-                                        ).push(context)
+                                      ? () => UgcUserSpaceRoute(archive.upMid, archive.upName).push(context)
                                       : null,
-                                  icon: Icon(
-                                    Icons.person_outline_rounded,
-                                    size: 30.sp,
-                                    color: Colors.white,
-                                  ),
+                                  icon: Icon(Icons.person_outline_rounded, size: 30.ts(context), color: Colors.white),
                                 ),
                               ],
                             ),
@@ -305,24 +248,24 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                   // steps as the room card's nick line.
                   Padding(
                     padding: EdgeInsets.only(
-                      left: 10.sp,
-                      top: (compact ? 6.sp : 16.sp) * textScale,
-                      right: compact ? 10.sp : 16.sp,
-                      bottom: (compact ? 6.sp : 8.sp) * textScale,
+                      left: 10.ts(context),
+                      top: (compact ? 6.ts(context) : 16.ts(context)) * textScale,
+                      right: compact ? 10.ts(context) : 16.ts(context),
+                      bottom: (compact ? 6.ts(context) : 8.ts(context)) * textScale,
                     ),
                     child: Row(
                       children: [
                         SizedBox(
-                          width: compact ? 20.sp : 56.sp,
+                          width: compact ? 20.ts(context) : 56.ts(context),
                           child: Center(
                             child: TvCommonAvatar(
                               avatarUrl: archive.upFace,
                               fallbackName: archive.upName,
-                              radius: compact ? 10.sp : null,
+                              radius: compact ? 10.ts(context) : null,
                             ),
                           ),
                         ),
-                        SizedBox(width: compact ? 8.sp : 16.sp),
+                        SizedBox(width: compact ? 8.ts(context) : 16.ts(context)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,30 +276,19 @@ class _VideoCardState extends ConsumerState<VideoCard> {
                                 isFocused: isFocused,
                                 style:
                                     (compact
-                                            ? AppTextStyles.t14.copyWith(
-                                                fontWeight: FontWeight.w700,
-                                              )
-                                            : AppTextStyles.t22.copyWith(
-                                                fontWeight: FontWeight.w700,
-                                              ))
+                                            ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700)
+                                            : AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700))
                                         .copyWith(color: titleColor),
                               ),
-                              SizedBox(
-                                height: (compact ? 2.sp : 4.sp) * textScale,
-                              ),
+                              SizedBox(height: (compact ? 2.ts(context) : 4.ts(context)) * textScale),
                               Text(
-                                archive.upName +
-                                    (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
+                                archive.upName + (_pubLabel.isEmpty ? '' : ' · $_pubLabel'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style:
                                     (compact
-                                            ? AppTextStyles.t14.copyWith(
-                                                fontWeight: FontWeight.w500,
-                                              )
-                                            : AppTextStyles.t18.copyWith(
-                                                fontWeight: FontWeight.w500,
-                                              ))
+                                            ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500)
+                                            : AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500))
                                         .copyWith(color: subtitleColor),
                               ),
                             ],

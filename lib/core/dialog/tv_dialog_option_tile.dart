@@ -1,7 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// One option inside a dialog.
 ///
@@ -70,24 +69,24 @@ class TvDialogOptionTile extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeInOut,
-          constraints: BoxConstraints(minHeight: 60.sp * scale),
+          constraints: BoxConstraints(minHeight: 60.ts(context) * scale),
           padding: EdgeInsets.symmetric(horizontal: 20.ts(context) * scale, vertical: 10.ts(context) * scale),
           decoration: BoxDecoration(
             color: highlighted ? tvTheme.focusColor : tvTheme.subtleRowFill,
             borderRadius: BorderRadius.circular(radius.ts(context)),
             border: Border.all(
               color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
-              width: 1.sp,
+              width: 1.ts(context),
             ),
           ),
           child: Row(
             children: [
               if (icon != null) ...[
                 IconTheme(
-                  data: IconThemeData(size: 24.sp * scale, color: foreground),
+                  data: IconThemeData(size: 24.ts(context) * scale, color: foreground),
                   child: icon!,
                 ),
-                SizedBox(width: 14.sp * scale),
+                SizedBox(width: 14.ts(context) * scale),
               ],
               Expanded(
                 child: Column(
@@ -110,10 +109,10 @@ class TvDialogOptionTile extends StatelessWidget {
                   ],
                 ),
               ),
-              if (trailing != null) ...[SizedBox(width: 12.sp), trailing!],
+              if (trailing != null) ...[SizedBox(width: 12.ts(context)), trailing!],
               if (selected && showCheck) ...[
-                SizedBox(width: 12.sp * scale),
-                Icon(Icons.check_circle_rounded, size: 26.sp * scale, color: foreground),
+                SizedBox(width: 12.ts(context) * scale),
+                Icon(Icons.check_circle_rounded, size: 26.ts(context) * scale, color: foreground),
               ],
             ],
           ),

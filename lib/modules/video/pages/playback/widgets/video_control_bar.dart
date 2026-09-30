@@ -5,7 +5,6 @@ import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// Bottom controls, live_play's index-driven model: the bar holds ONE focus
@@ -190,10 +189,10 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
         padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 18.ts(context)),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(24.sp),
+          borderRadius: BorderRadius.circular(24.ts(context)),
           border: Border.all(
             color: tvTheme.focusColor.withValues(alpha: _zone == VideoBarZone.seek ? 0.9 : 0.35),
-            width: _zone == VideoBarZone.seek ? 2.sp : 1.sp,
+            width: _zone == VideoBarZone.seek ? 2.ts(context) : 1.ts(context),
           ),
         ),
         child: StreamBuilder<PlaybackState>(
@@ -244,7 +243,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
               ),
               (
                 label: '${state.speed}x',
-                icon: Icon(Icons.speed_rounded, size: 22.sp),
+                icon: Icon(Icons.speed_rounded, size: 22.ts(context)),
                 active: false,
                 secondary: true,
                 onTap: () => controller.cycleSpeed(),
@@ -253,49 +252,49 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                 label: BilibiliMusicApi.qualityLabel(state.quality).isEmpty
                     ? i18n('video_quality')
                     : BilibiliMusicApi.qualityLabel(state.quality),
-                icon: Icon(Icons.high_quality_outlined, size: 22.sp),
+                icon: Icon(Icons.high_quality_outlined, size: 22.ts(context)),
                 active: false,
                 secondary: true,
                 onTap: widget.onOpenQuality,
               ),
               (
                 label: i18n('video_parts_title'),
-                icon: Icon(Icons.playlist_play_rounded, size: 22.sp),
+                icon: Icon(Icons.playlist_play_rounded, size: 22.ts(context)),
                 active: false,
                 secondary: true,
                 onTap: widget.onOpenParts,
               ),
               (
                 label: i18n(widget.danmakuOn ? 'video_danmaku_on' : 'video_danmaku_off'),
-                icon: Icon(Icons.subtitles_outlined, size: 22.sp),
+                icon: Icon(Icons.subtitles_outlined, size: 22.ts(context)),
                 active: false,
                 secondary: true,
                 onTap: widget.onToggleDanmaku,
               ),
               (
                 label: i18n('video_comments_title'),
-                icon: Icon(Icons.comment_outlined, size: 22.sp),
+                icon: Icon(Icons.comment_outlined, size: 22.ts(context)),
                 active: false,
                 secondary: true,
                 onTap: widget.commentsEnabled ? widget.onOpenComments : null,
               ),
               (
                 label: i18n('video_danmaku_settings'),
-                icon: Icon(Icons.tune_rounded, size: 22.sp),
+                icon: Icon(Icons.tune_rounded, size: 22.ts(context)),
                 active: false,
                 secondary: true,
                 onTap: widget.onOpenDanmakuSettings,
               ),
               (
                 label: i18n(widget.subtitleOn ? 'video_subtitle_on' : 'video_subtitle_off'),
-                icon: Icon(Icons.closed_caption_outlined, size: 22.sp),
+                icon: Icon(Icons.closed_caption_outlined, size: 22.ts(context)),
                 active: widget.subtitleOn,
                 secondary: !widget.subtitleOn,
                 onTap: widget.onToggleSubtitle,
               ),
               (
                 label: i18n(widget.aspectFill ? 'video_aspect_fill' : 'video_aspect_fit'),
-                icon: Icon(Icons.aspect_ratio_rounded, size: 22.sp),
+                icon: Icon(Icons.aspect_ratio_rounded, size: 22.ts(context)),
                 active: false,
                 secondary: true,
                 onTap: widget.onToggleAspect,
@@ -316,23 +315,23 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                 Row(
                   children: [
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 120.sp),
+                      constraints: BoxConstraints(maxWidth: 120.ts(context)),
                       child: Text(
                         _timeLabel(position),
                         style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                       ),
                     ),
-                    SizedBox(width: 16.sp),
+                    SizedBox(width: 16.ts(context)),
                     Expanded(
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 120),
-                        height: seekZone ? 18.sp : 10.sp,
-                        margin: EdgeInsets.symmetric(vertical: seekZone ? 4.sp : 8.sp),
+                        height: seekZone ? 18.ts(context) : 10.ts(context),
+                        margin: EdgeInsets.symmetric(vertical: seekZone ? 4.ts(context) : 8.ts(context)),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(9.sp),
+                          borderRadius: BorderRadius.circular(9.ts(context)),
                           border: Border.all(
                             color: seekZone ? tvTheme.focusColor : Colors.white24,
-                            width: seekZone ? 2.sp : 1.sp,
+                            width: seekZone ? 2.ts(context) : 1.ts(context),
                           ),
                         ),
                         child: Stack(
@@ -341,10 +340,10 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                               alignment: Alignment.centerLeft,
                               widthFactor: progress,
                               child: Container(
-                                margin: EdgeInsets.all(2.sp),
+                                margin: EdgeInsets.all(2.ts(context)),
                                 decoration: BoxDecoration(
                                   color: tvTheme.focusColor,
-                                  borderRadius: BorderRadius.circular(7.sp),
+                                  borderRadius: BorderRadius.circular(7.ts(context)),
                                 ),
                               ),
                             ),
@@ -353,15 +352,15 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                                 alignment:
                                     Alignment.lerp(Alignment.centerLeft, Alignment.centerRight, progress) ??
                                     Alignment.centerLeft,
-                                child: Container(width: 4.sp, color: Colors.white),
+                                child: Container(width: 4.ts(context), color: Colors.white),
                               ),
                           ],
                         ),
                       ),
                     ),
-                    SizedBox(width: 16.sp),
+                    SizedBox(width: 16.ts(context)),
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 120.sp),
+                      constraints: BoxConstraints(maxWidth: 120.ts(context)),
                       child: Text(
                         _timeLabel(duration),
                         style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
@@ -369,7 +368,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16.sp),
+                SizedBox(height: 16.ts(context)),
                 // One scrollable pill row, live_play's bar: a fixed row
                 // overflowed (304px) and a Wrap spilled to a second line where
                 // the index walked invisibly. The row follows the selection.
@@ -379,7 +378,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.zero,
                     itemCount: buttons.length,
-                    separatorBuilder: (_, _) => SizedBox(width: 12.sp),
+                    separatorBuilder: (_, _) => SizedBox(width: 12.ts(context)),
                     itemBuilder: (context, i) => KeyedSubtree(
                       key: _barKey(i),
                       child: _BarPill(

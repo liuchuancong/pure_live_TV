@@ -1,10 +1,9 @@
 import 'package:dpad/dpad.dart';
-import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// A bilibili archive card in the newBV visual: the cover carries a bottom
 /// scrim with the play / danmaku counts and the duration, the title sits below
@@ -66,7 +65,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
     final bool showDuration = widget.showDuration;
     final double progress = widget.progress;
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(18.sp);
+    final borderRadius = BorderRadius.circular(18.ts(context));
 
     final List<DpadEffect> effects = [
       DpadScaleEffect(
@@ -76,8 +75,13 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
         curve: Curves.easeOutCubic,
       ),
       tvTheme.isLight
-          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
-          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.ts(context), blurRadius: 0)
+          : DpadGlowEffect(
+              color: tvTheme.focusColor,
+              opacity: 0.75,
+              blurRadius: 18.ts(context),
+              spreadRadius: 1.5.ts(context),
+            ),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
         final titleColor = isFocused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor;
@@ -91,7 +95,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
           decoration: BoxDecoration(
             color: isFocused ? tvTheme.focusedCardColor : tvTheme.backgroundColor,
             borderRadius: borderRadius,
-            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -124,16 +128,16 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                     // font-scale resolver.
                     if (label.isNotEmpty)
                       Positioned(
-                        left: 12.sp,
-                        top: 12.sp,
+                        left: 12.ts(context),
+                        top: 12.ts(context),
                         child: TvCoverChip(label: label),
                       ),
                     Positioned(
-                      left: 12.sp,
-                      bottom: 12.sp,
+                      left: 12.ts(context),
+                      bottom: 12.ts(context),
                       child: Wrap(
-                        spacing: 8.sp,
-                        runSpacing: 6.sp,
+                        spacing: 8.ts(context),
+                        runSpacing: 6.ts(context),
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           TvCoverChip(
@@ -149,8 +153,8 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                     ),
                     if (showDuration && archive.duration > 0)
                       Positioned(
-                        right: 12.sp,
-                        bottom: 12.sp,
+                        right: 12.ts(context),
+                        bottom: 12.ts(context),
                         child: TvCoverChip(label: MusicVideoCard.formatDuration(archive.duration)),
                       ),
                     if (progress > 0)
@@ -160,7 +164,7 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
                         bottom: 0,
                         child: LinearProgressIndicator(
                           value: progress.clamp(0.0, 1.0),
-                          minHeight: 4.sp,
+                          minHeight: 4.ts(context),
                           backgroundColor: Colors.white24,
                           valueColor: AlwaysStoppedAnimation(tvTheme.focusColor),
                         ),
@@ -172,11 +176,11 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
               // slot, the title marquees while focused, and the UP name (with
               // the publish date, when known) sits beneath.
               Padding(
-                padding: EdgeInsets.fromLTRB(10.sp, 8.ts(context), 12.sp, 8.ts(context)),
+                padding: EdgeInsets.fromLTRB(10.ts(context), 8.ts(context), 12.ts(context), 8.ts(context)),
                 child: Row(
                   children: [
-                    TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName, radius: 20.sp),
-                    SizedBox(width: 10.sp),
+                    TvCommonAvatar(avatarUrl: archive.upFace, fallbackName: archive.upName, radius: 20.ts(context)),
+                    SizedBox(width: 10.ts(context)),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,4 +227,3 @@ class _MusicVideoCardState extends State<MusicVideoCard> {
     );
   }
 }
-

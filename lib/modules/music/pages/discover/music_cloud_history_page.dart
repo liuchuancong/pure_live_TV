@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
-import 'package:pure_live/modules/vod/models/models.dart';
-
 
 /// The bilibili cloud watch history (bmsc's cloud history screen), cursor
 /// paged. Rows show the watched progress bar; tapping opens the archive.
@@ -144,32 +142,35 @@ class _MusicCloudHistoryPageState extends ConsumerState<MusicCloudHistoryPage> {
         ),
         Expanded(
           child: DpadRegion(
-      child: ListView.builder(
-        controller: _scroll,
-        padding: EdgeInsets.fromLTRB(24.ts(context), 8.ts(context), 24.ts(context), 24.ts(context)),
-        itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= _items.length) {
-            return Padding(
-              padding: EdgeInsets.all(16.ts(context)),
-              child: Center(
-                child: _loading
-                    ? SizedBox(
-                        width: 56.ts(context),
-                        height: 56.ts(context),
-                        child: CircularProgressIndicator(strokeWidth: 5.sp, color: accent),
-                      )
-                    : Text(i18n('all_results_loaded'), style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor)),
-              ),
-            );
-          }
-          final item = _items[index];
-          return _HistoryRow(
-            item: item,
-            onLongPress: () => _showRowMenu(context, ref, item),
-          );
-        },
-      ),
+            child: ListView.builder(
+              controller: _scroll,
+              padding: EdgeInsets.fromLTRB(24.ts(context), 8.ts(context), 24.ts(context), 24.ts(context)),
+              itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= _items.length) {
+                  return Padding(
+                    padding: EdgeInsets.all(16.ts(context)),
+                    child: Center(
+                      child: _loading
+                          ? SizedBox(
+                              width: 56.ts(context),
+                              height: 56.ts(context),
+                              child: CircularProgressIndicator(strokeWidth: 5.ts(context), color: accent),
+                            )
+                          : Text(
+                              i18n('all_results_loaded'),
+                              style: AppTextStyles.t14.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: tvTheme.secondaryTextColor,
+                              ),
+                            ),
+                    ),
+                  );
+                }
+                final item = _items[index];
+                return _HistoryRow(item: item, onLongPress: () => _showRowMenu(context, ref, item));
+              },
+            ),
           ),
         ),
       ],
@@ -195,12 +196,12 @@ class _HistoryRow extends StatelessWidget {
       builder: (context, focused, child) => AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         margin: EdgeInsets.only(bottom: 10.ts(context)),
-        // Content-sized: a fixed 118.sp overflowed once the three text lines
+        // Content-sized: a fixed 118.ts(context) overflowed once the three text lines
         // scaled past it at the largest font setting.
         padding: EdgeInsets.all(10.ts(context)),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(16.sp),
+          borderRadius: BorderRadius.circular(16.ts(context)),
           border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
         ),
         child: Row(
@@ -208,7 +209,7 @@ class _HistoryRow extends StatelessWidget {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(10.sp),
+                  borderRadius: BorderRadius.circular(10.ts(context)),
                   child: CachedNetworkImage(
                     imageUrl: item.archive.cover,
                     width: 180.ts(context),
@@ -224,7 +225,7 @@ class _HistoryRow extends StatelessWidget {
                   bottom: 0,
                   child: LinearProgressIndicator(
                     value: progress,
-                    minHeight: 4.sp,
+                    minHeight: 4.ts(context),
                     backgroundColor: Colors.white24,
                     valueColor: AlwaysStoppedAnimation(accent),
                   ),

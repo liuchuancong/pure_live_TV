@@ -1,14 +1,12 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
-import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
-
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
+import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
 
 /// The followed users' video feed (bmsc/newBV's dynamics), shared by the
 /// music and video home rails: one grid paging the offset-based API.
@@ -89,7 +87,7 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _items.length) {
-            // The loader owns the cell: a 32.sp ring vanished inside a
+            // The loader owns the cell: a 32.ts(context) ring vanished inside a
             // grid-sized cell, reading as a broken tile.
             if (!_loading) return const SizedBox.shrink();
             return Center(
@@ -99,7 +97,7 @@ class _UgcDynamicsPageState extends ConsumerState<UgcDynamicsPage> {
                   SizedBox(
                     width: 64.ts(context),
                     height: 64.ts(context),
-                    child: CircularProgressIndicator(strokeWidth: 5.sp, color: accent),
+                    child: CircularProgressIndicator(strokeWidth: 5.ts(context), color: accent),
                   ),
                   SizedBox(height: 12.ts(context)),
                   Text(

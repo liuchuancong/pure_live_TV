@@ -6,7 +6,7 @@ import 'package:pure_live/core/theme/typography/app_font_scale.dart';
 /// The UI is drafted against a 1920x1080 panel and `flutter_screenutil`
 /// multiplies every `.sp` size by `screenWidth / 1920`. That keeps the layout
 /// proportional to the screen, which is what the design wants — but it also
-/// makes text proportional, so a 720p panel renders a 12-16.sp label at 8-11 px
+/// makes text proportional, so a 720p panel renders a 12-16.ts(context) label at 8-11 px
 /// and it cannot be read from a couch. The same label on a 1080p TV is fine, and
 /// that is the difference users report as "small TVs have small fonts".
 ///

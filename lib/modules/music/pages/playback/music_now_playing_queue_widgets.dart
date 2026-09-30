@@ -1,6 +1,5 @@
 part of 'music_now_playing_queue_page.dart';
 
-
 /// table, the player page's queue panel at page size.
 ///
 /// When the queue is homogeneous — an album, or a favourited UP's run of
@@ -57,8 +56,8 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.queue_music_rounded, size: 72.sp, color: accent.withValues(alpha: 0.5)),
-            SizedBox(height: 14.sp),
+            Icon(Icons.queue_music_rounded, size: 72.ts(context), color: accent.withValues(alpha: 0.5)),
+            SizedBox(height: 14.ts(context)),
             Text(
               i18n('music_queue_empty'),
               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
@@ -74,7 +73,7 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 10.sp),
+          padding: EdgeInsets.fromLTRB(20.ts(context), 16.ts(context), 20.ts(context), 10.ts(context)),
           child: Row(
             children: [
               Text(
@@ -84,15 +83,21 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
             ],
           ),
         ),
-        if (source != null) NowPlayingSourceHeader(source: source, track: queue[state.index.clamp(0, queue.length - 1)]),
+        if (source != null)
+          NowPlayingSourceHeader(source: source, track: queue[state.index.clamp(0, queue.length - 1)]),
         Expanded(
           child: DpadRegion(
             verticalEdge: DpadEdgeBehavior.leave,
             horizontalEdge: DpadEdgeBehavior.leave,
             child: ListView.separated(
-              padding: EdgeInsets.only(left: 20.sp, right: 20.sp, bottom: 16.sp, top: source == null ? 16.sp : 6.sp),
+              padding: EdgeInsets.only(
+                left: 20.ts(context),
+                right: 20.ts(context),
+                bottom: 16.ts(context),
+                top: source == null ? 16.ts(context) : 6.ts(context),
+              ),
               itemCount: queue.length,
-              separatorBuilder: (_, _) => SizedBox(height: 4.sp),
+              separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
               itemBuilder: (context, index) {
                 final track = queue[index];
                 _reveal.bindRow(track, context);
@@ -104,18 +109,10 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
                   // Long press and Right both open the shared song menu —
                   // direct removal from a stray hold was too easy to lose a
                   // track to.
-                  onRemove: () => showMusicSongMenu(
-                    context,
-                    ref,
-                    track: track,
-                    onDelete: () => controller.removeAt(index),
-                  ),
-                  onMenuRequest: () => showMusicSongMenu(
-                    context,
-                    ref,
-                    track: track,
-                    onDelete: () => controller.removeAt(index),
-                  ),
+                  onRemove: () =>
+                      showMusicSongMenu(context, ref, track: track, onDelete: () => controller.removeAt(index)),
+                  onMenuRequest: () =>
+                      showMusicSongMenu(context, ref, track: track, onDelete: () => controller.removeAt(index)),
                 );
               },
             ),
@@ -139,10 +136,7 @@ class _MusicNowPlayingQueuePageState extends ConsumerState<MusicNowPlayingQueueP
       upFace: first.upFace,
       title: isSingleArchive ? first.title : first.upName,
       showUpName: isSingleArchive,
-      isFavorited: ref
-          .read(musicLibraryControllerProvider)
-          .favorites
-          .any((a) => a.upMid == first.upMid && a.upMid > 0),
+      isFavorited: ref.read(musicLibraryControllerProvider).favorites.any((a) => a.upMid == first.upMid && a.upMid > 0),
     );
   }
 }

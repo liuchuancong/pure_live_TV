@@ -98,7 +98,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
     // The second way out of the empty state: both branches offer search next to
     // their own action.
     final String searchLabel = i18n('empty_favorite_action');
-    final Widget searchIcon = Icon(Icons.search_rounded, size: 24.sp);
+    final Widget searchIcon = Icon(Icons.search_rounded, size: 24.ts(context));
     void goSearch() => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.search.value);
 
     final AppStatusView status;
@@ -300,7 +300,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
                   },
                   onTabRefresh: (index) => ref.read(favoriteProvider.notifier).refreshData(),
                 ),
-                SizedBox(height: 12.sp),
+                SizedBox(height: 12.ts(context)),
                 TvTabBar(
                   tabs: siteTabs,
                   currentIndex: favoriteState.tabSiteIndex,
@@ -317,10 +317,10 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
                   // status bar above it.
                   onTabRefresh: (index) => ref.read(favoriteProvider.notifier).refreshData(),
                 ),
-                SizedBox(height: 12.sp),
+                SizedBox(height: 12.ts(context)),
                 if (favoriteState.visibleTags.isNotEmpty)
                   Container(
-                    height: 44.sp,
+                    height: 44.ts(context),
                     padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
@@ -359,7 +359,7 @@ class _FavoritePageState extends ConsumerState<FavoritePage> with RouteAware {
                       },
                     ),
                   ),
-                SizedBox(height: 16.sp),
+                SizedBox(height: 16.ts(context)),
                 Expanded(
                   child: TvTabView(
                     // Identity is the tab/tag selection only. Including the

@@ -3,7 +3,6 @@ import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/router/web_router.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// "View logs in a browser" — the page behind the backup & restore row.
 ///
@@ -28,13 +27,13 @@ class LogViewerPage extends StatelessWidget {
         TvSettingsGroupTitle(title: i18n('view_logs_in_browser')),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.all(24.sp),
-          decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(20.sp)),
+          padding: EdgeInsets.all(24.ts(context)),
+          decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(20.ts(context))),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const RemoteSyncQrCard(width: 320, route: WebRemoteRouter.log),
-              SizedBox(width: 28.sp),
+              SizedBox(width: 28.ts(context)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,12 +45,12 @@ class LogViewerPage extends StatelessWidget {
                         'Scan the QR code with a phone, or open the address above in a browser on the same LAN',
                       ),
                     ),
-                    SizedBox(height: 10.sp),
+                    SizedBox(height: 10.ts(context)),
                     _StepBullet(
                       icon: Icons.visibility_outlined,
                       text: i18nOr('log_viewer_step_view', 'The page shows the runtime log and offers a download'),
                     ),
-                    SizedBox(height: 10.sp),
+                    SizedBox(height: 10.ts(context)),
                     _StepBullet(
                       icon: Icons.description_outlined,
                       text: i18nOr(
@@ -84,8 +83,8 @@ class _StepBullet extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18.sp, color: theme.focusColor),
-        SizedBox(width: 10.sp),
+        Icon(icon, size: 18.ts(context), color: theme.focusColor),
+        SizedBox(width: 10.ts(context)),
         Expanded(
           child: Text(
             text,

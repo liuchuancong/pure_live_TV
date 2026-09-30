@@ -7,7 +7,6 @@ import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/video/video_section.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class VideoHistoryPane extends ConsumerStatefulWidget {
   const VideoHistoryPane({super.key});
@@ -93,12 +92,12 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
               duration: const Duration(milliseconds: 120),
               margin: EdgeInsets.only(bottom: 10.ts(context)),
               // No fixed height: the 98.ts(context) cover + padding + border size the
-              // row. A pinned 118.sp left 94.sp of content room for a 98.sp
+              // row. A pinned 118.ts(context) left 94.ts(context) of content room for a 98.ts(context)
               // cover — the 4px difference was the bottom overflow.
               padding: EdgeInsets.all(10.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(16.sp),
+                borderRadius: BorderRadius.circular(16.ts(context)),
                 border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
               ),
               child: Row(
@@ -106,7 +105,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                   Stack(
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(10.sp),
+                        borderRadius: BorderRadius.circular(10.ts(context)),
                         child: CachedNetworkImage(
                           imageUrl: item.archive.cover,
                           width: 210.ts(context),
@@ -125,7 +124,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                           bottom: 0,
                           child: LinearProgressIndicator(
                             value: item.duration > 0 ? (item.progress / item.duration).clamp(0.0, 1.0) : null,
-                            minHeight: 4.sp,
+                            minHeight: 4.ts(context),
                             backgroundColor: Colors.white24,
                             valueColor: AlwaysStoppedAnimation(accent),
                           ),
@@ -155,7 +154,7 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                                 padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
                                 decoration: BoxDecoration(
                                   color: accent.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.circular(6.sp),
+                                  borderRadius: BorderRadius.circular(6.ts(context)),
                                 ),
                                 child: Text(
                                   'P${item.page}',
@@ -187,8 +186,8 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                           Row(
                             children: [
                               if (item.viewAt > 0) ...[
-                                Icon(Icons.schedule_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                SizedBox(width: 4.sp),
+                                Icon(Icons.schedule_rounded, size: 20.ts(context), color: tvTheme.secondaryTextColor),
+                                SizedBox(width: 4.ts(context)),
                                 Text(
                                   _viewAtLabel(item.viewAt),
                                   style: AppTextStyles.t16.copyWith(
@@ -199,8 +198,12 @@ class VideoHistoryPaneState extends ConsumerState<VideoHistoryPane> {
                               ],
                               if (item.viewAt > 0 && hasProgress) SizedBox(width: 14.ts(context)),
                               if (hasProgress) ...[
-                                Icon(Icons.play_circle_outline_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-                                SizedBox(width: 4.sp),
+                                Icon(
+                                  Icons.play_circle_outline_rounded,
+                                  size: 20.ts(context),
+                                  color: tvTheme.secondaryTextColor,
+                                ),
+                                SizedBox(width: 4.ts(context)),
                                 Flexible(
                                   child: Text(
                                     finished

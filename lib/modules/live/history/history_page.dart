@@ -1,10 +1,9 @@
-import 'dart:developer' as developer;
-
 import 'package:dpad/dpad.dart';
+import 'dart:developer' as developer;
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/live/history/history_page_provider.dart';
 import 'package:pure_live/features/home/home_provider.dart';
+import 'package:pure_live/modules/live/history/history_page_provider.dart';
 import 'package:pure_live/services/history_settings/history_controller.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
@@ -45,68 +44,68 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
 
     return TvScaffold(
       child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _HistoryToolbar(
-                    onClear: () => _confirmClearHistory(context),
-                    onEditLimit: () => _showLimitMenu(context),
-                  ),
-                  SizedBox(height: 12.sp),
-                  TvTabBar(
-                    tabs: siteTabs,
-                    currentIndex: historyPageState.tabSiteIndex,
-                    onTabChange: (index) {
-                      ref.read(historyPageProvider.notifier).changeSiteTab(index);
-                    },
-                    // OK on the tab already in force re-verifies every entry against
-                    // its platform — the reference's history pull-to-refresh. The
-                    // returned future holds the bar's progress line meanwhile.
-                    onTabRefresh: (index) => _refreshHistoryRooms(),
-                  ),
-                  SizedBox(height: 16.sp),
-                  Expanded(
-                    child: TvTabView(
-                      // Stable identity: the room count used to be part of the
-                      // key, so clearing or adding one entry rebuilt the view
-                      // and reset focus and scroll position.
-                      memoryKey: "history_tv_view_${historyPageState.tabSiteIndex}",
-                      // Left at the first column hands the remote to the home sidebar.
-                      // Stopping here left the rail reachable only through the tab bar above,
-                      // so a viewer browsing a grid had to go up first.
-                      verticalEdge: DpadEdgeBehavior.leave,
-                      horizontalEdge: DpadEdgeBehavior.leave,
-                      child: BasePagedTvView<LiveRoom>(
-                        key: ValueKey('history_grid_${historyPageState.tabSiteIndex}'),
-                        param: currentParam,
-                        getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
-                        emptyScene: EmptyScene.history,
-                        onEmptyGoHot: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.hot.value),
-                        gridDelegate: TvAdaptiveGrid.fixed(
-                          context,
-                          crossAxisCount: themeState.denseRoomLayout,
-                          mainAxisSpacing: mainSpacing.w,
-                          crossAxisSpacing: crossSpacing.w,
-                          childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
-                        ),
-                        itemBuilder: (context, room, index) => TvRoomCard(
-                          room: room,
-                          index: index,
-                          playlist: currentRooms,
-                          onLongPress: () {
-                            FavOperateUtil.toggleHistoryDeleteDialog(context, room);
-                          },
-                        ),
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _HistoryToolbar(
+                  onClear: () => _confirmClearHistory(context),
+                  onEditLimit: () => _showLimitMenu(context),
+                ),
+                SizedBox(height: 12.ts(context)),
+                TvTabBar(
+                  tabs: siteTabs,
+                  currentIndex: historyPageState.tabSiteIndex,
+                  onTabChange: (index) {
+                    ref.read(historyPageProvider.notifier).changeSiteTab(index);
+                  },
+                  // OK on the tab already in force re-verifies every entry against
+                  // its platform — the reference's history pull-to-refresh. The
+                  // returned future holds the bar's progress line meanwhile.
+                  onTabRefresh: (index) => _refreshHistoryRooms(),
+                ),
+                SizedBox(height: 16.ts(context)),
+                Expanded(
+                  child: TvTabView(
+                    // Stable identity: the room count used to be part of the
+                    // key, so clearing or adding one entry rebuilt the view
+                    // and reset focus and scroll position.
+                    memoryKey: "history_tv_view_${historyPageState.tabSiteIndex}",
+                    // Left at the first column hands the remote to the home sidebar.
+                    // Stopping here left the rail reachable only through the tab bar above,
+                    // so a viewer browsing a grid had to go up first.
+                    verticalEdge: DpadEdgeBehavior.leave,
+                    horizontalEdge: DpadEdgeBehavior.leave,
+                    child: BasePagedTvView<LiveRoom>(
+                      key: ValueKey('history_grid_${historyPageState.tabSiteIndex}'),
+                      param: currentParam,
+                      getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+                      emptyScene: EmptyScene.history,
+                      onEmptyGoHot: () => ref.read(sideMenuIndexProvider.notifier).changeIndex(TvMenuType.hot.value),
+                      gridDelegate: TvAdaptiveGrid.fixed(
+                        context,
+                        crossAxisCount: themeState.denseRoomLayout,
+                        mainAxisSpacing: mainSpacing.w,
+                        crossAxisSpacing: crossSpacing.w,
+                        childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
+                      ),
+                      itemBuilder: (context, room, index) => TvRoomCard(
+                        room: room,
+                        index: index,
+                        playlist: currentRooms,
+                        onLongPress: () {
+                          FavOperateUtil.toggleHistoryDeleteDialog(context, room);
+                        },
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -193,11 +192,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           value: unlimitedHistoryLimit,
           leading: const Icon(Icons.all_inclusive_rounded),
         ),
-        TvSelectItem(
-          title: i18n('history_limit_custom'),
-          value: -1,
-          leading: const Icon(Icons.edit_rounded),
-        ),
+        TvSelectItem(title: i18n('history_limit_custom'), value: -1, leading: const Icon(Icons.edit_rounded)),
       ],
       selectedValue: current,
     );
@@ -243,7 +238,7 @@ class _HistoryToolbar extends ConsumerWidget {
           isSecondary: true,
           onTap: onClear,
         ),
-        SizedBox(width: 12.sp),
+        SizedBox(width: 12.ts(context)),
         TvButton(
           title: '${i18n('history_limit')}: $limitLabel',
           icon: const Icon(Icons.history_toggle_off_rounded),

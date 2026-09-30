@@ -1,7 +1,7 @@
 import 'dart:io';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 class AgreementPage extends StatelessWidget {
   const AgreementPage({super.key});
@@ -16,7 +16,11 @@ class AgreementPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(i18n('agreement_title'), textAlign: TextAlign.center, style: AppTextStyles.t40.copyWith(fontWeight: FontWeight.w700)),
+              Text(
+                i18n('agreement_title'),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.t40.copyWith(fontWeight: FontWeight.w700),
+              ),
               AppStyle.vGap40,
               Flexible(
                 child: SingleChildScrollView(
@@ -28,7 +32,7 @@ class AgreementPage extends StatelessWidget {
                       AppStyle.vGap24,
 
                       Padding(
-                        padding: EdgeInsets.only(left: 28.0.sp, right: 8.0.sp),
+                        padding: EdgeInsets.only(left: 28.0.ts(context), right: 8.0.ts(context)),
 
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -67,12 +71,7 @@ class AgreementPage extends StatelessWidget {
                     },
                   ),
                   AppStyle.hGap32,
-                  TvButton(
-                    title: i18n('exit_app'),
-                    size: TvButtonSize.medium,
-                    isSecondary: true,
-                    onTap: () => exit(0),
-                  ),
+                  TvButton(title: i18n('exit_app'), size: TvButtonSize.medium, isSecondary: true, onTap: () => exit(0)),
                 ],
               ),
             ],

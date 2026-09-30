@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// without it a new playlist is created. The controller refuses empty names.
@@ -42,7 +41,7 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
     builder: (_) => TvDialog(
       title: i18n('music_add_to_playlist'),
       cancelText: i18n('cancel'),
-      width: 640.sp,
+      width: 640.ts(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -60,13 +59,13 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
               padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
               decoration: BoxDecoration(
                 color: focused ? tvTheme.cardColor : Colors.transparent,
-                borderRadius: BorderRadius.circular(12.sp),
-                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+                borderRadius: BorderRadius.circular(12.ts(context)),
+                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.favorite_rounded, size: 26.sp, color: tvTheme.focusColor),
-                  SizedBox(width: 12.sp),
+                  Icon(Icons.favorite_rounded, size: 26.ts(context), color: tvTheme.focusColor),
+                  SizedBox(width: 12.ts(context)),
                   Expanded(
                     child: Text(
                       i18n('music_liked_playlist'),
@@ -95,13 +94,13 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
                 padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
                 decoration: BoxDecoration(
                   color: focused ? tvTheme.cardColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12.sp),
-                  border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+                  borderRadius: BorderRadius.circular(12.ts(context)),
+                  border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.queue_music_rounded, size: 26.sp, color: tvTheme.focusColor),
-                    SizedBox(width: 12.sp),
+                    Icon(Icons.queue_music_rounded, size: 26.ts(context), color: tvTheme.focusColor),
+                    SizedBox(width: 12.ts(context)),
                     Expanded(
                       child: Text(
                         playlist.name,
@@ -118,7 +117,7 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
                 ),
               ),
             ),
-          SizedBox(height: 8.sp),
+          SizedBox(height: 8.ts(context)),
           TvFocusable(
             onTap: () {
               Navigator.of(context).pop();
@@ -129,13 +128,13 @@ Future<void> showAddToPlaylistDialog(BuildContext context, WidgetRef ref, MusicT
               padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
               decoration: BoxDecoration(
                 color: focused ? tvTheme.cardColor : Colors.transparent,
-                borderRadius: BorderRadius.circular(12.sp),
-                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+                borderRadius: BorderRadius.circular(12.ts(context)),
+                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.add_rounded, size: 26.sp, color: tvTheme.focusColor),
-                  SizedBox(width: 12.sp),
+                  Icon(Icons.add_rounded, size: 26.ts(context), color: tvTheme.focusColor),
+                  SizedBox(width: 12.ts(context)),
                   Text(
                     i18n('music_create_playlist'),
                     style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.focusColor),
@@ -164,7 +163,7 @@ Future<String?> showPlaylistPicker(BuildContext context, WidgetRef ref) async {
     builder: (_) => TvDialog(
       title: i18n('music_save_to_playlist'),
       cancelText: i18n('cancel'),
-      width: 560.sp,
+      width: 560.ts(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -172,14 +171,14 @@ Future<String?> showPlaylistPicker(BuildContext context, WidgetRef ref) async {
             TvDialogOptionTile(
               title: playlist.name,
               subtitle: '${playlist.tracks.length}',
-              icon: Icon(Icons.queue_music_rounded, size: 26.sp),
+              icon: Icon(Icons.queue_music_rounded, size: 26.ts(context)),
               showCheck: false,
               autofocus: index == 0,
               onTap: () => Navigator.of(context).pop(playlist.id),
             ),
           TvDialogOptionTile(
             title: i18n('music_create_playlist'),
-            icon: Icon(Icons.add_rounded, size: 26.sp),
+            icon: Icon(Icons.add_rounded, size: 26.ts(context)),
             showCheck: false,
             onTap: () async {
               final id = await showPlaylistNameDialog(context, ref);

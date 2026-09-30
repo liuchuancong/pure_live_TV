@@ -1,17 +1,16 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/app/router/web_router.dart';
-import 'package:pure_live/domains/device/tv_remote_receiver.dart';
-import 'package:pure_live/services/favorites/favorite_room_controller.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/dialog/index.dart';
-import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/theme/index.dart';
+import 'package:pure_live/core/dialog/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
+import 'package:pure_live/app/router/web_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/services/settings/settings.dart';
+import 'package:pure_live/domains/device/tv_remote_receiver.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/services/favorites/favorite_room_controller.dart';
 
 /// Keyword shield, in the tag page's shape: the phone QR on top, an add dialog
 /// and a left-aligned chip cloud. Its own page and web route
@@ -66,10 +65,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
   }
 
   Future<void> _add() async {
-    final added = await TvDialogUtils.show<bool>(
-      context: context,
-      builder: (_) => const BlockEntryAddDialog(),
-    );
+    final added = await TvDialogUtils.show<bool>(context: context, builder: (_) => const BlockEntryAddDialog());
     if (added == true && mounted) setState(() {});
   }
 
@@ -95,7 +91,7 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.danmakuFilter)),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('danmaku_keyword_block')),
           TvSettingsCard(
             children: [
@@ -117,8 +113,8 @@ class DanmakuShieldSectionPageState extends ConsumerState<DanmakuShieldSectionPa
                         width: double.infinity,
                         child: Wrap(
                           alignment: WrapAlignment.start,
-                          spacing: 12.sp,
-                          runSpacing: 12.sp,
+                          spacing: 12.ts(context),
+                          runSpacing: 12.ts(context),
                           children: [
                             for (var i = 0; i < state.shieldList.length; i++)
                               TvButton(
@@ -214,14 +210,10 @@ class _BlockEntryAddDialogState extends ConsumerState<BlockEntryAddDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TvInputField(
-              controller: _controller,
-              focusNode: _focusNode,
-              hint: i18n('block_danmaku_keyword'),
-            ),
+            TvInputField(controller: _controller, focusNode: _focusNode, hint: i18n('block_danmaku_keyword')),
             if (_error.isNotEmpty)
               Padding(
-                padding: EdgeInsets.only(top: 10.sp),
+                padding: EdgeInsets.only(top: 10.ts(context)),
                 child: Text(_error, style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor)),
               ),
           ],
@@ -253,7 +245,7 @@ class BlockEntryDetailDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(value, style: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w600)),
-            SizedBox(height: 16.sp),
+            SizedBox(height: 16.ts(context)),
             Text(
               i18nOr('block_delete_confirm', '确定要删除这条屏蔽项吗？'),
               style: AppTextStyles.t17.copyWith(color: context.tvTheme.secondaryTextColor),

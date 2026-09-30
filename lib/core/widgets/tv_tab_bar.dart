@@ -44,7 +44,7 @@ class TvTabItemData {
         width: 26.sp,
         height: 26.sp,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => Icon(Icons.live_tv_rounded, size: 26.sp),
+        errorBuilder: (context, error, stackTrace) => Icon(Icons.live_tv_rounded, size: 26.ts(context)),
       ),
     );
   }
@@ -328,7 +328,12 @@ class _TvTabBarState extends State<TvTabBar> {
           // Sits below the pills, in the gap the page leaves under this bar; the
           // bar's own height is unchanged, so nothing below it moves.
           if (widget.showRefreshLine && (widget.refreshing || _refreshing))
-            Positioned(left: 16.sp, right: 16.sp, bottom: -8.sp, child: const _TabRefreshLine()),
+            Positioned(
+              left: 16.ts(context),
+              right: 16.ts(context),
+              bottom: -8.ts(context),
+              child: const _TabRefreshLine(),
+            ),
         ],
       ),
     );
@@ -343,8 +348,8 @@ class _TabRefreshLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentTvTheme = context.tvTheme;
     return LinearProgressIndicator(
-      minHeight: 4.sp,
-      borderRadius: BorderRadius.circular(2.sp),
+      minHeight: 4.ts(context),
+      borderRadius: BorderRadius.circular(2.ts(context)),
       color: currentTvTheme.focusColor,
       // A faint track the moving segment reads against, instead of the line
       // appearing out of nowhere.

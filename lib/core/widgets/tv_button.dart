@@ -177,7 +177,7 @@ class TvButton extends StatelessWidget {
     final textWidget = Center(widthFactor: 1.0, child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis));
 
     // The slot is tight-sized to the button's own scaled icon size and the
-    // icon FittedBox-fits it: callers pass `Icon(..., size: 22.sp)` with an
+    // icon FittedBox-fits it: callers pass `Icon(..., size: 22.ts(context))` with an
     // explicit size that overrides this button's IconTheme, so without the
     // slot every button icon stayed at its drafted pixels while the pill and
     // its label grew with the font. Any icon widget — Icon, SVG, a rotated or

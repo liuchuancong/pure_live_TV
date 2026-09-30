@@ -88,13 +88,13 @@ class _HomePageState extends ConsumerState<HomePage> {
               padding: EdgeInsets.symmetric(horizontal: 16.ts(context), vertical: 12.ts(context)),
               decoration: BoxDecoration(
                 color: focused ? tvTheme.cardColor : Colors.transparent,
-                borderRadius: BorderRadius.circular(12.sp),
-                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+                borderRadius: BorderRadius.circular(12.ts(context)),
+                border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
               ),
               child: Row(
                 children: [
-                  Icon(icon, size: 26.sp, color: tvTheme.focusColor),
-                  SizedBox(width: 12.sp),
+                  Icon(icon, size: 26.ts(context), color: tvTheme.focusColor),
+                  SizedBox(width: 12.ts(context)),
                   Expanded(
                     child: Text(
                       i18n(switch (mode) {
@@ -107,7 +107,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                     ),
                   ),
-                  if (isSelected) Icon(Icons.check_rounded, size: 26.sp, color: tvTheme.focusColor),
+                  if (isSelected) Icon(Icons.check_rounded, size: 26.ts(context), color: tvTheme.focusColor),
                 ],
               ),
             ),
@@ -117,7 +117,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         return TvDialog(
           title: i18n('mode_picker_title'),
           cancelText: i18n('cancel'),
-          width: 640.sp,
+          width: 640.ts(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -325,7 +325,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final double textScale = TvTextScale.factorOf(context);
     // Expanded carries the small pill (icon + four-character name) with margin;
     // collapsed keeps the 64dp icon tile.
-    final sidebarWidth = (isExpanded ? 216.sp : 110.sp) * textScale;
+    final sidebarWidth = (isExpanded ? 216.ts(context) : 110.ts(context)) * textScale;
 
     // The top-left button switches the whole app between live / music / video.
     // Music and video own their own UI stacks; the live rail's destinations
@@ -444,7 +444,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             Expanded(
               child: DpadRegion(
                 child: Padding(
-                  padding: EdgeInsets.all(8.sp),
+                  padding: EdgeInsets.all(8.ts(context)),
                   // Music and video own the whole pane (their own rail above,
                   // login-gated content below); live mode runs the keep-alive
                   // home stack here, and the music/video sections run their

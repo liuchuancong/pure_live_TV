@@ -77,7 +77,7 @@ class _TvInputDialogState extends State<TvInputDialog> {
         focusNode: _focusNode,
         hint: widget.hintText,
         maxLength: widget.maxLength,
-        height: 56.sp,
+        height: 56.ts(context),
         textColor: tvTheme.primaryTextColor,
         backgroundColor: tvTheme.cardColor.withAlpha(120),
         onSubmitted: (_) => _submit(),

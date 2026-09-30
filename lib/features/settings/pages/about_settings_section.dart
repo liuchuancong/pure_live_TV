@@ -1,8 +1,8 @@
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/app/router/app_router.dart';
+import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
 class AboutSettingsSectionPage extends ConsumerStatefulWidget {
   const AboutSettingsSectionPage({super.key});
@@ -29,8 +29,7 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
     // new version found hint: the startup check has already run by the time this page
     // can be opened, so the badge is instant for a user with a pending update.
     final updateState = ref.watch(appUpdateControllerProvider);
-    final String? newVersionHint =
-        updateState.phase == AppUpdatePhase.available && updateState.latestVersion.isNotEmpty
+    final String? newVersionHint = updateState.phase == AppUpdatePhase.available && updateState.latestVersion.isNotEmpty
         ? '${i18n('new_version_found')} v${updateState.latestVersion}'
         : null;
 
@@ -49,19 +48,22 @@ class AboutSettingsSectionPageState extends ConsumerState<AboutSettingsSectionPa
               icon: Icons.system_update_alt_rounded,
               trailing: newVersionHint == null
                   ? null
-                  : Text(i18n('new_version_found'), style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor)),
+                  : Text(
+                      i18n('new_version_found'),
+                      style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor),
+                    ),
               onTap: () => const AppUpdateRoute().push(context),
             ),
           ],
         ),
-        SizedBox(height: 20.sp),
+        SizedBox(height: 20.ts(context)),
         TvSettingsGroupTitle(title: i18n('project')),
         TvSettingsCard(
           children: [
             TvSettingsSwitchTile(
               title: i18n('ui_use_direct_github_updates'),
               subtitle: i18n('ui_check_updates_directly_on_github_without_a_mirro'),
-icon: appState.useGitHubOriginForUpdates ? Icons.cloud_outlined : Icons.cloud_off_outlined,
+              icon: appState.useGitHubOriginForUpdates ? Icons.cloud_outlined : Icons.cloud_off_outlined,
               value: appState.useGitHubOriginForUpdates,
               onChanged: (v) => app.update(appState.copyWith(useGitHubOriginForUpdates: v)),
             ),

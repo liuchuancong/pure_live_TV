@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// One interaction chip: a compact icon+label pill in the focused palette.
 class VideoActionChip extends StatelessWidget {
@@ -30,14 +29,14 @@ class VideoActionChip extends StatelessWidget {
               : focused
               ? tvTheme.focusedCardColor
               : tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(24.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+          borderRadius: BorderRadius.circular(24.ts(context)),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 22.sp * scale, color: active ? accent : tvTheme.secondaryTextColor),
-            SizedBox(width: 8.sp * scale),
+            Icon(icon, size: 22.ts(context) * scale, color: active ? accent : tvTheme.secondaryTextColor),
+            SizedBox(width: 8.ts(context) * scale),
             Text(
               label,
               style: AppTextStyles.t14.copyWith(

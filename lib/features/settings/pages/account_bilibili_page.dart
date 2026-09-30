@@ -39,7 +39,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
       child: Align(
         alignment: Alignment.center,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 660.sp),
+          constraints: BoxConstraints(maxWidth: 660.ts(context)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -49,7 +49,7 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                 TvSettingsCard(
                   children: [
                     Padding(
-                      padding: EdgeInsets.all(16.sp),
+                      padding: EdgeInsets.all(16.ts(context)),
                       child: BilibiliQrLoginView(
                         onLogined: () {
                           if (mounted) setState(() => _message = i18n('logined'));
@@ -64,11 +64,11 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                 TvSettingsCard(
                   children: [
                     Padding(
-                      padding: EdgeInsets.all(18.sp),
+                      padding: EdgeInsets.all(18.ts(context)),
                       child: Row(
                         children: [
-                          Icon(Icons.account_circle_rounded, size: 52.sp, color: theme.focusColor),
-                          SizedBox(width: 16.sp),
+                          Icon(Icons.account_circle_rounded, size: 52.ts(context), color: theme.focusColor),
+                          SizedBox(width: 16.ts(context)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +83,10 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                                       : (cookies.bilibiliUid > 0 ? 'UID ${cookies.bilibiliUid}' : i18n('logined')),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: theme.primaryTextColor),
+                                  style: AppTextStyles.t28.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.primaryTextColor,
+                                  ),
                                 ),
                                 if (account.name.isNotEmpty && cookies.bilibiliUid > 0) ...[
                                   SizedBox(height: 4.h),
@@ -91,18 +94,21 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                                     'UID ${cookies.bilibiliUid}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
+                                    style: AppTextStyles.t16.copyWith(
+                                      fontWeight: FontWeight.w300,
+                                      color: theme.secondaryTextColor,
+                                    ),
                                   ),
                                 ],
                               ],
                             ),
                           ),
-                          SizedBox(width: 16.sp),
+                          SizedBox(width: 16.ts(context)),
                           TvButton(
                             title: i18n('logout'),
                             size: TvButtonSize.medium,
                             isSecondary: true,
-                            icon: Icon(Icons.logout_rounded, size: 22.sp),
+                            icon: Icon(Icons.logout_rounded, size: 22.ts(context)),
                             onTap: () {
                               ref.read(cookieControllerProvider.notifier).setBilibiliCookie('');
                               if (mounted) setState(() => _message = '');
@@ -120,9 +126,12 @@ class _AccountBilibiliPageState extends ConsumerState<AccountBilibiliPage> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle_outline_rounded, size: 20.sp, color: theme.focusColor),
-                    SizedBox(width: 8.sp),
-                    Text(_message, style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor)),
+                    Icon(Icons.check_circle_outline_rounded, size: 20.ts(context), color: theme.focusColor),
+                    SizedBox(width: 8.ts(context)),
+                    Text(
+                      _message,
+                      style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor),
+                    ),
                   ],
                 ),
               ],
@@ -235,7 +244,7 @@ class _BilibiliQrLoginViewState extends ConsumerState<BilibiliQrLoginView> {
 
   @override
   Widget build(BuildContext context) {
-    final double statusHeight = 300.sp;
+    final double statusHeight = 300.ts(context);
 
     Widget body = SizedBox(
       height: statusHeight,

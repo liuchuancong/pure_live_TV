@@ -145,15 +145,15 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
               color: isServerRunning
                   ? currentTvTheme.focusColor.withValues(alpha: 0.1)
                   : Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20.sp),
+              borderRadius: BorderRadius.circular(20.ts(context)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 10.sp,
-                  height: 10.sp,
-                  margin: EdgeInsets.only(right: 8.sp),
+                  width: 10.ts(context),
+                  height: 10.ts(context),
+                  margin: EdgeInsets.only(right: 8.ts(context)),
                   decoration: BoxDecoration(
                     color: isServerRunning ? currentTvTheme.focusColor : Colors.redAccent,
                     shape: BoxShape.circle,
@@ -189,30 +189,30 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
         TvSettingsGroupTitle(title: i18n('movie_support_sites')),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.all(16.sp),
+          padding: EdgeInsets.all(16.ts(context)),
           decoration: BoxDecoration(
             color: currentTvTheme.cardColor,
-            borderRadius: BorderRadius.circular(16.sp),
+            borderRadius: BorderRadius.circular(16.ts(context)),
             border: Border.all(color: currentTvTheme.secondaryTextColor.withValues(alpha: 0.2)),
           ),
           child: IgnorePointer(
             child: Wrap(
-              spacing: 8.sp,
-              runSpacing: 8.sp,
+              spacing: 8.ts(context),
+              runSpacing: 8.ts(context),
               children: [
                 for (final site in Sites.supportSites)
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 10.ts(context), vertical: 4.ts(context)),
                     decoration: BoxDecoration(
                       color: currentTvTheme.backgroundColor.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(8.sp),
+                      borderRadius: BorderRadius.circular(8.ts(context)),
                     ),
                     child: Text(
                       site.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.t14.copyWith(
-                        fontSize: 14.sp,
+                        fontSize: 14.ts(context),
                         fontWeight: FontWeight.w500,
                         color: currentTvTheme.secondaryTextColor,
                       ),

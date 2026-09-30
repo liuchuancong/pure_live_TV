@@ -127,10 +127,10 @@ class _ColorTile extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(
               color: focused || active ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.3),
-              width: focused || active ? 3.sp : 1.sp,
+              width: focused || active ? 3.ts(context) : 1.ts(context),
             ),
           ),
-          padding: EdgeInsets.all(6.sp),
+          padding: EdgeInsets.all(6.ts(context)),
           child: Column(
             children: [
               Expanded(
@@ -139,7 +139,7 @@ class _ColorTile extends StatelessWidget {
                   child: ColoredBox(color: color),
                 ),
               ),
-              SizedBox(height: 4.sp),
+              SizedBox(height: 4.ts(context)),
               Text(
                 label,
                 maxLines: 1,

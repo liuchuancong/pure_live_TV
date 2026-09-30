@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/tv_settings_row.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// Settings row that opens another page.
 ///
@@ -55,7 +54,7 @@ class TvSettingsGroupTitle extends StatelessWidget {
     // rows below already use the palette accent — one heading, one accent.
     final theme = context.tvTheme;
     return Padding(
-      padding: EdgeInsets.only(left: 8.sp, bottom: 8.sp),
+      padding: EdgeInsets.only(left: 8.ts(context), bottom: 8.ts(context)),
       child: Text(
         title,
         style: AppTextStyles.t16.copyWith(

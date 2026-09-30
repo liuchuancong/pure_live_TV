@@ -1,14 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/core/dialog/index.dart';
-import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/theme/index.dart';
-import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:pure_live/core/dialog/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
+import 'package:pure_live/core/utils/toast_util.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/services/app_update/app_update_service.dart';
 
 /// The update package download, as a TV dialog: progress, cancel, install.
 ///
@@ -50,11 +48,7 @@ class DownloadApkDialog extends ConsumerStatefulWidget {
 }
 
 /// Shows the download dialog for [url] and completes when it closes.
-Future<void> showDownloadApkDialog({
-  required BuildContext context,
-  required String url,
-  bool preferGivenUrl = false,
-}) {
+Future<void> showDownloadApkDialog({required BuildContext context, required String url, bool preferGivenUrl = false}) {
   return TvDialogUtils.show<void>(
     context: context,
     builder: (_) => DownloadApkDialog(url: url, preferGivenUrl: preferGivenUrl),
@@ -176,16 +170,16 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
             children: <Widget>[
               if (downloading || _installing)
                 SizedBox.square(
-                  dimension: 20.sp,
-                  child: CircularProgressIndicator(strokeWidth: 2.5.sp, color: tvTheme.focusColor),
+                  dimension: 20.ts(context),
+                  child: CircularProgressIndicator(strokeWidth: 2.5.ts(context), color: tvTheme.focusColor),
                 )
               else
                 Icon(
                   failed ? Icons.error_outline_rounded : Icons.check_circle_rounded,
-                  size: 22.sp,
+                  size: 22.ts(context),
                   color: failed ? tvTheme.secondaryTextColor : tvTheme.focusColor,
                 ),
-              SizedBox(width: 12.sp),
+              SizedBox(width: 12.ts(context)),
               Expanded(
                 child: Text(
                   _fileName,
@@ -196,30 +190,33 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
               ),
             ],
           ),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8.sp),
+            borderRadius: BorderRadius.circular(8.ts(context)),
             child: LinearProgressIndicator(
               // Indeterminate only while bytes are actually arriving without a
               // Content-Length: every settled state keeps a fixed value, so the
               // bar never animates on forever after the transfer stopped.
               value: ready ? 1 : (downloading && state.totalBytes <= 0 ? null : state.progress),
-              minHeight: 10.sp,
+              minHeight: 10.ts(context),
               color: tvTheme.focusColor,
               backgroundColor: tvTheme.buttonSurface,
             ),
           ),
-          SizedBox(height: 12.sp),
+          SizedBox(height: 12.ts(context)),
           Text(
             _statusText(state, downloading: downloading, ready: ready, failed: failed),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.t18.copyWith(color: failed ? tvTheme.secondaryTextColor : tvTheme.primaryTextColor),
           ),
-          SizedBox(height: 28.sp),
+          SizedBox(height: 28.ts(context)),
           // The action set follows the phase: cancel while the transfer runs,
           // install (or retry) once it settled.
-          Row(mainAxisAlignment: MainAxisAlignment.end, children: _actions(downloading: downloading, ready: ready, failed: failed)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: _actions(downloading: downloading, ready: ready, failed: failed),
+          ),
         ],
       ),
     );
@@ -250,11 +247,7 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
     final String percent = state.totalBytes > 0 ? '${(state.progress * 100).toStringAsFixed(0)}%' : '';
     final String speed = state.speedMbps > 0 ? '${state.speedMbps.toStringAsFixed(1)} MB/s' : '';
 
-    return <String>[
-      done + total,
-      if (percent.isNotEmpty) percent,
-      if (speed.isNotEmpty) speed,
-    ].join(' · ');
+    return <String>[done + total, if (percent.isNotEmpty) percent, if (speed.isNotEmpty) speed].join(' · ');
   }
 
   List<Widget> _actions({required bool downloading, required bool ready, required bool failed}) {
@@ -280,12 +273,12 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
           isSecondary: true,
           onTap: _close,
         ),
-        SizedBox(width: 16.sp),
+        SizedBox(width: 16.ts(context)),
         TvButton(
           key: const ValueKey('download-install'),
           title: _installing ? i18n('download_complete_installing') : i18n('update_install_now'),
           size: TvButtonSize.mini,
-          icon: Icon(Icons.install_mobile_rounded, size: 18.sp),
+          icon: Icon(Icons.install_mobile_rounded, size: 18.ts(context)),
           autofocus: true,
           onTap: _installing ? null : _install,
         ),
@@ -301,12 +294,12 @@ class _DownloadApkDialogState extends ConsumerState<DownloadApkDialog> {
           isSecondary: true,
           onTap: _close,
         ),
-        SizedBox(width: 16.sp),
+        SizedBox(width: 16.ts(context)),
         TvButton(
           key: const ValueKey('download-retry'),
           title: i18n('retry'),
           size: TvButtonSize.mini,
-          icon: Icon(Remix.refresh_line, size: 18.sp),
+          icon: Icon(Remix.refresh_line, size: 18.ts(context)),
           autofocus: true,
           onTap: () => _retry(),
         ),

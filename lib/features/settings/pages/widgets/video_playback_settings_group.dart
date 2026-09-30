@@ -1,8 +1,9 @@
 import 'package:pure_live/services/index.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/features/settings/pages/video_settings_section.dart';
+
 /// The playback group: audio and playback-behavior rows.
 class VideoPlaybackSettingsGroup extends ConsumerWidget {
   const VideoPlaybackSettingsGroup({super.key});
@@ -19,7 +20,7 @@ class VideoPlaybackSettingsGroup extends ConsumerWidget {
     final bool globalMute = ref.watch(volumeSettingsControllerProvider).globalVolumeMute;
 
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: 4.sp),
+      padding: EdgeInsets.only(top: 4.ts(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -48,8 +49,8 @@ class VideoPlaybackSettingsGroup extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: 20.sp),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('video_default_playback_title')),
           TvSettingsCard(
             children: [
@@ -61,9 +62,8 @@ class VideoPlaybackSettingsGroup extends ConsumerWidget {
                 index: VideoSettingsController.qualityOptions
                     .indexOf(state.preferredQuality)
                     .clamp(0, VideoSettingsController.qualityOptions.length - 1),
-                onChanged: (i) => video.updateSettings(
-                  state.copyWith(preferredQuality: VideoSettingsController.qualityOptions[i]),
-                ),
+                onChanged: (i) =>
+                    video.updateSettings(state.copyWith(preferredQuality: VideoSettingsController.qualityOptions[i])),
               ),
               TvSettingsOptionTile(
                 title: i18n('video_default_speed'),
@@ -73,13 +73,12 @@ class VideoPlaybackSettingsGroup extends ConsumerWidget {
                 index: VideoSettingsController.speedOptions
                     .indexOf(state.defaultSpeed)
                     .clamp(0, VideoSettingsController.speedOptions.length - 1),
-                onChanged: (i) => video.updateSettings(
-                  state.copyWith(defaultSpeed: VideoSettingsController.speedOptions[i]),
-                ),
+                onChanged: (i) =>
+                    video.updateSettings(state.copyWith(defaultSpeed: VideoSettingsController.speedOptions[i])),
               ),
             ],
           ),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('playback_behavior_settings')),
           TvSettingsCard(
             children: [

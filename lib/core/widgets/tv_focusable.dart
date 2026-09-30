@@ -1,9 +1,9 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/tv_theme_x.dart';
-import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/core/theme/tv_text_scale.dart';
+import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
 
 typedef TvFocusableBuilder = Widget Function(BuildContext context, bool isFocused, Widget? child);
 
@@ -85,7 +85,7 @@ class _TvFocusableState extends State<TvFocusable> {
                 spreadRadius: 1,
                 color: activeTheme.focusColor.withValues(alpha: activeTheme.isLight ? 1.0 : 0.4),
               ),
-              borderRadius: BorderRadius.circular(20.sp),
+              borderRadius: BorderRadius.circular(20.ts(context)),
             );
       },
       child: const SizedBox.shrink(),

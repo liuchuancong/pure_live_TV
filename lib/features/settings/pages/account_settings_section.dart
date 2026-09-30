@@ -1,9 +1,9 @@
 import 'package:pure_live/services/index.dart';
-import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 import 'package:pure_live/platforms/sites.dart';
 import 'package:pure_live/app/router/app_routes.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
+import 'package:pure_live/platforms/douyu/douyu_utils.dart';
 
 /// third-party auth — one row per platform, each opening that platform's own page.
 ///
@@ -208,7 +208,7 @@ class SiteLogo extends StatelessWidget {
     // [TvPlatformLogo]).
     final double scaled = size.ts(context);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8.sp),
+      borderRadius: BorderRadius.circular(8.ts(context)),
       child: Image.asset(
         Sites.logoOf(siteId),
         width: scaled,

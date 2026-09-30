@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_list_reveal.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
+import 'package:pure_live/modules/music/controllers/playlist/music_playlist_sync_controller.dart';
 
 /// One synced playlist's track table (bmsc's fav detail): an in-list search
 /// filter and play all.
@@ -212,8 +211,7 @@ class _MusicFavDetailPageState extends ConsumerState<MusicFavDetailPage> {
                         focusNode: _reveal.nodeFor(track),
                         selectMode: _selectMode,
                         selected: _selectedIds.contains(trackId),
-                        onPlay: () =>
-                            _selectMode ? _toggleSelected(trackId) : _playFrom(context, ref, tracks, index),
+                        onPlay: () => _selectMode ? _toggleSelected(trackId) : _playFrom(context, ref, tracks, index),
                       );
                     },
                   ),
@@ -265,7 +263,7 @@ class _TrackRow extends StatelessWidget {
     final tvTheme = context.tvTheme;
     final accent = tvTheme.focusColor;
     // No fixed height: the row is as tall as its two labels plus scaled
-    // padding — the old fixed 72.sp painted the yellow overflow stripe once
+    // padding — the old fixed 72.ts(context) painted the yellow overflow stripe once
     // the enlarged font met the panel lift, exactly what the playlist track
     // rows fixed by sizing to their content.
     final double textScale = TvTextScale.factorOf(context);
@@ -279,7 +277,7 @@ class _TrackRow extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * textScale, vertical: 12.ts(context) * textScale),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(14.sp),
+          borderRadius: BorderRadius.circular(14.ts(context)),
           border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
         ),
         child: Row(
@@ -306,10 +304,7 @@ class _TrackRow extends StatelessWidget {
                     track.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.t16.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: tvTheme.primaryTextColor,
-                    ),
+                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
                   ),
                   Text(
                     track.archive.upName,

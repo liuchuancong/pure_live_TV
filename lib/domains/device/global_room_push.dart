@@ -108,7 +108,7 @@ class _RoomPushCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.live_tv_rounded, color: theme.focusColor, size: 28.sp),
+                Icon(Icons.live_tv_rounded, color: theme.focusColor, size: 28.ts(context)),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(

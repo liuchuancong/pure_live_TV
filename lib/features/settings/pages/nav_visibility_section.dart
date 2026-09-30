@@ -39,7 +39,7 @@ class NavVisibilitySectionPage extends ConsumerWidget {
             ),
           ],
         ),
-        SizedBox(height: 20.sp),
+        SizedBox(height: 20.ts(context)),
         TvSettingsGroupTitle(title: i18n('navigation_visibility')),
         TvSettingsCard(
           children: [

@@ -1,5 +1,5 @@
-import 'package:pure_live/exports/package_export.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:pure_live/exports/package_export.dart';
 import 'package:flutter_virtual_scroll/flutter_virtual_scroll.dart';
 
 class BasePagedTvView<T> extends ConsumerStatefulWidget {
@@ -69,7 +69,7 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
     final scroll = _core.scrollController;
     if (!scroll.hasClients) return;
 
-    final threshold = 400.sp;
+    final threshold = 400.ts(context);
     if (scroll.position.pixels >= scroll.position.maxScrollExtent - threshold) {
       final currentState = ref.read(pagingCoreProvider(widget.param));
       if (currentState.canLoadMore && !currentState.controllerState.loading) {
@@ -160,8 +160,8 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
           child: VirtualGridView(
             controller: _core.scrollController,
             gridDelegate: widget.gridDelegate,
-            cacheExtent: 100.sp,
-            padding: EdgeInsets.all(16.sp),
+            cacheExtent: 100.ts(context),
+            padding: EdgeInsets.all(16.ts(context)),
             physics: const ClampingScrollPhysics(),
             itemCount: state.items.length,
             itemBuilder: (context, index) => widget.itemBuilder(context, state.items[index], index),
@@ -174,7 +174,12 @@ class _BasePagedTvViewState<T> extends ConsumerState<BasePagedTvView<T>> {
           AppStatusView(type: AppStatusType.loading, isMini: true)
               .animate()
               .fade(begin: 0.0, end: 1.0, duration: 250.ms)
-              .move(begin: Offset(0, 15.sp), end: const Offset(0, 0), duration: 350.ms, curve: Curves.easeOutCubic),
+              .move(
+                begin: Offset(0, 15.ts(context)),
+                end: const Offset(0, 0),
+                duration: 350.ms,
+                curve: Curves.easeOutCubic,
+              ),
       ],
     );
   }

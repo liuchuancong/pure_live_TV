@@ -2,8 +2,8 @@ import 'package:dpad/dpad.dart';
 import 'package:pure_live/app/router/router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/live/favorite_areas/favorite_areas_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
+import 'package:pure_live/modules/live/favorite_areas/favorite_areas_provider.dart';
 
 class FavoriteAreasPage extends ConsumerStatefulWidget {
   const FavoriteAreasPage({super.key});
@@ -45,7 +45,7 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                   // OK twice on a tab refetches it.
                   onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
                 ),
-                SizedBox(height: 16.sp),
+                SizedBox(height: 16.ts(context)),
                 Expanded(
                   child: TvTabView(
                     // Stable identity: the area count used to be part of the

@@ -1,7 +1,7 @@
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_model.dart';
 import 'package:pure_live/services/danmaku_settings/danmaku_settings_controller.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 /// Danmaku appearance and filtering settings for the main player.
 class DanmakuSettingsSectionPage extends ConsumerWidget {
@@ -84,7 +84,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               TvSettingsSwitchTile(
                 title: i18n('danmaku_stroke'),
                 subtitle: i18n('danmaku_stroke_width'),
-  icon: state.enableDanmakuStroke ? Icons.border_color_rounded : Icons.border_color_outlined,
+                icon: state.enableDanmakuStroke ? Icons.border_color_rounded : Icons.border_color_outlined,
                 value: state.enableDanmakuStroke,
                 onChanged: (v) => update((s) => s.copyWith(enableDanmakuStroke: v)),
               ),
@@ -134,7 +134,7 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               ),
               TvSettingsSwitchTile(
                 title: i18n('danmaku_no_emoji'),
-  icon: state.noEmojiMode ? Icons.emoji_emotions_rounded : Icons.emoji_emotions_outlined,
+                icon: state.noEmojiMode ? Icons.emoji_emotions_rounded : Icons.emoji_emotions_outlined,
                 value: state.noEmojiMode,
                 onChanged: (v) => update((s) => s.copyWith(noEmojiMode: v)),
               ),
@@ -234,14 +234,14 @@ class DanmakuSettingsSectionPage extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('danmaku_repeat_filter')),
           TvSettingsCard(
             children: [
               TvSettingsSwitchTile(
                 title: i18n('collapse_repeated_danmaku'),
                 subtitle: i18n('collapse_repeated_danmaku_desc'),
-  icon: state.collapseRepeatedDanmaku ? Icons.filter_alt_rounded : Icons.filter_alt_outlined,
+                icon: state.collapseRepeatedDanmaku ? Icons.filter_alt_rounded : Icons.filter_alt_outlined,
                 value: state.collapseRepeatedDanmaku,
                 onChanged: (v) => update((s) => s.copyWith(collapseRepeatedDanmaku: v)),
               ),

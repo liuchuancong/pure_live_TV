@@ -1,6 +1,4 @@
 import 'dart:io';
-
-
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/services/font_settings/font_settings_controller.dart';
 import 'package:pure_live/services/font_settings/font_download_controller.dart';
@@ -133,12 +131,12 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
               ? i18n('font_currently_active')
               : (font.files.length > 1 ? i18n('font_selector_subtitle') : null),
           value: FontFamilyAction.apply,
-          leading: Icon(Icons.check_rounded, size: 26.sp),
+          leading: Icon(Icons.check_rounded, size: 26.ts(context)),
         ),
         TvMenuItem(
           title: i18n('delete'),
           value: FontFamilyAction.delete,
-          leading: Icon(Remix.delete_bin_6_line, size: 26.sp),
+          leading: Icon(Remix.delete_bin_6_line, size: 26.ts(context)),
         ),
       ],
     );
@@ -183,14 +181,14 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
         title: i18n('font_auto_weight'),
         subtitle: i18n('font_auto_weight_desc'),
         value: '',
-        leading: Icon(Icons.auto_awesome, size: 26.sp),
+        leading: Icon(Icons.auto_awesome, size: 26.ts(context)),
       ),
       for (final File file in files)
         TvSelectItem(
           title: i18n('font_lock_weight', args: {'label': FontDownloadManager.weightLabelOf(file.path)}),
           subtitle: i18n('font_lock_weight_desc'),
           value: FontDownloadManager.fileNameOf(file.path),
-          leading: Icon(Icons.font_download_outlined, size: 26.sp),
+          leading: Icon(Icons.font_download_outlined, size: 26.ts(context)),
         ),
     ];
 
@@ -251,7 +249,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
               children: [
                 TvButton(
                   title: i18n('font_app_group'),
-                  icon: Icon(Icons.smartphone_rounded, size: 22.sp),
+                  icon: Icon(Icons.smartphone_rounded, size: 22.ts(context)),
                   size: TvButtonSize.small,
                   selected: !_danmakuMode,
                   onTap: () => setState(() => _danmakuMode = false),
@@ -259,7 +257,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                 SizedBox(width: 12.w),
                 TvButton(
                   title: i18n('font_danmaku_group'),
-                  icon: Icon(Icons.subtitles_outlined, size: 22.sp),
+                  icon: Icon(Icons.subtitles_outlined, size: 22.ts(context)),
                   size: TvButtonSize.small,
                   selected: _danmakuMode,
                   onTap: () => setState(() => _danmakuMode = true),
@@ -276,8 +274,11 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                     ? i18n('factory_default_desc')
                     : '${i18n('font_family')}: ${_fontNameOf(activeId)}',
                 icon: Icons.settings_suggest_outlined,
-                trailingBuilder: (context, focused) =>
-                    tvSettingsValueLabel(context, focused, activeId == 'Default' ? i18n('font_currently_active') : i18n('apply')),
+                trailingBuilder: (context, focused) => tvSettingsValueLabel(
+                  context,
+                  focused,
+                  activeId == 'Default' ? i18n('font_currently_active') : i18n('apply'),
+                ),
                 onSelect: _resetFamily,
               ),
             ],
@@ -297,7 +298,7 @@ class FontFamilyManagerSectionPageState extends ConsumerState<FontFamilyManagerS
                   subtitle: _subtitleOf(font),
                   // Numbered leading: every family used the same glyph, so
                   // the list read as N identical rows.
-                  leading: NumberLeading(_fonts.indexOf(font) + 1, size: 26.sp),
+                  leading: NumberLeading(_fonts.indexOf(font) + 1, size: 26.ts(context)),
                   trailingBuilder: (context, focused) => _trailingOf(font, downloadState, focused),
                   onSelect: () => _onSelectFamily(font),
                 ),

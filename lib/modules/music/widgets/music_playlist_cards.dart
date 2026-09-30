@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// One shelf entry as the page sees it — the liked head and the stored
@@ -60,13 +59,13 @@ class MusicPlaylistCard extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 decoration: BoxDecoration(
                   color: tvTheme.cardColor,
-                  borderRadius: BorderRadius.circular(24.sp),
-                  border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                  borderRadius: BorderRadius.circular(24.ts(context)),
+                  border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                   boxShadow: [
                     BoxShadow(
                       color: accent.withValues(alpha: focused ? 0.4 : 0),
-                      blurRadius: focused ? 18.sp : 0,
-                      spreadRadius: 1.5.sp,
+                      blurRadius: focused ? 18.ts(context) : 0,
+                      spreadRadius: 1.5.ts(context),
                     ),
                   ],
                 ),
@@ -74,25 +73,25 @@ class MusicPlaylistCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(24.sp),
+                      borderRadius: BorderRadius.circular(24.ts(context)),
                       child: cover.isNotEmpty
                           ? CachedNetworkImage(
                               imageUrl: cover,
                               fit: BoxFit.cover,
                               memCacheWidth: 480,
-                              errorWidget: (_, _, _) => _fallback(accent),
+                              errorWidget: (_, _, _) => _fallback(context, accent),
                             )
-                          : _fallback(accent),
+                          : _fallback(context, accent),
                     ),
                     if (entry.pinned)
                       Positioned(
-                        left: 12.sp,
-                        top: 12.sp,
+                        left: 12.ts(context),
+                        top: 12.ts(context),
                         child: TvCoverChip(icon: Icons.push_pin_rounded, label: ''),
                       ),
                     Positioned(
-                      right: 12.sp,
-                      bottom: 12.sp,
+                      right: 12.ts(context),
+                      bottom: 12.ts(context),
                       child: TvCoverChip(label: '${entry.tracks.length}'),
                     ),
                   ],
@@ -100,12 +99,12 @@ class MusicPlaylistCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 4.sp),
+              padding: EdgeInsets.only(top: 4.ts(context)),
               child: Row(
                 children: [
                   if (entry.isLiked) ...[
-                    Icon(Icons.favorite_rounded, size: 22.sp, color: accent),
-                    SizedBox(width: 6.sp),
+                    Icon(Icons.favorite_rounded, size: 22.ts(context), color: accent),
+                    SizedBox(width: 6.ts(context)),
                   ],
                   Expanded(
                     child: Text(
@@ -124,9 +123,9 @@ class MusicPlaylistCard extends StatelessWidget {
     );
   }
 
-  Widget _fallback(Color accent) => Container(
+  Widget _fallback(BuildContext context, Color accent) => Container(
     color: accent.withValues(alpha: 0.15),
-    child: Icon(Icons.library_music_rounded, size: 64.sp, color: accent),
+    child: Icon(Icons.library_music_rounded, size: 64.ts(context), color: accent),
   );
 }
 
@@ -167,12 +166,12 @@ class MusicFolderCard extends StatelessWidget {
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(16.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
+          borderRadius: BorderRadius.circular(16.ts(context)),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.ts(context)),
           boxShadow: [
             BoxShadow(
               color: accent.withValues(alpha: focused ? 0.25 : 0),
-              blurRadius: focused ? 18.sp : 0,
+              blurRadius: focused ? 18.ts(context) : 0,
             ),
           ],
         ),
@@ -184,26 +183,26 @@ class MusicFolderCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16.sp)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16.ts(context))),
                     child: cover.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: cover,
                             fit: BoxFit.cover,
                             memCacheWidth: 480,
-                            errorWidget: (_, _, _) => _coverFallback(accent),
+                            errorWidget: (_, _, _) => _coverFallback(context, accent),
                           )
-                        : _coverFallback(accent),
+                        : _coverFallback(context, accent),
                   ),
                   Positioned(
-                    right: 8.sp,
-                    top: 8.sp,
+                    right: 8.ts(context),
+                    top: 8.ts(context),
                     child: TvCoverChip(label: isSyncing ? '...' : '${folder.mediaCount}'),
                   ),
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(10.sp),
+              padding: EdgeInsets.all(10.ts(context)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -213,7 +212,7 @@ class MusicFolderCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
                   ),
-                  SizedBox(height: 4.sp),
+                  SizedBox(height: 4.ts(context)),
                   Text(
                     syncedAtLocal == null
                         ? i18n('music_sync_not_yet')
@@ -229,8 +228,8 @@ class MusicFolderCard extends StatelessWidget {
     );
   }
 
-  Widget _coverFallback(Color accent) => Container(
+  Widget _coverFallback(BuildContext context, Color accent) => Container(
     color: accent.withValues(alpha: 0.15),
-    child: Icon(Icons.playlist_play_rounded, size: 64.sp, color: accent),
+    child: Icon(Icons.playlist_play_rounded, size: 64.ts(context), color: accent),
   );
 }

@@ -2,21 +2,15 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 import 'package:pure_live/modules/vod/pages/widgets/ugc_comment_tile.dart';
 
 /// A shared TV comments page for one archive (`x/v2/reply/wbi/main`), used by
 /// both music and video modes: hot/newest switch, root list with up to three
 /// inline sub-replies, paging on scroll end, comment like when logged in.
 class UgcCommentsPage extends ConsumerStatefulWidget {
-  const UgcCommentsPage({
-    super.key,
-    required this.oid,
-    this.type = 1,
-    required this.title,
-  });
+  const UgcCommentsPage({super.key, required this.oid, this.type = 1, required this.title});
 
   final int oid;
 
@@ -91,11 +85,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
 
   Future<void> _toggleLike(CommentItem comment) async {
     try {
-      await BilibiliUgcApi.instance.likeComment(
-        oid: comment.oid,
-        rpid: comment.rpid,
-        like: !comment.liked,
-      );
+      await BilibiliUgcApi.instance.likeComment(oid: comment.oid, rpid: comment.rpid, like: !comment.liked);
       if (!mounted) return;
       setState(() {
         final at = _comments.indexWhere((c) => c.rpid == comment.rpid);
@@ -133,10 +123,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 24.ts(context),
-              vertical: 12.ts(context),
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
             child: Row(
               children: [
                 for (final (index, (label, isHot)) in [
@@ -152,27 +139,17 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                     },
                     builder: (context, focused, child) => AnimatedContainer(
                       duration: const Duration(milliseconds: 120),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 24.ts(context),
-                        vertical: 10.ts(context),
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 10.ts(context)),
                       decoration: BoxDecoration(
-                        color: _hot == isHot
-                            ? accent.withValues(alpha: 0.22)
-                            : tvTheme.cardColor,
-                        borderRadius: BorderRadius.circular(24.sp),
-                        border: Border.all(
-                          color: focused ? accent : Colors.transparent,
-                          width: 2.ts(context),
-                        ),
+                        color: _hot == isHot ? accent.withValues(alpha: 0.22) : tvTheme.cardColor,
+                        borderRadius: BorderRadius.circular(24.ts(context)),
+                        border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                       ),
                       child: Text(
                         label,
                         style: AppTextStyles.t18.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: _hot == isHot
-                              ? accent
-                              : tvTheme.secondaryTextColor,
+                          color: _hot == isHot ? accent : tvTheme.secondaryTextColor,
                         ),
                       ),
                     ),
@@ -184,29 +161,16 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
           ),
           Expanded(
             child: _error != null && _comments.isEmpty
-                ? AppStatusView(
-                    type: AppStatusType.error,
-                    title: i18n('load_failed'),
-                    subtitle: _error,
-                  )
+                ? AppStatusView(type: AppStatusType.error, title: i18n('load_failed'), subtitle: _error)
                 : _comments.isEmpty && _loading
-                ? AppStatusView(
-                    type: AppStatusType.loading,
-                    title: '',
-                    subtitle: '',
-                  )
+                ? AppStatusView(type: AppStatusType.loading, title: '', subtitle: '')
                 : _comments.isEmpty
-                ? AppStatusView(
-                    type: AppStatusType.empty,
-                    title: i18n('video_comments_empty'),
-                    subtitle: '',
-                  )
+                ? AppStatusView(type: AppStatusType.empty, title: i18n('video_comments_empty'), subtitle: '')
                 : DpadRegion(
                     child: ListView.builder(
                       controller: _scroll,
                       padding: EdgeInsets.only(bottom: 24.ts(context)),
-                      itemCount:
-                          _comments.length + (_hasMore || _loading ? 1 : 0),
+                      itemCount: _comments.length + (_hasMore || _loading ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index >= _comments.length) {
                           return Padding(
@@ -216,10 +180,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                                   ? SizedBox(
                                       width: 32.ts(context),
                                       height: 32.ts(context),
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 3.sp,
-                                        color: accent,
-                                      ),
+                                      child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
                                     )
                                   : Text(
                                       i18n('all_results_loaded'),
@@ -231,10 +192,7 @@ class _UgcCommentsPageState extends ConsumerState<UgcCommentsPage> {
                             ),
                           );
                         }
-                        return UgcCommentTile(
-                          comment: _comments[index],
-                          onLike: _toggleLike,
-                        );
+                        return UgcCommentTile(comment: _comments[index], onLike: _toggleLike);
                       },
                     ),
                   ),

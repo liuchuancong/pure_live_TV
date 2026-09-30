@@ -35,7 +35,7 @@ class _VideoSettingsSectionPageState extends ConsumerState<VideoSettingsSectionP
       children: [
         // ---------------------------------------------- the left group menu
         SizedBox(
-          width: 300.sp,
+          width: 300.ts(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -57,8 +57,11 @@ class _VideoSettingsSectionPageState extends ConsumerState<VideoSettingsSectionP
                           : focused
                           ? tvTheme.focusedCardColor.withValues(alpha: 0.7)
                           : tvTheme.cardColor,
-                      borderRadius: BorderRadius.circular(20.sp),
-                      border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+                      borderRadius: BorderRadius.circular(20.ts(context)),
+                      border: Border.all(
+                        color: focused ? tvTheme.focusColor : Colors.transparent,
+                        width: 2.ts(context),
+                      ),
                     ),
                     child: Text(
                       i18n(labelKey),
@@ -72,7 +75,7 @@ class _VideoSettingsSectionPageState extends ConsumerState<VideoSettingsSectionP
             ],
           ),
         ),
-        SizedBox(width: 32.sp),
+        SizedBox(width: 32.ts(context)),
         // ------------------------------------------- the right content pane
         Expanded(
           child: switch (_group) {

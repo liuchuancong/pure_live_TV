@@ -7,7 +7,6 @@ import 'package:pure_live/services/settings/settings.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/services/cache/cache_controller.dart';
 import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';
 import 'package:pure_live/services/app_settings/app_settings_controller.dart';
 
@@ -97,7 +96,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(24.sp);
+    final borderRadius = BorderRadius.circular(24.ts(context));
     // Evaluated once per build, outside the effects closure, so the effect
     // never watches settings while a descendant is building.
     final String audience = _audienceText;
@@ -111,8 +110,13 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       ),
       // Light palette: the 18px glow is a grey smear on white; crisp ring.
       tvTheme.isLight
-          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
-          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
+          ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.ts(context), blurRadius: 0)
+          : DpadGlowEffect(
+              color: tvTheme.focusColor,
+              opacity: 0.75,
+              blurRadius: 18.ts(context),
+              spreadRadius: 1.5.ts(context),
+            ),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
         final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
@@ -129,7 +133,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: borderRadius,
-            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+            border: Border.all(color: isFocused ? tvTheme.focusColor : Colors.transparent, width: 2.ts(context)),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -164,7 +168,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                         Container(
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24.sp),
+                            borderRadius: BorderRadius.circular(24.ts(context)),
                             color: tvTheme.cardColor,
                           ),
                           child: CachedNetworkImage(
@@ -199,11 +203,11 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                         // VideoCard uses — the TvButton mini pill swallowed a
                         // cover at this cell size.
                         Positioned(
-                          left: 12.sp,
-                          top: 12.sp,
+                          left: 12.ts(context),
+                          top: 12.ts(context),
                           child: Wrap(
-                            spacing: 8.sp,
-                            runSpacing: 6.sp,
+                            spacing: 8.ts(context),
+                            runSpacing: 6.ts(context),
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               TvCoverChip(label: widget.room.platform.toUpperCase()),
@@ -219,16 +223,16 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
 
                         if (widget.room.isRecord == true)
                           Positioned(
-                            right: 12.sp,
-                            top: 12.sp,
+                            right: 12.ts(context),
+                            top: 12.ts(context),
                             child: TvCoverChip(icon: Icons.videocam_rounded, label: i18n('ui_replay')),
                           ),
                         if (widget.room.isRecord == false &&
                             widget.room.liveStatus == LiveStatus.live &&
                             audience.isNotEmpty)
                           Positioned(
-                            right: 12.sp,
-                            bottom: 12.sp,
+                            right: 12.ts(context),
+                            bottom: 12.ts(context),
                             child: TvCoverChip(icon: Icons.whatshot_rounded, label: audience),
                           ),
                       ],
@@ -242,28 +246,32 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                   // leading, which gives way to the title instead.
                   Padding(
                     padding: EdgeInsets.only(
-                      left: 10.sp,
-                      top: (compact ? 6.sp : 16.sp) * textScale,
-                      right: compact ? 10.sp : 16.sp,
-                      bottom: (compact ? 6.sp : 8.sp) * textScale,
+                      left: 10.ts(context),
+                      top: (compact ? 6.ts(context) : 16.ts(context)) * textScale,
+                      right: compact ? 10.ts(context) : 16.ts(context),
+                      bottom: (compact ? 6.ts(context) : 8.ts(context)) * textScale,
                     ),
                     child: Row(
                       children: [
                         // The leading keeps the avatar's footprint either way,
                         // so titles stay aligned in a grid that mixes platforms.
                         SizedBox(
-                          width: compact ? 20.sp : 56.sp,
+                          width: compact ? 20.ts(context) : 56.ts(context),
                           child: Center(
                             child: channelNumber == null
                                 ? TvCommonAvatar(
                                     avatarUrl: widget.room.avatar,
                                     fallbackName: widget.room.nick,
-                                    radius: compact ? 10.sp : null,
+                                    radius: compact ? 10.ts(context) : null,
                                   )
-                                : NumberLeading(channelNumber, size: (compact ? 20 : 34).sp, color: titleColor),
+                                : NumberLeading(
+                                    channelNumber,
+                                    size: (compact ? 20 : 34).ts(context),
+                                    color: titleColor,
+                                  ),
                           ),
                         ),
-                        SizedBox(width: compact ? 8.sp : 16.sp),
+                        SizedBox(width: compact ? 8.ts(context) : 16.ts(context)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,7 +292,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                                             : AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700))
                                         .copyWith(color: titleColor),
                               ),
-                              SizedBox(height: (compact ? 2.sp : 4.sp) * textScale),
+                              SizedBox(height: (compact ? 2.ts(context) : 4.ts(context)) * textScale),
                               Text(
                                 widget.room.nick,
                                 maxLines: 1,
@@ -344,4 +352,3 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
     );
   }
 }
-

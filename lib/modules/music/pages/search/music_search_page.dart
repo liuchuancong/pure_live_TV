@@ -60,23 +60,23 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20.sp, 16.sp, 20.sp, 8.sp),
+          padding: EdgeInsets.fromLTRB(20.ts(context), 16.ts(context), 20.ts(context), 8.ts(context)),
           child: Row(
             children: [
               SizedBox(
-                width: 520.sp,
+                width: 520.ts(context),
                 child: TvInputField(
                   controller: _controller,
                   hint: i18n('music_search_hint'),
-                  height: 64.sp,
+                  height: 64.ts(context),
                   maxLines: 1,
                   onSubmitted: _submit,
                 ),
               ),
-              SizedBox(width: 16.sp),
+              SizedBox(width: 16.ts(context)),
               TvButton(
                 title: i18n('music_tab_search'),
-                icon: Icon(Icons.search_rounded, size: 28.sp),
+                icon: Icon(Icons.search_rounded, size: 28.ts(context)),
                 size: TvButtonSize.mini,
                 onTap: () => _submit(_controller.text),
               ),
@@ -87,7 +87,7 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
           child: _submittedKeyword.isEmpty
               ? DpadRegion(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.all(24.sp),
+                    padding: EdgeInsets.all(24.ts(context)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -104,18 +104,18 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
                         else ...[
                           Row(
                             children: [
-                              Icon(Icons.local_fire_department_rounded, size: 26.sp, color: accent),
-                              SizedBox(width: 8.sp),
+                              Icon(Icons.local_fire_department_rounded, size: 26.ts(context), color: accent),
+                              SizedBox(width: 8.ts(context)),
                               Text(
                                 i18n('video_search_hotwords'),
                                 style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                               ),
                             ],
                           ),
-                          SizedBox(height: 16.sp),
+                          SizedBox(height: 16.ts(context)),
                           Wrap(
-                            spacing: 12.sp,
-                            runSpacing: 12.sp,
+                            spacing: 12.ts(context),
+                            runSpacing: 12.ts(context),
                             children: [
                               for (final (index, word) in _hotwords.indexed)
                                 TvFocusable(
@@ -126,8 +126,11 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
                                     padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 10.ts(context)),
                                     decoration: BoxDecoration(
                                       color: tvTheme.cardColor,
-                                      borderRadius: BorderRadius.circular(24.sp),
-                                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                                      borderRadius: BorderRadius.circular(24.ts(context)),
+                                      border: Border.all(
+                                        color: focused ? accent : Colors.transparent,
+                                        width: 2.ts(context),
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -139,7 +142,7 @@ class MusicSearchPageState extends ConsumerState<MusicSearchPage> {
                                             color: index < 3 ? Colors.redAccent : tvTheme.secondaryTextColor,
                                           ),
                                         ),
-                                        SizedBox(width: 8.sp),
+                                        SizedBox(width: 8.ts(context)),
                                         Text(
                                           word.keyword,
                                           style: AppTextStyles.t16.copyWith(

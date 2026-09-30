@@ -53,13 +53,16 @@ class _InfoPill extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 10.ts(context) * scale, vertical: 3.ts(context) * scale),
       decoration: BoxDecoration(
         color: filled ? color.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(8.sp),
+        borderRadius: BorderRadius.circular(8.ts(context)),
         border: Border.all(color: filled ? color.withValues(alpha: 0.75) : Colors.white.withValues(alpha: 0.16)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[Icon(icon, size: 16.sp * scale, color: Colors.white70), SizedBox(width: 4.sp * scale)],
+          if (icon != null) ...[
+            Icon(icon, size: 16.ts(context) * scale, color: Colors.white70),
+            SizedBox(width: 4.ts(context) * scale),
+          ],
           Text(
             label,
             style: AppTextStyles.t16.copyWith(
@@ -207,8 +210,8 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      tvInlineLoading(context, size: 36.sp),
-                      SizedBox(height: 12.sp),
+                      tvInlineLoading(context, size: 36.ts(context)),
+                      SizedBox(height: 12.ts(context)),
                       Text(
                         loadingDetail ? i18n('ui_loading_room_info') : i18n('ui_buffering'),
                         style: AppTextStyles.t16.copyWith(
@@ -267,7 +270,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
               _RoomInfoBar(room: room),
               if (state.showChannelBanner)
                 Padding(
-                  padding: EdgeInsets.only(top: 10.sp),
+                  padding: EdgeInsets.only(top: 10.ts(context)),
                   child: _ChannelBannerToast(text: state.channelBanner!),
                 ),
             ],
@@ -279,7 +282,7 @@ class _TvVideoSurfaceState extends ConsumerState<TvVideoSurface> {
         Positioned(
           left: 0,
           right: 0,
-          top: 64.sp,
+          top: 64.ts(context),
           child: _ChannelBannerToast(text: state.channelBanner!),
         ),
       );
@@ -318,7 +321,7 @@ class _RoomInfoBar extends StatelessWidget {
 
     return IgnorePointer(
       child: Container(
-        padding: EdgeInsets.fromLTRB(20.sp, 12.sp, 20.sp, 18.sp),
+        padding: EdgeInsets.fromLTRB(20.ts(context), 12.ts(context), 20.ts(context), 18.ts(context)),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -330,13 +333,13 @@ class _RoomInfoBar extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.ts(context) * scale, vertical: 12.ts(context) * scale),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.42),
-            borderRadius: BorderRadius.circular(18.sp),
+            borderRadius: BorderRadius.circular(18.ts(context)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
           ),
           child: Row(
             children: [
-              TvCommonAvatar(avatarUrl: room.avatar, fallbackName: room.nick, radius: 30.sp * scale),
-              SizedBox(width: 14.sp * scale),
+              TvCommonAvatar(avatarUrl: room.avatar, fallbackName: room.nick, radius: 30.ts(context) * scale),
+              SizedBox(width: 14.ts(context) * scale),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -351,12 +354,12 @@ class _RoomInfoBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
                     ),
-                    SizedBox(height: 8.sp),
+                    SizedBox(height: 8.ts(context)),
                     Row(
                       children: [
                         if (room.platform.isNotEmpty) ...[
                           _InfoPill(label: room.platform.toUpperCase(), accent: tvTheme.focusColor, filled: true),
-                          SizedBox(width: 10.sp),
+                          SizedBox(width: 10.ts(context)),
                         ],
                         if (room.nick.isNotEmpty)
                           Flexible(
@@ -367,21 +370,25 @@ class _RoomInfoBar extends StatelessWidget {
                               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
                           ),
-                        if (room.nick.isNotEmpty && audience.isNotEmpty) SizedBox(width: 10.sp),
+                        if (room.nick.isNotEmpty && audience.isNotEmpty) SizedBox(width: 10.ts(context)),
                         if (audience.isNotEmpty) _InfoPill(label: audience, icon: Icons.whatshot_rounded),
                       ],
                     ),
                   ],
                 ),
               ),
-              SizedBox(width: 18.sp * scale),
-              Container(width: 1.sp, height: 44.sp * scale, color: Colors.white.withValues(alpha: 0.14)),
-              SizedBox(width: 18.sp * scale),
+              SizedBox(width: 18.ts(context) * scale),
+              Container(
+                width: 1.ts(context),
+                height: 44.ts(context) * scale,
+                color: Colors.white.withValues(alpha: 0.14),
+              ),
+              SizedBox(width: 18.ts(context) * scale),
               // Wall clock: a live stream has no duration, so the time a viewer
               // glances up for is the time of day. The glyph rides the same
               // factor as the digits beside it.
-              Icon(RemixIcons.time_line, size: 24.sp * scale, color: Colors.white70),
-              SizedBox(width: 8.sp * scale),
+              Icon(RemixIcons.time_line, size: 24.ts(context) * scale, color: Colors.white70),
+              SizedBox(width: 8.ts(context) * scale),
               TvDigitalClock(
                 format: 'HH:mm',
                 style: AppTextStyles.t28.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
@@ -410,7 +417,7 @@ class _ChannelBannerToast extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 12.ts(context)),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(12.sp),
+            borderRadius: BorderRadius.circular(12.ts(context)),
             border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.6)),
           ),
           child: Text(

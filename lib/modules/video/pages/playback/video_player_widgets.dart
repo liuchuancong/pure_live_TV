@@ -434,7 +434,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                                 padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 14.ts(context)),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withValues(alpha: 0.72),
-                                  borderRadius: BorderRadius.circular(16.sp),
+                                  borderRadius: BorderRadius.circular(16.ts(context)),
                                 ),
                                 child: Text(
                                   state.error,
@@ -449,11 +449,14 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   SizedBox(
-                                    width: 44.sp,
-                                    height: 44.sp,
-                                    child: CircularProgressIndicator(strokeWidth: 3.sp, color: tvTheme.focusColor),
+                                    width: 44.ts(context),
+                                    height: 44.ts(context),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3.ts(context),
+                                      color: tvTheme.focusColor,
+                                    ),
                                   ),
-                                  SizedBox(height: 12.sp),
+                                  SizedBox(height: 12.ts(context)),
                                   Text(
                                     i18n('video_state_buffering'),
                                     style: AppTextStyles.t16.copyWith(
@@ -469,10 +472,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                             return Align(
                               alignment: Alignment.bottomRight,
                               child: Padding(
-                                padding: EdgeInsets.only(right: 48.sp, bottom: 64.sp),
+                                padding: EdgeInsets.only(right: 48.ts(context), bottom: 64.ts(context)),
                                 child: Icon(
                                   Icons.pause_circle_outline_rounded,
-                                  size: 72.sp,
+                                  size: 72.ts(context),
                                   color: Colors.white.withValues(alpha: 0.55),
                                 ),
                               ),
@@ -489,7 +492,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                     Positioned(
                       left: 0,
                       right: 0,
-                      bottom: 140.sp,
+                      bottom: 140.ts(context),
                       child: IgnorePointer(
                         child: SubtitleLines(cues: _subtitleCues, handle: controller.handle!),
                       ),
@@ -499,15 +502,15 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    top: _controlsVisible ? 24.sp : -120.sp,
-                    left: 48.sp,
-                    right: 48.sp,
+                    top: _controlsVisible ? 24.ts(context) : -120.ts(context),
+                    left: 48.ts(context),
+                    right: 48.ts(context),
                     child: IgnorePointer(
                       ignoring: !_controlsVisible,
                       child: Row(
                         children: [
-                          Icon(Icons.movie_outlined, size: 28.sp, color: tvTheme.focusColor),
-                          SizedBox(width: 10.sp),
+                          Icon(Icons.movie_outlined, size: 28.ts(context), color: tvTheme.focusColor),
+                          SizedBox(width: 10.ts(context)),
                           Expanded(
                             child: Text(
                               track?.title ?? i18n('video_player_title'),
@@ -516,31 +519,31 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                               style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
                             ),
                           ),
-                          SizedBox(width: 12.sp),
+                          SizedBox(width: 12.ts(context)),
                           if (track != null && track.archive.parts.length > 1)
                             Text(
                               'P${track.part.page}/${track.archive.parts.length}',
                               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
-                          SizedBox(width: 12.sp),
+                          SizedBox(width: 12.ts(context)),
                           if (BilibiliMusicApi.qualityLabel(state.quality).isNotEmpty)
                             Text(
                               BilibiliMusicApi.qualityLabel(state.quality),
                               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
-                          SizedBox(width: 12.sp),
+                          SizedBox(width: 12.ts(context)),
                           if (_onlineCount > 0) ...[
-                            Icon(Icons.visibility_outlined, size: 20.sp, color: Colors.white70),
-                            SizedBox(width: 4.sp),
+                            Icon(Icons.visibility_outlined, size: 20.ts(context), color: Colors.white70),
+                            SizedBox(width: 4.ts(context)),
                             Text(
                               readableCount(_onlineCount.toString()),
                               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
                             ),
-                            SizedBox(width: 12.sp),
+                            SizedBox(width: 12.ts(context)),
                           ],
                           if (track != null)
                             ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: 220.sp),
+                              constraints: BoxConstraints(maxWidth: 220.ts(context)),
                               child: Text(
                                 track.archive.upName,
                                 maxLines: 1,
@@ -557,9 +560,9 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    bottom: _controlsVisible ? 32.sp : -160.sp,
-                    left: 48.sp,
-                    right: 48.sp,
+                    bottom: _controlsVisible ? 32.ts(context) : -160.ts(context),
+                    left: 48.ts(context),
+                    right: 48.ts(context),
                     child: IgnorePointer(
                       ignoring: !_controlsVisible || _anyMenuOpen || _partsOpen || _commentsOpen,
                       child: ExcludeFocus(
@@ -614,7 +617,7 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                               : 0.0;
                           final accent = tvTheme.focusColor;
                           return SizedBox(
-                            height: 5.sp,
+                            height: 5.ts(context),
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
@@ -634,10 +637,10 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   // ----------------------------------------------- comments panel
                   if (_commentsOpen && track != null)
                     Positioned(
-                      top: 100.sp,
-                      bottom: 100.sp,
-                      right: 48.sp,
-                      width: 620.sp,
+                      top: 100.ts(context),
+                      bottom: 100.ts(context),
+                      right: 48.ts(context),
+                      width: 620.ts(context),
                       child: VideoCommentsPanel(
                         oid: track.archive.aid,
                         comments: _comments,
@@ -652,19 +655,19 @@ class _VideoPlayerPageState extends ConsumerState<VideoPlayerPage> {
                   // -------------------------------------------------- parts panel
                   if (_partsOpen)
                     Positioned(
-                      top: 100.sp,
-                      bottom: 100.sp,
-                      right: 48.sp,
-                      width: 520.sp,
+                      top: 100.ts(context),
+                      bottom: 100.ts(context),
+                      right: 48.ts(context),
+                      width: 520.ts(context),
                       child: VideoPartsPanel(onClose: _closeParts),
                     ),
 
                   // ------------------------------------------------- quality menu
                   if (_qualityOpen)
                     Positioned(
-                      top: 100.sp,
-                      right: 48.sp,
-                      width: 320.sp,
+                      top: 100.ts(context),
+                      right: 48.ts(context),
+                      width: 320.ts(context),
                       child: VideoQualityMenu(onClose: () => setState(() => _qualityOpen = false)),
                     ),
                 ],

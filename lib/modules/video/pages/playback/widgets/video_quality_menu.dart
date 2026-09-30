@@ -3,7 +3,6 @@ import 'package:media_core/media_core.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// The quality menu, one entry per rendition the current stream answer ships.
@@ -22,18 +21,18 @@ class VideoQualityMenu extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(20.sp),
+        borderRadius: BorderRadius.circular(20.ts(context)),
         border: Border.all(color: accent.withValues(alpha: 0.5)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: EdgeInsets.all(16.sp),
+            padding: EdgeInsets.all(16.ts(context)),
             child: Row(
               children: [
-                Icon(Icons.high_quality_outlined, size: 26.sp, color: accent),
-                SizedBox(width: 10.sp),
+                Icon(Icons.high_quality_outlined, size: 26.ts(context), color: accent),
+                SizedBox(width: 10.ts(context)),
                 Expanded(
                   child: Text(
                     i18n('video_quality'),
@@ -51,7 +50,7 @@ class VideoQualityMenu extends ConsumerWidget {
           ),
           for (final option in state.qualityOptions)
             Padding(
-              padding: EdgeInsets.only(left: 12.sp, right: 12.sp, bottom: 8.sp),
+              padding: EdgeInsets.only(left: 12.ts(context), right: 12.ts(context), bottom: 8.ts(context)),
               child: TvFocusable(
                 autofocus: option.quality == state.quality,
                 onTap: () {
@@ -62,12 +61,12 @@ class VideoQualityMenu extends ConsumerWidget {
                   final isCurrent = option.quality == state.quality;
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 120),
-                    height: 56.sp,
+                    height: 56.ts(context),
                     padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
                     decoration: BoxDecoration(
                       color: isCurrent ? accent.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(12.sp),
-                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                      borderRadius: BorderRadius.circular(12.ts(context)),
+                      border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                     ),
                     child: Row(
                       children: [
@@ -82,14 +81,14 @@ class VideoQualityMenu extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        if (isCurrent) Icon(Icons.check_rounded, size: 22.sp, color: accent),
+                        if (isCurrent) Icon(Icons.check_rounded, size: 22.ts(context), color: accent),
                       ],
                     ),
                   );
                 },
               ),
             ),
-          SizedBox(height: 8.sp),
+          SizedBox(height: 8.ts(context)),
         ],
       ),
     );

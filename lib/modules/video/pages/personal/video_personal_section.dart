@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/video/pages/personal/video_fav_pane.dart';
 import 'package:pure_live/modules/video/pages/personal/video_follow_pane.dart';
 import 'package:pure_live/modules/video/pages/personal/video_toview_pane.dart';
@@ -36,7 +35,7 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
       children: [
         // newBV's personal top bar: centred pills, one per pane.
         Padding(
-          padding: EdgeInsets.only(top: 16.sp, bottom: 8.sp),
+          padding: EdgeInsets.only(top: 16.ts(context), bottom: 8.ts(context)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -55,8 +54,11 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
                           : focused
                           ? tvTheme.focusedCardColor
                           : tvTheme.cardColor,
-                      borderRadius: BorderRadius.circular(34.sp),
-                      border: Border.all(color: focused ? tvTheme.focusColor : Colors.transparent, width: 2.sp),
+                      borderRadius: BorderRadius.circular(34.ts(context)),
+                      border: Border.all(
+                        color: focused ? tvTheme.focusColor : Colors.transparent,
+                        width: 2.ts(context),
+                      ),
                     ),
                     child: Text(
                       i18n(label),
@@ -67,7 +69,7 @@ class _VideoPersonalSectionState extends ConsumerState<VideoPersonalSection> {
                     ),
                   ),
                 ),
-                SizedBox(width: 14.sp),
+                SizedBox(width: 14.ts(context)),
               ],
             ],
           ),

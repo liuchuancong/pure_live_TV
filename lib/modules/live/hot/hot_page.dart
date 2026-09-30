@@ -1,9 +1,9 @@
 import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/common_export.dart';
+import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/modules/live/hot/hot_provider.dart';
 import 'package:pure_live/services/theme_settings/theme_settings_controller.dart';
-import 'package:pure_live/app/router/app_router.dart';
 
 class HotPage extends ConsumerStatefulWidget {
   const HotPage({super.key});
@@ -103,58 +103,58 @@ class _HotPageState extends ConsumerState<HotPage> {
 
     return TvScaffold(
       child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TvTabBar(
-                    tabs: tabItems,
-                    currentIndex: tabsState.currentIndex,
-                    refreshing: refreshing,
-                    onTabChange: (index) {
-                      ref.read(hotTabsProvider.notifier).changeTab(index);
-                    },
-                    // The returned future keeps the bar's progress line up for as
-                    // long as the refetch runs.
-                    onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
-                  ),
-                  SizedBox(height: 16.sp),
-                  Expanded(
-                    child: TvTabView(
-                      memoryKey: "hot_tab_view_content_${tabsState.currentIndex}",
-                      // Left at the first column hands the remote to the home sidebar.
-                      // Stopping here left the rail reachable only through the tab bar above,
-                      // so a viewer browsing a grid had to go up first.
-                      verticalEdge: DpadEdgeBehavior.leave,
-                      horizontalEdge: DpadEdgeBehavior.leave,
-                      child: BasePagedTvView<LiveRoom>(
-                        key: ValueKey('hot_site_${currentSite.id}'),
-                        param: currentParam,
-                        getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
-                        emptyScene: EmptyScene.hot,
-                        onGoLogin: () => const AccountSettingsRoute().push(context),
-                        gridDelegate: TvAdaptiveGrid.fixed(
-                          context,
-                          crossAxisCount: themeState.denseRoomLayout,
-                          mainAxisSpacing: mainSpacing.w,
-                          crossAxisSpacing: crossSpacing.w,
-                          childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
-                        ),
-                        itemBuilder: (context, room, index) => TvRoomCard(
-                          room: room,
-                          index: index,
-                          playlist: rooms,
-                          onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
-                        ),
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TvTabBar(
+                  tabs: tabItems,
+                  currentIndex: tabsState.currentIndex,
+                  refreshing: refreshing,
+                  onTabChange: (index) {
+                    ref.read(hotTabsProvider.notifier).changeTab(index);
+                  },
+                  // The returned future keeps the bar's progress line up for as
+                  // long as the refetch runs.
+                  onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
+                ),
+                SizedBox(height: 16.ts(context)),
+                Expanded(
+                  child: TvTabView(
+                    memoryKey: "hot_tab_view_content_${tabsState.currentIndex}",
+                    // Left at the first column hands the remote to the home sidebar.
+                    // Stopping here left the rail reachable only through the tab bar above,
+                    // so a viewer browsing a grid had to go up first.
+                    verticalEdge: DpadEdgeBehavior.leave,
+                    horizontalEdge: DpadEdgeBehavior.leave,
+                    child: BasePagedTvView<LiveRoom>(
+                      key: ValueKey('hot_site_${currentSite.id}'),
+                      param: currentParam,
+                      getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
+                      emptyScene: EmptyScene.hot,
+                      onGoLogin: () => const AccountSettingsRoute().push(context),
+                      gridDelegate: TvAdaptiveGrid.fixed(
+                        context,
+                        crossAxisCount: themeState.denseRoomLayout,
+                        mainAxisSpacing: mainSpacing.w,
+                        crossAxisSpacing: crossSpacing.w,
+                        childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
+                      ),
+                      itemBuilder: (context, room, index) => TvRoomCard(
+                        room: room,
+                        index: index,
+                        playlist: rooms,
+                        onLongPress: () => FavOperateUtil.toggleRoomFollowDialog(context, room),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -84,13 +84,13 @@ class _TvMultiSelectDialogState<T> extends State<TvMultiSelectDialog<T>> {
       onCancel: () => Navigator.of(context).pop(),
       child: hasItems
           ? Container(
-              constraints: BoxConstraints(maxHeight: 500.sp),
+              constraints: BoxConstraints(maxHeight: 500.ts(context)),
               child: ListView.separated(
                 controller: _scrollController,
                 shrinkWrap: true,
                 padding: EdgeInsets.symmetric(vertical: 2.ts(context)),
                 itemCount: widget.items.length,
-                separatorBuilder: (_, _) => SizedBox(height: 12.sp),
+                separatorBuilder: (_, _) => SizedBox(height: 12.ts(context)),
                 itemBuilder: (_, index) {
                   final item = widget.items[index];
                   final selected = _selection.contains(item.value);

@@ -1,7 +1,5 @@
 part of 'video_search_page.dart';
 
-
-
 /// The full-type search section, newBV's search screen for TV: hotwords while
 /// idle, then video / user / movie results per keyword.
 class VideoSearchSection extends ConsumerStatefulWidget {
@@ -56,38 +54,38 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(24.sp, 16.sp, 24.sp, 8.sp),
+          padding: EdgeInsets.fromLTRB(24.ts(context), 16.ts(context), 24.ts(context), 8.ts(context)),
           child: Row(
             children: [
               SizedBox(
-                width: 560.sp,
+                width: 560.ts(context),
                 child: TvInputField(
                   controller: _controller,
                   hint: i18n('video_search_hint'),
-                  height: 64.sp,
+                  height: 64.ts(context),
                   maxLines: 1,
                   onSubmitted: _submit,
                 ),
               ),
-              SizedBox(width: 16.sp),
+              SizedBox(width: 16.ts(context)),
               TvButton(
                 title: i18n('search_live'),
-                icon: Icon(Icons.search_rounded, size: 28.sp),
+                icon: Icon(Icons.search_rounded, size: 28.ts(context)),
                 size: TvButtonSize.mini,
                 onTap: () => _submit(_controller.text),
               ),
               if (_keyword.isNotEmpty) ...[
-                SizedBox(width: 20.sp),
+                SizedBox(width: 20.ts(context)),
                 for (final (index, (label, icon)) in _typeLabels.indexed) ...[
                   TvButton(
                     key: ValueKey('search_type_$index'),
                     title: i18n(label),
-                    icon: Icon(icon, size: 22.sp),
+                    icon: Icon(icon, size: 22.ts(context)),
                     size: TvButtonSize.mini,
                     isSecondary: _typeIndex != index,
                     onTap: () => setState(() => _typeIndex = index),
                   ),
-                  SizedBox(width: 10.sp),
+                  SizedBox(width: 10.ts(context)),
                 ],
               ],
             ],
@@ -128,10 +126,8 @@ class _VideoSearchSectionState extends ConsumerState<VideoSearchSection> {
             crossAxisSpacing: themeState.crossAxisSpacing.w,
             childAspectRatio: ThemeSettingsController.roomCardAspectRatio(themeState.denseRoomLayout),
           ),
-          itemBuilder: (context, archive, index) => VideoCard(
-            archive: archive,
-            onTap: () => openVideoArchive(context, ref, archive),
-          ),
+          itemBuilder: (context, archive, index) =>
+              VideoCard(archive: archive, onTap: () => openVideoArchive(context, ref, archive)),
         );
     }
   }
@@ -177,7 +173,7 @@ class VideoUserResultsState extends ConsumerState<VideoUserResults> {
     }
     return DpadRegion(
       child: ListView.builder(
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         itemCount: _users.length,
         itemBuilder: (context, index) {
           final user = _users[index];
@@ -185,12 +181,12 @@ class VideoUserResultsState extends ConsumerState<VideoUserResults> {
             onTap: () => UgcUserSpaceRoute(user.mid, user.uname).push(context),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.sp),
-              padding: EdgeInsets.all(14.sp),
+              margin: EdgeInsets.only(bottom: 10.ts(context)),
+              padding: EdgeInsets.all(14.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(16.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                borderRadius: BorderRadius.circular(16.ts(context)),
+                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
               ),
               child: Row(
                 children: [
@@ -202,7 +198,10 @@ class VideoUserResultsState extends ConsumerState<VideoUserResults> {
                           user.uname,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
+                          style: AppTextStyles.t18.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: tvTheme.primaryTextColor,
+                          ),
                         ),
                         if (user.sign.isNotEmpty)
                           Text(
@@ -269,7 +268,7 @@ class VideoPgcResultsState extends ConsumerState<VideoPgcResults> {
     return DpadRegion(
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _seasons.length,
         itemBuilder: (context, index) {
@@ -282,15 +281,15 @@ class VideoPgcResultsState extends ConsumerState<VideoPgcResults> {
               duration: const Duration(milliseconds: 120),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(14.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.sp),
+                borderRadius: BorderRadius.circular(14.ts(context)),
+                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.5.ts(context)),
               ),
               child: Column(
                 children: [
                   Expanded(
                     flex: 5,
                     child: ClipRRect(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(14.sp)),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(14.ts(context))),
                       child: CachedNetworkImage(
                         imageUrl: season.cover,
                         fit: BoxFit.cover,
@@ -301,7 +300,7 @@ class VideoPgcResultsState extends ConsumerState<VideoPgcResults> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.all(8.sp),
+                      padding: EdgeInsets.all(8.ts(context)),
                       child: Text(
                         season.title,
                         maxLines: 1,

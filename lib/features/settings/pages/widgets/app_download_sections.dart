@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:markdown_widget/config/configs.dart';
 import 'package:markdown_widget/widget/all.dart';
-import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
-import 'package:pure_live/services/app_update/app_update_service.dart';
-import 'package:pure_live/core/i18n/locale_helper.dart';
-import 'package:pure_live/core/models/release_model/release_model.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
+import 'package:markdown_widget/config/configs.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/services/app_update/app_update_service.dart';
+import 'package:pure_live/core/models/release_model/release_model.dart';
+import 'package:pure_live/features/settings/widgets/download_apk_dialog.dart';
+
 class AppDownloadAbiSection extends ConsumerWidget {
-  const AppDownloadAbiSection({super.key,
+  const AppDownloadAbiSection({
+    super.key,
     required this.abi,
     required this.sizeText,
     required this.sources,
@@ -34,25 +36,25 @@ class AppDownloadAbiSection extends ConsumerWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Icon(Icons.memory_rounded, size: 20.sp, color: tvTheme.secondaryTextColor),
-              SizedBox(width: 10.sp),
+              Icon(Icons.memory_rounded, size: 20.ts(context), color: tvTheme.secondaryTextColor),
+              SizedBox(width: 10.ts(context)),
               Text(_abiLabel(abi), style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600)),
               if (sizeText != null && sizeText!.isNotEmpty) ...<Widget>[
-                SizedBox(width: 12.sp),
+                SizedBox(width: 12.ts(context)),
                 Text(sizeText!, style: AppTextStyles.t16.copyWith(color: tvTheme.secondaryTextColor)),
               ],
             ],
           ),
-          SizedBox(height: 12.sp),
+          SizedBox(height: 12.ts(context)),
           Wrap(
-            spacing: 12.sp,
-            runSpacing: 12.sp,
+            spacing: 12.ts(context),
+            runSpacing: 12.ts(context),
             children: <Widget>[
               for (int i = 0; i < sources.length; i++)
                 TvButton(
                   title: useOrigin ? i18n('github_origin_source') : i18n('download_source', args: {'num': '${i + 1}'}),
                   size: TvButtonSize.small,
-                  icon: Icon(Remix.link, size: 18.sp),
+                  icon: Icon(Remix.link, size: 18.ts(context)),
                   onTap: () => _startDownload(context, sources[i]),
                 ),
             ],
@@ -81,7 +83,7 @@ class AppDownloadAbiSection extends ConsumerWidget {
 }
 
 class AppReleaseNotesMarkdown extends ConsumerWidget {
-  const AppReleaseNotesMarkdown({super.key,required this.state});
+  const AppReleaseNotesMarkdown({super.key, required this.state});
 
   final AppUpdateState state;
 
@@ -104,9 +106,15 @@ class AppReleaseNotesMarkdown extends ConsumerWidget {
       config: baseConfig.copy(
         configs: [
           PConfig(textStyle: AppTextStyles.t19.copyWith(height: 1.5, color: ink)),
-          H1Config(style: AppTextStyles.t25.copyWith(fontWeight: FontWeight.w700, color: ink)),
-          H2Config(style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: ink)),
-          H3Config(style: AppTextStyles.t19.copyWith(fontWeight: FontWeight.w700, color: ink)),
+          H1Config(
+            style: AppTextStyles.t25.copyWith(fontWeight: FontWeight.w700, color: ink),
+          ),
+          H2Config(
+            style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: ink),
+          ),
+          H3Config(
+            style: AppTextStyles.t19.copyWith(fontWeight: FontWeight.w700, color: ink),
+          ),
         ],
       ),
     );

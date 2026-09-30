@@ -1,7 +1,6 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 typedef TvSettingsTrailingBuilder = Widget Function(BuildContext context, bool focused);
 
@@ -45,7 +44,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(14.sp);
+    final borderRadius = BorderRadius.circular(14.ts(context));
 
     // The whole focus recipe lives in one custom effect and renders strictly
     // synchronously — no Animated* widgets. A fading-out decoration is driven
@@ -76,13 +75,13 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
             decoration: BoxDecoration(
               color: focused ? tvTheme.focusedCardColor : Colors.transparent,
               borderRadius: borderRadius,
-              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
               boxShadow: focused
                   ? [
                       BoxShadow(
                         color: accent.withValues(alpha: tvTheme.isLight ? 1 : 0.75),
-                        blurRadius: tvTheme.isLight ? 0 : 18.sp,
-                        spreadRadius: tvTheme.isLight ? 2.sp : 1.5.sp,
+                        blurRadius: tvTheme.isLight ? 0 : 18.ts(context),
+                        spreadRadius: tvTheme.isLight ? 2.ts(context) : 1.5.ts(context),
                       ),
                     ]
                   : const <BoxShadow>[],
@@ -94,7 +93,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                 LayoutBuilder(
                   builder: (context, constraints) {
                     final double trailingMaxWidth = constraints.maxWidth * 0.55;
-                    final double minContentHeight = 30.sp + 4.sp + 22.sp;
+                    final double minContentHeight = 30.ts(context) + 4.ts(context) + 22.ts(context);
                     return Container(
                       constraints: BoxConstraints(minHeight: minContentHeight * textScale),
                       alignment: Alignment.centerLeft,
@@ -117,18 +116,21 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                                   style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w600, color: titleColor),
                                 ),
                                 if (widget.subtitle != null) ...[
-                                  SizedBox(height: 4.sp),
+                                  SizedBox(height: 4.ts(context)),
                                   Text(
                                     widget.subtitle!,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: subtitleColor),
+                                    style: AppTextStyles.t16.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      color: subtitleColor,
+                                    ),
                                   ),
                                 ],
                               ],
                             ),
                           ),
-                          SizedBox(width: 12.sp),
+                          SizedBox(width: 12.ts(context)),
                           ConstrainedBox(
                             constraints: BoxConstraints(maxWidth: trailingMaxWidth),
                             child: widget.trailingBuilder?.call(context, focused) ?? const SizedBox.shrink(),
@@ -138,7 +140,7 @@ class _TvSettingsRowState extends State<TvSettingsRow> {
                     );
                   },
                 ),
-                if (widget.footer != null) ...[SizedBox(height: 10.sp), widget.footer!],
+                if (widget.footer != null) ...[SizedBox(height: 10.ts(context)), widget.footer!],
               ],
             ),
           ),
@@ -180,7 +182,10 @@ Widget tvSettingsValueLabel(BuildContext context, bool focused, String value) {
             value,
             maxLines: 1,
             softWrap: false,
-            style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor),
+            style: AppTextStyles.t20.copyWith(
+              fontWeight: FontWeight.w600,
+              color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
+            ),
           ),
         ),
       ),

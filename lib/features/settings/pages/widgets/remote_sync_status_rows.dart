@@ -16,13 +16,13 @@ class RemoteSyncPairingCodeRow extends StatelessWidget {
     final theme = context.tvTheme;
     return Row(
       children: [
-        Icon(Icons.pin_rounded, size: 22.sp, color: theme.secondaryTextColor),
-        SizedBox(width: 10.sp),
+        Icon(Icons.pin_rounded, size: 22.ts(context), color: theme.secondaryTextColor),
+        SizedBox(width: 10.ts(context)),
         Text(
           i18n('remote_sync_pairing_code'),
           style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: theme.secondaryTextColor),
         ),
-        SizedBox(width: 12.sp),
+        SizedBox(width: 12.ts(context)),
         Text(
           code,
           style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: theme.focusColor, letterSpacing: 4),
@@ -51,18 +51,18 @@ class RemoteSyncServiceStatusPill extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 10.ts(context)),
       decoration: BoxDecoration(
         color: badgeColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12.sp),
+        borderRadius: BorderRadius.circular(12.ts(context)),
         border: Border.all(color: badgeColor.withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 10.sp,
-            height: 10.sp,
+            width: 10.ts(context),
+            height: 10.ts(context),
             decoration: BoxDecoration(color: badgeColor, shape: BoxShape.circle),
           ),
-          SizedBox(width: 10.sp),
+          SizedBox(width: 10.ts(context)),
           Flexible(
             child: Text(
               running ? address : (error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...')),
@@ -71,7 +71,7 @@ class RemoteSyncServiceStatusPill extends StatelessWidget {
               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: theme.primaryTextColor),
             ),
           ),
-          SizedBox(width: 12.sp),
+          SizedBox(width: 12.ts(context)),
           Text(
             label,
             style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: badgeColor),
@@ -94,8 +94,8 @@ class RemoteSyncReceiveNoticeRow extends StatelessWidget {
     final color = ok ? remoteSyncOkColor : remoteSyncFailColor;
     return Row(
       children: [
-        Icon(ok ? Icons.check_circle_rounded : Icons.error_outline_rounded, size: 20.sp, color: color),
-        SizedBox(width: 8.sp),
+        Icon(ok ? Icons.check_circle_rounded : Icons.error_outline_rounded, size: 20.ts(context), color: color),
+        SizedBox(width: 8.ts(context)),
         Expanded(
           child: Text(
             notice,
@@ -123,18 +123,18 @@ class RemoteSyncStepBullet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 30.sp,
-          height: 30.sp,
+          width: 30.ts(context),
+          height: 30.ts(context),
           decoration: BoxDecoration(
             color: theme.focusColor.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(8.sp),
+            borderRadius: BorderRadius.circular(8.ts(context)),
           ),
-          child: Icon(icon, size: 17.sp, color: theme.focusColor),
+          child: Icon(icon, size: 17.ts(context), color: theme.focusColor),
         ),
-        SizedBox(width: 12.sp),
+        SizedBox(width: 12.ts(context)),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.only(top: 3.sp),
+            padding: EdgeInsets.only(top: 3.ts(context)),
             child: Text(
               text,
               style: AppTextStyles.t18.copyWith(

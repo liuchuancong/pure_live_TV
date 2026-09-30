@@ -232,7 +232,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     // grow them).
     final double rowExtent = PlayerRoomRow.extentOf(context, large: true);
 
-    final double target = (index * rowExtent) - 150.sp;
+    final double target = (index * rowExtent) - 150.ts(context);
 
     _scrollController.animateTo(
       target.clamp(0, _scrollController.position.maxScrollExtent),
@@ -259,11 +259,11 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
 
     final Size screenSize = MediaQuery.sizeOf(context);
 
-    final double dialogHeight = (screenSize.height * 0.72).clamp(560.sp, 780.sp).toDouble();
+    final double dialogHeight = (screenSize.height * 0.72).clamp(560.ts(context), 780.ts(context)).toDouble();
 
     return TvDialog(
       title: i18n('switch_live_room'),
-      width: 1160.sp,
+      width: 1160.ts(context),
       initialFocusNode: _focusNode,
       child: Focus(
         focusNode: _focusNode,
@@ -274,14 +274,14 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 4.sp),
+              SizedBox(height: 4.ts(context)),
               _buildTabs(tabs),
-              SizedBox(height: 14.sp),
+              SizedBox(height: 14.ts(context)),
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18.sp),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1.sp),
+                    borderRadius: BorderRadius.circular(18.ts(context)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1.ts(context)),
                     color: Colors.black.withValues(alpha: 0.10),
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -323,7 +323,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         for (int i = 0; i < _tabCount; i++) ...<Widget>[
-          if (i > 0) SizedBox(width: 10.sp),
+          if (i > 0) SizedBox(width: 10.ts(context)),
           GestureDetector(
             onTap: () => _selectTab(i),
             child: AnimatedContainer(
@@ -332,10 +332,10 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
               padding: EdgeInsets.symmetric(horizontal: 22.ts(context), vertical: 9.ts(context)),
               decoration: BoxDecoration(
                 color: i == _tabIndex ? accent.withValues(alpha: 0.16) : Colors.white.withValues(alpha: 0.035),
-                borderRadius: BorderRadius.circular(20.sp),
+                borderRadius: BorderRadius.circular(20.ts(context)),
                 border: Border.all(
                   color: i == _tabIndex ? accent.withValues(alpha: 0.90) : Colors.white.withValues(alpha: 0.14),
-                  width: i == _tabIndex ? 1.5.sp : 1.sp,
+                  width: i == _tabIndex ? 1.5.ts(context) : 1.ts(context),
                 ),
               ),
               child: Text(
@@ -359,7 +359,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     if (rooms.isEmpty) {
       return Center(
         child: SizedBox(
-          height: 280.sp,
+          height: 280.ts(context),
           child: AppStatusView(
             type: AppStatusType.empty,
             title: '',
@@ -377,7 +377,7 @@ class _RoomSwitchDialogState extends State<RoomSwitchDialog> {
     return ListView.builder(
       controller: _scrollController,
       physics: const ClampingScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(12.sp, 10.sp, 12.sp, 16.sp),
+      padding: EdgeInsets.fromLTRB(12.ts(context), 10.ts(context), 12.ts(context), 16.ts(context)),
       itemCount: rooms.length,
       itemBuilder: (context, index) =>
           PlayerRoomRow(room: rooms[index], selected: _zone == _Zone.rows && index == rowIndex, large: true),

@@ -125,7 +125,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 postFixWidget: GestureDetector(
                   onTap: () => _onSearchSubmit(_searchController.text),
                   child: Padding(
-                    padding: EdgeInsets.only(right: 16.sp),
+                    padding: EdgeInsets.only(right: 16.ts(context)),
                     child: Icon(Icons.search_rounded, color: tvTheme.secondaryTextColor, size: 28.ts(context)),
                   ),
                 ),
@@ -134,14 +134,14 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     curve: Curves.easeOutCubic,
-                    height: 76.sp * scale,
+                    height: 76.ts(context) * scale,
                     padding: EdgeInsets.symmetric(horizontal: 28.ts(context) * scale),
                     decoration: BoxDecoration(
                       color: tvTheme.cardColor,
-                      borderRadius: BorderRadius.circular(38.sp * scale),
+                      borderRadius: BorderRadius.circular(38.ts(context) * scale),
                       border: Border.all(
                         color: isFocused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
-                        width: isFocused ? 2.sp : 1.5.sp,
+                        width: isFocused ? 2.ts(context) : 1.5.ts(context),
                       ),
                     ),
                     child: content,
@@ -149,7 +149,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 },
               ),
             ),
-            if (history.isNotEmpty) ...[SizedBox(height: 24.sp), _buildHistorySection(history, themeColor)],
+            if (history.isNotEmpty) ...[SizedBox(height: 24.ts(context)), _buildHistorySection(history, themeColor)],
           ],
         ),
       ),
@@ -171,7 +171,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           for (int i = 0; i < _typeTabs.length; i++) ...[
-            if (i > 0) SizedBox(width: 6.sp),
+            if (i > 0) SizedBox(width: 6.ts(context)),
             _SegmentedOption(
               icon: i == 0 ? Icons.person_rounded : Icons.live_tv_rounded,
               label: _typeTabs[i].title,
@@ -191,7 +191,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 8.sp, bottom: 10.sp),
+            padding: EdgeInsets.only(left: 8.ts(context), bottom: 10.ts(context)),
             child: Text(
               '${i18n('search_history')}（${i18n('history_long_press_delete')}）',
               style: AppTextStyles.t20.copyWith(color: themeColor),
@@ -208,7 +208,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 physics: const ClampingScrollPhysics(),
                 padding: EdgeInsets.symmetric(horizontal: 8.ts(context)),
                 itemCount: history.length + 1,
-                separatorBuilder: (_, _) => SizedBox(width: 10.sp),
+                separatorBuilder: (_, _) => SizedBox(width: 10.ts(context)),
                 itemBuilder: (context, index) {
                   if (index == history.length) {
                     return _buildHistoryChip(
@@ -249,7 +249,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
   }) {
     final tvTheme = context.tvTheme;
     // The pill's every dimension follows its t20 label (same language as
-    // TvButton): a fixed 44.sp pill clipped the enlarged text.
+    // TvButton): a fixed 44.ts(context) pill clipped the enlarged text.
     return TvFocusable(
       key: Key(key),
       onTap: onTap,
@@ -268,12 +268,12 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
             decoration: BoxDecoration(
               color: focused ? themeColor : tvTheme.cardColor,
               borderRadius: BorderRadius.circular(22.ts(context)),
-              border: Border.all(color: themeColor, width: focused ? 2.5.sp : 1.5.sp),
+              border: Border.all(color: themeColor, width: focused ? 2.5.ts(context) : 1.5.ts(context)),
               boxShadow: [
                 BoxShadow(
                   color: themeColor.withValues(alpha: focused ? 0.55 : 0.0),
-                  blurRadius: focused ? 16.sp : 0,
-                  spreadRadius: focused ? 2.sp : 0,
+                  blurRadius: focused ? 16.ts(context) : 0,
+                  spreadRadius: focused ? 2.ts(context) : 0,
                 ),
               ],
             ),
@@ -331,12 +331,12 @@ class _SegmentedOption extends StatelessWidget {
             decoration: BoxDecoration(
               color: fill,
               borderRadius: BorderRadius.circular(23.ts(context)),
-              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+              border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
               boxShadow: [
                 BoxShadow(
                   color: accent.withValues(alpha: focused ? 0.5 : 0.0),
-                  blurRadius: focused ? 14.sp : 0,
-                  spreadRadius: focused ? 2.sp : 0,
+                  blurRadius: focused ? 14.ts(context) : 0,
+                  spreadRadius: focused ? 2.ts(context) : 0,
                 ),
               ],
             ),

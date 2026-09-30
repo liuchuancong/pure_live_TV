@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:pure_live/core/theme/index.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvQrCodeCard extends StatelessWidget {
   const TvQrCodeCard({super.key, required this.qrData, this.urlText, this.qrSize = 240});
@@ -19,7 +18,7 @@ class TvQrCodeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final borderRadius = BorderRadius.circular(24.sp);
+    final borderRadius = BorderRadius.circular(24.ts(context));
 
     // ScaleDown, not clip: a compact slot (a settings card, a player panel)
     // gets a smaller whole card instead of a bottom-clipped one.
@@ -36,16 +35,20 @@ class TvQrCodeCard extends StatelessWidget {
               // framed surface (settings card, player panel), and its own accent
               // outline read as a second border stacked inside the first.
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: .3), blurRadius: 12.sp, offset: Offset(0, 4.sp)),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .3),
+                  blurRadius: 12.ts(context),
+                  offset: Offset(0, 4.ts(context)),
+                ),
               ],
             ),
-            padding: EdgeInsets.all(8.sp),
+            padding: EdgeInsets.all(8.ts(context)),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.sp),
+              borderRadius: BorderRadius.circular(16.ts(context)),
               child: QrImageView(
                 data: qrData,
                 size: qrSize.ts(context),
-                padding: EdgeInsets.all(8.0.sp),
+                padding: EdgeInsets.all(8.0.ts(context)),
                 version: QrVersions.auto,
                 // A QR must stay a fixed dark-on-white pattern: themeing the modules
                 // painted them in focusedCardColor, which is white on every light
@@ -60,7 +63,7 @@ class TvQrCodeCard extends StatelessWidget {
             ),
           ),
           if (urlText?.isNotEmpty ?? false) ...[
-            SizedBox(height: 10.sp),
+            SizedBox(height: 10.ts(context)),
             // scaleDown against a bound wider than the code itself (and growing
             // with the font): a long address line (hash-route URLs ran ~40 chars
             // at 24sp) squeezed against the bare code width turned into dust —

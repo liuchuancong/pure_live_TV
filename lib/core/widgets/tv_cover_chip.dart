@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// A compact translucent chip for cover overlays (platform, followed, replay,
 /// audience, type, counts, duration) — the one cover-badge language every
@@ -23,14 +22,14 @@ class TvCoverChip extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 5.ts(context)),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.98),
-        borderRadius: BorderRadius.circular(20.sp),
+        borderRadius: BorderRadius.circular(20.ts(context)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 13.sp, color: iconColor ?? textColor ?? Colors.white),
-            if (label.isNotEmpty) SizedBox(width: 4.sp),
+            Icon(icon, size: 13.ts(context), color: iconColor ?? textColor ?? Colors.white),
+            if (label.isNotEmpty) SizedBox(width: 4.ts(context)),
           ],
           if (label.isNotEmpty)
             Flexible(
@@ -38,7 +37,7 @@ class TvCoverChip extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.t14.copyWith(fontSize: 12.sp, color: textColor ?? Colors.white),
+                style: AppTextStyles.t14.copyWith(fontSize: 12.ts(context), color: textColor ?? Colors.white),
               ),
             ),
         ],

@@ -1,5 +1,6 @@
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/package_export.dart';
+
 /// toggles. Theme and text size live in the app-wide settings; this group
 /// carries only what is video-specific.
 class VideoInterfaceSettingsGroup extends ConsumerWidget {
@@ -7,7 +8,13 @@ class VideoInterfaceSettingsGroup extends ConsumerWidget {
 
   /// The section labels in [VideoSection.values] order — the rail shows them
   /// in newBV's order, the setting stores the section index.
-  static const _sections = ['video_tab_home', 'video_tab_region', 'video_tab_pgc', 'video_tab_search', 'video_personal'];
+  static const _sections = [
+    'video_tab_home',
+    'video_tab_region',
+    'video_tab_pgc',
+    'video_tab_search',
+    'video_personal',
+  ];
   static const _homeTabs = ['video_dynamics', 'video_tab_recommend', 'video_tab_popular'];
   static const _personalTabs = [
     'video_personal_follow',
@@ -23,7 +30,7 @@ class VideoInterfaceSettingsGroup extends ConsumerWidget {
     final video = ref.read(videoSettingsControllerProvider.notifier);
 
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: 4.sp),
+      padding: EdgeInsets.only(top: 4.ts(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -54,7 +61,7 @@ class VideoInterfaceSettingsGroup extends ConsumerWidget {
               ),
             ],
           ),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('video_player_surface')),
           TvSettingsCard(
             children: [
@@ -79,4 +86,3 @@ class VideoInterfaceSettingsGroup extends ConsumerWidget {
     );
   }
 }
-

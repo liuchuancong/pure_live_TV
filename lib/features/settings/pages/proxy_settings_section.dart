@@ -86,7 +86,7 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Center(child: RemoteSyncQrCard(width: 280)),
-        SizedBox(height: 20.sp),
+        SizedBox(height: 20.ts(context)),
         // Two switches with two consumers, so both are shown:
         //
         // * the player kernel proxy (`enableProxy`) — what media_kit / mpv use to
@@ -129,7 +129,7 @@ class ProxySettingsSectionPageState extends ConsumerState<ProxySettingsSectionPa
               ),
           ],
         ),
-        SizedBox(height: 20.sp),
+        SizedBox(height: 20.ts(context)),
         TvSettingsGroupTitle(title: i18n('app_proxy_group_title')),
         TvSettingsCard(
           children: [

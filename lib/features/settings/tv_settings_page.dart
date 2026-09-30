@@ -220,9 +220,9 @@ class SettingsCatalogView extends ConsumerWidget {
                   ),
               ],
             ),
-            SizedBox(height: 20.sp),
+            SizedBox(height: 20.ts(context)),
           ],
-        SizedBox(height: 24.sp),
+        SizedBox(height: 24.ts(context)),
       ],
     );
   }
@@ -345,7 +345,7 @@ class SettingsSectionScaffold extends StatelessWidget {
       // navigator. The shell contributes no chrome (see the route
       // table): a scaffold shared by every page never saw an inner push, so its back
       // button outlived the page it belonged to and stole the highlight.
-      child: SingleChildScrollView(padding: EdgeInsets.all(16.sp), child: child),
+      child: SingleChildScrollView(padding: EdgeInsets.all(16.ts(context)), child: child),
     );
   }
 }

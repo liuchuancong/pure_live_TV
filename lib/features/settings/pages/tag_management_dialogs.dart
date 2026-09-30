@@ -44,7 +44,7 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Center(child: RemoteSyncQrCard(width: 280, route: WebRemoteRouter.tags)),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           TvSettingsGroupTitle(title: i18n('tag_management')),
           TvSettingsCard(
             children: [
@@ -69,8 +69,8 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
                         width: double.infinity,
                         child: Wrap(
                           alignment: WrapAlignment.start,
-                          spacing: 12.sp,
-                          runSpacing: 12.sp,
+                          spacing: 12.ts(context),
+                          runSpacing: 12.ts(context),
                           children: [
                             for (var i = 0; i < state.tags.length; i++)
                               TvButton(
@@ -88,10 +88,7 @@ class TagManagementSectionPageState extends ConsumerState<TagManagementSectionPa
           if (_result.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(left: 16.w, top: 10.h),
-              child: Text(
-                _result,
-                style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor),
-              ),
+              child: Text(_result, style: AppTextStyles.t16.copyWith(color: context.tvTheme.focusColor)),
             ),
         ],
       ),
@@ -179,15 +176,12 @@ class _AddTagDialogState extends ConsumerState<_AddTagDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TvInputField(controller: _name, focusNode: _nameFocus, hint: i18n('tag_input_hint')),
-            SizedBox(height: 12.sp),
+            SizedBox(height: 12.ts(context)),
             TvInputField(controller: _description, hint: i18n('tag_desc_hint')),
             if (_error.isNotEmpty)
               Padding(
-                padding: EdgeInsets.only(top: 10.sp),
-                child: Text(
-                  _error,
-                  style: AppTextStyles.t16.copyWith(color: tvTheme.focusColor),
-                ),
+                padding: EdgeInsets.only(top: 10.ts(context)),
+                child: Text(_error, style: AppTextStyles.t16.copyWith(color: tvTheme.focusColor)),
               ),
           ],
         ),
@@ -220,11 +214,8 @@ class _TagDetailDialog extends StatelessWidget {
           children: [
             Text(tag.name, style: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w600)),
             if (tag.description.isNotEmpty) ...[
-              SizedBox(height: 8.sp),
-              Text(
-                tag.description,
-                style: AppTextStyles.t17.copyWith(color: tvTheme.secondaryTextColor),
-              ),
+              SizedBox(height: 8.ts(context)),
+              Text(tag.description, style: AppTextStyles.t17.copyWith(color: tvTheme.secondaryTextColor)),
             ],
           ],
         ),

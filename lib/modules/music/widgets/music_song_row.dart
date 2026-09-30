@@ -3,7 +3,6 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart' show stripTrackOrdinal;
@@ -70,15 +69,15 @@ class MusicSongRow extends ConsumerWidget {
                 : focused
                 ? tvTheme.cardColor
                 : tvTheme.cardColor.withValues(alpha: 0.45),
-            borderRadius: BorderRadius.circular(14.sp),
-            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+            borderRadius: BorderRadius.circular(14.ts(context)),
+            border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
           ),
           child: Row(
             children: [
               SizedBox(
-                width: 44.sp,
+                width: 44.ts(context),
                 child: isCurrent
-                    ? Icon(Icons.graphic_eq_rounded, size: 30.sp, color: accent)
+                    ? Icon(Icons.graphic_eq_rounded, size: 30.ts(context), color: accent)
                     : Text(
                         '${index + 1}',
                         style: AppTextStyles.t16.copyWith(
@@ -87,22 +86,22 @@ class MusicSongRow extends ConsumerWidget {
                         ),
                       ),
               ),
-              SizedBox(width: 8.sp),
+              SizedBox(width: 8.ts(context)),
               ClipRRect(
-                borderRadius: BorderRadius.circular(10.sp),
+                borderRadius: BorderRadius.circular(10.ts(context)),
                 child: CachedNetworkImage(
                   imageUrl: track.archive.cover,
-                  width: 132.sp,
-                  height: 120.sp,
+                  width: 132.ts(context),
+                  height: 120.ts(context),
                   fit: BoxFit.cover,
                   memCacheWidth: 320,
                   errorWidget: (_, _, _) => Container(
                     color: accent.withValues(alpha: 0.12),
-                    child: Icon(Icons.music_note_rounded, size: 30.sp, color: accent),
+                    child: Icon(Icons.music_note_rounded, size: 30.ts(context), color: accent),
                   ),
                 ),
               ),
-              SizedBox(width: 16.sp),
+              SizedBox(width: 16.ts(context)),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -117,11 +116,11 @@ class MusicSongRow extends ConsumerWidget {
                         color: isCurrent ? accent : tvTheme.primaryTextColor,
                       ),
                     ),
-                    SizedBox(height: 4.sp),
+                    SizedBox(height: 4.ts(context)),
                     Row(
                       children: [
-                        Icon(Icons.album_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                        SizedBox(width: 4.sp),
+                        Icon(Icons.album_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.ts(context)),
                         Flexible(
                           child: Text(
                             track.archive.title,
@@ -133,9 +132,9 @@ class MusicSongRow extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10.sp),
-                        Icon(Icons.person_outline_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                        SizedBox(width: 4.sp),
+                        SizedBox(width: 10.ts(context)),
+                        Icon(Icons.person_outline_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                        SizedBox(width: 4.ts(context)),
                         Flexible(
                           child: Text(
                             track.archive.upName,
@@ -150,11 +149,11 @@ class MusicSongRow extends ConsumerWidget {
                       ],
                     ),
                     if (isMulti) ...[
-                      SizedBox(height: 2.sp),
+                      SizedBox(height: 2.ts(context)),
                       Row(
                         children: [
-                          Icon(Icons.playlist_play_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                          SizedBox(width: 4.sp),
+                          Icon(Icons.playlist_play_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                          SizedBox(width: 4.ts(context)),
                           Text(
                             'P${track.part.page}/${track.archive.parts.length}',
                             style: AppTextStyles.t16.copyWith(
@@ -162,9 +161,9 @@ class MusicSongRow extends ConsumerWidget {
                               color: tvTheme.secondaryTextColor,
                             ),
                           ),
-                          SizedBox(width: 10.sp),
-                          Icon(Icons.schedule_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                          SizedBox(width: 4.sp),
+                          SizedBox(width: 10.ts(context)),
+                          Icon(Icons.schedule_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                          SizedBox(width: 4.ts(context)),
                           Text(
                             MusicVideoCard.formatDuration(
                               track.part.duration > 0 ? track.part.duration : track.archive.duration,
@@ -177,11 +176,11 @@ class MusicSongRow extends ConsumerWidget {
                         ],
                       ),
                     ] else ...[
-                      SizedBox(height: 2.sp),
+                      SizedBox(height: 2.ts(context)),
                       Row(
                         children: [
-                          Icon(Icons.schedule_rounded, size: 18.sp, color: tvTheme.secondaryTextColor),
-                          SizedBox(width: 4.sp),
+                          Icon(Icons.schedule_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
+                          SizedBox(width: 4.ts(context)),
                           Text(
                             MusicVideoCard.formatDuration(track.archive.duration),
                             style: AppTextStyles.t16.copyWith(

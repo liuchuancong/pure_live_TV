@@ -494,20 +494,24 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
     required bool switching,
   }) {
     // Every dimension here holds t20 text (the title, the option rows), so the
-    // card grows with the font — a fixed 380.sp card ellipsised the enlarged
+    // card grows with the font — a fixed 380.ts(context) card ellipsised the enlarged
     // labels and the fixed row rung clipped them outright.
     final double scale = TvTextScale.factorOf(context);
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.sp * scale),
+      padding: EdgeInsets.only(bottom: 12.ts(context) * scale),
       child: Center(
         child: Container(
           width: _optionsWidth.ts(context) * scale,
-          constraints: BoxConstraints(maxHeight: 560.sp * scale),
+          constraints: BoxConstraints(maxHeight: 560.ts(context) * scale),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(16.sp),
+            borderRadius: BorderRadius.circular(16.ts(context)),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 18.sp, offset: Offset(0, 4.sp)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 18.ts(context),
+                offset: Offset(0, 4.ts(context)),
+              ),
             ],
           ),
           child: Column(
@@ -515,7 +519,12 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(24.sp * scale, 14.sp * scale, 24.sp * scale, 6.sp * scale),
+                padding: EdgeInsets.fromLTRB(
+                  24.ts(context) * scale,
+                  14.ts(context) * scale,
+                  24.ts(context) * scale,
+                  6.ts(context) * scale,
+                ),
                 child: Text(
                   _panelTitle,
                   maxLines: 1,
@@ -526,7 +535,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  padding: EdgeInsets.only(bottom: 12.sp * scale),
+                  padding: EdgeInsets.only(bottom: 12.ts(context) * scale),
                   itemCount: options.length,
                   itemBuilder: (context, index) {
                     final bool selected = index == _optionIndex;
@@ -573,7 +582,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemCount: actions.length,
-        separatorBuilder: (_, _) => SizedBox(width: 12.sp * scale),
+        separatorBuilder: (_, _) => SizedBox(width: 12.ts(context) * scale),
         itemBuilder: (context, index) {
           final action = actions[index];
           return KeyedSubtree(
@@ -662,7 +671,7 @@ class _Pill extends StatelessWidget {
 
     // Every dimension here is a box that exists because of the label (a t20
     // style the resolver grows, and the ambient scaler grows again at paint
-    // time), so they all follow the painted factor: a fixed 52.sp pill clipped
+    // time), so they all follow the painted factor: a fixed 52.ts(context) pill clipped
     // the enlarged label instead of growing with it.
     final double scale = TvTextScale.factorOf(context);
 

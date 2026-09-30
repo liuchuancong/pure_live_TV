@@ -5,7 +5,6 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
@@ -149,30 +148,30 @@ class _PosterLayout extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(28.sp),
+                borderRadius: BorderRadius.circular(28.ts(context)),
                 child: CachedNetworkImage(
                   imageUrl: track.archive.cover,
-                  width: 420.sp,
-                  height: 420.sp,
+                  width: 420.ts(context),
+                  height: 420.ts(context),
                   fit: BoxFit.cover,
                   memCacheWidth: 840,
                   errorWidget: (_, _, _) => Container(
-                    width: 420.sp,
-                    height: 420.sp,
+                    width: 420.ts(context),
+                    height: 420.ts(context),
                     color: tvTheme.focusColor.withValues(alpha: 0.2),
-                    child: Icon(Icons.music_note_rounded, size: 140.sp, color: tvTheme.focusColor),
+                    child: Icon(Icons.music_note_rounded, size: 140.ts(context), color: tvTheme.focusColor),
                   ),
                 ),
               ),
               if (resolving)
                 SizedBox(
-                  width: 76.sp,
-                  height: 76.sp,
-                  child: CircularProgressIndicator(strokeWidth: 5.sp, color: tvTheme.focusColor),
+                  width: 76.ts(context),
+                  height: 76.ts(context),
+                  child: CircularProgressIndicator(strokeWidth: 5.ts(context), color: tvTheme.focusColor),
                 ),
             ],
           ),
-          SizedBox(height: 36.sp),
+          SizedBox(height: 36.ts(context)),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 120.ts(context)),
             child: Text(
@@ -183,13 +182,13 @@ class _PosterLayout extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          SizedBox(height: 12.sp),
+          SizedBox(height: 12.ts(context)),
           Text(
             track.archive.upName,
             style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
           ),
           if (status.isNotEmpty) ...[
-            SizedBox(height: 14.sp),
+            SizedBox(height: 14.ts(context)),
             Text(
               status,
               style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white38),
@@ -231,22 +230,22 @@ class _LyricsLayout extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(24.sp),
+                  borderRadius: BorderRadius.circular(24.ts(context)),
                   child: CachedNetworkImage(
                     imageUrl: track.archive.cover,
-                    width: 300.sp,
-                    height: 300.sp,
+                    width: 300.ts(context),
+                    height: 300.ts(context),
                     fit: BoxFit.cover,
                     memCacheWidth: 600,
                     errorWidget: (_, _, _) => Container(
-                      width: 300.sp,
-                      height: 300.sp,
+                      width: 300.ts(context),
+                      height: 300.ts(context),
                       color: tvTheme.focusColor.withValues(alpha: 0.2),
-                      child: Icon(Icons.music_note_rounded, size: 96.sp, color: tvTheme.focusColor),
+                      child: Icon(Icons.music_note_rounded, size: 96.ts(context), color: tvTheme.focusColor),
                     ),
                   ),
                 ),
-                SizedBox(height: 28.sp),
+                SizedBox(height: 28.ts(context)),
                 Text(
                   stripTrackOrdinal(track.title),
                   style: AppTextStyles.t26.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
@@ -254,7 +253,7 @@ class _LyricsLayout extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 10.sp),
+                SizedBox(height: 10.ts(context)),
                 Text(
                   track.archive.upName,
                   style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: Colors.white70),
@@ -262,7 +261,7 @@ class _LyricsLayout extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(width: 48.sp),
+          SizedBox(width: 48.ts(context)),
           Expanded(
             flex: 6,
             child: LyricView(controller: lyric, style: style),

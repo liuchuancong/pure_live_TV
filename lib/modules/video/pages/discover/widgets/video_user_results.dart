@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/api/bilibili_ugc_api.dart';
 
 /// User results: a list row per UP, opening the shared user-space page.
 class VideoUserResults extends ConsumerStatefulWidget {
-  const VideoUserResults({super.key,required this.keyword});
+  const VideoUserResults({super.key, required this.keyword});
 
   final String keyword;
 
@@ -57,7 +56,7 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
     }
     return DpadRegion(
       child: ListView.builder(
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         itemCount: _users.length,
         itemBuilder: (context, index) {
           final user = _users[index];
@@ -65,12 +64,12 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
             onTap: () => UgcUserSpaceRoute(user.mid, user.uname).push(context),
             builder: (context, focused, child) => AnimatedContainer(
               duration: const Duration(milliseconds: 120),
-              margin: EdgeInsets.only(bottom: 10.sp),
-              padding: EdgeInsets.all(14.sp),
+              margin: EdgeInsets.only(bottom: 10.ts(context)),
+              padding: EdgeInsets.all(14.ts(context)),
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(16.sp),
-                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                borderRadius: BorderRadius.circular(16.ts(context)),
+                border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
               ),
               child: Row(
                 children: [
@@ -82,7 +81,10 @@ class _VideoUserResultsState extends ConsumerState<VideoUserResults> {
                           user.uname,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
+                          style: AppTextStyles.t18.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: tvTheme.primaryTextColor,
+                          ),
                         ),
                         if (user.sign.isNotEmpty)
                           Text(

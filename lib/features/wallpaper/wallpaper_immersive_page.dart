@@ -231,11 +231,11 @@ class _WallpaperImmersivePageState extends ConsumerState<WallpaperImmersivePage>
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
-                      margin: EdgeInsets.only(bottom: 48.sp),
+                      margin: EdgeInsets.only(bottom: 48.ts(context)),
                       padding: EdgeInsets.symmetric(horizontal: 24.ts(context), vertical: 14.ts(context)),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(28.sp),
+                        borderRadius: BorderRadius.circular(28.ts(context)),
                       ),
                       child: Text(
                         i18nOr('wallpaper_immersive_hint', '↑↓ 切换 · OK 设为壁纸 · 返回退出'),

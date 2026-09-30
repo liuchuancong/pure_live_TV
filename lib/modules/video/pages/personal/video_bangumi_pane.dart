@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/modules/vod/api/bilibili_pgc_api.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class VideoBangumiPane extends ConsumerStatefulWidget {
   const VideoBangumiPane({super.key});
@@ -81,7 +80,7 @@ class VideoBangumiPaneState extends ConsumerState<VideoBangumiPane> {
       horizontalEdge: DpadEdgeBehavior.leave,
       child: GridView.builder(
         controller: _scroll,
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
         itemCount: _items.length + (_hasMore || _loading ? 1 : 0),
         itemBuilder: (context, index) {
@@ -89,9 +88,9 @@ class VideoBangumiPaneState extends ConsumerState<VideoBangumiPane> {
             return Center(
               child: _loading
                   ? SizedBox(
-                      width: 32.sp,
-                      height: 32.sp,
-                      child: CircularProgressIndicator(strokeWidth: 3.sp, color: accent),
+                      width: 32.ts(context),
+                      height: 32.ts(context),
+                      child: CircularProgressIndicator(strokeWidth: 3.ts(context), color: accent),
                     )
                   : const SizedBox.shrink(),
             );
@@ -143,8 +142,8 @@ class _BangumiCard extends StatelessWidget {
         curve: TvFocusStyle.curve,
         decoration: BoxDecoration(
           color: focused ? tvTheme.focusedCardColor : tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(24.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+          borderRadius: BorderRadius.circular(24.ts(context)),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,7 +151,7 @@ class _BangumiCard extends StatelessWidget {
             Expanded(
               flex: 5,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(24.sp),
+                borderRadius: BorderRadius.circular(24.ts(context)),
                 child: CachedNetworkImage(
                   imageUrl: item.cover,
                   fit: BoxFit.cover,
@@ -163,16 +162,16 @@ class _BangumiCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(8.sp),
+              padding: EdgeInsets.all(8.ts(context)),
               child: TvMarqueeText(
-                  text: item.title,
-                  isFocused: focused,
-                  style: AppTextStyles.t14.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
-                  ),
+                text: item.title,
+                isFocused: focused,
+                style: AppTextStyles.t14.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: focused ? tvTheme.onFocusedCard : tvTheme.primaryTextColor,
                 ),
               ),
+            ),
           ],
         ),
       ),

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 
 /// The dark plate behind a stream that has not opened yet.
 class VideoIdleSurface extends StatelessWidget {
@@ -30,12 +28,12 @@ class VideoIdleSurface extends StatelessWidget {
         Center(
           child: resolving
               ? SizedBox(
-                  width: 64.sp,
-                  height: 64.sp,
-                  child: CircularProgressIndicator(strokeWidth: 4.sp, color: tvTheme.focusColor),
+                  width: 64.ts(context),
+                  height: 64.ts(context),
+                  child: CircularProgressIndicator(strokeWidth: 4.ts(context), color: tvTheme.focusColor),
                 )
               : (track == null
-                    ? Icon(Icons.movie_outlined, size: 96.sp, color: Colors.white24)
+                    ? Icon(Icons.movie_outlined, size: 96.ts(context), color: Colors.white24)
                     : const SizedBox.shrink()),
         ),
       ],

@@ -51,7 +51,7 @@ class PlatformDisplayOrderSectionPage extends ConsumerWidget {
           ],
         ),
         if (hidden.isNotEmpty) ...[
-          SizedBox(height: 12.sp),
+          SizedBox(height: 12.ts(context)),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4.ts(context)),
             child: Text(
@@ -131,8 +131,8 @@ class _SiteOrderTile extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.keyboard_arrow_up_rounded, size: 26.sp, color: canMoveUp ? accent : muted),
-            SizedBox(width: 4.sp),
+            Icon(Icons.keyboard_arrow_up_rounded, size: 26.ts(context), color: canMoveUp ? accent : muted),
+            SizedBox(width: 4.ts(context)),
             Text(
               '$position/$total',
               style: AppTextStyles.t20.copyWith(
@@ -140,8 +140,8 @@ class _SiteOrderTile extends StatelessWidget {
                 color: focused ? tvTheme.focusColor : tvTheme.primaryTextColor,
               ),
             ),
-            SizedBox(width: 4.sp),
-            Icon(Icons.keyboard_arrow_down_rounded, size: 26.sp, color: canMoveDown ? accent : muted),
+            SizedBox(width: 4.ts(context)),
+            Icon(Icons.keyboard_arrow_down_rounded, size: 26.ts(context), color: canMoveDown ? accent : muted),
           ],
         );
       },

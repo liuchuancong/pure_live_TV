@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_video_card.dart';
-import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// focus while the list scrolls to it.
 class MusicUserPlaylistDetailPage extends ConsumerStatefulWidget {
@@ -142,7 +142,9 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
     if (!_isLiked && playlist == null) {
       return TvPageScaffold(
         title: i18n('music_local_playlists'),
-        child: Center(child: AppStatusView(type: AppStatusType.empty, title: i18n('music_playlist_deleted'))),
+        child: Center(
+          child: AppStatusView(type: AppStatusType.empty, title: i18n('music_playlist_deleted')),
+        ),
       );
     }
 
@@ -156,7 +158,9 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
     return TvPageScaffold(
       title: name,
       child: tracks.isEmpty
-          ? Center(child: AppStatusView(type: AppStatusType.empty, title: i18n('music_empty_playlist')))
+          ? Center(
+              child: AppStatusView(type: AppStatusType.empty, title: i18n('music_empty_playlist')),
+            )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -198,7 +202,9 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                           icon: Icon(Icons.playlist_add_rounded, size: 24.ts(context)),
                           size: TvButtonSize.mini,
                           isSecondary: true,
-                          onTap: _selectedIds.isEmpty ? null : () => unawaited(_batchAddToPlaylist(_selectedTracks(tracks))),
+                          onTap: _selectedIds.isEmpty
+                              ? null
+                              : () => unawaited(_batchAddToPlaylist(_selectedTracks(tracks))),
                         ),
                         SizedBox(width: 12.ts(context)),
                         TvButton(
@@ -209,11 +215,19 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                           onTap: _selectedIds.isEmpty ? null : () => _batchRemove(_selectedTracks(tracks)),
                         ),
                         SizedBox(width: 12.ts(context)),
-                        TvButton(title: i18n('cancel'), size: TvButtonSize.mini, isSecondary: true, onTap: _toggleSelectMode),
+                        TvButton(
+                          title: i18n('cancel'),
+                          size: TvButtonSize.mini,
+                          isSecondary: true,
+                          onTap: _toggleSelectMode,
+                        ),
                       ] else ...[
                         Text(
                           '（${tracks.length}）',
-                          style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t22.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: tvTheme.secondaryTextColor,
+                          ),
                         ),
                         const Spacer(),
                         // bilibili-music checkbox table's entry button.
@@ -249,7 +263,12 @@ class _MusicUserPlaylistDetailPageState extends ConsumerState<MusicUserPlaylistD
                     horizontalEdge: DpadEdgeBehavior.leave,
                     child: ListView.separated(
                       controller: _scroll,
-                      padding: EdgeInsets.only(left: 20.ts(context), right: 20.ts(context), bottom: 16.ts(context), top: 16.ts(context)),
+                      padding: EdgeInsets.only(
+                        left: 20.ts(context),
+                        right: 20.ts(context),
+                        bottom: 16.ts(context),
+                        top: 16.ts(context),
+                      ),
                       itemCount: tracks.length,
                       separatorBuilder: (_, _) => SizedBox(height: 4.ts(context)),
                       itemBuilder: (context, index) {
@@ -389,7 +408,7 @@ class _PlaylistTrackRow extends StatelessWidget {
                 : focused
                 ? tvTheme.cardColor
                 : tvTheme.cardColor.withValues(alpha: 0.45),
-            borderRadius: BorderRadius.circular(14.sp),
+            borderRadius: BorderRadius.circular(14.ts(context)),
             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
           ),
           child: Row(
@@ -406,12 +425,15 @@ class _PlaylistTrackRow extends StatelessWidget {
                     ? Icon(Icons.graphic_eq_rounded, size: 30.ts(context), color: accent)
                     : Text(
                         '${index + 1}',
-                        style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                        style: AppTextStyles.t16.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: tvTheme.secondaryTextColor,
+                        ),
                       ),
               ),
               SizedBox(width: 8.ts(context)),
               ClipRRect(
-                borderRadius: BorderRadius.circular(10.sp),
+                borderRadius: BorderRadius.circular(10.ts(context)),
                 child: CachedNetworkImage(
                   imageUrl: track.archive.cover,
                   width: 132.ts(context),
@@ -437,7 +459,8 @@ class _PlaylistTrackRow extends StatelessWidget {
                             track.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w600, 
+                            style: AppTextStyles.t18.copyWith(
+                              fontWeight: FontWeight.w600,
                               color: isCurrent ? accent : tvTheme.primaryTextColor,
                             ),
                           ),
@@ -449,7 +472,10 @@ class _PlaylistTrackRow extends StatelessWidget {
                           MusicVideoCard.formatDuration(
                             track.part.duration > 0 ? track.part.duration : track.archive.duration,
                           ),
-                          style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                          style: AppTextStyles.t16.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: tvTheme.secondaryTextColor,
+                          ),
                         ),
                       ],
                     ),
@@ -463,7 +489,10 @@ class _PlaylistTrackRow extends StatelessWidget {
                             track.archive.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: tvTheme.secondaryTextColor,
+                            ),
                           ),
                         ),
                         SizedBox(width: 10.ts(context)),
@@ -474,7 +503,10 @@ class _PlaylistTrackRow extends StatelessWidget {
                             track.archive.upName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
+                            style: AppTextStyles.t16.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: tvTheme.secondaryTextColor,
+                            ),
                           ),
                         ),
                       ],

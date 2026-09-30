@@ -25,33 +25,29 @@ class _ExitConfirmDialog extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AppTextStyles.t22.copyWith(height: 1.5, color: tvTheme.primaryTextColor),
           ),
-          SizedBox(height: 24.sp),
+          SizedBox(height: 24.ts(context)),
           Center(
             child: Container(
-              width: 260.sp,
-              height: 260.sp,
-              padding: EdgeInsets.all(12.sp),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.sp)),
+              width: 260.ts(context),
+              height: 260.ts(context),
+              padding: EdgeInsets.all(12.ts(context)),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.ts(context))),
               child: Image.asset('assets/images/wechat.png', fit: BoxFit.contain),
             ),
           ),
-          SizedBox(height: 20.sp),
+          SizedBox(height: 20.ts(context)),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.favorite_rounded,
-                size: 24.ts(context),
-                color: tvTheme.focusColor,
-              ),
-              SizedBox(width: 8.sp),
+              Icon(Icons.favorite_rounded, size: 24.ts(context), color: tvTheme.focusColor),
+              SizedBox(width: 8.ts(context)),
               Text(
                 i18n('support_donate'),
                 style: AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700, color: tvTheme.primaryTextColor),
               ),
             ],
           ),
-          SizedBox(height: 12.sp),
+          SizedBox(height: 12.ts(context)),
           Text(
             i18nOr('exit_donate_message', '项目全程开源免费，无任何付费门槛。若是本应用给您带来便利，欢迎微信扫码请开发者喝瓶牛奶，支持后续更新维护。'),
             textAlign: TextAlign.center,

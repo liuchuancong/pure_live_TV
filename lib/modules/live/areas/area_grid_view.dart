@@ -82,7 +82,7 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
             // refresh lights one line.
             onTabRefresh: (index) => ref.read(pagingCoreProvider(currentParam).notifier).refresh(),
           ),
-        SizedBox(height: 20.sp),
+        SizedBox(height: 20.ts(context)),
         Expanded(
           child: TvTabView(
             memoryKey: widget.flat ? "areas_flat_view" : "areas_sub_category_view_$currentCategoryIndex",

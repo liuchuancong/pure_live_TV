@@ -157,8 +157,8 @@ class MusicFollowSectionState extends ConsumerState<MusicFollowSection> {
                             ),
                             if (selected)
                               Positioned(
-                                left: 10.sp,
-                                top: 10.sp,
+                                left: 10.ts(context),
+                                top: 10.ts(context),
                                 child: IgnorePointer(
                                   child: Container(
                                     width: 44.ts(context),
@@ -334,7 +334,7 @@ class MusicAuthorCard extends ConsumerWidget {
           padding: EdgeInsets.symmetric(horizontal: 14.ts(context), vertical: 12.ts(context)),
           decoration: BoxDecoration(
             color: focused ? tvTheme.focusedCardColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(16.sp),
+            borderRadius: BorderRadius.circular(16.ts(context)),
             border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
           ),
           child: Row(

@@ -42,8 +42,8 @@ class LivePlayPage extends ConsumerWidget {
             // keeps the whole screen and the danmaku keep their geometry.
             if (state.showSidePanel)
               Positioned(
-                top: 24.sp,
-                bottom: 24.sp,
+                top: 24.ts(context),
+                bottom: 24.ts(context),
                 left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.ts(context) : null,
                 right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.ts(context),
                 // The frame tracks the same text factor the panels inside size
@@ -51,11 +51,11 @@ class LivePlayPage extends ConsumerWidget {
                 // an enlarged panel's rows instead of growing with them.
                 width: 400.ts(context),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20.sp),
+                  borderRadius: BorderRadius.circular(20.ts(context)),
                   child: Container(
                     decoration: BoxDecoration(
                       color: tvTheme.backgroundColor.withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(20.sp),
+                      borderRadius: BorderRadius.circular(20.ts(context)),
                       border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35)),
                     ),
                     child: DpadRegion(

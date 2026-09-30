@@ -119,15 +119,15 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
           children: [
             // An offline marker on the avatar reads faster than a line of text.
             _OfflineBadge(room: room, title: title),
-            SizedBox(height: 18.sp),
+            SizedBox(height: 18.ts(context)),
             Text(
               i18n('room_offline'),
               textAlign: TextAlign.center,
               style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
             ),
-            SizedBox(height: 8.sp),
+            SizedBox(height: 8.ts(context)),
             SizedBox(
-              width: 640.sp,
+              width: 640.ts(context),
               child: Text(
                 i18n('switch_other_room_hint'),
                 textAlign: TextAlign.center,
@@ -136,12 +136,12 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
                 style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w300, color: tvTheme.secondaryTextColor),
               ),
             ),
-            SizedBox(height: 10.sp),
+            SizedBox(height: 10.ts(context)),
             Text(
               i18nOr('ui_panel_keys_adjust', '←→ 选择 · OK 确认'),
               style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
             ),
-            SizedBox(height: 20.sp),
+            SizedBox(height: 20.ts(context)),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -152,7 +152,7 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
                   label: i18n('switch_live_room'),
                   icon: Icons.swap_horiz_rounded,
                 ),
-                SizedBox(width: 16.sp),
+                SizedBox(width: 16.ts(context)),
                 _pill(
                   tvTheme,
                   index: _actionRefresh,
@@ -190,17 +190,23 @@ class _NotLivingVideoWidgetState extends ConsumerState<NotLivingVideoWidget> {
         padding: EdgeInsets.symmetric(horizontal: 22.ts(context), vertical: 12.ts(context)),
         decoration: BoxDecoration(
           color: background,
-          borderRadius: BorderRadius.circular(12.sp),
+          borderRadius: BorderRadius.circular(12.ts(context)),
           border: Border.all(color: selected ? Colors.white.withValues(alpha: 0.85) : Colors.transparent),
           boxShadow: selected
-              ? [BoxShadow(color: tvTheme.focusColor.withValues(alpha: 0.55), blurRadius: 14.sp, spreadRadius: 1.sp)]
+              ? [
+                  BoxShadow(
+                    color: tvTheme.focusColor.withValues(alpha: 0.55),
+                    blurRadius: 14.ts(context),
+                    spreadRadius: 1.ts(context),
+                  ),
+                ]
               : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20.sp, color: Colors.white),
-            SizedBox(width: 8.sp),
+            Icon(icon, size: 20.ts(context), color: Colors.white),
+            SizedBox(width: 8.ts(context)),
             Text(
               label,
               style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white),
@@ -232,42 +238,50 @@ class _OfflineBadge extends StatelessWidget {
           children: [
             ClipOval(
               child: SizedBox(
-                width: 72.sp,
-                height: 72.sp,
+                width: 72.ts(context),
+                height: 72.ts(context),
                 child: avatar.isEmpty
                     ? ColoredBox(
                         color: tvTheme.cardColor,
-                        child: Icon(Icons.person_outline_rounded, size: 36.sp, color: tvTheme.secondaryTextColor),
+                        child: Icon(
+                          Icons.person_outline_rounded,
+                          size: 36.ts(context),
+                          color: tvTheme.secondaryTextColor,
+                        ),
                       )
                     : CachedNetworkImage(
                         imageUrl: avatar,
                         fit: BoxFit.cover,
                         errorWidget: (context, _, _) => ColoredBox(
                           color: tvTheme.cardColor,
-                          child: Icon(Icons.person_outline_rounded, size: 36.sp, color: tvTheme.secondaryTextColor),
+                          child: Icon(
+                            Icons.person_outline_rounded,
+                            size: 36.ts(context),
+                            color: tvTheme.secondaryTextColor,
+                          ),
                         ),
                       ),
               ),
             ),
             // Bottom-right marker: reads as "streamer not live", not as a network fault.
             Positioned(
-              right: -2.sp,
-              bottom: -2.sp,
+              right: -2.ts(context),
+              bottom: -2.ts(context),
               child: Container(
-                padding: EdgeInsets.all(4.sp),
+                padding: EdgeInsets.all(4.ts(context)),
                 decoration: BoxDecoration(
                   color: const Color(0xFF3A3A3F),
                   shape: BoxShape.circle,
-                  border: Border.all(color: tvTheme.backgroundColor, width: 2.sp),
+                  border: Border.all(color: tvTheme.backgroundColor, width: 2.ts(context)),
                 ),
-                child: Icon(Icons.videocam_off_rounded, size: 16.sp, color: Colors.white70),
+                child: Icon(Icons.videocam_off_rounded, size: 16.ts(context), color: Colors.white70),
               ),
             ),
           ],
         ),
-        SizedBox(height: 12.sp),
+        SizedBox(height: 12.ts(context)),
         SizedBox(
-          width: 560.sp,
+          width: 560.ts(context),
           child: Text(
             title,
             textAlign: TextAlign.center,

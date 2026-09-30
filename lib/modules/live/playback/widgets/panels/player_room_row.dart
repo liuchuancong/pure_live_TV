@@ -82,8 +82,8 @@ class PlayerRoomRow extends ConsumerWidget {
     final Color muted = selected ? Colors.white70 : tvTheme.secondaryTextColor;
 
     final double rowHeight = (large ? 88.0 : 60.0).sp * boxScale;
-    final double rowRadius = large ? 14.sp : 10.sp;
-    final double horizontalPadding = large ? 18.sp : 12.sp;
+    final double rowRadius = large ? 14.ts(context) : 10.ts(context);
+    final double horizontalPadding = large ? 18.ts(context) : 12.ts(context);
 
     final double avatarRadius = (large ? 30.0 : 20.0).sp * boxScale;
 
@@ -105,7 +105,7 @@ class PlayerRoomRow extends ConsumerWidget {
       child: Row(
         children: [
           TvCommonAvatar(avatarUrl: room.avatar, fallbackName: nick, radius: avatarRadius),
-          SizedBox(width: large ? 16.sp : 12.sp),
+          SizedBox(width: large ? 16.ts(context) : 12.ts(context)),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -127,7 +127,7 @@ class PlayerRoomRow extends ConsumerWidget {
                     ),
                     if (showFollowAction)
                       Padding(
-                        padding: EdgeInsets.only(left: 8.sp),
+                        padding: EdgeInsets.only(left: 8.ts(context)),
                         child: _FollowLabel(
                           followed: favorite,
                           selected: selected,
@@ -137,7 +137,7 @@ class PlayerRoomRow extends ConsumerWidget {
                       ),
                   ],
                 ),
-                if (nick.isNotEmpty) SizedBox(height: large ? 3.sp : 0),
+                if (nick.isNotEmpty) SizedBox(height: large ? 3.ts(context) : 0),
                 if (nick.isNotEmpty)
                   Text(
                     nick,
@@ -148,7 +148,7 @@ class PlayerRoomRow extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(width: large ? 18.sp : 8.sp),
+          SizedBox(width: large ? 18.ts(context) : 8.ts(context)),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -158,7 +158,7 @@ class PlayerRoomRow extends ConsumerWidget {
                   room.platform.toUpperCase(),
                   style: AppTextStyles.of(platformSize).copyWith(fontWeight: FontWeight.w600, color: muted),
                 ),
-              SizedBox(height: large ? 3.sp : 0),
+              SizedBox(height: large ? 3.ts(context) : 0),
               Text(
                 trailing ?? _meta(app, ref.read(appSettingsControllerProvider.notifier)),
                 maxLines: 1,
@@ -221,7 +221,7 @@ class _FollowLabel extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(6.sp),
+        borderRadius: BorderRadius.circular(6.ts(context)),
         border: Border.all(color: color.withValues(alpha: selected ? 0.75 : (followed ? 0.75 : 0.35))),
       ),
       child: Text(

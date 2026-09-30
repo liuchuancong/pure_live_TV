@@ -3,7 +3,6 @@ import 'tv_dialog_option_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/theme/tv_text_scale.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvMenuItem<T> {
   final String title;
@@ -36,12 +35,12 @@ class TvMenuDialog<T> extends StatelessWidget {
       cancelText: i18n('close'),
       onCancel: () => Navigator.of(context).pop(),
       child: Container(
-        constraints: BoxConstraints(maxHeight: 500.sp),
+        constraints: BoxConstraints(maxHeight: 500.ts(context)),
         child: ListView.separated(
           shrinkWrap: true,
           padding: EdgeInsets.symmetric(vertical: 2.ts(context)),
           itemCount: items.length,
-          separatorBuilder: (_, _) => SizedBox(height: 12.sp),
+          separatorBuilder: (_, _) => SizedBox(height: 12.ts(context)),
           itemBuilder: (_, index) {
             final item = items[index];
             final selected = item.value == selectedValue;

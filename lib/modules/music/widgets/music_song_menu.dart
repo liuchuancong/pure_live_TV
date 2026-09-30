@@ -1,24 +1,16 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-
 import 'package:pure_live/exports/common_export.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
-import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
-import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
 import 'package:pure_live/modules/music/services/music_lyric_service.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
+import 'package:pure_live/modules/music/pages/playlist/music_playlist_dialogs.dart';
+import 'package:pure_live/modules/music/controllers/library/music_library_controller.dart';
 
 /// How the calling list removes this song — every list deletes differently
 /// entry), while everything else in the menu is shared.
-enum MusicSongMenuRemove {
-  recent,
-  liked,
-  playlist,
-  none,
-}
+enum MusicSongMenuRemove { recent, liked, playlist, none }
 
 ///
 /// one) only makes sense for a song that is NOT the one playing now, so it
@@ -45,7 +37,7 @@ Future<void> showMusicSongMenu(
     builder: (_) => TvDialog(
       title: track.title,
       cancelText: i18n('cancel'),
-      width: 560.sp,
+      width: 560.ts(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -153,7 +145,7 @@ Widget _menuTile(
   final color = destructive ? Colors.redAccent : context.tvTheme.focusColor;
   return TvDialogOptionTile(
     title: label,
-    icon: Icon(icon, size: 26.sp, color: color),
+    icon: Icon(icon, size: 26.ts(context), color: color),
     showCheck: false,
     autofocus: autofocus,
     onTap: onTap,

@@ -89,7 +89,7 @@ class CacheSettingsSectionPageState extends ConsumerState<CacheSettingsSectionPa
         ),
         if (_result.isNotEmpty)
           Padding(
-            padding: EdgeInsets.only(left: 16.sp, top: 8.sp),
+            padding: EdgeInsets.only(left: 16.ts(context), top: 8.ts(context)),
             child: Text(
               _result,
               style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: theme.focusColor),

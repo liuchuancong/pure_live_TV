@@ -3,7 +3,6 @@ import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/remote_sync/remote_sync_service.dart';
 
 /// The pairing QR of the device sync page: this TV's sync endpoint, to be scanned
@@ -26,11 +25,11 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
       final String? error = snapshot.error;
       return Container(
         width: width.ts(context),
-        padding: EdgeInsets.all(16.sp),
+        padding: EdgeInsets.all(16.ts(context)),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(24.sp),
-          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.5), width: 1.sp),
+          borderRadius: BorderRadius.circular(24.ts(context)),
+          border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.5), width: 1.ts(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,13 +38,13 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
             Row(
               children: <Widget>[
                 SizedBox(
-                  width: 18.sp,
-                  height: 18.sp,
+                  width: 18.ts(context),
+                  height: 18.ts(context),
                   child: error == null
                       ? const CircularProgressIndicator(strokeWidth: 2)
                       : Icon(Icons.error_outline_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
                 ),
-                SizedBox(width: 10.sp),
+                SizedBox(width: 10.ts(context)),
                 Expanded(
                   child: Text(
                     error ?? i18nOr('remote_sync_starting', 'Starting the LAN sync service...'),
@@ -55,7 +54,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
               ],
             ),
             if (error != null) ...<Widget>[
-              SizedBox(height: 12.sp),
+              SizedBox(height: 12.ts(context)),
               TvButton(
                 title: i18nOr('remote_sync_retry', 'Retry'),
                 size: TvButtonSize.mini,
@@ -87,16 +86,16 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: tvTheme.cardColor,
-                borderRadius: BorderRadius.circular(24.sp),
-                border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.45), width: 1.sp),
+                borderRadius: BorderRadius.circular(24.ts(context)),
+                border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.45), width: 1.ts(context)),
               ),
               child: Text(
                 address,
                 style: AppTextStyles.t24.copyWith(fontWeight: FontWeight.w600, color: tvTheme.primaryTextColor),
               ),
             ),
-          SizedBox(height: 10.sp),
-          // The hint tracks the QR width (the 300.sp code plus its padding) and
+          SizedBox(height: 10.ts(context)),
+          // The hint tracks the QR width (the 300.ts(context) code plus its padding) and
           // its line budget grows with the text: a fixed width + fixed two lines
           // truncated the enlarged hint mid-sentence.
           SizedBox(

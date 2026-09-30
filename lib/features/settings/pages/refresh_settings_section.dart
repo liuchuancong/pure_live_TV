@@ -1,8 +1,8 @@
-import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
+import 'package:pure_live/core/widgets/index.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:pure_live/core/theme/tv_text_scale.dart';
 import 'package:pure_live/services/refresh_config/refresh_config_controller.dart';
 
 /// auto-refresh, in the mobile page's shape: one group, the interval hidden while
@@ -46,7 +46,7 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
             ),
           ],
         ),
-        SizedBox(height: 20.sp),
+        SizedBox(height: 20.ts(context)),
         TvSettingsGroupTitle(title: i18n('auto_refresh_settings')),
         TvSettingsCard(
           children: [
@@ -72,10 +72,11 @@ class RefreshSettingsSectionPage extends ConsumerWidget {
               subtitle: i18n('ui_concurrent_refresh_requests_too_many_may_trigger'),
               icon: Remix.server_line,
               options: [
-                for (final int value in _concurrencyChoices)
-                  value == 4 ? '$value · ${i18n('recommended')}' : '$value',
+                for (final int value in _concurrencyChoices) value == 4 ? '$value · ${i18n('recommended')}' : '$value',
               ],
-              index: _concurrencyChoices.indexOf(refreshState.maxConcurrentRefresh).clamp(0, _concurrencyChoices.length - 1),
+              index: _concurrencyChoices
+                  .indexOf(refreshState.maxConcurrentRefresh)
+                  .clamp(0, _concurrencyChoices.length - 1),
               onChanged: (i) =>
                   refresh.updateSettings(refreshState.copyWith(maxConcurrentRefresh: _concurrencyChoices[i])),
             ),

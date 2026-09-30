@@ -2,7 +2,6 @@ import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The idle board: trending words from the search square, the entry newBV's
 /// TV search starts from.
@@ -27,24 +26,24 @@ class VideoHotwordBoard extends StatelessWidget {
     }
     return DpadRegion(
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(24.sp),
+        padding: EdgeInsets.all(24.ts(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.local_fire_department_rounded, size: 26.sp, color: accent),
-                SizedBox(width: 8.sp),
+                Icon(Icons.local_fire_department_rounded, size: 26.ts(context), color: accent),
+                SizedBox(width: 8.ts(context)),
                 Text(
                   i18n('video_search_hotwords'),
                   style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600, color: accent),
                 ),
               ],
             ),
-            SizedBox(height: 16.sp),
+            SizedBox(height: 16.ts(context)),
             Wrap(
-              spacing: 12.sp,
-              runSpacing: 12.sp,
+              spacing: 12.ts(context),
+              runSpacing: 12.ts(context),
               children: [
                 for (final (index, word) in hotwords.indexed)
                   TvFocusable(
@@ -55,8 +54,8 @@ class VideoHotwordBoard extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 20.ts(context), vertical: 10.ts(context)),
                       decoration: BoxDecoration(
                         color: tvTheme.cardColor,
-                        borderRadius: BorderRadius.circular(24.sp),
-                        border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+                        borderRadius: BorderRadius.circular(24.ts(context)),
+                        border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -68,7 +67,7 @@ class VideoHotwordBoard extends StatelessWidget {
                               color: index < 3 ? Colors.redAccent : tvTheme.secondaryTextColor,
                             ),
                           ),
-                          SizedBox(width: 8.sp),
+                          SizedBox(width: 8.ts(context)),
                           Text(
                             word.keyword,
                             style: AppTextStyles.t16.copyWith(

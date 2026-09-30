@@ -153,10 +153,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
         if (_status.isNotEmpty)
           Padding(
             padding: EdgeInsets.only(left: 16.w, top: 10.h),
-            child: Text(
-              _status,
-              style: AppTextStyles.t16.copyWith(color: theme.focusColor),
-            ),
+            child: Text(_status, style: AppTextStyles.t16.copyWith(color: theme.focusColor)),
           ),
       ],
     );
@@ -295,7 +292,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
           TvButton(
             title: i18n('sync'),
             size: TvButtonSize.mini,
-            icon: Icon(Icons.cloud_download_outlined, size: 18.sp),
+            icon: Icon(Icons.cloud_download_outlined, size: 18.ts(context)),
             onTap: onSync,
           ),
         if (autoSync != null) ...[
@@ -304,7 +301,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
             title: i18n('auto_sync'),
             size: TvButtonSize.mini,
             selected: autoSync,
-            icon: Icon(Icons.autorenew_rounded, size: 18.sp),
+            icon: Icon(Icons.autorenew_rounded, size: 18.ts(context)),
             onTap: () => onAutoSync?.call(!autoSync),
           ),
         ],
@@ -312,7 +309,7 @@ class _IptvResourcesSectionPageState extends State<IptvResourcesSectionPage> {
         TvButton(
           title: i18n('delete'),
           size: TvButtonSize.mini,
-          icon: Icon(Icons.delete_outline_rounded, size: 18.sp),
+          icon: Icon(Icons.delete_outline_rounded, size: 18.ts(context)),
           onTap: onDelete,
         ),
       ],

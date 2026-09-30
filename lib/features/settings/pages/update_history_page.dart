@@ -42,7 +42,7 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
         TvButton(
           title: i18n('refresh'),
           size: TvButtonSize.mini,
-          icon: Icon(Remix.refresh_line, size: 22.sp),
+          icon: Icon(Remix.refresh_line, size: 22.ts(context)),
           onTap: state.historyLoading ? null : controller.loadHistory,
         ),
       ],
@@ -53,14 +53,14 @@ class _UpdateHistoryPageState extends ConsumerState<UpdateHistoryPage> {
           children: <Widget>[
             _buildRecordsHeader(state, controller),
             TvSettingsCard(children: <Widget>[_buildRecords(state)]),
-            SizedBox(height: 24.sp),
+            SizedBox(height: 24.ts(context)),
             TvSettingsGroupTitle(
               title: state.currentVersion.isEmpty
                   ? i18n('version_history')
                   : '${i18n('version_history')} · ${i18n('current_version')}v${state.currentVersion}',
             ),
             TvSettingsCard(children: <Widget>[_buildReleases(state, controller)]),
-            SizedBox(height: 40.sp),
+            SizedBox(height: 40.ts(context)),
           ],
         ),
       ),
@@ -221,14 +221,14 @@ Future<void> showReleaseNotesDialog({required BuildContext context, required Rel
           children: <Widget>[
             SizedBox(
               width: double.infinity,
-              height: 380.sp,
+              height: 380.ts(context),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     if (release.date.isNotEmpty)
                       Padding(
-                        padding: EdgeInsets.only(bottom: 12.sp),
+                        padding: EdgeInsets.only(bottom: 12.ts(context)),
                         child: Text(
                           i18n('version_published_at', args: <String, String>{'date': release.date}),
                           style: AppTextStyles.t16.copyWith(color: tvTheme.secondaryTextColor),
@@ -243,21 +243,21 @@ Future<void> showReleaseNotesDialog({required BuildContext context, required Rel
               ),
             ),
             if (release.files.isNotEmpty) ...<Widget>[
-              SizedBox(height: 16.sp),
+              SizedBox(height: 16.ts(context)),
               Text(
                 i18n('update_assets'),
                 style: AppTextStyles.t17.copyWith(fontWeight: FontWeight.w600, color: tvTheme.secondaryTextColor),
               ),
-              SizedBox(height: 10.sp),
+              SizedBox(height: 10.ts(context)),
               Wrap(
-                spacing: 12.sp,
-                runSpacing: 12.sp,
+                spacing: 12.ts(context),
+                runSpacing: 12.ts(context),
                 children: <Widget>[
                   for (final ReleaseFileModel file in release.files)
                     TvButton(
                       title: '${file.name}${file.size.isEmpty ? '' : ' · ${file.size}'}',
                       size: TvButtonSize.mini,
-                      icon: Icon(Icons.download_rounded, size: 20.sp),
+                      icon: Icon(Icons.download_rounded, size: 20.ts(context)),
                       onTap: file.url.startsWith('http')
                           ? () {
                               Navigator.of(dialogContext).pop();
@@ -268,7 +268,7 @@ Future<void> showReleaseNotesDialog({required BuildContext context, required Rel
                 ],
               ),
             ],
-            SizedBox(height: 20.sp),
+            SizedBox(height: 20.ts(context)),
             Align(
               alignment: Alignment.centerRight,
               child: TvButton(

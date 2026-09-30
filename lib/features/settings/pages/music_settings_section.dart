@@ -1,6 +1,6 @@
 import 'package:pure_live/exports/package_export.dart';
-import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
+import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
 /// Music-mode settings (music's own section, separate from live/video):
 /// the defaults the shared VOD engine boots with in music mode.
@@ -18,9 +18,7 @@ class MusicSettingsSectionPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final savedMode = MusicPlayMode.values
-        .where((m) => m.name == HivePrefUtil.getString(_playModeKey))
-        .firstOrNull;
+    final savedMode = MusicPlayMode.values.where((m) => m.name == HivePrefUtil.getString(_playModeKey)).firstOrNull;
     final modeIndex = switch (savedMode ?? MusicPlayMode.sequence) {
       MusicPlayMode.sequence => 0,
       MusicPlayMode.loopOne => 1,
@@ -40,11 +38,7 @@ class MusicSettingsSectionPage extends ConsumerWidget {
               title: i18n('music_default_play_mode'),
               subtitle: i18n('music_default_play_mode_desc'),
               icon: Remix.repeat_2_line,
-              options: [
-                i18n('music_mode_sequence'),
-                i18n('music_mode_loop_one'),
-                i18n('music_mode_random'),
-              ],
+              options: [i18n('music_mode_sequence'), i18n('music_mode_loop_one'), i18n('music_mode_random')],
               index: modeIndex,
               onChanged: (index) {
                 final mode = switch (index) {
@@ -82,7 +76,7 @@ class MusicSettingsSectionPage extends ConsumerWidget {
             ),
           ],
         ),
-        SizedBox(height: 20.sp),
+        SizedBox(height: 20.ts(context)),
       ],
     );
   }

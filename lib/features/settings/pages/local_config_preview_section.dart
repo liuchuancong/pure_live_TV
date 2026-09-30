@@ -51,11 +51,11 @@ class _LocalConfigPreviewSectionPageState extends ConsumerState<LocalConfigPrevi
           '${i18n('backup_version')} v$_version   ·   ${i18n('backup_settings')} $_sectionCount',
           style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
         ),
-        SizedBox(height: 12.sp),
+        SizedBox(height: 12.ts(context)),
         // Bordered rather than rounded: the TV pages mark regions with a border.
         Container(
           width: double.infinity,
-          padding: EdgeInsets.all(16.sp),
+          padding: EdgeInsets.all(16.ts(context)),
           decoration: BoxDecoration(border: Border.all(color: tvTheme.secondaryTextColor.withValues(alpha: 0.3))),
           child: SelectableText(
             _json,

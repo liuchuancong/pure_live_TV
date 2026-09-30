@@ -1,9 +1,7 @@
 import 'dart:io';
-
 import 'package:pure_live/services/index.dart';
 import 'package:pure_live/exports/package_export.dart';
 import 'package:pure_live/core/dialog/backup_import_dialog.dart';
-
 
 /// The menu one backup row opens.
 enum BackupAction { restore, delete }
@@ -87,13 +85,13 @@ class BackupManageSectionPageState extends ConsumerState<BackupManageSectionPage
           title: i18n('recover_backup'),
           subtitle: i18n('recover_backup_subtitle'),
           value: BackupAction.restore,
-          leading: Icon(Remix.file_upload_line, size: 26.sp),
+          leading: Icon(Remix.file_upload_line, size: 26.ts(context)),
         ),
         TvMenuItem(
           title: i18n('delete'),
           subtitle: i18nOr('delete_backup_subtitle', 'Pick a local backup file and delete it'),
           value: BackupAction.delete,
-          leading: Icon(Remix.delete_bin_line, size: 26.sp),
+          leading: Icon(Remix.delete_bin_line, size: 26.ts(context)),
         ),
       ],
     );

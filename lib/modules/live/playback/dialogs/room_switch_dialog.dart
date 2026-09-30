@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:pure_live/services/settings/settings.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/app/router/app_router.dart';
 import 'package:pure_live/modules/live/playback/models/live_play_args.dart';

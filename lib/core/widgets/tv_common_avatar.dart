@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/tv_theme_x.dart';
+import 'package:pure_live/core/theme/tv_text_scale.dart';
 import 'package:pure_live/core/utils/cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvCommonAvatar extends StatelessWidget {
   final String? avatarUrl;
@@ -13,7 +13,7 @@ class TvCommonAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tvTheme = context.tvTheme;
-    final double r = radius ?? 28.sp;
+    final double r = radius ?? 28.ts(context);
     final double size = r * 2;
     final hasAvatar = avatarUrl != null && avatarUrl!.isNotEmpty;
 

@@ -5,7 +5,6 @@ import 'package:pure_live/exports/common_export.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/modules/vod/models/models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/music/widgets/music_song_menu.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 import 'package:pure_live/modules/music/pages/playback/widgets/player_now_playing_view.dart' show stripTrackOrdinal;
@@ -25,7 +24,7 @@ class _QueueRow extends StatelessWidget {
   /// Height of one row, margins included — the host list's `itemExtent` and
   /// its keep-in-view arithmetic read the same constant, so the highlight
   /// cannot drift off the rows it marks.
-  static double get extent => 96.0.sp;
+  static double get extent => 96.0;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +36,7 @@ class _QueueRow extends StatelessWidget {
     final Color muted = selected ? Colors.white70 : Colors.white54;
 
     return Container(
-      height: 88.0.sp,
+      height: 88.0.ts(context),
       margin: EdgeInsets.symmetric(vertical: 4.ts(context)),
       padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
       decoration: BoxDecoration(
@@ -46,37 +45,37 @@ class _QueueRow extends StatelessWidget {
             : isCurrent
             ? accent.withValues(alpha: 0.22)
             : Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14.sp),
+        borderRadius: BorderRadius.circular(14.ts(context)),
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 34.sp,
+            width: 34.ts(context),
             child: isCurrent
-                ? Icon(Icons.play_arrow_rounded, size: 32.sp, color: selected ? Colors.white : accent)
+                ? Icon(Icons.play_arrow_rounded, size: 32.ts(context), color: selected ? Colors.white : accent)
                 : Text(
                     '${index + 1}',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w500, color: muted),
                   ),
           ),
-          SizedBox(width: 12.sp),
+          SizedBox(width: 12.ts(context)),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10.sp),
+            borderRadius: BorderRadius.circular(10.ts(context)),
             child: Container(
-              width: 104.sp,
-              height: 64.sp,
+              width: 104.ts(context),
+              height: 64.ts(context),
               color: Colors.white.withValues(alpha: 0.08),
               child: CachedNetworkImage(
                 imageUrl: track.archive.cover,
                 fit: BoxFit.cover,
                 memCacheWidth: 240,
                 fadeInDuration: Duration.zero,
-                errorWidget: (_, _, _) => Icon(Icons.music_note_rounded, size: 26.sp, color: Colors.white24),
+                errorWidget: (_, _, _) => Icon(Icons.music_note_rounded, size: 26.ts(context), color: Colors.white24),
               ),
             ),
           ),
-          SizedBox(width: 14.sp),
+          SizedBox(width: 14.ts(context)),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -91,11 +90,11 @@ class _QueueRow extends StatelessWidget {
                     color: isCurrent && !selected ? accent : foreground,
                   ),
                 ),
-                SizedBox(height: 4.sp),
+                SizedBox(height: 4.ts(context)),
                 Row(
                   children: [
-                    Icon(Icons.album_rounded, size: 18.sp, color: muted),
-                    SizedBox(width: 4.sp),
+                    Icon(Icons.album_rounded, size: 18.ts(context), color: muted),
+                    SizedBox(width: 4.ts(context)),
                     Expanded(
                       child: Text(
                         isMulti ? track.archive.title : track.archive.upName,
@@ -110,12 +109,12 @@ class _QueueRow extends StatelessWidget {
             ),
           ),
           if (isMulti) ...[
-            SizedBox(width: 8.sp),
+            SizedBox(width: 8.ts(context)),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.ts(context), vertical: 2.ts(context)),
               decoration: BoxDecoration(
                 color: selected ? Colors.white.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(6.sp),
+                borderRadius: BorderRadius.circular(6.ts(context)),
               ),
               child: Text(
                 'P${track.part.page}/${track.archive.parts.length}',
@@ -179,7 +178,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
     if (viewport <= 0) return;
 
     final rowExtent = _QueueRow.extent;
-    final topPadding = 4.0.sp;
+    final topPadding = 4.0.ts(context);
     final margin = rowExtent;
     final rowTop = topPadding + _selected * rowExtent;
     final rowBottom = rowTop + rowExtent;
@@ -279,7 +278,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(24.sp),
+        borderRadius: BorderRadius.circular(24.ts(context)),
         border: Border.all(color: accent.withValues(alpha: 0.5)),
       ),
       child: Column(
@@ -336,7 +335,12 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                     onKeyEvent: _onKeyEvent,
                     child: ListView.builder(
                       controller: _scroll,
-                      padding: EdgeInsets.only(left: 12.sp, right: 12.sp, top: 4.sp, bottom: 16.sp),
+                      padding: EdgeInsets.only(
+                        left: 12.ts(context),
+                        right: 12.ts(context),
+                        top: 4.ts(context),
+                        bottom: 16.ts(context),
+                      ),
                       itemCount: queue.length,
                       // Exact row heights: the scroll arithmetic in
                       // [_scrollToSelection] is whole-row exact, so the last
@@ -358,7 +362,7 @@ class MusicQueuePanelState extends ConsumerState<MusicQueuePanel> {
                   ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(20.sp, 0, 20.sp, 12.sp),
+            padding: EdgeInsets.fromLTRB(20.ts(context), 0, 20.ts(context), 12.ts(context)),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(

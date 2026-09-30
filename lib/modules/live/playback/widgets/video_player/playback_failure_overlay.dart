@@ -90,11 +90,11 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48.sp, color: tvTheme.secondaryTextColor),
-            SizedBox(height: 12.sp),
+            Icon(Icons.error_outline, size: 48.ts(context), color: tvTheme.secondaryTextColor),
+            SizedBox(height: 12.ts(context)),
             SizedBox(
               // The message's line budget must survive the enlarged text: a
-              // fixed 560.sp held fewer words per line once every glyph grew,
+              // fixed 560.ts(context) held fewer words per line once every glyph grew,
               // and the third line then ellipsised mid-sentence.
               width: 560.ts(context),
               child: Text(
@@ -105,12 +105,12 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
                 style: AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500, color: tvTheme.primaryTextColor),
               ),
             ),
-            SizedBox(height: 10.sp),
+            SizedBox(height: 10.ts(context)),
             Text(
               i18nOr('ui_panel_keys_adjust', '←→ 选择 · OK 确认'),
               style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: tvTheme.secondaryTextColor),
             ),
-            SizedBox(height: 20.sp),
+            SizedBox(height: 20.ts(context)),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -122,7 +122,7 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
                   icon: Icons.refresh,
                   onTap: widget.onRetry,
                 ),
-                SizedBox(width: 16.sp),
+                SizedBox(width: 16.ts(context)),
                 _pill(
                   tvTheme,
                   index: 1,
@@ -163,17 +163,23 @@ class _PlaybackFailureOverlayState extends State<PlaybackFailureOverlay> {
         padding: EdgeInsets.symmetric(horizontal: 22.ts(context) * scale, vertical: 12.ts(context) * scale),
         decoration: BoxDecoration(
           color: background,
-          borderRadius: BorderRadius.circular(12.sp),
+          borderRadius: BorderRadius.circular(12.ts(context)),
           border: Border.all(color: selected ? Colors.white.withValues(alpha: 0.85) : Colors.transparent),
           boxShadow: selected
-              ? [BoxShadow(color: tvTheme.focusColor.withValues(alpha: 0.55), blurRadius: 14.sp, spreadRadius: 1.sp)]
+              ? [
+                  BoxShadow(
+                    color: tvTheme.focusColor.withValues(alpha: 0.55),
+                    blurRadius: 14.ts(context),
+                    spreadRadius: 1.ts(context),
+                  ),
+                ]
               : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20.sp * scale, color: Colors.white),
-            SizedBox(width: 8.sp * scale),
+            Icon(icon, size: 20.ts(context) * scale, color: Colors.white),
+            SizedBox(width: 8.ts(context) * scale),
             Text(
               label,
               style: AppTextStyles.t16.copyWith(fontWeight: FontWeight.w600, color: Colors.white),

@@ -94,33 +94,33 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
           : season == null
           ? AppStatusView(type: AppStatusType.loading, title: '', subtitle: '')
           : Padding(
-              padding: EdgeInsets.all(24.sp),
+              padding: EdgeInsets.all(24.ts(context)),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    width: 340.sp,
+                    width: 340.ts(context),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(16.sp),
+                          borderRadius: BorderRadius.circular(16.ts(context)),
                           child: AspectRatio(
                             aspectRatio: 3 / 4,
                             child: CachedNetworkImage(imageUrl: season.cover, fit: BoxFit.cover, memCacheWidth: 720),
                           ),
                         ),
-                        SizedBox(height: 16.sp),
+                        SizedBox(height: 16.ts(context)),
                         Row(
                           children: [
                             if (season.rating > 0) ...[
-                              Icon(Icons.star_rounded, size: 24.sp, color: Colors.amber),
-                              SizedBox(width: 6.sp),
+                              Icon(Icons.star_rounded, size: 24.ts(context), color: Colors.amber),
+                              SizedBox(width: 6.ts(context)),
                               Text(
                                 season.rating.toStringAsFixed(1),
                                 style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w700, color: Colors.amber),
                               ),
-                              SizedBox(width: 16.sp),
+                              SizedBox(width: 16.ts(context)),
                             ],
                             Text(
                               '${season.episodes.length} ${i18n('video_pgc_episodes_unit')}',
@@ -132,17 +132,17 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                           ],
                         ),
                         if (season.styles.isNotEmpty) ...[
-                          SizedBox(height: 10.sp),
+                          SizedBox(height: 10.ts(context)),
                           Wrap(
-                            spacing: 8.sp,
-                            runSpacing: 8.sp,
+                            spacing: 8.ts(context),
+                            runSpacing: 8.ts(context),
                             children: [
                               for (final style in season.styles.take(6))
                                 Container(
                                   padding: EdgeInsets.symmetric(horizontal: 12.ts(context), vertical: 4.ts(context)),
                                   decoration: BoxDecoration(
                                     color: tvTheme.cardColor,
-                                    borderRadius: BorderRadius.circular(14.sp),
+                                    borderRadius: BorderRadius.circular(14.ts(context)),
                                   ),
                                   child: Text(
                                     style,
@@ -155,7 +155,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                             ],
                           ),
                         ],
-                        SizedBox(height: 12.sp),
+                        SizedBox(height: 12.ts(context)),
                         Expanded(
                           child: SingleChildScrollView(
                             child: Text(
@@ -167,13 +167,13 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                       ],
                     ),
                   ),
-                  SizedBox(width: 32.sp),
+                  SizedBox(width: 32.ts(context)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsets.only(left: 8.sp, bottom: 12.sp),
+                          padding: EdgeInsets.only(left: 8.ts(context), bottom: 12.ts(context)),
                           child: Row(
                             children: [
                               Text(
@@ -183,7 +183,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                               const Spacer(),
                               TvButton(
                                 title: i18n('music_play_all'),
-                                icon: Icon(Icons.play_circle_fill_rounded, size: 28.sp),
+                                icon: Icon(Icons.play_circle_fill_rounded, size: 28.ts(context)),
                                 size: TvButtonSize.mini,
                                 onTap: () => _play(0),
                               ),
@@ -194,7 +194,7 @@ class _VideoSeasonPageState extends ConsumerState<VideoSeasonPage> {
                           child: DpadRegion(
                             horizontalEdge: DpadEdgeBehavior.leave,
                             child: GridView.builder(
-                              padding: EdgeInsets.only(bottom: 16.sp),
+                              padding: EdgeInsets.only(bottom: 16.ts(context)),
                               gridDelegate: TvAdaptiveGrid.media(
                                 context,
                                 crossAxisCount: 4,
@@ -236,8 +236,8 @@ class _EpisodeTile extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 14.ts(context)),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
-          borderRadius: BorderRadius.circular(12.sp),
-          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.sp),
+          borderRadius: BorderRadius.circular(12.ts(context)),
+          border: Border.all(color: focused ? accent : Colors.transparent, width: 2.ts(context)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -254,7 +254,7 @@ class _EpisodeTile extends StatelessWidget {
               ),
             ),
             if (episode.badge.isNotEmpty) ...[
-              SizedBox(height: 6.sp),
+              SizedBox(height: 6.ts(context)),
               Text(
                 episode.badge,
                 style: AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500, color: accent),

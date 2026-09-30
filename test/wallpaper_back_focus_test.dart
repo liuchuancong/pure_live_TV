@@ -1,11 +1,11 @@
 import 'package:dpad/dpad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// 设置 → 主题设置 → 背景设置 → 纯色/视频: coming **back** to 背景设置 left the screen with
 /// no highlight and a dead remote.
@@ -23,15 +23,27 @@ void main() {
       initialLocation: '/home',
       observers: <NavigatorObserver>[tvRouteObserver],
       routes: <RouteBase>[
-        GoRoute(path: '/home', builder: (context, state) => const _Page(title: 'home', rows: 3)),
-        GoRoute(path: '/settings', builder: (context, state) => const _Page(title: 'settings', rows: 3)),
+        GoRoute(
+          path: '/home',
+          builder: (context, state) => const _Page(title: 'home', rows: 3),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const _Page(title: 'settings', rows: 3),
+        ),
         ShellRoute(
           builder: (context, state, child) => child,
           routes: <RouteBase>[
-            GoRoute(path: '/settings/theme', builder: (context, state) => const _Page(title: 'theme', rows: 3)),
+            GoRoute(
+              path: '/settings/theme',
+              builder: (context, state) => const _Page(title: 'theme', rows: 3),
+            ),
           ],
         ),
-        GoRoute(path: '/wallpaper', builder: (context, state) => const _Page(title: 'wallpaper', rows: 4)),
+        GoRoute(
+          path: '/wallpaper',
+          builder: (context, state) => const _Page(title: 'wallpaper', rows: 4),
+        ),
         GoRoute(path: '/wallpaper_items', builder: (context, state) => const _GridPage()),
       ],
     );
@@ -132,7 +144,7 @@ class _Page extends StatelessWidget {
     return TvPageScaffold(
       title: title,
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(16.sp),
+        padding: EdgeInsets.all(16.ts(context)),
         child: Column(
           children: <Widget>[
             for (int row = 1; row <= rows; row++)
@@ -157,10 +169,9 @@ class _GridPage extends StatelessWidget {
         verticalEdge: DpadEdgeBehavior.leave,
         child: GridView.count(
           crossAxisCount: 4,
-          padding: EdgeInsets.all(16.sp),
+          padding: EdgeInsets.all(16.ts(context)),
           children: <Widget>[
-            for (int i = 1; i <= 8; i++)
-              TvSettingsNavTile(title: 'tile $i', icon: Icons.image_outlined, onTap: () {}),
+            for (int i = 1; i <= 8; i++) TvSettingsNavTile(title: 'tile $i', icon: Icons.image_outlined, onTap: () {}),
           ],
         ),
       ),

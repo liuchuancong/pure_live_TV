@@ -4,8 +4,8 @@ import 'package:pure_live/core/widgets/index.dart';
 import 'package:pure_live/app/consts/app_consts.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:pure_live/services/settings/settings.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -325,7 +325,7 @@ class _AppStatusViewState extends State<AppStatusView> {
     // The empty state's sentences follow the app font, and so do its loader
     // and artwork: a fixed disc would sit beside text twice its size.
     final double textScale = TvTextScale.factorOf(context).clamp(1.0, 1.1);
-    final double size = (widget.isMini ? 32.sp : 48.sp) * textScale;
+    final double size = (widget.isMini ? 32.ts(context) : 48.ts(context)) * textScale;
     return tvInlineLoading(context, size: size, color: parsedColor);
   }
 
@@ -347,7 +347,7 @@ class _AppStatusViewState extends State<AppStatusView> {
         widget.buttonTextIcon ??
         Icon(
           widget.type == AppStatusType.notLogin ? Remix.login_box_fill : Icons.refresh_rounded,
-          size: 24.sp * textScaler,
+          size: 24.ts(context) * textScaler,
         );
 
     // The column must survive extreme font scales (a 720p panel's lift plus
@@ -363,18 +363,18 @@ class _AppStatusViewState extends State<AppStatusView> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.all((widget.isMini ? 8.sp : 22.sp) * textScaler),
+                  padding: EdgeInsets.all((widget.isMini ? 8.ts(context) : 22.ts(context)) * textScaler),
                   // Accent-tinted disc instead of a grey-on-grey circle: the empty
                   // state is the page's voice, it should carry the palette.
                   decoration: BoxDecoration(
                     color: tvTheme.focusColor.withValues(alpha: 0.10),
                     shape: BoxShape.circle,
-                    border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.sp),
+                    border: Border.all(color: tvTheme.focusColor.withValues(alpha: 0.35), width: 1.5.ts(context)),
                   ),
                   child: Icon(
                     widget.icon ??
                         (widget.type == AppStatusType.error ? Icons.wifi_off_rounded : Icons.live_tv_rounded),
-                    size: (widget.isMini ? 36.sp : 64.sp) * textScaler,
+                    size: (widget.isMini ? 36.ts(context) : 64.ts(context)) * textScaler,
                     color: widget.iconColor ?? tvTheme.focusColor,
                   ),
                 ).animate().scaleXY(begin: 0, end: 1, duration: 1000.ms, curve: Curves.elasticOut),
@@ -384,23 +384,23 @@ class _AppStatusViewState extends State<AppStatusView> {
                     finalTitle,
                     style: AppTextStyles.t24.copyWith(
                       fontWeight: FontWeight.w600,
-                      fontSize: 24.sp * textScaler,
+                      fontSize: 24.ts(context) * textScaler,
                       color: widget.titleColor ?? tvTheme.primaryTextColor,
                     ),
                   ),
                 ],
                 if (!widget.isMini || finalSubtitle.isNotEmpty) ...[
-                  SizedBox(height: 6.sp * textScaler),
+                  SizedBox(height: 6.ts(context) * textScaler),
                   Text(
                     finalSubtitle,
                     style: AppTextStyles.t24.copyWith(
                       color: widget.subtitleColor ?? tvTheme.secondaryTextColor,
-                      fontSize: 24.sp * textScaler,
+                      fontSize: 24.ts(context) * textScaler,
                     ),
                   ),
                 ],
                 if (!widget.isMini && (widget.onTap != null || widget.onSecondaryTap != null)) ...[
-                  SizedBox(height: 24.sp * textScaler),
+                  SizedBox(height: 24.ts(context) * textScaler),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -413,11 +413,13 @@ class _AppStatusViewState extends State<AppStatusView> {
                           size: TvButtonSize.small,
                           onTap: widget.onTap,
                         ),
-                      if (widget.onTap != null && widget.onSecondaryTap != null) SizedBox(width: 16.sp),
+                      if (widget.onTap != null && widget.onSecondaryTap != null) SizedBox(width: 16.ts(context)),
                       if (widget.onSecondaryTap != null)
                         TvButton(
                           title: widget.secondaryButtonText ?? i18n('search_live'),
-                          icon: widget.secondaryButtonIcon ?? Icon(Icons.search_rounded, size: 24.sp * textScaler),
+                          icon:
+                              widget.secondaryButtonIcon ??
+                              Icon(Icons.search_rounded, size: 24.ts(context) * textScaler),
                           iconPosition: TvIconPosition.left,
                           size: TvButtonSize.small,
                           isSecondary: true,
