@@ -1,6 +1,5 @@
 part of 'video_controller_panel.dart';
 
-
 /// The player's control layer: **no d-pad, no Flutter focus traversal**.
 ///
 /// Ported from the reference player (`E:/project/pure_live_TV/lib/modules/
@@ -502,7 +501,7 @@ class _VideoControllerPanelState extends ConsumerState<VideoControllerPanel> {
       padding: EdgeInsets.only(bottom: 12.sp * scale),
       child: Center(
         child: Container(
-          width: _optionsWidth.sp * scale,
+          width: _optionsWidth.ts(context) * scale,
           constraints: BoxConstraints(maxHeight: 560.sp * scale),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.92),
@@ -682,9 +681,9 @@ class _Pill extends StatelessWidget {
       child: AnimatedContainer(
         duration: TvFocusStyle.focusDuration(selected),
         curve: TvFocusStyle.curve,
-        height: _height.sp * scale,
+        height: _height.ts(context) * scale,
         alignment: Alignment.center,
-        padding: EdgeInsets.symmetric(horizontal: _hPadding.sp * scale),
+        padding: EdgeInsets.symmetric(horizontal: _hPadding.ts(context) * scale),
         decoration: BoxDecoration(
           color: background,
           borderRadius: radius,
@@ -697,21 +696,21 @@ class _Pill extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (loading)
-              tvInlineLoading(context, size: _iconSize.sp * scale, color: loadingColor)
+              tvInlineLoading(context, size: _iconSize.ts(context) * scale, color: loadingColor)
             else if (asset != null)
               SvgPicture.asset(
                 asset!,
-                width: _iconSize.sp * scale,
-                height: _iconSize.sp * scale,
+                width: _iconSize.ts(context) * scale,
+                height: _iconSize.ts(context) * scale,
                 colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn),
               )
             else if (icon != null)
-              Icon(icon, size: _iconSize.sp * scale, color: foreground),
-            if (loading || asset != null || icon != null) SizedBox(width: _gap.sp * scale),
+              Icon(icon, size: _iconSize.ts(context) * scale, color: foreground),
+            if (loading || asset != null || icon != null) SizedBox(width: _gap.ts(context) * scale),
             Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
             if (trailing != null) ...[
-              SizedBox(width: _gap.sp * scale),
-              Icon(trailing, size: _trailingSize.sp * scale, color: foreground),
+              SizedBox(width: _gap.ts(context) * scale),
+              Icon(trailing, size: _trailingSize.ts(context) * scale, color: foreground),
             ],
           ],
         ),

@@ -103,7 +103,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
     return Column(
       children: [
         _buildHeader(currentTvTheme, isServerRunning),
-        SizedBox(height: _itemGap.sp),
+        SizedBox(height: _itemGap.ts(context)),
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -126,7 +126,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
 
   Widget _buildHeader(TvThemeData currentTvTheme, bool isServerRunning) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: _pagePadding.sp),
+      padding: EdgeInsets.symmetric(horizontal: _pagePadding.ts(context)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -177,7 +177,7 @@ class _MoviePlaybackPageState extends ConsumerState<MoviePlaybackPage> {
   Widget _buildInputSection(TvThemeData currentTvTheme, Color themeColor) {
     return Expanded(
       flex: 6,
-      child: Padding(padding: EdgeInsets.all(_pagePadding.sp), child: _buildSupportInfo(currentTvTheme)),
+      child: Padding(padding: EdgeInsets.all(_pagePadding.ts(context)), child: _buildSupportInfo(currentTvTheme)),
     );
   }
 

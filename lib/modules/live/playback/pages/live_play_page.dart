@@ -44,8 +44,8 @@ class LivePlayPage extends ConsumerWidget {
               Positioned(
                 top: 24.sp,
                 bottom: 24.sp,
-                left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.sp : null,
-                right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.sp,
+                left: PlayerPanelLayout.isLeft ? PlayerPanelLayout.offset.ts(context) : null,
+                right: PlayerPanelLayout.isLeft ? null : PlayerPanelLayout.offset.ts(context),
                 // The frame tracks the same text factor the panels inside size
                 // themselves by (400 design px at 100%): a fixed frame clipped
                 // an enlarged panel's rows instead of growing with them.

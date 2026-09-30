@@ -1,8 +1,8 @@
 ﻿import 'package:dpad/dpad.dart';
 import 'package:pure_live/exports/exports.dart';
 import 'package:pure_live/domains/device/tv_remote_receiver.dart';
-import 'package:pure_live/modules/live/search/search_history_controller.dart';
 import 'package:pure_live/modules/live/search/tv_search_provider.dart';
+import 'package:pure_live/modules/live/search/search_history_controller.dart';
 
 class TvSearchPage extends ConsumerStatefulWidget {
   const TvSearchPage({super.key});
@@ -89,13 +89,13 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: _pagePadding.sp, vertical: (_pagePadding * 1.2).sp),
+        padding: EdgeInsets.symmetric(horizontal: _pagePadding.ts(context), vertical: (_pagePadding * 1.2).sp),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(
-              width: _centerWidgetWidth.sp,
+              width: _centerWidgetWidth.ts(context),
               child: const RemoteSyncQrCard(width: 240, route: WebRemoteRouter.search),
             ),
             SizedBox(height: (_itemGap * 0.7).sp),
@@ -108,7 +108,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                 ref.read(tvSearchNotifierProvider.notifier).changeSiteTab(index);
               },
             ),
-            SizedBox(height: _itemGap.sp),
+            SizedBox(height: _itemGap.ts(context)),
             // A long ellipse: wider than the rest of the column, fully
             // pill-rounded (radius = half the height) and quiet — card fill,
             // a hairline neutral border that turns into the accent ring only
@@ -126,11 +126,7 @@ class _TvSearchPageState extends ConsumerState<TvSearchPage> {
                   onTap: () => _onSearchSubmit(_searchController.text),
                   child: Padding(
                     padding: EdgeInsets.only(right: 16.sp),
-                    child: Icon(
-                      Icons.search_rounded,
-                      color: tvTheme.secondaryTextColor,
-                      size: 28.ts(context),
-                    ),
+                    child: Icon(Icons.search_rounded, color: tvTheme.secondaryTextColor, size: 28.ts(context)),
                   ),
                 ),
                 builder: (content, isFocused) {

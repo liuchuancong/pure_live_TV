@@ -8,7 +8,6 @@ import 'package:pure_live/modules/vod/api/bilibili_music_api.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/modules/vod/controllers/music_player_controller.dart';
 
-
 /// Bottom controls, live_play's index-driven model: the bar holds ONE focus
 /// node and owns every key while visible — left/right walk the buttons (with
 /// wrap), OK activates the highlighted one, down drops into the seek strip
@@ -375,7 +374,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
                 // overflowed (304px) and a Wrap spilled to a second line where
                 // the index walked invisibly. The row follows the selection.
                 SizedBox(
-                  height: _BarPill.height,
+                  height: _BarPill.height(context),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.zero,
@@ -406,7 +405,7 @@ class VideoPlayerControlBarState extends ConsumerState<VideoPlayerControlBar> {
 /// The live bar's pill: accent fill plus a scale lift is the whole selected
 /// treatment (no ring — a border insets the fill and reads as a dark edge),
 /// over a translucent base when idle. An active state tints its glyph.
-class _BarPill extends StatelessWidget {
+class _BarPill extends StatefulWidget {
   const _BarPill({
     required this.icon,
     required this.label,
@@ -421,7 +420,7 @@ class _BarPill extends StatelessWidget {
   static const double _hPadding = 18;
   static const double _gap = 8;
 
-  static double get height => _height.sp;
+  static double height(BuildContext context) => _height.ts(context);
 
   final Widget icon;
   final String label;
@@ -431,36 +430,45 @@ class _BarPill extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
+  State<_BarPill> createState() => _BarPillState();
+}
+
+class _BarPillState extends State<_BarPill> {
+  @override
   Widget build(BuildContext context) {
     const Color foreground = Colors.white;
-    final TextStyle textStyle = (selected ? AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600) : AppTextStyles.t20)
-        .copyWith(color: foreground);
+    final TextStyle textStyle =
+        (widget.selected ? AppTextStyles.t20.copyWith(fontWeight: FontWeight.w600) : AppTextStyles.t20).copyWith(
+          color: foreground,
+        );
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: AnimatedScale(
-        scale: selected ? 1.05 : 1.0,
-        duration: TvFocusStyle.focusDuration(selected),
+        scale: widget.selected ? 1.05 : 1.0,
+        duration: TvFocusStyle.focusDuration(widget.selected),
         curve: TvFocusStyle.curve,
         child: AnimatedContainer(
-          duration: TvFocusStyle.focusDuration(selected),
+          duration: TvFocusStyle.focusDuration(widget.selected),
           curve: TvFocusStyle.curve,
-          height: _height.sp,
+          height: _BarPill._height.ts(context),
           alignment: Alignment.center,
-          padding: EdgeInsets.symmetric(horizontal: _hPadding.sp),
+          padding: EdgeInsets.symmetric(horizontal: _BarPill._hPadding.ts(context)),
           decoration: BoxDecoration(
-            color: selected ? accent : Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular((_height / 3).sp),
+            color: widget.selected ? widget.accent : Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular((_BarPill._height / 3).ts(context)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconTheme.merge(
-                data: IconThemeData(color: selected ? foreground : (active ? accent : Colors.white70)),
-                child: icon,
+                data: IconThemeData(
+                  color: widget.selected ? foreground : (widget.active ? widget.accent : Colors.white70),
+                ),
+                child: widget.icon,
               ),
-              SizedBox(width: _gap.sp),
-              Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
+              SizedBox(width: _BarPill._gap.ts(context)),
+              Text(widget.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: textStyle),
             ],
           ),
         ),

@@ -74,7 +74,7 @@ class TvDialogOptionTile extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 20.sp * scale, vertical: 10.sp * scale),
           decoration: BoxDecoration(
             color: highlighted ? tvTheme.focusColor : tvTheme.subtleRowFill,
-            borderRadius: BorderRadius.circular(radius.sp),
+            borderRadius: BorderRadius.circular(radius.ts(context)),
             border: Border.all(
               color: focused ? tvTheme.focusColor : tvTheme.secondaryTextColor.withValues(alpha: 0.25),
               width: 1.sp,
@@ -98,10 +98,7 @@ class TvDialogOptionTile extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.t20.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: foreground,
-                      ),
+                      style: AppTextStyles.t20.copyWith(fontWeight: FontWeight.w500, color: foreground),
                     ),
                     if (subtitle != null && subtitle!.isNotEmpty)
                       Text(

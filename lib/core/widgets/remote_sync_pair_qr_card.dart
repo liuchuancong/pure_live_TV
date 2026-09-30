@@ -25,7 +25,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
     if (!snapshot.started || snapshot.qrData.isEmpty) {
       final String? error = snapshot.error;
       return Container(
-        width: width.sp,
+        width: width.ts(context),
         padding: EdgeInsets.all(16.sp),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
@@ -43,11 +43,7 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
                   height: 18.sp,
                   child: error == null
                       ? const CircularProgressIndicator(strokeWidth: 2)
-                      : Icon(
-                          Icons.error_outline_rounded,
-                          size: 18.ts(context),
-                          color: tvTheme.secondaryTextColor,
-                        ),
+                      : Icon(Icons.error_outline_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
                 ),
                 SizedBox(width: 10.sp),
                 Expanded(
@@ -75,11 +71,10 @@ class RemoteSyncPairQrCard extends ConsumerWidget {
     // The address is the ground truth for manual entry; the QR is a convenience
     // layer over it, so the address line always renders on its own.
     final String address = snapshot.address;
-    final String qrPayload =
-        (snapshot.qrData.length >= 12 && snapshot.qrData.contains('://')) ? snapshot.qrData : '';
+    final String qrPayload = (snapshot.qrData.length >= 12 && snapshot.qrData.contains('://')) ? snapshot.qrData : '';
 
     return SizedBox(
-      width: width.sp,
+      width: width.ts(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[

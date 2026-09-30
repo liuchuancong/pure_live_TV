@@ -1,12 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pure_live/core/theme/index.dart';
 import 'package:pure_live/core/widgets/index.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/app/router/web_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/domains/device/tv_remote_receiver.dart';
-import 'dart:async';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 /// The "open the web form" card: a QR carrying the web remote's
 /// `http://ip:port/#/route` address, served by the alfred web server. A phone
@@ -45,7 +45,7 @@ class RemoteSyncQrCard extends ConsumerWidget {
         });
       }
       return Container(
-        width: width.sp,
+        width: width.ts(context),
         padding: EdgeInsets.all(16.sp),
         decoration: BoxDecoration(
           color: tvTheme.cardColor,
@@ -59,11 +59,7 @@ class RemoteSyncQrCard extends ConsumerWidget {
               height: 18.sp,
               child: error == null
                   ? const CircularProgressIndicator(strokeWidth: 2)
-                  : Icon(
-                      Icons.error_outline_rounded,
-                      size: 18.ts(context),
-                      color: tvTheme.secondaryTextColor,
-                    ),
+                  : Icon(Icons.error_outline_rounded, size: 18.ts(context), color: tvTheme.secondaryTextColor),
             ),
             SizedBox(width: 10.sp),
             Expanded(
@@ -79,7 +75,7 @@ class RemoteSyncQrCard extends ConsumerWidget {
 
     final String url = '$serverUrl$route';
     return SizedBox(
-      width: width.sp,
+      width: width.ts(context),
       child: TvQrCodeCard(qrData: url, urlText: url),
     );
   }
