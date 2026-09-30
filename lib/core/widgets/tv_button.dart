@@ -149,14 +149,13 @@ class TvButton extends StatelessWidget {
     return btn;
   }
 
-  /// Geometry of each size: design pixels multiplied by the app font scale.
+  /// Geometry of each size: design pixels.
   ///
-  /// The label is a `.sp` style and the inherited scaler multiplies it again, so
-  /// a button measured in panel units alone clipped its own label once the font
-  /// was enlarged, and looked untouched next to text the user had just made
-  /// bigger. `.w` keeps it proportional to the panel, `factorOf` to its label.
+  /// Button geometry stays fixed — only the label text scales with the user's
+  /// font preference. Scaling the pill itself made buttons balloon next to
+  /// unscaled neighbours on the playback bars.
   (double, EdgeInsets, TextStyle, double, double) _getSizeConfig(BuildContext context) {
-    final double scale = TvTextScale.factorOf(context);
+    const double scale = 1.0;
     return switch (size) {
       TvButtonSize.large => (
         80.0.w * scale,

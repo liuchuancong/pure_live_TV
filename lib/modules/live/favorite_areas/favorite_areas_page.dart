@@ -62,7 +62,12 @@ class _FavoriteAreasPageState extends ConsumerState<FavoriteAreasPage> {
                       param: currentParam,
                       getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
                       emptyScene: EmptyScene.favoriteAreas,
-                      gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
+                      gridDelegate: ThemeSettingsController.cardGridDelegate(
+                        context,
+                        ref,
+                        gridColums: 6,
+                        gridAspectRatio: 1.5,
+                      ),
                       itemBuilder: (context, area, index) => TvAreaCard(
                         area: area,
                         // A followed category is a shortcut into the same room

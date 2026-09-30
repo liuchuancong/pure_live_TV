@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/core/theme/tv_theme_x.dart';
 import 'package:pure_live/core/utils/cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
 class TvCommonAvatar extends StatelessWidget {
   final String? avatarUrl;

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:pure_live/exports/common_export.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pure_live/core/utils/dpad_long_press_gate.dart';
-import 'package:pure_live/core/theme/typography/app_font_scale.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:pure_live/services/area_images/area_image_matcher.dart';
 
@@ -42,12 +41,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
       // Light palette: a soft 12px halo smears on white; use a crisp ring.
       tvTheme.isLight
           ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
-          : DpadGlowEffect(
-              color: tvTheme.focusColor,
-              opacity: 1,
-              spreadRadius: 1.sp,
-              blurRadius: 12.0.sp,
-            ),
+          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 1.sp, blurRadius: 12.0.sp),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
         final bgColor = tvTheme.backgroundColor;
@@ -65,14 +59,7 @@ class _TvAreaCardState extends State<TvAreaCard> {
             padding: EdgeInsets.all(9.ts(context)),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // How many lines of the label this cell can hold. The name is
-                // sized by its text, so a cell too small for two lines would
-                // paint the second one over the artwork: it gets one ellipsised
-                // line instead. The line height is exact — the style pins
-                // `height: 1.15` and the name is 17 design px (the same base
-                // the style below uses), so a line is `fontSize * 1.15` at the
-                // scale the text is drawn at.
-                final double nameLineHeight = 17.ts(context) * 1.15;
+                final double nameLineHeight = 17.ts(context);
                 final double nameGap = 8.ts(context);
                 final int nameLines = constraints.maxHeight - nameGap >= nameLineHeight * 2 ? 2 : 1;
                 return Column(
@@ -137,23 +124,15 @@ class _TvAreaCardState extends State<TvAreaCard> {
                       ),
                     ),
                     SizedBox(height: nameGap),
-                    // The name is sized by the text it holds, never by a fixed
-                    // box: the old `SizedBox(height: 32.ts(context))` clipped a two-line
-                    // name even at 100% and hid it completely once the app font
-                    // was enlarged. [nameLines] keeps it bounded either way.
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4.ts(context)),
-                      child: Text(
-                        area.areaName,
-                        maxLines: nameLines,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.t20.copyWith(
-                          color: titleColor,
-                          fontSize: (17 * AppFontScale.user).sp,
-                          height: 1.15,
-                          fontWeight: isFocused ? FontWeight.w700 : FontWeight.w600,
-                        ),
+                    Text(
+                      area.areaName,
+                      maxLines: nameLines,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.t18.copyWith(
+                        color: titleColor,
+                        height: 1.15,
+                        fontWeight: isFocused ? FontWeight.w700 : FontWeight.w600,
                       ),
                     ),
                   ],

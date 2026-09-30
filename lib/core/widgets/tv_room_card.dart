@@ -105,12 +105,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
       // Light palette: the 18px glow is a grey smear on white; crisp ring.
       tvTheme.isLight
           ? DpadGlowEffect(color: tvTheme.focusColor, opacity: 1, spreadRadius: 2.sp, blurRadius: 0)
-          : DpadGlowEffect(
-              color: tvTheme.focusColor,
-              opacity: 0.75,
-              blurRadius: 18.sp,
-              spreadRadius: 1.5.sp,
-            ),
+          : DpadGlowEffect(color: tvTheme.focusColor, opacity: 0.75, blurRadius: 18.sp, spreadRadius: 1.5.sp),
       DpadCustomEffect((ctx, state, _) {
         final isFocused = state.focused;
         final bgColor = isFocused ? tvTheme.focusedCardColor : tvTheme.cardColor;
@@ -135,7 +130,7 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
               // does the decision to run the info row in its compact form: a card
               // whose labels are drawn 60% larger is effectively narrower, so the
               // threshold moves with the text instead of the cell alone.
-              final bool compact = constraints.maxWidth < 190.ts(context);
+              final bool compact = constraints.maxWidth < 190.sp;
               // A playlist ships no per-channel avatar, so an IPTV card numbers
               // its channel instead: a position is what a TV viewer reads as the
               // channel identity, while the shared placeholder would repeat one
@@ -199,8 +194,8 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                           left: 12.sp,
                           top: 12.sp,
                           child: Wrap(
-                            spacing: 8.ts(context),
-                            runSpacing: 6.ts(context),
+                            spacing: 8.sp,
+                            runSpacing: 6.sp,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               TvCoverChip(label: widget.room.platform.toUpperCase()),
@@ -238,33 +233,20 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                   // the taller labels need, while width is contested by the
                   // leading, which gives way to the title instead.
                   Padding(
-                    padding: EdgeInsets.only(
-                      left: 10.sp,
-                      top: compact ? 6.ts(context) : 16.ts(context),
-                      right: compact ? 10.ts(context) : 16.ts(context),
-                      bottom: compact ? 6.ts(context) : 8.ts(context),
-                    ),
+                    padding: EdgeInsets.only(left: 6.sp, top: 6.sp, right: 0.sp, bottom: 6.sp),
                     child: Row(
                       children: [
                         // The leading keeps the avatar's footprint either way,
                         // so titles stay aligned in a grid that mixes platforms.
                         SizedBox(
-                          width: compact ? 20.ts(context) : 56.ts(context),
+                          width: 56.sp,
                           child: Center(
                             child: channelNumber == null
-                                ? TvCommonAvatar(
-                                    avatarUrl: widget.room.avatar,
-                                    fallbackName: widget.room.nick,
-                                    radius: compact ? 10.sp : null,
-                                  )
-                                : NumberLeading(
-                                    channelNumber,
-                                    size: (compact ? 20 : 34).ts(context),
-                                    color: titleColor,
-                                  ),
+                                ? TvCommonAvatar(avatarUrl: widget.room.avatar, fallbackName: widget.room.nick)
+                                : NumberLeading(channelNumber, size: 28.sp, color: titleColor),
                           ),
                         ),
-                        SizedBox(width: compact ? 8.ts(context) : 16.ts(context)),
+                        SizedBox(width: 8.sp),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,22 +261,18 @@ class _TvRoomCardState extends ConsumerState<TvRoomCard> {
                               TvMarqueeText(
                                 text: widget.room.title,
                                 isFocused: isFocused,
-                                style:
-                                    (compact
-                                            ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w700)
-                                            : AppTextStyles.t22.copyWith(fontWeight: FontWeight.w700))
-                                        .copyWith(color: titleColor),
+                                style: AppTextStyles.t18
+                                    .copyWith(fontWeight: FontWeight.w700)
+                                    .copyWith(color: titleColor),
                               ),
-                              SizedBox(height: compact ? 2.ts(context) : 4.ts(context)),
+                              SizedBox(height: compact ? 2.sp : 4.sp),
                               Text(
                                 widget.room.nick,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style:
-                                    (compact
-                                            ? AppTextStyles.t14.copyWith(fontWeight: FontWeight.w500)
-                                            : AppTextStyles.t18.copyWith(fontWeight: FontWeight.w500))
-                                        .copyWith(color: subtitleColor),
+                                style: AppTextStyles.t16
+                                    .copyWith(fontWeight: FontWeight.w700)
+                                    .copyWith(color: subtitleColor),
                               ),
                             ],
                           ),

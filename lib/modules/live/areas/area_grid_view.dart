@@ -95,7 +95,7 @@ class _AreaGridViewState extends ConsumerState<AreaGridView> {
               key: ValueKey('page_$currentCategoryIndex'),
               param: currentParam,
               getNotifier: () => ref.read(pagingCoreProvider(currentParam).notifier),
-              gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref),
+              gridDelegate: ThemeSettingsController.cardGridDelegate(context, ref, gridColums: 6, gridAspectRatio: 1.5),
               itemBuilder: (context, area, index) => TvAreaCard(
                 area: area,
                 onTap: () {

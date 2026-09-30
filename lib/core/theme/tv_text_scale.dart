@@ -127,10 +127,9 @@ class TvAdaptiveGrid {
     double fontWeight = 1.0,
   }) {
     final double scale = _dampedFactor(context, fontWeight);
-    final int columns = (crossAxisCount / scale).ceil().clamp(1, crossAxisCount * 2);
     return SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: columns,
-      childAspectRatio: childAspectRatio * crossAxisCount / (scale * columns),
+      crossAxisCount: crossAxisCount,
+      childAspectRatio: childAspectRatio,
       mainAxisSpacing: mainAxisSpacing * scale,
       crossAxisSpacing: crossAxisSpacing * scale,
     );
