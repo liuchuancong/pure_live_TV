@@ -2,21 +2,9 @@
 // Split from app_update_service.dart — the controller file keeps the
 // riverpod state machinery; these are the plain data types.
 
-import 'dart:io';
-import 'dart:async';
 import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
-import 'package:pure_live/core/common/api_proxy_policy.dart';
-import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/core/platform/race_http.dart';
-import 'package:pure_live/core/utils/version_util.dart';
-import 'package:pure_live/services/settings/settings.dart';
-import 'package:pure_live/core/platform/file_utils.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:pure_live/core/i18n/locale_helper.dart';
 import 'package:pure_live/core/models/release_model/release_model.dart';
 
 enum AppUpdatePhase { idle, checking, upToDate, available, downloading, readyToInstall, failed }
